@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,13 +33,62 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) workflow filtered by a selected workflow type
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW )]
     public class WorkflowFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string WORKFLOW_TYPE_KEY = "workflowtype";
+        private const string WORKFLOW_TYPE_OPTIONS_KEY = "workflowtypeoptions";
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
+
+            if ( !configurationProperties.ContainsKey( WORKFLOW_TYPE_OPTIONS_KEY ) )
+            {
+                var workflowTypes = WorkflowTypeCache.All().OrderBy( wt => wt.Name ).ToListItemBagList();
+                configurationProperties[WORKFLOW_TYPE_OPTIONS_KEY] = workflowTypes.ToCamelCaseJson( false, true );
+            }
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && configurationValues.TryGetValue( WORKFLOW_TYPE_KEY, out string workflowTypeIdString ) && int.TryParse( workflowTypeIdString, out int workflowTypeId ) )
+            {
+                var workflowGuid = WorkflowTypeCache.GetGuid( workflowTypeId );
+                if ( workflowGuid != null )
+                {
+                    configurationValues[WORKFLOW_TYPE_KEY] = workflowGuid.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( configurationValues.TryGetValue( WORKFLOW_TYPE_KEY, out string workflowTypeIdString ) && Guid.TryParse( workflowTypeIdString, out Guid workflowTypeGuid ) )
+            {
+                var workflowId = WorkflowTypeCache.GetId( workflowTypeGuid );
+                if ( workflowId != null )
+                {
+                    configurationValues[WORKFLOW_TYPE_KEY] = workflowId.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
 
         #endregion
 
@@ -68,6 +118,65 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNotNullOrWhiteSpace() )
+            {
+                var guid = privateValue.AsGuidOrNull();
+                ListItemBag workflow = null;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    if ( guid.HasValue )
+                    {
+                        workflow = new WorkflowService( rockContext ).GetSelect( guid.Value, w => new ListItemBag()
+                        {
+                            Text = w.Name,
+                            Value = w.Guid.ToString()
+                        } );
+                    }
+                    else
+                    {
+                        var id = privateValue.AsIntegerOrNull();
+                        if ( id.HasValue )
+                        {
+                            workflow = new WorkflowService( rockContext ).GetSelect( id.Value, w => new ListItemBag()
+                            {
+                                Text = w.Name,
+                                Value = w.Guid.ToString()
+                            } );
+                        }
+                    }
+
+                    if ( workflow != null )
+                    {
+                        return workflow.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( jsonValue != null )
+            {
+                return jsonValue.Value;
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 

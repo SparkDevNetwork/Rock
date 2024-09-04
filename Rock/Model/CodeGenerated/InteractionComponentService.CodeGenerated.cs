@@ -126,9 +126,6 @@ namespace Rock.Model
             target.ChannelCustom1 = source.ChannelCustom1;
             target.ChannelCustom2 = source.ChannelCustom2;
             target.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
-            #pragma warning disable 612, 618
-            target.ChannelId = source.ChannelId;
-            #pragma warning restore 612, 618
             target.ComponentData = source.ComponentData;
             target.ComponentSummary = source.ComponentSummary;
             target.EntityId = source.EntityId;

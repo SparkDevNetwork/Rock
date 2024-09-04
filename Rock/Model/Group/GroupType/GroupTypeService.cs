@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -150,216 +152,97 @@ namespace Rock.Model
             return this.GetCheckinAreaDescendants( this.Get( parentGroupTypeGuid ).Id );
         }
 
-        #endregion Methods for CheckinAreas (which are GroupTypes)
-
-        #region Obsolete - Replaced with the above GetCheckinAreaDescendant.. methods
-
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
-        /// WARNING: It is possible for a user to create a circular reference in the GroupTypeAssociation table that will cause this query to get stuck.
-        /// The MaxRecursion number will control the depth and prevent this.
+        /// Gets all related (ancestor, sibling and descendant) check-in areas for the provided check-in area,
+        /// based on its ancestor check-in configuration.
         /// </summary>
-        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
-        /// <param name="maxRecursion">The maximum recursion.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
-        public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId, int maxRecursion )
+        /// <param name="checkInArea">The check-in area for which to get related check-in areas.</param>
+        /// <returns>All related (ancestor, sibling and descendant) check-in areas for the provided check-in area.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.2" )]
+        public List<GroupTypeCache> GetRelatedCheckInAreas( GroupTypeCache checkInArea )
         {
-            /* 2020-09-02 MDP
-             * This method is confusing/misleading because it only applies when GroupTypes are used as Checkin Areas.
-             * Also, it could cause an circular reference exception
-             * To address this issue, we decided to create new GetCheckinAreaDescendants methods to make it more obvious
-             * this is only applies to GroupType CheckinAreas, and to make GetCheckinAreaDescendants safe from circular reference problems.
-             */
-
-            return this.ExecuteQuery(
-                $@"
-                WITH CTE ([RecursionLevel], [GroupTypeId], [ChildGroupTypeId])
-                AS (
-                    SELECT
-                          0 AS [RecursionLevel]
-                        , [GroupTypeId]
-                        , [ChildGroupTypeId]
-                    FROM [GroupTypeAssociation]
-                    WHERE [GroupTypeId] = {parentGroupTypeId}
-
-                    UNION ALL
-
-                    SELECT acte.[RecursionLevel] + 1 AS [RecursionLevel]
-                        , [a].[GroupTypeId]
-                        , [a].[ChildGroupTypeId]
-                    FROM [GroupTypeAssociation] [a]
-                    JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
-                    WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
-                        AND [a].[ChildGroupTypeId] <> acte.[GroupTypeId] -- and the child group type can't be a parent group type
-                        AND (acte.RecursionLevel + 1 ) < {maxRecursion}
-                )
-
-                SELECT *
-                FROM [GroupType]
-                WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
-                OPTION ( MAXRECURSION {maxRecursion} )" );
-        }
-
-        /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
-        /// WARNING: This has MAXRECURSION set to 10 to prevent the query from getting stuck on a circular reference in the GroupTypeAssociation table.
-        /// </summary>
-        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes are that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
-        public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId )
-        {
-            /* 2020-09-02 MDP
-             * This method is confusing/misleading because it only applies when GroupTypes are used as Checkin Areas.
-             * Also, it could cause an circular reference exception
-             * To address this issue, we decided to create new GetCheckinAreaDescendants methods to make it more obvious
-             * this is only applies to GroupType CheckinAreas, and to make GetCheckinAreaDescendants safe from circular reference problems.
-             */
-
-            return GetAllAssociatedDescendents( parentGroupTypeId, 10 );
-        }
-
-        /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type
-        /// and ordered by the group type's Order in the hierarchy.
-        /// WARNING: This will fail (max recursion) if there is a circular reference in the GroupTypeAssociation table.
-        /// </summary>
-        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes are that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
-        public IEnumerable<GroupType> GetAllAssociatedDescendentsOrdered( int parentGroupTypeId )
-        {
-            // We're basically building a hierarchy ordering path using padded zeros of the GroupType's order
-            // such that the results of the HierarchyOrder looks something like this:
-            //
-            //// |000
-            //// |000
-            //// |001
-            //// |002
-            //// |002|000
-            //// |002|000|000
-            //// |002|001
-            //// |003
-            //// |004
-
-            return this.ExecuteQuery(
-                @"
-                -- Get GroupTypes ordered by their association GroupType's Order
-                WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyOrder) AS
-                (
-                      SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
-                      FROM   [GroupTypeAssociation] GTA
-		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
-                      WHERE  [GroupTypeId] = {0}
-                      UNION ALL 
-                      SELECT
-                            GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT2.[Order], 3)  )
-                      FROM
-                            GroupTypeAssociation GTA
-		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
-		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
-                      WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
-					  -- and the child group type can't be a parent group type
-					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
-                )
-                SELECT GT3.*
-                FROM CTE
-                INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
-				ORDER BY CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT3.[Order], 3) )",
-                parentGroupTypeId );
-        }
-
-        /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupTypePath">GroupTypePath</see> objects that are
-        /// associated descendants of a specified group type.
-        /// WARNING: This will fail if there is a circular reference in the GroupTypeAssociation table.
-        /// </summary>
-        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.GroupTypePath">GroupTypePath</see> objects.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes are that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
-        public IEnumerable<GroupTypePath> GetAllAssociatedDescendentsPath( int parentGroupTypeId )
-        {
-            return this.Context.Database.SqlQuery<GroupTypePath>(
-                @"
-                -- Get GroupType association hierarchy with GroupType ancestor path information
-                WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyPath) AS
-                (
-                      SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
-                      FROM   [GroupTypeAssociation] GTA
-		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
-                      WHERE  [GroupTypeId] = {0}
-                      UNION ALL 
-                      SELECT
-                            GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
-                      FROM
-                            GroupTypeAssociation GTA
-		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
-		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
-                      WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
-					  -- and the child group type can't be a parent group type
-					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
-                )
-                SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
-                FROM CTE
-                INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]",
-                parentGroupTypeId );
-        }
-
-        /// <summary>
-        /// Gets all checkin group type paths.
-        /// </summary>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetAllCheckinAreaPaths instead" )]
-        public IEnumerable<GroupTypePath> GetAllCheckinGroupTypePaths()
-        {
-            List<GroupTypePath> result = new List<GroupTypePath>();
-
-            GroupTypeService groupTypeService = this;
-
-            var qry = groupTypeService.Queryable();
-
-            // limit to show only GroupTypes that have a group type purpose of Checkin Template
-            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
-            qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
-
-            foreach ( var groupTypeId in qry.Select( a => a.Id ) )
+            var checkInConfiguration = this.GetCheckInConfiguration( checkInArea );
+            if ( checkInConfiguration == null )
             {
-                result.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId ) );
+                return null;
             }
 
-            return result;
+            return this.GetCheckinAreaDescendants( checkInConfiguration.Id );
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
-        /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
+        /// Gets the check-in configuration (the first ancestor group type with purpose == "Check-in Template")
+        /// for the specified check-in area.
         /// </summary>
-        /// <param name="parentGroupTypeGuid">The parent group type unique identifier.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes are that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
-        public IEnumerable<GroupType> GetAllAssociatedDescendents( Guid parentGroupTypeGuid )
+        /// <param name="checkInArea">The check-in area for which to get the check-in configuration.</param>
+        /// <returns>The check-in configuration for the specified check-in area, or <c>null</c> if not found.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.2" )]
+        public GroupTypeCache GetCheckInConfiguration( GroupTypeCache checkInArea )
         {
-            return this.GetAllAssociatedDescendents( this.Get( parentGroupTypeGuid ).Id );
+            var alreadyEncounteredGroupTypeIds = new List<int>();
+            return this.FindAncestorCheckInConfiguration( checkInArea, ref alreadyEncounteredGroupTypeIds );
         }
 
-        #endregion Obsolete
+        /// <summary>
+        /// Recursively searches the ancestor group type path to find the first one whose purpose == "Check-in Template".
+        /// </summary>
+        /// <param name="checkInArea">The current [check-in area] group type whose ancestors should be searched.</param>
+        /// <param name="alreadyEncounteredGroupTypeIds">The list of group type IDs we've already encountered and searched,
+        /// to prevent infinite loops caused by circular references.</param>
+        /// <returns>The first ancestor group type whose purpose == "Check-in Template".</returns>
+        private GroupTypeCache FindAncestorCheckInConfiguration( GroupTypeCache checkInArea, ref List<int> alreadyEncounteredGroupTypeIds )
+        {
+            GroupTypeCache checkInConfiguration = null;
+            var checkInTemplatePurposeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+
+            foreach ( var parentGroupType in checkInArea.ParentGroupTypes )
+            {
+                // If we've already encountered this group type, we have a circular reference; continue to the next one.
+                if ( alreadyEncounteredGroupTypeIds.Contains( parentGroupType.Id ) )
+                {
+                    continue;
+                }
+
+                // Take note of this group type's ID so we only check it once.
+                alreadyEncounteredGroupTypeIds.Add( parentGroupType.Id );
+
+                if ( parentGroupType.GroupTypePurposeValueId == checkInTemplatePurposeValueId )
+                {
+                    // We found it; set it and break out of this loop.
+                    checkInConfiguration = parentGroupType;
+                    break;
+                }
+
+                // Continue recursively up the group type path.
+                checkInConfiguration = this.FindAncestorCheckInConfiguration( parentGroupType, ref alreadyEncounteredGroupTypeIds );
+
+                // If we found it recursively, no need to continue searching.
+                if ( checkInConfiguration != null )
+                {
+                    break;
+                }
+            }
+
+            return checkInConfiguration;
+        }
+
+        #endregion Methods for CheckinAreas (which are GroupTypes)
 
         /// <summary>
         /// Deletes the specified item.

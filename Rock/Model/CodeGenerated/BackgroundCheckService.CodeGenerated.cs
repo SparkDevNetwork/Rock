@@ -123,6 +123,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BackgroundCheck target, BackgroundCheck source )
         {
             target.Id = source.Id;
+            target.ConnectionRequestId = source.ConnectionRequestId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.PackageName = source.PackageName;

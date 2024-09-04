@@ -126,6 +126,7 @@ namespace Rock.Model
             target.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GroupId = source.GroupId;
             target.GroupMemberId = source.GroupMemberId;
             target.LastReminderSentDateTime = source.LastReminderSentDateTime;
             target.LocationId = source.LocationId;

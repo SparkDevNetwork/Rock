@@ -29,6 +29,7 @@
     import { MediaElementPickerGetMediaTreeResultsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaElementPickerGetMediaTreeResultsBag";
     import { HttpBodyData } from "@Obsidian/Types/Utility/http";
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockButton from "./rockButton.obs";
@@ -137,7 +138,7 @@
     /** Load media folders for the selected account from server and returns them */
     async function loadMediaFolders(): Promise<ListItemBag[]> {
         const options: MediaElementPickerGetMediaFoldersOptionsBag = {
-            mediaAccountGuid: internalMediaAccount.value?.value ?? null
+            mediaAccountGuid: internalMediaAccount.value?.value || emptyGuid
         };
 
         return loadItems("MediaElementPickerGetMediaFolders", options);
@@ -146,7 +147,7 @@
     /** Load media elements for the selected folder from server and returns them */
     async function loadMediaElements(): Promise<ListItemBag[]> {
         const options: MediaElementPickerGetMediaElementsOptionsBag = {
-            mediaFolderGuid: internalMediaFolder.value?.value ?? null
+            mediaFolderGuid: internalMediaFolder.value?.value || emptyGuid
         };
 
         return loadItems("MediaElementPickerGetMediaElements", options);

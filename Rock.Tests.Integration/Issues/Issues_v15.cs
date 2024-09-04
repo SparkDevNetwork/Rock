@@ -15,13 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Integration.Data.Interactions;
+using Rock.Tests.Integration.Modules.Core.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.BugFixes
@@ -79,8 +80,6 @@ namespace Rock.Tests.Integration.BugFixes
             interactionService.Add( interaction2 );
 
             var settings = new PopulateInteractionSessionData.PopulateInteractionSessionDataJobSettings();
-            settings.IpAddressLookupIsDisabled = true;
-            settings.MaxRecordsToProcessPerRun = 10;
 
             var job = new PopulateInteractionSessionData();
             var jobResult = job.Execute( settings );

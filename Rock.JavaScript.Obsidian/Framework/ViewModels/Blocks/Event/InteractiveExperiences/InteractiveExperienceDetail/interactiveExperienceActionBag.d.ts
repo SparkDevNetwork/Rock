@@ -33,7 +33,7 @@ export type InteractiveExperienceActionBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the unique identifier of this action instance. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets a value indicating whether moderation is required

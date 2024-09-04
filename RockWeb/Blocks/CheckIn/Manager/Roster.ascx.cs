@@ -263,8 +263,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !this.IsPostBack )
             {
                 bgStatus.Items.Clear();
@@ -275,6 +273,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 BuildRoster();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

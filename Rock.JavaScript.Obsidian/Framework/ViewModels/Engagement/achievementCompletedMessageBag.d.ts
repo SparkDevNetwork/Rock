@@ -29,7 +29,7 @@ import { Guid } from "@Obsidian/Types";
  */
 export type AchievementCompletedMessageBag = {
     /** Gets or sets the achievement attempt unique identifier. */
-    achievementAttemptGuid?: Guid | null;
+    achievementAttemptGuid: Guid;
 
     /** Gets or sets the achievement type alternate image URL. */
     achievementTypeAlternateImageUrl?: string | null;
@@ -38,7 +38,7 @@ export type AchievementCompletedMessageBag = {
      * Gets or sets the unique identifier of the achievement type that
      * was completed.
      */
-    achievementTypeGuid?: Guid | null;
+    achievementTypeGuid: Guid;
 
     /** Gets or sets the achievement type image URL. */
     achievementTypeImageUrl?: string | null;
@@ -50,7 +50,7 @@ export type AchievementCompletedMessageBag = {
      * Gets or sets the unique identifier of the entity that completed
      * the achievement.
      */
-    entityGuid?: Guid | null;
+    entityGuid: Guid;
 
     /** Gets or sets the name of the entity. */
     entityName?: string | null;

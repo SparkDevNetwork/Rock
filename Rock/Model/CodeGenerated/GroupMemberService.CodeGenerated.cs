@@ -61,6 +61,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring LearningParticipant,Id
+
             // ignoring RegistrationRegistrant,GroupMemberId
             return true;
         }

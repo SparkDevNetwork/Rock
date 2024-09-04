@@ -30,6 +30,7 @@ using Rock.ViewModels.Blocks.Core.NoteWatchDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
 {
@@ -45,17 +46,12 @@ namespace Rock.Blocks.Core
 
     #region Block Attributes
 
-    [EntityTypeField( "Entity Type",
-        Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
-        IsRequired = false,
-        Order = 0,
-        Key = AttributeKey.EntityType )]
-
-    [NoteTypeField( "Note Type",
-        Description = "Set Note Type to limit this block to a specific note type",
-        AllowMultiple = false,
-        Order = 1,
-        Key = AttributeKey.NoteType )]
+    [CodeEditorField( "Watched Note Lava Template",
+        Key = AttributeKey.WatchedNoteLavaTemplate,
+        Description = "The Lava template to use to show the watched note type. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = false )]
 
     #endregion
 
@@ -80,8 +76,6 @@ namespace Rock.Blocks.Core
 
         public static class AttributeKey
         {
-            public const string EntityType = "EntityType";
-            public const string NoteType = "NoteType";
             public const string WatchedNoteLavaTemplate = "WatchedNoteLavaTemplate";
         }
 
@@ -179,14 +173,14 @@ namespace Rock.Blocks.Core
             // see if the Watcher parameters are valid
             if ( !noteWatch.IsValidWatcher )
             {
-                errorMessage = "A Person or Group must be specified as the watcher";
+                errorMessage = "WatcherMustBeSelected";
                 return false;
             }
 
             // see if the Watch filters parameters are valid
             if ( !noteWatch.IsValidWatchFilter )
             {
-                errorMessage = "A Watch Filter must be specified.";
+                errorMessage = "WatchFilterMustBeSelected";
                 return false;
             }
 
@@ -202,7 +196,7 @@ namespace Rock.Blocks.Core
                 var nonOverridableNoteWatch = noteWatch.GetNonOverridableNoteWatches( rockContext ).FirstOrDefault();
                 if ( nonOverridableNoteWatch != null )
                 {
-                    errorMessage = "Unable to set Watching to false. This would override another note watch that doesn't allow overrides.";
+                    errorMessage = "UnableToOverride";
                     return false;
                 }
             }
@@ -213,7 +207,7 @@ namespace Rock.Blocks.Core
                 var noteTypeCache = NoteTypeCache.Get( noteWatch.NoteTypeId.Value );
                 if ( noteTypeCache != null && !noteTypeCache.AllowsWatching )
                 {
-                    errorMessage = "This note type doesn't allow note watches.";
+                    errorMessage = "NoteTypeDoesNotAllowWatch";
                     return false;
                 }
             }
@@ -452,7 +446,7 @@ namespace Rock.Blocks.Core
         {
             int? entityId = null;
 
-            if ( bag.WatchedEntity == null )
+            if ( string.IsNullOrWhiteSpace( bag.WatchedEntity?.Value ) )
             {
                 entityId = bag.EntityId;
             }

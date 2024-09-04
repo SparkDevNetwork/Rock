@@ -21,16 +21,18 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** The information needed to identify a specific occurrence to be scheduled within the Group Scheduler. */
 export type GroupSchedulerOccurrenceBag = {
-    /** Gets or sets the attendance occurrence ID for this occurrence. */
-    attendanceOccurrenceId: number;
+    /**
+     * Gets or sets the attendance occurrence ID for this occurrence.
+     * This attendance occurrence might not exist yet.
+     */
+    attendanceOccurrenceId?: number | null;
 
     /** Gets or sets the desired capacity for this occurrence. */
     desiredCapacity?: number | null;
-
-    /** Gets or sets the friendly occurrence date. */
-    friendlyOccurrenceDate?: string | null;
 
     /** Gets or sets the group ID for this occurrence. */
     groupId: number;
@@ -40,6 +42,12 @@ export type GroupSchedulerOccurrenceBag = {
 
     /** Gets or sets the group name for this occurrence. */
     groupName?: string | null;
+
+    /** Gets or sets the group order for this occurrence. */
+    groupOrder: number;
+
+    /** Gets the unique identifier for this group scheduler occurrence. */
+    guid: Guid;
 
     /** Gets or sets whether scheduling is enabled for this occurrence. */
     isSchedulingEnabled: boolean;
@@ -56,7 +64,7 @@ export type GroupSchedulerOccurrenceBag = {
     /** Gets or sets the minimum capacity for this occurrence. */
     minimumCapacity?: number | null;
 
-    /** Gets or sets the ISO 8601 date for this occurrence. */
+    /** Gets the occurrence date. */
     occurrenceDate?: string | null;
 
     /** Gets or sets the occurrence date and time. */

@@ -21,6 +21,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -40,16 +43,10 @@ namespace Rock.Financial
     /// 3. Charging a "future payment" that originated from mode 2.
     ///
     /// </summary>
+    [RockLoggingCategory]
     public class AutomatedPaymentProcessor
     {
         #region Keys
-
-        /// <summary>
-        /// Use this key to set metadata that will be used as the description of the transaction in some gateways
-        /// </summary>
-        [Obsolete( "Use the 'MetadataKey' static class constants instead.", true )]
-        [RockObsolete( "1.10" )]
-        public const string DescriptionMetadataKey = "description";
 
         /// <summary>
         /// Commonly used keys within the transaction metadata
@@ -112,6 +109,28 @@ namespace Rock.Financial
 
         // Results
         private Payment _payment;
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         #endregion Instance Properties
 
@@ -649,7 +668,7 @@ namespace Rock.Financial
 
                 try
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Finance, $"AutomatedPaymentProcessor exception occurred while saving transaction {transactionGuid}: {exception.Message}" );
+                    Logger.LogDebug( $"AutomatedPaymentProcessor exception occurred while saving transaction {transactionGuid}: {exception.Message}" );
 
                     _rockContext.WrapTransaction( () =>
                     {
@@ -802,7 +821,7 @@ namespace Rock.Financial
         /// </summary>
         private FinancialTransaction SaveTransaction( Guid transactionGuid )
         {
-            RockLogger.Log.Debug( RockLogDomains.Finance, $"AutomatedPaymentProcessor attempting to save transaction {transactionGuid}" );
+            Logger.LogDebug( $"AutomatedPaymentProcessor attempting to save transaction {transactionGuid}" );
 
             // if this is a future transaction, the payment hasn't been charged yet
             if ( _payment == null && _automatedPaymentArgs.FutureProcessingDateTime.HasValue )
@@ -947,7 +966,7 @@ namespace Rock.Financial
                 batchChanges
             );
 
-            RockLogger.Log.Debug( RockLogDomains.Finance, $"AutomatedPaymentProcessor save succeeded for transaction {transactionGuid}" );
+            Logger.LogDebug( $"AutomatedPaymentProcessor save succeeded for transaction {transactionGuid}" );
 
             return financialTransaction;
         }

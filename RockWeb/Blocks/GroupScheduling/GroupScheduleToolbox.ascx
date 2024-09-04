@@ -119,7 +119,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <Rock:RockDropDownList ID="ddlSendRemindersDaysOffset" runat="server" Label="Send Reminders" OnSelectedIndexChanged="ddlSendRemindersDaysOffset_SelectedIndexChanged" AutoPostBack="true">
-                                                <asp:ListItem Value="" Text="Do not send a reminder"></asp:ListItem>
+                                                <asp:ListItem Value=""></asp:ListItem>
+                                                <asp:ListItem Value="-1" Text="Do not send a reminder"></asp:ListItem>
                                                 <asp:ListItem Value="1" Text="1 day before"></asp:ListItem>
                                                 <asp:ListItem Value="2" Text="2 days before"></asp:ListItem>
                                                 <asp:ListItem Value="3" Text="3 days before"></asp:ListItem>

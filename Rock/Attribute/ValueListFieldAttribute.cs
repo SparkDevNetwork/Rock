@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -56,7 +57,7 @@ namespace Rock.Attribute
             }
 
             Guid? guid = definedTypeGuid.AsGuidOrNull();
-            if ( guid.HasValue )
+            if ( guid.HasValue && RockApp.Current.IsDatabaseAvailable() )
             {
                 var definedType = DefinedTypeCache.Get( guid.Value );
                 if ( definedType != null )

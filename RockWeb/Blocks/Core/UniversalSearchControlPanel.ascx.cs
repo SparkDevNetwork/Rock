@@ -81,8 +81,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadIndexDetails();
@@ -91,6 +89,8 @@ namespace RockWeb.Blocks.Core
 
                 ddlSearchType.BindToEnum<SearchType>();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -340,14 +340,16 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRefresh_Click( object sender, RowEventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            EntityTypeService entityTypeService = new EntityTypeService( rockContext );
-            var entityType = entityTypeService.Get( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
 
             if ( entityType != null )
             {
-                IndexContainer.DeleteIndex( entityType.IndexModelType );
-                IndexContainer.CreateIndex( entityType.IndexModelType );
+                var indexesToRecreate = IndexHelper.GetRelatedIndexes( entityType.IndexModelType );
+                foreach (var indexType in indexesToRecreate )
+                {
+                    IndexContainer.DeleteIndex( indexType );
+                    IndexContainer.CreateIndex( indexType );
+                }
 
                 maMessages.Show( string.Format( "The index for {0} has been re-created.", entityType.FriendlyName ), ModalAlertType.Information );
             }

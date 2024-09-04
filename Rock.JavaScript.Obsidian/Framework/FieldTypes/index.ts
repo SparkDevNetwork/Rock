@@ -32,6 +32,12 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
+registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
+
+import { AttributeFieldType } from "./attributeField.partial";
+registerFieldType(FieldTypeGuids.Attribute, new AttributeFieldType());
+
 import { AudioFileFieldType } from "./audioFileField.partial";
 registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
 
@@ -44,11 +50,20 @@ registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
 
+import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
+
+import { BinaryFileFieldType } from "./binaryFileField.partial";
+registerFieldType(FieldTypeGuids.BinaryFile, new BinaryFileFieldType());
+
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
 
 import { BinaryFileTypesFieldType } from "./binaryFileTypesField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileTypes, new BinaryFileTypesFieldType());
+
+import { BlockTemplateFieldType } from "./blockTemplateField.partial";
+registerFieldType(FieldTypeGuids.BlockTemplate, new BlockTemplateFieldType());
 
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
@@ -68,6 +83,9 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CheckinConfigurationTypeField } from "./checkinConfigurationTypeField.partial";
+registerFieldType(FieldTypeGuids.CheckInConfigurationType, new CheckinConfigurationTypeField());
+
 import { CheckListFieldType } from "./checkListField.partial";
 registerFieldType(FieldTypeGuids.CheckList, new CheckListFieldType());
 
@@ -80,6 +98,12 @@ registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 import { ColorSelectorFieldType } from "./colorSelectorField.partial";
 registerFieldType(FieldTypeGuids.ColorSelector, new ColorSelectorFieldType());
 
+import { ConditionalScaleFieldType } from "./conditionalScaleField.partial";
+registerFieldType(FieldTypeGuids.ConditionalScale, new ConditionalScaleFieldType());
+
+import { ConnectionOpportunityFieldType } from "./connectionOpportunityField.partial";
+registerFieldType(FieldTypeGuids.ConnectionOpportunity, new ConnectionOpportunityFieldType());
+
 import { ConnectionTypeField } from "./connectionTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
 
@@ -88,6 +112,9 @@ registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
 
 import { ConnectionStateFieldType } from "./connectionStateField.partial";
 registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType());
+
+import { ConnectionStatusFieldType } from "./connectionStatusField.partial";
+registerFieldType(FieldTypeGuids.ConnectionStatus, new ConnectionStatusFieldType());
 
 import { ContentChannelFieldType } from "./contentChannelField.partial";
 registerFieldType(FieldTypeGuids.ContentChannel, new ContentChannelFieldType());
@@ -107,6 +134,12 @@ registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType()
 import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
 
+import { ConnectionRequestFieldType } from "./connectionRequestField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequest, new ConnectionRequestFieldType());
+
+import { ConnectionRequestActivityFieldType } from "./connectionRequestActivityField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequestActivity, new ConnectionRequestActivityFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
@@ -124,6 +157,9 @@ registerFieldType(FieldTypeGuids.Component, new ComponentFieldType());
 
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
+
+import { DataEntryRequirementLevelFieldType } from "./dataEntryRequirementLevelField.partial";
+registerFieldType(FieldTypeGuids.DataEntryRequirementLevel, new DataEntryRequirementLevelFieldType());
 
 import { DataViewFieldType } from "./dataViewField.partial";
 registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
@@ -152,20 +188,32 @@ registerFieldType(FieldTypeGuids.Decimal, new DecimalFieldType());
 import { DecimalRangeFieldType } from "./decimalRangeField.partial";
 registerFieldType(FieldTypeGuids.DecimalRange, new DecimalRangeFieldType());
 
+import { DefinedTypeFieldType } from "./definedTypeField.partial";
+registerFieldType(FieldTypeGuids.DefinedType, new DefinedTypeFieldType());
+
 import { DefinedValueFieldType } from "./definedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValue, new DefinedValueFieldType());
 
 import { DefinedValueRangeFieldType } from "./definedValueRangeField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldType());
 
+import { DocumentTypeFieldType } from "./documentTypeField.partial";
+registerFieldType(FieldTypeGuids.DocumentType, new DocumentTypeFieldType());
+
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
+
+import { EncryptedTextFieldType } from "./encryptedTextField.partial";
+registerFieldType(FieldTypeGuids.EncryptedText, new EncryptedTextFieldType());
 
 import { EntityFieldType } from "./entityField.partial";
 registerFieldType(FieldTypeGuids.Entity, new EntityFieldType());
 
 import { EntityTypeFieldType } from "./entityTypeField.partial";
 registerFieldType(FieldTypeGuids.Entitytype, new EntityTypeFieldType());
+
+import { EventCalendarFieldType } from "./eventCalendarField.partial";
+registerFieldType(FieldTypeGuids.EventCalendar, new EventCalendarFieldType());
 
 import { EventItemFieldType } from "./eventItemField.partial";
 registerFieldType(FieldTypeGuids.EventItem, new EventItemFieldType());
@@ -224,6 +272,9 @@ registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelField
 import { InteractionChannelsFieldType } from "./interactionChannelsField.partial";
 registerFieldType(FieldTypeGuids.InteractionChannels, new InteractionChannelsFieldType());
 
+import { InteractionChannelInteractionComponentFieldType } from "./interactionChannelInteractionComponentField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannelInteractionComponent, new InteractionChannelInteractionComponentFieldType());
+
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
 
@@ -236,8 +287,14 @@ registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
 import { LavaCommandsFieldType } from "./lavaCommandsField.partial";
 registerFieldType(FieldTypeGuids.LavaCommands, new LavaCommandsFieldType());
 
+import { LocationFieldType } from "./locationField.partial";
+registerFieldType(FieldTypeGuids.Location, new LocationFieldType());
+
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
+
+import { MatrixFieldType } from "./matrixField.partial";
+registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
 
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
@@ -251,6 +308,12 @@ registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
 import { MergeTemplateFieldType } from "./mergeTemplateField.partial";
 registerFieldType(FieldTypeGuids.MergeTemplate, new MergeTemplateFieldType());
 
+import { MetricCategoriesFieldType } from "./metricCategoriesField.partial";
+registerFieldType(FieldTypeGuids.MetricCategories, new MetricCategoriesFieldType());
+
+import { MetricFieldType } from "./metricField.partial";
+registerFieldType(FieldTypeGuids.Metric, new MetricFieldType());
+
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
 
@@ -260,8 +323,14 @@ registerFieldType(FieldTypeGuids.NoteType, new NoteTypeField());
 import { NoteTypesField } from "./noteTypesField.partial";
 registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 
+import { PersistedDatasetField } from "./persistedDatasetField.partial";
+registerFieldType(FieldTypeGuids.PersistedDataset, new PersistedDatasetField());
+
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
+
+import { PageReferenceFieldType } from "./pageReferenceField.partial";
+registerFieldType(FieldTypeGuids.PageReference, new PageReferenceFieldType());
 
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
@@ -272,6 +341,15 @@ registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 
+import { RegistrationTemplateField } from "./registrationTemplateField.partial";
+registerFieldType(FieldTypeGuids.RegistrationTemplate, new RegistrationTemplateField());
+
+import { RegistrationTemplatesField } from "./registrationTemplatesField.partial";
+registerFieldType(FieldTypeGuids.RegistrationTemplates, new RegistrationTemplatesField());
+
+import { RegistrationInstanceField } from "./registrationInstanceField.partial";
+registerFieldType(FieldTypeGuids.RegistrationInstance, new RegistrationInstanceField());
+
 import { RegistryEntryFieldType } from "./registryEntryField.partial";
 registerFieldType(FieldTypeGuids.RegistryEntry, new RegistryEntryFieldType());
 
@@ -281,11 +359,20 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
 
+import { RemoteAuthsFieldType } from "./remoteAuthsField.partial";
+registerFieldType(FieldTypeGuids.RemoteAuths, new RemoteAuthsFieldType());
+
+import { ReportFieldType } from "./reportField.partial";
+registerFieldType(FieldTypeGuids.Report, new ReportFieldType());
+
 import { ScheduleFieldType } from "./scheduleField.partial";
 registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 
 import { SchedulesFieldType } from "./schedulesField.partial";
 registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
+
+import { SecurityRoleFieldType } from "./securityRoleField.partial";
+registerFieldType(FieldTypeGuids.SecurityRole, new SecurityRoleFieldType());
 
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
@@ -299,14 +386,35 @@ registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountField
 import { SiteFieldType } from "./siteField.partial";
 registerFieldType(FieldTypeGuids.Site, new SiteFieldType());
 
+import { StepProgramFieldType } from "./stepProgramField.partial";
+registerFieldType(FieldTypeGuids.StepProgram, new StepProgramFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
+
+import { StepFieldType } from "./stepField.partial";
+registerFieldType(FieldTypeGuids.Step, new StepFieldType());
+
+import { StepProgramStepStatusFieldType } from "./stepProgramStepStatusField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepStatus, new StepProgramStepStatusFieldType());
+
+import { StepProgramStepTypeFieldType } from "./stepProgramStepTypeField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepType, new StepProgramStepTypeFieldType());
 
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
 
 import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
 registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
+
+import { SystemCommunicationFieldType } from "./systemCommunicationField.partial";
+registerFieldType(FieldTypeGuids.SystemCommunication, new SystemCommunicationFieldType());
+
+import { SystemEmailFieldType } from "./systemEmailField.partial";
+registerFieldType(FieldTypeGuids.SystemEmail, new SystemEmailFieldType());
+
+import { SystemPhoneNumberFieldType } from "./systemPhoneNumberField.partial";
+registerFieldType(FieldTypeGuids.SystemPhoneNumber, new SystemPhoneNumberFieldType());
 
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
@@ -317,8 +425,41 @@ registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
 import { TimeZoneFieldType } from "./timeZoneField.partial";
 registerFieldType(FieldTypeGuids.TimeZone, new TimeZoneFieldType());
 
+import { UniversalItemPickerFieldType } from "./universalItemPickerField.partial";
+registerFieldType("b69b5a61-6fcd-4e3b-bb45-5f6802514953", new UniversalItemPickerFieldType());
+
+import { UniversalItemSearchPickerFieldType } from "./universalItemSearchPickerField.partial";
+registerFieldType("c5b32713-fb46-41c0-8bbc-9bd4142f841a", new UniversalItemSearchPickerFieldType());
+
+import { UniversalItemTreePickerFieldType } from "./universalItemTreePickerField.partial";
+registerFieldType("c7485f3f-0c10-4db6-9574-c10b195617e4", new UniversalItemTreePickerFieldType());
+
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 
+import { ValueFilterFieldType } from "./valueFilterField.partial";
+registerFieldType(FieldTypeGuids.ValueFilter, new ValueFilterFieldType());
+
 import { ValueListFieldType } from "./valueListField.partial";
 registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());
+
+import { VideoUrlFieldType } from "./videoUrlField.partial";
+registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
+
+import { VideoFileFieldType } from "./videoFileField.partial";
+registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());
+
+import { WorkflowFieldType } from "./workflowField.partial";
+registerFieldType(FieldTypeGuids.Workflow, new WorkflowFieldType());
+
+import { WorkflowActivityFieldType } from "./workflowActivityField.partial";
+registerFieldType(FieldTypeGuids.WorkflowActivity, new WorkflowActivityFieldType());
+
+import { WorkflowAttributeFieldType } from "./workflowAttributeField.partial";
+registerFieldType(FieldTypeGuids.WorkflowAttribute, new WorkflowAttributeFieldType());
+
+import { WorkflowTypeFieldType } from "./workflowTypeField.partial";
+registerFieldType(FieldTypeGuids.WorkflowType, new WorkflowTypeFieldType());
+
+import { WorkflowTypesFieldType } from "./workflowTypesField.partial";
+registerFieldType(FieldTypeGuids.WorkflowTypes, new WorkflowTypesFieldType());

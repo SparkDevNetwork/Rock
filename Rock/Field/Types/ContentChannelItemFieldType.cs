@@ -144,7 +144,7 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( privateConfigurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) )
+            if ( usage != ConfigurationValueUsage.View && privateConfigurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) )
             {
                 var id = privateConfigurationValues[CONTENT_CHANNEL_KEY].AsIntegerOrNull();
 

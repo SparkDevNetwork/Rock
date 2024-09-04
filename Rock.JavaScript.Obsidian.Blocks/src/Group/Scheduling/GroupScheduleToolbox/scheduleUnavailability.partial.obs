@@ -1,0 +1,190 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Schedule Unavailability"
+           modalWrapperClasses="schedule-toolbox-unavailability"
+           saveText="Save"
+           :isSaveButtonDisabled="isSavingUnavailability"
+           @save="onSave">
+
+        <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+            {{ blockActionErrorMessage }}
+        </NotificationBox>
+
+        <div v-if="headerText" v-html="headerText"></div>
+
+        <DateRangePicker v-model="dateRangeParts"
+                         label="Date Range"
+                         formGroupClasses="unavailability-date-range"
+                         rules="required"
+                         :disabled="isSavingUnavailability" />
+
+        <TextBox v-model="notes"
+                 label="Unavailability Notes"
+                 formGroupClasses="unavailability-notes"
+                 :disabled="isSavingUnavailability" />
+
+        <DropDownList v-model="groupGuidOrEmptyString"
+                      label="Group"
+                      formGroupClasses="unavailability-group"
+                      :items="groups"
+                      :showBlankItem="false"
+                      :disabled="isSavingUnavailability" />
+
+        <CheckBoxList v-if="isFamilyMemberListVisible"
+                      v-model="personGuids"
+                      label="Individual"
+                      formGroupClasses="unavailability-people"
+                      rules="required"
+                      :items="familyMembers"
+                      :disabled="isSavingUnavailability" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref, watch } from "vue";
+    import {
+        SelectedPersonGuid
+    } from "./types.partial";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
+    import { SaveUnavailabilityRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveUnavailabilityRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        familyMembers: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        schedulableGroups: {
+            type: Array as PropType<GroupBag[]>,
+            required: true
+        },
+
+        headerText: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "scheduleUnavailabilityAdded"): void
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    /** The selected person unique identifier (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
+    const dateRangeParts = ref<DateRangeParts>({});
+    const notes = ref("");
+
+    /** The selected group unique identifier (or empty string if none selected). */
+    const groupGuidOrEmptyString = ref<string>("");
+
+    const personGuids = ref<string[]>(selectedPersonGuidOrEmptyString.value ? [selectedPersonGuidOrEmptyString.value] : []);
+
+    const isSavingUnavailability = ref(false);
+    const blockActionErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const groups = computed((): ListItemBag[] => {
+        const groupList: ListItemBag[] = [
+            {
+                text: "All Groups",
+                value: ""
+            }
+        ];
+
+        props.schedulableGroups?.forEach((group: GroupBag) => {
+            groupList.push({
+                text: group.name,
+                value: group.guid
+            });
+        });
+
+        return groupList;
+    });
+
+    const isFamilyMemberListVisible = computed((): boolean => {
+        return (props.familyMembers?.length ?? 0) > 1;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the Modal component.
+     */
+    async function onSave(): Promise<void> {
+        if (isSavingUnavailability.value) {
+            return;
+        }
+
+        isSavingUnavailability.value = true;
+        blockActionErrorMessage.value = "";
+
+        const bag: SaveUnavailabilityRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            startDate: dateRangeParts.value?.lowerValue,
+            endDate: dateRangeParts.value?.upperValue,
+            notes: notes.value,
+            groupGuid: toGuidOrNull(groupGuidOrEmptyString.value),
+            personGuids: personGuids.value
+        };
+
+        const result = await invokeBlockAction("SaveUnavailability", { bag });
+        isSavingUnavailability.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to save unavailability.";
+            return;
+        }
+
+        emit("scheduleUnavailabilityAdded");
+
+        isVisible.value = false;
+
+        // Reset the form.
+        dateRangeParts.value = {};
+        notes.value = "";
+        groupGuidOrEmptyString.value = "";
+        personGuids.value = selectedPersonGuidOrEmptyString.value ? [selectedPersonGuidOrEmptyString.value] : [];
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedPersonGuidOrEmptyString, () => {
+        personGuids.value = selectedPersonGuidOrEmptyString.value ? [selectedPersonGuidOrEmptyString.value] : [];
+    });
+
+    // #endregion Watchers
+</script>

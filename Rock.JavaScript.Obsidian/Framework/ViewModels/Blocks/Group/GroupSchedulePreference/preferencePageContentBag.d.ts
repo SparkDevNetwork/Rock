@@ -37,7 +37,7 @@ export type PreferencePageContentBag = {
     selectedOffset: number;
 
     /** Gets or sets an integer representing the index of the selected schedule. */
-    selectedSchedule?: Guid | null;
+    selectedSchedule: Guid;
 
     /** Gets or sets a System.DateTime representing the selected start date. */
     selectedStartDate?: string | null;

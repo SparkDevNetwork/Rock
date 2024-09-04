@@ -17,20 +17,23 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Reporting
+namespace Rock.Tests.Integration.Modules.Reporting.ReportBuilder
 {
     /// <summary>
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
-    public class ReportBuilderTests
+    public class ReportBuilderTests : DatabaseTestsBase
     {
         #region Tests
 

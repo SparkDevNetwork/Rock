@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Utility;
+using System.Web.Util;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -148,6 +149,13 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.ShowDaysSinceLastTransaction
         )]
 
+    [BooleanField( "Hide Transactions in Pending Batches",
+        Description = "When enabled, transactions in a batch whose status is 'Pending' will be filtered out from the list.",
+        DefaultBooleanValue = false,
+        Order = 13,
+        Key = AttributeKey.HideTransactionsInPendingBatches
+        )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -232,6 +240,11 @@ namespace RockWeb.Blocks.Finance
             /// The show days since last transaction
             /// </summary>
             public const string ShowDaysSinceLastTransaction = "ShowDaysSinceLastTransaction";
+
+            /// <summary>
+            /// The hide transactions in pending batches
+            /// </summary>
+            public const string HideTransactionsInPendingBatches = "HideTransactionsInPendingBatches";
         }
 
         #endregion Keys
@@ -318,7 +331,7 @@ namespace RockWeb.Blocks.Finance
 
             this._batchPageRoute = LinkedPageRoute( "BatchPage" );
 
-            int currentBatchId = PageParameter( "BatchId" ).AsInteger();
+            var currentBatchId = PageParameter( "BatchId" ).AsInteger();
 
             if ( _canEdit )
             {
@@ -379,7 +392,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetBlockOptions()
         {
-            string title = GetAttributeValue( AttributeKey.Title );
+            var title = GetAttributeValue( AttributeKey.Title );
             if ( string.IsNullOrWhiteSpace( title ) )
             {
                 title = "Transaction List";
@@ -408,8 +421,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbClosedWarning.Visible = false;
             nbResult.Visible = false;
 
@@ -452,7 +463,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( _canEdit && _batch != null )
             {
-                string script = string.Format( @"
+                var script = string.Format( @"
     $('#{0}').on('change', function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
         if (count == 0) {{
@@ -477,6 +488,7 @@ namespace RockWeb.Blocks.Finance
                 ScriptManager.RegisterStartupScript( _ddlMove, _ddlMove.GetType(), "moveTransaction", script, true );
             }
 
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -497,7 +509,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetupGridActionControls()
         {
-            bool showSelectColumn = false;
+            var showSelectColumn = false;
 
             this.ShowDeleteButton = true;
 
@@ -646,7 +658,7 @@ namespace RockWeb.Blocks.Finance
                 case "Credit Card Type":
                 case "Source Type":
 
-                    int definedValueId = 0;
+                    var definedValueId = 0;
                     if ( int.TryParse( e.Value, out definedValueId ) )
                     {
                         var definedValue = DefinedValueCache.Get( definedValueId );
@@ -770,8 +782,8 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            string currencyType = string.Empty;
-            string creditCardType = string.Empty;
+            var currencyType = string.Empty;
+            var creditCardType = string.Empty;
 
             var lPersonFullNameReversed = e.Row.FindControl( "lPersonFullNameReversed" ) as Literal;
             var lPersonId = e.Row.FindControl( "lPersonId" ) as Literal;
@@ -787,7 +799,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
             {
-                int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
+                var currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
                 if ( _currencyTypes.ContainsKey( currencyTypeId ) )
                 {
                     currencyType = _currencyTypes[currencyTypeId];
@@ -804,7 +816,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                     {
-                        int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
+                        var creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
                         if ( _creditCardTypes.ContainsKey( creditCardTypeId ) )
                         {
                             creditCardType = _creditCardTypes[creditCardTypeId];
@@ -833,13 +845,17 @@ namespace RockWeb.Blocks.Finance
                     int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.Id].FirstOrDefault();
                     if ( firstImageId != null )
                     {
-                        string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImageId, _imageHeight );
+                        var options = new GetImageUrlOptions
+                        {
+                            Height = _imageHeight
+                        };
+                        string imageSrc = FileUrlHelper.GetImageUrl( firstImageId.Value, options );
                         lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
                     }
                 }
             }
 
-            bool isExporting = false;
+            var isExporting = false;
             if ( e is RockGridViewRowEventArgs )
             {
                 isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
@@ -980,7 +996,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( transaction.BatchId.HasValue )
                 {
-                    string caption = ( transaction.AuthorizedPersonAlias != null && transaction.AuthorizedPersonAlias.Person != null ) ?
+                    var caption = ( transaction.AuthorizedPersonAlias != null && transaction.AuthorizedPersonAlias.Person != null ) ?
                         transaction.AuthorizedPersonAlias.Person.FullName :
                         string.Format( "Transaction: {0}", transaction.Id );
 
@@ -1018,7 +1034,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _canEdit && _batch != null )
             {
-                int? moveToBatchId = hfMoveToBatchId.Value.AsIntegerOrNull();
+                var moveToBatchId = hfMoveToBatchId.Value.AsIntegerOrNull();
                 if ( eventArgument == "MoveTransactions" && moveToBatchId.HasValue )
                 {
                     var txnsSelected = new List<int>();
@@ -1039,8 +1055,8 @@ namespace RockWeb.Blocks.Finance
                                 .Where( t => txnsSelected.Contains( t.Id ) )
                                 .ToList();
 
-                            decimal oldBatchControlAmount = oldBatch.ControlAmount;
-                            decimal newBatchControlAmount = newBatch.ControlAmount;
+                            var oldBatchControlAmount = oldBatch.ControlAmount;
+                            var newBatchControlAmount = newBatch.ControlAmount;
 
                             foreach ( var txn in txnsToUpdate )
                             {
@@ -1080,7 +1096,7 @@ namespace RockWeb.Blocks.Finance
                             var pageRef = new Rock.Web.PageReference( RockPage.PageId );
                             pageRef.Parameters = new Dictionary<string, string>();
                             pageRef.Parameters.Add( "BatchId", newBatch.Id.ToString() );
-                            string newBatchLink = string.Format( "<a href='{0}'>{1}</a>",
+                            var newBatchLink = string.Format( "<a href='{0}'>{1}</a>",
                                 pageRef.BuildUrl(), newBatch.Name );
 
                             RockPage.UpdateBlocks( "~/Blocks/Finance/BatchDetail.ascx" );
@@ -1145,8 +1161,8 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _canEdit && _person != null )
             {
-                int? personId = ppReassign.PersonId;
-                int? personAliasId = ppReassign.PersonAliasId;
+                var personId = ppReassign.PersonId;
+                var personAliasId = ppReassign.PersonAliasId;
                 var txnsSelected = new List<int>();
                 gTransactions.SelectedKeys.ToList().ForEach( b => txnsSelected.Add( b.ToString().AsInteger() ) );
 
@@ -1163,7 +1179,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         rockContext.SaveChanges();
 
-                        string acctAction = rblReassignBankAccounts.SelectedValue;
+                        var acctAction = rblReassignBankAccounts.SelectedValue;
                         if ( acctAction != "NONE" && personId.HasValue && _person != null )
                         {
                             var bankAcctService = new FinancialPersonBankAccountService( rockContext );
@@ -1252,6 +1268,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
+            gfTransactions.PreferenceKeyPrefix = hfTransactionViewMode.Value;
             drpDates.DelimitedValues = gfTransactions.GetFilterPreference( "Date Range" );
             nreAmount.DelimitedValues = gfTransactions.GetFilterPreference( "Amount Range" );
 
@@ -1345,7 +1362,16 @@ namespace RockWeb.Blocks.Finance
             // Parse the attribute filters
             _availableAttributes = new List<AttributeCache>();
 
-            int entityTypeId = new FinancialTransaction().TypeId;
+            int entityTypeId;
+            if ( hfTransactionViewMode.Value == "Transactions" )
+            {
+                entityTypeId = new FinancialTransaction().TypeId;
+            }
+            else
+            {
+                entityTypeId = new FinancialTransactionDetail().TypeId;
+            }
+
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -1417,7 +1443,7 @@ namespace RockWeb.Blocks.Finance
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = gfTransactions.GetFilterPreference( attribute.Key );
+                        var savedValue = gfTransactions.GetFilterPreference( attribute.Key );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try
@@ -1432,7 +1458,7 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    bool columnExists = gTransactions.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    var columnExists = gTransactions.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
                     if ( !columnExists )
                     {
                         AttributeField boundField = new AttributeField();
@@ -1509,33 +1535,28 @@ namespace RockWeb.Blocks.Finance
             _creditCardTypes = new Dictionary<int, string>();
 
             // If configured for a registration and registration is null, return
-            int registrationEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
+            var registrationEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == registrationEntityTypeId ) && _registration == null )
             {
                 return;
             }
 
             // If configured for a person and person is null, return
-            int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
-            bool isContextPerson = false;
+            var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
             {
                 return;
             }
-            else if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person != null )
-            {
-                isContextPerson = true;
-            }
 
             // If configured for a batch and batch is null, return
-            int batchEntityTypeId = EntityTypeCache.Get( "Rock.Model.FinancialBatch" ).Id;
+            var batchEntityTypeId = EntityTypeCache.Get( "Rock.Model.FinancialBatch" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) && _batch == null )
             {
                 return;
             }
 
             // If configured for a batch and batch is null, return
-            int scheduledTxnEntityTypeId = EntityTypeCache.Get( "Rock.Model.FinancialScheduledTransaction" ).Id;
+            var scheduledTxnEntityTypeId = EntityTypeCache.Get( "Rock.Model.FinancialScheduledTransaction" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == scheduledTxnEntityTypeId ) && _scheduledTxn == null )
             {
                 return;
@@ -1547,544 +1568,548 @@ namespace RockWeb.Blocks.Finance
             var lDaysSinceLastTransactionGridField = gTransactions.ColumnsOfType<RockLiteralField>().FirstOrDefault( c => c.ID == "lDaysSinceLastTransaction" );
             if ( lDaysSinceLastTransactionGridField != null )
             {
-
                 lDaysSinceLastTransactionGridField.Visible = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean();
             }
 
-            var rockContext = new RockContext();
-
-            SortProperty sortProperty = gTransactions.SortProperty;
-
-            // Qry
-            IQueryable<FinancialTransactionRow> qry;
-            if ( hfTransactionViewMode.Value == "Transaction Details" )
+            var hideTransactionsInPendingBatches = GetAttributeValue( AttributeKey.HideTransactionsInPendingBatches ).AsBoolean();
+            using ( var rockContext = new RockContext() )
             {
-                gTransactions.RowItemText = "Transaction Detail";
-                var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var financialTransactionDetailQry = financialTransactionDetailService.Queryable().AsNoTracking();
+                var sortProperty = gTransactions.SortProperty;
 
-                var includeFutureTransactions = GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBooleanOrNull() ?? false;
-                if ( includeFutureTransactions )
+                // Query
+                IQueryable<FinancialTransactionRow> query;
+                if ( hfTransactionViewMode.Value == "Transaction Details" )
                 {
-                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a =>
-                        a.Transaction.TransactionDateTime.HasValue ||
-                        a.Transaction.FutureProcessingDateTime.HasValue );
-                }
-                else
-                {
-                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
-                }
+                    gTransactions.RowItemText = "Transaction Detail";
+                    var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
+                    var financialTransactionDetailQuery = financialTransactionDetailService.Queryable().AsNoTracking();
 
-                if ( isContextPerson )
-                {
-                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );
-                }
-
-                if ( _availableAttributes != null && _availableAttributes.Any() )
-                {
-                    foreach ( var attribute in _availableAttributes )
+                    var includeFutureTransactions = GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBooleanOrNull() ?? false;
+                    if ( includeFutureTransactions )
                     {
-                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        financialTransactionDetailQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( financialTransactionDetailQry, filterControl, attribute, financialTransactionDetailService, Rock.Reporting.FilterMode.SimpleFilter );
-                    }
-                }
-
-                // Filter to configured accounts.
-                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-                if ( accountGuids.Any() )
-                {
-                    financialTransactionDetailQry = financialTransactionDetailQry
-                        .Where( d => accountGuids.Contains( d.Account.Guid ) );
-                }
-
-                if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
-                {
-                    if ( sortProperty.Direction == SortDirection.Ascending )
-                    {
-                        financialTransactionDetailQry = financialTransactionDetailQry
-                            .OrderBy( a => a.Transaction.AuthorizedPersonAlias.Person.LastName ).ThenBy( a => a.Transaction.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.Transaction.FutureProcessingDateTime ).ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
+                        financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a =>
+                            a.Transaction.TransactionDateTime.HasValue ||
+                            a.Transaction.FutureProcessingDateTime.HasValue );
                     }
                     else
                     {
-                        financialTransactionDetailQry = financialTransactionDetailQry
-                            .OrderByDescending( a => a.Transaction.AuthorizedPersonAlias.Person.LastName ).ThenByDescending( a => a.Transaction.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.Transaction.FutureProcessingDateTime ).ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
+                        financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.TransactionDateTime.HasValue );
                     }
-                }
 
-                qry = financialTransactionDetailQry.Select( a => new FinancialTransactionRow
-                {
-                    Id = a.TransactionId,
-                    BatchId = a.Transaction.BatchId,
-                    TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
-                    ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
-                    AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
-                    TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
-                    FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
-                    SourceTypeValueId = a.Transaction.SourceTypeValueId,
-                    TotalAmount = a.Amount,
-                    TransactionCode = a.Transaction.TransactionCode,
-                    ForeignKey = a.Transaction.ForeignKey,
-                    Status = a.Transaction.Status,
-                    SettledDate = a.Transaction.SettledDate,
-                    SettledGroupId = a.Transaction.SettledGroupId,
-                    FinancialGatewayId = a.Transaction.FinancialGatewayId,
-                    IsReconciled = a.Transaction.IsReconciled,
-                    IsSettled = a.Transaction.IsSettled,
-                    NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
-                    ProcessedDateTime = a.Transaction.ProcessedDateTime,
-                    ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
-                    StatusMessage = a.Transaction.StatusMessage,
-                    TransactionDetail = new DetailInfo
+                    if ( hideTransactionsInPendingBatches )
                     {
-                        AccountId = a.AccountId,
-                        Amount = a.Amount,
-                        EntityId = a.EntityId,
-                        EntityTypeId = a.EntityTypeId
-                    },
-                    Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
-                    FinancialPaymentDetail = new PaymentDetailInfo
-                    {
-                        Id = a.Transaction.FinancialPaymentDetail.Id,
-                        CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
-                        CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
-                    },
-                    ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
-                } );
-            }
-            else
-            {
-                gTransactions.RowItemText = "Transactions";
-                var financialTransactionService = new FinancialTransactionService( rockContext );
-                var financialTransactionQry = financialTransactionService.Queryable().AsNoTracking();
-
-                var includeFutureTransactions = GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBooleanOrNull() ?? false;
-                if ( includeFutureTransactions )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( a =>
-                        a.TransactionDateTime.HasValue ||
-                        a.FutureProcessingDateTime.HasValue );
-                }
-                else
-                {
-                    financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue );
-                }
-
-                if ( isContextPerson )
-                {
-                    financialTransactionQry = financialTransactionQry.Where( a => a.Batch == null || a.Batch.Status != BatchStatus.Pending );
-                }
-
-                // Filter to configured accounts.
-                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-                if ( accountGuids.Any() )
-                {
-                    financialTransactionQry = financialTransactionQry
-                        .Where( t => t.TransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
-                }
-
-                if ( _availableAttributes != null && _availableAttributes.Any() )
-                {
-                    foreach ( var attribute in _availableAttributes )
-                    {
-                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        financialTransactionQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( financialTransactionQry, filterControl, attribute, financialTransactionService, Rock.Reporting.FilterMode.SimpleFilter );
+                        financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );
                     }
-                }
 
-                if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
-                {
-                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    if ( _availableAttributes != null && _availableAttributes.Any() )
                     {
-                        financialTransactionQry = financialTransactionQry.OrderBy( a => a.AuthorizedPersonAlias.Person.LastName ).ThenBy( a => a.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                        foreach ( var attribute in _availableAttributes )
+                        {
+                            var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                            financialTransactionDetailQuery = attribute.FieldType.Field.ApplyAttributeQueryFilter( financialTransactionDetailQuery, filterControl, attribute, financialTransactionDetailService, Rock.Reporting.FilterMode.SimpleFilter );
+                        }
                     }
-                    else
-                    {
-                        financialTransactionQry = financialTransactionQry.OrderByDescending( a => a.AuthorizedPersonAlias.Person.LastName ).ThenByDescending( a => a.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
-                    }
-                }
 
-                qry = financialTransactionQry
-                    .Select( a => new FinancialTransactionRow
+                    // Filter to configured accounts.
+                    var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+                    if ( accountGuids.Any() )
                     {
-                        Id = a.Id,
-                        BatchId = a.BatchId,
-                        TransactionTypeValueId = a.TransactionTypeValueId,
-                        ScheduledTransactionId = a.ScheduledTransactionId,
-                        AuthorizedPersonAliasId = a.AuthorizedPersonAliasId,
-                        TransactionDateTime = a.TransactionDateTime ?? a.FutureProcessingDateTime.Value,
-                        FutureProcessingDateTime = a.FutureProcessingDateTime,
-                        TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
-                        Refunds = a.Refunds.Select( r => new RefundInfo { TransactionId = r.Id, TransactionCode = r.FinancialTransaction.TransactionCode } ),
-                        RefundForTransactionId = ( a.RefundDetails == null ) ? null : a.RefundDetails.OriginalTransactionId,
-                        SourceTypeValueId = a.SourceTypeValueId,
-                        TotalAmount = a.TransactionDetails.Sum( d => ( decimal? ) d.Amount ),
-                        TransactionCode = a.TransactionCode,
-                        ForeignKey = a.ForeignKey,
-                        Status = a.Status,
-                        SettledDate = a.SettledDate,
-                        SettledGroupId = a.SettledGroupId,
-                        Summary = a.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Summary,
-                        FinancialPaymentDetail = new PaymentDetailInfo { Id = a.Id, CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId },
-                        ForeignCurrencyCodeValueId = a.ForeignCurrencyCodeValueId,
-                        FinancialGatewayId = a.FinancialGatewayId,
-                        IsReconciled = a.IsReconciled,
-                        IsSettled = a.IsSettled,
-                        NonCashAssetTypeValueId = a.NonCashAssetTypeValueId,
-                        ProcessedDateTime = a.ProcessedDateTime,
-                        ShowAsAnonymous = a.ShowAsAnonymous,
-                        StatusMessage = a.StatusMessage
+                        financialTransactionDetailQuery = financialTransactionDetailQuery
+                            .Where( d => accountGuids.Contains( d.Account.Guid ) );
+                    }
+
+                    query = financialTransactionDetailQuery.Select( a => new FinancialTransactionRow
+                    {
+                        Id = a.TransactionId,
+                        BatchId = a.Transaction.BatchId,
+                        TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
+                        ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
+                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
+                        AuthorizedPersonLastName = ( a.Transaction.AuthorizedPersonAlias == null ) ? string.Empty : a.Transaction.AuthorizedPersonAlias.Person.LastName,
+                        AuthorizedPersonNickName = ( a.Transaction.AuthorizedPersonAlias == null ) ? string.Empty : a.Transaction.AuthorizedPersonAlias.Person.NickName,
+                        TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
+                        FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
+                        SourceTypeValueId = a.Transaction.SourceTypeValueId,
+                        TotalAmount = a.Amount,
+                        TransactionCode = a.Transaction.TransactionCode,
+                        ForeignKey = a.Transaction.ForeignKey,
+                        Status = a.Transaction.Status,
+                        SettledDate = a.Transaction.SettledDate,
+                        SettledGroupId = a.Transaction.SettledGroupId,
+                        FinancialGatewayId = a.Transaction.FinancialGatewayId,
+                        IsReconciled = a.Transaction.IsReconciled,
+                        IsSettled = a.Transaction.IsSettled,
+                        NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
+                        ProcessedDateTime = a.Transaction.ProcessedDateTime,
+                        ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
+                        StatusMessage = a.Transaction.StatusMessage,
+                        TransactionDetail = new DetailInfo
+                        {
+                            AccountId = a.AccountId,
+                            Amount = a.Amount,
+                            EntityId = a.EntityId,
+                            EntityTypeId = a.EntityTypeId
+                        },
+                        Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
+                        FinancialPaymentDetail = a.Transaction.FinancialPaymentDetailId != null ? new PaymentDetailInfo
+                        {
+                            Id = a.Transaction.FinancialPaymentDetail.Id,
+                            CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
+                            CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
+                        } : null,
+                        ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
                     } );
-            }
-
-            // Transaction Types
-            var transactionTypeValueIdList = GetAttributeValue( AttributeKey.TransactionTypes ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
-
-            if ( transactionTypeValueIdList.Any() )
-            {
-                qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
-            }
-
-            // Transaction Sources
-            var sourceValueIdList = GetAttributeValue( AttributeKey.SourceTypes ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
-
-            if ( sourceValueIdList.Any() )
-            {
-                qry = qry.Where( t => t.SourceTypeValueId.HasValue && sourceValueIdList.Contains( t.SourceTypeValueId.Value ) );
-            }
-
-            // Set up the selection filter
-            if ( _batch != null )
-            {
-                // If transactions are for a batch, the filter is hidden so only check the batch id
-                qry = qry.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
-
-                // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Closed && !_batch.IsAutomated && _canEdit )
-                {
-                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {
+                    gTransactions.RowItemText = "Transactions";
+                    var financialTransactionService = new FinancialTransactionService( rockContext );
+                    var financialTransactionQuery = financialTransactionService.Queryable().AsNoTracking();
+
+                    var includeFutureTransactions = GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBooleanOrNull() ?? false;
+                    if ( includeFutureTransactions )
+                    {
+                        financialTransactionQuery = financialTransactionQuery.Where( a =>
+                            a.TransactionDateTime.HasValue ||
+                            a.FutureProcessingDateTime.HasValue );
+                    }
+                    else
+                    {
+                        financialTransactionQuery = financialTransactionQuery.Where( a => a.TransactionDateTime.HasValue );
+                    }
+
+                    if ( hideTransactionsInPendingBatches )
+                    {
+                        financialTransactionQuery = financialTransactionQuery.Where( a => a.Batch == null || a.Batch.Status != BatchStatus.Pending );
+                    }
+
+                    // Filter to configured accounts.
+                    var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+                    if ( accountGuids.Any() )
+                    {
+                        financialTransactionQuery = financialTransactionQuery
+                            .Where( t => t.TransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
+                    }
+
+                    if ( _availableAttributes != null && _availableAttributes.Any() )
+                    {
+                        foreach ( var attribute in _availableAttributes )
+                        {
+                            var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                            financialTransactionQuery = attribute.FieldType.Field.ApplyAttributeQueryFilter( financialTransactionQuery, filterControl, attribute, financialTransactionService, Rock.Reporting.FilterMode.SimpleFilter );
+                        }
+                    }
+
+                    query = financialTransactionQuery
+                        .Select( a => new FinancialTransactionRow
+                        {
+                            Id = a.Id,
+                            BatchId = a.BatchId,
+                            TransactionTypeValueId = a.TransactionTypeValueId,
+                            ScheduledTransactionId = a.ScheduledTransactionId,
+                            AuthorizedPersonAliasId = a.AuthorizedPersonAliasId,
+                            AuthorizedPersonLastName = ( a.AuthorizedPersonAlias == null ) ? string.Empty : a.AuthorizedPersonAlias.Person.LastName,
+                            AuthorizedPersonNickName = ( a.AuthorizedPersonAlias == null ) ? string.Empty : a.AuthorizedPersonAlias.Person.NickName,
+                            TransactionDateTime = a.TransactionDateTime ?? a.FutureProcessingDateTime.Value,
+                            FutureProcessingDateTime = a.FutureProcessingDateTime,
+                            TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
+                            Refunds = a.Refunds.Select( r => new RefundInfo { TransactionId = r.Id, TransactionCode = r.FinancialTransaction.TransactionCode } ),
+                            RefundForTransactionId = ( a.RefundDetails == null ) ? null : a.RefundDetails.OriginalTransactionId,
+                            SourceTypeValueId = a.SourceTypeValueId,
+                            TotalAmount = a.TransactionDetails.Sum( d => ( decimal? ) d.Amount ),
+                            TransactionCode = a.TransactionCode,
+                            ForeignKey = a.ForeignKey,
+                            Status = a.Status,
+                            SettledDate = a.SettledDate,
+                            SettledGroupId = a.SettledGroupId,
+                            Summary = a.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Summary,
+                            FinancialPaymentDetail = new PaymentDetailInfo { Id = a.Id, CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId },
+                            ForeignCurrencyCodeValueId = a.ForeignCurrencyCodeValueId,
+                            FinancialGatewayId = a.FinancialGatewayId,
+                            IsReconciled = a.IsReconciled,
+                            IsSettled = a.IsSettled,
+                            NonCashAssetTypeValueId = a.NonCashAssetTypeValueId,
+                            ProcessedDateTime = a.ProcessedDateTime,
+                            ShowAsAnonymous = a.ShowAsAnonymous,
+                            StatusMessage = a.StatusMessage
+                        } );
+                }
+
+                // Transaction Types
+                var transactionTypeValueIdList = GetAttributeValue( AttributeKey.TransactionTypes ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+                if ( transactionTypeValueIdList.Any() )
+                {
+                    query = query.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
+                }
+
+                // Transaction Sources
+                var sourceValueIdList = GetAttributeValue( AttributeKey.SourceTypes ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+                if ( sourceValueIdList.Any() )
+                {
+                    query = query.Where( t => t.SourceTypeValueId.HasValue && sourceValueIdList.Contains( t.SourceTypeValueId.Value ) );
+                }
+
+                // Set up the selection filter
+                if ( _batch != null )
+                {
+                    // If transactions are for a batch, the filter is hidden so only check the batch id
+                    query = query.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
+
+                    // If the batch is closed, do not allow any editing of the transactions
+                    if ( _batch.Status != BatchStatus.Closed && !_batch.IsAutomated && _canEdit )
+                    {
+                        gTransactions.IsDeleteEnabled = _canEdit;
+                    }
+                    else
+                    {
+                        gTransactions.IsDeleteEnabled = false;
+                    }
+                }
+                else if ( _scheduledTxn != null )
+                {
+                    // If transactions are for a batch, the filter is hidden so only check the batch id
+                    query = query.Where( t => t.ScheduledTransactionId.HasValue && t.ScheduledTransactionId.Value == _scheduledTxn.Id );
+
                     gTransactions.IsDeleteEnabled = false;
                 }
-            }
-            else if ( _scheduledTxn != null )
-            {
-                // If transactions are for a batch, the filter is hidden so only check the batch id
-                qry = qry.Where( t => t.ScheduledTransactionId.HasValue && t.ScheduledTransactionId.Value == _scheduledTxn.Id );
-
-                gTransactions.IsDeleteEnabled = false;
-            }
-            else if ( _registration != null )
-            {
-                if ( hfTransactionViewMode.Value == "Transactions" )
-                {
-                    qry = qry
-                        .Where( t => t.TransactionDetails
-                            .Any( d =>
-                                d.EntityTypeId.HasValue &&
-                                d.EntityTypeId.Value == registrationEntityTypeId &&
-                                d.EntityId.HasValue &&
-                                d.EntityId.Value == _registration.Id ) );
-                }
-                else
-                {
-                    qry = qry
-                        .Where( t => t.TransactionDetail.EntityTypeId.HasValue &&
-                                t.TransactionDetail.EntityTypeId.Value == registrationEntityTypeId &&
-                                t.TransactionDetail.EntityId.HasValue &&
-                                t.TransactionDetail.EntityId.Value == _registration.Id );
-                }
-
-                gTransactions.IsDeleteEnabled = false;
-            }
-            else    // Person
-            {
-                // otherwise set the selection based on filter settings
-                if ( _person != null )
-                {
-                    // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-                    var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == _person.GivingId ).Select( a => a.Id ).ToList();
-
-                    // get the transactions for the person or all the members in the person's giving group (Family)
-                    qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
-                }
-
-                // Date Range
-                var drp = new DateRangePicker();
-                drp.DelimitedValues = gfTransactions.GetFilterPreference( "Date Range" );
-                if ( drp.LowerValue.HasValue )
-                {
-                    qry = qry.Where( t => t.TransactionDateTime >= drp.LowerValue.Value );
-                }
-
-                if ( drp.UpperValue.HasValue )
-                {
-                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    qry = qry.Where( t => t.TransactionDateTime < upperDate );
-                }
-
-                // Amount Range
-                var nre = new NumberRangeEditor();
-                nre.DelimitedValues = gfTransactions.GetFilterPreference( "Amount Range" );
-                if ( nre.LowerValue.HasValue )
-                {
-                    qry = qry.Where( t => t.TotalAmount >= nre.LowerValue.Value );
-                }
-
-                if ( nre.UpperValue.HasValue )
-                {
-                    qry = qry.Where( t => t.TotalAmount <= nre.UpperValue.Value );
-                }
-
-                // Transaction Code
-                string transactionCode = gfTransactions.GetFilterPreference( "Transaction Code" );
-                if ( !string.IsNullOrWhiteSpace( transactionCode ) )
-                {
-                    qry = qry.Where( t => t.TransactionCode == transactionCode.Trim() );
-                }
-
-                // Foreign Key
-                if ( GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean() )
-                {
-                    string foreingKey = gfTransactions.GetFilterPreference( "Foreign Key" );
-                    if ( !string.IsNullOrWhiteSpace( foreingKey ) )
-                    {
-                        qry = qry.Where( t => t.ForeignKey == foreingKey.Trim() );
-                    }
-                }
-
-                // Account Id
-                var accountIds = ( gfTransactions.GetFilterPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                accountIds = accountIds.Distinct().ToList();
-
-                if ( accountIds.Any() && apAccount.Visible )
+                else if ( _registration != null )
                 {
                     if ( hfTransactionViewMode.Value == "Transactions" )
                     {
-                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
+                        query = query
+                            .Where( t => t.TransactionDetails
+                                .Any( d =>
+                                    d.EntityTypeId.HasValue &&
+                                    d.EntityTypeId.Value == registrationEntityTypeId &&
+                                    d.EntityId.HasValue &&
+                                    d.EntityId.Value == _registration.Id ) );
                     }
                     else
                     {
-                        qry = qry.Where( a => accountIds.Contains( a.TransactionDetail.AccountId ) );
+                        query = query
+                            .Where( t => t.TransactionDetail.EntityTypeId.HasValue &&
+                                    t.TransactionDetail.EntityTypeId.Value == registrationEntityTypeId &&
+                                    t.TransactionDetail.EntityId.HasValue &&
+                                    t.TransactionDetail.EntityId.Value == _registration.Id );
                     }
-                }
 
-                // Transaction Type
-                int transactionTypeId = int.MinValue;
-                if ( int.TryParse( gfTransactions.GetFilterPreference( "Transaction Type" ), out transactionTypeId ) )
-                {
-                    qry = qry.Where( t => t.TransactionTypeValueId == transactionTypeId );
+                    gTransactions.IsDeleteEnabled = false;
                 }
-
-                // Currency Type
-                int currencyTypeId = int.MinValue;
-                if ( int.TryParse( gfTransactions.GetFilterPreference( "Currency Type" ), out currencyTypeId ) )
+                else    // Person
                 {
-                    qry = qry.Where( t => t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValueId == currencyTypeId );
-                }
-
-                // Credit Card Type
-                int creditCardTypeId = int.MinValue;
-                if ( int.TryParse( gfTransactions.GetFilterPreference( "Credit Card Type" ), out creditCardTypeId ) )
-                {
-                    qry = qry.Where( t => t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CreditCardTypeValueId == creditCardTypeId );
-                }
-
-                // Source Type
-                int sourceTypeId = int.MinValue;
-                if ( int.TryParse( gfTransactions.GetFilterPreference( "Source Type" ), out sourceTypeId ) )
-                {
-                    qry = qry.Where( t => t.SourceTypeValueId == sourceTypeId );
-                }
-
-                // Campus of Batch and/or Account
-                if ( this.ContextEntity() == null )
-                {
-                    var campusOfBatch = CampusCache.Get( gfTransactions.GetFilterPreference( "Campus" ).AsInteger() );
-                    if ( campusOfBatch != null )
+                    // otherwise set the selection based on filter settings
+                    if ( _person != null )
                     {
-                        var qryBatchesForCampus = new FinancialBatchService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfBatch.Id ).Select( a => a.Id );
-                        qry = qry.Where( t => qryBatchesForCampus.Contains( t.BatchId ?? 0 ) );
+                        // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+                        var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == _person.GivingId ).Select( a => a.Id ).ToList();
+
+                        // get the transactions for the person or all the members in the person's giving group (Family)
+                        query = query.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
                     }
-                    var campusOfAccount = CampusCache.Get( gfTransactions.GetFilterPreference( "CampusAccount" ).AsInteger() );
-                    if ( campusOfAccount != null )
+
+                    // Date Range
+                    var drp = new DateRangePicker();
+                    drp.DelimitedValues = gfTransactions.GetFilterPreference( "Date Range" );
+                    if ( drp.LowerValue.HasValue )
                     {
-                        var qryAccountsForCampus = new FinancialAccountService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfAccount.Id ).Select( a => a.Id );
+                        query = query.Where( t => t.TransactionDateTime >= drp.LowerValue.Value );
+                    }
+
+                    if ( drp.UpperValue.HasValue )
+                    {
+                        var upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                        query = query.Where( t => t.TransactionDateTime < upperDate );
+                    }
+
+                    // Amount Range
+                    var nre = new NumberRangeEditor();
+                    nre.DelimitedValues = gfTransactions.GetFilterPreference( "Amount Range" );
+                    if ( nre.LowerValue.HasValue )
+                    {
+                        query = query.Where( t => t.TotalAmount >= nre.LowerValue.Value );
+                    }
+
+                    if ( nre.UpperValue.HasValue )
+                    {
+                        query = query.Where( t => t.TotalAmount <= nre.UpperValue.Value );
+                    }
+
+                    // Transaction Code
+                    var transactionCode = gfTransactions.GetFilterPreference( "Transaction Code" );
+                    if ( !string.IsNullOrWhiteSpace( transactionCode ) )
+                    {
+                        query = query.Where( t => t.TransactionCode == transactionCode.Trim() );
+                    }
+
+                    // Foreign Key
+                    if ( GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean() )
+                    {
+                        var foreingKey = gfTransactions.GetFilterPreference( "Foreign Key" );
+                        if ( !string.IsNullOrWhiteSpace( foreingKey ) )
+                        {
+                            query = query.Where( t => t.ForeignKey == foreingKey.Trim() );
+                        }
+                    }
+
+                    // Account Id
+                    var accountIds = ( gfTransactions.GetFilterPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+                    accountIds = accountIds.Distinct().ToList();
+
+                    if ( accountIds.Any() && apAccount.Visible )
+                    {
                         if ( hfTransactionViewMode.Value == "Transactions" )
                         {
-                            qry = qry.Where( t => t.TransactionDetails.Any( d => qryAccountsForCampus.Contains( d.AccountId ) ) );
+                            query = query.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
                         }
                         else
                         {
-                            qry = qry.Where( a => qryAccountsForCampus.Contains( a.TransactionDetail.AccountId ) );
+                            query = query.Where( a => accountIds.Contains( a.TransactionDetail.AccountId ) );
                         }
                     }
-                }
 
-                if ( !( this.ContextEntity() is Person ) )
-                {
-                    var filterPersonId = gfTransactions.GetFilterPreference( "Person" ).AsIntegerOrNull();
-                    if ( filterPersonId.HasValue )
+                    // Transaction Type
+                    var transactionTypeId = int.MinValue;
+                    if ( int.TryParse( gfTransactions.GetFilterPreference( "Transaction Type" ), out transactionTypeId ) )
                     {
-                        // get the transactions for the person or all the members in the person's giving group (Family)
-                        var filterPerson = new PersonService( rockContext ).Get( filterPersonId.Value );
-                        if ( filterPerson != null )
-                        {
-                            // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-                            var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == filterPerson.GivingId ).Select( a => a.Id ).ToList();
+                        query = query.Where( t => t.TransactionTypeValueId == transactionTypeId );
+                    }
 
+                    // Currency Type
+                    var currencyTypeId = int.MinValue;
+                    if ( int.TryParse( gfTransactions.GetFilterPreference( "Currency Type" ), out currencyTypeId ) )
+                    {
+                        query = query.Where( t => t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValueId == currencyTypeId );
+                    }
+
+                    // Credit Card Type
+                    var creditCardTypeId = int.MinValue;
+                    if ( int.TryParse( gfTransactions.GetFilterPreference( "Credit Card Type" ), out creditCardTypeId ) )
+                    {
+                        query = query.Where( t => t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CreditCardTypeValueId == creditCardTypeId );
+                    }
+
+                    // Source Type
+                    var sourceTypeId = int.MinValue;
+                    if ( int.TryParse( gfTransactions.GetFilterPreference( "Source Type" ), out sourceTypeId ) )
+                    {
+                        query = query.Where( t => t.SourceTypeValueId == sourceTypeId );
+                    }
+
+                    // Campus of Batch and/or Account
+                    if ( this.ContextEntity() == null )
+                    {
+                        var campusOfBatch = CampusCache.Get( gfTransactions.GetFilterPreference( "Campus" ).AsInteger() );
+                        if ( campusOfBatch != null )
+                        {
+                            var batchCampusQuery = new FinancialBatchService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfBatch.Id ).Select( a => a.Id );
+                            query = query.Where( t => batchCampusQuery.Contains( t.BatchId ?? 0 ) );
+                        }
+                        var campusOfAccount = CampusCache.Get( gfTransactions.GetFilterPreference( "CampusAccount" ).AsInteger() );
+                        if ( campusOfAccount != null )
+                        {
+                            var accountCampusQuery = new FinancialAccountService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfAccount.Id ).Select( a => a.Id );
+                            if ( hfTransactionViewMode.Value == "Transactions" )
+                            {
+                                query = query.Where( t => t.TransactionDetails.Any( d => accountCampusQuery.Contains( d.AccountId ) ) );
+                            }
+                            else
+                            {
+                                query = query.Where( a => accountCampusQuery.Contains( a.TransactionDetail.AccountId ) );
+                            }
+                        }
+                    }
+
+                    if ( !( this.ContextEntity() is Person ) )
+                    {
+                        var filterPersonId = gfTransactions.GetFilterPreference( "Person" ).AsIntegerOrNull();
+                        if ( filterPersonId.HasValue )
+                        {
                             // get the transactions for the person or all the members in the person's giving group (Family)
-                            qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                            var filterPerson = new PersonService( rockContext ).Get( filterPersonId.Value );
+                            if ( filterPerson != null )
+                            {
+                                // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+                                var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == filterPerson.GivingId ).Select( a => a.Id ).ToList();
+
+                                // get the transactions for the person or all the members in the person's giving group (Family)
+                                query = query.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                            }
                         }
                     }
                 }
-            }
 
-            // NOTE: We sort by _PERSONNAME_  above so don't do it here
-            if ( sortProperty != null )
-            {
-                if ( sortProperty.Property != "_PERSONNAME_" )
-                {
-                    qry = qry.Sort( sortProperty );
-                }
-            }
-            else
-            {
-
-                // Default sort by Id if the transactions are seen via the batch,
-                // otherwise sort by descending date time.
-                if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) )
-                {
-                    qry = qry.OrderBy( t => t.Id );
-                }
+                if ( sortProperty != null )
+	            {
+	                if ( sortProperty.Property == "_PERSONNAME_" )
+	                {
+	                    if ( sortProperty.Direction == SortDirection.Ascending )
+	                    {
+	                        query = query.OrderBy( a => a.AuthorizedPersonLastName )
+	                            .ThenBy( a => a.AuthorizedPersonNickName )
+	                            .ThenByDescending( a => a.FutureProcessingDateTime )
+	                            .ThenByDescending( a => a.TransactionDateTime )
+	                            .ThenByDescending( a => a.Id );
+	                    }
+	                    else
+	                    {
+                            query = query.OrderByDescending( a => a.AuthorizedPersonLastName )
+	                            .ThenByDescending( a => a.AuthorizedPersonNickName )
+	                            .ThenByDescending( a => a.FutureProcessingDateTime )
+	                            .ThenByDescending( a => a.TransactionDateTime )
+	                            .ThenByDescending( a => a.Id );
+	                    }
+	                }
+	                else
+	                {
+                        query = query.Sort( sortProperty );
+	                }
+	            }
                 else
                 {
-                    qry = qry.OrderByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+
+                    // Default sort by Id if the transactions are seen via the batch,
+                    // otherwise sort by descending date time.
+                    if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) )
+                    {
+                        query = query.OrderBy( t => t.Id );
+                    }
+                    else
+                    {
+                        query = query.OrderByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                    }
                 }
-            }
 
-            var lTransactionImageField = gTransactions.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lTransactionImage" );
-            var summaryField = gTransactions.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "Summary" );
-            var showImages = bddlOptions.SelectedValue.AsIntegerOrNull() == 1;
-            if ( lTransactionImageField != null )
-            {
-                lTransactionImageField.Visible = showImages;
-            }
+                var lTransactionImageField = gTransactions.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lTransactionImage" );
+                var summaryField = gTransactions.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "Summary" );
+                var showImages = bddlOptions.SelectedValue.AsIntegerOrNull() == 1;
+                if ( lTransactionImageField != null )
+                {
+                    lTransactionImageField.Visible = showImages;
+                }
 
-            if ( summaryField != null )
-            {
-                summaryField.Visible = !showImages;
-            }
+                if ( summaryField != null )
+                {
+                    summaryField.Visible = !showImages;
+                }
 
-            var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
-            _personDetails = qryPersonAlias.Where( a => qry.Any( q => q.AuthorizedPersonAliasId.HasValue && q.AuthorizedPersonAliasId == a.Id ) ).Select( a => new
-            {
-                a.Id,
-                PersonId = a.Person.Id,
-                a.Person.LastName,
-                a.Person.NickName,
-                a.Person.SuffixValueId,
-                a.Person.RecordTypeValueId
-            } ).AsNoTracking().ToList().Select( k => new PersonDetail
-            {
-                PersonAliasId = k.Id,
-                PersonId = k.PersonId,
-                FullName = Person.FormatFullNameReversed( k.LastName, k.NickName, k.SuffixValueId, k.RecordTypeValueId )
-            } ).ToList();
-
-            if ( showImages )
-            {
-                _imageBinaryFileIdLookupByTransactionId = new FinancialTransactionImageService( rockContext ).Queryable().Where( a => qry.Any( q => q.Id == a.TransactionId ) )
-                    .Select( a => new { a.TransactionId, a.BinaryFileId, a.Order } )
-                    .GroupBy( a => a.TransactionId )
-                    .ToDictionary( k => k.Key, v => v.OrderBy( x => x.Order ).Select( x => x.BinaryFileId ).ToList() );
-            }
-            else
-            {
-                _imageBinaryFileIdLookupByTransactionId = new Dictionary<int, List<int>>();
-            }
-
-            if ( _availableAttributes.Any() )
-            {
-                gTransactions.ObjectList = new Dictionary<string, object>();
-                var txns = new FinancialTransactionService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( t => qry.Select( q => q.Id ).Contains( t.Id ) )
+                var personAliasQuery = new PersonAliasService( rockContext ).Queryable();
+                _personDetails = personAliasQuery
+                    .Where( a => query.Any( q => q.AuthorizedPersonAliasId.HasValue && q.AuthorizedPersonAliasId == a.Id ) )
+                    .Select( a => new
+                    {
+                        a.Id,
+                        PersonId = a.Person.Id,
+                        a.Person.LastName,
+                        a.Person.NickName,
+                        a.Person.SuffixValueId,
+                        a.Person.RecordTypeValueId
+                    } )
+                    .AsNoTracking()
+                    .ToList()
+                    .Select( k => new PersonDetail
+                    {
+                        PersonAliasId = k.Id,
+                        PersonId = k.PersonId,
+                        FullName = Person.FormatFullNameReversed( k.LastName, k.NickName, k.SuffixValueId, k.RecordTypeValueId )
+                    } )
                     .ToList();
-                txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
-            }
 
-            gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
-            gTransactions.SetLinqDataSource( qry.AsNoTracking() );
-            gTransactions.DataBind();
-
-            var showAccountSummary = this.GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean();
-            if ( showAccountSummary ||
-                _scheduledTxn == null &&
-                _registration == null &&
-                _person == null &&
-                !isExporting )
-            {
-                pnlSummary.Visible = true;
-
-                // No context - show account summary
-
-                IQueryable<DetailInfo> qryAccountDetails;
-                if ( hfTransactionViewMode.Value == "Transactions" )
+                if ( showImages )
                 {
-                    qryAccountDetails = qry.SelectMany( a => a.TransactionDetails );
+                    _imageBinaryFileIdLookupByTransactionId = new FinancialTransactionImageService( rockContext ).Queryable().Where( a => query.Any( q => q.Id == a.TransactionId ) )
+                        .Select( a => new { a.TransactionId, a.BinaryFileId, a.Order } )
+                        .GroupBy( a => a.TransactionId )
+                        .ToDictionary( k => k.Key, v => v.OrderBy( x => x.Order ).Select( x => x.BinaryFileId ).ToList() );
                 }
                 else
                 {
-                    qryAccountDetails = qry.Select( a => a.TransactionDetail );
+                    _imageBinaryFileIdLookupByTransactionId = new Dictionary<int, List<int>>();
                 }
 
-                var accountSummaryQry1 = qryAccountDetails.Select( a => new
+                if ( _availableAttributes.Any() )
                 {
-                    Id = a.AccountId,
-                    Amount = a.Amount
-                } ).GroupBy( a => a.Id ).Select( a => new
-                {
-                    AccountId = a.Key,
-                    TotalAmount = a.Sum( x => x.Amount )
-                } );
+                    gTransactions.ObjectList = new Dictionary<string, object>();
+                    var txns = new FinancialTransactionService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )
+                        .ToList();
+                    txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
+                }
 
-                var summaryQryList = accountSummaryQry1.ToList().Select( a => new AccountSummaryRow
-                {
-                    AccountId = a.AccountId,
-                    Order = FinancialAccountCache.Get( a.AccountId )?.Order ?? 0,
-                    Name = FinancialAccountCache.Get( a.AccountId )?.Name,
-                    TotalAmount = a.TotalAmount
-                } );
+                gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
+                gTransactions.SetLinqDataSource( query.AsNoTracking() );
+                gTransactions.DataBind();
 
-                // check for filtered accounts
-                var accountIds = ( gfTransactions.GetFilterPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                if ( accountIds.Any() && apAccount.Visible )
+                var showAccountSummary = this.GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean();
+                if ( showAccountSummary ||
+                    _scheduledTxn == null &&
+                    _registration == null &&
+                    _person == null &&
+                    !isExporting )
                 {
-                    summaryQryList = summaryQryList.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
-                    lbFiltered.Text = "Filtered Account List";
-                    lbFiltered.Visible = true;
+                    pnlSummary.Visible = true;
+
+                    // No context - show account summary
+
+                    // Query for the totals instead of using the grid data,
+                    // as the data bound to the grid can be paged.
+                    IQueryable<DetailInfo> transactionDetailQuery;
+                    if ( hfTransactionViewMode.Value == "Transactions" )
+                    {
+                        transactionDetailQuery = query.SelectMany( a => a.TransactionDetails );
+                    }
+                    else
+                    {
+                        transactionDetailQuery = query.Select( a => a.TransactionDetail );
+                    }
+
+                    var accountSummaries = transactionDetailQuery
+                        .Select( a => new
+                        {
+                            Id = a.AccountId,
+                            Amount = a.Amount
+                        } )
+                        .GroupBy( a => a.Id )
+                        .Select( a => new
+                        {
+                            AccountId = a.Key,
+                            TotalAmount = a.Sum( x => x.Amount )
+                        } )
+                        .ToList()
+                        .Select( a => new AccountSummaryRow
+                        {
+                            AccountId = a.AccountId,
+                            Order = FinancialAccountCache.Get( a.AccountId )?.Order ?? 0,
+                            Name = FinancialAccountCache.Get( a.AccountId )?.Name,
+                            TotalAmount = a.TotalAmount
+                        } );
+
+                    // check for filtered accounts
+                    var accountIds = ( gfTransactions.GetFilterPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+                    if ( accountIds.Any() && apAccount.Visible )
+                    {
+                        accountSummaries = accountSummaries.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
+                        lbFiltered.Text = "Filtered Account List";
+                        lbFiltered.Visible = true;
+                    }
+                    else
+                    {
+                        lbFiltered.Visible = false;
+                    }
+
+                    var accountSummaryList = accountSummaries.ToList();
+                    var grandTotalAmount = ( accountSummaryList.Count > 0 ) ? accountSummaryList.Sum( a => a.TotalAmount ) : 0;
+                    lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
+                    rptAccountSummary.DataSource = accountSummaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
+                    rptAccountSummary.DataBind();
+
                 }
                 else
                 {
-                    lbFiltered.Visible = false;
+                    pnlSummary.Visible = false;
                 }
-
-                var summaryList = summaryQryList.ToList();
-                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;
-                lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
-                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
-                rptAccountSummary.DataBind();
-
-            }
-            else
-            {
-                pnlSummary.Visible = false;
             }
         }
 
@@ -2111,7 +2136,7 @@ namespace RockWeb.Blocks.Finance
                 List<string> summary = null;
                 if ( txn.TransactionDetail != null )
                 {
-                    string summaryLine = string.Format( "{0}: {1}", FinancialAccountCache.Get( txn.TransactionDetail.AccountId )?.Name, txn.TransactionDetail.Amount.FormatAsCurrency() );
+                    var summaryLine = string.Format( "{0}: {1}", FinancialAccountCache.Get( txn.TransactionDetail.AccountId )?.Name, txn.TransactionDetail.Amount.FormatAsCurrency() );
                     summary = new List<string>();
                     summary.Add( summaryLine );
                 }
@@ -2158,14 +2183,14 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _batch != null )
             {
-                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                var qryParams = new Dictionary<string, string>();
                 qryParams.Add( "BatchId", _batch.Id.ToString() );
                 qryParams.Add( "TransactionId", id.ToString() );
                 NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
             }
             else if ( _person != null )
             {
-                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                var qryParams = new Dictionary<string, string>();
                 qryParams.Add( "PersonId", _person.Id.ToString() );
                 qryParams.Add( "TransactionId", id.ToString() );
                 NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
@@ -2247,6 +2272,7 @@ namespace RockWeb.Blocks.Finance
             preferences.SetValue( "TransactionViewMode", hfTransactionViewMode.Value );
             preferences.Save();
 
+            BindFilter();
             BindGrid();
         }
 
@@ -2257,6 +2283,8 @@ namespace RockWeb.Blocks.Finance
         {
             public int Id { get; set; }
             public int? AuthorizedPersonAliasId { get; internal set; }
+            public string AuthorizedPersonLastName { get; set; }
+            public string AuthorizedPersonNickName { get; set; }
             public int? BatchId { get; internal set; }
             public int? ScheduledTransactionId { get; internal set; }
             public DateTime TransactionDateTime { get; internal set; }

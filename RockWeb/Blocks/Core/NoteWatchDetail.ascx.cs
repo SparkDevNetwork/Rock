@@ -28,6 +28,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
@@ -38,17 +39,12 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a note watch." )]
 
-    [EntityTypeField( "Entity Type",
-        Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
-        IsRequired = false,
-        Order = 0,
-        Key = AttributeKey.EntityType )]
-
-    [NoteTypeField( "Note Type",
-        Description = "Set Note Type to limit this block to a specific note type",
-        AllowMultiple = false,
-        Order = 1,
-        Key = AttributeKey.NoteType )]
+    [CodeEditorField( "Watched Note Lava Template",
+        Key = AttributeKey.WatchedNoteLavaTemplate,
+        Description = "The Lava template to use to show the watched note type. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = false )]
 
     // Context Aware will limit the Watcher Option to the Person or Group context (when a new watch is added)
     [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
@@ -57,8 +53,7 @@ namespace RockWeb.Blocks.Core
     {
         public static class AttributeKey
         {
-            public const string EntityType = "EntityType";
-            public const string NoteType = "NoteType";
+            public const string WatchedNoteLavaTemplate = "WatchedNoteLavaTemplate";
         }
 
         #region Base Control Methods
@@ -82,8 +77,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
@@ -97,6 +90,8 @@ namespace RockWeb.Blocks.Core
                     this.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -325,6 +320,10 @@ namespace RockWeb.Blocks.Core
         protected void cbIsWatching_CheckedChanged( object sender, EventArgs e )
         {
             cbAllowOverride.Visible = cbIsWatching.Checked;
+            if ( !cbIsWatching.Checked && cbAllowOverride.Checked )
+            {
+                cbAllowOverride.Checked = false;
+            }
         }
 
         #endregion
@@ -503,7 +502,7 @@ namespace RockWeb.Blocks.Core
             {
                 var mergefields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
                 mergefields.Add( "Note", noteWatch.Note );
-                var lavaTemplate = this.GetAttributeValue( "WatchedNoteLavaTemplate" );
+                var lavaTemplate = this.GetAttributeValue( AttributeKey.WatchedNoteLavaTemplate );
 
                 lWatchedNote.Text = lavaTemplate.ResolveMergeFields( mergefields );
             }

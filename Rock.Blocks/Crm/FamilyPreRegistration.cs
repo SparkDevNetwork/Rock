@@ -19,6 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
@@ -31,6 +34,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks.Crm.FamilyPreRegistration;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -205,6 +209,13 @@ namespace Rock.Blocks.Crm
         DefaultValue = "Hide",
         Order = 18 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 19 )]
+
     #region Adult Category
 
     [CustomDropdownListField(
@@ -355,6 +366,15 @@ namespace Rock.Blocks.Crm
         Category = CategoryKey.AdultFields,
         Order = 14 )]
 
+    [TextField(
+        "Adult Label",
+        Key = AttributeKey.AdultLabel,
+        Description = "The label that should be used when referring to adults on the form. Please provide this in the singular form.",
+        Category = CategoryKey.AdultFields,
+        DefaultValue = "Adult",
+        IsRequired = false,
+        Order = 15 )]
+
     #endregion
 
     #region Child Category
@@ -468,6 +488,16 @@ namespace Rock.Blocks.Crm
         DefaultValue = "Hide",
         Category = CategoryKey.ChildFields,
         Order = 10 )]
+
+    [TextField(
+        "Child Label",
+        Key = AttributeKey.ChildLabel,
+        Description = "The label that should be used when referring to children on the form. Please provide this in the singular form.",
+        DefaultValue = "Child",
+        IsRequired = false,
+        Category = CategoryKey.ChildFields,
+        Order = 11 )]
+
     #endregion
 
     #region Child Relationship Category
@@ -531,6 +561,7 @@ namespace Rock.Blocks.Crm
             public const string RedirectURL = "RedirectURL";
             public const string RequireCampus = "RequireCampus";
             public const string DisplaySmsOptIn = "DisplaySmsOptIn";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
             
             public const string AdultSuffix = "AdultSuffix";
             public const string AdultGender = "AdultGender";
@@ -547,6 +578,7 @@ namespace Rock.Blocks.Crm
             public const string CreateAccountDescription = "CreateAccountDescription";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string AdultLabel = "AdultLabel";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -559,6 +591,7 @@ namespace Rock.Blocks.Crm
             public const string ChildProfilePhoto = "ChildProfilePhoto";
             public const string ChildRaceOption = "ChildRaceOption";
             public const string ChildEthnicityOption = "ChildEthnicityOption";
+            public const string ChildLabel = "ChildLabel";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -1031,10 +1064,21 @@ namespace Rock.Blocks.Crm
                     var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                     if ( homeLocationType != null )
                     {
-                        // Find a location record for the address that was entered.
-                        Location location = null;
-                        if ( bag.Address.Street1.IsNotNullOrWhiteSpace() && bag.Address.City.IsNotNullOrWhiteSpace() )
+                        // Only save the location if it is valid according to the country's requirements.
+                        Location location = new Location()
                         {
+                            Street1 = bag.Address.Street1,
+                            Street2 = bag.Address.Street2,
+                            City = bag.Address.City,
+                            State = bag.Address.State,
+                            PostalCode = bag.Address.PostalCode,
+                            Country = bag.Address.Country,
+                        };
+                        var isValid = LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
+
+                        if ( isValid )
+                        {
+                            // Find a location record for the address that was entered.
                             location = new LocationService( rockContext ).Get(
                                 // TODO: The default country should be removed once Obsidian has full country support.
                                 bag.Address.Street1,
@@ -1284,7 +1328,7 @@ namespace Rock.Blocks.Crm
                             foreach ( var adultId in adultIds )
                             {
                                 groupMemberService.CreateKnownRelationship( adultId, person.Id, canCheckInRole.Id );
-                                newRelationships.AddOrIgnore( person.Id, new List<int>() );
+                                newRelationships.TryAdd( person.Id, new List<int>() );
                                 newRelationships[person.Id].Add( canCheckInRole.Id );
                             }
                         }
@@ -1302,7 +1346,7 @@ namespace Rock.Blocks.Crm
                         foreach ( var adultId in adultIds )
                         {
                             groupMemberService.CreateKnownRelationship( adultId, person.Id, newRelationshipId.Value );
-                            newRelationships.AddOrIgnore( person.Id, new List<int>() );
+                            newRelationships.TryAdd( person.Id, new List<int>() );
                             newRelationships[person.Id].Add( newRelationshipId.Value );
                         }
                     }
@@ -1361,7 +1405,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1384,7 +1428,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1593,15 +1637,10 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            if ( bag.FullName.IsNotNullOrWhiteSpace() )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                errorMessages.Add( "Invalid Form Value" );
+                errorMessages.Add( "Captcha was not valid." );
                 return false;
             }
 
@@ -1921,14 +1960,17 @@ namespace Rock.Blocks.Crm
                 ChildCommunicationPreferenceField = GetFieldBag( AttributeKey.ChildDisplayCommunicationPreference ),
                 ChildProfilePhotoField = GetFieldBag( AttributeKey.ChildProfilePhoto ),
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
-                ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption )
+                ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
+                ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
 
             using ( var rockContext = new RockContext() )
             {
                 var currentPerson = this.GetCurrentPerson();
 
-                box.CampusGuid = GetInitialCampusGuid( rockContext, currentPerson, box.CampusTypesFilter, box.CampusStatusesFilter );
+                box.CampusGuid = GetInitialCampusGuid();
 
                 var childRelationshipTypes = GetChildRelationshipTypes();
 
@@ -1990,46 +2032,33 @@ namespace Rock.Blocks.Crm
             return box;
         }
 
-        private Guid? GetInitialCampusGuid( RockContext rockContext, Person currentPerson, List<Guid> campusTypesFilter, List<Guid> campusStatusesFilter )
+        /// <summary>
+        /// Tries to get the initial campus Guid from a page parameter, falling back to
+        /// the default campus block setting if the page parameter is missing or invalid.
+        /// </summary>
+        /// <returns>The initial campus Guid.</returns>
+        private Guid? GetInitialCampusGuid()
         {
-            if ( this.IsCampusHidden )
+            var campusGuid = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            CampusCache initialCampus = null;
+
+            if ( campusGuid.HasValue )
             {
-                // No initial campus if the block setting hides the field.
-                return null;
+                initialCampus = CampusCache.Get( campusGuid.Value );
+            }
+            else if ( campusId.HasValue )
+            {
+                initialCampus = CampusCache.Get( campusId.Value );
             }
 
-            var client = new CampusClientService( rockContext, currentPerson );
-            var campuses = client.GetCampusesAsListItems( new CampusOptions
+            if ( initialCampus == null && this.DefaultCampusGuid != Guid.Empty )
             {
-                LimitCampusStatuses = campusStatusesFilter,
-                LimitCampusTypes = campusTypesFilter,
-                IncludeInactive = false                
-            } );
-
-            if ( campuses.Any() )
-            {
-                Guid? defaultCampusGuid = this.DefaultCampusGuid;
-
-                if ( defaultCampusGuid == Guid.Empty )
-                {
-                    defaultCampusGuid = null;
-                }
-
-                if ( campuses.Count == 1 )
-                {
-                    // If there is only one filtered campus, then return the default campus OR the single campus if default is missing.
-                    return defaultCampusGuid ?? campuses.First().Value.AsGuidOrNull();
-                }
-                else
-                {
-                    // If there is more than one filtered campus, then return the default campus.
-                    return defaultCampusGuid;
-                }
+                initialCampus = CampusCache.Get( this.DefaultCampusGuid );
             }
-            else
-            {
-                return null;
-            }
+
+            return initialCampus?.Guid;
         }
 
         /// <summary>

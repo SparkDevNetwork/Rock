@@ -7,7 +7,7 @@
                 <div :class="{ 'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend }">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <div class="picker picker-obsidian picker-select rollover-container" :class="additionalPickerClass">
-                        <a class="picker-label form-control" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend, 'text-gray-400': disabled }" v-bind="disabledBinding">
+                        <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend, 'text-gray-400': disabled }" v-bind="disabledBinding">
                             <i :class="pickerIconClass"></i>
                             <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
                             <button type="button" role="button" aria-label="Clear selection" class="btn picker-select-none" v-if="showClear && !disabled" @click.prevent.stop="onAction('clear')">
@@ -15,6 +15,9 @@
                             </button>
                             <b class="fa fa-caret-down"></b>
                         </a>
+
+                        <!-- This helps trigger the resize when embedded in auto-resizing controls such as modals. -->
+                        <div v-if="internalShowPopup" class="hidden"></div>
 
                         <Fullscreen v-show="internalShowPopup" v-if="internalShowPopup || !forceContentReloadOnOpen" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
                             <!-- Optional "super header" area for things such as a means to switch between picker types -->
@@ -432,6 +435,6 @@
         emit(`${type}ButtonClicked`);
     }
 
-        // #endregion
+    // #endregion
 
 </script>

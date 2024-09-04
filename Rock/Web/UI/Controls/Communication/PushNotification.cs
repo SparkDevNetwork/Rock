@@ -40,6 +40,8 @@ namespace Rock.Web.UI.Controls.Communication
 
         private ImageUploader iupPushImage;
         private RockRadioButtonList rbOpenAction;
+        private StructureContentEditor sceAdditionalDetails;
+        private NotificationBox nbHtmlEditorWarning;
         private HtmlEditor htmlAdditionalDetails;
         private RockDropDownList ddlMobileApplications;
         private KeyValueList kvlQuerystring;
@@ -108,6 +110,7 @@ namespace Rock.Web.UI.Controls.Communication
             var pushOpenAction = GetSelectedOpenActionOrDefault();
             if ( pushOpenAction != PushOpenAction.ShowDetails )
             {
+                sceAdditionalDetails.StructuredContent = null;
                 htmlAdditionalDetails.Text = null;
                 ddlMobileApplications.SelectedValue = null;
             }
@@ -196,6 +199,17 @@ namespace Rock.Web.UI.Controls.Communication
             ddlMobileApplications = CreateMobileApplicationDropDownList();
             rcwMessage.Controls.Add( ddlMobileApplications );
 
+            // Add warning message above the HTML Editor
+            // recommending people to convert to structured content.
+            nbHtmlEditorWarning = new NotificationBox
+            {
+                ID = $"{nameof( nbHtmlEditorWarning )}_{ID}",
+                NotificationBoxType = NotificationBoxType.Warning,
+                Text = "Please convert the Additional Details section into structured content by copying its contents into the designated field below."
+            };
+
+            rcwMessage.Controls.Add( nbHtmlEditorWarning );
+
             htmlAdditionalDetails = new HtmlEditor
             {
                 ID = $"{nameof( htmlAdditionalDetails )}_{ID}",
@@ -204,6 +218,15 @@ namespace Rock.Web.UI.Controls.Communication
             };
 
             rcwMessage.Controls.Add( htmlAdditionalDetails );
+
+            sceAdditionalDetails = new StructureContentEditor
+            {
+                ID = $"{nameof( sceAdditionalDetails )}_{ID}",
+                Label = "Additional Details",
+                Height = 300
+            };
+
+            rcwMessage.Controls.Add( sceAdditionalDetails );
 
             ppMobilePage = new PagePicker
             {
@@ -246,7 +269,11 @@ namespace Rock.Web.UI.Controls.Communication
                 kvlQuerystring.Visible = openAction == PushOpenAction.LinkToMobilePage;
                 ppMobilePage.Visible = openAction == PushOpenAction.LinkToMobilePage;
                 ddlMobileApplications.Visible = openAction == PushOpenAction.ShowDetails;
-                htmlAdditionalDetails.Visible = openAction == PushOpenAction.ShowDetails;
+                sceAdditionalDetails.Visible = openAction == PushOpenAction.ShowDetails;
+                htmlAdditionalDetails.Visible = openAction == PushOpenAction.ShowDetails
+                    && sceAdditionalDetails.StructuredContent.IsNullOrWhiteSpace()
+                    && htmlAdditionalDetails.Text.IsNotNullOrWhiteSpace();
+                nbHtmlEditorWarning.Visible = htmlAdditionalDetails.Visible;
             }
             else
             {
@@ -254,7 +281,9 @@ namespace Rock.Web.UI.Controls.Communication
                 kvlQuerystring.Visible = false;
                 ppMobilePage.Visible = false;
                 ddlMobileApplications.Visible = false;
+                sceAdditionalDetails.Visible = false;
                 htmlAdditionalDetails.Visible = false;
+                nbHtmlEditorWarning.Visible = htmlAdditionalDetails.Visible;
             }
 
             // Setting this here because the control clears out this in the OnInit function.
@@ -299,11 +328,34 @@ namespace Rock.Web.UI.Controls.Communication
             }
 
             ddlMobileApplications.SelectedValue = null;
+            sceAdditionalDetails.StructuredContent = null;
             htmlAdditionalDetails.Text = null;
             if ( communication.PushOpenAction == PushOpenAction.ShowDetails )
             {
                 ddlMobileApplications.SelectedValue = pushData.MobileApplicationId.ToStringSafe();
-                htmlAdditionalDetails.Text = communication.PushOpenMessage;
+                sceAdditionalDetails.StructuredContent = communication.PushOpenMessageJson;
+
+                if ( communication.PushOpenMessageJson.IsNotNullOrWhiteSpace() )
+                {
+                    // The structured content editor should be used to edit
+                    // the push open message going forward, but the HTML
+                    // version should be kept up-to-date.
+                    nbHtmlEditorWarning.Visible = false;
+                    htmlAdditionalDetails.Text = new Rock.Cms.StructuredContent.StructuredContentHelper( communication.PushOpenMessageJson ).Render();
+                    htmlAdditionalDetails.Visible = false;
+                    nbHtmlEditorWarning.Visible = htmlAdditionalDetails.Visible;
+                }
+                else if ( communication.PushOpenMessage.IsNotNullOrWhiteSpace() )
+                {
+                    // There is no structured content but there is an HTML value
+                    // for the push open message.
+                    // Show both fields and let the individual know
+                    // they should convert the HTML push open message to use
+                    // structured content.
+                    htmlAdditionalDetails.Text = communication.PushOpenMessage;
+                    htmlAdditionalDetails.Visible = true;
+                    nbHtmlEditorWarning.Visible = htmlAdditionalDetails.Visible;
+                }
             }
 
             kvlQuerystring.Value = null;
@@ -313,7 +365,7 @@ namespace Rock.Web.UI.Controls.Communication
 
                 if ( pushData.MobilePageQueryString != null )
                 {
-                    kvlQuerystring.Value = pushData.MobilePageQueryString.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+                    kvlQuerystring.SetValue( pushData.MobilePageQueryString );
                 }
             }
 
@@ -340,13 +392,21 @@ namespace Rock.Web.UI.Controls.Communication
 
             if ( communication.PushOpenAction == PushOpenAction.ShowDetails )
             {
-                communication.PushOpenMessage = htmlAdditionalDetails.Text;
+                if ( sceAdditionalDetails.StructuredContent.IsNotNullOrWhiteSpace() )
+                {
+                    communication.PushOpenMessageJson = sceAdditionalDetails.StructuredContent;
+                    communication.PushOpenMessage = new Rock.Cms.StructuredContent.StructuredContentHelper( sceAdditionalDetails.StructuredContent ).Render();
+                }
+                else
+                {
+                    communication.PushOpenMessage = htmlAdditionalDetails.Text;
+                }
                 pushData.MobileApplicationId = ddlMobileApplications.SelectedValue.AsIntegerOrNull();
             }
 
             if ( communication.PushOpenAction == PushOpenAction.LinkToMobilePage )
             {
-                pushData.MobilePageQueryString = kvlQuerystring.Value.AsDictionaryOrNull();
+                pushData.MobilePageQueryString = kvlQuerystring.GetValueAsDictionaryOrNull();
                 pushData.MobilePageId = ppMobilePage.SelectedValue.AsIntegerOrNull();
                 pushData.MobileApplicationId = pushData.MobilePageId.HasValue ? PageCache.Get( pushData.MobilePageId.Value )?.SiteId : null;
             }

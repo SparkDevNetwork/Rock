@@ -16,12 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
 using Rock.Data;
+using Rock.SystemGuid;
 
 namespace Rock.Model
 {
@@ -48,6 +50,7 @@ namespace Rock.Model
             public string Method { get; set; }
             public string Path { get; set; }
             public Guid? ReflectedGuid { get; set; }
+            public MethodInfo MethodInfo { get; set; }
             public override string ToString()
             {
                 return ApiId;
@@ -127,14 +130,17 @@ namespace Rock.Model
                 var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) apiDescription.ActionDescriptor;
                 var action = apiDescription.ActionDescriptor;
                 var name = action.ControllerDescriptor.ControllerName;
-                var className = action.ControllerDescriptor.ControllerType.FullName;
+                var fullClassName = action.ControllerDescriptor.ControllerType.FullName;
                 var method = apiDescription.HttpMethod.Method;
                 var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>( inherit: false )?.Guid;
 
+                // Look for a previously discovered controller first by Guid
+                // and then by class name. We can't use just name because
+                // those are no longer unique.
                 var controller = discoveredControllers
-                    .Where( c => c.ClassName == className
-                        || ( c.ReflectedGuid.HasValue && controllerRockGuid.HasValue && c.ReflectedGuid.Value == controllerRockGuid.Value ) )
-                    .OrderByDescending( c => c.ReflectedGuid.HasValue && controllerRockGuid.HasValue && c.ReflectedGuid.Value == controllerRockGuid.Value )
+                    .Where( c => c.ClassName == fullClassName
+                        || ( controllerRockGuid.HasValue && c.ReflectedGuid == controllerRockGuid ) )
+                    .OrderByDescending( c => c.ReflectedGuid == controllerRockGuid )
                     .FirstOrDefault();
 
                 if ( controller == null )
@@ -142,7 +148,7 @@ namespace Rock.Model
                     controller = new DiscoveredControllerFromReflection
                     {
                         Name = name,
-                        ClassName = action.ControllerDescriptor.ControllerType.FullName
+                        ClassName = fullClassName
                     };
 
                     if ( controllerRockGuid.HasValue )
@@ -158,6 +164,13 @@ namespace Rock.Model
                     controllerApiIdMap[controller.ClassName] = new Dictionary<string, string>();
                 }
 
+                // The API Explorer will sometimes return the same method twice.
+                // No idea why. Skip the duplicates.
+                if ( controller.DiscoveredRestActions.Any( a => a.Method == method && a.MethodInfo == reflectedHttpActionDescriptor.MethodInfo ) )
+                {
+                    continue;
+                }
+
                 var apiIdMap = controllerApiIdMap[controller.ClassName];
                 var apiId = GetApiId( reflectedHttpActionDescriptor.MethodInfo, method, controller.Name, out Guid? restActionGuid );
 
@@ -169,6 +182,7 @@ namespace Rock.Model
                 {
                     ApiId = apiId,
                     Method = method,
+                    MethodInfo = reflectedHttpActionDescriptor.MethodInfo,
                     Path = apiDescription.RelativePath
                 };
 
@@ -190,15 +204,63 @@ namespace Rock.Model
                 return;
             }
 
-            var actionService = new RestActionService( rockContext );
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                // Look for any duplicate controller guids for diagnostic logging.
+                var duplicateControllerGuids = discoveredControllers
+                    .Where( c => c.ReflectedGuid.HasValue )
+                    .GroupBy( c => c.ReflectedGuid.Value )
+                    .Where( c => c.Count() > 1 )
+                    .ToList();
+
+                foreach ( var duplicateController in duplicateControllerGuids )
+                {
+                    var duplicateNames = duplicateController.Select( c => c.ClassName ).JoinStrings( ", " );
+
+                    Debug.WriteLine( $"Detected duplicate controller guid '{duplicateController.Key}': {duplicateNames}" );
+
+                    // Only throw an exception if a debugger is attached. This
+                    // reduces the risk of causing issues on a production system
+                    // that happens to have web.config configured in debug mode.
+                    if ( Debugger.IsAttached )
+                    {
+                        ExceptionLogService.LogException( new DuplicateSystemGuidException( $"Detected duplicate controller guid '{duplicateController.Key}': {duplicateNames}" ) );
+                    }
+                }
+
+                // Look for any duplicate action guids for diagnostic logging.
+                var duplicateActionGuids = discoveredControllers
+                    .SelectMany( c => c.DiscoveredRestActions )
+                    .Where( a => a.ReflectedGuid.HasValue )
+                    .GroupBy( a => a.ReflectedGuid.Value )
+                    .Where( a => a.Count() > 1 )
+                    .ToList();
+
+                foreach ( var duplicateAction in duplicateActionGuids )
+                {
+                    var duplicateNames = duplicateAction.Select( a => $"[{a.Method}]{a.MethodInfo.ReflectedType}.{a.MethodInfo.Name}" ).JoinStrings( ", " );
+
+                    Debug.WriteLine( $"Detected duplicate action guid '{duplicateAction.Key}': {duplicateNames}" );
+
+                    // Only throw an exception if a debugger is attached. This
+                    // reduces the risk of causing issues on a production system
+                    // that happens to have web.config configured in debug mode.
+                    if ( Debugger.IsAttached )
+                    {
+                        ExceptionLogService.LogException( new DuplicateSystemGuidException( $"Detected duplicate action guid '{duplicateAction.Key}': {duplicateNames}" ) );
+                    }
+                }
+            }
+
+            // First create any new controllers we will need in the next phase.
+            var allDatabaseControllers = restControllerService.Queryable().ToList();
+
             foreach ( var discoveredController in discoveredControllers )
             {
-                var apiIdMap = controllerApiIdMap[discoveredController.ClassName];
-
-                var controller = restControllerService.Queryable( "Actions" )
+                var controller = allDatabaseControllers
                     .Where( c => c.ClassName == discoveredController.ClassName
-                        || ( discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid.Value ) )
-                    .OrderByDescending( c => discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid.Value )
+                        || ( discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid ) )
+                    .OrderByDescending( c => c.Guid == discoveredController.ReflectedGuid )
                     .FirstOrDefault();
 
                 if ( controller == null )
@@ -209,6 +271,7 @@ namespace Rock.Model
                     };
 
                     restControllerService.Add( controller );
+                    allDatabaseControllers.Add( controller );
                 }
 
                 controller.ClassName = discoveredController.ClassName;
@@ -220,25 +283,76 @@ namespace Rock.Model
                         controller.Guid = discoveredController.ReflectedGuid.Value;
                     }
                 }
+            }
+
+            // Save all changes to the REST controllers.
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( Exception thrownException )
+            {
+                // if the exception was due to a duplicate Guid, throw as a duplicateGuidException. That'll make it easier to troubleshoot.
+                var duplicateGuidException = Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( thrownException, null );
+                if ( duplicateGuidException != null )
+                {
+                    throw duplicateGuidException;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            var actionService = new RestActionService( rockContext );
+            var allDatabaseActions = actionService.Queryable().ToList();
+
+            foreach ( var discoveredController in discoveredControllers )
+            {
+                var apiIdMap = controllerApiIdMap[discoveredController.ClassName];
+
+                var controller = allDatabaseControllers
+                    .Where( c => c.ClassName == discoveredController.ClassName
+                        || ( discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid ) )
+                    .OrderByDescending( c => c.Guid == discoveredController.ReflectedGuid )
+                    .FirstOrDefault();
+
+                // Shouldn't happen, but bail on this action just in case.
+                if ( controller == null )
+                {
+                    continue;
+                }
 
                 foreach ( var discoveredAction in discoveredController.DiscoveredRestActions )
                 {
                     var newFormatId = discoveredAction.ApiId;
                     var oldFormatId = apiIdMap[newFormatId];
 
-                    var action = controller.Actions.Where( a =>
+                    var action = allDatabaseActions.Where( a =>
                         a.ApiId == newFormatId
                         || a.ApiId == oldFormatId
                         || ( discoveredAction.ReflectedGuid.HasValue && a.Guid == discoveredAction.ReflectedGuid.Value ) ).FirstOrDefault();
 
                     if ( action == null )
                     {
-                        action = new RestAction { ApiId = newFormatId };
+                        action = new RestAction
+                        {
+                            ApiId = newFormatId,
+                            ControllerId = controller.Id
+                        };
                         controller.Actions.Add( action );
                     }
 
                     action.Method = discoveredAction.Method;
                     action.Path = discoveredAction.Path;
+
+                    // Make sure existing actions are still attached to the
+                    // correct controller. We can only safely do this if we
+                    // have an action unique identifier.
+                    if ( discoveredAction.ReflectedGuid.HasValue && action.ControllerId != controller.Id )
+                    {
+                        action.ControllerId = controller.Id;
+                    }
 
                     if ( action.ApiId != newFormatId )
                     {
@@ -255,25 +369,23 @@ namespace Rock.Model
                         }
                     }
                 }
-
-                var actionApiIds = discoveredController.DiscoveredRestActions.Select( d => d.ApiId ).ToList();
-                var actionGuids = discoveredController.DiscoveredRestActions.Select( d => d.ReflectedGuid ).ToList();
-                var actionsToRemove = controller.Actions
-                    .Where( a => !actionApiIds.Contains( a.ApiId ) && !actionGuids.Contains( a.Guid ) )
-                    .ToList();
-                foreach ( var action in actionsToRemove )
-                {
-                    actionService.Delete( action );
-                    controller.Actions.Remove( action );
-                }
             }
 
-            var controllerNames = discoveredControllers.Select( d => d.ClassName ).ToList();
-            var controllerGuids = discoveredControllers.Select( d => d.ReflectedGuid ).ToList();
-            var controllersToRemove = restControllerService.Queryable()
-                .Where( c => !controllerNames.Contains( c.ClassName ) && !controllerGuids.Contains( c.Guid ) )
+            // Delete any actions that no longer exist.
+            // NOTE: In the future this won't be safe since we might have API
+            // endpoints in two different Rock servers on two different .NET
+            // frameworks.
+            var allDiscoveredActions = discoveredControllers
+                .SelectMany( c => c.DiscoveredRestActions )
                 .ToList();
-            foreach ( var controller in controllersToRemove )
+            var actionsToDelete = allDatabaseActions
+                .Where( a => !allDiscoveredActions.Any( da => da.ApiId == a.ApiId || da.ReflectedGuid == a.Guid ) )
+                .ToList();
+            actionService.DeleteRange( actionsToDelete );
+
+            // Delete any controllers that no longer exist.
+            var controllers = discoveredControllers.Select( d => d.ClassName ).ToList();
+            foreach ( var controller in restControllerService.Queryable().Where( c => !controllers.Contains( c.ClassName ) ).ToList() )
             {
                 restControllerService.Delete( controller );
             }

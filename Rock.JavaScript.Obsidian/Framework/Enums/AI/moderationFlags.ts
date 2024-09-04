@@ -24,25 +24,25 @@
 /** Moderation categories */
 export const ModerationFlags = {
     /** No moderation categories set. */
-    None: 0,
+    None: 0x0000,
 
     /** Moderation for hate. */
-    Hate: 1,
+    Hate: 0x0001,
 
     /** Moderation for threats. */
-    Threat: 2,
+    Threat: 0x0002,
 
     /** Moderation for self harm. */
-    SelfHarm: 4,
+    SelfHarm: 0x0004,
 
     /** Moderation for sexual content. */
-    Sexual: 8,
+    Sexual: 0x0008,
 
     /** Moderation for sexual content with minors. */
-    SexualMinor: 16,
+    SexualMinor: 0x0010,
 
     /** Moderation for violence. */
-    Violent: 32
+    Violent: 0x0020
 } as const;
 
 /** Moderation categories */

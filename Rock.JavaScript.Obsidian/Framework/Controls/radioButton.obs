@@ -1,0 +1,47 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" label="" help="" :disableLabel="false" name="radio-button" #default="{ fi }">
+        <slot name="prepend" />
+        <label :class="isBlock ? 'radio' : 'radio-inline'">
+            <input type="radio" v-model="internalValue" :name="name" :value="value">
+            <span class="label-text">{{ label }}</span>
+            <HelpBlock v-if="help" :text="help" />
+        </label>
+        <slot name="append" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import HelpBlock from "./helpBlock.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String
+        },
+
+        value: {
+            type: String,
+            required: true
+        },
+
+        name: {
+            type: String
+        },
+
+        isBlock: {
+            type: Boolean
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+</script>

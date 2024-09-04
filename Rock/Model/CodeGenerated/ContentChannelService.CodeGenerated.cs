@@ -53,11 +53,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
-            if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
-                return false;
-            }
+            // ignoring ContentChannelItem,ContentChannelId
 
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
             {

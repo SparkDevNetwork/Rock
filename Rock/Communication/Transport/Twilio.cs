@@ -393,7 +393,7 @@ namespace Rock.Communication.Transport
             {
                 foreach ( var mergeField in mergeFields )
                 {
-                    recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                    recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                 }
 
                 CommunicationRecipient communicationRecipient = null;
@@ -611,11 +611,11 @@ namespace Rock.Communication.Transport
                 {
                     if ( b.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        return new Uri( $"{publicAppRoot}GetImage.ashx?id={b.Id}" );
+                        return new Uri( FileUrlHelper.GetImageUrl( b.Id, new GetImageUrlOptions { PublicAppRoot = publicAppRoot } ) );
                     }
                     else
                     {
-                        return new Uri( $"{publicAppRoot}GetFile.ashx?id={b.Id}" );
+                        return new Uri( FileUrlHelper.GetFileUrl( b.Id, new GetFileUrlOptions { PublicAppRoot = publicAppRoot } ) );
                     }
                 } ).ToList();
             }

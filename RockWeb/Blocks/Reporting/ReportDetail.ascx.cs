@@ -202,8 +202,6 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var preferences = GetBlockPersonPreferences();
@@ -249,6 +247,8 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( ex is RockDataViewFilterExpressionException )
                     {
                         RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                        nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( report.DataView );
+                        nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) report.DataView );
                     }
                     else
                     {

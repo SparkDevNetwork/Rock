@@ -1,0 +1,64 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="schedule-toolbox-signup-occurrence-date">
+        <RockLabel>{{ title }}</RockLabel>
+        <SignUpOccurrence v-for="occurrence in occurrences"
+                          :key="getOccurrenceKey(occurrence)"
+                          :occurrence="occurrence"
+                          :disabled="disabled"
+                          @updatedSignUps="$emit('updatedSignUps', $event)" />
+    </div>
+</template>
+
+<style scoped>
+.schedule-toolbox-signup-occurrence-date {
+    margin-top: 24px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import SignUpOccurrence from "./signUpOccurrence.partial.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceBag";
+    import { SignUpOccurrenceLocationBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceLocationBag";
+    import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
+
+    defineProps({
+        occurrences: {
+            type: Array as PropType<SignUpOccurrenceBag[]>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "updatedSignUps", signUps: SignUpsBag | null | undefined): void
+    }>();
+
+    // #region Functions
+
+    /**
+     * Gets the v-for key for a given occurrence, to ensure Vue knows when to NOT re-use a component instance.
+     *
+     * @param occurrence The occurrence.
+     */
+    function getOccurrenceKey(occurrence: SignUpOccurrenceBag): string {
+        const locationGuids = occurrence.locations
+            ?.map((location: SignUpOccurrenceLocationBag) => location?.locationGuid)
+            ?.join(";") ?? "no-locations";
+
+        return `${occurrence.occurrenceDateTime}|${occurrence.scheduleGuid}|${locationGuids}`;
+    }
+
+    // #endregion Functions
+</script>

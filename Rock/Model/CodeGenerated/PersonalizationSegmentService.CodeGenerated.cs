@@ -52,6 +52,12 @@ namespace Rock.Model
         public bool CanDelete( PersonalizationSegment item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<AdaptiveMessageAdaptationSegment>( Context ).Queryable().Any( a => a.PersonalizationSegmentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalizationSegment.FriendlyTypeName, AdaptiveMessageAdaptationSegment.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -124,12 +130,16 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdditionalFilterJson = source.AdditionalFilterJson;
+            target.CategoryId = source.CategoryId;
+            target.Description = source.Description;
             target.FilterDataViewId = source.FilterDataViewId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsDirty = source.IsDirty;
             target.Name = source.Name;
             target.SegmentKey = source.SegmentKey;
+            target.TimeToUpdateDurationMilliseconds = source.TimeToUpdateDurationMilliseconds;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

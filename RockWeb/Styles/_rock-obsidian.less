@@ -1,3 +1,35 @@
+.block-content > .obsidian-block-has-placeholder {
+  position: relative;
+  transition: height 0.1s ease-in-out;
+  overflow: hidden;
+}
+.block-content > .obsidian-block-has-placeholder.obsidian-block-loading {
+    height: var(--initial-block-height, auto);
+}
+.block-content > .obsidian-block-has-placeholder > .obsidian-block-placeholder {
+    opacity: 0;
+    visibility: hidden;
+    transition: visibility 0.2s linear, opacity 0.2s linear;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+.block-content > .obsidian-block-has-placeholder.obsidian-block-loading > .obsidian-block-placeholder {
+    opacity: 1;
+    visibility: visible;
+}
+.block-content > .obsidian-block-has-placeholder > .obsidian-block-wrapper {
+    visibility: visible;
+}
+.block-content > .obsidian-block-has-placeholder.obsidian-block-loading > .obsidian-block-wrapper {
+    min-height: 0;
+    transition: visibility 0.2s;
+    visibility: hidden;
+}
+
 .panel.panel-flex {
   display: flex;
   flex-direction: column;
@@ -168,4 +200,17 @@
 .rockslide-leave-to {
   opacity: 0;
   transform: translateY(-100%);
+}
+
+.shortlink-modal-popup_iframe .modal-header {
+  margin: 0 -15px 0;
+}
+
+.shortlink-modal-popup_iframe .modal-footer {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.shortlink-modal-popup_iframe .modal-body {
+  margin: 0 -15px 0;
 }

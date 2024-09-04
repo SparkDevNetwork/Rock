@@ -22,9 +22,17 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
 import { Guid } from "@Obsidian/Types";
+import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
+import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+import { IEntity } from "@Obsidian/ViewModels/entity";
+import { debounce } from "./util";
+import { BrowserBus, useBrowserBus } from "./browserBus";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
+const staticContentSymbol = Symbol("static-content");
+const blockBrowserBusSymbol = Symbol("block-browser-bus");
 
 // TODO: Change these to use symbols
 
@@ -56,6 +64,38 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
     }
 
     return result;
+}
+
+/**
+ * Creates a function that can be provided to the block that allows calling
+ * block actions.
+ *
+ * @private This should not be used by plugins.
+ *
+ * @param post The function to handle the post operation.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
+ * @param pageParameters The parameters to include with the block action calls.
+ *
+ * @returns A function that can be used to provide the invoke block action.
+ */
+export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>): InvokeBlockActionFunc {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined): Promise<HttpResult<T>> {
+        let context: BlockActionContextBag = {};
+
+        if (actionContext) {
+            context = { ...actionContext };
+        }
+
+        context.pageParameters = pageParameters;
+
+        return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
+            __context: context,
+            ...data
+        });
+    }
+
+    return invokeBlockAction;
 }
 
 /**
@@ -117,6 +157,52 @@ export function onConfigurationValuesChanged(callback: () => void): void {
     }
 }
 
+/**
+ * Provides the static content that the block provided on the server.
+ *
+ * @param content The static content from the server.
+ */
+export function provideStaticContent(content: Ref<Node[]>): void {
+    provide(staticContentSymbol, content);
+}
+
+/**
+ * Gets the static content that was provided by the block on the server.
+ *
+ * @returns A string of HTML content or undefined.
+ */
+export function useStaticContent(): Node[] {
+    const content = inject<Ref<Node[]>>(staticContentSymbol);
+
+    if (!content) {
+        return [];
+    }
+
+    return content.value;
+}
+
+/**
+ * Provides the browser bus configured to publish messages for the current
+ * block.
+ *
+ * @param bus The browser bus.
+ */
+export function provideBlockBrowserBus(bus: BrowserBus): void {
+    provide(blockBrowserBusSymbol, bus);
+}
+
+/**
+ * Gets the browser bus configured for use by the current block. If available
+ * this will be properly configured to publish messages with the correct block
+ * and block type. If this is called outside the context of a block then a
+ * generic use {@link BrowserBus} will be returned.
+ *
+ * @returns An instance of {@link BrowserBus}.
+ */
+export function useBlockBrowserBus(): BrowserBus {
+    return inject<BrowserBus>(blockBrowserBusSymbol, () => useBrowserBus(), true);
+}
+
 
 /**
  * A type that returns the keys of a child property.
@@ -126,11 +212,11 @@ type ChildKeys<T extends Record<string, unknown>, PropertyName extends string> =
 /**
  * A valid properties box that uses the specified name for the content bag.
  */
-type ValidPropertiesBox<PropertyName extends string> = {
+type ValidPropertiesSettingsBox = {
     validProperties?: string[] | null;
 } & {
-        [P in PropertyName]?: Record<string, unknown> | null;
-    };
+    settings?: Record<string, unknown> | null;
+};
 
 /**
  * Sets the a value for a custom settings box. This will set the value and then
@@ -140,7 +226,7 @@ type ValidPropertiesBox<PropertyName extends string> = {
  * @param propertyName The name of the custom setting property to set.
  * @param value The new value of the custom setting.
  */
-export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings">, S extends NonNullable<T["settings"]>, K extends ChildKeys<T, "settings">>(box: T, propertyName: K, value: S[K]): void {
+export function setCustomSettingsBoxValue<T extends ValidPropertiesSettingsBox, S extends NonNullable<T["settings"]>, K extends ChildKeys<T, "settings">>(box: T, propertyName: K, value: S[K]): void {
     if (!box.settings) {
         box.settings = {} as Record<string, unknown>;
     }
@@ -164,9 +250,9 @@ export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings
  * @param propertyName The name of the property on the bag to set.
  * @param value The new value of the property.
  */
-export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
+export function setPropertiesBoxValue<T extends Record<string, unknown>, K extends keyof T & string>(box: ValidPropertiesBox<T>, propertyName: K, value: T[K]): void {
     if (!box.bag) {
-        box.bag = {} as Record<string, unknown>;
+        box.bag = {} as Record<string, unknown> as T;
     }
 
     box.bag[propertyName] = value;
@@ -175,13 +261,16 @@ export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S ext
         box.validProperties = [];
     }
 
-    if (!box.validProperties.includes(propertyName)) {
+    if (!box.validProperties.some(p => p.toLowerCase() === propertyName.toLowerCase())) {
         box.validProperties.push(propertyName);
     }
 }
 
 /**
  * Dispatches a block event to the document.
+ *
+ * @deprecated Do not use this function anymore, it will be removed in the future.
+ * Use the BrowserBus instead.
  *
  * @param eventName The name of the event to be dispatched.
  * @param eventData The custom data to be attached to the event.
@@ -209,9 +298,112 @@ export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData
  * @returns true if the event is a block event.
  */
 export function isBlockEvent<TData = undefined>(event: Event): event is CustomEvent<BlockEvent<TData>> {
-    return "guid" in event && "data" in event;
+    return event instanceof CustomEvent
+        && typeof event.detail === "object"
+        && "guid" in event.detail
+        && "data" in event.detail;
 }
 
+// #region Entity Detail Blocks
+
+const entityTypeNameSymbol = Symbol("EntityTypeName");
+const entityTypeGuidSymbol = Symbol("EntityTypeGuid");
+
+type UseEntityDetailBlockOptions = {
+    /** The block configuration. */
+    blockConfig: Record<string, unknown>;
+
+    /**
+     * The entity that will be used by the block, this will cause the
+     * onPropertyChanged logic to be generated.
+     */
+    entity?: Ref<ValidPropertiesBox<IEntity>>;
+};
+
+type UseEntityDetailBlockResult = {
+    /** The onPropertyChanged handler for the edit panel. */
+    onPropertyChanged?(propertyName: string): void;
+};
+
+/**
+ * Performs any framework-level initialization of an entity detail block.
+ *
+ * @param options The options to use when initializing the detail block logic.
+ *
+ * @returns An object that contains information which can be used by the block.
+ */
+export function useEntityDetailBlock(options: UseEntityDetailBlockOptions): UseEntityDetailBlockResult {
+    const securityGrant = getSecurityGrant(options.blockConfig.securityGrantToken as string);
+
+    provideSecurityGrant(securityGrant);
+
+    if (options.blockConfig.entityTypeName) {
+        provideEntityTypeName(options.blockConfig.entityTypeName as string);
+    }
+
+    if (options.blockConfig.entityTypeGuid) {
+        provideEntityTypeGuid(options.blockConfig.entityTypeGuid as Guid);
+    }
+
+    const entity = options.entity;
+
+    const result: Record<string, unknown> = {};
+
+    if (entity) {
+        const invokeBlockAction = useInvokeBlockAction();
+        const refreshAttributesDebounce = debounce(() => refreshEntityDetailAttributes(entity, invokeBlockAction), undefined, true);
+
+        result.onPropertyChanged = (propertyName: string): void => {
+            // If we don't have any qualified attribute properties or this property
+            // is not one of them then do nothing.
+            if (!options.blockConfig.qualifiedAttributeProperties || !(options.blockConfig.qualifiedAttributeProperties as string[]).some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+                return;
+            }
+
+            refreshAttributesDebounce();
+        };
+    }
+
+    return result;
+}
+
+/**
+ * Provides the entity type name to child components.
+ *
+ * @param name The entity type name in PascalCase, such as `GroupMember`.
+ */
+export function provideEntityTypeName(name: string): void {
+    provide(entityTypeNameSymbol, name);
+}
+
+/**
+ * Gets the entity type name provided from a parent component.
+ *
+ * @returns The entity type name in PascalCase, such as `GroupMember` or undefined.
+ */
+export function useEntityTypeName(): string | undefined {
+    return inject<string | undefined>(entityTypeNameSymbol, undefined);
+}
+
+/**
+ * Provides the entity type unique identifier to child components.
+ *
+ * @param guid The entity type unique identifier.
+ */
+export function provideEntityTypeGuid(guid: Guid): void {
+    provide(entityTypeGuidSymbol, guid);
+}
+
+/**
+ * Gets the entity type unique identifier provided from a parent component.
+ *
+ * @returns The entity type unique identifier or undefined.
+ */
+export function useEntityTypeGuid(): Guid | undefined {
+    return inject<string | undefined>(entityTypeGuidSymbol, undefined);
+}
+
+// #endregion
 
 // #region Security Grants
 
@@ -297,7 +489,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
 /**
  * Provides the security grant to child components to use in their API calls.
  *
- * @param grant The grant ot provide to child components.
+ * @param grant The grant to provide to child components.
  */
 export function provideSecurityGrant(grant: SecurityGrant): void {
     provide(securityGrantSymbol, grant);
@@ -345,6 +537,35 @@ export function watchPropertyChanges<E extends "propertyChanged">(propertyRefs: 
  * Requests an updated attribute list from the server based on the
  * current UI selections made.
  *
+ * @param box The valid properties box that will be used to determine current
+ * property values and then updated with the new attributes and values.
+ * @param invokeBlockAction The function to use when calling the block action.
+ */
+async function refreshEntityDetailAttributes<TEntityBag extends IEntity>(box: Ref<ValidPropertiesBox<TEntityBag>>, invokeBlockAction: InvokeBlockActionFunc): Promise<void> {
+    const result = await invokeBlockAction<ValidPropertiesBox<TEntityBag>>("RefreshAttributes", {
+        box: box.value
+    });
+
+    if (result.isSuccess) {
+        if (result.statusCode === 200 && result.data && box.value) {
+            const newBox: ValidPropertiesBox<TEntityBag> = {
+                ...box.value,
+                bag: {
+                    ...box.value.bag as TEntityBag,
+                    attributes: result.data.bag?.attributes,
+                    attributeValues: result.data.bag?.attributeValues
+                }
+            };
+
+            box.value = newBox;
+        }
+    }
+}
+
+/**
+ * Requests an updated attribute list from the server based on the
+ * current UI selections made.
+ *
  * @param bag The entity bag that will be used to determine current property values
  * and then updated with the new attributes and values.
  * @param validProperties The properties that are considered valid on the bag when
@@ -377,9 +598,10 @@ export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, 
 
 // #endregion Extended Refs
 
-// #region Block Guid
+// #region Block and BlockType Guid
 
 const blockGuidSymbol = Symbol("block-guid");
+const blockTypeGuidSymbol = Symbol("block-type-guid");
 
 /**
  * Provides the block unique identifier to all child components.
@@ -398,6 +620,26 @@ export function provideBlockGuid(blockGuid: string): void {
  */
 export function useBlockGuid(): Guid | undefined {
     return inject<Guid>(blockGuidSymbol);
+}
+
+/**
+ * Provides the block type unique identifier to all child components.
+ * This is an internal method and should not be used by plugins.
+ *
+ * @param blockTypeGuid The unique identifier of the block type.
+ */
+export function provideBlockTypeGuid(blockTypeGuid: string): void {
+    provide(blockTypeGuidSymbol, blockTypeGuid);
+}
+
+/**
+ * Gets the block type unique identifier of the current block in this component
+ * chain.
+ *
+ * @returns The unique identifier of the block type.
+ */
+export function useBlockTypeGuid(): Guid | undefined {
+    return inject<Guid>(blockTypeGuidSymbol);
 }
 
 // #endregion
@@ -425,6 +667,12 @@ const emptyPreferences: IPersonPreferenceCollection = {
     },
     withPrefix(): IPersonPreferenceCollection {
         return emptyPreferences;
+    },
+    on(): void {
+        // Intentionally empty.
+    },
+    off(): void {
+        // Intentionally empty.
     }
 };
 

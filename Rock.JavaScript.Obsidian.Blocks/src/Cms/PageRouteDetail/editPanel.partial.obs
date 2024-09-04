@@ -44,6 +44,9 @@
     import { PageRouteBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteBag";
     import { PageRouteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteDetailOptionsBag";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -68,9 +71,7 @@
     const route = propertyRef(props.modelValue.route ?? "", "Route");
     const isGlobal = propertyRef(props.modelValue.isGlobal ?? false, "IsGlobal");
     const site = ref(props.modelValue.site ?? "");
-    const page = ref<PageRouteValueBag>({
-        page: props.modelValue.page ?? {}
-    });
+    const page = ref<PageRouteValueBag | undefined>(toPageRouteValueBag(props.modelValue.page));
     const isSystem = ref(props.modelValue.isSystem ?? false);
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -80,11 +81,13 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    // #endregion
-
     // #region Functions
+
+    function toPageRouteValueBag(page: ListItemBag | null | undefined): PageRouteValueBag | undefined {
+        return !page ? undefined : {
+            page: props.modelValue.page ?? {}
+        };
+    }
 
     // #endregion
 
@@ -96,9 +99,13 @@
             return;
         }
 
-        const response = await invokeBlockAction<{ siteName: string }>("GetSiteName", {
-            guid: value.page.value
-        });
+        const request: {
+            guid?: Guid | null | undefined;
+        } = {
+            guid: toGuidOrNull(value.page.value)
+        };
+
+        const response = await invokeBlockAction<{ siteName: string }>("GetSiteName", request);
 
         if (response.isSuccess && response.data) {
             site.value = response.data.siteName;
@@ -113,9 +120,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(route, props.modelValue.route ?? "");
         updateRefValue(isGlobal, props.modelValue.isGlobal);
-        updateRefValue(page, {
-            page: props.modelValue.page ?? {}
-        });
+        updateRefValue(page, toPageRouteValueBag(props.modelValue.page));
     });
 
     // Determines which values we want to track changes on (defined in the

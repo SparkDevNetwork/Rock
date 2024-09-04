@@ -41,10 +41,6 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             base.DefaultText = "Add Merge Field";
 
-            // This will disable the stripping of 'C' off the nodes in the item rock tree. This was making
-            // CurrentPerson => urrentPerson. ISSUE #5340
-            this.UseCategorySelection = false;
-
             this.CssClass += " picker-mergefield picker-novalue";
         }
 

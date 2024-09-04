@@ -15,12 +15,9 @@
 // </copyright>
 //
 
-using System;
-using System.Linq;
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.TextCompletions;
-using Rock.AI.OpenAI.OpenAIApiClient.Attributes;
-using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.AI.OpenAI.Utilities;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
@@ -34,45 +31,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
         /// The string representation of the model to use. 
         /// </summary>
         [JsonProperty( "model" )]
-        public string Model {
-            get
-            {
-                var modelProperties = ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( OpenAIModel.ToString() ), typeof( OpenAIModelProperties ) );
-                return modelProperties.Label;
-            }
-            set
-            {
-               
-                var modelItem = Enum.GetValues( typeof( OpenAIModel ) )
-                            .Cast<OpenAIModel>()
-                            .FirstOrDefault( m => ( ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( m.ToString() ), typeof( OpenAIModelProperties ) ) ).Label == value );
-
-                // Set the model using the default if not found
-                if ( modelItem == OpenAIModel.Default )
-                {
-                    modelItem = OpenAIApi.OpenAIDefaultTextCompletionsModel;
-                }
-
-                OpenAIModel = modelItem;
-            }
-        }
-
-        /// <summary>
-        /// The OpenAI model.
-        /// </summary>
-        [JsonIgnore]
-        public OpenAIModel OpenAIModel {
-
-            get
-            {
-                return _openAIModel;
-            }
-
-            set {
-                _openAIModel = value;
-            }
-        }
-        private OpenAIModel _openAIModel = OpenAIApi.OpenAIDefaultTextCompletionsModel;
+        public string Model { get; set; }
 
         /// <summary>
         /// The prompt for the completion.
@@ -92,14 +51,15 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
                     return _maxTokens;
                 }
 
-                // Get number of tokens in the prompt
+                // Estimate the number of tokens in the prompt.
                 var promptSize = OpenAIUtilities.TokenCount( this.Prompt );
 
-                // Get the max size that the model supports.
-                var modelProperties = ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( OpenAIModel.ToString() ), typeof( OpenAIModelProperties ) );
+                // As of July 2024 both the cheapest and most advanced chat completion models
+                // support a context window of 128,000 tokens (gpt-4o and gpt-4o-mini).
+                const int defaultContextWindow = 128000;
 
-                // Return the difference
-                return modelProperties.MaxTokens - promptSize;
+                // Return the difference.
+                return defaultContextWindow - promptSize;
             }
             set
             {

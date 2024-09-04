@@ -56,7 +56,7 @@
 
                             var percent = (data.loaded * 100 / data.total).toFixed(0);
                             if (percent > 1 && percent < 99) {
-                                $progressPercent.text(percent + "%");
+                                $progressPercent.text(percent + "%"); 
                             }
                             else {
                                 $progressPercent.text("");
@@ -86,9 +86,16 @@
                         + 'GetFile.ashx?'
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')
                         // note rootFolder is encrypted to prevent direct access to filesystem via the URL
-                        + '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '')
-                        + '&id=' + data.response().result.Id
-                        + '&fileName=' + data.response().result.FileName;
+                        + '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
+
+                    if (options.disablePredictableIds) {
+                        getFileUrl += '&guid=' + data.response().result.Guid;
+                    }
+                    else {
+                        getFileUrl += '&id=' + data.response().result.Id
+                    }
+
+                    getFileUrl += '&fileName=' + data.response().result.FileName;
 
                     $el.text(data.response().result.FileName).attr('href', getFileUrl);
                     $('#' + options.aRemove).show();

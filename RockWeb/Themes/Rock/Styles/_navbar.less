@@ -64,7 +64,7 @@ body.navbar-side-open {
   height: 32px;
   color: @white !important;
   background: transparent !important;
-  padding: 0;
+  padding: 0 !important;
 
   &.no-logo::after {
     position: absolute;
@@ -80,9 +80,9 @@ body.navbar-side-open {
   }
 
   .logo {
-    width: 48px;
-    height: 48px;
-    margin: 3px 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
   }
 
   @media (min-width: @grid-float-breakpoint) {
@@ -100,26 +100,29 @@ body.navbar-side-open {
   display: none;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
   color: @navbarside-color;
   background-color: var(--navbarside-background-color);
+  // Scroll Styling applied to the inner container because of a bug in Safari
+  .zone-navigation {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    background-color: transparent;
-  }
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: transparent;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    width: 6px;
-    background-color: rgba(0,0,0, .2);
-    border-radius: 10px;
+    &::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: rgba(0,0,0, .2);
+      border-radius: 10px;
+    }
   }
 
   .navbar-side-open & {
     display: block;
   }
-
   // Hide config-bar inside navigation since it is always cropped
   .config-bar {
     display: none !important;
@@ -131,10 +134,13 @@ body.navbar-side-open {
     height: 48px;
     background: @brand-primary;
     padding: 0 12px;
+    position: fixed;
+    width: 100%;
+    z-index: @zindex-navbar-fixed;
   }
 
   .navbar-side {
-
+    margin-bottom: 84px; // adds space for the admintool bar and the static top menu item on mobile
 
     .nav-item-top {
       display: flex;
@@ -158,17 +164,21 @@ body.navbar-side-open {
         border-top: 0;
       }
 
+      &:nth-child(2) {
+        margin-top: 48px; // Move the second list item (the first real menu item) down so it's not covered by the navbar-logo
+      }
+
       i {
         width: 1.25em;
       }
 
       &:hover,
-      &.open {
+      &.open,
+      &.current {
         background-color: var(--nav-childpages-bg);
         box-shadow: inset 3px 0 0 0 @brand-primary;
       }
 
-      
       // TODO: This is split into a separate selector because it feels buggy when toggled open
       &.open {
         .nav-childpages {
@@ -223,6 +233,7 @@ body.navbar-side-open {
 
     .item-title {
       display: inline-block;
+
       &:after {
         transform: rotate(90deg);
       }
@@ -231,8 +242,15 @@ body.navbar-side-open {
     .nav-item {
       .nav-link {
         padding: 0;
-        line-height: 2.5;
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        margin: 18px 0;
         color: @navbarside-color;
+
+        &:last-child{
+            margin-bottom: 0;
+        }
 
         &::before {
           display: inline-block;
@@ -265,6 +283,7 @@ body.navbar-side-open {
         .nav-link {
           font-weight: 600;
           color: @white;
+
           &::before {
             width: 8px;
             padding-left: 8px;
@@ -341,6 +360,14 @@ body.navbar-side-open {
       z-index: 2000;
     }
 
+    .navbar-side:first-child {
+      margin-bottom: 0; // Remove the extra margin that's needed for mobile.
+    }
+
+    .navbar-side .nav-item-top:nth-child(2) {
+      margin-top: 0px; // Remove the extra margin on the second list item (the first real menu item) down so it's not covered by the navbar-logo
+    }
+
     .navbar-side .nav-item-top > .item-title {
       display: none;
     }
@@ -357,12 +384,15 @@ body.navbar-side-open {
         .item-title {
           // display: inline-block;
           font-size: 28px;
+
           &:after {
             display: none;
           }
         }
 
-        i { display: none; }
+        i {
+          display: none;
+        }
       }
     }
 

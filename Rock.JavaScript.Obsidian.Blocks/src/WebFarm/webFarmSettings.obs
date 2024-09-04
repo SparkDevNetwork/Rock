@@ -6,11 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="emptyGuid"
-                 entityTypeName="Web Farm Settings"
+                 entityTypeName="WebFarmSettings"
                  :isAuditHidden="true"
                  :isBadgesVisible="false"
                  :isDeleteVisible="false"
@@ -64,7 +63,7 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "isActive",
+        "isEnabled",
         "webFarmKey",
         "lowerPollingLimit",
         "upperPollingLimit",
@@ -79,13 +78,6 @@
     // #region Computed Values
 
     /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return "Web Farm Settings";
-    });
-
-    /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
@@ -98,19 +90,23 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (!webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey && webFarmSettingsViewBag.value?.isRunning) {
+        const isEnabled = webFarmSettingsViewBag.value?.isEnabled;
+        const hasValidKey = webFarmSettingsViewBag.value?.hasValidKey;
+        const isRunning = webFarmSettingsViewBag.value?.isRunning;
+
+        if (!isEnabled && hasValidKey && isRunning) {
             labels.push({
                 title: "Ready (Re-enable)",
                 type: "warning"
             });
         }
-        else if (webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey && !webFarmSettingsViewBag.value?.isRunning) {
+        else if (isEnabled && hasValidKey && !isRunning) {
             labels.push({
                 title: "Ready (Restart Rock)",
                 type: "warning"
             });
         }
-        else if (webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey) {
+        else if (isEnabled && hasValidKey) {
             labels.push({
                 title: "Active",
                 type: "success"
@@ -133,10 +129,6 @@
     const options = computed((): WebFarmSettingsDetailOptionsBag => {
         return config.options ?? {};
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

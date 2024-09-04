@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -27,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control that can be used to add a new location or select an existing location
     /// </summary>
-    public class LocationPicker : CompositeControl, IRockControl
+    public class LocationPicker : CompositeControl, IRockControl, IDisplayRequiredIndicator
     {
         #region Controls
 
@@ -46,7 +47,43 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationPicker" /> class.
+        /// </summary>
+        public LocationPicker()
+            : base()
+        {
+            HelpBlock = new HelpBlock();
+            WarningBlock = new WarningBlock();
+        }
+
+        #endregion
+
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        public CustomValidator CustomValidator { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return CustomValidator == null || CustomValidator.IsValid;
+            }
+        }
 
         /// <summary>
         /// Indicates whether inactive named locations should be included.  This only affects named locations.
@@ -110,7 +147,9 @@ namespace Rock.Web.UI.Controls
                  * In some circumstances, such as when this control is used as a child control of the AttributeMatrixEditor, ViewState does not correctly
                  * reflect the picker mode if a postback is triggered by another editor control and the picker has not been previously accessed.
                  */
-                var currentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnumOrNull<LocationPickerMode>();
+                EnsureChildControls();
+
+                var currentPickerMode = _hfCurrentPickerMode?.Value.ConvertToEnumOrNull<LocationPickerMode>();
 
                 if ( !currentPickerMode.HasValue )
                 {
@@ -379,6 +418,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="savedState">An object that represents the control state to restore.</param>
         protected override void LoadViewState( object savedState )
         {
+            EnsureChildControls();
+
             base.LoadViewState( savedState );
 
             var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
@@ -444,6 +485,9 @@ namespace Rock.Web.UI.Controls
             _radAddress.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Address", _hfCurrentPickerMode.ClientID );
             _radPoint.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Point", _hfCurrentPickerMode.ClientID );
             _radPolygon.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Polygon", _hfCurrentPickerMode.ClientID );
+
+            // Disable the Address Picker validation by default, it should only be activated when that control is displayed.
+            _addressPicker.ValidationIsDisabled = true;
 
             if ( Page.IsPostBack )
             {
@@ -562,6 +606,44 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.Controls.Add( _pointPicker );
             _pickersPanel.Controls.Add( _polygonPicker );
 
+            // Add custom validator
+            CustomValidator = new CustomValidator();
+            CustomValidator.ID = this.ID + "_cfv";
+            CustomValidator.CssClass = "validation-error";
+            CustomValidator.Enabled = true;
+            CustomValidator.ServerValidate += _CustomValidator_ServerValidate;
+            CustomValidator.Display = ValidatorDisplay.None;
+            this.Controls.Add( CustomValidator );
+        }
+
+        private void _CustomValidator_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            if ( this.Required
+                 && this.Location == null )
+            {
+                args.IsValid = false;
+
+                var controlName = string.IsNullOrWhiteSpace( this.Label ) ? "Location" : this.Label;
+                CustomValidator.ErrorMessage = $"{controlName} is required.";
+
+                return;
+            }
+
+            switch ( this.CurrentPickerMode )
+            {
+                case LocationPickerMode.Address:
+                    args.IsValid = _addressPicker.IsValid;
+                break;
+                case LocationPickerMode.Point:
+                    args.IsValid = _pointPicker.IsValid;
+                    break;
+                case LocationPickerMode.Polygon:
+                    args.IsValid = _polygonPicker.IsValid;
+                    break;
+                case LocationPickerMode.Named:
+                    args.IsValid = _namedPicker.IsValid;
+                    break;
+            }
         }
 
         /// <summary>
@@ -666,38 +748,45 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-
         /// <summary>
         /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            //
+            base.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
         }
 
         #region IRockControl implementation (much different than others)
 
         /// <summary>
-        /// Gets or sets the label.
+        /// Gets or sets the label text.
         /// </summary>
         /// <value>
-        /// The label text
+        /// The label text.
         /// </value>
         public string Label
         {
             get
             {
-                EnsureChildControls();
-                return _namedPicker.Label;
+                return ViewState["Label"] as string ?? string.Empty;
             }
+
             set
             {
-                EnsureChildControls();
-                _namedPicker.Label = value;
-                _addressPicker.Label = value;
-                _pointPicker.Label = value;
-                _polygonPicker.Label = value;
+                ViewState["Label"] = value;
             }
         }
 
@@ -723,16 +812,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _namedPicker.Help;
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
             set
             {
-                EnsureChildControls();
-                _namedPicker.Help = value;
-                _addressPicker.Help = value;
-                _pointPicker.Help = value;
-                _polygonPicker.Help = value;
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
             }
         }
 
@@ -746,16 +833,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _namedPicker.Warning;
+                return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
             set
             {
-                EnsureChildControls();
-                _namedPicker.Warning = value;
-                _addressPicker.Warning = value;
-                _pointPicker.Warning = value;
-                _polygonPicker.Warning = value;
+                if ( WarningBlock != null )
+                {
+                    WarningBlock.Text = value;
+                }
             }
         }
 
@@ -770,15 +855,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _namedPicker.Required;
+                return ViewState["Required"] as bool? ?? false;
             }
+
             set
             {
                 EnsureChildControls();
-                _namedPicker.Required = value;
-                _addressPicker.Required = value;
-                _pointPicker.Required = value;
-                _polygonPicker.Required = value;
+                ViewState["Required"] = value;
             }
         }
 
@@ -793,11 +876,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _namedPicker.RequiredErrorMessage;
+                return ViewState["RequiredErrorMessage"] as string;
             }
             set
             {
                 EnsureChildControls();
+                ViewState["RequiredErrorMessage"] = value;
+
                 _namedPicker.RequiredErrorMessage = value;
                 _addressPicker.RequiredErrorMessage = value;
                 _pointPicker.RequiredErrorMessage = value;
@@ -829,52 +914,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsValid
-        {
-            get
-            {
-                EnsureChildControls();
-                switch ( CurrentPickerMode )
-                {
-                    case LocationPickerMode.Address:
-                        return _addressPicker.IsValid;
-                    case LocationPickerMode.Point:
-                        return _pointPicker.IsValid;
-                    case LocationPickerMode.Polygon:
-                        return _polygonPicker.IsValid;
-                    default:
-                        return _namedPicker.IsValid;
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets the help block.
         /// </summary>
         /// <value>
         /// The help block.
         /// </value>
-        public HelpBlock HelpBlock
-        {
-            get
-            {
-                EnsureChildControls();
-                return _namedPicker.HelpBlock;
-            }
-            set
-            {
-                EnsureChildControls();
-                _namedPicker.HelpBlock = value;
-                _addressPicker.HelpBlock = value;
-                _pointPicker.HelpBlock = value;
-                _polygonPicker.HelpBlock = value;
-            }
-        }
+        public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
         /// Gets the warning block.
@@ -882,22 +927,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The warning block.
         /// </value>
-        public WarningBlock WarningBlock
-        {
-            get
-            {
-                EnsureChildControls();
-                return _namedPicker.WarningBlock;
-            }
-            set
-            {
-                EnsureChildControls();
-                _namedPicker.WarningBlock = value;
-                _addressPicker.WarningBlock = value;
-                _pointPicker.WarningBlock = value;
-                _polygonPicker.WarningBlock = value;
-            }
-        }
+        public WarningBlock WarningBlock { get; set; }
 
         /// <summary>
         /// Gets the required field validator.
@@ -910,7 +940,20 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _namedPicker.RequiredFieldValidator;
+
+                switch ( this.CurrentPickerMode )
+                {
+                    case LocationPickerMode.Address:
+                        return _addressPicker.RequiredFieldValidator;
+                    case LocationPickerMode.Point:
+                        return _pointPicker.RequiredFieldValidator;
+                    case LocationPickerMode.Polygon:
+                        return _polygonPicker.RequiredFieldValidator;
+                    case LocationPickerMode.Named:
+                        return _namedPicker.RequiredFieldValidator;
+                }
+
+                return null;
             }
             set
             {
@@ -920,6 +963,22 @@ namespace Rock.Web.UI.Controls
                 _pointPicker.RequiredFieldValidator = value;
                 _polygonPicker.RequiredFieldValidator = value;
             }
+        }
+
+        #endregion
+
+        #region IDisplayRequiredIndicator
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the Required indicator when Required=true
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayRequiredIndicator
+        {
+            get { return ViewState["DisplayRequiredIndicator"] as bool? ?? true; }
+            set { ViewState["DisplayRequiredIndicator"] = value; }
         }
 
         #endregion

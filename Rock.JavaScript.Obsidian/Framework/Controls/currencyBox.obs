@@ -2,20 +2,35 @@
 <template>
     <NumberBox v-model="internalValue"
                :placeholder="placeholder"
-               :minimum-value="minimumValue"
-               :maximum-value="maximumValue"
-               :decimal-count="2"
+               :minimumValue="minimumValue"
+               :maximumValue="maximumValue"
+               :decimalCount="decimalPlaces"
                rules="decimal">
-        <template v-slot:inputGroupPrepend>
-            <span class="input-group-addon">$</span>
+        <template v-if="$slots.prepend" #prepend="slotProps">
+            <slot name="prepend" v-bind="slotProps"><!-- Pass the "prepend" slot to the NumberBox.--></slot>
+        </template>
+        <template #inputGroupPrepend="slotProps">
+            <slot name="inputGroupPrepend" v-bind="slotProps"></slot>
+            <span class="input-group-addon">{{ symbol }}</span>
+        </template>
+        <template v-if="$slots.inputGroupAppend" #inputGroupAppend="slotProps">
+            <slot name="inputGroupAppend" v-bind="slotProps"><!-- Pass the "inputGroupAppend" slot to the NumberBox.--></slot>
+        </template>
+        <template v-if="$slots.append" #append="slotProps">
+            <slot name="append" v-bind="slotProps"><!-- Pass the "append" slot to the NumberBox.--></slot>
         </template>
     </NumberBox>
 </template>
 
 <script setup lang="ts">
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { PropType } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import NumberBox from "./numberBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { CurrencyBoxGetCurrencyInfoOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/currencyBoxGetCurrencyInfoOptionsBag";
+    import { CurrencyBoxGetCurrencyInfoResultsBag } from "@Obsidian/ViewModels/Rest/Controls/currencyBoxGetCurrencyInfoResultsBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -28,9 +43,19 @@
             type: Number as PropType<number | null>
         },
 
+        /** The maximum allowed value to be entered. */
         maximumValue: {
             type: Number as PropType<number | null>
         },
+
+        currencyCodeDefinedValueGuid: {
+            type: String as PropType<Guid | null | undefined>,
+        },
+
+        disablePlaceholder: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -38,5 +63,45 @@
     }>();
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
-    const placeholder = "0.00";
+    const decimalPlaces = ref(2);
+    const symbol = ref("$");
+
+    const http = useHttp();
+
+    const placeholder = computed<string>(() => {
+        if (!props.disablePlaceholder) {
+            return (0).toLocaleString("en-US", {
+                minimumFractionDigits: decimalPlaces.value,
+                maximumFractionDigits: decimalPlaces.value
+            });
+        }
+        else {
+            return "";
+        }
+    });
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadOptions(): Promise<void> {
+        const options: CurrencyBoxGetCurrencyInfoOptionsBag = {
+            // Pass an emptyGuid when null to get the organization currency info.
+            currencyCodeGuid: toGuidOrNull(props.currencyCodeDefinedValueGuid) ?? emptyGuid
+        };
+        const result = await http.post<CurrencyBoxGetCurrencyInfoResultsBag>("/api/v2/Controls/CurrencyBoxGetCurrencyInfo", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            symbol.value = result.data.symbol ?? "$";
+            decimalPlaces.value = result.data.decimalPlaces ?? 2;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+    watch(() => props.currencyCodeDefinedValueGuid, loadOptions, { immediate: true });
 </script>

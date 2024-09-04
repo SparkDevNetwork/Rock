@@ -42,13 +42,15 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import FlowNodeDiagram from "./StepFlow/flowNodeDiagram.partial.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
     import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
     import { FlowNodeDiagramSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramSettingsBag";
     import { StepFlowInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowInitializationBox";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { syncRefsWithQueryParams } from "@Obsidian/Utility/url";
+    import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
+    import { Guid } from "@Obsidian/Types";
 
     // #region Variables
 
@@ -87,7 +89,7 @@
 
     // #region Event Handlers
 
-    async function fetchData(): Promise<void | boolean> {
+    async function fetchData(): Promise<void> {
         if (isLoading.value) {
             // Still Loading Previous Request. Don't want to start another one.
             return;
@@ -109,11 +111,17 @@
         dateRangeParam.lowerDate = startDate;
         dateRangeParam.upperDate = endDate;
 
-        const response = await invokeBlockAction<StepFlowGetDataBag>("GetData", {
+        const request: {
+            dateRange: SlidingDateRangeBag | null;
+            maxLevels: number;
+            campus: Guid;
+        } = {
             dateRange: dateRangeParam,
             maxLevels: maxLevels.value,
-            campus: campus.value,
-        });
+            campus: toGuidOrNull(campus.value) ?? emptyGuid,
+        };
+
+        const response = await invokeBlockAction<StepFlowGetDataBag>("GetData", request);
 
         isLoading.value = false;
 

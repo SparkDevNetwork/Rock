@@ -18,4 +18,5 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
-[assembly: InternalsVisibleTo( "Rock.Lava.Tests" )] 
+[assembly: InternalsVisibleTo( "Rock.Lava.Tests" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]

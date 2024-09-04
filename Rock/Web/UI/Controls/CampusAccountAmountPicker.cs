@@ -193,6 +193,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// If enabled private accounts in the  <see cref="SelectableAccountIds"/> will be rendered.
+        /// </summary>
+        public bool AllowPrivateSelectableAccounts
+        {
+            get => ViewState["AllowPrivateAccounts"] as bool? ?? false;
+            set => ViewState["AllowPrivateAccounts"] = value;
+        }
+
+        /// <summary>
         /// Class to specify an amount for a selected AccountId
         /// </summary>
         public class AccountIdAmount
@@ -375,20 +384,23 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public bool IsValidAmountSelected()
         {
+            bool isAllPositiveAmount = false;
             decimal? totalAmount;
             if ( this.AmountEntryMode == AccountAmountEntryMode.MultipleAccounts )
             {
+                isAllPositiveAmount = !this.AccountAmounts.Any( a => a.Amount < 0 );
                 totalAmount = this.AccountAmounts.Sum( a => a.Amount ?? 0.00M );
             }
             else
             {
+                isAllPositiveAmount = this.SelectedAmount >= 0;
                 totalAmount = this.SelectedAmount;
             }
 
             // don't allow 0.00 and limit to $21,474,836.47, just in case browser validation doesn't limit it
             const int maxAmountCents = int.MaxValue;
             decimal maxAmountDollars = maxAmountCents / 100;
-            return totalAmount.HasValue && totalAmount.Value != 0.00M && totalAmount < maxAmountDollars;
+            return isAllPositiveAmount && totalAmount.HasValue && totalAmount.Value != 0.00M && totalAmount < maxAmountDollars;
         }
 
         /// <summary>
@@ -479,7 +491,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
-                var firstMatchingChildAccount = displayedAccount.ChildAccounts.Where(a => a.IsActive).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
+                var firstMatchingChildAccount = displayedAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
                 if ( firstMatchingChildAccount != null )
                 {
                     // one of the child accounts is associated with the campus so, return the child account
@@ -760,13 +772,16 @@ namespace Rock.Web.UI.Controls
             // limit to active, public accounts, and don't include ones that aren't within the date range
             accountsQry = accountsQry.Where( f =>
                     f.IsActive &&
-                    f.IsPublic.HasValue &&
-                    f.IsPublic.Value &&
                     ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
-                .OrderBy( f => f.Order );
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) );
 
-            var accountsList = accountsQry.AsNoTracking().ToList();
+            // Only allow Private accounts from the provided selectableAccountIds.
+            if ( !AllowPrivateSelectableAccounts || !selectableAccountIds.Any() )
+            {
+                accountsQry = accountsQry.Where( f => f.IsPublic == true );
+            }
+
+            var accountsList = accountsQry.OrderBy( f => f.Order ).AsNoTracking().ToList();
 
             _ddlAccountSingle.Items.Clear();
 
@@ -820,7 +835,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var hfAccountAmountMultiAccountId = item.FindControl( RepeaterControlIds.ID_hfAccountAmountMultiAccountId ) as HiddenField;
                         var displayedAccountId = hfAccountAmountMultiAccountId.Value.AsInteger();
-                        var displayedAccount = FinancialAccountCache.Get ( displayedAccountId );
+                        var displayedAccount = FinancialAccountCache.Get( displayedAccountId );
                         var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( selectedCampusId, displayedAccount );
                         var cbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
                         resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, cbAccountAmountMulti.Value ) );

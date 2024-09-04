@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 
@@ -29,8 +30,8 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageShortLink" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "83D8C6DF-1D53-438B-93B2-75A2038BBEE6")]
-    public partial class PageShortLink : Model<PageShortLink>
+    [Rock.SystemGuid.EntityTypeGuid( "83D8C6DF-1D53-438B-93B2-75A2038BBEE6" )]
+    public partial class PageShortLink : Model<PageShortLink>, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -65,6 +66,31 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Url { get; set; }
 
+        /// <inheritdoc/>
+        [RockInternal( "1.16.6" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary>
+        /// Gets a flag that determines if this short link has schedules enabled.
+        /// When <c>true</c>, the schedule details will be contained in the
+        /// additional settings.
+        /// </summary>
+        [DataMember]
+        public bool IsScheduled
+        {
+            get => HasSchedules();
+            private set { /* Make EF happy */ }
+        }
+
+        /// <summary>
+        /// Gets or sets the identifier of the category this short link is for.
+        /// Categories are used for reporting purposes only. They do not affect
+        /// the ability to use a short link.
+        /// </summary>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -77,6 +103,14 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual Site Site { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category this short link is for. Categories are used
+        /// for reporting purposes only. They do not affect the ability to use a
+        /// short link.
+        /// </summary>
+        [LavaVisible]
+        public virtual Category Category { get; set; }
 
         /// <summary>
         /// Gets the short link URL.
@@ -125,6 +159,7 @@ namespace Rock.Model
         public PageShortLinkConfiguration()
         {
             this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
         }
     }
 

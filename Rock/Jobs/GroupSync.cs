@@ -23,8 +23,12 @@ using System.Linq;
 using System.Text;
 
 using Humanizer;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -55,6 +59,7 @@ namespace Rock.Jobs
 
     [BooleanField( "Require Password Reset On New Logins", "Determines if new logins will require the individual to reset their password on the first log in.", Key = "RequirePasswordReset" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]
+    [RockLoggingCategory]
     public class GroupSync : RockJob
     {
         /// <summary>
@@ -127,7 +132,7 @@ namespace Rock.Jobs
                     var enableLoggingMessage = "Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues.";
                     warningExceptionMessage = $"{warningExceptionMessage} {enableLoggingMessage}";
 
-                    Log( Logging.RockLogLevel.Warning, $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
+                    Logger.LogWarning( $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
 
                     resultSb.AppendLine( $"{circleWarning} {enableLoggingMessage}" );
                 }

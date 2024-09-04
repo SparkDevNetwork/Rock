@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Field.Types
@@ -29,10 +31,39 @@ namespace Rock.Field.Types
     /// Field Type to select 0 or more Checkin Configuration Areas/Types. (Weekly Service Check-in, Volunteer Check-in, etc)
     /// Stored as a list of GroupType Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "7522975C-C224-489A-985D-B44580DFC5BD")]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CHECK_IN_CONFIGURATION_TYPE )]
     public class CheckinConfigurationTypeFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+           
+            using ( var rockContext = new RockContext() )
+            {
+                GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+                int? groupTypePurposeCheckinTemplateValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = new GroupTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( a => a.GroupTypePurposeValueId.HasValue && a.GroupTypePurposeValueId.Value == groupTypePurposeCheckinTemplateValueId )
+                    .OrderBy( o => o.Name )
+                    .Select( o => new ListItemBag
+                    {
+                        Value = o.Guid.ToString(),
+                        Text = o.Name
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

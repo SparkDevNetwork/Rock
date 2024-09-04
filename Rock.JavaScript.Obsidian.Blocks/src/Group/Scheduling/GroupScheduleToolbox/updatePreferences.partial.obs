@@ -1,0 +1,406 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+        {{ blockActionErrorMessage }}
+    </NotificationBox>
+
+    <NotificationBox v-else-if="isNoGroupsNotificationVisible" :alertType="AlertType.Info">
+        You are currently not in any scheduled groups.
+    </NotificationBox>
+
+    <template v-if="isContentVisible">
+        <TabbedBar v-model="selectedGroupGuidOrEmptyString"
+                   class="schedule-toolbox-group-tabs"
+                   :tabs="groupList"
+                   :disabled="disabled || isBusy" />
+
+        <div class="row schedule-toolbox-preference-offset-days">
+            <div class="col-md-8">
+                <DropDownList v-model="scheduleReminderEmailOffsetDays"
+                              label="Send Reminders"
+                              :items="offsetDaysItems"
+                              :disabled="disabled || isBusy"
+                              @update:modelValue="onPreferencesChanged" />
+            </div>
+        </div>
+
+        <div class="row schedule-toolbox-preference-current-schedule">
+            <div class="col-md-8">
+                <DropDownList v-model="selectedScheduleTemplateGuidOrEmptyString"
+                              label="Current Schedule"
+                              :items="scheduleTemplateItems"
+                              :disabled="disabled || isBusy"
+                              @update:modelValue="onPreferencesChanged" />
+            </div>
+            <div v-if="selectedScheduleTemplateGuidOrEmptyString" class="col-md-4">
+                <DatePicker v-model="scheduleStartDate"
+                            label="Starting On"
+                            :disabled="disabled || isBusy"
+                            @update:modelValue="onPreferencesChanged" />
+            </div>
+        </div>
+
+        <template v-if="selectedScheduleTemplateGuidOrEmptyString">
+            <RockLabel class="schedule-toolbox-preference-assignment-label">Assignment</RockLabel>
+            <p class="schedule-toolbox-preference-assignment-instructions">
+                Please select a time and optional location that you would like to be scheduled for.
+            </p>
+
+            <Grid light
+                  keyField="key"
+                  itemTerm="Group Preference Assignment"
+                  :data="assignmentGridData"
+                  :disabled="disabled || isBusy"
+                  @addItem="onAddEditAssignment">
+
+                <TextColumn name="schedule"
+                            field="schedule"
+                            title="Schedule"
+                            visiblePriority="xs" />
+
+                <TextColumn name="location"
+                            field="location"
+                            title="Location"
+                            visiblePriority="xs" />
+
+                <EditColumn :onClick="onAddEditAssignment" />
+
+                <DeleteColumn :onClick="onDeleteAssignment" />
+            </Grid>
+        </template>
+
+    </template>
+
+    <!-- See note on `isEditAssignmentModalVisible` usage below. -->
+    <EditAssignment v-if="isEditAssignmentModalVisible"
+                    v-model:isVisible="isEditAssignmentModalVisible"
+                    :optionsRequest="getAssignmentOptionsRequest"
+                    @updatedAssignments="onUpdatedAssignments" />
+</template>
+
+<style scoped>
+.schedule-toolbox-group-tabs {
+    margin-bottom: 24px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, nextTick, PropType, ref, watch } from "vue";
+    import EditAssignment from "./editAssignment.partial.obs";
+    import { SelectedGroup, SelectedPersonGuid } from "./types.partial";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid from "@Obsidian/Controls/grid";
+    import { DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { DeleteAssignmentRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/deleteAssignmentRequestBag";
+    import { GetAssignmentOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/getAssignmentOptionsRequestBag";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
+    import { SchedulePreferenceAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferenceAssignmentBag";
+    import { SchedulePreferenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferenceBag";
+    import { GetSchedulePreferencesRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/getSchedulePreferencesRequestBag";
+    import { SaveSchedulePreferenceRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveSchedulePreferenceRequestBag";
+    import { SchedulePreferencesBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferencesBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isLoadingSchedulePreferences: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isLoadingSchedulePreferences"): void
+    }>();
+
+    // #region Values
+
+    /** The selected person unique identifier (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
+    const selectedGroup = inject(SelectedGroup);
+
+    const blockActionErrorMessage = ref("");
+
+    const isLoadingSchedulePreferences = useVModelPassthrough(props, "isLoadingSchedulePreferences", emit);
+    const hasCompletedInitialLoad = ref(false);
+    const isSavingSchedulePreference = ref(false);
+
+    const schedulableGroups = ref<GroupBag[]>([]);
+    const schedulePreference = ref<SchedulePreferenceBag | null | undefined>(null);
+
+    const scheduleReminderEmailOffsetDays = ref("");
+    const selectedScheduleTemplateGuidOrEmptyString = ref<string>("");
+    const scheduleStartDate = ref("");
+    const assignments = ref<SchedulePreferenceAssignmentBag[]>([]);
+
+    /*
+        10/13/2023 - JPH
+
+        This value is purposely being used in both the `v-if` and `v-model:isVisible` directives
+        of the `EditAssignment` partial; don't change this. This is to prevent issues that may
+        arise with misaligned requests/responses if the individual rapidly opens/closes/reopens
+        the modal. If we introduce a way to cancel HTTP requests in the future, we can rethink
+        this usage at that time.
+    */
+    const isEditAssignmentModalVisible = ref(false);
+    const getAssignmentOptionsRequest = ref<GetAssignmentOptionsRequestBag | null>(null);
+
+    let deletingAssignmentGuids: string[] = [];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isNoGroupsNotificationVisible = computed((): boolean => {
+        return !!(!isLoadingSchedulePreferences.value && (!schedulableGroups.value?.length || !selectedGroup?.value));
+    });
+
+    const groupList = computed((): ListItemBag[] => {
+        return schedulableGroups.value
+            .filter((group: GroupBag) => group?.guid && group?.name)
+            .map((group: GroupBag) => ({
+                text: `${group.name}${group.campusName ? ` (${group.campusName})` : ""}`,
+                value: group.guid
+            }));
+    });
+
+    const selectedGroupGuidOrEmptyString = computed<string>({
+        get() {
+            return toGuidOrNull(selectedGroup?.value?.guid) ?? "";
+        },
+        set(newValue) {
+            getSchedulePreferences(toGuidOrNull(newValue) ?? emptyGuid);
+        }
+    });
+
+    const isContentVisible = computed((): boolean => {
+        return !isNoGroupsNotificationVisible.value && hasCompletedInitialLoad.value;
+    });
+
+    const offsetDaysItems = computed((): ListItemBag[] => {
+        const items: ListItemBag[] = [
+            { text: "Do not send a reminder", value: "-1" },
+        ];
+
+        for (let i = 1; i < 15; i++) {
+            const text = `${i} day${i > 1 ? "s" : ""} before`;
+            items.push({ text, value: i.toString() });
+        }
+
+        return items;
+    });
+
+    const scheduleTemplateItems = computed((): ListItemBag[] => {
+        return schedulePreference.value?.scheduleTemplates ?? [];
+    });
+
+    const assignmentGridData = computed((): GridDataBag => ({
+        rows: assignments.value.map((assignment: SchedulePreferenceAssignmentBag) => ({
+            key: assignment.groupMemberAssignmentGuid,
+            schedule: assignment.scheduleName,
+            location: assignment.locationName
+        }))
+    }));
+
+    const isBusy = computed((): boolean => {
+        return isLoadingSchedulePreferences.value
+            || isSavingSchedulePreference.value
+            || isEditAssignmentModalVisible.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the schedule preferences for the selected person and group.
+     *
+     * @param groupGuidOrEmptyString The selected group unique identifier (or empty string if none selected).
+     */
+    async function getSchedulePreferences(groupGuidOrEmptyString: string): Promise<void> {
+        if (isBusy.value) {
+            return;
+        }
+
+        isLoadingSchedulePreferences.value = true;
+        blockActionErrorMessage.value = "";
+
+        const bag: GetSchedulePreferencesRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(groupGuidOrEmptyString) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<SchedulePreferencesBag>("GetSchedulePreferences", { bag });
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to get schedule preferences.";
+            setSchedulePreferences(null);
+            setIsLoadingSchedulePreferencesFalse();
+            return;
+        }
+
+        setSchedulePreferences(result.data);
+
+        hasCompletedInitialLoad.value = true;
+
+        setIsLoadingSchedulePreferencesFalse();
+    }
+
+    /**
+     * Sets the internal values using the provided schedule preferences.
+     *
+     * @param schedulePreferences The schedule preferences from which to set the internal values.
+     */
+    function setSchedulePreferences(schedulePreferences: SchedulePreferencesBag | null): void {
+        if (selectedGroup) {
+            selectedGroup.value = schedulePreferences?.selectedGroup;
+        }
+
+        schedulableGroups.value = schedulePreferences?.schedulableGroups ?? [];
+        schedulePreference.value = schedulePreferences?.schedulePreference;
+
+        scheduleReminderEmailOffsetDays.value = schedulePreference.value?.scheduleReminderEmailOffsetDays ?? "";
+        selectedScheduleTemplateGuidOrEmptyString.value = toGuidOrNull(schedulePreference.value?.selectedScheduleTemplateGuid) ?? "";
+        scheduleStartDate.value = schedulePreference.value?.scheduleStartDate ?? "";
+        assignments.value = schedulePreference.value?.assignments ?? [];
+
+        deletingAssignmentGuids = [];
+    }
+
+    /**
+     * Sets the `isLoadingSchedulePreferences` value back to false after waiting for the DOM to update.
+     */
+    function setIsLoadingSchedulePreferencesFalse(): void {
+        nextTick(() => {
+            // Wait for the DOM to update before setting this back to false, so the
+            // "SaveSchedulePreference" block action isn't unneccessarily invoked
+            // by simply loading new preference values.
+            isLoadingSchedulePreferences.value = false;
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `update:modelValue` event of preference controls.
+     */
+    async function onPreferencesChanged(): Promise<void> {
+        if (isBusy.value) {
+            return;
+        }
+
+        isSavingSchedulePreference.value = true;
+        blockActionErrorMessage.value = "";
+
+        const bag: SaveSchedulePreferenceRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(selectedGroupGuidOrEmptyString.value) ?? emptyGuid,
+            scheduleReminderEmailOffsetDays: scheduleReminderEmailOffsetDays.value,
+            selectedScheduleTemplateGuid: toGuidOrNull(selectedScheduleTemplateGuidOrEmptyString.value),
+            scheduleStartDate: scheduleStartDate.value
+        };
+
+        const result = await invokeBlockAction("SaveSchedulePreference", { bag });
+        isSavingSchedulePreference.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to save schedule preferences.";
+        }
+    }
+
+    /**
+     * Handles the `addItem` and `EditColumn.onClick` events of the assignments grid.
+     *
+     * @param editAssignmentGuid The assignmnent unique identifier if editing an existing assignment.
+     */
+    function onAddEditAssignment(editAssignmentGuid: string | null | undefined): void {
+        if (isBusy.value) {
+            return;
+        }
+
+        getAssignmentOptionsRequest.value = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(selectedGroupGuidOrEmptyString.value) ?? emptyGuid
+        };
+
+        if (typeof editAssignmentGuid === "string") {
+            getAssignmentOptionsRequest.value.editAssignmentGuid = toGuidOrNull(editAssignmentGuid);
+        }
+
+        isEditAssignmentModalVisible.value = true;
+    }
+
+    /**
+     * Handles the `updatedAssignments` event of the EditAssignment component.
+     *
+     * @param updatedAssignments The updated assignments.
+     */
+    function onUpdatedAssignments(updatedAssignments: SchedulePreferenceAssignmentBag[]): void {
+        assignments.value = updatedAssignments;
+    }
+
+    /**
+     * Handles the `DeleteColumn.onClick` event of the assignments grid.
+     *
+     * @param deleteAssignmentGuid The unique identifier of the assignment to delete.
+     */
+    async function onDeleteAssignment(deleteAssignmentGuid: string): Promise<void> {
+        if (deletingAssignmentGuids.indexOf(deleteAssignmentGuid) > -1) {
+            return;
+        }
+
+        deletingAssignmentGuids.push(deleteAssignmentGuid);
+        blockActionErrorMessage.value = "";
+
+        const bag: DeleteAssignmentRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            deleteAssignmentGuid: toGuidOrNull(deleteAssignmentGuid) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction("DeleteAssignment", { bag });
+        deletingAssignmentGuids = deletingAssignmentGuids.filter((guid: Guid) => guid !== deleteAssignmentGuid);
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown errow while trying to delete assignment";
+        }
+
+        assignments.value = assignments.value
+            .filter((assignment: SchedulePreferenceAssignmentBag) =>
+                assignment.groupMemberAssignmentGuid !== deleteAssignmentGuid
+            );
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedPersonGuidOrEmptyString, () => {
+        if (selectedPersonGuidOrEmptyString.value) {
+            hasCompletedInitialLoad.value = false;
+            getSchedulePreferences(selectedGroupGuidOrEmptyString.value);
+        }
+    });
+
+    // #endregion Watchers
+
+    getSchedulePreferences(selectedGroupGuidOrEmptyString.value);
+</script>

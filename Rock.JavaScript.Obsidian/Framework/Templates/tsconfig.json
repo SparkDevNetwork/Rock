@@ -8,6 +8,7 @@
   "references": [
     { "path": "../Controls" },
     { "path": "../Directives" },
-    { "path": "../FieldTypes" }
+    { "path": "../FieldTypes" },
+    { "path": "../Utility" }
   ]
 }

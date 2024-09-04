@@ -4,7 +4,7 @@
         <div class="zone-body">
             <div class="d-flex flex-column" :class="sectionTypeClass" style="flex-grow: 1;">
                 <div>
-                    <h1 v-if="title">{{ title }}</h1>
+                    <h3 v-if="title">{{ title }}</h3>
                     <div v-if="description" class="mb-2">{{ description }}</div>
                     <hr v-if="showSeparator" />
                 </div>

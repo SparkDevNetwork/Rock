@@ -65,7 +65,7 @@ namespace Rock.Web.UI.Controls
         // no point was clicked
         postbackArg =  'YValue=';
     }}
-    window.location = ""javascript:__doPostBack('{ this.ChartContainerControl.UniqueID }', '"" +  postbackArg + ""')"";
+    window.location = ""javascript:__doPostBack('{this.ChartContainerControl.UniqueID}', '"" +  postbackArg + ""')"";
 }}";
         }
 
@@ -113,8 +113,15 @@ namespace Rock.Web.UI.Controls
             var args = new ChartJsPieChartDataFactory.ChartJsonArgs();
 
             args.ContainerControlId = this.ClientID;
+
+            GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment );
+
+            args.LegendPosition = legendPosition;
+            args.LegendAlignment = legendAlignment;
             args.DisplayLegend = this.ShowLegend;
-            args.LegendPosition = this.LegendPosition;
+
+            args.MaintainAspectRatio = this.MaintainAspectRatio;
+
             args.DisableAnimation = this.Page.IsPostBack;
             args.ShowSegmentLabels = this.ShowSegmentLabels;
 

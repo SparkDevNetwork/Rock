@@ -13,7 +13,6 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_root.less";
-@import "_new-group-scheduler.less";
 
 @import "_navbar.less";
 @import "_legacy-profile.less";
@@ -723,6 +722,14 @@ textarea,
 
   > .panel-heading {
     border-bottom: 1px solid @panel-border;
+    background-color: var(--color-interface-softest);
+    border-bottom-color: var(--color-interface-softer);
+    padding-left: var(--spacing-large);
+    height: 56px; // to match the NextGen grid
+
+    & .panel-title {
+      font-size: var(--font-size-h5);
+    }
   }
 
   > .panel-body {
@@ -1696,8 +1703,8 @@ td.grid-actions {
 
 @media (max-width: @grid-float-breakpoint-max) {
   .main-content {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 16px;
+    padding-right: 16px;
 
     .page-header {
       margin-left: 0;

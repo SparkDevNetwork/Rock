@@ -308,7 +308,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>call "$(DevEnvDir)..\Tools\VsDevCmd.bat"
-"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.33.31629\bin\Hostx86\x86\editbin.exe" /NXCOMPAT:NO "$(TargetPath)"
+"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.40.33807\bin\Hostx86\x86\editbin.exe" /NXCOMPAT:NO "$(TargetPath)"
 
 </PostBuildEvent>
   </PropertyGroup>

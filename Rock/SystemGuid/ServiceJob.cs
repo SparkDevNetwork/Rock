@@ -164,6 +164,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "4232194C-90AE-4B44-93E7-1E5DE984A9E1";
 
         /// <summary>
+        /// The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket.
+        /// </summary>
+        public const string DATA_MIGRATIONS_154_UPDATE_AGE_BRACKET_VALUES = "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1";
+
+        /// <summary>
         /// The Job to run Post v16.0 Move Person Preferences.
         /// </summary>
         public const string DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES = "C8591D15-9D37-49D3-8DF8-1DB72EE42D29";
@@ -212,6 +217,42 @@ namespace Rock.SystemGuid
         /// The Job to run Post v16.0 Data Migrations to update the media element default urls.
         /// </summary>
         public const string DATA_MIGRATIONS_160_UPDATE_MEDIA_ELEMENT_DEFAULT_URLS = "3f2a18ce-882d-4687-a4e4-b2a34af2777d";
+
+        /// <summary>
+        /// The Job to run Post v16.1 Data Migrations to swap Financial Batch List web forms block with obsidian block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_SWAP_FINANCIAL_BATCH_LIST = "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE";
+
+        /// <summary>
+        /// The Job to run Post v16.1 Data Migrations to swap AccountEntry and Login web forms blocks with obisdian blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_CHOP_ACCOUNTENTRY_AND_LOGIN = "A65D26C1-229E-4198-B388-E269C3534BC0";
+
+        /// <summary>
+        /// The Job to run Post v16.6 Data Migrations to update the newly
+        /// created TargetCount column on AchievementType.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_UPDATE_ACHIEVEMENTTYPE_TARGETCOUNT_COLUMN = "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5";
+
+        /// <summary>
+        /// The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX = "2B2E2C6F-0184-4797-9D39-E8FC700D9887";
+
+        /// <summary>
+        /// The Job to run Post v16.6 to add a new index to the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX = "48070B65-FC20-401F-B25F-8F4D13BA5F36";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop Shortened Link Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK = "8899363A-C52B-4D82-88C2-CA199D73E95C";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop 6 blocks Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS = "4B8A66B3-1D92-480C-B473-D066B64E72AD";
 
         /// <summary>
         /// The Job to get NCOA
@@ -287,6 +328,11 @@ namespace Rock.SystemGuid
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
 
         /// <summary>
+        /// The <see cref="Rock.Jobs.UpdateAnalyticsSourcePostalCode" /> job.
+        /// </summary>
+        public const string UPDATE_ANALYTICS_SOURCE_POSTAL_CODE = "29731D97-699D-4D34-A9F4-50C7C33D5C48";
+
+        /// <summary>
         /// The Post Update Data Migration Job to swap the Notes Block
         /// </summary>
         public const string DATA_MIGRATIONS_SWAP_NOTES_BLOCK = "8390C1AC-88D6-474A-AC05-8FFBD358F75D";
@@ -301,5 +347,75 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Group Registration block
         /// </summary>
         public const string DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION = "72D9EC04-517A-4CA0-B631-9F9A41F1790D";
+
+        /// <summary>
+        /// The post update data migration job to swap the Group Schedule Toolbox V1.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_SWAP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V1 = "22DBD648-79C0-40C7-B561-094E4E7637E5";
+
+        /// <summary>
+        /// The post update data migration job to chop the Group Schedule Toolbox V2.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_CHOP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V2 = "7F989E9F-913C-45E4-9EB1-EC70AC220939";
+
+        /// <summary>
+        /// The post update data migration job to remove obsidian group schedule toolbox back buttons.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_REMOVE_OBSIDIAN_GROUP_SCHEDULE_TOOLBOX_BACK_BUTTONS = "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04";
+
+        /// <summary>
+        /// The post update data migration job to chop the Login and Account Entry blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
+
+        /// <summary>
+        /// The post update data migration job to chop the Email Preference Entry block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY = "AE07C80A-80A4-48FD-908C-56DDB1CAA322";
+
+        /// <summary>
+        /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_COMMUNICATION_RECIPIENT_LIST_BLOCK = "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6";
+
+        /// <summary>
+        /// The post update data migration job to remove legacy preference attributes.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES = "46d98280-7611-4588-831d-6924e2be9da6";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
+        /// </summary>
+        public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
+
+        /// <summary>
+        /// The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson.
+        /// </summary>
+        public const string DATA_MIGRATIONS_167_POPULATE_ENTITY_INTENTS_FROM_ADDITIONAL_SETTINGS_JSON = "155C2051-1513-4BB3-83AD-8D37EBBC3F59";
+
+        /// <summary>
+        /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK = "795AE7B0-8B61-4577-B50A-350907CA0C65";
+
+        /// <summary>
+        /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningActivityNotifications"/>.
+        /// </summary>
+        public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
+
+        /// <summary>
+        /// The job for updating learning program completions. <see cref="Rock.Jobs.UpdateProgramCompletions"/>.
+        /// </summary>
+        public const string UPDATE_PROGRAM_COMPLETIONS = "4E805A88-C031-4BA0-BAD6-0A706E647870";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_CHOP_OBSIDIAN_BLOCKS = "74265B89-31DF-4430-84D4-8343C64F2580";
+
+        /// <summary>
+        /// The job for updating the IX_EntityTypeId_EntityId index on the History table.
+        /// </summary>
+        public const string POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX = "48D7629C-1FB5-425A-AFAB-E8F220ABADB0";
     }
 }

@@ -19,6 +19,8 @@
 
 import { InjectionKey, Ref } from "vue";
 import { ResourceListSourceType } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";
+import { Guid } from "@Obsidian/Types";
+import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
 
 /**
  * Information about a scheduler resource assignment for the group scheduler.
@@ -180,7 +182,7 @@ export interface ISchedulerResourceParameters {
     ResourceGroupId?: number | null,
 
     /** The resource group guid. */
-    ResourceGroupGuid?: string | null,
+    ResourceGroupGuid?: Guid | null,
 
     /** If we just need the data for a specific person. */
     LimitToPersonId?: number | null,
@@ -195,7 +197,7 @@ export interface ISchedulerResourceParameters {
     ResourceDataViewId?: number | null,
 
     /** The resource data view guid. */
-    ResourceDataViewGuid?: string | null,
+    ResourceDataViewGuid?: Guid | null,
 
     /** The resource additional person IDs. */
     ResourceAdditionalPersonIds?: number[] | null
@@ -218,7 +220,10 @@ export interface IScheduleProgress {
     confirmedCount: number,
 
     /** The count of pending resources for this occurrence. */
-    pendingCount: number
+    pendingCount: number,
+
+    /** The count of declined resources for this occurrence. */
+    declinedCount: number
 }
 
 /**
@@ -233,9 +238,35 @@ export interface IRemainingResourceSpots {
 }
 
 /**
+ * An injection key to provide information about unassigned resource counts.
+ */
+export const UnassignedResourceCounts: InjectionKey<Ref<GroupSchedulerUnassignedResourceCountBag[]>> = Symbol("unassigned-resource-counts");
+
+/**
+ * An injection key to provide a function that can be used to report unassigned resources as assigned.
+ */
+export const ReportAssignedResources: InjectionKey<(unassignedResourceCountGuid: Guid | null | undefined, assignedCount: number) => void> = Symbol("report-assigned-resources");
+
+/**
+ * An injection key to provide an occurrence date.
+ */
+export const OccurrenceDate: InjectionKey<Ref<string>> = Symbol("occurrence-date");
+
+/**
  * An injection key to provide a computed occurrence date title to descendent components.
  */
 export const OccurrenceDateTitle: InjectionKey<Ref<string>> = Symbol("occurrence-date-title");
+
+/**
+ * * An injection key to provide a schedule identifier.
+ */
+export const ScheduleId: InjectionKey<Ref<number>> = Symbol("schedule-id");
+
+/**
+ * An injection key to provide a function that will add the provided attendance occurrence identifier
+ * to the schedule occurrence matching the provided unique identifier.
+ */
+export const AddAttendanceOccurrenceId: InjectionKey<(scheduleOccurrenceGuid: Guid, attendanceOccurrenceId: number) => void> = Symbol("add-attendance-occurrence-id");
 
 /**
  * An injection key to instruct all schedule occurrences to reload themselves.

@@ -25,10 +25,11 @@ namespace Rock.Blocks
     /// Identifies a block as having custom administrative actions that should
     /// be added to the block's configuration bar.
     /// </summary>
-    internal interface IHasCustomActions
+    public interface IHasCustomActions
     {
         /// <summary>
         /// Adds custom actions to the configuration area of a block instance.
+        /// No other properties on the block instance are valid during this call.
         /// </summary>
         /// <param name="canEdit">A <see cref="bool" /> flag that indicates if the user can edit the block instance.</param>
         /// <param name="canAdministrate">A <see cref="bool" /> flag that indicates if the user can administrate the block instance.</param>

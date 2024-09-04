@@ -25,6 +25,8 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -164,8 +166,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbPeople.Visible = false;
             nbError.Visible = false;
 
@@ -182,6 +182,8 @@ namespace RockWeb.Blocks.Crm
             {
                 LoadViewDetails();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -501,11 +503,7 @@ namespace RockWeb.Blocks.Crm
 
             var oldPhotos = new List<int>();
 
-            var logger = new RockProcessLogger
-            {
-                DefaultTopic = "PersonMerge",
-                LogDomain = RockLogDomains.Crm
-            };
+            var logger = new RockProcessLogger( Logger );
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = 90;
 
@@ -525,7 +523,7 @@ namespace RockWeb.Blocks.Crm
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                     if ( primaryPerson != null )
                     {
-                        logger.DefaultTopic = $"PersonMerge:{primaryPerson.FullName}";
+                        logger.DefaultTopic = $"{primaryPerson.FullName}";
                         logger.Write( $"Merge started. [TargetPersonId={primaryPerson.Id}]" );
 
                         primaryPersonId = primaryPerson.Id;
@@ -2173,14 +2171,25 @@ AND Attendance.Id != @FirstTimeRecordId
         /// </summary>
         private class RockProcessLogger
         {
-            public string LogDomain { get; set; }
-            public string DefaultTopic { get; set; }
-            public RockLogLevel DefaultLogLevel { get; set; } = RockLogLevel.Debug;
+            private readonly ILogger _logger;
 
-            public void Write( string message, string topic = null, RockLogLevel? logLevel = null )
+            public string DefaultTopic { get; set; }
+
+            public RockProcessLogger( ILogger logger )
             {
-                var msg = $"({ topic ?? DefaultTopic }) { message }";
-                RockLogger.Log.WriteToLog( logLevel ?? DefaultLogLevel, domain: LogDomain, messageTemplate: msg );
+                _logger = logger;
+            }
+
+            public void Write( string message )
+            {
+                if ( DefaultTopic.IsNullOrWhiteSpace() )
+                {
+                    _logger.LogDebug( message );
+                }
+                else
+                {
+                    _logger.LogDebug( $"({DefaultTopic}) {message}" );
+                }
             }
         }
 

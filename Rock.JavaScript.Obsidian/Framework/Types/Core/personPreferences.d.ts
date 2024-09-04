@@ -15,6 +15,21 @@
 // </copyright>
 //
 
+
+type IPersonPreferenceValueBag = {
+    /** Gets or sets the key of the preference value. */
+    key?: string | null;
+
+    /** Gets or sets the last accessed date time. */
+    lastAccessedDateTime?: string | null;
+
+    /** Gets or sets the preference value. */
+    value?: string | null;
+};
+
+type PersonPreferenceChangedEvents =
+    "preferenceSaved";
+
 /**
  * Provides access to person preferences from inside a block.
  */
@@ -98,4 +113,8 @@ export interface IPersonPreferenceCollection {
      * @returns A new instance of {@link IPersonPreferenceCollection}.
      */
     withPrefix(prefix: string): IPersonPreferenceCollection;
+
+    on(event: PersonPreferenceChangedEvents, callback: (preference: IPersonPreferenceValueBag[]) => void): void;
+
+    off(event: PersonPreferenceChangedEvents, callback: (preference: IPersonPreferenceValueBag[]) => void): void;
 }

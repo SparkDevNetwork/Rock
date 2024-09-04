@@ -144,6 +144,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsAlert = source.IsAlert;
+            target.IsPinned = source.IsPinned;
             target.IsPrivateNote = source.IsPrivateNote;
             target.IsSystem = source.IsSystem;
             target.NoteTypeId = source.NoteTypeId;

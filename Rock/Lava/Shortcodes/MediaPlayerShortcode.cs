@@ -322,7 +322,7 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>settings</strong> - Settings menu to adjust playback speed and other options depending on media.</li>
     <li><strong>pip</strong> - Picture-in-picture (currently Safari only).</li>
     <li><strong>airplay</strong> - Airplay button (currently Safari only).</li>
-    <li><strong>download</strong> - Show a download button with a link to either the source.</li>
+    <li><strong>download</strong> - Show a download button with a link to the media source. Note: This is only supported for certain media and is not supported for YouTube embed, Vimeo embed, HLS, etc.</li>
     <li><strong>fullscreen</strong> - Toggle fullscreen playback.</li>
 </ul>
 ";

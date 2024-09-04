@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Test the compatibility of the Lava parser with the Liquid language syntax.
@@ -122,26 +125,40 @@ Slow
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
-        [TestMethod]
-        public void Operators_IfWithNoOperator_BooleanTrueIsParsedAsTruthy()
+        [DataTestMethod]
+        [DataRow( "true | AsBoolean", true )]
+        [DataRow( "'true'", true )]
+        [DataRow( "''", true )]
+        public void Operators_IfWithNoOperatorAndAnyDefinedValue_ReturnsTrue( string value, bool expectedResult )
         {
             var input = @"
-{% assign isTruthy = true | AsBoolean %}
-{% if isTruthy %}true{% else %}false{% endif %}
+{% assign value = $value %}
+{% if value %}true{% else %}false{% endif %}
 ";
-
-            TestHelper.AssertTemplateOutput( "true", input );
+            input = input.Replace( "$value", value );
+            TestHelper.AssertTemplateOutput( expectedResult.ToString().ToLower(), input );
         }
 
         [TestMethod]
-        public void Operators_IfWithNoOperator_StringWithContentIsParsedAsTruthy()
+        public void Operators_IfWithNoOperatorAndUndefinedVariable_ReturnsFalse()
         {
             var input = @"
-{% assign isTruthy = 'true' %}
-{% if isTruthy %}true{% else %}false{% endif %}
+{% if noVariable %}true{% else %}false{% endif %}
 ";
 
-            TestHelper.AssertTemplateOutput( "true", input );
+            TestHelper.AssertTemplateOutput( "false", input );
+        }
+
+        [TestMethod]
+        public void Operators_IfWithNoOperatorAndNullVariable_ReturnsFalse()
+        {
+            var input = @"
+{% if value %}true{% else %}false{% endif %}
+";
+
+            var options = new LavaTestRenderOptions();
+            options.MergeFields = new Dictionary<string, object> { { "value", null } };
+            TestHelper.AssertTemplateOutput( "false", input, options  );
         }
 
         /// <summary>
@@ -244,15 +261,31 @@ abc <= abc.
         }
 
         [TestMethod]
-        [Ignore( "Requires a fix for the Fluid library. Tags embedded in a raw tag are incorrectly parsed by the Fluid engine." )]
         public void Tags_RawTagWithEmbeddedTag_ReturnsLiteralTagText()
         {
             var inputTemplate = @"
-{% capture lava %}{% raw %}{% assign test = 'hello' %}{{ test }}{% endraw %}{% endcapture %}
-{{ lava | RunLava }}
+{% raw %}{% assign test = 'hello' %}{% endraw %}
 ";
 
-            TestHelper.AssertTemplateOutput( "hello", inputTemplate );
+            TestHelper.AssertTemplateOutput( "{% assign test = 'hello' %}", inputTemplate );
+        }
+
+        /// <summary>
+        /// Verify that a comment tag correctly ignores any other tags that are contained within it.
+        /// </summary>
+        /// <remarks>
+        /// Fluid only. The DotLiquid framework does not support this behaviour.
+        /// </remarks>
+        [TestMethod]
+        public void Tags_CommentTagContainingInvalidRawTag_IsParsedCorrectly()
+        {
+            var inputTemplate = @"
+Comment-->
+{% comment %}Open-ended tag-->{% raw %}, Invalid tag-->{% invalid_tag %}{% endcomment %}
+<--Comment
+";
+
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), "Comment--><--Comment", inputTemplate );
         }
 
         [TestMethod]

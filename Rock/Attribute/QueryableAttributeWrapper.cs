@@ -110,8 +110,8 @@ namespace Rock.Attribute
                     value.PersistedCondensedHtmlValue,
                     value.IsPersistedValueDirty );
 
-                attributes.AddOrIgnore( value.Key, attribute );
-                attributeValues.AddOrIgnore( value.Key, valueCache );
+                attributes.TryAdd( value.Key, attribute );
+                attributeValues.TryAdd( value.Key, valueCache );
             }
 
             Id = id;

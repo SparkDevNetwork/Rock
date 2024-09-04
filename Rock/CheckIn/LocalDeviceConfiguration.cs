@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using Rock.Security;
 using Rock.Web.UI;
 
@@ -112,7 +113,7 @@ namespace Rock.CheckIn
         public int[] BlockedPageIds { get; set; } = null;
 
         /// <summary>
-        /// Set this to override the <seealso cref="CheckinType.AllowCheckout"/> setting  
+        /// Set this to override the <seealso cref="CheckInState.AllowCheckout"/> setting  
         /// </summary>
         /// <value>
         /// The allow checkout.
@@ -148,17 +149,6 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Saves the LocalDeviceConfig to the cookie.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        [Obsolete( "Use SaveToCookie( ) instead." )]
-        [RockObsolete( "1.12" )]
-        public void SaveToCookie( System.Web.UI.Page page )
-        {
-            SaveToCookie();
-        }
-
-        /// <summary>
         /// Saves to cookie.
         /// We are now encrypting this cookie see Asana: REF# 20210224-MSB1 for details.
         /// </summary>
@@ -175,7 +165,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        public LocalDeviceConfiguration GetFromCookie( System.Web.UI.Page page)
+        public LocalDeviceConfiguration GetFromCookie( System.Web.UI.Page page )
         {
             return GetFromCookie( page, false );
         }

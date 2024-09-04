@@ -111,7 +111,7 @@ namespace Rock.Lava
         void RegisterFilter( MethodInfo filterMethod, string filterName = null );
 
         /// <summary>
-        /// Register a Lava Tag elemennt.
+        /// Register a Lava Tag element.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="factoryMethod"></param>
@@ -173,6 +173,12 @@ namespace Rock.Lava
         /// </summary>
         /// <returns></returns>
         Dictionary<string, ILavaElementInfo> GetRegisteredElements();
+
+        /// <summary>
+        /// Gets the collection of all registered Lava filters.
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetRegisteredFilterNames();
 
         /// <summary>
         /// Parse the provided text into a compiled Lava template object. The resulting template can be used to render output with a variety of render contexts.
@@ -278,13 +284,18 @@ namespace Rock.Lava
         /// </summary>
         Throw = 0,
         /// <summary>
-        /// Render the exception message as template output.
+        /// Render the exception message as template output, with information suitable for public display.
         /// </summary>
         RenderToOutput = 1,
         /// <summary>
         /// Ignore the exception and do not render any output.
         /// </summary>
-        Ignore = 2
+        Ignore = 2,
+        /// <summary>
+        /// Render the exception message as template output, and include additional information for diagnostic purposes.
+        /// Note that the additional information may contain internal implementation details that should not be exposed on a public website.
+        /// </summary>
+        RenderDiagnosticOutput = 3,
     }
 
     #endregion

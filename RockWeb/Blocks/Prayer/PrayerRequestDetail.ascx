@@ -85,8 +85,8 @@
                         </fieldset>
 
                         <div class="actions">
-                            <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                            <asp:LinkButton ID="lbSave" runat="server" data-shortcut-key="s" Text="Save" ToolTip="Alt+s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                            <asp:LinkButton ID="lbCancel" runat="server" data-shortcut-key="c" Text="Cancel" ToolTip="Alt+c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                         </div>
 
                     </div>
@@ -111,8 +111,8 @@
                         </div>
 
                         <div class="actions">
-                            <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
-                            <asp:LinkButton ID="lbCancelView" runat="server" Text="Back" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                            <asp:LinkButton ID="lbEdit" runat="server" data-shortcut-key="e" Text="Edit" ToolTip="Alt+e" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
+                            <asp:LinkButton ID="lbCancelView" runat="server" data-shortcut-key="b" Text="Back" ToolTip="Alt+b" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                             <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="lbDelete_Click" />
                         </div>
 

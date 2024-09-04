@@ -17,6 +17,7 @@
 using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 namespace Rock.Model
@@ -33,4 +34,22 @@ namespace Rock.Model
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsDimPersonHistorical Configuration Class
+    /// </summary>
+    public partial class AnalyticsDimPersonHistoricalConfiguration : EntityTypeConfiguration<AnalyticsDimPersonHistorical>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimPersonHistoricalConfiguration"/> class.
+        /// </summary>
+        public AnalyticsDimPersonHistoricalConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

@@ -308,8 +308,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // initialize DoFadeIn to "0" so it only gets set to "1" when navigating thru transaction images
             hfDoFadeIn.Value = "0";
 
@@ -342,6 +340,8 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -640,7 +640,14 @@ namespace RockWeb.Blocks.Finance
                 var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
                 var financialTransactionService = new FinancialTransactionService( rockContext );
                 var qryTransactionsToMatch = financialTransactionService.Queryable()
-                    .Where( a => a.AuthorizedPersonAliasId == null && a.ProcessedByPersonAliasId == null );
+                    .Where( a =>
+                        a.AuthorizedPersonAliasId == null
+                        &&
+                        (
+                            a.ProcessedByPersonAliasId == null
+                            || a.ProcessedByPersonAliasId == CurrentPersonAliasId
+                        )
+                    );
 
                 if ( batchId != 0 )
                 {
@@ -962,11 +969,8 @@ namespace RockWeb.Blocks.Finance
                 return string.Empty;
             }
 
-            return string.Format(
-                "<a href='{0}' target='_blank' rel='noopener noreferrer'><img src='{0}'/></a>",
-                ResolveRockUrl( string.Format(
-                    "~/GetImage.ashx?id={0}",
-                    financialTransactionImage.BinaryFileId ) ) );
+            var imageUrl = FileUrlHelper.GetImageUrl( financialTransactionImage.BinaryFileId );
+            return $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}'/></a>";
         }
 
         private void UpdateVisibleAccountBoxes( bool onlyShowSelectedAccounts = false )
@@ -1619,17 +1623,21 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Images the URL.
+        /// Gets the image URL with optional maximum width and height properties.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
-        /// <returns></returns>
+        /// <returns>The URL of the image with specified dimensions.</returns>
         protected string ImageUrl( int binaryFileId, int? maxWidth = null, int? maxHeight = null )
         {
-            string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
-            string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
-            return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
+            var options = new GetImageUrlOptions
+            {
+                MaxWidth = maxWidth,
+                MaxHeight = maxHeight
+            };
+
+            return FileUrlHelper.GetImageUrl( binaryFileId, options );
         }
 
         /// <summary>

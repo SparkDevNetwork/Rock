@@ -18,7 +18,7 @@
                            :options="options"
                            :isEditable="isEditable"
                            @propertyChanged="onPropertyChanged"
-                           @isLabelFileChanged="onIsLabelFileChanged" />
+                           @labelFileChanged="onLabelFileChanged" />
 
                 <Modal v-model="showAuditDetailsModal" title="Audit Details">
                     <AuditDetail :entityTypeGuid="EntityType.BinaryFile" :entityKey="entityKey" />
@@ -103,7 +103,8 @@
         "description",
         "document",
         "fileName",
-        "mimeType"
+        "mimeType",
+        "file"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(binaryFileEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -150,10 +151,6 @@
 
         return actions;
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 
@@ -205,8 +202,11 @@
      * Event handler for the the file isLabelFile status change.
      * If true will display the Edit Label File button.
      */
-    function onIsLabelFileChanged(isLabelFileValue: boolean): void {
-        isLabelFile.value = isLabelFileValue;
+    function onLabelFileChanged(bag: BinaryFileBag): void {
+        isLabelFile.value = bag.isLabelFile;
+        if (config.navigationUrls && config.navigationUrls[NavigationUrlKey.EditLabelPage] && bag.idKey) {
+            config.navigationUrls[NavigationUrlKey.EditLabelPage] = config.navigationUrls[NavigationUrlKey.EditLabelPage].replace("((Key))", bag.idKey);
+        }
     }
 
     /**

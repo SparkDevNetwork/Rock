@@ -8,12 +8,12 @@
                 </label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
-                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" v-bind="$attrs" />
                     </div>
                 </div>
             </div>
         </template>
-        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" v-bind="$attrs" />
     </div>
     <div v-else>
         <component :is="editComponent"
@@ -23,7 +23,8 @@
                    :configurationValues="configurationValues"
                    :rules="rules"
                    @updateConfigurationValue="onUpdateConfigurationValue"
-                   :dataEntryMode="dataEntryMode" />
+                   :dataEntryMode="dataEntryMode"
+                   v-bind="$attrs" />
     </div>
 </template>
 
@@ -32,6 +33,7 @@
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const textField = getFieldType(FieldType.Text);
 
@@ -63,6 +65,10 @@
         dataEntryMode: {
             type: String as PropType<DataEntryMode>,
             default: undefined
+        },
+        isEscaped: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -72,7 +78,7 @@
     }>();
 
     const field = computed(() => {
-        const fieldType = getFieldType(props.attribute.fieldTypeGuid ?? "");
+        const fieldType = getFieldType(toGuidOrNull(props.attribute.fieldTypeGuid) ?? emptyGuid);
 
         return fieldType ?? textField;
     });
@@ -83,8 +89,8 @@
     /** True if this field is required and must be filled in. */
     const isRequired = computed(() => props.attribute.isRequired);
 
-     /** attribute Guid. */
-     const attributeGuid = computed(() => props.attribute.attributeGuid);
+    /** attribute Guid. */
+    const attributeGuid = computed(() => props.attribute.attributeGuid);
 
     /** Indicates to the editor component if this field is required or not. */
     const rules = computed(() => isRequired.value ? "required" : "");
@@ -108,12 +114,12 @@
         //const _ignored = props.attributeValue.value;
 
         return props.isCondensed
-            ? field.value?.getCondensedFormattedComponent()
-            : field.value?.getFormattedComponent();
+            ? field.value?.getCondensedFormattedComponent(configurationValues.value)
+            : field.value?.getFormattedComponent(configurationValues.value);
     });
 
     /** The edit component to use to display the value. */
-    const editComponent = computed(() => field.value?.getEditComponent());
+    const editComponent = computed(() => field.value?.getEditComponent(configurationValues.value));
 
     /** The value to display or edit. */
     const value = computed({

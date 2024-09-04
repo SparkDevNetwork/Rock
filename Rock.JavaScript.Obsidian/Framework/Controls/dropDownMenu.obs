@@ -1,11 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="dropdownElement" class="dropdown" :class="additionalDropDownClasses">
-        <button class="btn btn-link btn-overflow" type="button" @click.prevent="onDropDownClick">
-            <slot>
-                <i class="fa fa-ellipsis-v"></i>
-            </slot>
-        </button>
+    <div ref="dropdownElement" :class="dropDownClasses">
+        <slot name="anchor" @click.prevent="onDropDownClick">
+            <button class="btn btn-link btn-overflow" type="button" @click.prevent="onDropDownClick">
+                <slot>
+                    <i class="fa fa-ellipsis-v"></i>
+                </slot>
+            </button>
+        </slot>
 
         <ul class="dropdown-menu" :class="additionalDropDownMenuClasses">
             <li v-for="action in items" :class="getActionItemClasses(action)">
@@ -53,6 +55,14 @@ li.disabled > button {
         align: {
             type: String as PropType<"left" | "right">,
             default: "left"
+        },
+
+        /**
+         * Whether to align the dropdown above ("up") or below "down" the anchor.
+         */
+        verticalAlign: {
+            type: String as PropType<"up" | "down">,
+            default: "down"
         }
     });
 
@@ -70,8 +80,13 @@ li.disabled > button {
     });
 
     /** Additional classes to be applied to the drop down container. */
-    const additionalDropDownClasses = computed((): string => {
-        return isDropDownOpen.value ? "open" : "";
+    const dropDownClasses = computed((): string => {
+        const classes = [
+            props.verticalAlign === "down" ? "dropdown" : "dropup",
+            isDropDownOpen.value ? "open" : ""
+        ];
+
+        return classes.join(" ");
     });
 
     /** Additional classes to be applied to the drop down menu. */
@@ -111,7 +126,7 @@ li.disabled > button {
      * Event handler for when the drop down anchor element has been clicked.
      */
     function onDropDownClick(): void {
-        isDropDownOpen.value = true;
+        isDropDownOpen.value = !isDropDownOpen.value;
     }
 
     /**

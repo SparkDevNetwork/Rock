@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model.Connection.ConnectionRequest.Options;
@@ -83,28 +84,6 @@ namespace Rock.Model
         #endregion
 
         #region Connection Board Helper Methods
-
-        /// <summary>
-        /// Determines whether this request can be connected.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="connectionType">Type of the connection.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use CanConnect( ConnectionRequestViewModel request, ConnectionOpportunity connectionOpportunity, ConnectionTypeCache connectionType )" )]
-        public bool CanConnect( ConnectionRequestViewModel request, ConnectionTypeCache connectionType )
-        {
-            var rockContext = Context as RockContext;
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == request.ConnectionOpportunityId );
-
-            return CanConnect( request, connectionOpportunity, connectionType );
-        }
 
         /// <summary>
         /// Determines whether this request can be connected.
@@ -1089,6 +1068,48 @@ namespace Rock.Model
             {
                 throw new ArgumentException( "An args object is required" );
             }
+        }
+
+        /// <summary>
+        /// Creates a The <see cref="ConnectionRequest"/> from the provided input. If for some reason, the Connection Request
+        /// was not able to be created, null would be returned.
+        /// </summary>
+        /// <param name="connectionOpportunityId">The Connection Opportunity Id of the Connection Request.</param>
+        /// <param name="personAliasId">The Person Alias Id of the Connection Request.</param>
+        /// <param name="campusId">The optional Campus Id which would determine which campus the Connection Request should be
+        /// linked to. If no campus is provided, then it defaults to the Main campus of the person linked to the personAliasId.</param>
+        /// <param name="status">The optional Status of the Connection Request. If not provided, it will default to the
+        /// provided Connection Opportunity's default status.</param>
+        /// <param name="rockContext">An optional <see cref="RockContext" />. A new context would be created if not provided.</param>
+        /// <returns></returns>
+        internal ConnectionRequest CreateConnectionRequestWithDefaultConnector( int connectionOpportunityId, int personAliasId, int? campusId = null, ConnectionStatus status = null, RockContext rockContext = null )
+        {
+            // create a new RockContent if null was provided
+            rockContext = rockContext ?? new RockContext();
+
+            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+            status = status ?? connectionOpportunityService.GetStatuses( connectionOpportunityId )
+                    .FirstOrDefault( cs => cs.IsDefault )
+                        ?? connectionOpportunityService.GetStatuses( connectionOpportunityId )
+                    .FirstOrDefault();
+            if ( status == null )
+            {
+                return null;
+            }
+
+            var opportunity = connectionOpportunityService.Get( connectionOpportunityId );
+            campusId = campusId ?? new PersonAliasService( rockContext )
+                .Get( personAliasId ).Person?.PrimaryCampusId;
+
+            return new ConnectionRequest
+            {
+                ConnectionOpportunityId = opportunity.Id,
+                PersonAliasId = personAliasId,
+                ConnectionStatusId = status.Id,
+                ConnectionState = ConnectionState.Active,
+                CampusId = campusId,
+                ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId )
+            };
         }
 
         #endregion Connection Board Helper Methods

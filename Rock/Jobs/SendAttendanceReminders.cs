@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -83,6 +85,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
+    [RockLoggingCategory]
     public class SendAttendanceReminder : RockJob
     {
         #region Attribute Keys
@@ -143,7 +146,7 @@ namespace Rock.Jobs
             {
                 var warning = $"Group Type {groupType.Name} has been configured to send reminders through the \"Send Group Attendance Reminders\" job and this legacy job is no longer required.";
                 results.Append( FormatWarningMessage( warning ) );
-                Log( RockLogLevel.Warning, warning );
+                Logger.LogWarning( warning );
                 this.Result = results.ToString();
                 throw new RockJobWarningException( warning );
             }
@@ -152,7 +155,7 @@ namespace Rock.Jobs
             {
                 var warning = $"Group Type {groupType.Name} isn't setup to take attendance.";
                 results.Append( FormatWarningMessage( warning ) );
-                Log( RockLogLevel.Warning, warning );
+                Logger.LogWarning( warning );
                 this.Result = results.ToString();
                 throw new RockJobWarningException( warning );
             }
@@ -174,7 +177,7 @@ namespace Rock.Jobs
             {
                 var warning = $"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email.";
                 results.Append( FormatWarningMessage( warning ) );
-                Log( RockLogLevel.Warning, warning );
+                Logger.LogWarning( warning );
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 

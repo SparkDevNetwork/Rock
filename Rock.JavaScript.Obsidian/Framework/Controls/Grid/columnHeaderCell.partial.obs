@@ -94,13 +94,13 @@
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {
-        return !props.light && props.column.filter !== undefined;
+        return !props.light && props.column.filter != null;
     });
 
     /** Will be `true` if sorting is enabled on the grid. */
     const isSortingEnabled = computed((): boolean => {
-        // Sorting is not supported if this is not a data column.
-        return !props.light && !props.column.name.startsWith("__");
+        // Sorting is not supported if this is not a data column or if sorting is disabled.
+        return !props.light && !props.column.name.startsWith("__") && !props.column.disableSort;
     });
 
     /** The CSS classes to apply to the filter button */
@@ -262,7 +262,7 @@
             });
         }
         else {
-        document.removeEventListener("mousedown", onMouseDownEvent);
-    }
-});
+            document.removeEventListener("mousedown", onMouseDownEvent);
+        }
+    });
 </script>

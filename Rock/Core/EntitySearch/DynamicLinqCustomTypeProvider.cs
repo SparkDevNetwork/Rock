@@ -60,7 +60,7 @@ namespace Rock.Core.EntitySearch
         /// </summary>
         public DynamicLinqCustomTypeProvider()
         {
-            _defaultProvider = new DefaultDynamicLinqCustomTypeProvider( true );
+            _defaultProvider = new DefaultDynamicLinqCustomTypeProvider( ParsingConfig.Default, true );
         }
 
         #endregion

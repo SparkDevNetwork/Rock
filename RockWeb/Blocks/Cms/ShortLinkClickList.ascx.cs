@@ -29,6 +29,8 @@ using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
 using System.Data.Entity;
+using System.Web.UI.WebControls;
+using Rock.Cms.Utm;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -54,6 +56,7 @@ namespace RockWeb.Blocks.Cms
             gShortLinkClicks.DataKeyNames = new string[] { "Id" };
             gShortLinkClicks.Actions.ShowAdd = false;
             gShortLinkClicks.GridRebind += gShortLinkClicks_GridRebind;
+            gShortLinkClicks.RowDataBound += gShortLinkClicks_RowDataBound;
         }
 
         /// <summary>
@@ -62,12 +65,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindShortLinkClicksGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -85,6 +88,31 @@ namespace RockWeb.Blocks.Cms
             BindShortLinkClicksGrid();
         }
 
+        private void gShortLinkClicks_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var sourceValueId = e.Row.DataItem.GetPropertyValue( "SourceValueId" ).ToStringSafe().AsIntegerOrNull();
+            if ( sourceValueId == null )
+            {
+                return;
+            }
+
+            var colSource = gShortLinkClicks.GetColumnByHeaderText( "UTM Source" );
+            if ( colSource == null )
+            {
+                return;
+            }
+
+            var colIndex = gShortLinkClicks.GetColumnIndex( colSource );
+            var cell = e.Row.Cells[colIndex];
+
+            cell.Text = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( sourceValueId, string.Empty );
+        }
+
         /// <summary>
         /// Binds the group members grid.
         /// </summary>
@@ -99,6 +127,7 @@ namespace RockWeb.Blocks.Cms
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = 180;
                 var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER );
                 if ( dv != null )
                 {
@@ -119,7 +148,8 @@ namespace RockWeb.Blocks.Cms
                             i.InteractionSession.DeviceType.Application,
                             i.InteractionSession.DeviceType.OperatingSystem,
                             i.InteractionSession.DeviceType.ClientType,
-                            i.Source
+                            i.Source,
+                            i.SourceValueId
                         } );
 
                     SortProperty sortProperty = gShortLinkClicks.SortProperty;

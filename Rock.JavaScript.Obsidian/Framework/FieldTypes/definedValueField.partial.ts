@@ -124,7 +124,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
                     .join(", ");
             }
             catch {
-                return clientValue.value;
+                return clientValue.value ?? "";
             }
         }
         catch {
@@ -163,8 +163,13 @@ export class DefinedValueFieldType extends FieldTypeBase {
         }
     }
 
-    public override getFilterComponent(): Component {
-        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
+    public override getFilterComponent(configurationValues: Record<string, string>): Component {
+        if (asBoolean(configurationValues[ConfigurationValueKey.AllowMultiple])) {
+            return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
+        }
+        else {
+            return getStandardFilterComponent("Is", filterComponent);
+        }
     }
 
     public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {

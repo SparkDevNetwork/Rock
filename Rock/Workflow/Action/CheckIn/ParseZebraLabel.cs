@@ -70,7 +70,7 @@ namespace Rock.Workflow.Action
                     var keyVal = keyAndVal.Split( new char[] { '^' } );
                     if ( keyVal.Length == 2 )
                     {
-                        existingMergeFields.AddOrIgnore( keyVal[0], keyVal[1] );
+                        existingMergeFields.TryAdd( keyVal[0], keyVal[1] );
                     }
                 }
 

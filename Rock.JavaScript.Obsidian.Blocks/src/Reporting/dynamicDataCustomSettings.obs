@@ -1,0 +1,552 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen" title="Configuration" :saveText="saveButtonText" @save="onSave">
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <template v-else>
+
+            <template v-if="enablePageUpdate">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="pageName"
+                                 label="Page Name"
+                                 class="input-large"
+                                 help="The current page's title"
+                                 :disabled="isDisabled" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="pageDescription"
+                                 label="Page Description"
+                                 textMode="multiline"
+                                 :rows="1"
+                                 class="input-xlarge"
+                                 help="The current page's description"
+                                 :disabled="isDisabled" />
+                    </div>
+                </div>
+            </template>
+
+            <SectionHeader title="Query Setup"
+                           description="Craft and refine your query for optimal display within the block." />
+
+            <CodeEditor v-model="query"
+                        label="SQL Query"
+                        help="The SQL query or stored procedure name to execute. If you are providing SQL you can add items from the query string using Lava like this: '{{ QueryParmName }}'. If SQL parameters are included they will also need to be in the Parameters field below.<br><span class='tip tip-lava'></span>"
+                        mode="sql"
+                        :disabled="isDisabled" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <Switch v-model="isStoredProcedure" text="Query Implemented as Stored Procedure" :disableLabel="true"
+                            :disabled="isDisabled" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="parameters"
+                             :label="parametersLabel"
+                             textMode="multiline"
+                             :rows="1"
+                             class="input-xlarge"
+                             help="Specify the parameters required by the query or stored procedure using the format 'param1=value;param2=value'. Include an equals sign for each parameter. Omitting a value will set it to default to blank. Parameters matching query string values will automatically adopt those values. The 'CurrentPersonId' parameter will be replaced with the ID of the currently logged-in person. This field supports both standard SQL and stored procedures."
+                             :disabled="isDisabled" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="timeout"
+                               label="Timeout Length"
+                               help="The amount of time in seconds to allow the query to run before timing out."
+                               inputGroupClasses="input-width-md"
+                               :disabled="isDisabled">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">sec</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <SectionHeader title="Results Formatting"
+                           description="Settings to configure how the results should be displayed." />
+
+            <div class="form-group">
+                <ButtonGroup v-model="resultsDisplayMode"
+                             :items="stdDisplayModeItems"
+                             :disabled="isDisabled" />
+            </div>
+
+            <template v-if="!isLavaTemplateDisplayMode">
+                <SectionHeader title="Column Configuration">
+                    <template #actions>
+                        <div class="d-flex flex-wrap column-config-reload">
+                            <small v-if="reloadColumnsErrorMessage" class="text-danger">An error occurred processing your query.</small>
+                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                                        @click="onReloadColumnsClick"
+                                        :disabled="isDisabled">
+                                <i class="fa fa-redo" aria-hidden></i> Reload Columns From Query
+                            </RockButton>
+                        </div>
+                    </template>
+                </SectionHeader>
+
+                <ColumnConfiguration v-if="columnConfigurations.length"
+                                     v-for="config in columnConfigurations"
+                                     :key="config.name ?? undefined"
+                                     :config="config"
+                                     :columnTypeItems="columnTypeItems"
+                                     :visiblePriorityItems="visiblePriorityItems"
+                                     :disabled="isDisabled" />
+
+                <NotificationBox v-else :alertType="AlertType.Info">
+                    No columns found. Please craft your query above, and click the <strong>Reload Columns From Query</strong> button to configure columns.
+                </NotificationBox>
+
+                <SectionHeader title="Additional Settings" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <Switch v-model="showCheckboxSelectionColumn"
+                                    text="Show Checkbox Selection Column"
+                                    :disabled="isDisabled" />
+
+                            <Switch v-model="disablePaging"
+                                    text="Disable Paging"
+                                    :disabled="isDisabled" />
+
+                            <Switch v-model="isPersonReport"
+                                    text="Person Report"
+                                    :disabled="isDisabled" />
+
+                            <Switch v-model="enableStickyHeader"
+                                    text="Enable Sticky Header"
+                                    :disabled="isDisabled" />
+                        </div>
+
+                        <TextBox v-model="gridTitle"
+                                 label="Panel Title"
+                                 class="input-large"
+                                 help="The title of the grid's panel."
+                                 :disabled="isDisabled" />
+
+                        <TextBox v-model="selectionUrl"
+                                 label="Selection URL"
+                                 class="input-large"
+                                 help="The URL to redirect individual to when they click on a row in the grid. Any column's value can be used in the URL by including it in braces. For example if the grid includes an 'Id' column that contains Person IDs, you can link to the Person view by specifying a value here of '~/Person/{Id}'."
+                                 :disabled="isDisabled" />
+
+                        <TextBox v-model="communicationMergeFields"
+                                 label="Communication Merge Fields"
+                                 textMode="multiline"
+                                 :rows="1"
+                                 class="input-xlarge"
+                                 help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication. Enter any comma-separated column name(s) that you'd like to be available for the communication. If the same recipient has multiple results in this report, each result will be included in an 'AdditionalFields' list. These can be accessed using Lava in the communication. For example: '{% for field in AdditionalFields %}{{ field.columnName }}{% endfor %}'."
+                                 :disabled="isDisabled" />
+
+                        <TextBox v-model="communicationRecipientFields"
+                                 label="Communication Recipient Fields"
+                                 textMode="multiline"
+                                 :rows="1"
+                                 class="input-xlarge"
+                                 help="The comma-separated column name(s) that contain a person ID field to use as the recipient for a communication. If left blank, it will assume a column named 'Id' contains the recipient's person Id."
+                                 :disabled="isDisabled" />
+                    </div>
+                    <div class="col-md-6">
+                        <RockLabel>Grid Actions</RockLabel>
+                        <div class="form-group">
+                            <CheckBox v-model="enableExport"
+                                      label="" text="Enable Export"
+                                      :disabled="isDisabled" />
+
+                            <CheckBox v-model="enableMergeTemplate"
+                                      label=""
+                                      text="Merge Template"
+                                      :disabled="isDisabled" />
+
+                            <template v-if="isPersonReport">
+                                <CheckBox v-model="enableCommunications"
+                                          label=""
+                                          text="Communications"
+                                          :disabled="isDisabled" />
+
+                                <CheckBox v-model="enablePersonMerge"
+                                          label=""
+                                          text="Person Merge"
+                                          :disabled="isDisabled" />
+
+                                <CheckBox v-model="enableBulkUpdate"
+                                          label=""
+                                          text="Bulk Update"
+                                          :disabled="isDisabled" />
+
+                                <CheckBox v-model="enableLaunchWorkflow"
+                                          label=""
+                                          text="Launch Workflow"
+                                          :disabled="isDisabled" />
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+            </template>
+
+            <CodeEditor v-else
+                        v-model="lavaTemplate"
+                        label="Lava Template"
+                        help="Formatting to apply to the returned results. Example: '{% for row in rows %}{{ row.FirstName }}{% endfor %}' or if the query returns multiple result sets: '{% for row in table1.rows %}{{ row.FirstName }}{% endfor %}'. Alternatively, you may iterate over all tables within the returned results. For example: '{% for table in tables %}{% for row in table.rows %}{{ row.FirstName }}{% endfor %}{% endfor %}'.<br><span class='tip tip-lava'></span>"
+                        mode="lava"
+                        :disabled="isDisabled" />
+
+            <Panel title="Advanced Settings" hasCollapse>
+                <div v-if="!isLavaTemplateDisplayMode" class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="encryptedFields"
+                                 label="Encrypted Fields"
+                                 textMode="multiline"
+                                 :rows="1"
+                                 class="input-xlarge"
+                                 help="The comma-separated column name(s) that need to be decrypted before displaying their value."
+                                 :disabled="isDisabled" />
+                    </div>
+                </div>
+
+                <CodeEditor v-model="pageTitleLava"
+                            label="Page Title Lava"
+                            help="Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'.<br><span class='tip tip-lava'></span>"
+                            mode="lava"
+                            :disabled="isDisabled" />
+
+                <template v-if="!isLavaTemplateDisplayMode">
+                    <CodeEditor v-model="gridHeaderContent"
+                                label="Grid Header Content"
+                                help="This Lava template will be rendered above the grid. It will have access to the same dataset as the grid.<br><span class='tip tip-lava'></span>"
+                                mode="lava"
+                                :disabled="isDisabled" />
+
+                    <CodeEditor v-model="gridFooterContent"
+                                label="Grid Footer Content"
+                                help="This Lava template will be rendered below the grid (best used for custom totaling). It will have access to the same dataset as the grid.<br><span class='tip tip-lava'></span>"
+                                mode="lava"
+                                :disabled="isDisabled" />
+                </template>
+            </Panel>
+
+        </template>
+
+    </Modal>
+</template>
+
+<style scoped>
+.column-config-reload {
+    gap: 8px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import ColumnConfiguration from "./DynamicData/columnConfiguration.partial.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { ColumnConfigurationBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/columnConfigurationBag";
+    import { DynamicDataCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/dynamicDataCustomSettingsBag";
+    import { DynamicDataCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/dynamicDataCustomSettingsOptionsBag";
+    import { ReloadColumnsRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/reloadColumnsRequestBag";
+    import { ReloadColumnsResponseBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/reloadColumnsResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    /**
+     * How the results should be displayed.
+     */
+    const displayMode = {
+        grid: "grid",
+        lavaTemplate: "lavaTemplate"
+    };
+
+    // #region Values
+
+    const errorMessage = ref("");
+
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+
+    const isReloadingColumns = ref(false);
+    const reloadColumnsErrorMessage = ref("");
+
+    // Shared Settings (shared between grid and Lava results formatting display modes).
+    const enablePageUpdate = ref(false);
+    const pageName = ref("");
+    const pageDescription = ref("");
+
+    const query = ref("");
+    const isStoredProcedure = ref(false);
+    const parameters = ref("");
+    const timeout = ref<number | null>(null);
+    const resultsDisplayMode = ref(displayMode.grid);
+
+    const pageTitleLava = ref("");
+
+    // Results Formatting - Grid Settings.
+    const columnConfigurations = ref<ColumnConfigurationBag[]>([]);
+
+    const showCheckboxSelectionColumn = ref(false);
+    const disablePaging = ref(false);
+    const isPersonReport = ref(false);
+    const enableStickyHeader = ref(false);
+
+    const enableExport = ref(false);
+    const enableMergeTemplate = ref(false);
+    const enableCommunications = ref(false);
+    const enablePersonMerge = ref(false);
+    const enableBulkUpdate = ref(false);
+    const enableLaunchWorkflow = ref(false);
+
+    const gridTitle = ref("");
+    const selectionUrl = ref("");
+    const communicationMergeFields = ref("");
+    const communicationRecipientFields = ref("");
+
+    const encryptedFields = ref("");
+    const gridHeaderContent = ref("");
+    const gridFooterContent = ref("");
+
+    // Results Formatting - Lava Settings.
+    const lavaTemplate = ref("");
+
+    // Available options for controls.
+    const displayModeItems = ref<ListItemBag[]>([]);
+    const columnTypeItems = ref<ListItemBag[]>([]);
+    const visiblePriorityItems = ref<ListItemBag[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const parametersLabel = computed((): string => {
+        return `${(isStoredProcedure.value ? "Stored Procedure" : "Query")} Parameters`;
+    });
+
+    const stdDisplayModeItems = computed((): { text: string, value: string }[] => {
+        return displayModeItems.value
+            ?.filter((mode: ListItemBag) => !!(mode.text && mode.value))
+            .map((mode: ListItemBag) => ({
+                text: mode.text ?? "",
+                value: mode.value ?? ""
+            })) ?? [];
+    });
+
+    const isLavaTemplateDisplayMode = computed((): boolean => {
+        return resultsDisplayMode.value === displayMode.lavaTemplate;
+    });
+
+    const isDisabled = computed((): boolean => {
+        return isReloadingColumns.value;
+    });
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || (!isLoading.value && !isDisabled.value) ? "Save" : "";
+    });
+
+    const securityGrantToken = computed((): string | null => {
+        return securityGrant.token.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI can be displayed.
+     */
+    async function startLoading(): Promise<void> {
+        const result = await invokeBlockAction<CustomSettingsBox<DynamicDataCustomSettingsBag, DynamicDataCustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            // Shared Settings (shared between grid and Lava results formatting display modes).
+            enablePageUpdate.value = result.data.settings.enablePageUpdate;
+            pageName.value = result.data.settings.pageName ?? "";
+            pageDescription.value = result.data.settings.pageDescription ?? "";
+
+            query.value = result.data.settings.query ?? "";
+            isStoredProcedure.value = result.data.settings.isStoredProcedure;
+            parameters.value = result.data.settings.parameters ?? "";
+            timeout.value = result.data.settings.timeout ?? null;
+            resultsDisplayMode.value = result.data.settings.resultsDisplayMode ?? displayMode.grid;
+
+            pageTitleLava.value = result.data.settings.pageTitleLava ?? "";
+
+            // Results Formatting - Grid Settings.
+            columnConfigurations.value = result.data.settings.columnConfigurations ?? [];
+
+            showCheckboxSelectionColumn.value = result.data.settings.showCheckboxSelectionColumn;
+            disablePaging.value = result.data.settings.disablePaging;
+            isPersonReport.value = result.data.settings.isPersonReport;
+            enableStickyHeader.value = result.data.settings.enableStickyHeader;
+
+            enableExport.value = result.data.settings.enableExport;
+            enableMergeTemplate.value = result.data.settings.enableMergeTemplate;
+            enableCommunications.value = result.data.settings.enableCommunications;
+            enablePersonMerge.value = result.data.settings.enablePersonMerge;
+            enableBulkUpdate.value = result.data.settings.enableBulkUpdate;
+            enableLaunchWorkflow.value = result.data.settings.enableLaunchWorkflow;
+
+            gridTitle.value = result.data.settings.gridTitle ?? "";
+            selectionUrl.value = result.data.settings.selectionUrl ?? "";
+            communicationMergeFields.value = result.data.settings.communicationMergeFields ?? "";
+            communicationRecipientFields.value = result.data.settings.communicationRecipientFields ?? "";
+
+            encryptedFields.value = result.data.settings.encryptedFields ?? "";
+            gridHeaderContent.value = result.data.settings.gridHeaderContent ?? "";
+            gridFooterContent.value = result.data.settings.gridFooterContent ?? "";
+
+            // Results Formatting - Lava Settings.
+            lavaTemplate.value = result.data.settings.lavaTemplate ?? "";
+
+            // Load any additional information required by the UI to paint the custom settings interface.
+            securityGrant.updateToken(result.data.securityGrantToken);
+            displayModeItems.value = result.data.options.displayModeItems ?? [];
+            columnTypeItems.value = result.data.options.columnTypeItems ?? [];
+            visiblePriorityItems.value = result.data.options.visiblePriorityItems ?? [];
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event of the "Reload Columns..." button.
+     */
+    async function onReloadColumnsClick(): Promise<void> {
+        if (isReloadingColumns.value) {
+            return;
+        }
+
+        isReloadingColumns.value = true;
+        reloadColumnsErrorMessage.value = "";
+
+        const bag: ReloadColumnsRequestBag = {
+            query: query.value,
+            isStoredProcedure: isStoredProcedure.value,
+            parameters: parameters.value,
+            timeout: timeout.value,
+            existingColumnConfigurations: columnConfigurations.value
+        };
+
+        const result = await invokeBlockAction<ReloadColumnsResponseBag>("ReloadColumns", { bag });
+        if (!result.isSuccess) {
+            reloadColumnsErrorMessage.value = result.errorMessage || "Unkown error when trying to reload columns from query.";
+            isReloadingColumns.value = false;
+            return;
+        }
+
+        columnConfigurations.value = result.data?.columnConfigurations ?? [];
+
+        isReloadingColumns.value = false;
+    }
+
+    /**
+     * Saves the block settings.
+     */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<DynamicDataCustomSettingsBag, DynamicDataCustomSettingsOptionsBag> = {};
+
+        // Shared Settings (shared between grid and Lava results formatting display modes).
+        setCustomSettingsBoxValue(box, "pageName", pageName.value);
+        setCustomSettingsBoxValue(box, "pageDescription", pageDescription.value);
+
+        setCustomSettingsBoxValue(box, "query", query.value);
+        setCustomSettingsBoxValue(box, "isStoredProcedure", isStoredProcedure.value);
+        setCustomSettingsBoxValue(box, "parameters", parameters.value);
+        setCustomSettingsBoxValue(box, "timeout", timeout.value);
+        setCustomSettingsBoxValue(box, "resultsDisplayMode", resultsDisplayMode.value);
+
+        setCustomSettingsBoxValue(box, "pageTitleLava", pageTitleLava.value);
+
+        // Results Formatting - Grid Settings.
+        setCustomSettingsBoxValue(box, "columnConfigurations", columnConfigurations.value);
+
+        setCustomSettingsBoxValue(box, "showCheckboxSelectionColumn", showCheckboxSelectionColumn.value);
+        setCustomSettingsBoxValue(box, "disablePaging", disablePaging.value);
+        setCustomSettingsBoxValue(box, "isPersonReport", isPersonReport.value);
+        setCustomSettingsBoxValue(box, "enableStickyHeader", enableStickyHeader.value);
+
+        setCustomSettingsBoxValue(box, "enableExport", enableExport.value);
+        setCustomSettingsBoxValue(box, "enableMergeTemplate", enableMergeTemplate.value);
+        setCustomSettingsBoxValue(box, "enableCommunications", enableCommunications.value);
+        setCustomSettingsBoxValue(box, "enablePersonMerge", enablePersonMerge.value);
+        setCustomSettingsBoxValue(box, "enableBulkUpdate", enableBulkUpdate.value);
+        setCustomSettingsBoxValue(box, "enableLaunchWorkflow", enableLaunchWorkflow.value);
+
+        setCustomSettingsBoxValue(box, "gridTitle", gridTitle.value);
+        setCustomSettingsBoxValue(box, "selectionUrl", selectionUrl.value);
+        setCustomSettingsBoxValue(box, "communicationMergeFields", communicationMergeFields.value);
+        setCustomSettingsBoxValue(box, "communicationRecipientFields", communicationRecipientFields.value);
+
+        setCustomSettingsBoxValue(box, "encryptedFields", encryptedFields.value);
+        setCustomSettingsBoxValue(box, "gridHeaderContent", gridHeaderContent.value);
+        setCustomSettingsBoxValue(box, "gridFooterContent", gridFooterContent.value);
+
+        // Results Formatting - Lava Settings.
+        setCustomSettingsBoxValue(box, "lavaTemplate", lavaTemplate.value);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    startLoading();
+</script>

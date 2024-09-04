@@ -32,11 +32,11 @@ namespace Rock.Migrations
         public override void Up()
         {
             // Add Redirector HTTP module component
-            RockMigrationHelper.UpdateEntityType( "Rock.Web.HttpModules.Observability", "Observability HTTP Module", "Rock.Web.HttpModules.Observability, Rock, Version=1.16.0.6, Culture=neutral, PublicKeyToken=null", false, true, EntityType.HTTP_MODULE_OBSERVABILITY );
+            RockMigrationHelper.UpdateEntityType( "Rock.Web.HttpModules.Observability", "Observability HTTP Module", "Rock.Web.HttpModules.Observability, Rock, Version=1.16.0.6, Culture=neutral, PublicKeyToken=null", false, true, "FE7A8295-9383-4FD8-9FB2-FF77A8042462" );
 
-            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Web.HttpModules.Observability", FieldType.BOOLEAN, "", "", "Active", "", "Determines if the module should be enabled.", 0, "False", SystemGuid.Attribute.HTTP_MODULE_OBSERVABILITY_ACTIVE, null );
+            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Web.HttpModules.Observability", FieldType.BOOLEAN, "", "", "Active", "", "Determines if the module should be enabled.", 0, "False", "DAC40EF2-1616-4E15-A897-8CCD7CF2C588", null );
 
-            Sql( $@"  DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '{SystemGuid.Attribute.HTTP_MODULE_OBSERVABILITY_ACTIVE}')
+            Sql( @"  DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'DAC40EF2-1616-4E15-A897-8CCD7CF2C588')
 
                       INSERT INTO [AttributeValue]
                       ([AttributeId], [EntityId], [Value], [IsSystem], [Guid])
@@ -50,7 +50,7 @@ namespace Rock.Migrations
         public override void Down()
         {
             // Delete HTTP module component
-            RockMigrationHelper.DeleteEntityType( EntityType.HTTP_MODULE_OBSERVABILITY );
+            RockMigrationHelper.DeleteEntityType( "FE7A8295-9383-4FD8-9FB2-FF77A8042462" );
         }
     }
 }

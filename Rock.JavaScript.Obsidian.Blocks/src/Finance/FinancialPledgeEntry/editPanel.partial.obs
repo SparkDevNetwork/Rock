@@ -8,7 +8,7 @@
                          alertType="warning"></NotificationBox>
 
         <div v-else>
-            <div class="form-group" v-if="currentPerson">
+            <div class="form-group" v-if="currentPerson.text">
                 <RockLabel>Name</RockLabel>
                 <div>
                     {{ currentPerson.text }}
@@ -16,14 +16,14 @@
             </div>
 
             <div v-else>
-                <TextBox label="First Name" v-model="firstName" />
-                <TextBox label="Last Name" v-model="lastName" />
-                <EmailBox label="Email" v-model="email" />
+                <FirstNameTextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <TextBox label="Last Name" v-model="lastName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <EmailBox label="Email" v-model="email" rules="required" />
             </div>
 
-            <DropDownList v-if="selectGroupTypeGuid"
+            <DropDownList v-if="selectGroupTypeGuidOrEmptyString"
                           :label="groupsLabel"
-                          v-model="groupGuid"
+                          v-model="groupGuidOrEmptyString"
                           :items="groups"
                           :showBlankItem="false"
                           :enhanceForLongLists="false"
@@ -56,6 +56,7 @@
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
@@ -95,9 +96,9 @@
     const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
     const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
-    const groupGuid = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
+    const groupGuidOrEmptyString = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
     const pledgeFrequencyValue = propertyRef(props.modelValue.pledgeFrequencyValue?.value ?? "", "PledgeFrequencyValueId");
-    const selectGroupTypeGuid = ref(props.options.selectGroupTypeGuid ?? "");
+    const selectGroupTypeGuidOrEmptyString = ref(props.options.selectGroupTypeGuid ?? "");
     const groupsLabel = ref(props.options.groupsLabel ?? "");
     const groups = ref(props.options.groups ?? []);
     const showPledgeFrequency = ref(props.options.showPledgeFrequency);
@@ -110,7 +111,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [startDate, endDate, totalAmount, groupGuid, pledgeFrequencyValue, personAlias, account];
+    const propRefs = [startDate, endDate, totalAmount, groupGuidOrEmptyString, pledgeFrequencyValue, personAlias, account];
 
     // #endregion
 
@@ -135,28 +136,32 @@
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");
-        updateRefValue(endDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
         updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
-        updateRefValue(groupGuid, props.modelValue.group?.value ?? "");
+        updateRefValue(groupGuidOrEmptyString, props.modelValue.group?.value ?? "");
         updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue?.value ?? "");
         updateRefValue(personAlias, props.modelValue.personAlias ?? {});
         updateRefValue(account, props.modelValue.account ?? {});
         updateRefValue(duplicatePledgeWarningText, props.modelValue.duplicatePledgeWarningText ?? "");
+        // TODO Should account, selectedDateRange, showDateRange, and pledgeTerm be updated here?
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, selectedDateRange, ...propRefs], () => {
+    watch([attributeValues, selectedDateRange, firstName, lastName, email, ...propRefs], () => {
         const newValue: FinancialPledgeEntryBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
             totalAmount: totalAmount.value,
             group: {
-                value: groupGuid.value
+                value: groupGuidOrEmptyString.value
             },
             pledgeFrequencyValue: {
                 value: pledgeFrequencyValue.value
             },
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
             startDate: selectedDateRange.value?.lowerValue,
             endDate: selectedDateRange.value?.upperValue,
             personAlias: personAlias.value,

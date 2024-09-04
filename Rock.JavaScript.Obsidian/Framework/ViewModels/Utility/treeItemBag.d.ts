@@ -52,6 +52,13 @@ export type TreeItemBag = {
     /** Gets or sets the text that should be displayed to identify this item. */
     text?: string | null;
 
+    /**
+     * Gets or sets the type of item represented by this instance. There is
+     * no pre-defined meaning to this, it is up to the item provider to
+     * decide what to do with it.
+     */
+    type?: string | null;
+
     /** Gets or sets the generic identifier of this item. */
     value?: string | null;
 };

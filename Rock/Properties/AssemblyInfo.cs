@@ -39,9 +39,30 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Integration.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
+[assembly: InternalsVisibleTo( "Rock.Update" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
+[assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq
+
+// Register friendly logging category names.
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Bus" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Communication" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Web" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioDefaultResponseAsync" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioSendGrid" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.CheckIn.AttendanceAnalytics" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Cms.ContentChannelItemList" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Crm.BulkUpdate" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Crm.PersonMerge" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Examples.SampleData" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Security.PhoneNumberIdentification" )]
 
 // The following type forwardings were setup in Rock 1.13.0
 [assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]
@@ -135,3 +156,6 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemMatchesPreference ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemStatus ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.SchedulerResourceGroupMemberFilterType ) )]
+
+// The following type forwardings were setup in Rock 1.16.6
+[assembly: TypeForwardedTo( typeof( Rock.Model.ComparisonType ) )]

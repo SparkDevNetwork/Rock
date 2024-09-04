@@ -14,53 +14,52 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Diagnostics;
 using System.Threading;
 
 namespace Rock.Net
 {
     /// <summary>
-    /// <para>
-    /// Provides an internal implementation to get the current request context.
-    /// If possible, we should avoid ever making this public so we don't have
-    /// to worry about plugins using it if we need to change how this works.
-    /// </para>
-    /// <para>
-    /// This follows the pattern in .NET Core for accessing HttpContext.
-    /// </para>
+    /// Internal implementation to provide the current RockRequestContext
+    /// through dependency injection.
     /// </summary>
-    [DebuggerDisplay( "RequestContext = {RequestContext}" )]
-    internal static class RockRequestContextAccessor
+    class RockRequestContextAccessor : IRockRequestContextAccessor
     {
-        private static readonly AsyncLocal<RequestContextHolder> _requestContextCurrent = new AsyncLocal<RequestContextHolder>();
-
         /// <summary>
-        /// Gets or sets the current request context.
+        /// The rock request context for the current async execution context.
         /// </summary>
-        /// <value>The current request context.</value>
-        public static RockRequestContext RequestContext
+        private static readonly AsyncLocal<RockRequestContextHolder> _rockRequestContext = new AsyncLocal<RockRequestContextHolder>();
+
+        /// <inheritdoc cref="RockRequestContext"/>
+        internal static RockRequestContext Current => _rockRequestContext.Value?.Context;
+
+        /// <inheritdoc/>
+        public RockRequestContext RockRequestContext
         {
-            get => _requestContextCurrent.Value?.Context;
-            internal set
+            get
             {
-                var holder = _requestContextCurrent.Value;
+                return _rockRequestContext.Value?.Context;
+            }
+            set
+            {
+                var holder = _rockRequestContext.Value;
 
                 if ( holder != null )
                 {
-                    // Clear current RockRequestContext trapped in the AsyncLocals, as its done.
+                    // Clear current RockRequestContext trapped in the AsyncLocals.
                     holder.Context = null;
                 }
 
                 if ( value != null )
                 {
-                    // Use an object indirection to hold the RockRequestContext in the AsyncLocal,
-                    // so it can be cleared in all ExecutionContexts when its cleared.
-                    _requestContextCurrent.Value = new RequestContextHolder { Context = value };
+                    // Use an indirect object to hold the real context. This
+                    // allows us to clear it even in other execution contexts
+                    // that have inherited the AsyncLocal.
+                    _rockRequestContext.Value = new RockRequestContextHolder { Context = value };
                 }
             }
         }
 
-        private sealed class RequestContextHolder
+        private class RockRequestContextHolder
         {
             public RockRequestContext Context;
         }

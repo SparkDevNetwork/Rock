@@ -150,7 +150,7 @@ namespace Rock.Lava.DotLiquid
                     {
                         registeringTypeName = type.Name;
 
-                        var lavaInfo = LavaDataObjectHelper.GetLavaTypeInfo( type );
+                        var lavaInfo = LavaDataHelper.GetLavaTypeInfo( type );
 
                         if ( lavaInfo.HasLavaTypeAttribute )
                         {
@@ -362,7 +362,7 @@ namespace Rock.Lava.DotLiquid
 
             if ( allowedMembers == null )
             {
-                allowedMembersArray = LavaDataObjectHelper.GetLavaTypeInfo( type ).VisiblePropertyNames.ToArray();
+                allowedMembersArray = LavaDataHelper.GetLavaTypeInfo( type ).VisiblePropertyNames.ToArray();
             }
             else
             {
@@ -557,6 +557,21 @@ namespace Rock.Lava.DotLiquid
             var condition = global::DotLiquid.Condition.Operators["=="];
 
             return condition( left, right );
+        }
+
+        /// <inheritdoc />
+        public override List<string> GetRegisteredFilterNames()
+        {
+            var strainerType = typeof( Strainer );
+            var filtersField = strainerType.GetField( "Filters", BindingFlags.NonPublic | BindingFlags.Static );
+
+            var filters = filtersField.GetValue( null ) as Dictionary<string, Type>;
+
+            var filterNames = filters.Keys
+                .Select( k => k )
+                .OrderBy( k => k )
+                .ToList();
+            return filterNames;
         }
 
         private Template CreateNewDotLiquidTemplate( string inputTemplate )

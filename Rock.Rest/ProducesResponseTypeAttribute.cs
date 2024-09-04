@@ -15,12 +15,12 @@
 // </copyright>
 //
 
+#if WEBFORMS
 using System;
 using System.Net;
 
-namespace Rock.Rest
+namespace Microsoft.AspNetCore.Mvc
 {
-#if WEBFORMS
     /// <summary>
     /// A forward compatible class for the way ASP.Net Core will handle response
     /// type decorations.
@@ -65,5 +65,5 @@ namespace Rock.Rest
         {
         }
     }
-#endif
 }
+#endif

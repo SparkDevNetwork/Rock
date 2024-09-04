@@ -157,8 +157,7 @@ namespace Rock.Model
                  && string.IsNullOrWhiteSpace( city )
                  && string.IsNullOrWhiteSpace( state )
                  && string.IsNullOrWhiteSpace( locality )
-                 && string.IsNullOrWhiteSpace( postalCode )
-                 && string.IsNullOrWhiteSpace( country ) )
+                 && string.IsNullOrWhiteSpace( postalCode ) )
             {
                 return null;
             }
@@ -901,6 +900,27 @@ namespace Rock.Model
         {
             var groupLocationQuery = new GroupLocationService( this.Context as RockContext ).Queryable().Where( gl => gl.Schedules.Any( s => s.Id == scheduleId ) && gl.GroupId == groupId );
             return this.Queryable().Where( l => groupLocationQuery.Any( gl => gl.LocationId == l.Id ) );
+        }
+
+        /// <summary>
+        /// Updates the IsActive property on the specified location with the specified value.
+        /// Called primarily when opening or closing a room, this action will be logged to the history table.
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="isActive">if set to <c>true</c> [is active].</param>
+        public void SetActiveStatus( int locationId, bool isActive )
+        {
+            var location = this.Get( locationId );
+            if ( location != null )
+            {
+                var changeList = new History.HistoryChangeList();
+                History.EvaluateChange( changeList, "Active", location.IsActive, isActive );
+                HistoryService.SaveChanges( this.Context as RockContext, typeof( Location ), Rock.SystemGuid.Category.HISTORY_LOCATION.AsGuid(), locationId, changeList, false );
+                location.IsActive = isActive;
+
+                this.Context.SaveChanges();
+                Rock.CheckIn.KioskDevice.Clear();
+            }
         }
     }
 

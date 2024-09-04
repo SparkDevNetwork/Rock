@@ -130,40 +130,43 @@ namespace Rock.Field.Types
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
             var groupTypes = new List<GroupTypeCache>();
 
-            if ( publicConfigurationValues.ContainsKey( GROUP_TYPE_KEY ) )
+            if ( usage != ConfigurationValueUsage.View )
             {
-                var groupTypeValue = publicConfigurationValues[GROUP_TYPE_KEY];
-                if ( Guid.TryParse( groupTypeValue, out Guid groupTypeGuid ) )
+                if ( publicConfigurationValues.ContainsKey( GROUP_TYPE_KEY ) )
                 {
-                    var groupType = GroupTypeCache.Get( groupTypeGuid );
-                    publicConfigurationValues[GROUP_TYPE_KEY] = new ListItemBag()
+                    var groupTypeValue = publicConfigurationValues[GROUP_TYPE_KEY];
+                    if ( Guid.TryParse( groupTypeValue, out Guid groupTypeGuid ) )
                     {
-                        Text = groupType?.Name,
-                        Value = groupTypeValue
-                    }.ToCamelCaseJson( false, true );
+                        var groupType = GroupTypeCache.Get( groupTypeGuid );
+                        publicConfigurationValues[GROUP_TYPE_KEY] = new ListItemBag()
+                        {
+                            Text = groupType?.Name,
+                            Value = groupTypeValue
+                        }.ToCamelCaseJson( false, true );
 
-                    // If in Edit mode add GroupType if any so we get its locations.
-                    if ( usage == ConfigurationValueUsage.Edit && groupType != null )
-                    {
-                        groupTypes.Add( groupType );
+                        // If in Edit mode add GroupType if any so we get its locations.
+                        if ( usage == ConfigurationValueUsage.Edit && groupType != null )
+                        {
+                            groupTypes.Add( groupType );
+                        }
                     }
                 }
-            }
 
-            // If in Configure mode get all GroupTypes so we can get their locations
-            if ( usage == ConfigurationValueUsage.Configure )
-            {
-                groupTypes = GroupTypeCache.All();
-            }
+                // If in Configure mode get all GroupTypes so we can get their locations
+                if ( usage == ConfigurationValueUsage.Configure )
+                {
+                    groupTypes = GroupTypeCache.All();
+                }
 
-            var locationTypes = new Dictionary<string, string>();
-            foreach ( var groupType in groupTypes )
-            {
-                var locationTypeValues = groupType.LocationTypeValues.ConvertAll( g => new ListItemBag() { Text = g.Value, Value = g.Guid.ToString() } );
-                locationTypes.Add( groupType.Guid.ToString(), locationTypeValues.ToCamelCaseJson( false, true ) );
-            }
+                var locationTypes = new Dictionary<string, string>();
+                foreach ( var groupType in groupTypes )
+                {
+                    var locationTypeValues = groupType.LocationTypeValues.ConvertAll( g => new ListItemBag() { Text = g.Value, Value = g.Guid.ToString() } );
+                    locationTypes.Add( groupType.Guid.ToString(), locationTypeValues.ToCamelCaseJson( false, true ) );
+                }
 
-            publicConfigurationValues.Add( GROUP_TYPE_LOCATIONS_KEY, locationTypes.ToCamelCaseJson( false, true ) );
+                publicConfigurationValues.Add( GROUP_TYPE_LOCATIONS_KEY, locationTypes.ToCamelCaseJson( false, true ) );
+            }
 
             return publicConfigurationValues;
         }

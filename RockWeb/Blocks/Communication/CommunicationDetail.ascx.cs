@@ -36,6 +36,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -261,8 +262,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbTemplateCreated.Visible = false;
 
             if ( Page.IsPostBack )
@@ -341,6 +340,8 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -975,6 +976,7 @@ namespace RockWeb.Blocks.Communication
             public const string DeliveryStatus = "Delivery Status";
             public const string DeliveryStatusNote = "Delivery Status Note";
             public const string CommunicationMedium = "Communication Medium";
+            public const string Campus = "Campus";
         }
 
         /// <summary>
@@ -1067,6 +1069,7 @@ namespace RockWeb.Blocks.Communication
             cblOpenedStatus.SetValues( settingsKeyValueMap[FilterSettingName.OpenedStatus].SplitDelimitedValues( "," ) );
             cblClickedStatus.SetValues( settingsKeyValueMap[FilterSettingName.ClickedStatus].SplitDelimitedValues( "," ) );
             cblDeliveryStatus.SetValues( settingsKeyValueMap[FilterSettingName.DeliveryStatus].SplitDelimitedValues( "," ) );
+            cpCampuses.SetValues( settingsKeyValueMap[FilterSettingName.Campus].SplitDelimitedValues( "," ) );
 
             txbDeliveryStatusNote.Text = settingsKeyValueMap[FilterSettingName.DeliveryStatusNote];
         }
@@ -1088,6 +1091,7 @@ namespace RockWeb.Blocks.Communication
             settings[FilterSettingName.DeliveryStatus] = cblDeliveryStatus.SelectedValues.AsDelimited( "," );
 
             settings[FilterSettingName.DeliveryStatusNote] = txbDeliveryStatusNote.Text;
+            settings[FilterSettingName.Campus] = cpCampuses.SelectedValues.AsDelimited( "," );
 
             return settings;
         }
@@ -1126,6 +1130,10 @@ namespace RockWeb.Blocks.Communication
             else if ( filterSettingName == FilterSettingName.DeliveryStatusNote )
             {
                 return string.Format( "Contains \"{0}\"", txbDeliveryStatusNote.Text );
+            }
+            else if ( filterSettingName == FilterSettingName.Campus )
+            {
+                return string.Format( "Contains \"{0}\"", cpCampuses.SelectedNames.AsDelimited( ", " ) );
             }
 
             return string.Empty;
@@ -1211,6 +1219,11 @@ namespace RockWeb.Blocks.Communication
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
             rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+
+            if ( CampusCache.All( true ).Count <= 1 )
+            {
+                cpCampuses.ForceVisible = false;
+            }
 
             // If this is a full page load, initialize the filter control and load the filter values.
             if ( !Page.IsPostBack )
@@ -1971,8 +1984,8 @@ namespace RockWeb.Blocks.Communication
                     sb.Append( "<div class='row'><div class='col-md-12'><ul>" );
                     foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
                     {
-                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
-                            System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
+                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}'>{1}</a></li>",
+                            FileUrlHelper.GetFileUrl( binaryFile.Id ), binaryFile.FileName );
                     }
                     sb.Append( "</ul></div></div>" );
                 }
@@ -2695,6 +2708,10 @@ namespace RockWeb.Blocks.Communication
 
             var insertAtIndex = gRecipients.GetColumnIndex( nameField ) + 1;
 
+            boundField = new BoundField { HeaderText = "Campus", DataField = "Campus" };
+            gRecipients.Columns.Insert( insertAtIndex, boundField );
+            insertAtIndex++;
+
             boundField = new BoundField { HeaderText = "Status", DataField = "DeliveryStatus" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
@@ -2743,6 +2760,7 @@ namespace RockWeb.Blocks.Communication
             dataTable.Columns.Add( "DeliveryStatusNote", typeof( string ) );
             dataTable.Columns.Add( "HasOpened", typeof( bool ) );
             dataTable.Columns.Add( "HasClicked", typeof( bool ) );
+            dataTable.Columns.Add( "Campus", typeof( string ) );
 
             // order by ModifiedDateTime to get a consistent result in case a person has received the communication more than once (more than one recipient record for the same person)
             var query = GetRecipientInfoQuery( dataContext ).OrderByDescending( a => a.ModifiedDateTime );
@@ -2754,7 +2772,7 @@ namespace RockWeb.Blocks.Communication
             {
                 // since we order by ModifiedDateTime this will end up ignoring any order recipient records for the personid
                 // NOTE: We tried to do this in SQL but it caused performance issues, so we'll do it in C# instead.
-                recipients.AddOrIgnore( recipient.PersonId, recipient );
+                recipients.TryAdd( recipient.PersonId, recipient );
             }
 
             builder.FillDataColumnValues( dataTable, recipients );
@@ -2796,7 +2814,8 @@ namespace RockWeb.Blocks.Communication
                         DeliveryStatusNote = x.StatusNote,
                         HasOpened = ( x.Status == CommunicationRecipientStatus.Opened ),
                         HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId ),
-                        ModifiedDateTime = x.ModifiedDateTime
+                        ModifiedDateTime = x.ModifiedDateTime,
+                        Campus = x.PersonAlias.Person.PrimaryCampus.Name
                     } );
 
             return recipientQuery;
@@ -2941,6 +2960,14 @@ namespace RockWeb.Blocks.Communication
             if ( !string.IsNullOrWhiteSpace( lastName ) )
             {
                 personFilterQuery = personFilterQuery.Where( p => p.LastName.StartsWith( lastName ) );
+            }
+
+            // Filter by: Campuses
+            var campusIds = filterSettingsKeyValueMap[FilterSettingName.Campus].SplitDelimitedValues( "," ).AsIntegerList();
+
+            if ( campusIds.Count > 0 )
+            {
+                personFilterQuery = personFilterQuery.Where( p => campusIds.Contains( p.PrimaryCampusId.Value ) );
             }
 
             // Combine the Recipient Query and the Person Query to create the filter.
@@ -3287,6 +3314,7 @@ namespace RockWeb.Blocks.Communication
             public string DeliveryStatusNote { get; set; }
             public string CommunicationMediumName { get; set; }
             public DateTime? ModifiedDateTime { get; set; }
+            public string Campus { get; set; }
         }
 
         /// <summary>

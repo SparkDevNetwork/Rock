@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -105,39 +105,37 @@ namespace Rock.Lava.Blocks
 
             var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
 
-            var attributes = new Dictionary<string, string>();
             string parmWorkflowType = settings.GetStringOrNull( "workflowtype" );
             string parmWorkflowName = settings.GetStringOrNull( "workflowname" );
             string parmWorkflowId = settings.GetStringOrNull( "workflowid" );
             string parmActivityType = settings.GetStringOrNull( "activitytype" );
 
-            /* Parse the markup text to pull out configuration parameters. */
-            var knownParameterKeys = new List<string> { "workflowtype", "workflowname", "workflowid", "activitytype" };
-            foreach ( var attributeKey in settings.GetUnmatchedAttributes( knownParameterKeys ) )
-            {
-                attributes.AddOrReplace( attributeKey, settings.GetString( attributeKey ) );
-            }
+            // Get the set of lava parameters that represent Workflow Attributes.
+            var entityAttributes = settings.Clone();
 
             // Process the workflow inside a new context so that the output variables created by this WorkflowActivate block
             // do not collide with any same-named variables defined outside the block.
             // The following variables are added to the context for use within this block: Workflow, Activity, Error.
+            var knownParameterKeys = new List<string> { "workflowtype", "workflowname", "workflowid", "activitytype" };
+            entityAttributes.Remove( knownParameterKeys );
             context.ExecuteInChildScope( ( newContext ) =>
             {
                 var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
-                WorkflowService workflowService = new WorkflowService( rockContext );
+                var workflowService = new WorkflowService( rockContext );
+
                 Rock.Model.Workflow workflow = null;
                 WorkflowActivity activity = null;
                 var errorMessage = string.Empty;
 
-                /* They provided a WorkflowType, so we need to kick off a new workflow. */
+                // They provided a WorkflowType, so we need to kick off a new workflow.
                 if ( parmWorkflowType != null )
                 {
-                    string type = parmWorkflowType;
-                    string name = parmWorkflowName ?? string.Empty;
+                    var type = parmWorkflowType;
+                    var name = parmWorkflowName ?? string.Empty;
                     WorkflowTypeCache workflowType = null;
 
-                    /* Get the type of workflow */
+                    // Get the type of workflow.
                     if ( type.AsGuidOrNull() != null )
                     {
                         workflowType = WorkflowTypeCache.Get( type.AsGuid() );
@@ -147,19 +145,12 @@ namespace Rock.Lava.Blocks
                         workflowType = WorkflowTypeCache.Get( type.AsInteger() );
                     }
 
-                    /* Try to activate the workflow */
+                    // Try to activate the workflow.
                     if ( workflowType != null )
                     {
                         workflow = Rock.Model.Workflow.Activate( ( WorkflowTypeCache ) workflowType, ( string ) parmWorkflowName );
 
-                        /* Set any workflow attributes that were specified. */
-                        foreach ( var attr in attributes )
-                        {
-                            if ( workflow.Attributes.ContainsKey( attr.Key ) )
-                            {
-                                workflow.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                            }
-                        }
+                        SetWorkflowAttributeValues( workflow, entityAttributes );
 
                         if ( workflow != null )
                         {
@@ -183,12 +174,12 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                /* They instead provided a WorkflowId, so we are working with an existing Workflow. */
+                // They instead provided a WorkflowId, so we are working with an existing Workflow.
                 else if ( parmWorkflowId != null )
                 {
                     string id = parmWorkflowId.ToString();
 
-                    /* Get the workflow */
+                    // Get the workflow
                     if ( id.AsGuidOrNull() != null )
                     {
                         workflow = workflowService.Get( id.AsGuid() );
@@ -202,23 +193,21 @@ namespace Rock.Lava.Blocks
                     {
                         if ( workflow.CompletedDateTime == null )
                         {
-                            /* Currently we cannot activate an activity in a workflow that is currently
-                                * being processed. The workflow is held in-memory so the activity we would
-                                * activate would not show up for the processor and probably never run.
-                                */
+                            // Currently we cannot activate an activity in a workflow that is currently
+                            // being processed. The workflow is held in-memory so the activity we would
+                            // activate would not show up for the processor and probably never run.
                             if ( !workflow.IsProcessing )
                             {
                                 bool hasError = false;
 
-                                /* If they provided an ActivityType parameter then we need to activate
-                                    * a new activity in the workflow.
-                                    */
+                                // If they provided an ActivityType parameter then we need to activate
+                                // a new activity in the workflow.
                                 if ( parmActivityType != null )
                                 {
                                     string type = parmActivityType.ToString();
                                     WorkflowActivityTypeCache activityType = null;
 
-                                    /* Get the type of activity */
+                                    // Get the type of activity.
                                     if ( type.AsGuidOrNull() != null )
                                     {
                                         activityType = WorkflowActivityTypeCache.Get( type.AsGuid() );
@@ -232,14 +221,7 @@ namespace Rock.Lava.Blocks
                                     {
                                         activity = WorkflowActivity.Activate( activityType, workflow );
 
-                                        /* Set any workflow attributes that were specified. */
-                                        foreach ( var attr in attributes )
-                                        {
-                                            if ( activity.Attributes.ContainsKey( attr.Key ) )
-                                            {
-                                                activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                            }
-                                        }
+                                        SetActivityAttributeValues( activity, entityAttributes );
                                     }
                                     else
                                     {
@@ -248,7 +230,7 @@ namespace Rock.Lava.Blocks
                                     }
                                 }
 
-                                /* Process the existing Workflow. */
+                                // Process the existing Workflow.
                                 if ( !hasError )
                                 {
                                     List<string> errorMessages;
@@ -292,47 +274,65 @@ namespace Rock.Lava.Blocks
                 }
 
                 base.OnRender( context, result );
-                
             } );
         }
 
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        private void SetWorkflowAttributeValues( Rock.Model.Workflow workflow, LavaElementAttributes lavaAttributes )
         {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:('[^']+'|[\\d.]+))" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
+            if ( workflow == null || lavaAttributes == null )
             {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    if ( itemParts[1].Trim()[0] == '\'' )
-                    {
-                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                    }
-                    else
-                    {
-                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim() );
-                    }
-                }
+                return;
             }
 
-            return parms;
+            var attributeNameToKeyMap = GetLavaParameterNameToAttributeKeyMap( workflow.Attributes?.Keys );
+            // Set any workflow attributes that were specified.
+            foreach ( var attr in lavaAttributes.Attributes )
+            {
+                var exists = attributeNameToKeyMap.TryGetValue( attr.Key, out string entityKey );
+                if ( exists )
+                {
+                    workflow.SetAttributeValue( entityKey, attr.Value.ToString() );
+                }
+            }
+        }
+
+        private void SetActivityAttributeValues( Rock.Model.WorkflowActivity activity, LavaElementAttributes lavaAttributes )
+        {
+            if ( activity == null || lavaAttributes == null )
+            {
+                return;
+            }
+
+            var attributeNameToKeyMap = GetLavaParameterNameToAttributeKeyMap( activity.Attributes?.Keys );
+            // Set any activity attributes that were specified.
+            foreach ( var attr in lavaAttributes.Attributes )
+            {
+                var exists = attributeNameToKeyMap.TryGetValue( attr.Key, out string entityKey );
+                if ( exists )
+                {
+                    activity.SetAttributeValue( entityKey, attr.Value.ToString() );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a map of case-insensitive keys to the correct Entity Attribute casing.
+        /// Entity Attribute keys are case-sensitive, whereas Lava parameters are not.
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetLavaParameterNameToAttributeKeyMap( IEnumerable<string> keys )
+        {
+            var attributeNameToKeyMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            if ( keys != null )
+            {
+                foreach ( var attributeKey in keys )
+                {
+                    attributeNameToKeyMap[attributeKey] = attributeKey;
+                }
+            }
+            return attributeNameToKeyMap;
         }
 
         #region ILavaSecured

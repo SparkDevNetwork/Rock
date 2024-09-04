@@ -1,0 +1,71 @@
+<template>
+    <div class="current-counts">
+        <div v-for="columnCounts in columns" class="current-counts-column">
+            <template v-if="!showCountsByLocation" v-for="area in columnCounts">
+                <h3>{{ area.name }}</h3>
+                <template v-for="group in area.children">
+                    <h4 class="count-row">
+                        <span class="title">{{ group.name }}</span>
+                        <span class="subtitle">{{ group.count }}</span>
+                    </h4>
+
+                    <ul v-if="group.children.length > 0">
+                        <li v-for="location in group.children">
+                            <div class="count-row">
+                                <span class="title">{{ location.name }}</span>
+                                <span class="subtitle">{{ location.count }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                </template>
+            </template>
+
+            <template v-else>
+                <div v-for="location in columnCounts">
+                    <h4 class="count-row">
+                        <span class="title">{{ location.name }}</span>
+                        <span class="subtitle">{{ location.count }}</span>
+                    </h4>
+
+                    <ul v-if="location.children.length > 0">
+                        <li v-for="group in location.children">
+                            <div class="count-row">
+                                <span class="title">{{ group.name }}</span>
+                                <span class="subtitle">{{ group.count }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { AttendanceCountGroup } from "./types.partial";
+
+    const props = defineProps({
+        counts: {
+            type: Array as PropType<AttendanceCountGroup[]>,
+            required: true
+        },
+
+        showCountsByLocation: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const firstColumnCounts = computed((): AttendanceCountGroup[] => {
+        return props.counts.filter((_, index) => index % 2 === 0);
+    });
+
+    const secondColumnCounts = computed((): AttendanceCountGroup[] => {
+        return props.counts.filter((_, index) => index % 2 === 1);
+    });
+
+    const columns = computed((): AttendanceCountGroup[][] => {
+        return [firstColumnCounts.value, secondColumnCounts.value];
+    });
+</script>

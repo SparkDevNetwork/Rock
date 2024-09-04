@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
@@ -29,12 +30,17 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets threshold that will prevent checkin (no option to override)
         /// </summary>
-        public int? FirmRoomThreshold { get; set; }
+        public string FirmRoomThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the image identifier.
         /// </summary>
         public ListItemBag Image { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image identifier.
+        /// </summary>
+        public string ImageUrlParam { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -70,7 +76,7 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets a threshold that will prevent checkin unless a manager overrides
         /// </summary>
-        public int? SoftRoomThreshold { get; set; }
+        public string SoftRoomThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the address fields.
@@ -113,6 +119,13 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// The geo fence well known text.
         /// </value>
         public string GeoFence_WellKnownText { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the guid.
+        /// </summary>
+        /// <value>
+        /// The guid.
+        /// </value>
+        public Guid Guid { get; set; }
     }
 }

@@ -42,6 +42,7 @@ namespace Rock.Web.UI.Controls
 
             this.CssClass = "searchinput";
             this.AccessKey = "q";
+            this.TextMode = TextBoxMode.Search;
         }
 
         /// <summary>

@@ -16,6 +16,7 @@
     import { ReportTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import TreeItemPicker from "./treeItemPicker.obs";
     import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -31,7 +32,7 @@
 
         /** Guid of an Entity Type to filter results by the reports that relate to this entity type. */
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -56,7 +57,7 @@
     function refreshItemProvider(): void {
         const provider = new ReportTreeItemProvider();
         provider.includeCategoryGuids = props.categoryGuids;
-        provider.entityTypeGuid = props.entityTypeGuid;
+        provider.entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
         provider.securityGrantToken = securityGrantToken.value;
 
         itemProvider.value = provider;

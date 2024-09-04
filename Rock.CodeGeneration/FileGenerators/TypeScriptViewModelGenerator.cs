@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
-using Rock.CodeGeneration.Utility;
+using System.Text.RegularExpressions;
 
 using Rock;
+using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
-using System.ComponentModel;
+using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
@@ -37,7 +38,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
 
-            return GenerateTypeViewModel( GetClassNameForType( type ), typeComment, type.GetProperties().ToList() );
+            return GenerateTypeViewModel( GetClassNameForType( type ), typeComment, type.GetProperties().ToList(), type );
         }
 
         /// <summary>
@@ -46,15 +47,16 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="typeName">Name of the type.</param>
         /// <param name="typeComment">The type comment.</param>
         /// <param name="properties">The properties.</param>
+        /// <param name="type">The type being generated.</param>
         /// <param name="isAutoGen">if set to <c>true</c> [is automatic gen].</param>
         /// <returns>System.String.</returns>
-        public string GenerateTypeViewModel( string typeName, string typeComment, IList<PropertyInfo> properties, bool isAutoGen = true )
+        public string GenerateTypeViewModel( string typeName, string typeComment, IList<PropertyInfo> properties, Type type, bool isAutoGen = true )
         {
             var imports = new List<TypeScriptImport>();
 
             var sb = new StringBuilder();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
             sb.AppendLine( $"export type {typeName} = {{" );
 
             var sortedProperties = properties.OrderBy( p => p.Name ).ToList();
@@ -112,7 +114,7 @@ namespace Rock.CodeGeneration.FileGenerators
             sb.Append( GenerateViewModelForEnum( type, true ) );
             sb.AppendLine();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
 
             if ( !isFlagType )
             {
@@ -139,7 +141,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
             var sb = new StringBuilder();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
 
             if ( type.GetCustomAttribute<ObsoleteAttribute>() is ObsoleteAttribute obsoleteTypeAttribute )
             {
@@ -191,7 +193,14 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 if ( !isDescription )
                 {
-                    sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
+                    if ( type.GetCustomAttribute<FlagsAttribute>() != null )
+                    {
+                        sb.Append( $"    {fieldName}: 0x{( int ) field.GetRawConstantValue():X4}" );
+                    }
+                    else
+                    {
+                        sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
+                    }
                 }
                 else
                 {
@@ -248,7 +257,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
             var sb = new StringBuilder();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
             sb.AppendLine( $"export const {type.Name} = {{" );
 
             // Loop through each value and emit the declaration.
@@ -378,7 +387,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             var xdoc = _xmlDoc.GetMemberComments( memberInfo )?.Summary?.PlainText;
 
-            AppendCommentBlock( sb, xdoc, indentationSize );
+            AppendCommentBlock( sb, xdoc, indentationSize, memberInfo.DeclaringType );
         }
 
         /// <summary>
@@ -387,16 +396,58 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="sb">The StringBuilder to append the comment to.</param>
         /// <param name="comment">The comment to append.</param>
         /// <param name="indentationSize">Size of the indentation for the comment block.</param>
-        private void AppendCommentBlock( StringBuilder sb, string comment, int indentationSize )
+        /// /// <param name="sourceType">The source type that this comment is related to, if a method this would be the type that contains the method.</param>
+        private void AppendCommentBlock( StringBuilder sb, string comment, int indentationSize, Type sourceType )
         {
             if ( comment.IsNullOrWhiteSpace() )
             {
                 return;
             }
 
+            // Replace any XML code with backticks.
+            comment = comment.Replace( "<c>", "`" ).Replace( "</c>", "`" );
+
+            // Replace any self closing see tags.
+            comment = Regex.Replace( comment, "<see\\s+cref=\"([^\"]+)\"\\s*\\/>", m =>
+            {
+                if ( m.Groups[1].Value.Length < 2 || m.Groups[1].Value[1] != ':' )
+                {
+                    return m.Groups[1].Value;
+                }
+
+                var segments = m.Groups[1].Value.Substring( 2 ).Split( '.' );
+
+                if ( segments.Length < 2 )
+                {
+                    return m.Groups[1].Value;
+                }
+
+                if ( m.Groups[1].Value[0] == 'F' )
+                {
+                    // This should be an enum, so don't change case.
+                    return $"{{@link {segments.TakeLast( 2 ).JoinStrings( "." )}}}";
+                }
+                else
+                {
+                    var refTypeName = segments[segments.Length - 2];
+                    var refName = segments[segments.Length - 1];
+
+                    return $"{{@link {refTypeName}.{refName.ToCamelCase()}}}";
+                }
+            } );
+
+            // Replace any non self closing see tags.
+            comment = Regex.Replace( comment, "<see\\s+cref=\"[^\"]+\"\\s*>([^<]*)<\\/see>", m =>
+            {
+                return m.Groups[1].Value;
+            } );
+
             // If it contains newline information then insert it as a block.
             if ( comment.Contains( "\r\n" ) )
             {
+                // Paragraph breaks come in as 3 newline pairs, make it just 2.
+                comment = comment.Replace( "\r\n\r\n\r\n", "\r\n\r\n" );
+
                 comment = comment.Replace( "\r\n", $"\r\n{new string( ' ', indentationSize )} * " );
 
                 sb.AppendLine( $"{new string( ' ', indentationSize )}/**" );
@@ -416,7 +467,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns><c>true</c> if the type is non-nullable; otherwise, <c>false</c>.</returns>
         private static bool IsNonNullType( Type type )
         {
-            return type.IsPrimitive || type.IsEnum || type == typeof( decimal );
+            return type.IsPrimitive || type.IsEnum || type == typeof( decimal ) || type == typeof( Guid );
         }
 
         /// <summary>
@@ -512,6 +563,19 @@ namespace Rock.CodeGeneration.FileGenerators
 
                     tsType = $"{itemType}[]";
                     imports.AddRange( itemImports );
+                    isNullable = isNullable || !isRequired;
+                }
+                else if ( genericTypeDefinition == typeof( ValidPropertiesBox<> ) )
+                {
+                    var (valueType, valueImports) = GetTypeScriptType( type.GetGenericArguments()[0], true );
+
+                    tsType = $"ValidPropertiesBox<{valueType}>";
+                    imports.AddRange( valueImports );
+                    imports.Add( new TypeScriptImport
+                    {
+                        SourcePath = "@Obsidian/ViewModels/Utility/validPropertiesBox",
+                        NamedImport = "ValidPropertiesBox"
+                    } );
                     isNullable = isNullable || !isRequired;
                 }
             }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -175,11 +175,13 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
                 SystemGuid.Page.REMINDER_LIST,
                 "fa fa-bell" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_LIST, "reminders", REMINDERS_ROUTE_1 );
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_LIST, "reminders/{EntityTypeId}", REMINDERS_ROUTE_2 );
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_LIST, "reminders/{EntityTypeId}/{EntityId}", REMINDERS_ROUTE_3 );
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_LIST, "reminders/{EntityTypeId}/{ReminderTypeId}", REMINDERS_ROUTE_4 );
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_LIST, "reminders/{EntityTypeId}/{ReminderTypeId}/{EntityId}", REMINDERS_ROUTE_5 );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.AddBlock(
                 true,
@@ -229,7 +231,9 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
                 SystemGuid.Page.REMINDER_TYPES,
                 "fa fa-bell" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_TYPES, "admin/general/reminder-types", REMINDER_TYPES_ROUTE );
+#pragma warning restore CS0618
 
             // This is temporary, to prevent the Reminder Types page from showing up in pre-alpha.
             // REMOVE THIS FOR PRODUCTION RELEASE.

@@ -52,6 +52,12 @@ namespace Rock.Model
         public bool CanDelete( SignatureDocument item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<RegistrationRegistrant>( Context ).Queryable().Any( a => a.SignatureDocumentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocument.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

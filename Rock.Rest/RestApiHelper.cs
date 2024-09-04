@@ -460,7 +460,7 @@ namespace Rock.Rest
 
                     foreach ( var attributeKey in attributedEntity.Attributes.Keys )
                     {
-                        values.AddOrIgnore( attributeKey, new ModelAttributeValueBag
+                        values.TryAdd( attributeKey, new ModelAttributeValueBag
                         {
                             Value = attributedEntity.GetAttributeValue( attributeKey ),
                             TextValue = attributedEntity.GetAttributeTextValue( attributeKey ),

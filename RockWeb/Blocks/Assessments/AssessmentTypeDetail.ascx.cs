@@ -89,7 +89,6 @@ namespace RockWeb.Blocks.Assessments
                 return;
             }
 
-            this.InitializeActionButtons();
         }
 
         /// <summary>
@@ -98,10 +97,9 @@ namespace RockWeb.Blocks.Assessments
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !_blockContextIsValid )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -109,6 +107,8 @@ namespace RockWeb.Blocks.Assessments
             {
                 this.ShowDetail( _entityId );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -294,14 +294,10 @@ namespace RockWeb.Blocks.Assessments
         /// <summary>
         /// Initialize buttons that perform entity-specific actions.
         /// </summary>
-        private void InitializeActionButtons()
+        private void InitializeActionButtons( AssessmentType currentEntity )
         {
-            var currentEntity = this.GetTargetEntity();
-
             // Delete button
-            var deleteClickScript = @"javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');";
-
-            deleteClickScript = string.Format( deleteClickScript, _entityType.FriendlyName, this.DeleteItemDetailMessage );
+            var deleteClickScript = $"javascript: return Rock.dialogs.confirmDelete(event, '\"{currentEntity.Title}\" assessment type', '{this.DeleteItemDetailMessage}');";
 
             btnDelete.Attributes["onclick"] = deleteClickScript;
 
@@ -424,6 +420,7 @@ namespace RockWeb.Blocks.Assessments
                 ShowEditDetails( currentEntity );
             }
 
+            this.InitializeActionButtons( currentEntity );
         }
 
         /// <summary>

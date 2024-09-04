@@ -448,8 +448,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbNotice.Visible = false;
 
             if ( Request["PersonGuid"] != null )
@@ -484,6 +482,8 @@ namespace RockWeb.Blocks.Groups
                     ShowView();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1722,7 +1722,7 @@ namespace RockWeb.Blocks.Groups
                         IsActive = g.IsActive,
                         GroupRole = string.Empty,
                         DateAdded = DateTime.MinValue,
-                        Schedule = g.Schedule.ToFriendlyScheduleText( true ),
+                        Schedule = g.Schedule?.ToFriendlyScheduleText( true ),
                         MemberCount = qryMembers.Count(),
                         AverageAge = Math.Round( qryMembers.Select( m => new { m.Person.BirthDate, m.Person.DeceasedDate } ).ToList().Select( a => Person.GetAge( a.BirthDate, a.DeceasedDate ) ).Average() ?? 0.0D ),
                         Campus = g.Campus != null ? g.Campus.Name : string.Empty,

@@ -43,11 +43,21 @@ namespace Rock.ViewModels.Controls
         /// See: Rock.Field.IFieldType.GetPublicConfigurationValues()
         /// </remarks>
         /// <value>The configuration options.</value>
-        public Dictionary<string, string> ConfigurationValues { get; set; }
+        public Dictionary<string, string> AdminConfigurationValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration values that describe the field
+        /// when it is in edit mode (such as the default control).
+        /// </summary>
+        /// <remarks>
+        /// See: Rock.Field.IFieldType.GetPublicConfigurationValues()
+        /// </remarks>
+        /// <value>The edit mode configuration values.</value>
+        public Dictionary<string, string> EditConfigurationValues { get; set; }
 
         /// <summary>
         /// Gets or sets the default attribute value view model that corresponds
-        /// to the current <see cref="ConfigurationValues"/>.
+        /// to the current <see cref="EditConfigurationValues"/>.
         /// </summary>
         /// <value>The default value information.</value>
         public string DefaultValue { get; set; }

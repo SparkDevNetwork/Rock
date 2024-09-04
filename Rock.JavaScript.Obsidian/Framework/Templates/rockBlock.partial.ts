@@ -22,13 +22,14 @@ import { Component, computed, defineComponent, nextTick, onErrorCaptured, onMoun
 import { useStore } from "@Obsidian/PageState";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
-import { provideBlockGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock } from "@Obsidian/Utility/block";
-import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
+import { createInvokeBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock, provideStaticContent } from "@Obsidian/Utility/block";
+import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
 import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+import { BlockReloadMode } from "@Obsidian/Enums/Cms/blockReloadMode";
+import { BrowserBus } from "@Obsidian/Utility/browserBus";
 
 const store = useStore();
 
@@ -117,6 +118,31 @@ function updateConfigurationBarActions(blockContainerElement: HTMLElement, actio
     });
 }
 
+/**
+ * Converts a HTML string to a collection of Node objects.
+ *
+ * @param content The HTML content to be converted.
+ *
+ * @returns A collection of Node objects that represent the HTML.
+ */
+function convertHtmlToNodes(content: string | undefined | null): Node[] {
+    if (typeof content !== "string") {
+        return [];
+    }
+
+    const nodes: Node[] = [];
+    const root = document.createElement("div");
+    root.innerHTML = content;
+
+    while (root.firstChild !== null) {
+        const node = root.firstChild;
+        node.remove();
+        nodes.push(node);
+    }
+
+    return nodes;
+}
+
 export default defineComponent({
     name: "RockBlock",
 
@@ -132,6 +158,10 @@ export default defineComponent({
         startTimeMs: {
             type: Number as PropType<number>,
             required: true
+        },
+        staticContent: {
+            type: Array as PropType<Node[]>,
+            required: false
         }
     },
 
@@ -141,6 +171,7 @@ export default defineComponent({
         const blockContainerElement = ref<HTMLElement | null>(null);
         const configurationValues = ref(props.config.configurationValues);
         const configCustomActions = ref(props.config.customConfigurationActions);
+        const staticContent = ref(props.staticContent ?? []);
         const customActionComponent = ref<Component | null>(null);
         const currentBlockComponent = ref<Component | null>(props.blockComponent);
 
@@ -192,14 +223,7 @@ export default defineComponent({
             return await httpCall<T>("POST", url, params, data);
         };
 
-        const invokeBlockAction: InvokeBlockActionFunc = async <T>(actionName: string, data: HttpBodyData = undefined) => {
-            return await post<T>(`/api/v2/BlockActions/${store.state.pageGuid}/${props.config.blockGuid}/${actionName}`, undefined, {
-                __context: {
-                    pageParameters: store.state.pageParameters
-                },
-                ...data
-            });
-        };
+        const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters);
 
         /**
          * Reload the block by requesting the new initialization data and then
@@ -217,6 +241,7 @@ export default defineComponent({
                     configurationValuesChanged.reset();
                     configurationValues.value = result.data?.configurationValues;
                     configCustomActions.value = result.data?.customConfigurationActions;
+                    staticContent.value = convertHtmlToNodes(result.data?.initialContent);
                     currentBlockComponent.value = props.blockComponent;
                 });
             }
@@ -231,9 +256,35 @@ export default defineComponent({
          * @returns A block person preference provider.
          */
         function getPreferenceProvider(): IBlockPersonPreferencesProvider {
+            let timeStampFromSessionData = 0;
+            let valuesFromSessionData: PersonPreferenceValueBag[] = [];
+            let values: PersonPreferenceValueBag[] = [];
+
+            const sessionStorageKey = `${props.config.rootElementId}-preferences`;
+
+            try {
+                const sessionStorageDataRaw = sessionStorage.getItem(sessionStorageKey) ?? "{}";
+                timeStampFromSessionData = (JSON.parse(sessionStorageDataRaw))?.timeStamp ?? 0;
+                valuesFromSessionData = ((JSON.parse(sessionStorageDataRaw))?.values ?? []) as PersonPreferenceValueBag[];
+            }
+            catch { /* continue with the default values if parsing of sessionData fails */ }
+
+            // Compare the preference in the props with the one in the Session Storage and choose the later of the two.
+            // This was done to avoid displaying outdated preference when the individual navigates to the webpage using a back button for instance.
+            if (props.config?.preferences?.timeStamp && timeStampFromSessionData <= props.config.preferences.timeStamp) {
+                const preferenceDataToBeStored = {
+                    timeStamp: props.config.preferences?.timeStamp,
+                    values: props.config.preferences?.values ?? []
+                };
+                sessionStorage.setItem(sessionStorageKey, `${JSON.stringify(preferenceDataToBeStored)}`);
+                values = props.config.preferences?.values ?? [];
+            }
+            else {
+                values = valuesFromSessionData;
+            }
+
             const entityTypeKey = props.config.preferences?.entityTypeKey ?? undefined;
             const entityKey = props.config.preferences?.entityKey ?? undefined;
-            const values = props.config.preferences?.values ?? [];
             const anonymous = !store.state.isAnonymousVisitor && !store.state.currentPerson;
 
             const preferenceProvider: IBlockPersonPreferencesProvider = {
@@ -272,6 +323,18 @@ export default defineComponent({
                     }
                 },
             };
+
+            // Store the preference in the Session Storage when it changes after render.
+            const onPreferenceSave = (prefereneces: PersonPreferenceValueBag[]): void => {
+                const preferenceDataToBeStored = {
+                    timeStamp: new Date().getTime(),
+                    values: prefereneces
+                };
+
+                sessionStorage.setItem(sessionStorageKey, `${JSON.stringify(preferenceDataToBeStored)}`);
+            };
+
+            preferenceProvider.blockPreferences.on("preferenceSaved", onPreferenceSave);
 
             return preferenceProvider;
         }
@@ -352,15 +415,26 @@ export default defineComponent({
         provideReloadBlock(reloadBlock);
         providePersonPreferences(getPreferenceProvider());
         const configurationValuesChanged = provideConfigurationValuesChanged();
+        provideStaticContent(staticContent);
 
-        if (props.config.blockGuid) {
-            provideBlockGuid(props.config.blockGuid);
-        }
+        provideBlockGuid(props.config.blockGuid);
+        provideBlockTypeGuid(props.config.blockTypeGuid);
+        provideBlockBrowserBus(new BrowserBus({
+            block: props.config.blockGuid,
+            blockType: props.config.blockTypeGuid
+        }));
 
         // If we have a block guid, then add an event listener for configuration
         // changes to the block.
         if (props.config.blockGuid) {
             addBlockChangedEventListener(props.config.blockGuid, () => {
+                if (props.config.reloadMode === BlockReloadMode.Page) {
+                    window.location.href = window.location.href.toString();
+                }
+                else if (props.config.reloadMode === BlockReloadMode.Block) {
+                    reloadBlock();
+                }
+
                 configurationValuesChanged.invoke();
             });
         }

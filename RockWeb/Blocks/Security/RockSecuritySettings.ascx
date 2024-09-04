@@ -81,6 +81,15 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-6">
+                        <Rock:RockCheckBox
+                            ID="cbDisablePredictableIds"
+                            runat="server"
+                            Label="Disable Predictable IDs"
+                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs." />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
                         <Rock:RockDropDownList
                             runat="server"
                             ID="ddlHighRoles"
@@ -115,6 +124,12 @@
                             Help="2FA - Selected protection profiles will require two-factor authentication when logging in."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
+                        <Rock:NotificationBox
+                            runat="server"
+                            ID="nbTwoFactorAuthenticationDisabled"
+                            NotificationBoxType="Warning"
+                            Visible="false"
+                            Text="Please update your login pages to use the latest Login Block to enable Two-Factor Authentication." />
                     </div>
                 </div>
                 <Rock:PanelWidget runat="server" ID="pnlAuthenticationSettings" Title="Authentication Settings" CssClass="mt-3">

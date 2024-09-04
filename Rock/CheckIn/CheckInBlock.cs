@@ -176,64 +176,12 @@ namespace Rock.CheckIn
         public LocalDeviceConfiguration LocalDeviceConfig { get; set; } = new LocalDeviceConfiguration();
 
         /// <summary>
-        /// The current theme.
-        /// </summary>
-        [Obsolete( "Use LocalDeviceConfig...", true )]
-        [RockObsolete( "1.10" )]
-        protected string CurrentTheme
-        {
-            get => LocalDeviceConfig.CurrentTheme;
-            set => LocalDeviceConfig.CurrentTheme = value;
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [load unencrypted cookie].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [load unencrypted cookie]; otherwise, <c>false</c>.
         /// </value>
         protected virtual bool LoadUnencryptedLocalDeviceConfig { get => false; }
-
-        /// <summary>
-        /// The current kiosk id
-        /// </summary>
-        [Obsolete( "Use LocalDeviceConfig...", true )]
-        [RockObsolete( "1.10" )]
-        protected int? CurrentKioskId
-        {
-            get => LocalDeviceConfig.CurrentKioskId;
-            set => LocalDeviceConfig.CurrentKioskId = value;
-        }
-
-        /// <summary>
-        /// The current primary checkin-type id
-        /// </summary>
-        [Obsolete( "Use LocalDeviceConfig...", true )]
-        [RockObsolete( "1.10" )]
-        protected int? CurrentCheckinTypeId
-        {
-            get
-            {
-                return LocalDeviceConfig.CurrentCheckinTypeId;
-            }
-
-            set
-            {
-                LocalDeviceConfig.CurrentCheckinTypeId = value;
-                _currentCheckinType = null;
-            }
-        }
-
-        /// <summary>
-        /// The current group type ids (Checkin Areas)
-        /// </summary>
-        [Obsolete( "Use LocalDeviceConfig...", true )]
-        [RockObsolete( "1.10" )]
-        protected List<int> CurrentGroupTypeIds
-        {
-            get => LocalDeviceConfig.CurrentGroupTypeIds;
-            set => LocalDeviceConfig.CurrentGroupTypeIds = value;
-        }
 
         /// <summary>
         /// Gets the type of the current check in.
@@ -298,35 +246,6 @@ namespace Rock.CheckIn
         }
 
         private Rock.Model.Workflow _currentWorkflow;
-
-        /// <summary>
-        /// Holds cookie names shared across certain check-in blocks.
-        /// </summary>
-        [Obsolete( "Use CheckInCookieKey instead", true )]
-        [RockObsolete( "1.10" )]
-        public struct CheckInCookie
-        {
-            /// <summary>
-            /// The local device configuration
-            /// </summary>
-            public static readonly string LocalDeviceConfig = CheckInCookieKey.LocalDeviceConfig;
-
-            /// <summary>
-            /// The name of the cookie that holds the DeviceId. Setters of this cookie should
-            /// be sure to set the expiration to a time when the device is no longer valid.
-            /// </summary>
-            public static readonly string DEVICEID = CheckInCookieKey.DeviceId;
-
-            /// <summary>
-            /// The name of the cookie that holds whether or not the device was a mobile device.
-            /// </summary>
-            public static readonly string ISMOBILE = CheckInCookieKey.IsMobile;
-
-            /// <summary>
-            /// The phone number used to check in could be in this cookie.
-            /// </summary>
-            public static readonly string PHONENUMBER = CheckInCookieKey.PhoneNumber;
-        }
 
         /// <summary>
         /// Gets a value indicating whether the kiosk has active group types and locations that 
@@ -848,7 +767,7 @@ namespace Rock.CheckIn
                         pageReference.Parameters = new Dictionary<string, string>();
                     }
 
-                    pageReference.Parameters.AddOrIgnore( PageParameterKey.IsActive, "True" );
+                    pageReference.Parameters.TryAdd( PageParameterKey.IsActive, "True" );
                 }
 
                 return pageReference.BuildUrl();

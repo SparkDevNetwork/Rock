@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <g v-if="levelNumber == 1">
+    <g class="flow-level" v-if="levelNumber == 1">
         <text v-for="node in visibleNodes" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" font-size="12" text-anchor="end">
             {{ node.order }}
         </text>
     </g>
-    <g v-if="levelNumber > 1">
+    <g class="flow-edges" v-if="levelNumber > 1">
         <template v-for="node in levelData" key="node.id + 'flows'">
             <path
                   v-for="(flow, index) in node.inFlows"
@@ -17,7 +17,7 @@
                   :class="flowClass(flow)"></path>
         </template>
     </g>
-    <g>
+    <g class="flow-sections">
         <rect
               v-for="node in levelData"
               key="node.id" :x="node.x"
@@ -99,7 +99,7 @@
     }
 
     function flowClass(flow: FlowDiagramInFlow): string {
-        return `edge node-${flow.sourceId} node-${flow.targetId} level-${props.levelNumber - 1}_${props.levelNumber}`;
+        return `edge node-${flow.sourceId} node-${flow.targetId} level-${props.levelNumber - 1} level-${props.levelNumber - 1}_${props.levelNumber}`;
     }
 
     function onHoverFlow(flow: FlowDiagramInFlow, e: MouseEvent): void {

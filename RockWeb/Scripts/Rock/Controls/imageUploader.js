@@ -16,8 +16,8 @@
             }
 
             var wsUrl = Rock.settings.get('baseUrl')
-                        + 'ImageUploader.ashx?'
-                        + 'isBinaryFile=' + options.isBinaryFile;
+                + 'ImageUploader.ashx?'
+                + 'isBinaryFile=' + options.isBinaryFile;
 
             if (options.isBinaryFile == 'T') {
                 wsUrl += '&fileId=' + options.fileId
@@ -61,12 +61,19 @@
                     else {
                         $binaryFileId.val(data.response().result.Id);
                     }
-                    
+
                     var getImageUrl = Rock.settings.get('baseUrl')
                         + 'GetImage.ashx?'
-                        + 'isBinaryFile=' + (options.isBinaryFile || 'T')
-                        + '&id=' + data.response().result.Id
-                        + '&fileName=' + data.response().result.FileName
+                        + 'isBinaryFile=' + (options.isBinaryFile || 'T');
+
+                    if (options.disablePredictableIds) {
+                        getImageUrl += '&guid=' + data.response().result.Guid
+                    }
+                    else {
+                        getImageUrl += '&id=' + data.response().result.Id;
+                    }
+
+                    getImageUrl += '&fileName=' + data.response().result.FileName
                         + '&width=500';
 
                     if (options.rootFolder) {
@@ -129,7 +136,7 @@
                 }
 
                 if (options.deleteFunction) {
-                  options.deleteFunction();
+                    options.deleteFunction();
                 }
 
                 if (options.postbackRemovedScript) {

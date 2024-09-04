@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -72,16 +73,19 @@ namespace RockWeb.Blocks.Cms
     [BooleanField(
         "Show Nick Name",
         Key = AttributeKey.ShowNickName,
-        Description = "Whether to show the person's Nickname in addition to the First Name.",
+        Description = "Whether to show the person's Nickname in addition to the First Name in the edit screen.",
         DefaultBooleanValue = true,
         Order = 4 )]
 
-    [BooleanField(
-        "View Only",
-        Key = AttributeKey.ViewOnly,
-        Description = "Should people be prevented from editing their profile or family records?",
-        DefaultBooleanValue = false,
-        Order = 5 )]
+    [CustomDropdownListField(
+        "Display Mode",
+        Key = AttributeKey.DisplayMode,
+        Description = "Specifies the Display Mode. To prevent people from editing their profile or family records choose 'View Only'.",
+        ListSource = "VIEW^View Only,EDIT^Edit Only,VIEWEDIT^View & Edit",
+        IsRequired = true,
+        DefaultValue = "VIEWEDIT",
+        Order = 5
+        )]
 
     [BooleanField(
         "Show Family Members",
@@ -235,20 +239,32 @@ namespace RockWeb.Blocks.Cms
         DefaultValue = "Campus",
         Order = 25 )]
 
-    [BooleanField(
-        "Require Gender",
-        Key = AttributeKey.RequireGender,
-        Description = "Controls whether or not the gender field is required.",
-        IsRequired = true,
-        DefaultBooleanValue = true,
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
         Order = 26 )]
 
-    [BooleanField(
-        "Show Gender",
-        Key = AttributeKey.ShowGender,
-        Description = "Whether gender is shown or not.",
-        DefaultBooleanValue = true,
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
         Order = 27 )]
+
+    [CustomDropdownListField(
+        "Gender",
+        Key = AttributeKey.Gender,
+        Description = "How should Gender be displayed?",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Required",
+        Order = 28 )]
 
     [CustomDropdownListField(
         "Race",
@@ -257,7 +273,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Hide",
-        Order = 28 )]
+        Order = 29 )]
 
     [CustomDropdownListField(
         "Ethnicity",
@@ -266,7 +282,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Hide",
-        Order = 29 )]
+        Order = 30 )]
 
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
@@ -276,7 +292,7 @@ namespace RockWeb.Blocks.Cms
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
-        Order = 30 )]
+        Order = 31 )]
 
     #endregion
 
@@ -290,8 +306,7 @@ namespace RockWeb.Blocks.Cms
             public const string ShowTitle = "ShowTitle";
             public const string ShowSuffix = "ShowSuffix";
             public const string ShowNickName = "ShowNickName";
-            public const string ViewOnly = "ViewOnly";
-            public const string ShowGender = "ShowGender";
+            public const string DisplayMode = "DisplayMode";
             public const string ShowFamilyMembers = "ShowFamilyMembers";
             public const string ShowAddresses = "ShowAddresses";
             public const string AddressTypeValueGuid = "AddressType";
@@ -311,10 +326,17 @@ namespace RockWeb.Blocks.Cms
             public const string PersonAttributesChildren = "PersonAttributes(children)";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
-            public const string RequireGender = "RequireGender";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string ViewTemplate = "ViewTemplate";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string Gender = "Gender";
+        }
+
+        private static class PageParametersName
+        {
+            public const string ReturnUrl = "ReturnUrl";
         }
 
         private static class MergeFieldKey
@@ -324,6 +346,11 @@ namespace RockWeb.Blocks.Cms
             /// If this is true, the Edit button should not be visible
             /// </summary>
             public const string ViewOnly = "ViewOnly";
+
+            /// <summary>
+            /// Whether the public profile displays in View, Edit or View & Edit mode.
+            /// </summary>
+            public const string DisplayMode = "DisplayMode";
 
             /// <summary>
             /// The family that is currently selected (the person could be in multiple families).
@@ -351,6 +378,16 @@ namespace RockWeb.Blocks.Cms
             /// True if gender should be shown.
             /// </summary>
             public const string ShowGender = "ShowGender";
+
+            /// <summary>
+            /// True if the person's title should be shown.
+            /// </summary>
+            public const string ShowTitle = "ShowTitle";
+
+            /// <summary>
+            /// True if the person's suffix should be shown.
+            /// </summary>
+            public const string ShowSuffix = "ShowSuffix";
 
             /// <summary>
             /// The families that this person is in.
@@ -427,10 +464,18 @@ namespace RockWeb.Blocks.Cms
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
         }
 
+        private static class DisplayMode
+        {
+            public const string ViewOnly = "VIEW";
+            public const string EditOnly = "EDIT";
+            public const string ViewAndEdit = "EDITVIEW";
+        }
+
         #region Fields
 
         private List<Guid> _requiredPhoneNumberGuids = new List<Guid>();
         private bool _isEditRecordAdult = false;
+        private string _displayMode;
 
         #endregion
 
@@ -452,6 +497,8 @@ namespace RockWeb.Blocks.Cms
             dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
 
             dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+
+            _displayMode = GetAttributeValue( AttributeKey.DisplayMode );
 
             SetElementVisibility();
 
@@ -488,7 +535,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             if ( CurrentPerson == null )
             {
                 pnlView.Visible = false;
@@ -500,12 +546,21 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowViewDetail();
+                if ( _displayMode == DisplayMode.EditOnly )
+                {
+                    ShowEditPersonDetails( CurrentPerson.Guid );
+                }
+                else
+                {
+                    ShowViewDetail();
+                }
             }
             else
             {
                 var handled = HandleLavaPostback( this.Request.Params["__EVENTTARGET"], this.Request.Params["__EVENTARGUMENT"] );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -516,7 +571,11 @@ namespace RockWeb.Blocks.Cms
         private void PublicProfileEdit_BlockUpdated( object sender, EventArgs e )
         {
             SetElementVisibility();
-            ShowViewDetail();
+
+            if ( _displayMode != DisplayMode.EditOnly )
+            {
+                ShowViewDetail();
+            }
         }
 
         /// <summary>
@@ -626,11 +685,15 @@ namespace RockWeb.Blocks.Cms
                 .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
                 .OrderByDescending( m => m.Person.Age ) );
 
+            // Prevent breaking changes for the legacy, "ViewOnly" MergeField.
+            var isViewOnly = _displayMode == DisplayMode.ViewOnly;
+
             mergeFields.Add( MergeFieldKey.FamilyMembers, orderedMembers );
 
             mergeFields.Add( MergeFieldKey.ShowFamilyMembers, GetAttributeValue( AttributeKey.ShowFamilyMembers ).AsBoolean() );
             mergeFields.Add( MergeFieldKey.Families, personFamilies );
-            mergeFields.Add( MergeFieldKey.ViewOnly, GetAttributeValue( AttributeKey.ViewOnly ).AsBoolean() );
+            mergeFields.Add( MergeFieldKey.ViewOnly, isViewOnly );
+            mergeFields.Add( MergeFieldKey.DisplayMode, _displayMode );
             mergeFields.Add( MergeFieldKey.AddressTypeValueId, DefinedValueCache.GetId( GetAttributeValue( AttributeKey.AddressTypeValueGuid ).AsGuid() ) );
 
             var groupLocationTypeValueGuid = this.GetAttributeValue( AttributeKey.AddressTypeValueGuid ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
@@ -646,9 +709,14 @@ namespace RockWeb.Blocks.Cms
             pnlAddress.Visible = showAddresses;
             mergeFields.Add( MergeFieldKey.ShowAddresses, showAddresses );
 
-            var showGender = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
-            rblGender.Visible = showGender;
+            var showGender = GetAttributeValue( AttributeKey.Gender ) != "Hide";
             mergeFields.Add( MergeFieldKey.ShowGender, showGender );
+
+            var showTitle = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
+            mergeFields.Add( MergeFieldKey.ShowTitle, showTitle );
+
+            var showSuffix = GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
+            mergeFields.Add( MergeFieldKey.ShowSuffix, showSuffix );
 
             var showEmailPreference = GetAttributeValue( AttributeKey.ShowEmailPreference ).AsBoolean();
             rblEmailPreference.Visible = showEmailPreference;
@@ -750,6 +818,15 @@ namespace RockWeb.Blocks.Cms
 
             epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
             epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
+
+            ddlGender.Visible = GetAttributeValue( AttributeKey.Gender ) != "Hide";
+            ddlGender.Required = GetAttributeValue( AttributeKey.Gender ) == "Required";
+
+            // There's no need to show the Cancel button when the DisplayMode is EditOnly.
+            if ( _displayMode == DisplayMode.EditOnly )
+            {
+                btnCancel.Visible = false;
+            }
         }
 
         #endregion
@@ -871,7 +948,7 @@ namespace RockWeb.Blocks.Cms
                     groupMember.Person.NickName = tbNickName.Text;
                     groupMember.Person.LastName = tbLastName.Text;
                     groupMember.Person.SuffixValueId = dvpSuffix.SelectedValueAsId();
-                    groupMember.Person.Gender = rblGender.SelectedValueAsEnum<Gender>();
+                    groupMember.Person.Gender =  ddlGender.SelectedValue.IsNotNullOrWhiteSpace() ? ddlGender.SelectedValueAsEnum<Gender>() : Gender.Unknown;
                     DateTime? birthdate = bpBirthDay.SelectedDate;
                     if ( birthdate.HasValue )
                     {
@@ -989,7 +1066,7 @@ namespace RockWeb.Blocks.Cms
                         person.GraduationYear = graduationYear;
                     }
 
-                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+                    person.Gender = ddlGender.SelectedValue.IsNotNullOrWhiteSpace() ? ddlGender.SelectedValueAsEnum<Gender>() : Gender.Unknown;
 
                     // update campus
                     // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
@@ -1059,6 +1136,16 @@ namespace RockWeb.Blocks.Cms
                         var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypeValueGuids ).Split( ',' ).AsGuidList();
 
                         var phoneNumberService = new PhoneNumberService( rockContext );
+
+                        // Remove any empty numbers
+                        foreach ( var phoneNumber in person.PhoneNumbers
+                                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value )
+                                            && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
+                                        .ToList() )
+                        {
+                            person.PhoneNumbers.Remove( phoneNumber );
+                            phoneNumberService.Delete( phoneNumber );
+                        }
 
                         // Remove any duplicate numbers
                         var hasDuplicate = person.PhoneNumbers.GroupBy( pn => pn.Number ).Where( g => g.Count() > 1 ).Any();
@@ -1262,7 +1349,30 @@ namespace RockWeb.Blocks.Cms
 
             if ( wrapTransactionResult )
             {
-                NavigateToCurrentPage();
+                if ( _displayMode == DisplayMode.EditOnly )
+                {
+                    // When in EditOnly mode if there's a ReturnUrl specified navigate to that page.
+                    // Otherwise stay on the page, but show a saved success message.
+                    var returnUrl = PageParameter( PageParametersName.ReturnUrl );
+
+                    if ( returnUrl.IsNotNullOrWhiteSpace() )
+                    {
+                        string redirectUrl = Server.UrlDecode( returnUrl );
+
+                        string queryString = string.Empty;
+                        if ( redirectUrl.Contains( "?" ) )
+                        {
+                            queryString = redirectUrl.Split( '?' ).Last();
+                        }
+                        Context.Response.Redirect( redirectUrl );
+                    }
+
+                    hlblSuccess.Visible = true;
+                }
+                else
+                {
+                    NavigateToCurrentPage();
+                }
             }
         }
 
@@ -1351,9 +1461,21 @@ namespace RockWeb.Blocks.Cms
 
             if ( !groupId.HasValue )
             {
-                // invalid situation; return and report nothing.
-                return;
+                // It's possible the DisplayMode doesn't default to View
+                // so we may need to initialize the selected family ourselves.
+                groupId = CurrentPerson.GetFamily().Id;
+
+                if ( groupId == 0 )
+                {
+                    // invalid situation; return and report nothing.
+                    return;
+                }
+
+                // We were able to initialize the selected family -
+                // ensure the hidden field reflects the correct value.
+                hfGroupId.Value = groupId.ToString();
             }
+
 
             var group = new GroupService( rockContext ).Get( groupId.Value );
             if ( group == null )
@@ -1409,19 +1531,7 @@ namespace RockWeb.Blocks.Cms
             bpBirthDay.SelectedDate = person.BirthDate;
             rpRace.SetValue( person.RaceValueId );
             epEthnicity.SetValue( person.EthnicityValueId );
-
-            // Setup the gender radio button list according to the required field
-            var genderRequired = GetAttributeValue( AttributeKey.RequireGender ).AsBooleanOrNull() ?? true;
-            if ( !genderRequired )
-            {
-                rblGender.Items.Add( new ListItem( "Unknown", "Unknown" ) );
-            }
-
-            // Add this check to handle if the gender requirement became required after an "Unknown" value was already set
-            if ( rblGender.Items.FindByValue( person.Gender.ConvertToString() ) != null )
-            {
-                rblGender.SelectedValue = person.Gender.ConvertToString();
-            }
+            ddlGender.SelectedValue = person.Gender == Gender.Unknown ? string.Empty : person.Gender.ConvertToString();
 
             if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
             {
@@ -1468,10 +1578,38 @@ namespace RockWeb.Blocks.Cms
 
                 // show/hide campus selector
                 bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                divFamilyInfo.Visible = showCampus;
                 cpCampus.Visible = showCampus;
+
                 if ( showCampus )
                 {
                     cpCampus.Campuses = CampusCache.All( false );
+
+                    var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                        .SplitDelimitedValues( true )
+                        .AsGuidList()
+                        .Select( a => DefinedValueCache.Get( a ) )
+                        .Where( a => a != null )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( selectedCampusTypeIds.Any() )
+                    {
+                        cpCampus.CampusTypesFilter = selectedCampusTypeIds;
+                    }
+
+                    var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                        .SplitDelimitedValues( true )
+                        .AsGuidList()
+                        .Select( a => DefinedValueCache.Get( a ) )
+                        .Where( a => a != null )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( selectedCampusStatusIds.Any() )
+                    {
+                        cpCampus.CampusStatusFilter = selectedCampusStatusIds;
+                    }
 
                     // Use the current person's campus if this a new person
                     if ( personGuid == Guid.Empty )
@@ -1589,8 +1727,45 @@ namespace RockWeb.Blocks.Cms
 
             BindPhoneNumbers( person );
 
+            if ( person.Id != CurrentPerson.Id && ( person.AccountProtectionProfile == AccountProtectionProfile.High || person.AccountProtectionProfile == AccountProtectionProfile.Extreme ) )
+            {
+                var accountProtectionWarningMessage = "Only the account owner can update the email.";
+
+                if ( GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean() )
+                {
+                    accountProtectionWarningMessage = "Only the account owner can update the email and phone number.";
+
+                    foreach ( RepeaterItem item in rContactInfo.Items )
+                    {
+                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+                        HtmlGenericControl phoneNumberContainer = ( HtmlGenericControl ) item.FindControl( "divPhoneNumberContainer" );
+
+                        pnbPhone.Enabled = false;
+                        pnbPhone.Required = false;
+                        cbSms.Enabled = false;
+                        phoneNumberContainer.RemoveCssClass( "required" );
+                    }
+                }
+
+                tbEmail.Enabled = false;
+                tbEmail.Required = false;
+                nbAccountProtectionWarning.Visible = true;
+                nbAccountProtectionWarning.NotificationBoxType = NotificationBoxType.Warning;
+                nbAccountProtectionWarning.Text = accountProtectionWarningMessage;
+
+            }
+            else
+            {
+                tbEmail.Enabled = true;
+                nbAccountProtectionWarning.Visible = false;
+            }
+
             pnlView.Visible = false;
             pnlEdit.Visible = true;
+
+            // Show the family information section only when the campus picker is visible.
+            divFamilyInfo.Visible = cpCampus.Visible;
         }
 
         /// <summary>

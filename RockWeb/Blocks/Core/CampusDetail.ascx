@@ -39,6 +39,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DefinedValuePicker ID="dvpCampusStatus" runat="server" Label="Status" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="CampusStatusValueId" />
+                                <Rock:DatePicker ID="dpOpenedDate" runat="server" Label="Opened Date" />
                                 <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" Label="Code" />
                                 <Rock:RockDropDownList ID="ddlTimeZone" runat="server" CausesValidation="false" CssClass="input-width-xxl" Label="Time Zone" Help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone." ></Rock:RockDropDownList>
                                 <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
@@ -46,6 +47,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:DefinedValuePicker ID="dvpCampusType" runat="server" Label="Type" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="CampusTypeValueId" />
+                                <Rock:DatePicker ID="dpClosedDate" runat="server" Label="Closed Date" />
                                 <Rock:UrlLinkBox ID="urlCampus" runat="server" Label="URL" />
                                 <Rock:PhoneNumberBox ID="pnbPhoneNumber" runat="server" Label="Phone Number" />
                                 <Rock:LocationPicker ID="lpLocation" runat="server" AllowedPickerModes="Named" Required="true" Label="Location" Help="Select a Campus Location" />
@@ -104,8 +106,8 @@
                     </fieldset>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -126,7 +128,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                     </div>

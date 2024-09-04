@@ -21,8 +21,9 @@ import { DrawingMode, Coordinate, ILatLng, ILatLngLiteral } from "@Obsidian/Type
 import { GeoPickerSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerSettingsBag";
 import { GeoPickerGetSettingsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGetSettingsOptionsBag";
 import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
-import { loadJavaScriptAsync } from "./page";
+import { emptyGuid } from "./guid";
 import { post } from "./http";
+import { loadJavaScriptAsync } from "./page";
 
 /**
  * Converts a LatLng object, "lat,lng" coordinate string, or WellKnown "lng lat" coordinate string to a Coordinate array
@@ -141,7 +142,7 @@ export function isClockwisePolygon(polygon: number[][]): boolean {
  *
  * @return Promise with the map settings retrieved from the API
  */
-export async function loadMapResources(options: GeoPickerGetSettingsOptionsBag = {}): Promise<GeoPickerSettingsBag> {
+export async function loadMapResources(options: GeoPickerGetSettingsOptionsBag = { mapStyleValueGuid: emptyGuid }): Promise<GeoPickerSettingsBag> {
     const response = await post<GeoPickerGoogleMapSettingsBag>("/api/v2/Controls/GeoPickerGetGoogleMapSettings", undefined, options);
     const googleMapSettings = response.data ?? {};
 

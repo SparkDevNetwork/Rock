@@ -17,7 +17,9 @@
 namespace Rock.Mobile.JsonFields
 {
     /// <summary>
-    /// POCO to store the settings for the fields
+    /// POCO to store the settings for the fields.
+    /// This is copied to Rock.ViewModels/Controls/FieldSettingBag.cs. If any changes are made here,
+    /// they may need to be copied there as well.
     /// </summary>
     public class FieldSetting
     {

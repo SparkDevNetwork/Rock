@@ -77,12 +77,12 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindData();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.WorkFlow
                         actions = GetActions( rockContext );
                     }
 
-                    var mergeFields = new Dictionary<string, object>();
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                     mergeFields.Add( "Role", role );
                     mergeFields.Add( "Actions", actions.OrderByDescending( a => a.CreatedDateTime ) );
                     mergeFields.Add( "PanelTitle", panelTitle );

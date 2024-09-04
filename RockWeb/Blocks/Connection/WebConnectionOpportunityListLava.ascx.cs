@@ -179,7 +179,6 @@ namespace RockWeb.Blocks.Connection
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             _connectionTypeGuid = PageParameter( PageParameterKey.ConnectionTypeGuid ).AsGuid();
 
             if ( !Page.IsPostBack )
@@ -193,6 +192,8 @@ namespace RockWeb.Blocks.Connection
 
                 GetConnectionOpportunities();
             }
+
+            base.OnLoad( e );
         }
         #endregion Base Control Events
 

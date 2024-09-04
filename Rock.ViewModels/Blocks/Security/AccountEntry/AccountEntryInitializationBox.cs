@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Security.AccountEntry
@@ -43,10 +44,16 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// </summary>
         public bool IsAddressRequired { get; set; }
 
+
         /// <summary>
         /// Gets or sets a value indicating whether the address fields are shown.
         /// </summary>
         public bool IsAddressShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the birth date is shown.
+        /// </summary>
+        public bool IsBirthDateShown { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the email field is hidden.
@@ -90,6 +97,11 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Indicating whether the campus picker is shown.
         /// </summary>
         public bool IsCampusPickerShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether campus is required.
+        /// </summary>
+        public bool IsCampusRequired { get; set; }
 
         /// <summary>
         /// The registration state.
@@ -148,5 +160,37 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Indicating whether the Gender dropdown is shown.
         /// </summary>
         public bool IsGenderPickerShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person details if there is an identified user.
+        /// </summary>
+        /// <value>
+        /// The account entry person information bag.
+        /// </value>
+        public AccountEntryPersonInfoBag AccountEntryPersonInfoBag { get; set; }
+
+        /// <summary>
+        /// If set to true if the Captcha verification step should not be performed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Captcha is disabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// Campus status defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public List<Guid> CampusStatusFilter { get; set; }
+
+        /// <summary>
+        /// Campus type defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus type filter.
+        /// </value>
+        public List<Guid> CampusTypeFilter { get; set; }
     }
 }

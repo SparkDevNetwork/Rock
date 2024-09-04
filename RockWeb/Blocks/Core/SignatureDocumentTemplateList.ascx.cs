@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Core
 
             if ( type != null )
             {
-                if ( !UserCanEdit && !type.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                if ( !type.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     mdGridWarning.Show( "Sorry, you're not authorized to delete this signature document template.", ModalAlertType.Alert );
                     return;

@@ -60,6 +60,7 @@
     <Compile Include="Core\ILavaTag.cs" />
     <Compile Include="Core\ILavaBlock.cs" />
     <Compile Include="Core\LavaDataDictionary.cs" />
+    <Compile Include="Core\LavaDataWrapper.cs" />
     <Compile Include="Core\LavaEngineConfigurationOptions.cs" />
     <Compile Include="Core\LavaInterruptException.cs" />
     <Compile Include="Core\LavaException.cs" />
@@ -77,6 +78,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shortcodes\ILavaShortcode.cs" />
     <Compile Include="Utility\InputParser.cs" />
+    <Compile Include="Utility\LavaDataHelper.cs" />
+    <Compile Include="Utility\LavaDataTypeInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -1,0 +1,190 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
+
+            <EditPanel v-model="metricValueEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :isEditable="isEditable" :validationError="validationError" />
+
+            <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+            </Modal>
+
+            <template #footerActions>
+                <RockButton v-if="isEditable"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            :isLoading="isSaving"
+                            @click="onStartSubmitForm">
+                    Save
+                </RockButton>
+                <RockButton v-if="isEditable"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancel">
+                    Cancel
+                </RockButton>
+                <RockButton v-if="!isEditable"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancel">
+                    Close
+                </RockButton>
+            </template>
+
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import EditPanel from "./MetricValueDetail/editPanel.partial.obs";
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./MetricValueDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MetricValueBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueBag";
+    import { MetricValueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const submitForm = ref(false);
+    const resetKey = ref("");
+    const showAuditDetailsModal = ref(false);
+    const isSaving = ref(false);
+    const validationError = ref<string | null>();
+
+    const metricValueEditBag = ref<ValidPropertiesBox<MetricValueBag>>({
+        bag: config.entity ?? {} as MetricValueBag
+    });
+
+    const entityTypeGuid = EntityType.MetricValue;
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: metricValueEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelTitle = computed((): string => {
+        return metricValueEditBag.value.bag?.idKey ? "Edit Metric Value" : "Add Metric Value";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return metricValueEditBag.value?.bag?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const secondaryActions = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        if (metricValueEditBag?.value?.bag?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): MetricValueDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    /**
+    * Event handler for the Cancel button being clicked while in Edit or Add mode.
+    * Handles redirect to parent page.
+    */
+    function onCancel(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<MetricValueBag> | string>("Save", {
+            box: metricValueEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+        }
+        else if (result.statusCode == 400 && typeof result.errorMessage === "string") {
+            validationError.value = result.errorMessage;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save metric value.";
+        }
+    }
+
+    /**
+    * Begins the form submission process.
+    */
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified metric value could not be viewed.";
+    }
+</script>

@@ -329,6 +329,70 @@ namespace Rock.SystemGuid
         public const string LAYOUT = "9DACC861-FED4-47FC-946D-D6A120FF6D56";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningActivity"/>
+        /// </summary>
+        public const string LEARNING_ACTIVITY = "E82F540C-F483-4D4A-898A-3AE7FF76F75A";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningActivityCompletion"/>
+        /// </summary>
+        public const string LEARNING_ACTIVITY_COMPLETION = "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClass"/>
+        /// </summary>
+        public const string LEARNING_CLASS = "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassAnnouncement"/>
+        /// </summary>
+        public const string LEARNING_CLASS_ANNOUNCEMENT = "D2CE59D3-55E1-4275-9EA1-38C18A05A32B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassContentPage"/>
+        /// </summary>
+        public const string LEARNING_CLASS_CONTENT_PAGE = "72A061C4-B7E6-4A91-A4F2-80551F772D46";
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningCourse"/>
+        /// </summary>
+        public const string LEARNING_COURSE = "21870376-4A6E-4402-ACE3-42AA4441FC2E";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningCourseRequirement"/>
+        /// </summary>
+        public const string LEARNING_COURSE_REQUIREMENT = "576F54E1-CE70-43ED-A7D8-5169529C70E9";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningGradingSystem"/>
+        /// </summary>
+        public const string LEARNING_GRADING_SYSTEM = "0B693CAF-3718-4913-B7AC-61D31B4DF099";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningGradingSystem"/>
+        /// </summary>
+        public const string LEARNING_GRADING_SYSTEM_SCALE = "14BA9B5B-6B4A-4462-ACDF-898DCEC9EC0D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningParticipant"/>
+        /// </summary>
+        public const string LEARNING_PARTICIPANT = "03195758-1770-4794-9487-7A4AA02930A7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningProgram"/>
+        /// </summary>
+        public const string LEARNING_PROGRAM = "AFD89885-6923-4FA1-B6FE-A1DF8D821BBC";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningProgramCompletion"/>
+        /// </summary>
+        public const string LEARNING_PROGRAM_COMPLETION = "B82813A7-E70E-4F04-8568-0D84EFB484B2";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningSemester"/>
+        /// </summary>
+        public const string LEARNING_SEMESTER = "F9A40931-0ACE-4B50-A507-0D1D75F92BC4";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.MediaAccount"/> 
         /// </summary>
         public const string MEDIA_ACCOUNT = "CD35F034-AC18-40D5-B703-6BF16D79C51C";
@@ -404,6 +468,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F";
+
+        /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
         /// </summary>
         public const string MOBILE_MY_PRAYER_REQUESTS_BLOCK_TYPE = "E644DE6A-44CA-48AC-BF33-5429DA8052C6";
@@ -437,6 +506,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.Search"/>.
         /// </summary>
         public const string MOBILE_CORE_SEARCH_BLOCK_TYPE = "F81015CD-EBA9-4358-B930-4F1AB29AF879";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.SmartSearch" />.
+        /// </summary>
+        public const string MOBILE_CORE_SMART_SEARCH_BLOCK_TYPE = "45BE4816-3F5B-4AD1-BA89-819325D7E8CF";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
@@ -601,6 +675,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
 
         /// <summary>
+        /// The GUID for the mobile check-in block
+        /// </summary>
+        public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
@@ -704,6 +783,26 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.Schedule entity
         /// </summary>
         public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
+
+        /// <summary>
+        /// The guid for the Rock.Search.Group.Name search component.
+        /// </summary>
+        public const string SEARCH_COMPONENT_GROUP_NAME = "94825231-DC38-4DC0-A1D3-64B4AD6A87F0";
+
+        /// <summary>
+        /// The guid for the Rock.Search.Person.Name search component.
+        /// </summary>
+        public const string SEARCH_COMPONENT_PERSON_NAME = "3B1D679A-290F-4A53-8E11-159BF0517A19";
+
+        /// <summary>
+        /// The guid for the Rock.Search.Person.Email search component.
+        /// </summary>
+        public const string SEARCH_COMPONENT_PERSON_EMAIL = "00095C10-72C9-4C82-844E-AE8B146DE4F1";
+
+        /// <summary>
+        /// The guid for the Rock.Search.Person.Phone search component.
+        /// </summary>
+        public const string SEARCH_COMPONENT_PERSON_PHONE = "5F92ECC3-4EBD-4C41-A691-C03F1DA4F7BF";
 
         /// <summary>
         /// The guid for the Rock.Workflow.Action.SendEmail entity
@@ -1174,6 +1273,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.EntityCampusFilter"/> 
         /// </summary>
         public const string ENTITY_CAMPUS_FILTER = "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EntityIntent"/> 
+        /// </summary>
+        public const string ENTITY_INTENT = "15CE39A3-193F-44E5-80C7-DE47DA3EAF97";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.EntitySet"/> 
@@ -1766,6 +1870,11 @@ namespace Rock.SystemGuid
         public const string TAGGED_ITEM = "AB97403A-206E-4E0C-AC42-856A010FA6DD";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Theme"/> 
+        /// </summary>
+        public const string THEME = "D02B63B9-E945-45BC-9D41-2C3E72B85F46";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.UserLogin"/> 
         /// </summary>
         public const string USER_LOGIN = "0FA592F1-728C-4885-BE38-60ED6C0D834F";
@@ -1846,9 +1955,16 @@ namespace Rock.SystemGuid
         public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY instead." )]
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
+        /// </summary>
+        public const string HTTP_MODULE_ROCK_GATEWAY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessage"/> 
@@ -1864,5 +1980,15 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptationSegment"/> 
         /// </summary>
         public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.CheckInLabel"/> 
+        /// </summary>
+        public const string CHECK_IN_LABEL = "8B651EB1-492F-46D0-821B-CA7355C6E6E7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIProvider"/> 
+        /// </summary>
+        public const string AI_PROVIDER = "945A994F-F15E-43AC-B503-A54BDE70F77F";
     }
 }

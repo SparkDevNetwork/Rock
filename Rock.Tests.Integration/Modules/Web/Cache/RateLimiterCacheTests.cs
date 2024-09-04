@@ -1,23 +1,18 @@
 ﻿using System;
-using System.Threading;
+using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Bus;
+
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Web.Cache
+namespace Rock.Tests.Integration.Modules.Web.Cache
 {
     [TestClass]
     public class RateLimiterCacheTests
     {
-        [ClassInitialize]
-        public static void InitializeClass(TestContext testContext)
-        {
-            RockMessageBus.IsRockStarted = true;
-            RockMessageBus.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
         [TestMethod]
-        public void CanProcessPage_ShouldResetAfterPeriodExpires()
+        public async Task CanProcessPage_ShouldResetAfterPeriodExpires()
         {
             var result = RateLimiterCache.CanProcessPage(
                 1,
@@ -28,7 +23,7 @@ namespace Rock.Tests.Integration.Web.Cache
 
             Assert.IsTrue( result );
 
-            Thread.Sleep( 6000 );
+            await Task.Delay( 6000 );
 
             result = RateLimiterCache.CanProcessPage(
                 1,

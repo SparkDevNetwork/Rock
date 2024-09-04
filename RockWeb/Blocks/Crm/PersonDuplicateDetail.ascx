@@ -27,12 +27,12 @@
                                     <%# GetAccountProtectionProfileColumnHtml((AccountProtectionProfile)Eval("DuplicatePerson.AccountProtectionProfile")) %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
-                            <Rock:RockBoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
-                            <Rock:RockBoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
-                            <Rock:EnumField DataField="DuplicatePerson.Gender" HeaderText="Gender" SortExpression="DuplicatePerson.Gender" />
+                            <Rock:RockBoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName, LastName" />
+                            <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
+                            <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" />
+                            <Rock:EnumField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
 
-                            <Rock:RockBoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
+                            <Rock:RockBoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
 
                             
                             <Rock:RockTemplateField HeaderText="Addresses">

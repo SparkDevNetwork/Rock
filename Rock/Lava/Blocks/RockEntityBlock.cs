@@ -25,7 +25,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -628,7 +630,7 @@ namespace Rock.Lava.Blocks
         {
             // If the database is not connected, we do not have access to entity definitions.
             // This can occur when the Lava engine is started without an attached database.
-            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            if ( !RockApp.Current.IsDatabaseAvailable() )
             {
                 return;
             }
@@ -950,9 +952,20 @@ namespace Rock.Lava.Blocks
                         foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
                             filterAttribute = attribute;
-                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
-                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute, limitToFilterableAttributes:false );
+
+                            Expression filterExpression;
+                            if ( attributeEntityField == null )
+                            {
+                                // There is no Entity field matching this Attribute, so ignore the filter.
+                                filterExpression = new NoAttributeFilterExpression();
+                            }
+                            else
+                            {
+                                filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            }
+                            
                             if ( filterExpression is NoAttributeFilterExpression )
                             {
                                 // Ignore this filter because it would cause the Where expression to match everything.
@@ -1000,8 +1013,19 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
-                    // error in parsing expression
-                    throw new Exception( "Error in Where expression" );
+                    // The Where clause is incomplete.
+                    string errorDetail;
+                    if ( expressionParts.Count == 2 )
+                    {
+                        errorDetail = "Missing or invalid value in Where expression.";
+                    }
+                    else
+                    {
+                        errorDetail = "Where expression is incomplete.";
+                    }
+
+                    errorDetail = $"{errorDetail} [Expression=\"{whereClause}\"]";
+                    throw new Exception( "RockEntity block error. The Where expression is invalid.", new Exception( errorDetail ) );
                 }
             }
 

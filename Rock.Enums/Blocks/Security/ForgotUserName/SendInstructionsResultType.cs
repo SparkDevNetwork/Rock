@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Enums.Blocks.Security.ForgotUserName
 {
     /// <summary>
@@ -35,6 +37,12 @@ namespace Rock.Enums.Blocks.Security.ForgotUserName
         /// <summary>
         /// Indicates that change password is not supported for account(s) associated with requested email.
         /// </summary>
-        ChangePasswordNotSupported = 2
+        ChangePasswordNotSupported = 2,
+
+        /// <summary>
+        /// Indicates that the captcha was not solved successfully.
+        /// </summary>
+        [Obsolete( "No longer used and will be removed in the future." )]
+        CaptchaInvalid = 3,
     }
 }

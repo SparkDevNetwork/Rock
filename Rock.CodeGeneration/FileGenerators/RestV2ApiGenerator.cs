@@ -34,6 +34,7 @@ namespace Rock.CodeGeneration.FileGenerators
             var hasPatchAttributeValues = endpoints.HasFlag( CodeGenerateRestEndpoint.UpdateAttributeValues );
             var hasSearch = endpoints.HasFlag( CodeGenerateRestEndpoint.Search );
 
+            usings.Add( "Microsoft.AspNetCore.Mvc" );
             usings.Add( "System.Collections.Generic" );
             usings.Add( "System.Net" );
             usings.Add( "Rock.Rest.Filters" );

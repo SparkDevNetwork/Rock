@@ -181,7 +181,7 @@ namespace Rock.Bus.Queue
             {
                 if ( IsRockQueue( type ) )
                 {
-                    queueTypes.AddOrIgnore( type.FullName, type );
+                    queueTypes.TryAdd( type.FullName, type );
                 }
             }
 

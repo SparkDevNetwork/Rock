@@ -20,6 +20,10 @@ import { Component, defineComponent, PropType } from "vue";
 import DeleteCell from "../Cells/deleteCell.partial.obs";
 import { IGridState } from "@Obsidian/Types/Controls/grid";
 
+/**
+ * Shows a delete button that will prompt the individual for confirmation
+ * before calling the click handler.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -49,6 +53,11 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "delete"
+        },
+
         /**
          * Disables the normal confirmation message displayed before calling
          * the click handler.
@@ -69,7 +78,8 @@ export default defineComponent({
 
         /**
          * Called when the delete button has been clicked and the confirmation
-         * has been approved.
+         * has been approved. If a Promise is returned then the button will
+         * remain disabled until the Promise is resolved.
          */
         onClick: {
             type: Function as PropType<(key: string, grid: IGridState) => (void | Promise<void>)>,

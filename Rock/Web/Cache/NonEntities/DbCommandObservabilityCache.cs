@@ -15,13 +15,15 @@
 // </copyright>
 //
 
-using Rock.Data;
-using System.Collections.Concurrent;
 using System;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
-using Rock.SystemKey;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
+
+using Rock.Observability;
+using Rock.SystemKey;
 
 namespace Rock.Web.Cache.NonEntities
 {
@@ -69,6 +71,7 @@ namespace Rock.Web.Cache.NonEntities
         #endregion
 
         #region Properties
+
         /// <summary>
         /// This is a cached listed of query hashes that have been targeted to provide additional telemetry for. These are stored
         /// as system settings but are cached here as a list to improve performance.
@@ -77,25 +80,87 @@ namespace Rock.Web.Cache.NonEntities
         {
             get
             {
-                if ( _targetedQueryHashes == null )
+                var hashes = _targetedQueryHashes;
+
+                if ( hashes != null )
+                {
+                    return hashes;
+                }
+
+                // We have to jump through some hoops since getting system
+                // settings could cause a database query which could call
+                // us again which could... and so forth until we hit a stack
+                // overflow exception and crash. So set a default value
+                // temporarily to prevent further database requests and then
+                // start a task to load the actual values.
+                _targetedQueryHashes = new List<string>();
+
+                System.Threading.Tasks.Task.Run( () =>
                 {
                     var targetedQueryHashes = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
 
-                    // If there aren't any hashes assign a empty list to prevent checking for every query and to prevent null reference exceptions.
+                    // If there aren't any hashes assign a empty list to prevent
+                    // checking for every query and to prevent null reference
+                    // exceptions.
                     if ( targetedQueryHashes.IsNullOrWhiteSpace() )
                     {
                         _targetedQueryHashes = new List<string>();
                     }
+                    else
+                    {
+                        _targetedQueryHashes = targetedQueryHashes.Split( new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    }
+                } );
 
-                    _targetedQueryHashes = targetedQueryHashes.Split( new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                }
-                return _targetedQueryHashes;
+                // This value might be wrong for the first couple queries until
+                // the task finishes, but I'm not sure there is anything we
+                // can do about that.
+                return new List<string>();
             }
         }
         private static List<string> _targetedQueryHashes = null;
+
+        /// <summary>
+        /// Gets a value indicating whether all query statements should be
+        /// included with the activity.
+        /// </summary>
+        /// <value><c>true</c> if all query statements should be included; otherwise, <c>false</c>.</value>
+        internal static bool IsQueryIncluded
+        {
+            get
+            {
+                var isQueryIncluded = _isQueryIncluded;
+
+                if ( isQueryIncluded.HasValue )
+                {
+                    return isQueryIncluded.Value;
+                }
+
+                // We have to jump through some hoops since getting system
+                // settings could cause a database query which could call
+                // us again which could... and so forth until we hit a stack
+                // overflow exception and crash. So set a default value
+                // temporarily to prevent further database requests and then
+                // start a task to load the actual values.
+                _isQueryIncluded = false;
+
+                System.Threading.Tasks.Task.Run( () =>
+                {
+                    _isQueryIncluded = SystemSettings.GetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS ).AsBoolean();
+                } );
+
+                // This value might be wrong for the first couple queries until
+                // the task finishes, but I'm not sure there is anything we
+                // can do about that.
+                return false;
+            }
+        }
+        private static bool? _isQueryIncluded;
+
         #endregion
 
         #region Cache Methods
+
         /// <summary>
         /// Returns table name from cache.  If item does not already exist in cache, it
         /// will be read and added to cache
@@ -115,7 +180,9 @@ namespace Rock.Web.Cache.NonEntities
         public static void ClearTargetedQueryHashes()
         {
             _targetedQueryHashes = null;
+            _isQueryIncluded = null;
         }
+
         #endregion
 
         #region Private Methods
@@ -198,14 +265,14 @@ namespace Rock.Web.Cache.NonEntities
         /// <returns></returns>
         private static string ParseSelectForTable( string commandText, int iterationCount = 0 )
         {
-            var tableName = string.Empty;
+            var tableName = "undefined";
 
             if ( iterationCount > 4 )
             {
-                return "undefined";
+                return tableName;
             }
 
-            var indexOfFrom = commandText.IndexOfNth( "from", iterationCount, StringComparison.OrdinalIgnoreCase );
+            var indexOfFrom = commandText.IndexOfNth( "from ", iterationCount, StringComparison.OrdinalIgnoreCase );
 
             if ( indexOfFrom > 0 )
             {
@@ -219,13 +286,86 @@ namespace Rock.Web.Cache.NonEntities
                     tableName = ParseSelectForTable( commandText, ( iterationCount + 1 ) );
                 }
             }
-            else
-            {
-                return "undefined";
-            }
 
             return tableName;
         }
+
+        /// <summary>
+        /// Updates the activity with custom tags for the database query. If
+        /// the query is targetted for additional information then the factory
+        /// method will be called to retrieve the query parameters.
+        /// </summary>
+        /// <typeparam name="T">The type of the context data to pass to the factory method.</typeparam>
+        /// <param name="activity">The activity to update.</param>
+        /// <param name="commandText">The SQL command text for updating the activity.</param>
+        /// <param name="factoryContext">The factory context used for generating command parameters.</param>
+        /// <param name="commandParametersFactory">The function that generates the command parameters based on the factory context.</param>
+        internal static void UpdateActivity<T>( Activity activity, string commandText, T factoryContext, Func<T, IEnumerable<KeyValuePair<string, string>>> commandParametersFactory )
+        {
+            if ( activity == null )
+            {
+                return;
+            }
+
+            var observabilityInfo = Get( commandText );
+            var isTargeted = TargetedQueryHashes.Contains( observabilityInfo.CommandHash );
+
+            activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
+            activity.AddTag( "db.system", "mssql" );
+            activity.AddTag( "rock.otel_type", "rock-db" );
+            activity.AddTag( "rock.db.hash", observabilityInfo.CommandHash );
+
+            ObservabilityHelper.IncrementDbQueryCount( activity );
+
+            if ( isTargeted || IsQueryIncluded )
+            {
+                activity.AddTag( "db.query", commandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
+            }
+
+            // Check if this query should get additional observability telemetry
+            if ( isTargeted )
+            {
+                // Append stack trace
+                var stackTrace = TrimInfrastructureFromStackTrace( new StackTrace( true ).ToString() );
+
+                activity.AddTag( "rock.db.stacktrace", stackTrace.Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+
+                // Append parameters
+                var parameters = new StringBuilder();
+                foreach ( var keyValue in commandParametersFactory( factoryContext ) )
+                {
+                    parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
+                }
+
+                activity.AddTag( "rock.db.parameters", parameters.ToString().Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+            }
+
+            // Add observability metric
+            var tags = RockMetricSource.CommonTags;
+            tags.Add( "operation", observabilityInfo.CommandType );
+            RockMetricSource.DatabaseQueriesCounter?.Add( 1, tags );
+        }
+
+        /// <summary>
+        /// Since we are limited on space in the tag values this trims off any
+        /// stack frames that would be considered inconsequential from the
+        /// start of the trace. Such as EF and our own internal code related
+        /// to recording the activity information.
+        /// </summary>
+        /// <param name="stackTrace">The stack trace to be trimmed.</param>
+        /// <returns>A string that contains the trimmed stack trace information.</returns>
+        private static string TrimInfrastructureFromStackTrace( string stackTrace )
+        {
+            var stackTraceLines = stackTrace.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
+
+            var includedLines = stackTraceLines.SkipWhile( line =>
+                line.StartsWith( "   at Rock.Data.Interception." )
+                || line.StartsWith( "   at Rock.Web.Cache.NonEntities.DbCommandObservabilityCache." )
+                || line.StartsWith( "   at System.Data.Entity." ) );
+
+            return string.Join( Environment.NewLine, includedLines );
+        }
+
         #endregion
     }
 }

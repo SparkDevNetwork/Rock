@@ -35,6 +35,9 @@ export type NoteEditBag = {
     /** Gets or sets a value indicating whether this note is an alert note. */
     isAlert: boolean;
 
+    /** Gets or sets a value indicating whether this note should be pinned to the top of the list. */
+    isPinned: boolean;
+
     /** Gets or sets a value indicating whether this note is private. */
     isPrivate: boolean;
 

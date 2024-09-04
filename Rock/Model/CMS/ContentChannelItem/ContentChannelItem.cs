@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -43,7 +44,7 @@ namespace Rock.Model
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM )]
     [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.ContentChannelItemDocument ) )]
-    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
+    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -56,6 +57,7 @@ namespace Rock.Model
         [DataMember]
         [HideFromReporting]
         [EnableAttributeQualification]
+        [IgnoreCanDelete]
         public int ContentChannelId { get; set; }
 
         /// <summary>
@@ -244,6 +246,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
 

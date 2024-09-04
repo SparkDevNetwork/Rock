@@ -279,6 +279,33 @@ namespace Rock.Web.Cache
         /// </value>
         public static int? SingleCampusId => SingleCampus?.Id;
 
+        /// <summary>
+        /// Gets or sets the opened date.
+        /// </summary>
+        /// <value>
+        /// The opened date.
+        /// </value>
+        [DataMember]
+        public DateTime? OpenedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the closed date.
+        /// </summary>
+        /// <value>
+        /// The closed date.
+        /// </value>
+        [DataMember]
+        public DateTime? ClosedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tithe metric.
+        /// </summary>
+        /// <value>
+        /// The tithe metric.
+        /// </value>
+        [DataMember]
+        public decimal? TitheMetric { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -339,6 +366,9 @@ namespace Rock.Web.Cache
             RawServiceTimes = campus.ServiceTimes;
             CampusScheduleIds = campus.CampusSchedules.Select( s => s.ScheduleId ).ToList();
             Order = campus.Order;
+            OpenedDate = campus.OpenedDate;
+            ClosedDate = campus.ClosedDate;
+            TitheMetric = campus.TitheMetric;
 
             Location = new CampusLocation( campus.Location );
         }

@@ -18,30 +18,43 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Results;
+
 using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Extension;
+using Rock.Field;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Lava;
+using Rock.Media;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Storage;
+using Rock.Storage.AssetStorage;
 using Rock.Utility;
+using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Controls;
-using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
@@ -113,7 +126,7 @@ namespace Rock.Rest.v2
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
                     IsActive = a.IsActive,
                     IconCssClass = "fa fa-file-o"
                 } ).ToList();
@@ -243,7 +256,7 @@ namespace Rock.Rest.v2
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = HttpUtility.HtmlEncode( ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ) ),
+                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
                         Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                     } )
                     .ToList();
@@ -283,7 +296,7 @@ namespace Rock.Rest.v2
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
                         Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                     } )
                     .ToList();
@@ -501,12 +514,16 @@ namespace Rock.Rest.v2
             string errorMessage = null;
             string addressString = null;
 
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var orgCountryCode = globalAttributesCache.OrganizationCountry;
+            var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+
             editedLocation.Street1 = options.Street1;
             editedLocation.Street2 = options.Street2;
             editedLocation.City = options.City;
             editedLocation.State = options.State;
             editedLocation.PostalCode = options.PostalCode;
-            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : "US";
+            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : defaultCountryCode;
 
             var locationService = new LocationService( new RockContext() );
 
@@ -539,6 +556,41 @@ namespace Rock.Rest.v2
                     Country = editedLocation.Country
                 }
             } );
+        }
+
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="address">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AddressControlGetStreetAddressString" )]
+        [Rock.SystemGuid.RestActionGuid( "9258BA75-F922-4607-A2C0-036141621F0E" )]
+        public IHttpActionResult AddressControlGetStreetAddressString( [FromBody] AddressControlBag address )
+        {
+            Location editedLocation;
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var orgCountryCode = globalAttributesCache.OrganizationCountry;
+            var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+
+            var locationService = new LocationService( new RockContext() );
+            editedLocation = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country.IsNotNullOrWhiteSpace() ? address.Country : defaultCountryCode, null );
+
+            if ( editedLocation == null )
+            {
+                editedLocation = new Location
+                {
+                    Street1 = address.Street1.FixCase(),
+                    Street2 = address.Street2.FixCase(),
+                    City = address.City.FixCase(),
+                    State = address.State,
+                    County = address.Locality,
+                    PostalCode = address.PostalCode,
+                    Country = address.Country
+                };
+            }
+
+            return Ok( editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
         }
 
         #endregion
@@ -575,6 +627,1237 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Asset Manager
+
+        /// <summary>
+        /// Gets the root storage providers and/or the root File Browser folder.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="AssetManagerTreeItemBag"/> objects that represent the asset storage providers/folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetRootFolders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9A96E14F-99DB-4F9A-95EB-DF17D3B5EE25" )]
+        public IHttpActionResult AssetManagerGetRootFolders( [FromBody] AssetManagerGetRootFoldersOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            var expandedFolders = new List<string>();
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+            var selectedFolder = options.SelectedFolder.IsNotNullOrWhiteSpace() ? ParseAssetKey( options.SelectedFolder ) : null;
+
+            // Decrypt the root folder of the ExpandedFolders so we actually know which folders to expand
+            if ( ( options.ExpandedFolders?.Count ?? 0 ) > 0 )
+            {
+                foreach ( var folder in options.ExpandedFolders )
+                {
+                    var parsedAsset = ParseAssetKey( folder );
+                    expandedFolders.Add( $"{parsedAsset.ProviderId},{parsedAsset.FullPath}" );
+                }
+            }
+
+            if ( options.EnableFileManager )
+            {
+                var (folder, expandedFileFolders) = GetRootFolder( options.RootFolder, expandedFolders, selectedFolder, options.UserSpecificRoot );
+
+                tree.Add( folder );
+                if ( expandedFileFolders != null )
+                {
+                    updatedExpandedFolders.AddRange( expandedFileFolders );
+                }
+
+                // If only file manager is enabled, we want the folder expanded immediately
+                if ( !options.EnableAssetManager && !( folder.Children?.Any() ?? false ) )
+                {
+                    var (children, expanded) = GetChildFolders( ParseAssetKey( folder.Value ), expandedFolders );
+                    folder.Children = children;
+                    updatedExpandedFolders.Add( folder.Value );
+                }
+            }
+
+            if ( options.EnableAssetManager )
+            {
+                var (assetTree, expandedAssetFolders) = GetAssetStorageProviders( expandedFolders, selectedFolder );
+
+                tree.AddRange( assetTree );
+                updatedExpandedFolders.AddRange( expandedAssetFolders );
+
+                var folder = assetTree?.ElementAt( 0 );
+
+                // If only asset manager is enabled and only one asset provider exists, we want it expanded immediately
+                if ( !options.EnableFileManager && ( assetTree?.Count ?? 0 ) == 1 && !( folder.Children?.Any() ?? false ) )
+                {
+                    var (children, expanded) = GetChildrenOfAsset( ParseAssetKey( folder.Value ), expandedFolders );
+                    folder.Children = children;
+                    updatedExpandedFolders.Add( folder.Value );
+                }
+            }
+
+            return Ok( new
+            {
+                Tree = tree,
+                UpdatedExpandedFolders = updatedExpandedFolders,
+            } );
+        }
+
+        /// <summary>
+        /// Gets a list of folders of a given parent folder.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="AssetManagerTreeItemBag"/> objects that represent the asset storage providers/folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "68C50BAE-C50C-4143-B37F-58C80BF5E1BF" )]
+        public IHttpActionResult AssetManagerGetChildren( [FromBody] AssetManagerBaseOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            var parsedAsset = ParseAssetKey( options.AssetFolderId );
+
+            if ( parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
+            {
+                return Ok( new List<AssetManagerTreeItemBag>() );
+            }
+
+            if ( parsedAsset.IsAssetProviderAsset )
+            {
+                var (tree, updatedExpandedFolders) = GetChildrenOfAsset( parsedAsset, new List<string>() );
+                return Ok( tree );
+            }
+            else if ( parsedAsset.IsLocalAsset )
+            {
+                var (tree, updatedExpandedFolders) = GetChildFolders( parsedAsset, new List<string>() );
+                return Ok( tree );
+            }
+
+            return Ok( new List<AssetManagerTreeItemBag>() );
+        }
+
+        /// <summary>
+        /// Gets the files present in a asset provider folder
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="Asset"/> objects that represent the files.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetFiles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "D45422C0-5FCA-44C4-B9E1-4BA05E8D534D" )]
+        public IHttpActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            var asset = ParseAssetKey( options.AssetFolderId );
+
+            if ( asset.ProviderId == null || asset.FullPath == null )
+            {
+                return BadRequest();
+            }
+
+            if ( asset.IsLocalAsset )
+            {
+                var files = GetFilesInFolder( asset, options.BrowseMode );
+
+                return Ok( files );
+            }
+
+            if ( asset.IsAssetProviderAsset )
+            {
+                var (provider, component) = GetAssetStorageProvider( asset.ProviderId.Value );
+
+                if ( provider == null || component == null )
+                {
+                    return BadRequest();
+                }
+
+                List<Asset> files = component.ListFilesInFolder( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder, AssetStorageProviderId = asset.ProviderId.Value } );
+
+                // TODO: filter on browse mode
+
+                return Ok( new AssetManagerGetFilesResultsBag<Asset>
+                {
+                    Files = files,
+                    IsFolderUploadRestricted = true
+                } );
+            }
+
+            return BadRequest();
+        }
+
+        /// <summary>
+        /// Delete a folder within a asset storage provider
+        /// </summary>
+        /// <param name="options">The options that describe which folder to delete.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerDeleteFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "7625091B-D70A-4564-97C8-ED77AE5DB738" )]
+        public IHttpActionResult AssetManagerDeleteFolder( [FromBody] AssetManagerBaseOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.DELETE ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            var asset = ParseAssetKey( options.AssetFolderId );
+
+            if ( asset.ProviderId == null || asset.FullPath == null )
+            {
+                return BadRequest();
+            }
+
+            if ( asset.IsLocalAsset )
+            {
+                try
+                {
+                    var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                    Directory.Delete( physicalFolder, true );
+                }
+                catch ( Exception ex )
+                {
+                    return InternalServerError( ex );
+                }
+
+                return Ok( true );
+            }
+            else if ( asset.IsAssetProviderAsset )
+            {
+                var (provider, component) = GetAssetStorageProvider( asset.ProviderId.Value );
+
+                if ( provider == null || component == null )
+                {
+                    return BadRequest();
+                }
+
+                return Ok( component.DeleteAsset( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder } ) );
+            }
+
+            return BadRequest();
+        }
+
+        /// <summary>
+        /// Creates a new folder in the specified location on the file system or asset provider.
+        /// </summary>
+        /// <param name="options">The options that describe the name of the new folder and where it should be.</param>
+        /// <returns>An <see cref="AssetManagerTreeItemBag"/> object that represents the new folder.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerAddFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B90D9215-57A4-45D3-9B70-A44AA2C9FE7B" )]
+        public IHttpActionResult AssetManagerAddFolder( [FromBody] AssetManagerAddFolderOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            if ( !IsValidAssetFolderName( options.NewFolderName ) || options.NewFolderName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var parsedAsset = ParseAssetKey( options.AssetFolderId );
+
+            if ( parsedAsset == null || parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
+            {
+                return BadRequest();
+            }
+
+            if ( parsedAsset.IsLocalAsset )
+            {
+                var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.FullPath );
+                Directory.CreateDirectory( Path.Combine( physicalFolder, options.NewFolderName ) );
+
+                return Ok( new AssetManagerTreeItemBag
+                {
+                    Text = options.NewFolderName,
+                    Value = $"0,{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}",
+                    IconCssClass = "fa fa-folder",
+                    HasChildren = false,
+                    UnencryptedRoot = parsedAsset.Root
+                } );
+            }
+            else if ( parsedAsset.IsAssetProviderAsset )
+            {
+                var (provider, component) = GetAssetStorageProvider( parsedAsset.ProviderId.Value );
+
+                if ( provider == null || component == null )
+                {
+                    return BadRequest();
+                }
+
+                var asset = new Asset { Type = AssetType.Folder };
+
+                // Selecting the root does not put a value for the selected folder, so we have to make sure
+                // if it does not have a value that we use name instead of key so the root folder is used
+                // by the component.
+                if ( parsedAsset.FullPath.IsNotNullOrWhiteSpace() )
+                {
+                    asset.Key = parsedAsset.FullPath + options.NewFolderName;
+                }
+                else
+                {
+                    asset.Name = options.NewFolderName;
+                }
+
+                if ( component.CreateFolder( provider.ToEntity(), asset ) )
+                {
+                    return Ok( new AssetManagerTreeItemBag
+                    {
+                        Text = options.NewFolderName,
+                        Value = $"{provider.Id},{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}/",
+                        IconCssClass = "fa fa-folder",
+                        HasChildren = false,
+                        UnencryptedRoot = parsedAsset.Root
+                    } );
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Rename a given folder to the specified name.
+        /// </summary>
+        /// <param name="options">The options that describe which folder to rename and its new name.</param>
+        /// <returns>The new key string for the folder that was renamed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerRenameFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8DF6054E-6F52-4A08-A7F5-C11F44B8465C" )]
+        public IHttpActionResult AssetManagerRenameFolder( [FromBody] AssetManagerRenameFolderOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var asset = ParseAssetKey( options.AssetFolderId );
+                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath.TrimEnd( '/', '\\' ) ), options.NewFolderName );
+                Directory.Move( physicalPath, renamedPath );
+
+                var newKey = $"0,{asset.EncryptedRoot},{Path.Combine( Path.GetDirectoryName( asset.SubPath.TrimEnd( '/', '\\' ) ), options.NewFolderName ).Replace( "\\", "/" ).TrimEnd( '/', '\\' ) + "/"}";
+
+                return Ok( newKey );
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Move a folder to another location on the file system.
+        /// </summary>
+        /// <param name="options">The options that describe which folder to move and where to move it to.</param>
+        /// <returns>The new key string for the folder that was moved.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerMoveFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "87A139A7-78B8-4CC9-8A3B-146A338A291F" )]
+        public IHttpActionResult AssetManagerMoveFolder( [FromBody] AssetManagerMoveFolderOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var asset = ParseAssetKey( options.AssetFolderId );
+                var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
+                var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder.TrimStart( '/', '\\' ), baseFolderName );
+                var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
+
+                if ( !Directory.Exists( targetPhyicalPath ) && !File.Exists( targetPhyicalPath ) )
+                {
+                    Directory.Move( currentPhysicalPath, targetPhyicalPath );
+                }
+                else
+                {
+                    return BadRequest( "Invalid target location. Something already exists there with the same name." );
+                }
+
+                var newKey = $"0,{asset.EncryptedRoot},{Path.Combine( options.TargetFolder, baseFolderName ).Replace( "\\", "/" ).TrimEnd( '/' ) + "/"}";
+
+                return Ok( newKey );
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the specified file(s) from the server/asset provider
+        /// </summary>
+        /// <param name="options">The options that describe which file(s) to delete.</param>
+        /// <returns>True if every file was deleted successfully.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerDeleteFiles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "55ADD16B-0FC1-4F33-BB0A-03C29018866F" )]
+        public IHttpActionResult AssetManagerDeleteFiles( [FromBody] AssetManagerDeleteFilesOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.DELETE ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                if ( options.AssetStorageProviderId == 0 )
+                {
+                    foreach ( string file in options.Files )
+                    {
+                        var physicalPath = System.Web.HttpContext.Current.Server.MapPath( file );
+                        File.Delete( physicalPath );
+                    }
+                }
+                else
+                {
+                    var (provider, component) = GetAssetStorageProvider( options.AssetStorageProviderId );
+
+                    if ( provider == null || component == null )
+                    {
+                        return BadRequest();
+                    }
+
+                    foreach ( string file in options.Files )
+                    {
+                        component.DeleteAsset( provider.ToEntity(), new Asset { Key = file, Type = AssetType.File } );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+
+            return Ok( true );
+        }
+
+        /// <summary>
+        /// Downloads the specified file via a stream.
+        /// </summary>
+        /// <param name="options">The options that describe which file to download.</param>
+        /// <returns>A stream for the download of the specified file.</returns>
+        [HttpGet]
+        [System.Web.Http.Route( "AssetManagerDownloadFile" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "C810774B-8B15-42D0-BAC2-85503AB23BC0" )]
+        public IHttpActionResult AssetManagerDownloadFile( [FromUri] AssetManagerDownloadFileOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            Stream stream;
+            string fileName;
+
+            try
+            {
+                if ( options.AssetStorageProviderId == 0 )
+                {
+                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    fileName = Path.GetFileName( physicalPath );
+                    stream = File.Open( physicalPath, FileMode.Open );
+                }
+                else
+                {
+                    var (provider, component) = GetAssetStorageProvider( options.AssetStorageProviderId );
+
+                    if ( provider == null || component == null || options.File.IsNullOrWhiteSpace() )
+                    {
+                        return BadRequest( "Invalid Asset Storage Provider ID or file key." );
+                    }
+
+                    Asset asset = component.GetObject( provider.ToEntity(), new Asset { Key = options.File, Type = AssetType.File }, false );
+                    fileName = asset.Name;
+                    byte[] bytes = asset.AssetStream.ReadBytesToEnd();
+                    stream = new MemoryStream( bytes );
+                }
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+
+            var result = new System.Net.Http.HttpResponseMessage( System.Net.HttpStatusCode.OK )
+            {
+                Content = new System.Net.Http.StreamContent( stream )
+            };
+
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+            result.Content.Headers.Add( "content-disposition", "attachment; filename=" + HttpUtility.UrlEncode( fileName ) );
+
+            return new ResponseMessageResult( result );
+        }
+
+        /// <summary>
+        /// Rename a file.
+        /// </summary>
+        /// <param name="options">The options that describe which file to rename and what to rename it.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerRenameFile" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "150AAF48-33C5-47F8-BD53-2CF3A75F88FB" )]
+        public IHttpActionResult AssetManagerRenameFile( [FromBody] AssetManagerRenameFileOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                if ( options.AssetStorageProviderId == 0 )
+                {
+                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
+                    File.Move( physicalPath, renamedPath );
+
+                    return Ok( true );
+                }
+                else
+                {
+                    var (provider, component) = GetAssetStorageProvider( options.AssetStorageProviderId );
+
+                    if ( provider == null || component == null || options.File.IsNullOrWhiteSpace() || options.NewFileName.IsNullOrWhiteSpace() )
+                    {
+                        return BadRequest();
+                    }
+
+                    return Ok( component.RenameAsset( provider.ToEntity(), new Asset { Key = options.File, Type = AssetType.File }, options.NewFileName ) );
+                }
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Extract a given zip archive into its folder.
+        /// </summary>
+        /// <param name="options">The options that describe which file to extract.</param>
+        /// <returns>True if the operation worked.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerExtractFile" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "07CECA87-B9F9-4130-AC09-584AC9DBBE8C" )]
+        public IHttpActionResult AssetManagerExtractFile( [FromBody] AssetManagerExtractFileOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            if ( options == null || options.EncryptedRoot.IsNullOrWhiteSpace() || options.FileName.IsNullOrWhiteSpace() )
+            {
+                return BadRequest();
+            }
+
+            var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot );
+            var fullPath = Path.Combine( root, options.FileName );
+            var physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( fullPath );
+            var directoryPath = Path.GetDirectoryName( physicalZipFile );
+
+            try
+            {
+                if ( File.Exists( physicalZipFile ) )
+                {
+                    FileInfo fileInfo = new FileInfo( physicalZipFile );
+                    if ( fileInfo.Extension.Equals( ".zip", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        using ( ZipArchive archive = ZipFile.OpenRead( physicalZipFile ) )
+                        {
+                            foreach ( ZipArchiveEntry file in archive.Entries )
+                            {
+                                string completeFileName = Path.Combine( directoryPath, file.FullName );
+                                if ( file.Name == string.Empty )
+                                {
+                                    // Assuming Empty for Directory
+                                    Directory.CreateDirectory( Path.GetDirectoryName( completeFileName ) );
+                                    continue;
+                                }
+
+                                file.ExtractToFile( completeFileName, true );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        File.Delete( physicalZipFile );
+                        throw new Exception( "Invalid File Uploaded." );
+                    }
+                    File.Delete( physicalZipFile );
+                }
+                else
+                {
+                    throw new Exception( "Error Extracting the File." );
+                }
+
+                return Ok( true );
+            }
+            catch ( Exception ex )
+            {
+                File.Delete( physicalZipFile );
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Get a flat list of all the folders and subfolders in a given root folder, excluding a given folder and its children.
+        /// </summary>
+        /// <param name="options">The options that describe which folders to load and not load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent all the folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetListOfAllFolders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1008C9C5-E33E-43F6-BB02-D1BDF2CCE205" )]
+        public IHttpActionResult AssetManagerGetListOfAllFolders( [FromBody] AssetManagerGetListOfAllFoldersOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
+            if ( options == null || options.EncryptedRoot.IsNullOrWhiteSpace() || options.SelectedFolder.IsNullOrWhiteSpace() )
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot );
+
+                if ( options.UserSpecificRoot )
+                {
+                    var username = RockRequestContext.CurrentUser.UserName;
+                    root = root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
+                }
+
+                var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( root );
+                var physicalSelectedFolder = System.Web.HttpContext.Current.Server.MapPath( options.SelectedFolder ).TrimEnd( '/', '\\' );
+                var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder, physicalSelectedFolder );
+
+                if ( folders != null )
+                {
+                    var folderOptions = folders.Select( folderName => new ListItemBag { Text = folderName, Value = folderName } ).ToList();
+
+                    return Ok( folderOptions );
+                }
+
+                return Ok( new List<ListItemBag>() );
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// Gets the asset storage provider [cache] and associated asset storage component using the ID stored in the hidden field.
+        /// </summary>
+        /// <returns>The asset storage provider and component.</returns>
+        private (AssetStorageProviderCache provider, AssetStorageComponent component) GetAssetStorageProvider( int assetStorageProviderId )
+        {
+            var provider = AssetStorageProviderCache.Get( assetStorageProviderId );
+            var component = provider?.AssetStorageComponent;
+
+            return (provider, component);
+        }
+
+        /// <summary>
+        /// Parse a string ID in the form of "${assetStorageProviderID},${encryptedRootPath},${subPath}" and pull out its individual parts.
+        /// </summary>
+        /// <param name="assetItemKey">A key string that identifies an asset in the form of "${assetStorageProviderID},${encryptedRootPath},${subPath}".</param>
+        /// <returns>An <see cref="AssetManagerAsset"/> object that represents all the data of an asset.</returns>
+        private AssetManagerAsset ParseAssetKey( string assetItemKey )
+        {
+            try
+            {
+                var assetParts = assetItemKey.Split( ',' );
+                int assetStorageProviderId;
+
+                if ( assetParts.Length < 3 )
+                {
+                    return null;
+                }
+                else
+                {
+                    assetStorageProviderId = assetParts[0].AsInteger();
+                    var encryptedRoot = assetParts[1].Trim();
+                    var root = Rock.Security.Encryption.DecryptString( encryptedRoot );
+
+                    // Verify all local roots start with "~/"
+                    if ( assetStorageProviderId == 0 && !root.StartsWith( "~/" ) )
+                    {
+                        root = "~/" + root;
+                    }
+
+                    // Verify root ends with "/"
+                    root = root.EnsureTrailingForwardslash();
+
+                    var partialPath = assetParts[2].Trim();
+
+                    if ( partialPath != string.Empty )
+                    {
+                        // Verify path doesn't start with a "/" and does end with a "/"
+                        partialPath = partialPath.TrimStart( '/', '\\' ).EnsureTrailingForwardslash();
+                    }
+
+                    return new AssetManagerAsset
+                    {
+                        ProviderId = assetStorageProviderId,
+                        EncryptedRoot = encryptedRoot,
+                        Root = root,
+                        SubPath = partialPath
+                    };
+                }
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get a (tree) list of all the folders in the given root folder of the local file system, along with their children if they are in the given list of expanded folders.
+        /// </summary>
+        /// <returns>A (tree) list of all the child folders and an updated version of the given expanded folders list.</returns>
+        private (AssetManagerTreeItemBag, List<string> updatedExpandedFolders) GetRootFolder( string encryptedRootFolder, List<string> expandedFolders, AssetManagerAsset selectedFolder, bool userSpecificRoot )
+        {
+            if ( encryptedRootFolder.IsNullOrWhiteSpace() )
+            {
+                // Set root to default
+                encryptedRootFolder = Rock.Security.Encryption.EncryptString( "~/Content/" );
+            }
+
+            var rootAssetKey = $"0,{encryptedRootFolder},,True";
+            var parsedAsset = ParseAssetKey( rootAssetKey );
+
+            if ( parsedAsset.Root.IsNullOrWhiteSpace() )
+            {
+                return (null, null);
+            }
+
+            // ensure that the folder is formatted to be relative to web root
+            if ( !parsedAsset.Root.StartsWith( "~/" ) )
+            {
+                parsedAsset.Root = "~/" + parsedAsset.Root;
+            }
+
+            if ( userSpecificRoot )
+            {
+                var username = RockRequestContext.CurrentUser.UserName;
+                parsedAsset.Root = parsedAsset.Root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
+                encryptedRootFolder = Rock.Security.Encryption.EncryptString( parsedAsset.Root );
+                parsedAsset.EncryptedRoot = encryptedRootFolder;
+            }
+
+            // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
+            if ( selectedFolder != null && selectedFolder.ProviderId == 0 && selectedFolder.Root == parsedAsset.Root )
+            {
+                encryptedRootFolder = selectedFolder.EncryptedRoot;
+                parsedAsset.EncryptedRoot = selectedFolder.EncryptedRoot;
+            }
+
+            var localRoot = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.Root );
+
+            if ( !Directory.Exists( localRoot ) )
+            {
+                try
+                {
+                    Directory.CreateDirectory( localRoot );
+                }
+                catch
+                {
+                    // intentionally ignore the exception. It'll be handled later.
+                }
+            }
+
+            if ( Directory.Exists( localRoot ) && !IsHiddenFolder( localRoot ) )
+            {
+                var updatedExpandedFolders = new List<string>();
+
+                var folder = new DirectoryInfo( localRoot );
+                var hasChildren = false;
+                var folderKey = $"0,{encryptedRootFolder},,True";
+
+                try
+                {
+                    var subDirectoryList = Directory.GetDirectories( localRoot )
+                        .Where( dir => !IsHiddenFolder( dir ) )
+                        .ToList();
+                    hasChildren = subDirectoryList.Any();
+                }
+                catch ( Exception )
+                {
+                    // Empty. Just mark as having no children.
+                }
+
+                var folderBag = new AssetManagerTreeItemBag
+                {
+                    Text = folder.Name,
+                    Value = folderKey,
+                    IconCssClass = "fa fa-folder",
+                    HasChildren = hasChildren,
+                    UnencryptedRoot = parsedAsset.Root
+                };
+
+                if ( hasChildren && expandedFolders.Contains( $"0,{parsedAsset.Root}" ) )
+                {
+                    updatedExpandedFolders.Add( folderKey );
+                    var (children, exFolders) = GetChildFolders( parsedAsset, expandedFolders );
+
+                    folderBag.Children = children;
+
+                    if ( exFolders?.Any() ?? false )
+                    {
+                        updatedExpandedFolders.AddRange( exFolders );
+                    }
+                }
+
+                return (folderBag, updatedExpandedFolders);
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Get a list of all the folders in the given folder of the local file system, along with their children if they are in the given list of expanded folders.
+        /// </summary>
+        /// <returns>A list of all the child folders and an updated version of the given expanded folders list.</returns>
+        private (List<TreeItemBag>, List<string> updatedExpandedFolders) GetChildFolders( AssetManagerAsset asset, List<string> expandedFolders )
+        {
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+
+            if ( asset.Root.IsNullOrWhiteSpace() )
+            {
+                return (null, null);
+            }
+
+            // ensure that the folder is formatted to be relative to web root
+            if ( !asset.Root.StartsWith( "~/" ) )
+            {
+                asset.Root = "~/" + asset.Root;
+            }
+
+            var localRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+            var localPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+            var subDirectories = Directory.GetDirectories( localPath ).OrderBy( a => a ).ToList();
+
+            foreach ( var subDir in subDirectories )
+            {
+                if ( !IsHiddenFolder( subDir ) )
+                {
+                    var subDirInfo = new DirectoryInfo( subDir );
+                    var hasChildren = false;
+                    var subDirKey = $"0,{asset.EncryptedRoot},{subDir.Replace( localRoot, string.Empty ).Replace( "\\", "/" )}/";
+                    var subDirAsset = ParseAssetKey( subDirKey );
+
+                    try
+                    {
+                        var childDirectories = Directory.GetDirectories( subDir )
+                            .Where( dir => !IsHiddenFolder( dir ) )
+                            .ToList();
+                        hasChildren = childDirectories.Any();
+                    }
+                    catch ( Exception )
+                    {
+                        // Empty. Just mark as having no children.
+                    }
+
+                    var subDirItemBag = new AssetManagerTreeItemBag
+                    {
+                        Text = subDirInfo.Name,
+                        Value = subDirKey,
+                        IconCssClass = "fa fa-folder",
+                        HasChildren = hasChildren,
+                        UnencryptedRoot = asset.Root
+                    };
+
+                    if ( hasChildren && expandedFolders.Contains( $"0,{subDirAsset.FullDirectoryPath}" ) )
+                    {
+                        updatedExpandedFolders.Add( subDirKey );
+
+                        var (children, exFolders) = GetChildFolders( subDirAsset, expandedFolders );
+
+                        subDirItemBag.Children = children;
+
+                        if ( exFolders?.Any() ?? false )
+                        {
+                            updatedExpandedFolders.AddRange( exFolders );
+                        }
+                    }
+
+                    tree.Add( subDirItemBag );
+                }
+            }
+
+            return (tree, updatedExpandedFolders);
+        }
+
+        /// <summary>
+        /// Get a list of all files in the given folder. If browseMode is "image", only return the images. Also return any restrictions for the folder.
+        /// </summary>
+        /// <param name="asset">An asset model representing the folder that the files are in.</param>
+        /// <param name="browseMode">"image" or "doc", which determines whether to filter for only images or get all files.</param>
+        /// <returns>An object containing the list of files as well as flags for restrictions on the folder.</returns>
+        private AssetManagerGetFilesResultsBag<Asset> GetFilesInFolder( AssetManagerAsset asset, string browseMode /* image or doc */ )
+        {
+            var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+            var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+
+            var fileTypeWhiteList = "*.*";
+            var fileList = new List<string>();
+            var files = new List<Asset>();
+
+            if ( browseMode == "image" )
+            {
+                string imageFileTypeWhiteList = GlobalAttributesCache.Get().GetValue( "ContentImageFiletypeWhitelist" );
+                if ( imageFileTypeWhiteList.IsNotNullOrWhiteSpace() )
+                {
+                    fileTypeWhiteList = imageFileTypeWhiteList;
+                }
+            }
+
+            // Directory.GetFiles doesn't support multiple patterns, so we'll do one at a time
+            List<string> fileFilters = fileTypeWhiteList.Split( new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( s => s = "*." + s.TrimStart( new char[] { '*', ' ' } ).TrimStart( '.' ) ) // ensure that the filter starts with '*.'
+                .ToList();
+
+            foreach ( var filter in fileFilters )
+            {
+                fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
+            }
+
+            var dir = new DirectoryInfo( physicalFolder );
+            var fileInfoList = dir.GetFiles();
+
+
+            foreach ( var filePath in fileList )
+            {
+                var file = new Asset();
+
+                var fileInfo = new FileInfo( Path.Combine( physicalFolder, filePath ) );
+                string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
+                string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
+                string rootRelativePath = asset.Root.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
+                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( rootRelativePath ) );
+                string downloadUrl = RockApp.Current.ResolveRockUrl( rootRelativePath );
+
+                file = new Asset
+                {
+                    AssetStorageProviderId = 0,
+                    Name = fileInfo.Name,
+                    Key = rootRelativePath,
+                    Uri = downloadUrl,
+                    Type = AssetType.File,
+                    IconPath = thumbUrl,
+                    LastModifiedDateTime = fileInfo.LastWriteTime,
+                    FileSize = fileInfo.Length
+                };
+
+                files.Add( file );
+            }
+
+            return new AssetManagerGetFilesResultsBag<Asset>
+            {
+                Files = files,
+                IsFolderRestricted = IsRestrictedFolder( asset.FullPath ),
+                IsFolderUploadRestricted = IsUploadRestrictedFolder( asset.FullPath )
+            };
+        }
+
+        /// <summary>
+        /// Get a tree of all the asset storage providers
+        /// </summary>
+        /// <returns>A tree of all the asset storage providers</returns>
+        private (List<TreeItemBag>, List<string> updatedExpandedFolders) GetAssetStorageProviders( List<string> expandedFolders, AssetManagerAsset selectedFolder )
+        {
+            var providers = AssetStorageProviderCache.All()
+                .Where( a => a.EntityTypeId.HasValue && a.IsActive );
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+
+            foreach ( var provider in providers )
+            {
+                var component = provider.AssetStorageComponent;
+                var rootFolder = component.GetRootFolder( provider.ToEntity() );
+                var encryptedRootFolder = Rock.Security.Encryption.EncryptString( rootFolder );
+
+                // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
+                if ( selectedFolder != null && selectedFolder.ProviderId == provider.Id && selectedFolder.Root == rootFolder )
+                {
+                    encryptedRootFolder = selectedFolder.EncryptedRoot;
+                }
+
+                var providerBag = new AssetManagerTreeItemBag
+                {
+                    Text = provider.Name,
+                    Value = $"{provider.Id},{encryptedRootFolder},,{true}",
+                    IconCssClass = component.IconCssClass,
+                    HasChildren = true,
+                    UnencryptedRoot = rootFolder
+                };
+
+                if ( expandedFolders.Contains( $"{provider.Id},{rootFolder}" ) )
+                {
+                    var (children, exFolders) = GetChildrenOfAsset( ParseAssetKey( providerBag.Value ), expandedFolders );
+                    providerBag.Children = children;
+                    providerBag.ChildCount = children?.Count ?? 0;
+
+                    if ( providerBag.ChildCount == 0 )
+                    {
+                        providerBag.HasChildren = false;
+                    }
+                    else
+                    {
+                        updatedExpandedFolders.Add( providerBag.Value );
+                        updatedExpandedFolders.AddRange( exFolders );
+                    }
+                }
+
+                tree.Add( providerBag );
+            }
+
+            return (tree, updatedExpandedFolders);
+        }
+
+        /// <summary>
+        /// Get the child folders of the given parent folder asset.
+        /// </summary>
+        /// <param name="parentAsset">Parent of the children we want to get.</param>
+        /// <param name="expandedFolders">A list of expanded folders that gets updated with the correct encrypted roots.</param>
+        /// <returns>The child folders and a list of folders that got updated from the expandedFolders list.</returns>
+        private (List<TreeItemBag> children, List<string> updatedExpandedFolders) GetChildrenOfAsset( AssetManagerAsset parentAsset, List<string> expandedFolders )
+        {
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+
+            var (provider, component) = GetAssetStorageProvider( parentAsset.ProviderId.Value );
+
+            if ( provider == null || component == null )
+            {
+                return (tree, updatedExpandedFolders);
+            }
+
+            var compontentRoot = component.GetRootFolder( provider.ToEntity() );
+            compontentRoot = compontentRoot.TrimEnd( '/', '\\' ) + "/";
+
+            // Cannot request assets from a root other than the configured one
+            if ( compontentRoot != parentAsset.Root )
+            {
+                return (tree, updatedExpandedFolders);
+            }
+
+            var asset = new Asset { Type = AssetType.Folder, Key = parentAsset.FullPath.TrimStart( '/', '\\' ) ?? string.Empty };
+            var folders = component.ListFoldersInFolder( provider.ToEntity(), asset );
+
+            foreach ( Asset folder in folders )
+            {
+                // If there's a folder with a name that has slashes, exclude it because it causes issues with trying to load its children
+                // and it's invalid according to our folder name rules
+                if ( folder.Name.Contains( "/" ) )
+                {
+                    continue;
+                }
+
+                var folderBag = new AssetManagerTreeItemBag
+                {
+                    Text = folder.Name,
+                    Value = $"{parentAsset.ProviderId},{parentAsset.EncryptedRoot},{Path.Combine( parentAsset.SubPath, folder.Name ).TrimEnd( '/', '\\' ) + "/"}",
+                    IconCssClass = "fa fa-folder",
+                    // Verifying if it has any children is slow, so we just say true and it gets fixed
+                    // on the client when attempting to expand children
+                    HasChildren = true,
+                    UnencryptedRoot = parentAsset.Root
+                };
+
+
+                if ( expandedFolders?.Contains( $"{parentAsset.ProviderId},{folder.Key}" ) ?? false )
+                {
+                    var (children, exFolders) = GetChildrenOfAsset( ParseAssetKey( folderBag.Value ), expandedFolders );
+                    folderBag.Children = children;
+                    folderBag.ChildCount = children?.Count ?? 0;
+
+                    if ( folderBag.ChildCount == 0 )
+                    {
+                        folderBag.HasChildren = false;
+                    }
+                    else
+                    {
+                        updatedExpandedFolders.Add( folderBag.Value );
+                        updatedExpandedFolders.AddRange( exFolders );
+                    }
+                }
+
+                tree.Add( folderBag );
+            }
+
+            return (tree, updatedExpandedFolders);
+        }
+
+        /// <summary>
+        /// Recursively gets a list of every folder that is in the given directory.
+        /// </summary>
+        /// <param name="directoryPath">The folder we want to get the children of.</param>
+        /// <param name="physicalRootFolder">The root folder where this list was started from.</param>
+        /// <param name="excludedFolder">The name of a folder that should be excluded from the list (and its children).</param>
+        /// <returns>A list of <see cref="ListItemBag"/> items of each child directory.</returns>
+        private List<string> GetRecursiveFolders( string directoryPath, string physicalRootFolder, string excludedFolder )
+        {
+            // If this is a hidden folder, don't show it.
+            if ( IsHiddenFolder( directoryPath ) || directoryPath == excludedFolder )
+            {
+                return new List<string>();
+            }
+
+            DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
+            string relativeFolderPath = directoryPath.Replace( physicalRootFolder, string.Empty );
+
+            var folders = new List<string> { string.IsNullOrEmpty( relativeFolderPath ) ? "/" : relativeFolderPath.Replace( "\\", "/" ) };
+
+            List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
+
+            foreach ( var subDirectoryPath in subDirectoryList )
+            {
+                folders.AddRange( GetRecursiveFolders( subDirectoryPath, physicalRootFolder, excludedFolder ) );
+            }
+
+            return folders;
+        }
+
+        /// <summary>
+        /// Determines whether the given folder name is a valid folder name.
+        /// </summary>
+        /// <param name="folderName">Name of the rename folder.</param>
+        /// <returns>True if folderName is valid, false otherwise</returns>
+        private bool IsValidAssetFolderName( string folderName )
+        {
+            Regex regularExpression = new Regex( @"^[^*/><?\\\\|:,~]+$" );
+            var isValid = regularExpression.IsMatch( folderName );
+
+            var invalidChars = Path.GetInvalidPathChars().ToList();
+            invalidChars.Add( '\\' );
+            invalidChars.Add( '/' );
+            invalidChars.Add( '~' );
+
+            isValid = isValid && !( folderName.ToList().Any( a => invalidChars.Contains( a ) ) || folderName.StartsWith( ".." ) || folderName.EndsWith( "." ) );
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Whether the folder at the given path should be hidden from the file manager.
+        /// </summary>
+        /// <param name="localPathName"></param>
+        /// <returns>True if the folder at the given path should be hidden from the file manager, otherwise false.</returns>
+        private bool IsHiddenFolder( string localPathName )
+        {
+            var HiddenFolders = new List<string> { "Content\\ASM_Thumbnails" };
+            return HiddenFolders.Any( a => localPathName.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > -1 );
+        }
+
+        /// <summary>
+        /// Whether the folder at the given path name is restricted from certain actions.
+        /// </summary>
+        /// <param name="pathName"></param>
+        /// <returns>True if the folder at the given path name is restricted from certain actions, otherwise false.</returns>
+        private bool IsRestrictedFolder( string pathName )
+        {
+            var restrictedFolders = new List<string>()
+            {
+                "Bin",
+                "App_Data",
+                "App_Code",
+                "App_Browsers",
+                "Assets",
+                "Blocks",
+                "Content",
+                "Plugins",
+                "Scripts",
+                "SqlServerTypes",
+                "Styles",
+                "Themes",
+                "Webhooks"
+            };
+
+            pathName = pathName.TrimStart( '~' ).TrimStart( '/', '\\' ).TrimEnd( '/', '\\' );
+
+            return restrictedFolders.Contains( pathName, StringComparer.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
+        /// Whether the folder at the given path name is restricted from certain types of uploads.
+        /// </summary>
+        /// <param name="pathName"></param>
+        /// <returns>True if the folder at the given path name is restricted from certain types of uploads, otherwise false.</returns>
+        private bool IsUploadRestrictedFolder( string pathName )
+        {
+            var restrictedFolders = new List<string>()
+            {
+                "Bin",
+                "App_Code"
+            };
+
+            pathName = pathName.TrimStart( '~' ).TrimStart( '/', '\\' ).TrimEnd( '/', '\\' );
+
+            return restrictedFolders.Any( a => pathName.StartsWith( a, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        #endregion
+
         #region Asset Storage Provider Picker
 
         /// <summary>
@@ -596,6 +1879,40 @@ namespace Rock.Rest.v2
                     .ToListItemBagList();
 
                 return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Attribute Matrix Editor
+
+        /// <summary>
+        /// Take the public edit values for a given matrix item and convert them to public viewing values.
+        /// </summary>
+        /// <param name="options">The options that describe the attributes and their public edit values.</param>
+        /// <returns>The public edit values and the public viewing values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
+        public IHttpActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
+                {
+                    var attr = AttributeCache.Get( a.Value.AttributeGuid );
+
+                    var privateValue = PublicAttributeHelper.GetPrivateValue( attr, options.AttributeValues.GetValueOrDefault( a.Key, "" ) );
+                    var publicValue = PublicAttributeHelper.GetPublicValueForView( attr, privateValue );
+                    return publicValue;
+                } );
+
+                return Ok( new
+                {
+                    ViewValues = publicValues,
+                    EditValues = options.AttributeValues
+                } );
             }
         }
 
@@ -677,13 +1994,79 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Badge Control
+
+        /// <summary>
+        /// Get a rendered badge matching the given options
+        /// </summary>
+        /// <param name="options">The options that describe the badge to load.</param>
+        /// <returns>The HTML of a specified badge.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgeControlGetBadge" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
+        public IHttpActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+                var entityType = entityTypeCache?.GetEntityType();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Verify that we found the entity type.
+                if ( entityType == null )
+                {
+                    return BadRequest( "Unknown entity type." );
+                }
+
+                // Load the entity and verify we got one.
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                // If the entity can be secured, ensure the person has access to it.
+                if ( entity is ISecured securedEntity )
+                {
+                    var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( entity, Authorization.VIEW ) == true;
+
+                    if ( !isAuthorized )
+                    {
+                        return Unauthorized();
+                    }
+                }
+
+                BadgeCache badge = BadgeCache.Get( options.BadgeTypeGuid );
+
+                if ( badge == null || badge.EntityTypeId.Value != entityTypeCache.Id )
+                {
+                    return NotFound();
+                }
+
+                var isBadgeAuthorized = badge.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    || grant?.IsAccessGranted( badge, Authorization.VIEW ) == true;
+
+                if ( !isBadgeAuthorized )
+                {
+                    return Unauthorized();
+                }
+
+                return Ok( badge.RenderBadge( entity ) );
+            }
+        }
+
+        #endregion
+
         #region Badge List
 
         /// <summary>
         /// Get the rendered badge information for a specific entity.
         /// </summary>
         /// <param name="options">The options that describe which badges to render.</param>
-        /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
+        /// <returns>A collection of <see cref="ViewModels.Crm.RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgeListGetBadges" )]
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
@@ -878,7 +2261,8 @@ namespace Rock.Rest.v2
                 {
                     if ( item.GetAttributeValue( "TemplateBlock" ).AsGuid() == blockTemplateDefinedValue.Guid )
                     {
-                        var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
+                        var iconGuid = item.GetAttributeValue( "Icon" ).AsGuid();
+                        var imageUrl = FileUrlHelper.GetImageUrl( iconGuid );
 
                         items.Add( new BlockTemplatePickerGetBlockTemplatesResultsBag { Guid = item.Guid, Name = item.Value, IconUrl = RockRequestContext.ResolveRockUrl( imageUrl ), Template = item.Description } );
                     }
@@ -1043,6 +2427,48 @@ namespace Rock.Rest.v2
                 Text = account.Name,
                 Value = account.Guid.ToString()
             };
+        }
+
+        #endregion
+
+        #region Captcha
+
+        /// <summary>
+        /// Gets saved captcha Site Key
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route( "CaptchaControlGetConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
+        public IHttpActionResult CaptchaControlGetConfiguration()
+        {
+            var bag = new CaptchaControlConfigurationBag()
+            {
+                SiteKey = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY )
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Gets saved captcha Site Key
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route( "CaptchaControlValidateToken" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8f373592-d745-4d69-944a-729e15c3f941" )]
+        public IHttpActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
+        {
+            var api = new CloudflareApi();
+
+            var isTokenValid = api.IsTurnstileTokenValid( options.Token );
+
+            var result = new CaptchaControlTokenValidateTokenResultBag()
+            {
+                IsTokenValid = isTokenValid
+            };
+
+            return Ok( result );
         }
 
         #endregion
@@ -1571,6 +2997,44 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Currency Box
+
+        /// <summary>
+        /// Gets the currency info for the currency box matching the given currency code defined value Guid.
+        /// </summary>
+        /// <returns>The currency symbol and decimal places</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CurrencyBoxGetCurrencyInfo" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6E8D0B48-EB88-4028-B03F-064A690902D4" )]
+        public IHttpActionResult CurrencyBoxGetCurrencyInfo( [FromBody] CurrencyBoxGetCurrencyInfoOptionsBag options )
+        {
+            Guid currencyCodeGuid = options.CurrencyCodeGuid;
+            RockCurrencyCodeInfo currencyInfo = null;
+
+            if ( !currencyCodeGuid.IsEmpty() )
+            {
+                var currencyCodeDefinedValueCache = DefinedValueCache.Get( currencyCodeGuid );
+                if ( currencyCodeDefinedValueCache != null )
+                {
+                    currencyInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueCache.Id );
+                }
+            }
+
+            if ( currencyInfo == null )
+            {
+                currencyInfo = new RockCurrencyCodeInfo();
+            }
+
+            return Ok( new CurrencyBoxGetCurrencyInfoResultsBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces
+            } );
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
@@ -1615,45 +3079,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Defined Value Picker
-
-        /// <summary>
-        /// Gets the defined values and their categories that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a tree view control.
-        /// </summary>
-        /// <param name="options">The options that describe which defined values to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
-        [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
-        [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
-        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-
-                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                {
-                    return NotFound();
-                }
-
-                var definedValues = definedType.DefinedValues
-                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
-                        && ( options.IncludeInactive || v.IsActive ) )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .Select( v => new ListItemBag
-                    {
-                        Value = v.Guid.ToString(),
-                        Text = v.Value
-                    } )
-                    .ToList();
-
-                return Ok( definedValues );
-            }
-        }
+        #region Defined Value Editor
 
         /// <summary>
         /// Get the attributes for the given Defined Type
@@ -1661,10 +3087,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options needed to find the attributes for the defined type</param>
         /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
         [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerGetAttributes" )]
+        [System.Web.Http.Route( "DefinedValueEditorGetAttributes" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "10b3fa87-756e-4dde-bf67-fb102037ddc3" )]
-        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetAttributesOptionsBag options )
+        [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
+        public IHttpActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -1678,7 +3104,25 @@ namespace Rock.Rest.v2
                 DefinedTypeId = definedType.Id
             };
 
-            return Ok( GetAttributes( definedValue ) );
+            definedValue.LoadAttributes();
+
+            var attributes = definedValue.Attributes.ToDictionary( a => a.Key, a =>
+            {
+                return PublicAttributeHelper.GetPublicAttributeForEdit( a.Value );
+            } );
+
+            var defaultValues = definedValue.Attributes.ToDictionary( a => a.Key, a =>
+            {
+                var config = a.Value.ConfigurationValues;
+                var fieldType = a.Value.FieldType.Field;
+                return fieldType.GetPublicEditValue( a.Value.DefaultValue, config );
+            } );
+
+            return Ok( new DefinedValueEditorGetAttributesResultsBag
+            {
+                Attributes = attributes,
+                DefaultValues = defaultValues
+            } );
         }
 
         /// <summary>
@@ -1687,10 +3131,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options the new defined value</param>
         /// <returns>A <see cref="ListItemBag"/> representing the new defined value.</returns>
         [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerSaveNewValue" )]
+        [System.Web.Http.Route( "DefinedValueEditorSaveNewValue" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "2a10eb70-cc9a-48be-8ed7-d9104fd9fdca" )]
-        public IHttpActionResult DefinedValuePickerSaveNewValue( DefinedValuePickerSaveNewValueOptionsBag options )
+        [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
+        public IHttpActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -1759,6 +3203,48 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
+        #region Defined Value Picker
+
+        /// <summary>
+        /// Gets the defined values and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which defined values to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
+        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
+                        && ( options.IncludeInactive || v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
             }
         }
 
@@ -2366,7 +3852,8 @@ namespace Rock.Rest.v2
                 .Select( f => new ListItemBag
                 {
                     Text = f.Name,
-                    Value = f.Guid.ToString()
+                    Value = f.Guid.ToString(),
+                    Category = f.Field?.GetType().GetCustomAttribute<UniversalFieldTypeGuidAttribute>()?.Guid.ToString()
                 } )
                 .ToList();
 
@@ -2407,12 +3894,16 @@ namespace Rock.Rest.v2
             var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
 
             // Get the public configuration options from the internal options (values).
-            var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+            var publicAdminConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+
+            // Get the public configuration options from the internal options (values).
+            var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
 
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
-                ConfigurationValues = publicConfigurationValues,
+                AdminConfigurationValues = publicAdminConfigurationValues,
+                EditConfigurationValues = publicEditConfigurationValues,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }
@@ -2877,6 +4368,579 @@ namespace Rock.Rest.v2
             }
 
             return Ok( list );
+        }
+
+        #endregion
+
+        #region Group Member Requirement Card
+
+        /// <summary>
+        /// Get the data needed to properly display the GroupMemberRequirementCard control
+        /// </summary>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementCardGetConfigResultsBag"/> containing everything the card needs to be displayed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
+        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
+        {
+            if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
+            {
+                return BadRequest( "GroupRequirementGuid and GroupMemberRequirementGuid are required." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = RockRequestContext.CurrentPerson;
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+                var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
+
+                if ( groupMemberRequirement == null || groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
+                var LabelKey = new
+                {
+                    RequirementMet = " Requirement Met",
+                    RequirementNotMet = " Requirement Not Met",
+                    RequirementMetWithWarning = "Requirement Met With Warning"
+                };
+                var groupRequirementType = groupRequirement.GroupRequirementType;
+                var results = new GroupMemberRequirementCardGetConfigResultsBag();
+
+                if (
+                    groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual
+                    && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets
+                )
+                {
+                    results.ManualRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
+                            ? groupRequirement.GroupRequirementType.CheckboxLabel
+                            : groupRequirement.GroupRequirementType.Name,
+                        Icon = "fa fa-square-o fa-fw"
+                    };
+                }
+
+                if ( options.CanOverride && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets )
+                {
+                    results.OverrideRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = "Mark as Met",
+                        Icon = "fa fa-check-circle-o fa-fw"
+                    };
+                }
+
+                var hasNotMetWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
+
+                var hasWarningWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateWarningWorkflow
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
+
+                if ( hasNotMetWorkflow )
+                {
+                    results.NotMetWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace()
+                            ? groupRequirementType.DoesNotMeetWorkflowLinkText
+                            : "Requirement Not Met",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( hasWarningWorkflow )
+                {
+                    results.WarningWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                            groupRequirementType.WarningWorkflowLinkText :
+                            "Requirement Met With Warning",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( groupMemberRequirement.WasOverridden )
+                {
+                    results.IsOverridden = true;
+                    results.OverriddenBy = groupMemberRequirement.OverriddenByPersonAlias.Person.FullName;
+                    results.OverriddenAt = groupMemberRequirement.OverriddenDateTime.ToShortDateString();
+                }
+
+                results.Message = "Issue With Requirement.";
+
+                switch ( options.MeetsGroupRequirement )
+                {
+                    case MeetsGroupRequirement.Meets:
+                        results.Message = groupRequirementType.PositiveLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.PositiveLabel : LabelKey.RequirementMet;
+                        break;
+                    case MeetsGroupRequirement.NotMet:
+                        results.Message = groupRequirementType.NegativeLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.NegativeLabel : LabelKey.RequirementNotMet;
+                        break;
+                    case MeetsGroupRequirement.MeetsWithWarning:
+                        results.Message = groupRequirementType.WarningLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.WarningLabel : LabelKey.RequirementMetWithWarning;
+                        break;
+                }
+
+                results.Summary = groupRequirementType.Summary;
+
+                return Ok( results );
+            }
+        }
+
+        /// <summary>
+        /// Manually mark a GroupMemberRequirement as met
+        /// </summary>
+        /// <param name="options">The options that describe which item to mark met</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardMarkMetManually" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
+        public IHttpActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                {
+                    // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                    var groupRequirementService = new GroupRequirementService( rockContext );
+                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                    if ( groupRequirement != null && groupMember != null )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = groupRequirement.Id,
+                            GroupMemberId = groupMember.Id
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                    }
+                }
+
+                groupMemberRequirement.WasManuallyCompleted = true;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Manually override a GroupMemberRequirement as met
+        /// </summary>
+        /// <param name="options">The options that describe which item to override</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardOverrideMarkMet" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
+        public IHttpActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementService = new GroupRequirementService( rockContext );
+                var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine if current person is authorized to override
+                if ( currentPerson == null )
+                {
+                    return Unauthorized();
+                }
+
+                var currentPersonIsLeaderOfCurrentGroup = new GroupMemberService( rockContext )
+                    .GetByGroupId( groupRequirement.Group.Id )
+                    .Where( m => m.GroupRole.IsLeader )
+                    .Select( m => m.PersonId )
+                    .Contains( currentPerson.Id );
+
+                bool currentPersonCanOverride = groupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                var hasPermissionToOverride = groupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+
+                if ( !( currentPersonCanOverride || hasPermissionToOverride ) )
+                {
+                    return Unauthorized();
+                }
+
+                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                {
+                    // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                    if ( groupRequirement != null && groupMember != null )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = groupRequirement.Id,
+                            GroupMemberId = groupMember.Id
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                    }
+                }
+
+                groupMemberRequirement.WasOverridden = true;
+                groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
+                groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
+                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Run the "not met" workflow for the given GroupMemberRequirement
+        /// </summary>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardRunNotMetWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
+        public IHttpActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+
+                if ( !groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
+                {
+                    return BadRequest();
+                }
+
+                // Begin the workflow.
+                var workflowType = WorkflowTypeCache.Get( groupRequirementType.DoesNotMeetWorkflowTypeId.Value );
+
+                // If a workflow type is not persisted, let the user know that it did not work.
+                if ( !workflowType.IsPersisted )
+                {
+                    return Ok( new
+                    {
+                        Alert = $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started."
+                    } );
+                }
+
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                        var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                        var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                        return Ok( new
+                        {
+                            GoTo = workflowLink.BuildUrl()
+                        } );
+                    }
+                    else
+                    {
+                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        {
+                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                            var groupRequirementService = new GroupRequirementService( rockContext );
+                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                            if ( groupRequirement != null && groupMember != null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = groupRequirement.Id,
+                                    GroupMemberId = groupMember.Id
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
+                        }
+
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            if ( workflow.HasActiveEntryForm( RockRequestContext.CurrentPerson ) )
+                            {
+                                var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                                var qryParams = new Dictionary<string, string>
+                                {
+                                    { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                    { "WorkflowGuid", workflow.Guid.ToString() }
+                                };
+
+                                var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                                return Ok( new
+                                {
+                                    Open = workflowLink.BuildUrl(),
+                                    Alert = message
+                                } );
+                            }
+                            else
+                            {
+                                return Ok( new
+                                {
+                                    Alert = $"A '{workflowType.Name}' workflow was started."
+                                } );
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Run the "warning" workflow for the given GroupMemberRequirement
+        /// </summary>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardRunWarningWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
+        public IHttpActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+
+                if ( !groupRequirementType.WarningWorkflowTypeId.HasValue )
+                {
+                    return BadRequest();
+                }
+
+                // Begin the workflow.
+                var workflowType = WorkflowTypeCache.Get( groupRequirementType.WarningWorkflowTypeId.Value );
+
+                // If a workflow type is not persisted, let the user know that it did not work.
+                if ( !workflowType.IsPersisted )
+                {
+                    return Ok( new
+                    {
+                        Alert = $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started."
+                    } );
+                }
+
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                        var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                        var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                        return Ok( new
+                        {
+                            GoTo = workflowLink.BuildUrl()
+                        } );
+                    }
+                    else
+                    {
+                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        {
+                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                            var groupRequirementService = new GroupRequirementService( rockContext );
+                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                            if ( groupRequirement != null && groupMember != null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = groupRequirement.Id,
+                                    GroupMemberId = groupMember.Id
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
+                        }
+
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.WarningWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            if ( workflow.HasActiveEntryForm( RockRequestContext.CurrentPerson ) )
+                            {
+                                var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                                var qryParams = new Dictionary<string, string>
+                                {
+                                    { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                    { "WorkflowGuid", workflow.Guid.ToString() }
+                                };
+
+                                var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                                return Ok( new
+                                {
+                                    Open = workflowLink.BuildUrl(),
+                                    Alert = message
+                                } );
+                            }
+                            else
+                            {
+                                return Ok( new
+                                {
+                                    Alert = $"A '{workflowType.Name}' workflow was started."
+                                } );
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+        }
+
+        #endregion
+
+        #region Group Member Requirements Container
+
+        /// <summary>
+        /// Get the data for each of the cards in the GroupMemberRequirementContainer
+        /// </summary>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementContainerGetDataResultsBag"/> containing everything the cards need to be displayed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementContainerGetData" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B1F29337-BD8B-4F62-A68E-F67C32E8CFDE" )]
+        public IHttpActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
+        {
+            var results = new GroupMemberRequirementContainerGetDataResultsBag
+            {
+                Errors = new List<GroupMemberRequirementErrorBag>(),
+                CategorizedRequirements = new List<GroupMemberRequirementCategoryBag>()
+            };
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupRole = new GroupTypeRoleService( rockContext ).Get( options.GroupRoleGuid );
+                var person = new PersonService( rockContext ).Get( options.PersonGuid );
+                var group = new GroupService( rockContext ).Get( options.GroupGuid );
+
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine whether the current person is a leader of the chosen group.
+                var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupGuid( options.GroupGuid );
+                var currentPersonIsLeaderOfCurrentGroup = currentPerson == null ? false :
+                    groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( currentPerson.Id );
+
+                IEnumerable<GroupRequirementStatus> groupRequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, person?.Id ?? 0, groupRole.Id );
+
+                // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
+                var requirementCategories = groupRequirementStatuses
+                .Select( s => new
+                {
+                    CategoryId = s.GroupRequirement.GroupRequirementType.CategoryId,
+                    Name = s.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? s.GroupRequirement.GroupRequirementType.Category.Name : string.Empty,
+                    RequirementResults = groupRequirementStatuses.Where( gr => gr.GroupRequirement.GroupRequirementType.CategoryId == s.GroupRequirement.GroupRequirementType.CategoryId ),
+                } ).OrderBy( a => a.CategoryId.HasValue ).ThenBy( a => a.Name ).DistinctBy( a => a.CategoryId );
+
+                var requirementsWithErrors = groupRequirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+
+                if ( requirementsWithErrors.Any() )
+                {
+                    var nbRequirementErrors = new GroupMemberRequirementErrorBag
+                    {
+                        Text = string.Format( "An error occurred in one or more of the requirement calculations" ),
+                        Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine )
+                    };
+                    results.Errors.Add( nbRequirementErrors );
+                }
+
+                foreach ( var requirementCategory in requirementCategories )
+                {
+                    var newCategory = new GroupMemberRequirementCategoryBag
+                    {
+                        Id = requirementCategory.CategoryId,
+                        Name = requirementCategory.Name,
+                        MemberRequirements = new List<GroupMemberRequirementCardConfigBag>()
+                    };
+
+                    // Set up Security or Override access.
+
+                    // Add the Group Member Requirement Cards here.
+                    foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
+                    {
+                        bool leaderCanOverride = requirementStatus.GroupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                        var hasPermissionToOverride = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+                        var isAuthorized = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+                        var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( requirementStatus.GroupMemberRequirementId ?? 0 );
+
+                        // Do not render cards where the current person is not authorized, or the status is "Not Applicable" or "Error".
+                        if ( isAuthorized && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.Error )
+                        {
+                            var card = new GroupMemberRequirementCardConfigBag
+                            {
+                                Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
+                                TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
+                                MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
+                                GroupRequirementGuid = requirementStatus.GroupRequirement.Guid,
+                                GroupRequirementTypeGuid = requirementStatus.GroupRequirement.GroupRequirementType.Guid,
+                                GroupMemberRequirementGuid = groupMemberRequirement.Guid,
+                                GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate?.ToShortDateString(),
+                                CanOverride = leaderCanOverride || hasPermissionToOverride
+                            };
+
+                            newCategory.MemberRequirements.Add( card );
+                        }
+                    }
+
+                    results.CategorizedRequirements.Add( newCategory );
+                }
+                return Ok( results );
+            }
         }
 
         #endregion
@@ -3940,6 +6004,51 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Media Player
+
+        /// <summary>
+        /// Gets the media accounts that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag" /> objects that represent media accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaPlayerGetPlayerOptions" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "85EF9540-0B5E-4816-9A13-9B09BF1ECA4F" )]
+        public IHttpActionResult MediaPlayerGetPlayerOptions( [FromBody] MediaPlayerGetPlayerOptionsOptionsBag options )
+        {
+            if ( options.PlayerOptions == null || options.MediaElementGuid == null )
+            {
+                return BadRequest( "Player Options and MediaElementGuid are Required." );
+            }
+
+            var playerOptions = new MediaPlayerOptions
+            {
+                Autoplay = options.PlayerOptions.Autoplay,
+                Autopause = options.PlayerOptions.Autopause,
+                ClickToPlay = options.PlayerOptions.ClickToPlay,
+                Controls = options.PlayerOptions.Controls,
+                Debug = options.PlayerOptions.Debug,
+                HideControls = options.PlayerOptions.HideControls,
+                MediaUrl = options.PlayerOptions.MediaUrl,
+                Muted = options.PlayerOptions.Muted,
+                PosterUrl = options.PlayerOptions.PosterUrl,
+                RelatedEntityId = options.PlayerOptions.RelatedEntityId,
+                RelatedEntityTypeId = options.PlayerOptions.RelatedEntityTypeId,
+                SeekTime = options.PlayerOptions.SeekTime,
+                TrackProgress = options.PlayerOptions.TrackProgress,
+                Type = options.PlayerOptions.Type,
+                Volume = options.PlayerOptions.Volume,
+                WriteInteraction = options.PlayerOptions.WriteInteraction
+            };
+
+            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays, options.CombinePlayStatisticsInDays, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
+
+            return Ok( playerOptions );
+        }
+
+        #endregion
+
         #region Merge Field Picker
 
         /// <summary>
@@ -4956,7 +7065,8 @@ namespace Rock.Rest.v2
             var rockContext = new RockContext();
 
             // Chain to the v1 controller.
-            return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+            var results = Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+            return results;
         }
 
         #endregion
@@ -4976,6 +7086,7 @@ namespace Rock.Rest.v2
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             string defaultCountryCode = null;
+            var countryCodes = new List<string>();
 
             if ( definedType != null )
             {
@@ -5001,6 +7112,7 @@ namespace Rock.Rest.v2
                     }
 
                     countryCodeRules.Add( countryCode, rules );
+                    countryCodes.Add( countryCode );
                 }
             }
 
@@ -5010,6 +7122,7 @@ namespace Rock.Rest.v2
                 {
                     Rules = countryCodeRules,
                     DefaultCountryCode = defaultCountryCode,
+                    CountryCodes = countryCodes,
                     SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
                 } );
             }
@@ -5017,6 +7130,7 @@ namespace Rock.Rest.v2
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
             {
                 Rules = countryCodeRules,
+                CountryCodes = countryCodes,
                 DefaultCountryCode = defaultCountryCode
             } );
         }
@@ -5643,6 +7757,21 @@ namespace Rock.Rest.v2
             } );
         }
 
+        /// <summary>
+        /// Gets the value of structured content as HTML.
+        /// </summary>
+        /// <param name="content">The raw content of the StructuredContentEditor.</param>
+        /// <returns>The structured content converted to HTML.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StructuredContentAsHtml" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "aec4bf60-bdcc-44e6-b7c5-8c019612deb6" )]
+        public IHttpActionResult StructuredContentAsHtml( [FromBody] object content )
+        {
+            var contentAsHtml = new StructuredContentHelper( content.ToString() ).Render();
+            return Ok( contentAsHtml );
+        }
+
         #endregion
 
         #region Workflow Action Type Picker
@@ -5724,7 +7853,7 @@ namespace Rock.Rest.v2
                 // workflow actions from showing up to the user. System user only.
                 if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
                 {
-                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions.TryAdd( categoryName, new List<EntityTypeCache>() );
                     categorizedActions[categoryName].Add( action.EntityType );
                 }
             }
@@ -5924,18 +8053,16 @@ namespace Rock.Rest.v2
                     entityType = entityType.BaseType;
                 }
 
-                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+                var attributes = new List<AttributeCache>();
 
                 var entityTypeCache = EntityTypeCache.Get( entityType );
 
-                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                List<AttributeCache> allAttributes = null;
                 Dictionary<int, List<int>> inheritedAttributes = null;
 
-                //
                 // If this entity can provide inherited attribute information then
                 // load that data now. If they don't provide any then generate empty lists.
-                //
-                if ( model is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
+                if ( model is IHasInheritedAttributes entityWithInheritedAttributes )
                 {
                     allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
                     inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
@@ -5944,10 +8071,8 @@ namespace Rock.Rest.v2
                 allAttributes = allAttributes ?? new List<AttributeCache>();
                 inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
 
-                //
                 // Get all the attributes that apply to this entity type and this entity's
                 // properties match any attribute qualifiers.
-                //
                 var entityTypeId = entityTypeCache?.Id;
 
                 if ( entityTypeCache != null )
@@ -5962,7 +8087,7 @@ namespace Rock.Rest.v2
                             System.Reflection.PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                             if ( propertyInfo != null )
                             {
-                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( model, null ) );
+                                propertyValues.TryAdd( propertyName, propertyInfo.GetValue( model, null ) );
                             }
                         }
 
@@ -5976,9 +8101,7 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                //
                 // Append these attributes to our inherited attributes, in order.
-                //
                 foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
                 {
                     allAttributes.Add( attribute );

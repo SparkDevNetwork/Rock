@@ -64,25 +64,365 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202310051734463_Rollup_20231005.cs" />
-    <Compile Include="Migrations\202310051734463_Rollup_20231005.designer.cs">
+    <Compile Include="Migrations\202407181858470_Rollup_20240718.cs" />
+    <Compile Include="Migrations\202407181858470_Rollup_20240718.designer.cs">
+      <DependentUpon>202407181858470_Rollup_20240718.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407182137238_CodeGenerated_20240718.cs" />
+    <Compile Include="Migrations\202407182137238_CodeGenerated_20240718.designer.cs">
+      <DependentUpon>202407182137238_CodeGenerated_20240718.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs" />
+    <Compile Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.Designer.cs">
+      <DependentUpon>202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs" />
+    <Compile Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.Designer.cs">
+      <DependentUpon>202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407241832019_AddCommunicationEmailMetricsReminderColumns.cs" />
+    <Compile Include="Migrations\202407241832019_AddCommunicationEmailMetricsReminderColumns.Designer.cs">
+      <DependentUpon>202407241832019_AddCommunicationEmailMetricsReminderColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407261915042_AIModels.cs" />
+    <Compile Include="Migrations\202407261915042_AIModels.Designer.cs">
+      <DependentUpon>202407261915042_AIModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs" />
+    <Compile Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.designer.cs">
+      <DependentUpon>202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408011753319_Rollup_20240801.cs" />
+    <Compile Include="Migrations\202408011753319_Rollup_20240801.designer.cs">
+      <DependentUpon>202408011753319_Rollup_20240801.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408011847291_CodeGenerated_20240801.cs" />
+    <Compile Include="Migrations\202408011847291_CodeGenerated_20240801.designer.cs">
+      <DependentUpon>202408011847291_CodeGenerated_20240801.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408012144211_AddSchedulesToShortLinks.cs" />
+    <Compile Include="Migrations\202408012144211_AddSchedulesToShortLinks.Designer.cs">
+      <DependentUpon>202408012144211_AddSchedulesToShortLinks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408221651228_Rollup_20240822.cs" />
+    <Compile Include="Migrations\202408221651228_Rollup_20240822.designer.cs">
+      <DependentUpon>202408221651228_Rollup_20240822.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408221726136_CodeGenerated_20240822.cs" />
+    <Compile Include="Migrations\202408221726136_CodeGenerated_20240822.designer.cs">
+      <DependentUpon>202408221726136_CodeGenerated_20240822.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408271607508_MobileStyleGuide.cs" />
+    <Compile Include="Migrations\202408271607508_MobileStyleGuide.Designer.cs">
+      <DependentUpon>202408271607508_MobileStyleGuide.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
+      <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404231632538_AddTargetCountColumnToAchievementType.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404231632538_AddTargetCountColumnToAchievementType.Designer.cs">
+      <DependentUpon>202404231632538_AddTargetCountColumnToAchievementType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404242201295_AddIsOverflowLocationToGroupLocation.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404242201295_AddIsOverflowLocationToGroupLocation.Designer.cs">
+      <DependentUpon>202404242201295_AddIsOverflowLocationToGroupLocation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404251740406_Rollup_20240425.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404251740406_Rollup_20240425.Designer.cs">
+      <DependentUpon>202404251740406_Rollup_20240425.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404251817274_CodeGenerated_20240425.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404251817274_CodeGenerated_20240425.Designer.cs">
+      <DependentUpon>202404251817274_CodeGenerated_20240425.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405091644314_Rollup_20240509.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405091644314_Rollup_20240509.Designer.cs">
+      <DependentUpon>202405091644314_Rollup_20240509.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405091842467_CodeGenerated_20240509.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405091842467_CodeGenerated_20240509.Designer.cs">
+      <DependentUpon>202405091842467_CodeGenerated_20240509.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405121011403_UpdateAgeBracketValues.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405121011403_UpdateAgeBracketValues.Designer.cs">
+      <DependentUpon>202405121011403_UpdateAgeBracketValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405211556129_AddPeerNetworkEntity.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405211556129_AddPeerNetworkEntity.Designer.cs">
+      <DependentUpon>202405211556129_AddPeerNetworkEntity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405231643444_Rollup_20240523.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405231643444_Rollup_20240523.Designer.cs">
+      <DependentUpon>202405231643444_Rollup_20240523.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405231728102_CodeGenerated_20240523.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202405231728102_CodeGenerated_20240523.Designer.cs">
+      <DependentUpon>202405231728102_CodeGenerated_20240523.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.Designer.cs">
+      <DependentUpon>202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406040120175_WidenColumnInteractionSessionLocationRegionCode.Designer.cs">
+      <DependentUpon>202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406051555015_UpdatePersonalizationSegmentModel.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406051555015_UpdatePersonalizationSegmentModel.Designer.cs">
+      <DependentUpon>202406051555015_UpdatePersonalizationSegmentModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406061735165_Rollup_20240606.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406061735165_Rollup_20240606.Designer.cs">
+      <DependentUpon>202406061735165_Rollup_20240606.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406061828335_CodeGenerated_20240606.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406061828335_CodeGenerated_20240606.Designer.cs">
+      <DependentUpon>202406061828335_CodeGenerated_20240606.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406091439540_AddMeasurementClassificationValueToMetric.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406091439540_AddMeasurementClassificationValueToMetric.Designer.cs">
+      <DependentUpon>202406091439540_AddMeasurementClassificationValueToMetric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406170654068_AddSmsPipelineInteractionLogging.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406170654068_AddSmsPipelineInteractionLogging.Designer.cs">
+      <DependentUpon>202406170654068_AddSmsPipelineInteractionLogging.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406190900171_UpdatePeerNetworkModel.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406190900171_UpdatePeerNetworkModel.Designer.cs">
+      <DependentUpon>202406190900171_UpdatePeerNetworkModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406201602320_LMSModels.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406201602320_LMSModels.Designer.cs">
+      <DependentUpon>202406201602320_LMSModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406201817226_Rollup_20240620.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406201817226_Rollup_20240620.Designer.cs">
+      <DependentUpon>202406201817226_Rollup_20240620.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406201833063_CodeGenerated_20240620.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406201833063_CodeGenerated_20240620.Designer.cs">
+      <DependentUpon>202406201833063_CodeGenerated_20240620.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406221248188_AddPageShortLinkUtmProperties.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406221248188_AddPageShortLinkUtmProperties.Designer.cs">
+      <DependentUpon>202406221248188_AddPageShortLinkUtmProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406281837177_CreateCheckInLabelModel.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202406281837177_CreateCheckInLabelModel.Designer.cs">
+      <DependentUpon>202406281837177_CreateCheckInLabelModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407032103552_AddProxyDeviceIdToDeviceModel.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407032103552_AddProxyDeviceIdToDeviceModel.Designer.cs">
+      <DependentUpon>202407032103552_AddProxyDeviceIdToDeviceModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407032356002_AddEntityIntentModel.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407032356002_AddEntityIntentModel.Designer.cs">
+      <DependentUpon>202407032356002_AddEntityIntentModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407051728313_Rollup_20240705.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407051728313_Rollup_20240705.Designer.cs">
+      <DependentUpon>202407051728313_Rollup_20240705.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407051800282_CodeGenerated_20240705.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407051800282_CodeGenerated_20240705.Designer.cs">
+      <DependentUpon>202407051800282_CodeGenerated_20240705.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407091928445_Rollup_20240709.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.6\202407091928445_Rollup_20240709.Designer.cs">
+      <DependentUpon>202407091928445_Rollup_20240709.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
+      <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.Designer.cs">
+      <DependentUpon>202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.designer.cs">
+      <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112335123_Rollup_20240411.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112335123_Rollup_20240411.Designer.cs">
+      <DependentUpon>202404112335123_Rollup_20240411.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112355222_CodeGenerated_20240411.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112355222_CodeGenerated_20240411.Designer.cs">
+      <DependentUpon>202404112355222_CodeGenerated_20240411.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.designer.cs">
+      <DependentUpon>202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.Designer.cs">
+      <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403282045457_CodeGenerated_20240328.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403282045457_CodeGenerated_20240328.Designer.cs">
+      <DependentUpon>202403282045457_CodeGenerated_20240328.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403140604035_AddSignUpAttributes.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403140604035_AddSignUpAttributes.Designer.cs">
+      <DependentUpon>202403140604035_AddSignUpAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403141934502_CodeGenerated_20240314.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403141934502_CodeGenerated_20240314.Designer.cs">
+      <DependentUpon>202403141934502_CodeGenerated_20240314.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403151756104_Rollup_20240315.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403151756104_Rollup_20240315.Designer.cs">
+      <DependentUpon>202403151756104_Rollup_20240315.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.designer.cs">
+      <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151750399_CodeGenerated_20240215.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151750399_CodeGenerated_20240215.designer.cs">
+      <DependentUpon>202402151750399_CodeGenerated_20240215.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403011745440_AddConnectionRequestToBackgroundCheck.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403011745440_AddConnectionRequestToBackgroundCheck.designer.cs">
+      <DependentUpon>202403011745440_AddConnectionRequestToBackgroundCheck.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403071824190_Rollup_20240307.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403071824190_Rollup_20240307.Designer.cs">
+      <DependentUpon>202403071824190_Rollup_20240307.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403071916505_CodeGenerated_20240307.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403071916505_CodeGenerated_20240307.Designer.cs">
+      <DependentUpon>202403071916505_CodeGenerated_20240307.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.designer.cs">
+      <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.designer.cs">
+      <DependentUpon>202402051838570_AddBotGuardianLevelToPageAndSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.designer.cs">
+      <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041745490_CodeGenerated_20240104.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041745490_CodeGenerated_20240104.designer.cs">
+      <DependentUpon>202401041745490_CodeGenerated_20240104.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.designer.cs">
+      <DependentUpon>202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401122007330_AddCheckInStatusToAttendance.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401122007330_AddCheckInStatusToAttendance.designer.cs">
+      <DependentUpon>202401122007330_AddCheckInStatusToAttendance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401182112484_CodeGenerated_20240118.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401182112484_CodeGenerated_20240118.designer.cs">
+      <DependentUpon>202401182112484_CodeGenerated_20240118.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401211244562_AddAnalyticsSourceZipCode.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401211244562_AddAnalyticsSourceZipCode.designer.cs">
+      <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401162245280_DataViewIcon.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401162245280_DataViewIcon.designer.cs">
+      <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401292333035_AddEventRegistrationPaymentPlansSupport.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401292333035_AddEventRegistrationPaymentPlansSupport.designer.cs">
+      <DependentUpon>202401292333035_AddEventRegistrationPaymentPlansSupport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401302113422_PublicProfileEditAttribute.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401302113422_PublicProfileEditAttribute.designer.cs">
+      <DependentUpon>202401302113422_PublicProfileEditAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011802539_Rollup_20240201.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011802539_Rollup_20240201.designer.cs">
+      <DependentUpon>202402011802539_Rollup_20240201.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011906172_CodeGenerated_20240201.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011906172_CodeGenerated_20240201.designer.cs">
+      <DependentUpon>202402011906172_CodeGenerated_20240201.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.designer.cs">
+      <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301818327_CodeGenerated_20231130.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301818327_CodeGenerated_20231130.designer.cs">
+      <DependentUpon>202311301818327_CodeGenerated_20231130.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312012300370_AddPersistedScheduleIdToPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312012300370_AddPersistedScheduleIdToPersistedDataset.designer.cs">
+      <DependentUpon>202312012300370_AddPersistedScheduleIdToPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312051622324_AddScheduleForeignKeyToPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312051622324_AddScheduleForeignKeyToPersistedDataset.designer.cs">
+      <DependentUpon>202312051622324_AddScheduleForeignKeyToPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.designer.cs">
+      <DependentUpon>202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.designer.cs">
       <DependentUpon>202310051734463_Rollup_20231005.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310052028000_CodeGenerated_20231005.cs" />
-    <Compile Include="Migrations\202310052028000_CodeGenerated_20231005.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310052028000_CodeGenerated_20231005.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310052028000_CodeGenerated_20231005.designer.cs">
       <DependentUpon>202310052028000_CodeGenerated_20231005.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.cs" />
-    <Compile Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310140012542_AddAuthClientScopeApprovalExpiration.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310140012542_AddAuthClientScopeApprovalExpiration.designer.cs">
       <DependentUpon>202310140012542_AddAuthClientScopeApprovalExpiration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310191717043_Rollup_20231019.cs" />
-    <Compile Include="Migrations\202310191717043_Rollup_20231019.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191717043_Rollup_20231019.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191717043_Rollup_20231019.designer.cs">
       <DependentUpon>202310191717043_Rollup_20231019.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.cs" />
-    <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191751018_CodeGenerated_20231019.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191751018_CodeGenerated_20231019.designer.cs">
       <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310231631563_AddAdaptiveMessage.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310231631563_AddAdaptiveMessage.designer.cs">
+      <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310241831421_AddPinTopTopFlagForNotes.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310241831421_AddPinTopTopFlagForNotes.designer.cs">
+      <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.designer.cs">
+      <DependentUpon>202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311021741313_Rollup_20231101.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311021741313_Rollup_20231101.designer.cs">
+      <DependentUpon>202311021741313_Rollup_20231101.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311022055184_CodeGenerated_20231101.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311022055184_CodeGenerated_20231101.designer.cs">
+      <DependentUpon>202311022055184_CodeGenerated_20231101.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162105098_Rollup_20231116.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162105098_Rollup_20231116.designer.cs">
+      <DependentUpon>202311162105098_Rollup_20231116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162232335_CodeGenerated_20231116.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162232335_CodeGenerated_20231116.designer.cs">
+      <DependentUpon>202311162232335_CodeGenerated_20231116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311201535330_AddIsDirtyToPersonalizationSegment.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311201535330_AddIsDirtyToPersonalizationSegment.designer.cs">
+      <DependentUpon>202311201535330_AddIsDirtyToPersonalizationSegment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311271854592_Rollup_20231127.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311271854592_Rollup_20231127.designer.cs">
+      <DependentUpon>202311271854592_Rollup_20231127.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
@@ -1850,20 +2190,275 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202310051734463_Rollup_20231005.resx">
+    <EmbeddedResource Include="Migrations\202407181858470_Rollup_20240718.resx">
+      <DependentUpon>202407181858470_Rollup_20240718.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407182137238_CodeGenerated_20240718.resx">
+      <DependentUpon>202407182137238_CodeGenerated_20240718.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.resx">
+      <DependentUpon>202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.resx">
+      <DependentUpon>202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407241832019_AddCommunicationEmailMetricsReminderColumns.resx">
+      <DependentUpon>202407241832019_AddCommunicationEmailMetricsReminderColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407261915042_AIModels.resx">
+      <DependentUpon>202407261915042_AIModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.resx">
+      <DependentUpon>202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408011753319_Rollup_20240801.resx">
+      <DependentUpon>202408011753319_Rollup_20240801.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408011847291_CodeGenerated_20240801.resx">
+      <DependentUpon>202408011847291_CodeGenerated_20240801.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408012144211_AddSchedulesToShortLinks.resx">
+      <DependentUpon>202408012144211_AddSchedulesToShortLinks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408221651228_Rollup_20240822.resx">
+      <DependentUpon>202408221651228_Rollup_20240822.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408221726136_CodeGenerated_20240822.resx">
+      <DependentUpon>202408221726136_CodeGenerated_20240822.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408271607508_MobileStyleGuide.resx">
+      <DependentUpon>202408271607508_MobileStyleGuide.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
+      <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404231632538_AddTargetCountColumnToAchievementType.resx">
+      <DependentUpon>202404231632538_AddTargetCountColumnToAchievementType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404242201295_AddIsOverflowLocationToGroupLocation.resx">
+      <DependentUpon>202404242201295_AddIsOverflowLocationToGroupLocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404251740406_Rollup_20240425.resx">
+      <DependentUpon>202404251740406_Rollup_20240425.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404251817274_CodeGenerated_20240425.resx">
+      <DependentUpon>202404251817274_CodeGenerated_20240425.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202405091644314_Rollup_20240509.resx">
+      <DependentUpon>202405091644314_Rollup_20240509.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202405091842467_CodeGenerated_20240509.resx">
+      <DependentUpon>202405091842467_CodeGenerated_20240509.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202405121011403_UpdateAgeBracketValues.resx">
+      <DependentUpon>202405121011403_UpdateAgeBracketValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202405211556129_AddPeerNetworkEntity.resx">
+      <DependentUpon>202405211556129_AddPeerNetworkEntity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202405231643444_Rollup_20240523.resx">
+      <DependentUpon>202405231643444_Rollup_20240523.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202405231728102_CodeGenerated_20240523.resx">
+      <DependentUpon>202405231728102_CodeGenerated_20240523.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.resx">
+      <DependentUpon>202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406040120175_WidenColumnInteractionSessionLocationRegionCode.resx">
+      <DependentUpon>202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406051555015_UpdatePersonalizationSegmentModel.resx">
+      <DependentUpon>202406051555015_UpdatePersonalizationSegmentModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406061735165_Rollup_20240606.resx">
+      <DependentUpon>202406061735165_Rollup_20240606.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406061828335_CodeGenerated_20240606.resx">
+      <DependentUpon>202406061828335_CodeGenerated_20240606.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406091439540_AddMeasurementClassificationValueToMetric.resx">
+      <DependentUpon>202406091439540_AddMeasurementClassificationValueToMetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406170654068_AddSmsPipelineInteractionLogging.resx">
+      <DependentUpon>202406170654068_AddSmsPipelineInteractionLogging.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406190900171_UpdatePeerNetworkModel.resx">
+      <DependentUpon>202406190900171_UpdatePeerNetworkModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406201602320_LMSModels.resx">
+      <DependentUpon>202406201602320_LMSModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406201817226_Rollup_20240620.resx">
+      <DependentUpon>202406201817226_Rollup_20240620.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406201833063_CodeGenerated_20240620.resx">
+      <DependentUpon>202406201833063_CodeGenerated_20240620.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406221248188_AddPageShortLinkUtmProperties.resx">
+      <DependentUpon>202406221248188_AddPageShortLinkUtmProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202406281837177_CreateCheckInLabelModel.resx">
+      <DependentUpon>202406281837177_CreateCheckInLabelModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202407032103552_AddProxyDeviceIdToDeviceModel.resx">
+      <DependentUpon>202407032103552_AddProxyDeviceIdToDeviceModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202407032356002_AddEntityIntentModel.resx">
+      <DependentUpon>202407032356002_AddEntityIntentModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202407051728313_Rollup_20240705.resx">
+      <DependentUpon>202407051728313_Rollup_20240705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202407051800282_CodeGenerated_20240705.resx">
+      <DependentUpon>202407051800282_CodeGenerated_20240705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202407091928445_Rollup_20240709.resx">
+      <DependentUpon>202407091928445_Rollup_20240709.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
+      <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.resx">
+      <DependentUpon>202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.resx">
+      <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404112335123_Rollup_20240411.resx">
+      <DependentUpon>202404112335123_Rollup_20240411.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404112355222_CodeGenerated_20240411.resx">
+      <DependentUpon>202404112355222_CodeGenerated_20240411.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.resx">
+      <DependentUpon>202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.resx">
+      <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403282045457_CodeGenerated_20240328.resx">
+      <DependentUpon>202403282045457_CodeGenerated_20240328.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.resx">
+      <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202402151750399_CodeGenerated_20240215.resx">
+      <DependentUpon>202402151750399_CodeGenerated_20240215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403011745440_AddConnectionRequestToBackgroundCheck.resx">
+      <DependentUpon>202403011745440_AddConnectionRequestToBackgroundCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403071824190_Rollup_20240307.resx">
+      <DependentUpon>202403071824190_Rollup_20240307.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403071916505_CodeGenerated_20240307.resx">
+      <DependentUpon>202403071916505_CodeGenerated_20240307.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403140604035_AddSignUpAttributes.resx">
+      <DependentUpon>202403140604035_AddSignUpAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403141934502_CodeGenerated_20240314.resx">
+      <DependentUpon>202403141934502_CodeGenerated_20240314.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403151756104_Rollup_20240315.resx">
+      <DependentUpon>202403151756104_Rollup_20240315.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.resx">
+      <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.resx">
+      <DependentUpon>202402051838570_AddBotGuardianLevelToPageAndSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.resx">
+      <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401041745490_CodeGenerated_20240104.resx">
+      <DependentUpon>202401041745490_CodeGenerated_20240104.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.resx">
+      <DependentUpon>202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401122007330_AddCheckInStatusToAttendance.resx">
+      <DependentUpon>202401122007330_AddCheckInStatusToAttendance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401182112484_CodeGenerated_20240118.resx">
+      <DependentUpon>202401182112484_CodeGenerated_20240118.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401211244562_AddAnalyticsSourceZipCode.resx">
+      <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401162245280_DataViewIcon.resx">
+      <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401292333035_AddEventRegistrationPaymentPlansSupport.resx">
+      <DependentUpon>202401292333035_AddEventRegistrationPaymentPlansSupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401302113422_PublicProfileEditAttribute.resx">
+      <DependentUpon>202401302113422_PublicProfileEditAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402011802539_Rollup_20240201.resx">
+      <DependentUpon>202402011802539_Rollup_20240201.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402011906172_CodeGenerated_20240201.resx">
+      <DependentUpon>202402011906172_CodeGenerated_20240201.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.resx">
+      <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301818327_CodeGenerated_20231130.resx">
+      <DependentUpon>202311301818327_CodeGenerated_20231130.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202312012300370_AddPersistedScheduleIdToPersistedDataset.resx">
+      <DependentUpon>202312012300370_AddPersistedScheduleIdToPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202312051622324_AddScheduleForeignKeyToPersistedDataset.resx">
+      <DependentUpon>202312051622324_AddScheduleForeignKeyToPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.resx">
+      <DependentUpon>202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.resx">
       <DependentUpon>202310051734463_Rollup_20231005.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310052028000_CodeGenerated_20231005.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310052028000_CodeGenerated_20231005.resx">
       <DependentUpon>202310052028000_CodeGenerated_20231005.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310140012542_AddAuthClientScopeApprovalExpiration.resx">
       <DependentUpon>202310140012542_AddAuthClientScopeApprovalExpiration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310191717043_Rollup_20231019.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310191717043_Rollup_20231019.resx">
       <DependentUpon>202310191717043_Rollup_20231019.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310191751018_CodeGenerated_20231019.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310191751018_CodeGenerated_20231019.resx">
       <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310231631563_AddAdaptiveMessage.resx">
+      <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310241831421_AddPinTopTopFlagForNotes.resx">
+      <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.resx">
+      <DependentUpon>202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311021741313_Rollup_20231101.resx">
+      <DependentUpon>202311021741313_Rollup_20231101.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311022055184_CodeGenerated_20231101.resx">
+      <DependentUpon>202311022055184_CodeGenerated_20231101.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311162105098_Rollup_20231116.resx">
+      <DependentUpon>202311162105098_Rollup_20231116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311162232335_CodeGenerated_20231116.resx">
+      <DependentUpon>202311162232335_CodeGenerated_20231116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311201535330_AddIsDirtyToPersonalizationSegment.resx">
+      <DependentUpon>202311201535330_AddIsDirtyToPersonalizationSegment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311271854592_Rollup_20231127.resx">
+      <DependentUpon>202311271854592_Rollup_20231127.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>

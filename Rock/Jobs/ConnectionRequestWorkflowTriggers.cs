@@ -140,7 +140,7 @@ namespace Rock.Jobs
                                     triggerWorkflow += 1;
                                 }
 
-                                updateRockContext.ConnectionRequests.Attach( connectionRequest );
+                                new ConnectionRequestService( updateRockContext ).Attach( connectionRequest );
                                 connectionRequest.ConnectionState = ConnectionState.Active;
 
                                 var guid = Rock.SystemGuid.ConnectionActivityType.FOLLOWUP_DATE_REACHED.AsGuid();

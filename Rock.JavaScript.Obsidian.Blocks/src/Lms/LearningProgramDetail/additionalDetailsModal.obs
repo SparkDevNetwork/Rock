@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <SectionHeader :title="name" />
+        <div class="row">
+            <div class="col-md-6">
+                <StaticFormControl v-model="publicName" label="Public Name" />
+            </div>
+            <div class="col-md-6">
+                <StaticFormControl v-model="completionWorkflowType" label="Completion Workflow Type" />
+            </div>
+        </div>
+
+        <SectionHeader title="Additional Attributes" />
+        <AttributeValuesContainer :showCategoryLabel="false" :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+        <div class="row">
+            <div>
+                <StructuredContentEditor :disabled="true"
+                                         v-model="description" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LearningProgramBag | null>,
+            required: false
+        },
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const description = ref(props.modelValue?.description ?? "");
+    const name = ref(props.modelValue?.name ?? "");
+    const publicName = ref(props.modelValue?.publicName ?? "");
+    const completionWorkflowType = ref(props.modelValue?.completionWorkflowType?.text ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

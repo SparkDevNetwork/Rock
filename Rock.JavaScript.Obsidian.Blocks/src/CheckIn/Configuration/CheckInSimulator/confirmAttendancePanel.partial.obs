@@ -1,0 +1,34 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <NotificationBox alertType="info">
+                <p>
+                    All pending attendance records from this session will be saved.
+                </p>
+
+                <p>
+                    A new session is created any time you search for a different family.
+                </p>
+            </NotificationBox>
+        </div>
+
+        <div v-if="props.result" class="col-md-8">
+            <CheckInResultDetail :result="props.result" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckInResultDetail from "./checkInResultDetail.partial.obs";
+    import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
+
+    const props = defineProps({
+        result: {
+            type: Object as PropType<CheckInResultBag>,
+            required: false
+        }
+    });
+</script>

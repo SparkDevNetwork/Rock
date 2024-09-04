@@ -49,7 +49,7 @@ export class AudioUrlFieldType extends FieldTypeBase {
         return stringComparisonTypes;
     }
 
-    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         if (!value) {
             return "";
         }
@@ -65,6 +65,10 @@ export class AudioUrlFieldType extends FieldTypeBase {
     Rock.controls.mediaPlayer.initialize();
 </script>
         `;
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
 
         return html;
     }

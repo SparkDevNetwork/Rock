@@ -71,6 +71,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Device>( Context ).Queryable().Any( a => a.ProxyDeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Location.FriendlyTypeName );
@@ -161,6 +167,7 @@ namespace Rock.Model
             target.PrinterDeviceId = source.PrinterDeviceId;
             target.PrintFrom = source.PrintFrom;
             target.PrintToOverride = source.PrintToOverride;
+            target.ProxyDeviceId = source.ProxyDeviceId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

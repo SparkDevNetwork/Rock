@@ -233,9 +233,27 @@ function getPeriodDurationInDays(period: string): number {
 function getRecurrenceDates(attributes: Record<string, string>, value: string): RockDateTime[] {
     const recurrenceDates: RockDateTime[] = [];
     const valueParts = value.split(",");
-    const valueType = attributes["VALUE"];
+    let valueType = attributes["VALUE"];
 
     for (const valuePart of valueParts) {
+        if(!valueType) {
+            // The value type is unspecified and it could be a PERIOD, DATE-TIME or a DATE.
+            // Determine it based on the length and the contents of the valuePart string.
+
+            const length = valuePart.length;
+
+            if (length === 8) { // Eg: 20240117
+                valueType = "DATE";
+            }
+            else if ((length === 15 || length === 16) && valuePart[8] === "T") { // Eg: 19980119T020000, 19970714T173000Z
+                valueType = "DATE-TIME";
+            }
+            else { // Eg: 20240201/20240202, 20240118/P1D
+                valueType = "PERIOD";
+            }
+        }
+
+
         if (valueType === "PERIOD") {
             // Values are stored in period format, such as "20221005/P1D".
             recurrenceDates.push(...getDatesFromRangeOrPeriod(valuePart));
@@ -247,7 +265,7 @@ function getRecurrenceDates(attributes: Record<string, string>, value: string): 
                 recurrenceDates.push(date);
             }
         }
-        else {
+        else if (valueType === "DATE-TIME")  {
             // Values are date and time values.
             const date = getDateTimeFromString(valuePart);
             if (date) {
@@ -689,7 +707,11 @@ export class RecurrenceRule {
             attributes.push(`BYMONTHDAY=${monthDayValues}`);
         }
 
-        if (this.byDay.length > 0) {
+        if (this.frequency === "MONTHLY" && this.byDay.length > 0) {
+            const dayValues = this.byDay.map(d => `${d.value}${getiCalDay(d.day)}`);
+            attributes.push(`BYDAY=${dayValues}`);
+        }
+        else if (this.byDay.length > 0) {
             const dayValues = this.byDay.map(d => d.value !== 1 ? `${d.value}${getiCalDay(d.day)}` : getiCalDay(d.day));
             attributes.push(`BYDAY=${dayValues}`);
         }

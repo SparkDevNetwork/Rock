@@ -32,7 +32,7 @@ export type PagePickerGetPageRoutesOptionsBag = {
      * Gets or sets the unique identifier of the page we're
      * retrieving the routes for.
      */
-    pageGuid?: Guid | null;
+    pageGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

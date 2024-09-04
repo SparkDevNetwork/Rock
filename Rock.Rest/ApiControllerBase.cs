@@ -25,6 +25,8 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -64,19 +66,14 @@ namespace Rock.Rest
         public RockRequestContext RockRequestContext { get; private set; }
 
         /// <inheritdoc/>
-        public override async Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
+        public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
         {
-            var responseContext = new RockMessageResponseContext();
-            RockRequestContext = new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext );
-            RockRequestContextAccessor.RequestContext = RockRequestContext;
+            if ( controllerContext.Request.Properties["RockServiceProvider"] is IServiceProvider serviceProvider )
+            {
+                RockRequestContext = serviceProvider.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext;
+            }
 
-            var responseMessage = await base.ExecuteAsync( controllerContext, cancellationToken );
-
-            responseContext.Update( responseMessage );
-
-            RockRequestContextAccessor.RequestContext = null;
-
-            return responseMessage;
+            return base.ExecuteAsync( controllerContext, cancellationToken );
         }
 
         /// <summary>

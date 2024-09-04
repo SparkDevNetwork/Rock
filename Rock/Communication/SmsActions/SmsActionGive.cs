@@ -175,6 +175,16 @@ namespace Rock.Communication.SmsActions
         Category = "Response",
         Key = AttributeKeys.MissingAmountResponse )]
 
+    [CodeEditorField( "Transaction Failure Response",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        Description = "The response that will be sent if the transaction fails. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
+        IsRequired = true,
+        DefaultValue = "Your transaction could not be processed. Please text GIVE & amount (example: GIVE $250) to try again, or text SETUP if you need to change your payment details.",
+        Order = 15,
+        Category = "Response",
+        Key = AttributeKeys.TransactionFailureResponse )]
+
     #endregion Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "EFB22EDF-49E5-46C9-B204-AD99876E44D6" )]
@@ -206,6 +216,7 @@ namespace Rock.Communication.SmsActions
             public const string RefundSuccessResponse = "RefundSuccessResponse";
             public const string RefundFailureResponse = "RefundFailureResponse";
             public const string MissingAmountResponse = "MissingAmountResponse";
+            public const string TransactionFailureResponse = "TransactionFailureResponse";
         }
 
         /// <summary>
@@ -221,6 +232,7 @@ namespace Rock.Communication.SmsActions
             public const string SetupLink = "SetupLink";
             public const string PersonToken = "PersonToken";
             public const string PersonActionIdentifier = "PersonActionIdentifier";
+            public const string TransactionError = "TransactionError";
         }
 
         #endregion Keys
@@ -333,7 +345,7 @@ namespace Rock.Communication.SmsActions
         #region Setup
 
         /// <summary>
-        /// Process a setup link request
+        /// Process a setup link request.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="errorMessage"></param>
@@ -360,7 +372,7 @@ namespace Rock.Communication.SmsActions
         #region Help
 
         /// <summary>
-        /// Process a help request
+        /// Process a help request.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="errorMessage"></param>
@@ -380,7 +392,7 @@ namespace Rock.Communication.SmsActions
         #region Giving
 
         /// <summary>
-        /// Process a gift if the sender requests it
+        /// Process a text gift.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="errorMessage"></param>
@@ -400,20 +412,19 @@ namespace Rock.Communication.SmsActions
             SetSetupPageLink( context );
 
             // If the person doesn't have a configured account designation, or the person
-            // doesn't have a default saved payment method, send the "setup" response
+            // doesn't have a default saved payment method, send the "setup" response.
             if ( defaultSavedAccount == null || financialAccount == null )
             {
                 return GetResolvedSmsResponse( AttributeKeys.SetupResponse, context );
             }
 
-            // If the amount is not valid (missing, not valid decimal, or not valid currency format), send back the
-            // "help" response
+            // If the amount is not valid, send the "missing amount" response.
             if ( !giftAmountNullable.HasValue || giftAmountNullable.Value < 1m )
             {
                 return GetResolvedSmsResponse( AttributeKeys.MissingAmountResponse, context );
             }
 
-            // If the gift amount exceeds the max amount, send the "max amount" response
+            // If the gift amount exceeds the max amount, send the "max amount" response.
             var giftAmount = giftAmountNullable.Value;
             var exceedsMax = maxAmount.HasValue && giftAmount > maxAmount.Value;
 
@@ -422,7 +433,7 @@ namespace Rock.Communication.SmsActions
                 return GetResolvedSmsResponse( AttributeKeys.MaxAmountResponse, context );
             }
 
-            // Validation has passed so prepare the automated payment processor args to charge the payment
+            // Validation has passed so prepare the automated payment processor args to charge the payment.
             var automatedPaymentArgs = new AutomatedPaymentArgs
             {
                 AuthorizedPersonAliasId = context.SmsMessage.FromPerson.PrimaryAliasId.Value,
@@ -438,7 +449,7 @@ namespace Rock.Communication.SmsActions
                 }
             };
 
-            // Determine if this is a future transaction and when it should be processed
+            // Determine if this is a future transaction and when it should be processed.
             var minutesDelay = GetDelayMinutes( context );
 
             if ( minutesDelay.HasValue && minutesDelay > 0 )
@@ -447,30 +458,32 @@ namespace Rock.Communication.SmsActions
                 automatedPaymentArgs.FutureProcessingDateTime = RockDateTime.Now.Add( delayTimeSpan );
             }
 
-            // Create the processor
+            // Create the processor.
             var automatedPaymentProcessor = new AutomatedPaymentProcessor( null, automatedPaymentArgs, context.RockContext );
 
-            // If the args are not valid send the setup response
+            // If the args are not valid, send the setup response.
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) )
             {
-                return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+                return GetResolvedSmsResponse( AttributeKeys.SetupResponse, context );
             }
 
-            // If charge seems like a duplicate or repeat, tell the sender
+            // If charge seems like a duplicate or repeat, tell the sender.
             if ( automatedPaymentProcessor.IsRepeatCharge( out errorMessage ) )
             {
                 return GetSmsResponse( context, "It looks like you've given very recently. In order for us to avoid accidental charges, please wait several minutes before giving again. Thank you!" );
             }
 
-            // Charge the payment and send an appropriate response
+            // Charge the payment.
             var transaction = automatedPaymentProcessor.ProcessCharge( out errorMessage );
 
+            // If the transaction did not process (possibly a gateway error), send the "transaction failure" response.
             if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
             {
-                return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+                context.LavaMergeFields[LavaMergeFieldKeys.TransactionError] = errorMessage;
+                return GetResolvedSmsResponse( AttributeKeys.TransactionFailureResponse, context );
             }
 
-            // Tag the transaction's summary with info from this action
+            // Tag the transaction's summary with info from this action.
             transaction.Summary = string.Format( "{0}{1}Text To Give from {2} with the message `{3}`",
                 transaction.Summary,
                 transaction.Summary.IsNullOrWhiteSpace() ? string.Empty : ". ",
@@ -478,7 +491,7 @@ namespace Rock.Communication.SmsActions
                 context.MessageText );
             context.RockContext.SaveChanges();
 
-            // Let the sender know that the gift was a success
+            // Let the sender know that the gift was a success.
             return GetResolvedSmsResponse( AttributeKeys.SuccessResponse, context );
         }
 
@@ -487,7 +500,7 @@ namespace Rock.Communication.SmsActions
         #region Refund
 
         /// <summary>
-        /// Handles the action of giving a refund if the message requests it. Only future transactions can be refunded
+        /// Handles the action of giving a refund if the message requests it. Only future transactions can be refunded.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="errorMessage"></param>
@@ -519,7 +532,7 @@ namespace Rock.Communication.SmsActions
         #region Model Helpers
 
         /// <summary>
-        /// Get the future transaction to delete and sync the context's merge fields
+        /// Get the future transaction to delete and sync the context's merge fields.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="service">The service.</param>
@@ -560,7 +573,7 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
-        /// Create a new person with the phone number in the SMS message if a person does not already exist
+        /// Create a new person with the phone number in the SMS message if a person does not already exist.
         /// </summary>
         /// <param name="context"></param>
         private void CreatePersonRecordIfNeeded( SmsGiveContext context )
@@ -612,7 +625,7 @@ namespace Rock.Communication.SmsActions
         #region Parsing Helpers
 
         /// <summary>
-        /// Parse the gift amount from the message text.  Expected format is something like "{{keyword}} {{amount}}"
+        /// Parse the gift amount from the message text.  Expected format is something like "{{keyword}} {{amount}}".
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -622,10 +635,10 @@ namespace Rock.Communication.SmsActions
             var keyword = context.MatchingGiveKeyword;
             var textWithoutKeyword = keyword.IsNullOrWhiteSpace() ? messageText : Regex.Replace( messageText, keyword, string.Empty, RegexOptions.IgnoreCase ).Trim();
 
-            // First try to parse a decimal like "1123.56"
+            // First try to parse a decimal like "1123.56".
             var successfulParse = decimal.TryParse( textWithoutKeyword, out var parsedValue );
 
-            // Second try to parse currency like "$1,123.56"
+            // Second try to parse currency like "$1,123.56".
             if ( !successfulParse )
             {
                 successfulParse = decimal.TryParse( textWithoutKeyword, NumberStyles.Currency, CultureInfo.CurrentCulture, out parsedValue );
@@ -647,7 +660,7 @@ namespace Rock.Communication.SmsActions
         #region Attribute Helpers
 
         /// <summary>
-        /// Take the lava template, resolve it with useful text-to-give fields, and generate an SMS object to respond with
+        /// Take the lava template, resolve it with useful text-to-give fields, and generate an SMS object to respond with.
         /// </summary>
         /// <param name="templateAttributeKey"></param>
         /// <param name="context"></param>
@@ -660,7 +673,7 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
-        /// Generate an SMS response object to the message in the context with the specified message text
+        /// Generate an SMS response object to the message in the context with the specified message text.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="message"></param>
@@ -680,7 +693,7 @@ namespace Rock.Communication.SmsActions
         #region Giving Attribute Getters
 
         /// <summary>
-        /// Get and validate the max amount attribute
+        /// Get and validate the max amount attribute.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns>System.Nullable&lt;System.Decimal&gt;.</returns>
@@ -691,7 +704,7 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
-        /// Get and validate the financial account attribute. If the attribute is omitted, then the person's default account is used
+        /// Get and validate the financial account attribute. If the attribute is omitted, then the person's default account is used.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns>FinancialAccount.</returns>
@@ -702,7 +715,7 @@ namespace Rock.Communication.SmsActions
 
             if ( !rootAccountGuid.HasValue )
             {
-                // No setting was specified, so use the person's default account setting
+                // No setting was specified, so use the person's default account setting.
                 context.LavaMergeFields[LavaMergeFieldKeys.AccountName] = person?.ContributionFinancialAccount?.PublicName ?? string.Empty;
                 return person?.ContributionFinancialAccount;
             }
@@ -733,7 +746,7 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
-        /// Set the setup page link on the context
+        /// Set the setup page link on the context.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -765,7 +778,7 @@ namespace Rock.Communication.SmsActions
                 setupPage.Parameters["rckid"] = personActionIdentifier;
             }
 
-            // AccountIds is in the format AccountId^Amount^Enabled, where Enabled indicates if the amount can be changed or is presented as readonly
+            // AccountIds is in the format AccountId^Amount^Enabled, where Enabled indicates if the amount can be changed or is presented as readonly.
             var accountId = context.LavaMergeFields.GetValueOrNull( LavaMergeFieldKeys.AccountId ).ToStringSafe()?.AsIntegerOrNull();
             if ( accountId.HasValue && FinancialAccountCache.Get( accountId.Value ) != null )
             {
@@ -796,7 +809,7 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
-        /// Set the person token on the context
+        /// Set the person token on the context.
         /// </summary>
         /// <param name="context"></param>
         private void SetPersonIdentifier( SmsGiveContext context )
@@ -809,7 +822,7 @@ namespace Rock.Communication.SmsActions
                 return;
             }
 
-            // create a limited-use person key that will last long enough for them to go through all the postbacks while posting a transaction
+            // create a limited-use person key that will last long enough for them to go through all the postbacks while posting a transaction.
             const int expiresInMinutes = 30;
             var expiresDateTime = RockDateTime.Now.AddMinutes( expiresInMinutes );
             var personKey = person.GetImpersonationToken( expiresDateTime, null, null );
@@ -840,7 +853,7 @@ namespace Rock.Communication.SmsActions
         #region Refund Attribute Getters
 
         /// <summary>
-        /// Get and validate the delay minutes attribute
+        /// Get and validate the delay minutes attribute.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
@@ -849,7 +862,7 @@ namespace Rock.Communication.SmsActions
             return context.SmsActionCache.GetAttributeValue( AttributeKeys.ProcessingDelayMinutes ).AsIntegerOrNull();
         }
 
-        #endregion  Refund Attribute Getters
+        #endregion Refund Attribute Getters
 
         #region Helper Classes
 
@@ -861,7 +874,7 @@ namespace Rock.Communication.SmsActions
         private class SmsGiveContext
         {
             /// <summary>
-            /// Constructor for the SMS context
+            /// Constructor for the SMS context.
             /// </summary>
             /// <param name="smsActionCache"></param>
             /// <param name="smsMessage"></param>
@@ -887,24 +900,25 @@ namespace Rock.Communication.SmsActions
                     { LavaMergeFieldKeys.AccountName, string.Empty },
                     { LavaMergeFieldKeys.SetupLink, string.Empty },
                     { LavaMergeFieldKeys.PersonActionIdentifier, string.Empty },
-                    { LavaMergeFieldKeys.PersonToken, string.Empty }
+                    { LavaMergeFieldKeys.PersonToken, string.Empty },
+                    { LavaMergeFieldKeys.TransactionError, string.Empty }
                 };
             }
 
             /// <summary>
-            /// The SMS action that is handling the SMS processing
+            /// The SMS action that is handling the SMS processing.
             /// </summary>
             public SmsActionCache SmsActionCache => SmsActionCache.Get( SmsActionId );
 
             private int SmsActionId { get; set; }
 
             /// <summary>
-            /// The object representing the SMS
+            /// The object representing the SMS.
             /// </summary>
             public SmsMessage SmsMessage { get; private set; }
 
             /// <summary>
-            /// The text of the SMS message
+            /// The text of the SMS message.
             /// </summary>
             public string MessageText { get; private set; }
 
@@ -915,12 +929,12 @@ namespace Rock.Communication.SmsActions
             public string PrimaryKeyword { get; private set; }
 
             /// <summary>
-            /// The merge fields that will be used in the SMS response
+            /// The merge fields that will be used in the SMS response.
             /// </summary>
             public Dictionary<string, object> LavaMergeFields { get; private set; }
 
             /// <summary>
-            /// Get the rock context to use for this giving message
+            /// Get the rock context to use for this giving message.
             /// </summary>
             public RockContext RockContext
             {
@@ -929,7 +943,7 @@ namespace Rock.Communication.SmsActions
             private RockContext _rockContext = null;
 
             /// <summary>
-            /// Get the give keywords
+            /// Get the give keywords.
             /// </summary>
             /// <value>The giving keywords.</value>
             public List<string> GivingKeywords
@@ -939,18 +953,18 @@ namespace Rock.Communication.SmsActions
             private List<string> _givingKeywords = null;
 
             /// <summary>
-            /// True if one of the give keywords matched
+            /// True if one of the give keywords matched.
             /// </summary>
             public bool IsGiveMessage
             {
                 // If they provided a GIVE keyword, that indicates a GIVE message,
                 // but also magically treat a simple text starting with $ as a GIVE.
-                // For example: $150 should give $150
+                // For example: $150 should give $150.
                 get => !MatchingGiveKeyword.IsNullOrWhiteSpace() || MessageText.StartsWith( "$" );
             }
 
             /// <summary>
-            /// The give keyword that matched the message
+            /// The give keyword that matched the message.
             /// </summary>
             public string MatchingGiveKeyword
             {
@@ -958,7 +972,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// Get the refund keywords
+            /// Get the refund keywords.
             /// </summary>
             /// <value>The refund keywords.</value>
             public List<string> RefundKeywords
@@ -968,7 +982,7 @@ namespace Rock.Communication.SmsActions
             private List<string> _refundKeywords = null;
 
             /// <summary>
-            /// True if the message is a refund message
+            /// True if the message is a refund message.
             /// </summary>
             public bool IsRefundMessage
             {
@@ -976,7 +990,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// The refund keyword that matched the message
+            /// The refund keyword that matched the message.
             /// </summary>
             public string MatchingRefundKeyword
             {
@@ -984,7 +998,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// Get the setup keywords
+            /// Get the setup keywords.
             /// </summary>
             /// <value>The setup keywords.</value>
             public List<string> SetupKeywords
@@ -994,7 +1008,7 @@ namespace Rock.Communication.SmsActions
             private List<string> _setupKeywords = null;
 
             /// <summary>
-            /// True if the message is a setup message
+            /// True if the message is a setup message.
             /// </summary>
             public bool IsSetupMessage
             {
@@ -1002,7 +1016,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// The setup keyword that matched the message
+            /// The setup keyword that matched the message.
             /// </summary>
             public string MatchingSetupKeyword
             {
@@ -1010,7 +1024,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// Get the help keywords
+            /// Get the help keywords.
             /// </summary>
             /// <value>The help keywords.</value>
             public List<string> HelpKeywords
@@ -1020,7 +1034,7 @@ namespace Rock.Communication.SmsActions
             private List<string> _helpKeywords = new List<string> { "HELP" };
 
             /// <summary>
-            /// True if the message is a help message
+            /// True if the message is a help message.
             /// </summary>
             public bool IsHelpMessage
             {
@@ -1028,7 +1042,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// The help keyword that matched the message
+            /// The help keyword that matched the message.
             /// </summary>
             public string MatchingHelpKeyword
             {
@@ -1036,7 +1050,7 @@ namespace Rock.Communication.SmsActions
             }
 
             /// <summary>
-            /// Get keywords from an attribute value
+            /// Get keywords from an attribute value.
             /// </summary>
             /// <param name="attributeKey"></param>
             /// <returns></returns>

@@ -95,6 +95,24 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningCourse>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningCourse.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningProgram.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, MediaFolder.FriendlyTypeName );

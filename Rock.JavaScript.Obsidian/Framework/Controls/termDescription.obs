@@ -1,0 +1,30 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <dt>
+        <slot name="term">{{ term }}</slot>
+    </dt>
+    <dd>
+        <slot name="description">{{ description }}</slot>
+    </dd>
+</template>
+
+<script setup lang="ts">
+    defineProps({
+        /**
+         * The term you'd like to describe/define. If you'd like to use HTML code here, then you
+         * could use the `term` slot instead of the prop.
+         */
+        term: {
+            type: String
+        },
+
+        /**
+         * The description/definition of the term. If you'd like to use HTML code here, then you
+         * could use the `description` slot instead of the prop.
+         */
+        description: {
+            type: String
+        }
+});
+
+</script>

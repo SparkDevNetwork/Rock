@@ -18,6 +18,7 @@
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -419,7 +420,7 @@ namespace Rock.Blocks.Core
                     Unit = TimeIntervalUnit.Minutes,
                     Value = 0
                 },
-                RockCacheabilityType = RockCacheablityType.Public.ConvertToInt(),
+                RockCacheabilityType = RockCacheabilityType.Public,
                 SharedMaxAge = new TimeIntervalBag
                 {
                     Unit = TimeIntervalUnit.Minutes,
@@ -443,11 +444,11 @@ namespace Rock.Blocks.Core
 
             if ( cacheability.RockCacheablityType == RockCacheablityType.Private )
             {
-                bag.RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt();
+                bag.RockCacheabilityType = ( RockCacheabilityType ) cacheability.RockCacheablityType;
             }
             else
             {
-                bag.RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt();
+                bag.RockCacheabilityType = ( RockCacheabilityType ) cacheability.RockCacheablityType;
 
                 if ( cacheability.SharedMaxAge != null )
                 {

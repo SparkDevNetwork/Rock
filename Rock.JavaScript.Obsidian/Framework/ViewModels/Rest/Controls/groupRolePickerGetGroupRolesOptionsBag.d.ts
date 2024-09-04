@@ -30,7 +30,7 @@ import { Guid } from "@Obsidian/Types";
 export type GroupRolePickerGetGroupRolesOptionsBag = {
     excludeGroupRoles?: Guid[] | null;
 
-    groupTypeGuid?: Guid | null;
+    groupTypeGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

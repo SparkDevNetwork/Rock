@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -145,8 +146,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlContent.Visible = _canView;
 
             if ( !Page.IsPostBack && _canView )
@@ -164,6 +163,8 @@ namespace RockWeb.Blocks.Groups
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -483,7 +484,7 @@ namespace RockWeb.Blocks.Groups
 
                 var schedules = new Dictionary<int, string> { { 0, string.Empty } };
                 grouplocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
-                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+                    .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
                 var locationField = gOccurrences.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Location" );
                 if ( schedules.Any() )
                 {
@@ -569,10 +570,10 @@ namespace RockWeb.Blocks.Groups
                     var locCampus = new Dictionary<int, int>();
                     foreach ( var campus in CampusCache.All().Where( c => c.LocationId.HasValue ) )
                     {
-                        locCampus.AddOrIgnore( campus.LocationId.Value, campus.Id );
+                        locCampus.TryAdd( campus.LocationId.Value, campus.Id );
                         foreach ( var locId in locationService.GetAllDescendentIds( campus.LocationId.Value ) )
                         {
-                            locCampus.AddOrIgnore( locId, campus.Id );
+                            locCampus.TryAdd( locId, campus.Id );
                         }
                     }
 
@@ -658,7 +659,7 @@ namespace RockWeb.Blocks.Groups
         #endregion
     }
 
-    public class AttendanceListOccurrence
+    public class AttendanceListOccurrence : LavaDataObject
     {
         public int Id { get; set; }
         public DateTime OccurrenceDate { get; set; }

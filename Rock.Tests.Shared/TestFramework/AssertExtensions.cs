@@ -76,6 +76,17 @@ namespace Rock.Tests.Shared
             StringAssert.Contains( value, substring );
         }
 
+        public static void Contains( this Assert assert, System.String value, System.String substring, bool ignoreWhiteSpace )
+        {
+            if ( ignoreWhiteSpace )
+            {
+                value = value.RemoveWhiteSpace();
+                substring = substring.RemoveWhiteSpace();
+            }
+
+            StringAssert.Contains( value, substring );
+        }
+
         public static void DoesNotContain( this Assert assert, System.String value, System.String substring )
         {
             if ( value == null && substring == null )
@@ -92,6 +103,11 @@ namespace Rock.Tests.Shared
             }
 
             Assert.IsFalse( value.Contains( substring ), $"The result \"{ value }\" contains the unexpected value \"{ substring }\"." );
+        }
+
+        public static void Matches( this Assert assert, System.String value, System.Text.RegularExpressions.Regex pattern )
+        {
+            StringAssert.Matches( value, pattern );
         }
 
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
@@ -266,40 +282,40 @@ namespace Rock.Tests.Shared
         {
             Assert.ReplaceNullChars( input );
         }
-        public static void ThrowsException<T>( this Assert assert, Action action )
+        public static T ThrowsException<T>( this Assert assert, Action action )
             where T : Exception
         {
-            Assert.ThrowsException<T>( action );
+            return Assert.ThrowsException<T>( action );
         }
-        public static void ThrowsException<T>( this Assert assert, Action action, string message )
+        public static T ThrowsException<T>( this Assert assert, Action action, string message )
             where T : Exception
         {
-            Assert.ThrowsException<T>( action, message );
+            return Assert.ThrowsException<T>( action, message );
         }
-        public static void ThrowsException<T>( this Assert assert, Func<object> action )
+        public static T ThrowsException<T>( this Assert assert, Func<object> action )
             where T : Exception
         {
-            Assert.ThrowsException<T>( action );
+            return Assert.ThrowsException<T>( action );
         }
-        public static void ThrowsException<T>( this Assert assert, Func<object> action, string message )
+        public static T ThrowsException<T>( this Assert assert, Func<object> action, string message )
             where T : Exception
         {
-            Assert.ThrowsException<T>( action, message );
-        }
-
-        public static void ThrowsException<T>( this Assert assert, Func<object> action, string message, params object[] parameters )
-            where T : Exception
-        {
-            Assert.ThrowsException<T>( action, message, parameters );
+            return Assert.ThrowsException<T>( action, message );
         }
 
-        public static void ThrowsException<T>( this Assert assert, Action action, string message, params object[] parameters )
+        public static T ThrowsException<T>( this Assert assert, Func<object> action, string message, params object[] parameters )
             where T : Exception
         {
-            Assert.ThrowsException<T>( action, message, parameters );
+            return Assert.ThrowsException<T>( action, message, parameters );
         }
 
-        public static void ThrowsExceptionWithMessage<T>( this Assert assert, Action action, string expectedMessage )
+        public static T ThrowsException<T>( this Assert assert, Action action, string message, params object[] parameters )
+            where T : Exception
+        {
+            return Assert.ThrowsException<T>( action, message, parameters );
+        }
+
+        public static T ThrowsExceptionWithMessage<T>( this Assert assert, Action action, string expectedMessage )
             where T : Exception
         {
             try
@@ -310,12 +326,16 @@ namespace Rock.Tests.Shared
             {
                 if ( !ex.Message.Equals( expectedMessage, StringComparison.InvariantCultureIgnoreCase ) )
                 {
-                    Assert.Fail( $"Excepted error message to be {expectedMessage}, but it was ${ex.Message}" );
+                    Assert.Fail( $"Excepted error message to be {expectedMessage}, but it was {ex.Message}" );
                 }
-                return;
+
+                return ex;
             }
 
             Assert.Fail( $"A ${typeof( T )} exception was expected but was not thrown." );
+
+            // Doesn't actually do anything, but makes the compiler happy.
+            return ( T ) null;
         }
 
         #region Empty Assertions

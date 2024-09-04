@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Site"
+          :title="config.options?.blockTitle ?? 'Site'"
           :entityTypeGuid="EntityType.Site"
           :expectedRowCount="config.expectedRowCount ?? undefined"
           tooltipField="name"
@@ -11,14 +12,16 @@
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-         <Column name="name"
+
+        <Column name="name"
                 title="Name"
                 :filter="textValueFilter"
-                filterValue="{{ row.name }}"
-                quickFilterValue="{{ row.name }}">
+                filterValue="{{ row.name }} {{  row.description }}"
+                quickFilterValue="{{ row.name }} {{  row.description }}"
+                width="30%">
             <template #format="{ row }">
                 <div class="d-flex flex-fill align-items-center">
-                    <div class="mr-2 flex-shrink-0"
+                    <div v-if="config.options?.showSiteIcon !== 'False'" class="mr-2 flex-shrink-0"
                          :style="{ 'width': '50px', 'height': '50px', 'background-image': `url('${row.siteIconUrl}')`, 'background-size': 'cover' }">
                     </div>
                     <div class="flex-grow-1">
@@ -41,22 +44,36 @@
             </template>
         </Column>
 
-        <TextColumn name="domains"
+        <TextColumn v-if="showWebColumns"
+                    name="domain"
                     title="Domains"
-                    field="domains"
+                    field="domain"
                     :filter="textValueFilter"
-                    visiblePriority="md" />
-        <TextColumn name="theme"
+                    visiblePriority="md"
+                    width="20%" />
+
+        <TextColumn v-if="showWebColumns"
+                    name="theme"
                     title="Theme"
                     field="theme"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="xs" />
-        <BooleanColumn name="isSystem"
-                       title="Is System"
-                       field="isSystem"
-                       visiblePriority="xs" />
+                    visiblePriority="sm"
+                    width="5%" />
 
-        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+        <BooleanColumn name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       visiblePriority="xs"
+                       width="2%"
+                       :itemClass="'d-flex align-items-center'" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs"
+                       width="2%"
+                       :itemClass="'d-flex align-items-center'" />
 
         <SecurityColumn />
 
@@ -67,13 +84,14 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SiteListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteList/siteListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./SiteList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 
     const config = useConfigurationValues<ListBlockBox<SiteListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -82,6 +100,15 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const showWebColumns = computed(() => {
+        const siteTypes: SiteType[] = config?.options?.siteType ?? [];
+        return siteTypes.length === 0 || siteTypes.includes(SiteType.Web);
+    });
 
     // #endregion
 

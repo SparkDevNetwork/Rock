@@ -27,13 +27,20 @@ using System.Web.Http.OData.Builder;
 using System.Web.Http.OData.Extensions;
 using System.Web.Http.OData.Routing;
 using System.Web.Http.OData.Routing.Conventions;
+using System.Web.Http.Validation;
 using System.Web.Http.ValueProviders;
 using System.Web.Routing;
 
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Data;
+using Rock.Net;
+using Rock.Rest.Handler;
 using Rock.Rest.Utility;
 using Rock.Rest.Utility.ValueProviders;
-using Rock.Tasks;
+using Rock.Rest.Validation;
 
 namespace Rock.Rest
 {
@@ -55,6 +62,9 @@ namespace Rock.Rest
             config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
             config.Services.Replace( typeof( IAssembliesResolver ), new RockAssembliesResolver() );
             config.Services.Replace( typeof( IHttpControllerSelector ), new Handler.RockHttpControllerSelector( config ) );
+            config.Services.Replace( typeof( IBodyModelValidator ), new RockBodyModelValidator() );
+
+            ConfigureServiceProvider( config );
 
             // Configure the API to handle differences between v1 and v2 endpoints.
             config.Services.Replace( typeof( IActionValueBinder ), new RockActionValueBinder() );
@@ -337,8 +347,35 @@ namespace Rock.Rest
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
 
-
             new Rock.Transactions.RegisterControllersTransaction().Enqueue();
+        }
+
+        /// <summary>
+        /// Configures the service provider used during API requests. This really
+        /// should be moved to the BeginRequest method as an HTTP handler, but
+        /// for now this will work until we unify everything. Just keep it all
+        /// private and internal.
+        /// </summary>
+        /// <param name="config">The HTTP configuration.</param>
+        private static void ConfigureServiceProvider( HttpConfiguration config )
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
+            serviceCollection.AddScoped<RockContext>();
+            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Rock.Utility.WebHostEnvironment
+            {
+                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
+            } );
+
+            var apiServiceProvider = serviceCollection.BuildServiceProvider();
+
+            // Replace the standard controller activator with one of ours
+            // that uses the standard dependency injection patterm used in
+            // ASP.Net Core.
+            config.Services.Replace( typeof( IHttpControllerActivator ), new RockDependencyControllerActivator() );
+
+            // Add a new message handler that will create scopes for each request.
+            config.MessageHandlers.Add( new ServiceScopeHandler( apiServiceProvider ) );
         }
     }
 }

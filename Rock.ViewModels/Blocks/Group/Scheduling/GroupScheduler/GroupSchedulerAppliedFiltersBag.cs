@@ -36,9 +36,25 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// Gets or sets the occurrences to be scheduled, limited by the applied filters.
         /// </summary>
         /// <value>
-        /// The occurrences to be scheduled, limited by the applied filters..
+        /// The occurrences to be scheduled, limited by the applied filters.
         ///</value>
         public List<GroupSchedulerOccurrenceBag> ScheduleOccurrences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique, ordered group, location and schedule name combinations.
+        /// </summary>
+        /// <value>
+        /// The unique, ordered group, location and schedule name combinations.
+        /// </value>
+        public List<GroupSchedulerGroupLocationScheduleNamesBag> GroupLocationScheduleNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unassigned resource counts, limited by the applied filters.
+        /// </summary>
+        /// <value>
+        /// The unassigned resource counts, limited by the applied filters.
+        /// </value>
+        public List<GroupSchedulerUnassignedResourceCountBag> UnassignedResourceCounts { get; set; }
 
         /// <summary>
         /// Gets or sets the navigation urls.

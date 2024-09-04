@@ -4,20 +4,20 @@
         <div class="row">
             <div class="col-md-6">
                 <PersonPicker v-model="requestedByPersonAlias"
-                          label="Requested By"
-                          @update:modelValue="updatePersonName($event)" />
-                <TextBox v-model="firstName"
-                          label="First Name"
-                          rules="required" />
+                              label="Requested By"
+                              @update:modelValue="updatePersonName($event)" />
+                <FirstNameTextBox v-model="firstName"
+                                  label="First Name"
+                                  :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
                 <TextBox v-model="lastName"
-                          label="Last Name"
-                          :rules="isLastNameRequired" />
+                         label="Last Name"
+                         :rules="[isLastNameRequired, 'nospecialcharacters', 'noemojisorspecialfonts']" />
                 <EmailBox v-model="email"
                           label="Email" />
                 <DatePicker v-model="expirationDate"
-                          label="Expiration Date" />
+                            label="Expiration Date" />
                 <CampusPicker label="Campus" v-model="campus"
-                          :rules="isCampusRequired" />
+                              :rules="isCampusRequired" />
             </div>
 
             <div class="col-md-3">
@@ -25,39 +25,41 @@
                           label="Active" />
                 <div v-if="props.modelValue?.flagCount">
                     <span ref="flagCountRef" class="label label-warning" tabindex="-1" data-toggle="tooltip"
-                        data-placement="auto" data-container="body" data-html="true"
-                        data-original-title="re-approve the request to clear the flags">
+                          data-placement="auto" data-container="body" data-html="true"
+                          data-original-title="re-approve the request to clear the flags">
                         <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
                     </span>
                 </div>
                 <CheckBoxList label="Options"
-                          v-model="optionsListValue"
-                          :items="optionsList" />
+                              v-model="optionsListValue"
+                              :items="optionsList" />
             </div>
 
             <div class="col-md-3">
-                <Toggle v-model="isApproved"
-                          trueText="Approved"
-                          falseText="Pending"
-                          onButtonActiveCssClass="btn-success"
-                          offButtonActiveCssClass="btn-warning"
-                          label="Status" />
+                <Toggle v-model="isPending"
+                        trueText="Pending"
+                        falseText="Approved"
+                        btnSize="xs"
+                        onButtonActiveCssClass="btn-warning"
+                        offButtonActiveCssClass="btn-success"
+                        label="Status" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
                 <CategoryPicker v-model="category"
-                        label="Category"
-                        :entityTypeGuid="prayerRequestEntityTypeGuid"
-                        rules="required" />
+                                label="Category"
+                                :entityTypeGuid="prayerRequestEntityTypeGuid"
+                                rules="required"
+                                autoExpand />
                 <TextBox v-model="request"
-                          label="Request"
-                          textMode="multiline"
-                          rules="required" />
+                         label="Request"
+                         textMode="multiline"
+                         rules="required" />
                 <TextBox v-model="answer"
-                          textMode="multiline"
-                          label="Answer" />
+                         textMode="multiline"
+                         label="Answer" />
             </div>
         </div>
 
@@ -78,6 +80,7 @@
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -85,6 +88,8 @@
     import { PrayerRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestBag";
     import { PrayerRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailOptionsBag";
     import { PrayerRequestDetailAddPersonResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailAddPersonResponseBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -109,7 +114,7 @@
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
     const requestedByPersonAlias = propertyRef(props.modelValue.requestedByPersonAlias ?? undefined, "RequestedByPersonAliasId");
-    const isApproved = propertyRef(props.modelValue.isApproved ?? false, "IsApproved");
+    const isPending = propertyRef(!(props.modelValue.isApproved ?? false), "IsApproved");
     const firstName = propertyRef(props.modelValue.firstName ?? "", "FirstName");
     const lastName = propertyRef(props.modelValue.lastName ?? "", "LastName");
     const email = propertyRef(props.modelValue.email ?? "", "Email");
@@ -123,16 +128,16 @@
     const allowComments = propertyRef(props.modelValue.allowComments, "AllowComments");
 
     const optionsList: ListItemBag[] = [
-                { text: "Public", value: "isPublic" },
-                { text: "Urgent", value: "isUrgent" },
-                { text: "Allow Comments", value: "allowComments" }
-            ];
+        { text: "Public", value: "isPublic" },
+        { text: "Urgent", value: "isUrgent" },
+        { text: "Allow Comments", value: "allowComments" }
+    ];
 
     const prayerRequestEntityTypeGuid = EntityType.PrayerRequest;
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [isActive, requestedByPersonAlias, isApproved, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
+    const propRefs = [isActive, requestedByPersonAlias, isPending, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
     const invokeBlockAction = useInvokeBlockAction();
 
     // #endregion
@@ -163,8 +168,8 @@
         }
     });
 
-    const isLastNameRequired = computed(() => props.options.isLastNameRequired ? "required": "");
-    const isCampusRequired = computed(() => props.options.isCampusRequired ? "required": "");
+    const isLastNameRequired = computed(() => props.options.isLastNameRequired ? "required" : "");
+    const isCampusRequired = computed(() => props.options.isCampusRequired ? "required" : "");
 
     // #endregion
 
@@ -177,12 +182,18 @@
     /**
      * Event handler for the "Add Person As" person being selected.
      */
-     async function updatePersonName(personPickerSelection: ListItemBag | undefined): Promise<void> {
-        var result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", { personAliasGuid: (personPickerSelection as ListItemBag)?.value});
+    async function updatePersonName(personPickerSelection: ListItemBag | undefined): Promise<void> {
+        const request: {
+            personAliasGuid: Guid;
+        } = {
+            personAliasGuid: toGuidOrNull((personPickerSelection as ListItemBag)?.value) ?? emptyGuid,
+        };
+
+        const result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", request);
         firstName.value = result?.data?.nickName ?? "";
         lastName.value = result?.data?.lastName ?? "";
         email.value = result?.data?.email ?? "";
-     }
+    }
 
     // #endregion
 
@@ -192,7 +203,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(requestedByPersonAlias, props.modelValue.requestedByPersonAlias ?? undefined);
-        updateRefValue(isApproved, props.modelValue.isApproved?? false);
+        updateRefValue(isPending, !(props.modelValue.isApproved ?? false));
         updateRefValue(firstName, props.modelValue.firstName ?? "");
         updateRefValue(lastName, props.modelValue.lastName ?? "");
         updateRefValue(email, props.modelValue.email ?? "");
@@ -214,7 +225,7 @@
             attributeValues: attributeValues.value,
             isActive: isActive.value,
             requestedByPersonAlias: requestedByPersonAlias.value,
-            isApproved: isApproved.value,
+            isApproved: !isPending.value,
             firstName: firstName.value,
             lastName: lastName.value,
             email: email.value,
@@ -237,7 +248,7 @@
     // enable the tooltips for the badges
     const flagCountRef = ref<HTMLElement | null>(null);
     onMounted(() => {
-        if(flagCountRef?.value) {
+        if (flagCountRef?.value) {
             tooltip(flagCountRef.value);
         }
     });

@@ -99,7 +99,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [BlockTemplateField( "Notes Template",
         Description = "The template to use when rendering the notes. Provided with a 'Notes' merge field, among some others (see documentation).",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_NOTES,
-        DefaultValue = "C9134085-D433-444D-9803-8E5CE1B053DE",
+        DefaultValue = "1EB6DCE4-69F1-44B9-A674-E1C67E216B2A",
         IsRequired = true,
         Key = AttributeKey.NotesTemplate,
         Order = 7 )]
@@ -727,7 +727,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                         return ActionForbidden( "Not authorized to add note." );
                     }
 
-                    note = rockContext.Notes.Create();
+                    note = rockContext.Set<Note>().Create();
                     note.IsSystem = false;
                     note.EntityId = entity.Id;
                     note.ParentNoteId = parentNote?.Id;

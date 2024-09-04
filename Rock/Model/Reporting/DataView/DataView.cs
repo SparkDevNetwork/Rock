@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Reporting;
 
 namespace Rock.Model
 {
@@ -31,7 +32,7 @@ namespace Rock.Model
     [Table( "DataView" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DATAVIEW )]
-    public partial class DataView : Model<DataView>, ICategorized
+    public partial class DataView : Model<DataView>, ICategorized, IDataViewDefinition
     {
         #region Entity Properties
 
@@ -144,7 +145,9 @@ namespace Rock.Model
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the last run date time.
+        /// Gets or sets the last run date time. This is only updated when the
+        /// data view is actually executed, not when we access the persisted
+        /// values directly.
         /// </summary>
         /// <value>
         /// The last run date time.
@@ -153,7 +156,8 @@ namespace Rock.Model
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the run count.
+        /// Gets or sets the run count. This is only updated when the data view
+        /// is actually executed, not when we access the persisted values directly.
         /// </summary>
         /// <value>
         /// The run count.
@@ -162,7 +166,9 @@ namespace Rock.Model
         public int? RunCount { get; set; }
 
         /// <summary>
-        /// The amount of time in milliseconds that it took to run the <see cref="DataView"/>
+        /// Gets or sets the amount of time in milliseconds that it took to run the
+        /// <see cref="DataView"/>. This is only updated when the data view
+        /// is actually executed, not when we access the persisted values directly.
         /// </summary>
         /// <value>
         /// The time to run in ms.
@@ -198,6 +204,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PersistedScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class for entities returned by this DataView.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the highlight color for the <see cref="IconCssClass"/>.
+        /// </summary>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string HighlightColor { get; set; }
 
         #endregion
 
@@ -247,6 +267,13 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Schedule PersistedSchedule { get; set; }
+
+        #endregion
+
+        #region IDataViewDefinition Implementation
+
+        /// <inheritdoc/>
+        IDataViewFilterDefinition IDataViewDefinition.DataViewFilter => this.DataViewFilter;
 
         #endregion
     }

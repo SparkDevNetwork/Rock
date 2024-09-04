@@ -155,6 +155,15 @@ namespace Rock.Model
         [DataMember]
         public bool CanManageMembers { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is excluded from peer network.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is excluded from peer network; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsExcludedFromPeerNetwork { get; set; }
+
         #endregion
 
         #region Navigation Properties

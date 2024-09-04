@@ -19,6 +19,10 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import ReorderCell from "../Cells/reorderCell.partial.obs";
 
+/**
+ * Displays a standard re-order cell that can be used by the individual to drag
+ * and drop the row to change the order in the list.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -48,11 +52,22 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "reorder"
+        },
+
         /**
          * Called when the order of an item has changed. The first parameter
          * is the row item that was moved. The second parameter is the row item
          * it was dropped in front of or `null` if it was dropped at the end of
-         * the grid.
+         * the grid. The grid rows will already be updated when this is called
+         * so you only need to handle any additional logic, such as updating
+         * the database.
+         *
+         * If `false` is returned then the the re-order operation is
+         * aborted. If a Promise is returned then the grid will wait until it
+         * is resolved before allowing another re-order operation.
          */
         onOrderChanged: {
             type: Function as PropType<(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null) => void | Promise<void> | boolean | Promise<boolean>>,

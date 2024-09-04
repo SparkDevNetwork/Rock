@@ -14,6 +14,7 @@
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { Guid } from "@Obsidian/Types";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** The currently selected campus value(s). */
@@ -24,7 +25,7 @@
 
         /** GUID for the Registration Template that you want to pull instances from */
         registrationTemplateGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -64,13 +65,15 @@
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<ListItemBag[]> {
-        if (!props.registrationTemplateGuid) {
+        const registrationTemplateGuid = toGuidOrNull(props.registrationTemplateGuid);
+
+        if (!registrationTemplateGuid || areEqual(registrationTemplateGuid, emptyGuid)) {
             loadedItems.value = [];
             return [];
         }
 
         const options: RegistrationInstancePickerGetRegistrationInstancesOptionsBag = {
-            registrationTemplateGuid: props.registrationTemplateGuid,
+            registrationTemplateGuid,
             securityGrantToken: securityGrantToken.value
         };
 
@@ -94,5 +97,5 @@
 
     watch(() => props.registrationTemplateGuid, () => loadedItems.value = null);
 
-        // #endregion
+    // #endregion
 </script>

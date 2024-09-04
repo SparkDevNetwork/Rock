@@ -7,7 +7,6 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.Layout"
@@ -18,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @edit="onEdit"
                  @save="onSave">
@@ -81,7 +81,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return layoutViewBag.value?.idKey ? layoutViewBag.value?.name ?? "Layout" : "Add Layout";
+        return layoutViewBag.value?.name ?? "";
     });
 
     /**
@@ -127,6 +127,14 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
+        const siteId = layoutEditBag.value?.siteId?.toString();
+
+        if (siteId) {
+            const qryString = new URLSearchParams();
+            qryString.append("SiteId", siteId);
+            return `${config.navigationUrls?.[NavigationUrlKey.ParentPage]}?${qryString.toString()}`;
+        }
+
         if (!layoutEditBag.value?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];

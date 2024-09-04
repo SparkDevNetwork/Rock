@@ -90,5 +90,10 @@ namespace Rock.SystemGuid
         /// The Digitally Signed Document guid
         /// </summary>
         public const string DIGITALLY_SIGNED_DOCUMENTS = "40871411-4E2D-45C2-9E21-D9FCBA5FC340";
+
+        /// <summary>
+        /// The Learning Management System (LMS) guid
+        /// </summary>
+        public const string LEARNING_MANAGEMENT_SYSTEM = "4f55987b-5279-4d10-8c38-f320046b4bbb";
     }
 }

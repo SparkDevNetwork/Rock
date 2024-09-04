@@ -22,7 +22,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Tests.Integration
+namespace Rock.Tests.Integration.TestFramework
 {
     /// <summary>
     /// A lookup service for person records.

@@ -1,0 +1,37 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <CodeEditor v-model="internalValue" v-bind="$attrs" mode="markdown" :editorHeight="editorHeight" />
+    <small class='pull-right text-muted' style="margin-top:-20px;">
+        <strong>**bold**</strong>&nbsp;
+        <em>*italics*</em>&nbsp;
+        >quote&nbsp;
+        [link text](link address)&nbsp;
+        <a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank' rel='noopener noreferrer'>more</a>
+    </small>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import CodeEditor from "./codeEditor.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        editorHeight: {
+            type: Number,
+            default: 250
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+</script>

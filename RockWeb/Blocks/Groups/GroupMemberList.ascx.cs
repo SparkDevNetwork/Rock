@@ -354,8 +354,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 pnlContent.Visible = _canView;
@@ -367,6 +365,8 @@ namespace RockWeb.Blocks.Groups
                     BindGroupMemberRequirementsGrid();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1933,7 +1933,7 @@ namespace RockWeb.Blocks.Groups
                 _memberRequirements.Clear();
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.AddOrIgnore(
+                    _memberRequirements.TryAdd(
                         member.Id,
                         member.GetGroupRequirementsStatuses( rockContext )
                         	.Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
@@ -2083,17 +2083,33 @@ namespace RockWeb.Blocks.Groups
             _showNoteColumn = GetAttributeValue( "ShowNoteColumn" ).AsBoolean();
             gGroupMembers.ColumnsOfType<RockBoundField>().First( a => a.DataField == "Note" ).Visible = _showNoteColumn;
 
-            List<int> selectedGroupMemberIds = new List<int>();
-
-            // If any row is selected, use those selected, otherwise choose all of them.
-            selectedGroupMemberIds = !gGroupMembers.SelectedKeys.Any() ? qry.Select( gm => gm.Id ).ToList() : gGroupMembers.SelectedKeys.OfType<int>().ToList();
-
             var hasInactiveGroupMembers = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).Any();
 
-            if ( selectedGroupMemberIds.Count > 0 && hasInactiveGroupMembers )
+            // Determine if the current query has inactive group members selected.
+            if ( hasInactiveGroupMembers )
             {
-                // Determine if the current query has inactive group members selected.
-                _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive && selectedGroupMemberIds.Contains( gm.Id ) ).Any();
+                if ( gGroupMembers.SelectedKeys.Any() )
+                {
+                    // At least one row is selected, use the list of selected rows.
+                    var selectedGroupMemberIds = gGroupMembers.SelectedKeys.OfType<int>().ToList();
+
+                    if ( selectedGroupMemberIds.Count > 1_000 )
+                    {
+                        // Doing a .Contains() on a large number can cause the
+                        // query to fail with an "out of resources" error.
+                        var groupMemberIdsInQuery = qry.Select( gm => gm.Id ).ToList();
+                        _hasInactiveGroupMembersSelected = groupMemberIdsInQuery.Any( gmid => selectedGroupMemberIds.Contains( gmid ) );
+                    }
+                    else
+                    {
+                        _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive && selectedGroupMemberIds.Contains( gm.Id ) ).Any();
+                    }
+                }
+                else
+                {
+                    // Nothing is selected, so check everybody in the query.
+                    _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).Any();
+                }
             }
 
             gGroupMembers.SetLinqDataSource( qry );
@@ -2153,6 +2169,12 @@ namespace RockWeb.Blocks.Groups
             _requirementFullNameField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportFullName" ).FirstOrDefault();
             _nameWithHtmlField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementNameWithHtml" ).FirstOrDefault();
             _requirementStatesField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementStates" ).FirstOrDefault();
+
+            _exportHomePhoneField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportHomePhone" ).FirstOrDefault();
+            _exportCellPhoneField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportCellPhone" ).FirstOrDefault();
+            _exportHomeAddressField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportHomeAddress" ).FirstOrDefault();
+            _exportLatitudeField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLatitude" ).FirstOrDefault();
+            _exportLongitude = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLongitude" ).FirstOrDefault();
 
             _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
 

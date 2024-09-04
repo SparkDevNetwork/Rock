@@ -151,8 +151,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             maContentChannelWarning.Hide();
 
             if ( !Page.IsPostBack )
@@ -193,6 +191,8 @@ namespace RockWeb.Blocks.Cms
                     rblLicenseType.Required = false;
                 } 
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -480,12 +480,31 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bgEditorType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var isStructuredContentChecked = bgEditorType.SelectedValueAsInt() == 1;
-            ddlContentControlType.Visible = !isStructuredContentChecked;
-            dvEditorTool.Visible = isStructuredContentChecked;
-            if ( !isStructuredContentChecked )
+            var selectedValue = bgEditorType.SelectedValueAsInt();
+            var isStructuredContentChecked = selectedValue == 1;
+            var isHtmlChecked = selectedValue == 2;
+
+            if ( isStructuredContentChecked )
             {
+                dvEditorTool.Visible = true;
+            }
+            else
+            {
+                dvEditorTool.Visible = false;
                 dvEditorTool.SelectedDefinedValueId = null;
+            }
+
+            if ( isHtmlChecked )
+            {
+                ddlContentControlType.Visible = true;
+                tbRootImageDirectory.Visible = ddlContentControlType.SelectedValueAsEnumOrNull<ContentControlType>() == ContentControlType.HtmlEditor;
+            }
+            else
+            {
+                ddlContentControlType.Visible = false;
+                ddlContentControlType.SelectedIndex = -1;
+                tbRootImageDirectory.Visible = false;
+                tbRootImageDirectory.Text = null;
             }
         }
 

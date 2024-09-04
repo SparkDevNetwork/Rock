@@ -19,3 +19,66 @@
     }
   }
 }
+
+// Panels with sidebar content use a grid with 4 columns and 2 rows.
+/* use e("/") to escape the forward slash during compilation. */
+.panel-with-sidebar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  box-shadow: 0 0 1px 0 rgba(0,0,0,0.03), 0 1px 3px 0 rgba(0,0,0,0.08);
+  background: @panel-bg;
+  border: 1px solid @panel-default-border;
+  border-radius: @panel-border-radius;
+  /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
+  > .panel-sidebar-content {
+    grid-column: 1;
+    grid-row: 1;
+    /* Include margins for the top and left. */
+    margin-top: 12px;
+    left: 12px;
+  }
+  /* The main panel content spans 3 of the 4 columns of the 1st row. */
+  > .panel {
+    grid-column: 2 e("/") span 3;
+    grid-row: 1;
+    border: 0;
+    box-shadow: none;
+  }
+  /* Remove background and borders for main panel headers. */
+  .panel-block {
+    > .panel-heading, > .panel-sub-header {
+      border-bottom: 0;
+      background-color: #fff;
+    }
+  }
+  /* The footer spans all 4 columns of the 2nd row. */
+  .sidebar-footer {
+    grid-column: 1 e("/") span 4;
+    grid-row: 2;
+    /* The actions footer items uses a sub grid with a single row and 2 columns. */
+    > div.actions {
+      display: grid;
+      justify-items: start;
+      grid-template-columns: repeat(2, 1fr);
+      margin: 12px;
+
+      div.footer-actions {
+        grid-column: 1;
+        /* Child buttons should have margins */
+        > * {
+          margin-right: 8px;
+        }
+      }
+      /* justify the secondary footer actions to the right-hand side (end) of the grid. */
+      div.footer-secondary-actions {
+        grid-column: 2;
+        justify-self: end;
+        /* Child buttons should have margins */
+        > * {
+          margin-left: 4px;
+        }
+      }
+    }
+  }
+}

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
+using Microsoft.AspNetCore.Mvc;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -28,8 +30,6 @@ using Rock.Web.Cache;
 using Rock.ViewModels.Rest.Models;
 
 #if WEBFORMS
-using System.Data.Entity;
-
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 using RouteAttribute = System.Web.Http.RouteAttribute;

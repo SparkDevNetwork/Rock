@@ -1,0 +1,426 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name"
+                             label="Name"
+                             rules="required" />
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" />
+                        </div>
+                        <div class="col-xs-6">
+                            <CheckBox label="Include Time" text="Yes" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <CheckBox label="Disable Priority" text="Yes" v-model="disablePriority" help="Should channels of this type disable the use of priorities?" />
+                        </div>
+                        <div class="col-sm-6">
+                            <CheckBox label="Disable Content Field" text="Yes" v-model="disableContentField" help="Should channels of this type disable the use of the content field?" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <CheckBox label="Disable Status" text="Yes" v-model="disableStatus" help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" />
+                        </div>
+                        <div class="col-sm-6">
+                            <CheckBox label="Show in Channel Lists" text="Yes" v-model="showInChannelList" help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <Panel :isDrawerOpen="false" :hasCollapse="true" title="Channel Attributes">
+                <div class="grid">
+                    <Grid :data="channelAttributesGridData" keyField="key" itemTerm="Channel Attribute" liveUpdates light @addItem="onAddChannelAttribute">
+                        <ReorderColumn @orderChanged="onChannelAttributeOrderChanged" />
+                        <TextColumn field="name" name="name" title="Attribute" />
+                        <TextColumn field="description" name="description" title="Description" />
+                        <BooleanColumn field="isRequired" name="isRequired" title="Required" />
+                        <EditColumn @click="onEditChannelAttribute" />
+                        <DeleteColumn @click="onDeleteChannelAttribute" />
+                    </Grid>
+                </div>
+                <Modal v-model="isChannelAttributeModalOpen" title="Content Channel Attributes" saveText="Save" @save="onSaveChannelAttribute">
+                    <NotificationBox v-show="channelAttributeErrors.length > 0" alertType="validation">
+                        Please correct the following:
+                        <ul>
+                            <li v-for="error of channelAttributeErrors">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </NotificationBox>
+                    <AttributeEditor v-model="channelAttribute" :reservedKeyNames="channelAttributesReservedKeyNames" />
+                </Modal>
+            </Panel>
+
+            <Panel :isDrawerOpen="false" :hasCollapse="true" title="Item Attributes">
+                <div class="grid">
+                    <Grid :data="itemAttributesGridData" keyField="key" itemTerm="Item Attribute" liveUpdates light @addItem="onAddItemAttribute">
+                        <ReorderColumn @orderChanged="onItemAttributeOrderChanged" />
+                        <TextColumn field="name" name="name" title="Attribute" />
+                        <TextColumn field="description" name="description" title="Description" />
+                        <BooleanColumn field="isRequired" name="isRequired" title="Required" />
+                        <EditColumn @click="onEditItemAttribute" />
+                        <DeleteColumn @click="onDeleteItemAttribute" />
+                    </Grid>
+                </div>
+                <Modal v-model="isItemAttributeModalOpen" title="Item Attributes" saveText="Save" @save="onSaveItemAttribute">
+                    <NotificationBox v-show="itemAttributeErrors.length > 0" alertType="validation">
+                        Please correct the following:
+                        <ul>
+                            <li v-for="error of itemAttributeErrors">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </NotificationBox>
+                    <AttributeEditor v-model="itemAttribute" :reservedKeyNames="itemAttributesReservedKeyNames" />
+                </Modal>
+            </Panel>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import Grid, { EditColumn, TextColumn, BooleanColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ContentChannelTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeBag";
+    import { ContentChannelTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeDetailOptionsBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ContentChannelTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ContentChannelTypeBag): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const dateRangeType = propertyRef(props.modelValue.dateRangeType.toString() ?? "", "DateRangeType");
+    const includeTime = propertyRef(props.modelValue.includeTime, "IncludeTime");
+    const disablePriority = propertyRef(props.modelValue.disablePriority, "DisablePriority");
+    const disableContentField = propertyRef(props.modelValue.disableContentField, "DisableContentField");
+    const disableStatus = propertyRef(props.modelValue.disableStatus, "DisableStatus");
+    const showInChannelList = propertyRef(props.modelValue.showInChannelList, "ShowInChannelList");
+
+    const dateRangeTypeOptions = ref(props.options.dateRangeTypes ?? []);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const itemAttributes = ref(props.modelValue.itemAttributes ?? []);
+    const isItemAttributeModalOpen = ref(false);
+    const itemAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const itemAttributesReservedKeyNames = ref<string[]>([]);
+    const itemAttributeErrors = ref<string[]>([]);
+
+    const channelAttributes = ref(props.modelValue.channelAttributes ?? []);
+    const isChannelAttributeModalOpen = ref(false);
+    const channelAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const channelAttributesReservedKeyNames = ref<string[]>([]);
+    const channelAttributeErrors = ref<string[]>([]);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, dateRangeType, includeTime, disablePriority, disableContentField, disableStatus, showInChannelList];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const itemAttributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: itemAttributes.value.map(x => convertToAttributeGridRowItem(x))
+    });
+
+    const channelAttributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: channelAttributes.value.map(x => convertToAttributeGridRowItem(x))
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+
+        if (attribute.key) {
+            if (!itemAttributesReservedKeyNames.value.includes(attribute.key)) {
+                itemAttributesReservedKeyNames.value.push(attribute.key);
+            }
+
+            if (!channelAttributesReservedKeyNames.value.includes(attribute.key)) {
+                channelAttributesReservedKeyNames.value.push(attribute.key);
+            }
+        }
+
+        return {
+            key: attribute.key,
+            name: attribute.name,
+            description: attribute.description,
+            isRequired: attribute.isRequired,
+            guid: attribute.guid
+        };
+    }
+
+    // #endregion
+
+    // #region Item Attributes
+
+    async function onAddItemAttribute(): Promise<void> {
+        itemAttribute.value = {} as PublicEditableAttributeBag;
+        isItemAttributeModalOpen.value = true;
+        itemAttributeErrors.value = [];
+    }
+
+    const onEditItemAttribute = async (key: string): Promise<void> => {
+        itemAttributeErrors.value = [];
+        const selectedAttribute = itemAttributes.value.find(x => x.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedAttribute) {
+            itemAttribute.value = selectedAttribute;
+            isItemAttributeModalOpen.value = true;
+        }
+        else {
+            onAddItemAttribute();
+        }
+    };
+
+    const onDeleteItemAttribute = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isItemAttributeModalOpen.value = false;
+        itemAttributes.value = itemAttributes.value.filter(s => s.key !== key);
+        itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== key);
+
+        // Update the grid.
+        if (itemAttributesGridData.rows) {
+            const index = itemAttributesGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                itemAttributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveItemAttribute(): void {
+        itemAttributeErrors.value = [];
+        const isExistingKey = itemAttributesReservedKeyNames.value.includes(itemAttribute.value?.key ?? "");
+
+        if (isExistingKey) {
+            itemAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+        else {
+            if (itemAttribute.value) {
+                const index = itemAttributes.value.findIndex(a => a.key === itemAttribute.value?.key);
+                if (index !== -1) {
+                    // Get the updated attribute and rowItem.
+                    let editedAttribute = itemAttributes.value.find(a => a.key == itemAttribute.value?.key);
+                    let rowItem = itemAttributesGridData.rows?.find(x => x.key == itemAttribute.value?.key);
+
+                    if (editedAttribute) {
+                        // Replace old attribute with updated attribute.
+                        editedAttribute = itemAttribute.value;
+                        itemAttributes.value.splice(index, 1, editedAttribute);
+                    }
+
+                    if (rowItem && itemAttributesGridData.rows && editedAttribute) {
+                        // Update GridRowItem so changes are reflected in the UI.
+                        const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        itemAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                    }
+                }
+                else {
+                    itemAttributes.value.push(itemAttribute.value);
+
+                    // Add new RowItem to the grid to represent the newly added attribute.
+                    const newRowItem = convertToAttributeGridRowItem(itemAttribute.value);
+                    itemAttributesGridData.rows?.push(newRowItem);
+                }
+
+                isItemAttributeModalOpen.value = false;
+                itemAttributesReservedKeyNames.value.push(itemAttribute.value.key ?? "");
+            }
+        }
+    }
+
+    /**
+    * Called when a row has been dragged from one position to a new position.
+    *
+    * @param item The item that was moved to a new position.
+    * @param beforeItem The item that the first item was dropped before.
+    *
+    * @returns `true` if the operation succeeded; otherwise `false`.
+    */
+    async function onItemAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const data = {
+            idKey: props.modelValue?.idKey,
+            guid: item["guid"],
+            beforeGuid: beforeItem?.["guid"] ?? null
+        };
+
+        const result = await invokeBlockAction<string>("ReorderItemAttributes", data);
+
+        return result.isSuccess;
+    }
+    // #endregion
+
+    // #region Channel Attributes
+
+    async function onAddChannelAttribute(): Promise<void> {
+        channelAttribute.value = {} as PublicEditableAttributeBag;
+        isChannelAttributeModalOpen.value = true;
+        channelAttributeErrors.value = [];
+    }
+
+    const onEditChannelAttribute = async (key: string): Promise<void> => {
+        channelAttributeErrors.value = [];
+        const selectedAttribute = channelAttributes.value.find(x => x.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedAttribute) {
+            channelAttribute.value = selectedAttribute;
+            isChannelAttributeModalOpen.value = true;
+        }
+        else {
+            onAddChannelAttribute();
+        }
+    };
+
+    const onDeleteChannelAttribute = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isChannelAttributeModalOpen.value = false;
+        channelAttributes.value = channelAttributes.value.filter(s => s.key !== key);
+        channelAttributesReservedKeyNames.value = channelAttributesReservedKeyNames.value.filter(k => k !== key);
+
+        // Update the grid.
+        if (channelAttributesGridData.rows) {
+            const index = channelAttributesGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                channelAttributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveChannelAttribute(): void {
+        channelAttributeErrors.value = [];
+        const isExistingKey = channelAttributesReservedKeyNames.value.includes(channelAttribute.value?.key ?? "");
+
+        if (isExistingKey) {
+            channelAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+        else {
+            if (channelAttribute.value) {
+                const index = channelAttributes.value.findIndex(a => a.key === channelAttribute.value?.key);
+                if (index !== -1) {
+                    // Get the updated attribute and rowItem.
+                    let editedAttribute = channelAttributes.value.find(a => a.key == channelAttribute.value?.key);
+                    let rowItem = channelAttributesGridData.rows?.find(x => x.key == channelAttribute.value?.key);
+
+                    if (editedAttribute) {
+                        // Replace old attribute with updated attribute.
+                        editedAttribute = channelAttribute.value;
+                        channelAttributes.value.splice(index, 1, editedAttribute);
+                    }
+
+                    if (rowItem && channelAttributesGridData.rows && editedAttribute) {
+                        // Update GridRowItem so changes are reflected in the UI.
+                        const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.key);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        channelAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                    }
+                }
+                else {
+                    channelAttributes.value.push(channelAttribute.value);
+
+                    // Add new RowItem to the grid to represent the newly added attribute.
+                    const newRowItem = convertToAttributeGridRowItem(channelAttribute.value);
+                    channelAttributesGridData.rows?.push(newRowItem);
+                }
+
+                isChannelAttributeModalOpen.value = false;
+                channelAttributesReservedKeyNames.value.push(channelAttribute.value.key ?? "");
+            }
+        }
+    }
+
+    /**
+    * Called when a row has been dragged from one position to a new position.
+    *
+    * @param item The item that was moved to a new position.
+    * @param beforeItem The item that the first item was dropped before.
+    *
+    * @returns `true` if the operation succeeded; otherwise `false`.
+    */
+    async function onChannelAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const data = {
+            idKey: props.modelValue?.idKey,
+            guid: item["guid"],
+            beforeGuid: beforeItem?.["guid"] ?? null
+        };
+
+        const result = await invokeBlockAction<string>("ReorderChannelAttributes", data);
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(dateRangeType, props.modelValue.dateRangeType.toString() ?? "");
+        updateRefValue(includeTime, props.modelValue.includeTime);
+        updateRefValue(disablePriority, props.modelValue.disablePriority);
+        updateRefValue(disableContentField, props.modelValue.disableContentField);
+        updateRefValue(disableStatus, props.modelValue.disableStatus);
+        updateRefValue(showInChannelList, props.modelValue.showInChannelList);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ContentChannelTypeBag = {
+            ...props.modelValue,
+            name: name.value,
+            dateRangeType: toNumber(dateRangeType.value),
+            includeTime: includeTime.value,
+            disablePriority: disablePriority.value,
+            disableContentField: disableContentField.value,
+            disableStatus: disableStatus.value,
+            showInChannelList: showInChannelList.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+</script>

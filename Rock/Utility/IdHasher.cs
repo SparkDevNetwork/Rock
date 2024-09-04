@@ -26,13 +26,13 @@ namespace Rock.Utility
     /// of integer id numbers into a hashed text key. These keys are non-sequential
     /// and cannot be guessed. This is not a cryptographic one-way hash.
     /// </summary>
-    internal class IdHasher
+    public class IdHasher
     {
         /// <summary>
         /// Gets the default instance.
         /// </summary>
         /// <value>The default instance.</value>
-        internal static IdHasher Instance { get; } = new IdHasher();
+        public static IdHasher Instance { get; } = new IdHasher();
 
         /// <summary>
         /// The underlying hashing provider used to encode and decode hashes.

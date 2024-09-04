@@ -1,0 +1,328 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+        {{ blockActionErrorMessage }}
+    </NotificationBox>
+
+    <div class="schedule-toolbox-content-header-buttons">
+        <div class="schedule-toolbox-calendar-buttons">
+            <span ref="addToCalendarButton" title="Downloads your schedule to be added directly to your calendar.">
+                <RockButton type="button"
+                            class="btn-add-to-calendar"
+                            :btnType="BtnType.Default"
+                            :btnSize="BtnSize.ExtraSmall"
+                            :disabled="disabled || isLoadingCurrentSchedule || !personGroupScheduleFeedUrl"
+                            @click="onAddToCalendarClick">
+                    <i class="fa fa-calendar-plus-o"></i>
+                    Add to Calendar
+                </RockButton>
+            </span>
+
+            <span ref="copyCalendarLinkButton" :title="copyCalendarLinkTooltip">
+                <RockButton type="button"
+                            class="btn-copy-calendar-link"
+                            :btnType="BtnType.Default"
+                            :btnSize="BtnSize.ExtraSmall"
+                            :disabled="disabled || isLoadingCurrentSchedule || !personGroupScheduleFeedUrl"
+                            @click="onCopyCalendarLinkClick">
+                    <i class="fa fa-calendar-alt"></i>
+                    Copy Calendar Link
+                </RockButton>
+            </span>
+        </div>
+
+        <RockButton v-if="isScheduleUnavailabilityEnabled"
+                    type="button"
+                    class="btn-schedule-unavailability"
+                    :btnType="BtnType.Default"
+                    :btnSize="BtnSize.ExtraSmall"
+                    :disabled="disabled || isLoadingCurrentSchedule"
+                    @click="onScheduleUnavailabilityClick">
+            <i class="fa fa-calendar-times-o"></i>
+            {{ scheduleUnavailabilitybuttonText }}
+        </RockButton>
+    </div>
+
+    <div class="schedule-toolbox-cards">
+        <NotificationBox v-if="isNoSchedulesNotificationVisible" :alertType="AlertType.Info">
+            No upcoming schedules.
+        </NotificationBox>
+
+        <CurrentScheduleRow v-else
+                            v-for="row in scheduleRows"
+                            :key="row.entityGuid ?? ''"
+                            :row="row"
+                            :disabled="disabled || isLoadingCurrentSchedule"
+                            @removeScheduleRow="onRemoveScheduleRow"
+                            @personGroupScheduleFeedUrlUpdated="onPersonGroupScheduleFeedUrlUpdated" />
+    </div>
+
+    <ScheduleUnavailability v-model:isVisible="isScheduleUnavailabilityModalVisible"
+                            :familyMembers="familyMembers"
+                            :schedulableGroups="schedulableGroups"
+                            :headerText="scheduleUnavailabilityHeaderHtml"
+                            @scheduleUnavailabilityAdded="getCurrentSchedule" />
+</template>
+
+<style scoped>
+.schedule-toolbox-content-header-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.schedule-toolbox-calendar-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.btn-schedule-unavailability {
+    margin-bottom: 24px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref, watch } from "vue";
+    import CurrentScheduleRow from "./currentScheduleRow.partial.obs";
+    import { SelectedPersonGuid } from "./types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ScheduleUnavailability from "./scheduleUnavailability.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { showTooltip, tooltip } from "@Obsidian/Utility/tooltip";
+    import { CurrentScheduleBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/currentScheduleBag";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
+    import { ScheduleRowBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/scheduleRowBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const tooltipTitleAttribute = "data-original-title";
+    const copyCalendarLinkTooltip = "Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar";
+
+    const props = defineProps({
+        isLoadingCurrentSchedule: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isScheduleUnavailabilityEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        scheduleUnavailabilitybuttonText: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        scheduleUnavailabilityHeaderHtml: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isLoadingCurrentSchedule"): void
+    }>();
+
+    // #region Values
+
+    const addToCalendarButton = ref<HTMLElement | null>(null);
+    const copyCalendarLinkButton = ref<HTMLElement | null>(null);
+
+    /** The selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
+    const isLoadingCurrentSchedule = useVModelPassthrough(props, "isLoadingCurrentSchedule", emit);
+    const blockActionErrorMessage = ref("");
+
+    const scheduleRows = ref<ScheduleRowBag[]>([]);
+    const personGroupScheduleFeedUrl = ref<string | null | undefined>();
+    const familyMembers = ref<ListItemBag[]>([]);
+    const schedulableGroups = ref<GroupBag[]>([]);
+
+    const isScheduleUnavailabilityModalVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isNoSchedulesNotificationVisible = computed((): boolean => {
+        return !!(!isLoadingCurrentSchedule.value && !scheduleRows.value?.length);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the current schedule for the selected person.
+     */
+    async function getCurrentSchedule(): Promise<void> {
+        if (isLoadingCurrentSchedule.value) {
+            return;
+        }
+
+        isLoadingCurrentSchedule.value = true;
+        blockActionErrorMessage.value = "";
+
+        const request: {
+            selectedPersonGuid: Guid;
+        } = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<CurrentScheduleBag>("GetCurrentSchedule", request);
+        isLoadingCurrentSchedule.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to get current schedule.";
+            setCurrentSchedule(null);
+            return;
+        }
+
+        setCurrentSchedule(result.data);
+    }
+
+    /**
+     * Sets the internal values using the provided current schedule.
+     *
+     * @param currentSchedule The current schedule value from which to set the internal values.
+     */
+    function setCurrentSchedule(currentSchedule: CurrentScheduleBag | null): void {
+        scheduleRows.value = currentSchedule?.scheduleRows ?? [];
+        personGroupScheduleFeedUrl.value = currentSchedule?.personGroupScheduleFeedUrl;
+        familyMembers.value = currentSchedule?.familyMembers ?? [];
+        schedulableGroups.value = currentSchedule?.schedulableGroups ?? [];
+    }
+
+    /**
+     * Configures the button tooltips.
+     */
+    function configureTooltips(): void {
+        if (addToCalendarButton.value) {
+            tooltip(addToCalendarButton.value);
+        }
+
+        if (copyCalendarLinkButton.value) {
+            tooltip(copyCalendarLinkButton.value);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `click` event of the add to calendar button.
+     *
+     * @param event The mouse event.
+     */
+    async function onAddToCalendarClick(event: MouseEvent): Promise<void> {
+        (event.target as HTMLElement)?.blur();
+
+        if (!personGroupScheduleFeedUrl.value) {
+            return;
+        }
+
+        const link = document.createElement("a");
+        link.href = personGroupScheduleFeedUrl.value;
+        link.setAttribute("download", "download");
+        link.click();
+    }
+
+    /**
+     * Handles the `click` event of the copy calendar link button.
+     *
+     * @param event The mouse event.
+     */
+    async function onCopyCalendarLinkClick(event: MouseEvent): Promise<void> {
+        (event.target as HTMLElement)?.blur();
+
+        if (!personGroupScheduleFeedUrl.value) {
+            return;
+        }
+
+        await navigator.clipboard.writeText(personGroupScheduleFeedUrl.value ?? "");
+
+        if (!copyCalendarLinkButton.value) {
+            return;
+        }
+
+        copyCalendarLinkButton.value.blur();
+
+        // Temporarily show a "Copied" tooltip.
+        copyCalendarLinkButton.value.setAttribute(tooltipTitleAttribute, "Copied");
+        showTooltip(copyCalendarLinkButton.value);
+
+        // Set the tooltip tile back to the default value.
+        copyCalendarLinkButton.value.setAttribute(tooltipTitleAttribute, copyCalendarLinkTooltip);
+    }
+
+    /**
+     * Handles the `click` event of the schedule unavailability button.
+     */
+    function onScheduleUnavailabilityClick(event: MouseEvent): void {
+        (event.target as HTMLElement)?.blur();
+
+        isScheduleUnavailabilityModalVisible.value = true;
+    }
+
+    /**
+     * Handles the `removeScheduleRow` event of the CurrentScheduleRow component.
+     *
+     * @param entityGuid The unique identifier of the schedule row to remove.
+     */
+    function onRemoveScheduleRow(entityGuid: string): void {
+        const rowToRemove = scheduleRows.value?.find(r => r?.entityGuid === entityGuid);
+        if (!rowToRemove) {
+            return;
+        }
+
+        scheduleRows.value = scheduleRows.value.filter(r => r !== rowToRemove);
+    }
+
+    /**
+     * Handles the `personGroupScheduleFeedUrlUpdated` event of the CurrentScheduleRow component.
+     *
+     * @param updatedUrl The updated URL.
+     */
+    function onPersonGroupScheduleFeedUrlUpdated(updatedUrl: string | null | undefined): void {
+        personGroupScheduleFeedUrl.value = updatedUrl;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedPersonGuidOrEmptyString, () => {
+        if (selectedPersonGuidOrEmptyString.value) {
+            getCurrentSchedule();
+        }
+    });
+
+    watch([
+        addToCalendarButton,
+        copyCalendarLinkButton
+    ], () => {
+        configureTooltips();
+    });
+
+    // #endregion Watchers
+
+    getCurrentSchedule();
+</script>
