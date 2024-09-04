@@ -17,11 +17,18 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+
+using Rock.Attribute;
 using Rock.BulkImport;
+using Rock.Core;
 using Rock.Data;
+using Rock.Net.Geolocation;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -33,6 +40,31 @@ namespace Rock.Model
     /// </summary>
     public partial class InteractionService
     {
+        /// <summary>
+        /// Creates a new interaction using the provided interaction info object
+        /// and adds the new interaction to the context.
+        /// <remarks>
+        /// <para>
+        /// The new interaction will not be saved until you call <see cref="DbContext.SaveChanges()"/>.
+        /// </para>
+        /// <para>
+        /// The following entities will be looked up (or added and auto-saved to the database) when
+        /// possible, with the session ID being added to the returned interaction instance:
+        /// <see cref="InteractionSessionLocation" />,
+        /// <see cref="InteractionDeviceType" />,
+        /// <see cref="InteractionSession" />.
+        /// </para>
+        /// </remarks>
+        /// </summary>
+        /// <param name="info">The information that will be used to create the interaction.</param>
+        /// <returns>A new interaction.</returns>
+        internal Interaction AddInteraction( InteractionInfo info )
+        {
+            var interaction = CreateInteraction( info );
+            this.Add( interaction );
+            return interaction;
+        }
+
         /// <summary>
         /// Adds the interaction.
         /// </summary>
@@ -65,8 +97,151 @@ namespace Rock.Model
             string ipAddress,
             Guid? browserSessionId )
         {
+            /*
+                5/22/2024 - JPH
+
+                We should prefer the `AddInteraction( InteractionInfo info )` overload of this method for future use,
+                as this method signature is difficult to call and extend. If changes are needed to this method, you
+                should instead take the opportunity to migrate to the simpler method signature and add properties to
+                the `InteractionInfo` POCO as needed.
+
+                #techdebt: We should consider deprecating this method in the future.
+
+                Reason: Extend InteractionService to add geolocation support
+             */
+
             Interaction interaction = CreateInteraction( interactionComponentId, entityId, operation, interactionSummary, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
             this.Add( interaction );
+            return interaction;
+        }
+
+        /// <summary>
+        /// Creates a new interaction using the provided interaction info object.
+        /// <remarks>
+        /// <para>
+        /// The new interaction will not be added to the context or saved to the database.
+        /// </para>
+        /// <para>
+        /// The following entities will be looked up (or added and auto-saved to the database) when
+        /// possible, with the session ID being added to the returned interaction instance:
+        /// <see cref="InteractionSessionLocation" />,
+        /// <see cref="InteractionDeviceType" />,
+        /// <see cref="InteractionSession" />.
+        /// </para>
+        /// </remarks>
+        /// </summary>
+        /// <param name="info">The information that will be used to create the interaction.</param>
+        /// <returns>A new interaction.</returns>
+        internal Interaction CreateInteraction( InteractionInfo info )
+        {
+            if ( info == null )
+            {
+                return new Interaction();
+            }
+
+            var interaction = new Interaction
+            {
+                InteractionDateTime = info.InteractionDateTime,
+                Operation = info.Operation.IsNotNullOrWhiteSpace() ? info.Operation.Trim() : "View",
+                InteractionComponentId = info.InteractionComponentId,
+                EntityId = info.EntityId,
+                RelatedEntityTypeId = info.RelatedEntityTypeId,
+                RelatedEntityId = info.RelatedEntityId,
+                PersonAliasId = info.PersonAliasId,
+                InteractionSummary = info.InteractionSummary?.Trim(),
+                InteractionEndDateTime = info.InteractionEndDateTime,
+                ChannelCustom1 = info.ChannelCustom1?.Trim(),
+                ChannelCustom2 = info.ChannelCustom2?.Trim(),
+                ChannelCustomIndexed1 = info.ChannelCustomIndexed1?.Trim(),
+                InteractionLength = info.InteractionLength,
+                InteractionTimeToServe = info.InteractionTimeToServe
+            };
+
+            interaction.SetInteractionData( info.InteractionData?.Trim() );
+
+            // Try to set the UTM fields first from the provided URL, and only
+            // fall back to using the provided info's values if they're not
+            // already set from the URL. This is to maintain existing behavior
+            // that this new method will be used to replace:
+            // https://github.com/SparkDevNetwork/Rock/blob/df53f91052621f5e341fb6888a703254d575dfb8/Rock/Transactions/InteractionTransaction.cs#L300-L304
+            interaction.SetUTMFieldsFromURL( info.InteractionData );
+
+            if ( interaction.Source.IsNullOrWhiteSpace() )
+            {
+                interaction.Source = info.Source?.Trim();
+            }
+
+            if ( interaction.Medium.IsNullOrWhiteSpace() )
+            {
+                interaction.Medium = info.Medium?.Trim();
+            }
+
+            if ( interaction.Campaign.IsNullOrWhiteSpace() )
+            {
+                interaction.Campaign = info.Campaign?.Trim();
+            }
+
+            if ( interaction.Content.IsNullOrWhiteSpace() )
+            {
+                interaction.Content = info.Content?.Trim();
+            }
+
+            if ( interaction.Term.IsNullOrWhiteSpace() )
+            {
+                interaction.Term = info.Term?.Trim();
+            }
+
+            // If geolocation data hasn't yet been set, look it up from the cache or IPGeoLookup service
+            // so we only have to make a single database call to lookup or add a session location instance.
+            if ( !info.GeolocationLookupDateTime.HasValue && info.IpAddress.IsNotNullOrWhiteSpace() )
+            {
+                var geolocation = IpGeoLookup.Instance.GetGeolocation( info.IpAddress );
+                if ( geolocation != null )
+                {
+                    info.GeolocationIpAddress = geolocation.IpAddress;
+                    info.GeolocationLookupDateTime = geolocation.LookupDateTime;
+                    info.City = geolocation.City;
+                    info.RegionName = geolocation.RegionName;
+                    info.RegionCode = geolocation.RegionCode;
+                    info.RegionValueId = geolocation.RegionValueId;
+                    info.CountryCode = geolocation.CountryCode;
+                    info.CountryValueId = geolocation.CountryValueId;
+                    info.PostalCode = geolocation.PostalCode;
+                    info.Latitude = geolocation.Latitude;
+                    info.Longitude = geolocation.Longitude;
+                }
+            }
+
+            // If we have geolocation data, lookup or add a session location instance.
+            var interactionSessionLocationId = GetInteractionSessionLocationId( info );
+
+            // Get device info from user agent.
+            ParseUserAgentString( info.UserAgent ?? string.Empty, out string deviceOs, out string deviceApplication, out string deviceClientType );
+
+            // If all device values were returned (they should have been, since values of "Other" will be
+            // returned if parsing is unsuccessful), lookup or add a device type instance.
+            int? deviceTypeId = null;
+            if ( deviceOs.IsNotNullOrWhiteSpace() && deviceApplication.IsNotNullOrWhiteSpace() && deviceClientType.IsNotNullOrWhiteSpace() )
+            {
+                deviceTypeId = GetInteractionDeviceTypeId( deviceApplication, deviceOs, deviceClientType, info.UserAgent );
+            }
+
+            // If we have at least one useful piece of info about the session, lookup or add a session instance.
+            if ( info.BrowserSessionId.HasValue
+                || info.IpAddress.IsNotNullOrWhiteSpace()
+                || interactionSessionLocationId.HasValue
+                || deviceTypeId.HasValue )
+            {
+                var interactionSessionId = GetInteractionSessionId(
+                    info.BrowserSessionId ?? Guid.NewGuid(),
+                    info.IpAddress,
+                    deviceTypeId,
+                    interaction.InteractionDateKey,
+                    interactionSessionLocationId );
+
+                interaction.InteractionSessionId = interactionSessionId;
+            }
+
             return interaction;
         }
 
@@ -89,6 +264,19 @@ namespace Rock.Model
         /// <returns></returns>
         public Interaction CreateInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime, string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
         {
+            /*
+                5/22/2024 - JPH
+
+                We should prefer the `CreateInteraction( InteractionInfo info )` overload of this method for future use,
+                as this method signature is difficult to call and extend. If changes are needed to this method, you
+                should instead take the opportunity to migrate to the simpler method signature and add properties to
+                the `InteractionInfo` POCO as needed.
+
+                #techdebt: We should consider deprecating this method in the future.
+
+                Reason: Extend InteractionService to add geolocation support
+             */
+
             Interaction interaction = new Interaction();
             interaction.InteractionComponentId = interactionComponentId;
             interaction.EntityId = entityId;
@@ -147,6 +335,19 @@ namespace Rock.Model
         /// <returns></returns>
         public Interaction CreateInteraction( int interactionComponentId, string userAgent, string url, string ipAddress, Guid? browserSessionId )
         {
+            /*
+                5/22/2024 - JPH
+
+                We should prefer the `CreateInteraction( InteractionInfo info )` overload of this method for future use,
+                as this method signature is difficult to call and extend. If changes are needed to this method, you
+                should instead take the opportunity to migrate to the simpler method signature and add properties to
+                the `InteractionInfo` POCO as needed.
+
+                #techdebt: We should consider deprecating this method in the future.
+
+                Reason: Extend InteractionService to add geolocation support
+             */
+
             userAgent = userAgent ?? string.Empty;
 
             string deviceOs;
@@ -192,6 +393,19 @@ namespace Rock.Model
             string ipAddress,
             Guid? browserSessionId )
         {
+            /*
+                5/22/2024 - JPH
+
+                We should prefer the `AddInteraction( InteractionInfo info )` overload of this method for future use,
+                as this method signature is difficult to call and extend. If changes are needed to this method, you
+                should instead take the opportunity to migrate to the simpler method signature and add properties to
+                the `InteractionInfo` POCO as needed.
+
+                #techdebt: We should consider deprecating this method in the future.
+
+                Reason: Extend InteractionService to add geolocation support
+             */
+
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
         }
 
@@ -223,10 +437,23 @@ namespace Rock.Model
             string deviceTypeData,
             string ipAddress )
         {
+            /*
+                5/22/2024 - JPH
+
+                We should prefer the `AddInteraction( InteractionInfo info )` overload of this method for future use,
+                as this method signature is difficult to call and extend. If changes are needed to this method, you
+                should instead take the opportunity to migrate to the simpler method signature and add properties to
+                the `InteractionInfo` POCO as needed.
+
+                #techdebt: We should consider deprecating this method in the future.
+
+                Reason: Extend InteractionService to add geolocation support
+             */
+
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
-        private static ConcurrentDictionary<string, int> _deviceTypeIdLookup = new ConcurrentDictionary<string, int>();
+        private const string DeviceTypeIdLookupCacheKey = "InteractionServiceDeviceTypeIdLookup";
 
         /// <summary>
         /// Gets the interaction device type identifier.
@@ -238,55 +465,23 @@ namespace Rock.Model
         /// <returns></returns>
         public int GetInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
+            var lookupTable = RockCacheManager<object>.Instance.Get( DeviceTypeIdLookupCacheKey ) as ConcurrentDictionary<string, int>;
+
+            if ( lookupTable == null )
+            {
+                lookupTable = new ConcurrentDictionary<string, int>();
+                RockCacheManager<object>.Instance.AddOrUpdate( DeviceTypeIdLookupCacheKey, lookupTable );
+            }
+
             var lookupKey = $"{application}|{operatingSystem}|{clientType}";
-            int? deviceTypeId = _deviceTypeIdLookup.GetValueOrNull( lookupKey );
+            int? deviceTypeId = lookupTable.GetValueOrNull( lookupKey );
             if ( deviceTypeId == null )
             {
                 deviceTypeId = GetOrCreateInteractionDeviceTypeId( application, operatingSystem, clientType, deviceTypeData );
-                _deviceTypeIdLookup.AddOrReplace( lookupKey, deviceTypeId.Value );
+                lookupTable.AddOrReplace( lookupKey, deviceTypeId.Value );
             }
 
             return deviceTypeId.Value;
-        }
-
-        /// <summary>
-        /// Gets the interaction device type. If it can't be found, a new InteractionDeviceType record will be created and returned.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="operatingSystem">The operating system.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceTypeData">The device type data (either a plain DeviceType name or the whole useragent string).</param>
-        /// <returns></returns>
-        [Obsolete]
-        [RockObsolete( "1.11" )]
-        public InteractionDeviceType GetInteractionDeviceType( string application, string operatingSystem, string clientType, string deviceTypeData )
-        {
-            /*
-             * 2020-10-22 ETD
-             * This method was used by GetInteractionDeviceTypeId(). Discussed with Mike and Nick and it was
-             * decided to mark it as obsolete and create private method GetOrCreateInteractionDeviceTypeId()
-             * instead.
-             */
-
-            var rockContext = new RockContext();
-            InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
-            InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
-                .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
-                .FirstOrDefault();
-
-            if ( interactionDeviceType == null )
-            {
-                interactionDeviceType = new InteractionDeviceType();
-                interactionDeviceType.DeviceTypeData = deviceTypeData;
-                interactionDeviceType.ClientType = clientType;
-                interactionDeviceType.OperatingSystem = operatingSystem;
-                interactionDeviceType.Application = application;
-                interactionDeviceType.Name = string.Format( "{0} - {1}", operatingSystem, application );
-                interactionDeviceTypeService.Add( interactionDeviceType );
-                rockContext.SaveChanges();
-            }
-
-            return interactionDeviceType;
         }
 
         /// <summary>
@@ -344,8 +539,9 @@ namespace Rock.Model
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
         /// <param name="interactionDateKey">The interaction date key.</param>
+        /// <param name="interactionSessionLocationId">The interaction session location identifier.</param>
         /// <returns></returns>
-        private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId, int? interactionDateKey = null )
+        private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId, int? interactionDateKey = null, int? interactionSessionLocationId = null )
         {
             object deviceTypeId = DBNull.Value;
             if ( interactionDeviceTypeId != null )
@@ -355,6 +551,12 @@ namespace Rock.Model
 
             var currentDateTime = RockDateTime.Now;
             interactionDateKey = interactionDateKey ?? currentDateTime.ToString( "yyyyMMdd" ).AsInteger();
+
+            object sessionLocationId = DBNull.Value;
+            if ( interactionSessionLocationId != null )
+            {
+                sessionLocationId = interactionSessionLocationId;
+            }
 
             // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
             int interactionSessionId = this.Context.Database.SqlQuery<int>(
@@ -374,6 +576,7 @@ namespace Rock.Model
                             ,[CreatedDateTime]
                             ,[ModifiedDateTime]
                             ,[SessionStartDateKey]
+                            ,[InteractionSessionLocationId]
                             )
                         OUTPUT inserted.Id
                         VALUES (
@@ -383,6 +586,7 @@ namespace Rock.Model
                             ,@currentDateTime
                             ,@currentDateTime
                             ,@sessionStartDateKey
+                            ,@interactionSessionLocationId
                             )
                     END
                     ELSE
@@ -394,7 +598,8 @@ namespace Rock.Model
                 new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
                 new SqlParameter( "@interactionDeviceTypeId", deviceTypeId ),
                 new SqlParameter( "@currentDateTime", currentDateTime ),
-                new SqlParameter( "@sessionStartDateKey", interactionDateKey ) )
+                new SqlParameter( "@sessionStartDateKey", interactionDateKey ),
+                new SqlParameter( "@interactionSessionLocationId", sessionLocationId ) )
                 .FirstOrDefault();
 
             return interactionSessionId;
@@ -430,7 +635,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="interactionInfo"></param>
         /// <param name="immediate"></param>
-        internal void RegisterPageInteraction( PageInteractionInfo interactionInfo, bool immediate = false )
+        internal static void RegisterPageInteraction( RegisterPageInteractionActionInfo interactionInfo, bool immediate = false )
         {
             // Get the Page.
             var page = PageCache.Get( interactionInfo.PageId );
@@ -473,11 +678,28 @@ namespace Rock.Model
                 InteractionData = interactionInfo.PageRequestUrl,
                 InteractionTimeToServe = interactionInfo.PageRequestTimeToServe,
                 InteractionChannelCustomIndexed1 = interactionInfo.UrlReferrerHostAddress,
+                InteractionChannelCustom1 = interactionInfo.TraceId,
                 InteractionChannelCustom2 = interactionInfo.UrlReferrerSearchTerms,
                 InteractionSummary = title,
                 UserAgent = interactionInfo.UserAgent,
                 IPAddress = interactionInfo.UserHostAddress,
-                BrowserSessionId = interactionInfo.BrowserSessionGuid
+                BrowserSessionId = interactionInfo.BrowserSessionGuid,
+                GeolocationIpAddress = interactionInfo.GeolocationIpAddress,
+                GeolocationLookupDateTime = interactionInfo.GeolocationLookupDateTime,
+                City = interactionInfo.City,
+                RegionName = interactionInfo.RegionName,
+                RegionCode = interactionInfo.RegionCode,
+                RegionValueId = interactionInfo.RegionValueId,
+                CountryCode = interactionInfo.CountryCode,
+                CountryValueId = interactionInfo.CountryValueId,
+                PostalCode = interactionInfo.PostalCode,
+                Latitude = interactionInfo.Latitude,
+                Longitude = interactionInfo.Longitude,
+                InteractionSource = interactionInfo.InteractionSource,
+                InteractionMedium = interactionInfo.InteractionMedium,
+                InteractionCampaign = interactionInfo.InteractionCampaign,
+                InteractionContent = interactionInfo.InteractionContent,
+                InteractionTerm = interactionInfo.InteractionTerm
             };
 
             var pageViewTransaction = new InteractionTransaction( dvWebsiteChannelType,
@@ -495,6 +717,231 @@ namespace Rock.Model
             {
                 pageViewTransaction.Enqueue();
             }
+
+            RegisterIntentInteractions( page.InteractionIntentValueIds, immediate: immediate );
+        }
+
+        /// <summary>
+        /// Creates interactions for the provided interaction intent defined values.
+        /// </summary>
+        /// <param name="interactionIntentValueIds">The interaction intent defined value identifiers.</param>
+        /// <param name="interactionOperation">The optional interaction operation.</param>
+        /// <param name="immediate">Whether the transaction should be written to the database immediately. If false, it will be added to the transaction queue.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static void RegisterIntentInteractions( IEnumerable<int> interactionIntentValueIds, string interactionOperation = "View", bool immediate = false )
+        {
+            if ( interactionIntentValueIds?.Any() != true )
+            {
+                return;
+            }
+
+            var channelTypeMediumValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_INTERACTION_INTENTS )?.Id;
+            var definedTypeEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.DEFINED_TYPE )?.Id;
+            var interactionIntentDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.INTERACTION_INTENT.AsGuid() )?.Id;
+
+            if ( !channelTypeMediumValueId.HasValue
+                || !definedTypeEntityTypeId.HasValue
+                || !interactionIntentDefinedTypeId.HasValue )
+            {
+                // Missing required system values.
+                return;
+            }
+
+            foreach ( var intentValueId in interactionIntentValueIds )
+            {
+                var intentValue = DefinedValueCache.Get( intentValueId );
+                if ( intentValue == null
+                    || intentValue.DefinedTypeId != interactionIntentDefinedTypeId.Value
+                    || intentValue.Value.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                var info = new InteractionTransactionInfo
+                {
+                    ChannelTypeMediumValueId = channelTypeMediumValueId,
+                    ChannelName = "Interaction Intents",
+                    ComponentEntityTypeId = definedTypeEntityTypeId,
+                    ChannelEntityId = interactionIntentDefinedTypeId,
+                    ComponentEntityId = intentValue.Id,
+                    ComponentName = intentValue.Value,
+                    InteractionOperation = interactionOperation
+                };
+
+                var intentTransaction = new InteractionTransaction( info );
+
+                if ( immediate )
+                {
+                    intentTransaction.Execute();
+                }
+                else
+                {
+                    intentTransaction.Enqueue();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ensures there is a matching/updated interaction session location instance
+        /// in the database and returns its ID.
+        /// </summary>
+        /// <param name="info">The information that will be used to lookup/add/update
+        /// the interaction session location instance.</param>
+        /// <returns>The ID of the interaction session location instance.</returns>
+        private int? GetInteractionSessionLocationId( InteractionInfo info )
+        {
+            if ( info == null
+                || info.GeolocationIpAddress.IsNullOrWhiteSpace()
+                || !info.GeolocationLookupDateTime.HasValue )
+            {
+                return null;
+            }
+
+            object postalCode = DBNull.Value;
+            if ( info.PostalCode.IsNotNullOrWhiteSpace() )
+            {
+                postalCode = info.PostalCode.Truncate( 50 );
+            }
+
+            object location = DBNull.Value;
+            if ( info.City.IsNotNullOrWhiteSpace() || info.RegionName.IsNotNullOrWhiteSpace() )
+            {
+                var locationSb = new StringBuilder();
+                if ( info.City.IsNullOrWhiteSpace() )
+                {
+                    locationSb.Append( info.RegionName );
+                }
+                else if ( info.RegionName.IsNullOrWhiteSpace() )
+                {
+                    locationSb.Append( info.City );
+                }
+                else
+                {
+                    locationSb.Append( $"{info.City}, {info.RegionName}" );
+                }
+
+                location = locationSb.ToString().Truncate( 250 );
+            }
+
+            object countryCode = DBNull.Value;
+            if ( info.CountryCode.IsNotNullOrWhiteSpace() )
+            {
+                countryCode = info.CountryCode.Truncate( 2 );
+            }
+
+            object countryValueId = DBNull.Value;
+            if ( info.CountryValueId.HasValue )
+            {
+                countryValueId = info.CountryValueId.Value;
+            }
+
+            object regionCode = DBNull.Value;
+            if ( info.RegionCode.IsNotNullOrWhiteSpace() )
+            {
+                // TODO: Non-US region codes may be up to 3 characters in length.
+                // We need to increase the db column's max length to allow more than 2.
+                regionCode = info.RegionCode.Truncate( 2 );
+            }
+
+            object regionValueId = DBNull.Value;
+            if ( info.RegionValueId.HasValue )
+            {
+                regionValueId = info.RegionValueId.Value;
+            }
+
+            var geographySqlParameter = new SqlParameter( "@GeoPoint", DBNull.Value );
+            if ( info.Latitude.HasValue && info.Longitude.HasValue )
+            {
+                // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.
+                geographySqlParameter = Location.GetGeographySqlParameter( "@GeoPoint", info.Latitude.Value, info.Longitude.Value );
+            }
+
+            // To make this more thread safe and to avoid overhead of an extra database call, Etc.,
+            // run a SQL block to get/create/update in one quick SQL round trip.
+            int interactionSessionLocationId = this.Context.Database.SqlQuery<int>(
+                @"BEGIN
+                    DECLARE @InteractionSessionLocationId [int] =
+                    (
+                        SELECT TOP 1 [Id]
+                        FROM [InteractionSessionLocation]
+                        WHERE [IpAddress] = @IpAddress
+                            AND ((@PostalCode IS NULL AND [PostalCode] IS NULL) OR [PostalCode] = @PostalCode)
+                            AND ((@CountryCode IS NULL AND [CountryCode] IS NULL) OR [CountryCode] = @CountryCode)
+                            AND ((@RegionCode IS NULL AND [RegionCode] IS NULL) OR [RegionCode] = @RegionCode)
+                    );
+
+                    IF @InteractionSessionLocationId IS NULL
+                    BEGIN
+                        INSERT [InteractionSessionLocation]
+                        (
+                            [IpAddress]
+                            , [LookupDateTime]
+                            , [PostalCode]
+                            , [Location]
+                            , [CountryCode]
+                            , [CountryValueId]
+                            , [RegionCode]
+                            , [RegionValueId]
+                            , [GeoPoint]
+                            , [CreatedDateTime]
+                            , [ModifiedDateTime]
+                            , [Guid]
+                        )
+                        OUTPUT INSERTED.[Id]
+                        VALUES
+                        (
+                            @IpAddress
+                            , @LookupDateTime
+                            , @PostalCode
+                            , @Location
+                            , @CountryCode
+                            , @CountryValueId
+                            , @RegionCode
+                            , @RegionValueId
+                            , @GeoPoint
+                            , @Now
+                            , @Now
+                            , NEWID()
+                        );
+                    END
+                    ELSE
+                    BEGIN
+                        IF @IpAddress NOT IN ('InvalidAddress', 'ReservedAddress')
+                        BEGIN
+                            UPDATE [InteractionSessionLocation]
+                            SET [LookupDateTime] = @LookupDateTime
+                                , [Location] = @Location
+                                , [CountryValueId] = @CountryValueId
+                                , [RegionValueId] = @RegionValueId
+                                , [GeoPoint] = @GeoPoint
+                                , [ModifiedDateTime] = @Now
+                            WHERE [Id] = @InteractionSessionLocationId;
+                        END
+
+                        SELECT @InteractionSessionLocationId;
+                    END
+                END",
+                new SqlParameter( "@IpAddress", info.GeolocationIpAddress.Truncate( 45 ) ),
+                new SqlParameter( "@LookupDateTime", info.GeolocationLookupDateTime.Value ),
+                new SqlParameter( "@PostalCode", postalCode ),
+                new SqlParameter( "@Location", location ),
+                new SqlParameter( "@CountryCode", countryCode ),
+                new SqlParameter( "@CountryValueId", countryValueId ),
+                new SqlParameter( "@RegionCode", regionCode ),
+                new SqlParameter( "@RegionValueId", regionValueId ),
+                new SqlParameter( "@Now", RockDateTime.Now ),
+                geographySqlParameter )
+                .FirstOrDefault();
+
+            return interactionSessionLocationId;
         }
 
         #region Queryables that return Page Views
@@ -737,7 +1184,7 @@ namespace Rock.Model
                                         .Select( i => new { i.Id, i.Guid } )
                                         .ToList();
 
-                foreach( var interactionId in interactionIds )
+                foreach ( var interactionId in interactionIds )
                 {
                     var interaction = interactionsToInsert.Where( i => i.Guid == interactionId.Guid ).FirstOrDefault();
                     if ( interaction != null )
@@ -749,7 +1196,6 @@ namespace Rock.Model
                 // Launch task
                 interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
             }
-            
         }
     }
 
@@ -817,6 +1263,197 @@ namespace Rock.Model
         /// The unique identifier of the user initiating this interaction.
         /// </summary>
         public string UserIdKey { get; set; }
+
+        #region InteractionSessionLocation Properties
+
+        /// <inheritdoc cref="IpGeolocation.IpAddress"/>
+        public string GeolocationIpAddress { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.LookupDateTime"/>
+        public DateTime? GeolocationLookupDateTime { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.City"/>
+        public string City { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.RegionName"/>
+        public string RegionName { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionCode"/>
+        public string RegionCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionValueId"/>
+        public int? RegionValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryCode"/>
+        public string CountryCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryValueId"/>
+        public int? CountryValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.PostalCode"/>
+        public string PostalCode { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Latitude"/>
+        public double? Latitude { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Longitude"/>
+        public double? Longitude { get; set; }
+
+        #endregion InteractionSessionLocation Properties
+    }
+
+    /// <summary>
+    /// Describes a processing request to register a page interaction.
+    /// </summary>
+    internal class RegisterPageInteractionActionInfo
+    {
+        /// <summary>
+        /// Create a new instance from a PageInteractionInfo object.
+        /// </summary>
+        /// <param name="interactionInfo"></param>
+        /// <returns></returns>
+        public static RegisterPageInteractionActionInfo FromPageInteraction( PageInteractionInfo interactionInfo )
+        {
+            var actionInfo = new RegisterPageInteractionActionInfo()
+            {
+                PageId = interactionInfo.PageId,
+                UserIdKey = interactionInfo.UserIdKey,
+                PageRequestUrl = interactionInfo.PageRequestUrl,
+                PageRequestTimeToServe = interactionInfo.PageRequestTimeToServe,
+                UrlReferrerHostAddress = interactionInfo.UrlReferrerHostAddress,
+                UrlReferrerSearchTerms = interactionInfo.UrlReferrerSearchTerms,
+                UserAgent = interactionInfo.UserAgent,
+                UserHostAddress = interactionInfo.UserHostAddress,
+                BrowserSessionGuid = interactionInfo.BrowserSessionGuid,
+                GeolocationIpAddress = interactionInfo.GeolocationIpAddress,
+                GeolocationLookupDateTime = interactionInfo.GeolocationLookupDateTime,
+                City = interactionInfo.City,
+                RegionName = interactionInfo.RegionName,
+                RegionCode = interactionInfo.RegionCode,
+                RegionValueId = interactionInfo.RegionValueId,
+                CountryCode = interactionInfo.CountryCode,
+                CountryValueId = interactionInfo.CountryValueId,
+                PostalCode = interactionInfo.PostalCode,
+                Latitude = interactionInfo.Latitude,
+                Longitude = interactionInfo.Longitude,
+                TraceId = Activity.Current?.TraceId.ToString()
+            };
+
+            return actionInfo;
+        }
+
+        /// <summary>
+        /// The unique identifier of the page.
+        /// </summary>
+        public int PageId { get; set; }
+
+        /// <summary>
+        /// The name of the action being registered.
+        /// </summary>
+        public string ActionName { get; set; } = "View";
+
+        /// <summary>
+        /// The unique identifier for the browser session.
+        /// </summary>
+        public Guid BrowserSessionGuid { get; set; }
+
+        /// <summary>
+        /// The URL requested by the client browser.
+        /// </summary>
+        public string PageRequestUrl { get; set; }
+
+        /// <summary>
+        /// The server date and time on which the page was requested.
+        /// </summary>
+        public DateTime PageRequestDateTime { get; set; }
+
+        /// <summary>
+        /// The time in seconds required to serve the initial page request.
+        /// </summary>
+        public double? PageRequestTimeToServe { get; set; }
+
+        /// <summary>
+        /// Gets the raw user agent string of the client browser.
+        /// </summary>
+        public string UserAgent { get; set; }
+
+        /// <summary>
+        /// Gets the IP host address of the remote client.
+        /// </summary>
+        public string UserHostAddress { get; set; }
+
+        /// <summary>
+        /// Gets the DNS host name or IP address of the client's previous request that linked to the current URL.
+        /// </summary>
+        public string UrlReferrerHostAddress { get; set; }
+
+        /// <summary>
+        /// Gets the query search terms of the client's previous request that linked to the current URL.
+        /// </summary>
+        public string UrlReferrerSearchTerms { get; set; }
+
+        /// <summary>
+        /// The trace identifier from Observability. This allows correlation
+        /// between page interactions and observability trace logs.
+        /// </summary>
+        public string TraceId { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the user initiating this interaction.
+        /// </summary>
+        public string UserIdKey { get; set; }
+
+        /// <inheritdoc cref="Interaction.Source"/>
+        public string InteractionSource { get; set; }
+
+        /// <inheritdoc cref="Interaction.Medium"/>
+        public string InteractionMedium { get; set; }
+
+        /// <inheritdoc cref="Interaction.Campaign"/>
+        public string InteractionCampaign { get; set; }
+
+        /// <inheritdoc cref="Interaction.Content"/>
+        public string InteractionContent { get; set; }
+
+        /// <inheritdoc cref="Interaction.Term"/>
+        public string InteractionTerm { get; set; }
+
+        #region InteractionSessionLocation Properties
+
+        /// <inheritdoc cref="IpGeolocation.IpAddress"/>
+        public string GeolocationIpAddress { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.LookupDateTime"/>
+        public DateTime? GeolocationLookupDateTime { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.City"/>
+        public string City { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.RegionName"/>
+        public string RegionName { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionCode"/>
+        public string RegionCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionValueId"/>
+        public int? RegionValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryCode"/>
+        public string CountryCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryValueId"/>
+        public int? CountryValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.PostalCode"/>
+        public string PostalCode { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Latitude"/>
+        public double? Latitude { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Longitude"/>
+        public double? Longitude { get; set; }
+
+        #endregion InteractionSessionLocation Properties
     }
 
     #endregion

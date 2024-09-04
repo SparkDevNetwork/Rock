@@ -1,10 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue">
-        <div class="control-wrapper">
-            <div class="structured-content-container" :id="uniqueId" ref="containerRef"></div>
-        </div>
-    </RockFormField>
+    <span v-if="isDisabled" v-html="htmlContent"></span>
+    <span v-show="!isDisabled">
+        <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue" >
+            <div class="control-wrapper">
+                <div class="structured-content-container" :id="uniqueId" ref="containerRef"></div>
+            </div>
+        </RockFormField>
+    </span>
 </template>
 
 <script setup lang="ts">
@@ -15,9 +18,10 @@
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { debounce } from "@Obsidian/Utility/util";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { getStructuredContentEditorConfiguration } from "@Obsidian/Utility/structuredContentEditor";
+    import { getStructuredContentAsHtml, getStructuredContentEditorConfiguration } from "@Obsidian/Utility/structuredContentEditor";
     import { normalizeRules } from "@Obsidian/Utility/validationRules";
     import { StructuredContentEditorConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/structuredContentEditorConfigurationBag";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     /* eslint-disable @typescript-eslint/naming-convention */
     interface IEditorJsWindow {
@@ -38,10 +42,14 @@
 
     const editorJsWindow: IEditorJsWindow & Window = window;
 
+    // The intialized editor control.
+    let editor;
+
     // Load the JS dependencies first.
     // We'll await them in the onMounted handler.
     const editorjsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorJS);
     const editorToolsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorTools);
+    const htmlContent = ref("");
 
     enum EditorJsLogLevel {
         Verbose = "VERBOSE",
@@ -65,6 +73,11 @@
             default: null
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -80,6 +93,9 @@
     //#endregion
 
     //#region Computed Values
+
+    /** Determines if the control should be in a disabled state. */
+    const isDisabled = computed((): boolean =>  props.disabled);
 
     const containerId = computed<string>(() => containerRef.value?.id ?? "");
     const internalRules = computed<ValidationRule | ValidationRule[]>(() => {
@@ -128,6 +144,16 @@
     }
 
     /** Retrieves the structured content editor configuration from the server */
+    async function setReadonlyContent(): Promise<void> {
+        try {
+            htmlContent.value = await getStructuredContentAsHtml(editor.configuration.data) ?? "";
+        }
+        catch (e) {
+            console.error(e ?? "Unknown error while loading structured content html.");
+        }
+    }
+
+    /** Retrieves the structured content editor configuration from the server */
     async function getConfiguration(): Promise<StructuredContentEditorConfigurationBag | undefined> {
         try {
             const result = await getStructuredContentEditorConfiguration({
@@ -171,17 +197,21 @@
         }
 
         // Initialize the editor.js control.
-        const editor = new EditorJS({
+        editor = new EditorJS({
             holder: containerId.value,
             tools: config?.toolsScript ? saferEval(config.toolsScript) : undefined,
             defaultBlock: "paragraph",
             data: JSON.parse(props.modelValue || "{}"),
             logLevel: EditorJsLogLevel.Error,
+            readOnly: isDisabled.value,
             onReady: function() {
                 new EditorDragDrop(editor);
+                if (isDisabled.value === true) {
+                    setReadonlyContent();
+                }
             },
             onChange: debounce(() => {
-                editor.save().then(function(savedData: unknown) {
+                editor.save().then(function (savedData: unknown) {
                     emit("update:modelValue", JSON.stringify(savedData));
                 }).catch((e: unknown): void => {
                     console.log("Saving failed: ", e);
@@ -190,11 +220,39 @@
         });
     }
 
+    /** Toggle the readOnly state of editor control. Initializes if the control if necessary. */
+    async function toggleReadOnly(): Promise<void> {
+        if (!editor) {
+            // If the editor hasn't been initialized then initialization will
+            // take care of setting the proper disabled status.
+            await initialize();
+        }
+        else {
+            // If the editor has been initialized just toggle the readOnly setting.
+            editor.readOnly.toggle();
+        }
+    }
+
     //#endregion
 
     //#region Watchers
 
+    watch(() => props.disabled, async (newValue, oldValue) => {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        if (newValue === true) {
+            setReadonlyContent();
+        }
+
+        toggleReadOnly();
+    });
+
     watch(() => props.toolsGuid, async (newValue, oldValue) => {
+        newValue = toGuidOrNull(newValue);
+        oldValue = toGuidOrNull(oldValue);
+
         if (!newValue && !oldValue) {
             // Don't reinitialize the editor if the toolsGuid was and still is an invalid Guid.
             return;
@@ -202,7 +260,7 @@
 
         if (!newValue
             || !oldValue
-            || newValue.toLocaleLowerCase() !== oldValue.toLocaleLowerCase()) {
+            || !areEqual(newValue, oldValue)) {
             // Reinitialize the editor...
             // ...if the toolsGuid was changed to/from a valid Guid to/from an invalid Guid,
             // OR

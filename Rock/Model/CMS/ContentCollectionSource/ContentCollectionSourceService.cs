@@ -52,7 +52,7 @@ namespace Rock.Model
 
             for ( int rank = 0; rank < trendingScores.Count; rank++ )
             {
-                lookup.AddOrIgnore( trendingScores[rank].Id, rank + 1 );
+                lookup.TryAdd( trendingScores[rank].Id, rank + 1 );
             }
 
             return lookup;

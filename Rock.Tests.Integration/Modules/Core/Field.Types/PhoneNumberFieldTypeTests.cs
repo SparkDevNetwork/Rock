@@ -15,8 +15,9 @@
 // </copyright>
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Field.Types;
-using Rock.Tests.Integration.TestData;
+using Rock.Tests.Integration.Modules.Crm;
 using Rock.Tests.Shared;
 using Rock.Web.UI.Controls;
 

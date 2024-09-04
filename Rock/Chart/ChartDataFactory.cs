@@ -22,11 +22,11 @@ using System.Linq;
 namespace Rock.Chart
 {
     /// <summary>
-    /// A factory that produces time series datasets for use with Rock charts.
+    /// A factory that produces datasets for use with Rock charts.
     /// </summary>
     /// <remarks>
     /// This factory replicates the data functions of the ChartJsTimeSeriesDataFactory,
-    /// with the ChartJs-specific presentation elements removed for greater flexibility.
+    /// with the ChartJs-specific presentation elements removed to allow lower-level manipulation of chart data.
     /// </remarks>
     public static class ChartDataFactory
     {
@@ -172,10 +172,91 @@ namespace Rock.Chart
             return datasetQuantized;
         }
 
-        //public static ChartJsTimeSeriesDataset GetTimeSeriesFromChartDataValues( ChartJsTimeSeriesDataset dataset, ChartJsTimeSeriesTimeScaleSpecifier? timeScale = null )
-        //{
+        /// <summary>
+        /// Quantize a collection of time series datasets to discrete periods in the specified time scale.
+        /// </summary>
+        /// <remarks>
+        /// Quantizing the data points in this way will substantially improve the performance of Chart.js for large data sets.
+        /// </remarks>
+        /// <param name="dataset"></param>
+        /// <param name="timeScale">
+        /// The timescale used to separate the datapoints into categories.
+        /// If not specified, the scale is determined as the best fit for the date range of the datapoints.
+        /// </param>
+        /// <returns></returns>
+        public static ChartJsTimeSeriesDataset GetQuantizedTimeSeries( ChartJsTimeSeriesDataset dataset, ChartJsTimeSeriesTimeScaleSpecifier timeScale )
+        {
+            var datapoints = dataset.DataPoints;
 
-        //}
+            var datasetQuantized = new ChartJsTimeSeriesDataset();
+
+            datasetQuantized.Name = dataset.Name;
+            datasetQuantized.BorderColor = dataset.BorderColor;
+            datasetQuantized.FillColor = dataset.FillColor;
+
+            if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Auto )
+            {
+                timeScale = GetRecommendedCategoryIntervalForTimeSeries( dataset );
+            }
+
+            List<ChartJsTimeSeriesDataPoint> quantizedDataPoints;
+
+            if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                quantizedDataPoints = datapoints
+                    .GroupBy( x => new { Day = x.DateTime } )
+                    .Select( x => new ChartJsTimeSeriesDataPoint
+                    {
+                        DateTime = x.Key.Day,
+                        Value = x.Sum( y => y.Value ),
+                        SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
+                    } )
+                    .OrderBy( x => x.SortKey )
+                    .ToList();
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
+            {
+                quantizedDataPoints = datapoints
+                    .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
+                    .Select( x => new ChartJsTimeSeriesDataPoint
+                    {
+                        DateTime = x.Key.Month,
+                        Value = x.Sum( y => y.Value ),
+                        SortKey = x.Key.Month.ToString( "yyyyMM" ),
+                    } )
+                    .OrderBy( x => x.SortKey )
+                    .ToList();
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Year )
+            {
+                quantizedDataPoints = datapoints
+                    .GroupBy( x => new { Year = new DateTime( x.DateTime.Year, 1, 1 ) } )
+                    .Select( x => new ChartJsTimeSeriesDataPoint
+                    {
+                        DateTime = x.Key.Year,
+                        Value = x.Sum( y => y.Value ),
+                        SortKey = x.Key.Year.ToString( "yyyy" ),
+                    } )
+                    .OrderBy( x => x.SortKey )
+                    .ToList();
+            }
+            else
+            {
+                // Get the sum of all datapoints.
+                quantizedDataPoints = datapoints
+                    .Select( x => new ChartJsTimeSeriesDataPoint
+                    {
+                        DateTime = datapoints.Max( p => p.DateTime ),
+                        Value = datapoints.Sum( p => p.Value ),
+                        SortKey = dataset.Name
+                    } )
+                    .ToList();
+            }
+
+            datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsTimeSeriesDataPoint>().ToList();
+
+            return datasetQuantized;
+        }
 
         /// <summary>
         /// Create a category series of data values from a collection of Rock Chart Data Items.
@@ -190,28 +271,7 @@ namespace Rock.Chart
                 defaultSeriesName = "(unknown)";
             }
 
-
-            // Show a bar chart to summarize the data for a single date.
             var itemsBySeries = chartDataItems.GroupBy( k => k.SeriesName, v => v );
-            /*
-                        var datasets = new List<ChartJsCategorySeriesDataset>();
-                        foreach ( var series in itemsBySeries )
-                        {
-                            var categoryName = string.IsNullOrWhiteSpace( series.Key ) ? defaultSeriesName : series.Key;
-                            datasets.Add( new ChartJsCategorySeriesDataset
-                            {
-                                Name = categoryName,
-                                DataPoints = new List<IChartJsCategorySeriesDataPoint>()
-                                    {
-                                        new ChartJsCategorySeriesDataPoint
-                                        {
-                                            Category = categoryName,
-                                            Value = series.Sum(x => x.YValue ?? 0)
-                                        }
-                                    }
-                            } );
-                        }
-            */
 
             var firstItem = chartDataItems.FirstOrDefault();
             var isChartJsDataPoint = firstItem is IChartJsCategorySeriesDataPoint;
@@ -229,14 +289,14 @@ namespace Rock.Chart
                     dataPoints = chartDataItems.Where( x => x.SeriesName == series.Key )
                         .Select( x => ( IChartJsCategorySeriesDataPoint ) new ChartJsCategorySeriesDataPoint
                         {
-                            Category = categoryName, //x.SeriesName,
+                            Category = categoryName,
                             Value = x.YValue ?? 0,
                         } )
                         .ToList();
                 }
                 var dataset = new ChartJsCategorySeriesDataset
                 {
-                    Name = categoryName, // series.Key,
+                    Name = categoryName,
                     DataPoints = dataPoints
                 };
 
@@ -285,51 +345,7 @@ namespace Rock.Chart
                 timeDatasets.Add( dataset );
             }
 
-
-            //        timeDatasets.Add( new ChartJsTimeSeriesDataset
-            //    {
-            //        Name = string.IsNullOrWhiteSpace( series.Key ) ? defaultSeriesName : series.Key,
-            //        DataPoints = chartDataItems.Where( x => x.SeriesName == series.Key )
-            //            .Select( x => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
-            //            {
-            //                DateTime = GetDateTimeFromJavascriptMilliseconds( x.DateTimeStamp ),
-            //                Value = x.YValue ?? 0,
-            //            } ).ToList()
-            //    } );
-            //}
-
             return timeDatasets;
-
-
-            //var isChartJsDataPoint = firstItem is IChartJsTimeSeriesDataPoint;
-            //var timeDatasets = new List<ChartJsTimeSeriesDataset>();
-            //foreach ( var series in itemsBySeries )
-            //{
-            //    List<IChartJsTimeSeriesDataPoint> dataPoints;
-            //    if ( isChartJsDataPoint )
-            //    {
-            //        dataPoints = chartDataItems.Cast<IChartJsTimeSeriesDataPoint>().ToList();
-            //    }
-            //    else
-            //    {
-            //        dataPoints = chartDataItems.Where( x => x.SeriesName == series.Key )
-            //            .Select( x => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
-            //            {
-            //                DateTime = GetDateTimeFromJavascriptMilliseconds( x.DateTimeStamp ),
-            //                Value = x.YValue ?? 0
-            //            } )
-            //            .ToList();
-            //    }
-            //    var dataset = new ChartJsTimeSeriesDataset
-            //    {
-            //        Name = series.Key,
-            //        DataPoints = dataPoints
-            //    };
-
-            //    timeDatasets.Add( dataset );
-            //}
-
-
         }
 
         internal static DateTime GetDateTimeFromJavascriptMilliseconds( long millisecondsAfterEpoch )

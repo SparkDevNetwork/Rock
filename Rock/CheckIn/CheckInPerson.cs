@@ -58,7 +58,6 @@ namespace Rock.CheckIn
         [DataMember]
         public bool ExcludedByFilter { get; set; }
 
-
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was automatically selected by a check-in action.
         /// </summary>
@@ -127,6 +126,14 @@ namespace Rock.CheckIn
         public List<CheckInSchedule> PossibleSchedules { get; set; }
 
         /// <summary>
+        /// Gets whether this person has any possible schedules available for check-in.
+        /// </summary>
+        /// <value>
+        /// Whether this person has any possible schedules available for check-in.
+        /// </value>
+        public bool AnyPossibleSchedules => this.PossibleSchedules?.Any() == true;
+
+        /// <summary>
         /// Gets or sets state parameters which can be used by workflow actions to track state of current person's check-in
         /// </summary>
         /// <value>
@@ -156,7 +163,10 @@ namespace Rock.CheckIn
         {
             get
             {
-                return SelectedSchedules.FirstOrDefault( s => !s.Processed );
+                return SelectedSchedules
+                    .Where( s => !s.Processed )
+                    .OrderByOrderAndNextScheduledDateTime()
+                    .FirstOrDefault();
             }
         }
 
@@ -174,6 +184,27 @@ namespace Rock.CheckIn
             }
         }
         private List<CheckInPersonSummary> _selectedOptions = null;
+
+        /// <summary>
+        /// Gets or sets the reason this person has no check-in options.
+        /// Note: this property may only be set once and will thereafter become immutable.
+        /// </summary>
+        /// <value>
+        /// The reason this person has no check-in options.
+        /// </value>
+        public string NoOptionReason
+        {
+            get { return _noOptionReason; }
+            set
+            {
+                if ( _noOptionReason.IsNullOrWhiteSpace() )
+                {
+                    _noOptionReason = value;
+                }
+            }
+        }
+
+        private string _noOptionReason;
 
         /// <summary>
         /// Sets the options.

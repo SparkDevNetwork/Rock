@@ -29,7 +29,7 @@ export type AccountEntryPhoneNumberBag = {
     countryCode?: string | null;
 
     /** Gets or sets the phone's defined value guid. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Indicates whether this phone number is hidden. */
     isHidden: boolean;

@@ -49,7 +49,7 @@ namespace Rock.Tasks
 
             using ( var rockContext = new RockContext() )
             {
-                var metaPhones = rockContext.Metaphones;
+                var metaPhones = rockContext.Set<Metaphone>();
 
                 var newMetaphoneNames = names.Where( n => !metaPhones.Any( m => m.Name == n ) ).ToList();
 

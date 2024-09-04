@@ -17,16 +17,20 @@
 using System;
 using System.IO;
 using System.Linq;
+
 using Http.TestLibrary;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Storage
+namespace Rock.Tests.Integration.Modules.Core.StorageTests
 {
-    public abstract class BaseStorageComponentTests
+    public abstract class BaseStorageComponentTests : DatabaseTestsBase
     {
         protected static System.Guid _assetStorageProviderServiceGuid;
 

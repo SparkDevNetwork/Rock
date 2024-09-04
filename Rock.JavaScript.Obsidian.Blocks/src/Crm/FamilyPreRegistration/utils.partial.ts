@@ -20,7 +20,9 @@ import { CommunicationPreference, CommunicationPreferenceDescription } from "@Ob
 import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { getDay, getMonth, getYear } from "@Obsidian/Utility/dateKey";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { getEmojiPattern, getSpecialCharacterPattern, getSpecialFontPattern } from "@Obsidian/Utility/regexPatterns";
 import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -37,6 +39,7 @@ export function convertPersonToPersonRequest(person: FamilyPreRegistrationPerson
         ...person,
 
         // Overwrite required fields.
+        guid: person?.guid || emptyGuid,
         attributeValues: person?.attributeValues || defaults.attributeValues,
         communicationPreference: person?.communicationPreference ?? defaults.communicationPreference,
         email: person?.email || defaults.email,
@@ -70,6 +73,7 @@ export function convertPersonToChildRequest(person: FamilyPreRegistrationPersonB
  */
 export function createPersonRequest(): PersonRequestBag {
     return {
+        guid: emptyGuid,
         attributeValues: {},
         communicationPreference: CommunicationPreference.None,
         email: "",
@@ -80,7 +84,7 @@ export function createPersonRequest(): PersonRequestBag {
         lastName: "",
         mobilePhone: "",
         mobilePhoneCountryCode: "",
-        isMessagingEnabled: false
+        isMessagingEnabled: false,
     };
 }
 
@@ -129,10 +133,11 @@ export function createPersonViewModel(person: Ref<PersonRequestBag>): PersonRequ
  */
 export function createChildRequest(): ChildRequestBag {
     return {
+        guid: emptyGuid,
         attributeValues: {},
         communicationPreference: CommunicationPreference.None,
         email: "",
-        familyRoleGuid: "",
+        familyRoleGuid: emptyGuid,
         firstName: "",
         gender: Gender.Unknown,
         isFirstNameReadOnly: false,
@@ -140,7 +145,7 @@ export function createChildRequest(): ChildRequestBag {
         lastName: "",
         mobilePhone: "",
         mobilePhoneCountryCode: "",
-        isMessagingEnabled: false
+        isMessagingEnabled: false,
     };
 }
 
@@ -544,6 +549,34 @@ export function required(value: unknown, params?: unknown[]): ValidationResult {
 
     if (!value) {
         return "is required";
+    }
+
+    return true;
+}
+
+/**
+ * Validates whether a name can include special characters.
+ */
+export function noSpecialCharacters (value: unknown): ValidationResult {
+    if (typeof value === "string") {
+        // Checks if a string contains special characters
+        if (getSpecialCharacterPattern().test(value)) {
+            return "cannot contain special characters such as quotes, parentheses, etc.";
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Validates whether a name can emojis or special fonts.
+ */
+export function noEmojisOrSpecialFonts (value: unknown): ValidationResult {
+    if (typeof value === "string") {
+        // Checks if a string contains emojis or special fonts.
+        if (getEmojiPattern().test(value) || getSpecialFontPattern().test(value)) {
+            return "cannot contain emojis or special fonts.";
+        }
     }
 
     return true;

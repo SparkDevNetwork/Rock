@@ -26,17 +26,21 @@
                 <asp:Panel ID="pnlEdit" runat="server">
                     <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <div class="row">
-                        <div class="col-md-4 pull-right">
-                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
-                        </div>
-                    </div>
-                    <div class="row">
 
                         <div class="col-md-3">
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" ButtonText="<i class='fa fa-camera'></i>" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         </div>
 
                         <div class="col-md-9">
+                            <div id="divFamilyInfo" runat="server">
+                                <h3>Family Information</h3>
+                                <hr class="mt-0" />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                                    </div>
+                                </div>
+                            </div>
                             <h3>Personal Information</h3>
                             <hr class="mt-0" />
                             <asp:Panel ID="pnlPersonalTitle" runat="server" CssClass="row">
@@ -46,15 +50,15 @@
                             </asp:Panel>
                             <div class="row form-row">
                                 <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" />
+                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" />
+                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                             </div>
                             <div class="row form-row">
                                 <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" />
+                                    <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
@@ -75,10 +79,11 @@
                                 <div class="col-md-6">
 
                                     <Rock:RockRadioButtonList ID="rblRole" runat="server" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" />
-                                    <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender" FormGroupCssClass="gender-picker" Required="true">
-                                        <asp:ListItem Text="Male" Value="Male" />
-                                        <asp:ListItem Text="Female" Value="Female" />
-                                    </Rock:RockRadioButtonList>
+                                    <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender" Required="false">
+                                        <asp:ListItem></asp:ListItem>
+                                        <asp:ListItem Text="Male" Value="Male"></asp:ListItem>
+                                        <asp:ListItem Text="Female" Value="Female"></asp:ListItem>
+                                    </Rock:RockDropDownList>
                                 </div>
                             </div>
 
@@ -105,6 +110,7 @@
 
                             <h3>Contact Information</h3>
                             <hr class="mt-0" />
+                            <Rock:NotificationBox ID="nbAccountProtectionWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                             <asp:Panel ID="pnlPhoneNumbers" class="form-section" runat="server">
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
@@ -166,6 +172,10 @@
                             <div class="actions">
                                 <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                                 <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+
+                                <div class="pull-right">
+                                    <Rock:HighlightLabel ID="hlblSuccess" runat="server" LabelType="Success" Text="Saved" Visible="false" />
+                                </div>
                             </div>
 
                         </div>

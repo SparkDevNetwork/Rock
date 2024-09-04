@@ -3,60 +3,66 @@
     <div>
         <fieldset>
             <legend>Your Information</legend>
+            <FirstNameTextBox
+                v-model="internalFirstName"
+                :disabled="disabled"
+                label="First Name"
+                :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <TextBox
-                     v-model="internalFirstName"
-                     :disabled="disabled"
-                     label="First Name"
-                     rules="required"></TextBox>
-            <TextBox
-                     v-model="internalLastName"
-                     :disabled="disabled"
-                     label="Last Name"
-                     rules="required"></TextBox>
+                v-model="internalLastName"
+                :disabled="disabled"
+                label="Last Name"
+                :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <EmailBox
-                      v-if="!isEmailHidden"
-                      v-model="internalEmail"
-                      :disabled="disabled"
-                      label="Email"
-                      rules="required"></EmailBox>
+                v-if="!isEmailHidden"
+                v-model="internalEmail"
+                :disabled="disabled"
+                label="Email"
+                rules="required" />
             <GenderPicker
-                          v-if="isGenderPickerShown"
-                          v-model="internalGender"
-                          label="Gender"
-                          :disabled="disabled"></GenderPicker>
+                v-if="isGenderPickerShown"
+                v-model="internalGender"
+                :disabled="disabled" />
             <BirthdayPicker
-                            v-model="internalBirthday"
-                            :disabled="disabled"
-                            label="Birthday"
-                            rules="required"></BirthdayPicker>
+                v-if="isBirthDateShown"
+                v-model="internalBirthday"
+                :disabled="disabled"
+                label="Birthday"
+                :rules="birthdayRules" />
         </fieldset>
 
         <fieldset v-if="internalArePhoneNumbersShown">
             <legend v-if="internalPhoneNumbers.length > 1">Phone Numbers</legend>
             <template v-for="(value, key) in internalPhoneNumbers">
-                <PhoneNumberDetails
-                                    v-if="!value.isHidden"
+                <PhoneNumberDetails v-if="!value.isHidden"
                                     v-model="internalPhoneNumbers[key]"
-                                    :disabled="disabled"></PhoneNumberDetails>
+                                    :disabled="disabled"
+                                    :isMobile="isMobile" />
             </template>
         </fieldset>
 
         <fieldset v-if="isAddressShown">
             <legend>Address</legend>
-            <Address
-                     v-model="internalAddress"
+            <Address v-model="internalAddress"
                      :disabled="disabled"
                      :rules="addressRules"></Address>
         </fieldset>
 
         <CampusPicker
-                      v-if="isCampusPickerShown"
-                      :disabled="disabled"
-                      :label="campusPickerLabel"
-                      @update:modelValue="onCampusChanged"
-                      :forceVisible="true"
-                      :includeInactive="true"
-                      :showBlankItem="true"></CampusPicker>
+            v-if="isCampusPickerShown"
+            :disabled="disabled"
+            :label="campusPickerLabel"
+            @update:modelValue="onCampusChanged"
+            :campusStatusFilter="campusStatusFilter"
+            :campusTypeFilter="campusTypeFilter"
+            :showBlankItem="true"
+            :rules="campusRules" />
+
+        <AttributeValuesContainer v-if="internalAttributes"
+                                  v-model="internalAttributeValues"
+                                  :attributes="internalAttributes"
+                                  isEditMode
+                                  :showCategoryLabel="false" />
     </div>
 </template>
 
@@ -64,19 +70,22 @@
     import { computed, PropType } from "vue";
     import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
     import Address from "@Obsidian/Controls/addressControl.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
     import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const props = defineProps({
         modelValue: {
@@ -88,6 +97,11 @@
             required: true
         },
         disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        isMobile: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false
@@ -105,8 +119,12 @@
     const isAddressShown = computed(() => props.config.isAddressShown);
     const isAddressRequired = computed(() => props.config.isAddressRequired);
     const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
+    const isCampusRequired = computed(() => props.config.isCampusRequired);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
     const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
+    const isBirthDateShown = computed(() => props.config.isBirthDateShown);
+    const campusStatusFilter = computed(() => props.config.campusStatusFilter ?? []);
+    const campusTypeFilter = computed(() => props.config.campusTypeFilter ?? []);
 
     const internalFirstName = computed<string>({
         get() {
@@ -162,18 +180,38 @@
         }
     });
 
-    const internalAddress = computed<AddressControlBag>({
+    const internalAddress = computed<AddressControlBag | undefined>({
         get() {
-            return props.modelValue?.address || {};
+            return props.modelValue?.address ?? undefined;
         },
-        set(newValue: AddressControlBag) {
+        set(newValue: AddressControlBag | undefined) {
             emit("update:modelValue", { ...props.modelValue, address: newValue });
         }
     });
 
     const addressRules = computed<string>(() => isAddressRequired.value ? "required" : "");
+    const campusRules = computed<string>(() => isCampusRequired.value ? "required" : "");
+    const birthdayRules = computed<string>(() => isBirthDateShown.value ? "required" : "");
 
     const internalArePhoneNumbersShown = computed<boolean>(() => arePhoneNumbersShown.value && internalPhoneNumbers.value.some(p => !p.isHidden));
+
+    const internalAttributes = computed<Record<string, PublicAttributeBag> | null | undefined>({
+        get() {
+            return props.modelValue?.attributes;
+        },
+        set(newValue: Record<string, PublicAttributeBag> | null | undefined) {
+            emit("update:modelValue", { ...props.modelValue, attributes: newValue });
+        }
+    });
+
+    const internalAttributeValues = computed<Record<string, string>>({
+        get() {
+            return props.modelValue?.attributeValues ?? {};
+        },
+        set(newValue: Record<string, string>) {
+            emit("update:modelValue", { ...props.modelValue, attributeValues: newValue });
+        }
+    });
 
     // #endregion
 

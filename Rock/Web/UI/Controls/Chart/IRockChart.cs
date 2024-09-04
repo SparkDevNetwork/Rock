@@ -39,5 +39,10 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets a flag indicating if the chart is visible.
         /// </summary>
         bool Visible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if the ratio of height to width is maintained when the chart is resized.
+        /// </summary>
+        bool MaintainAspectRatio { get; set; }
     }
 }

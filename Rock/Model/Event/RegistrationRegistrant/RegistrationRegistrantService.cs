@@ -286,21 +286,6 @@ namespace Rock.Model
         /// <param name="registrationRegistrant">The registration registrant.</param>
         /// <param name="person">The person.</param>
         /// <param name="alreadyPlacedInGroup">if set to <c>true</c> [already placed in group].</param>
-        /// <param name="registrationInstanceName"></param>
-        /// <param name="options">The options.</param>
-        [Obsolete( "Use the other GroupPlacementRegistrant constructor ", true )]
-        [RockObsolete( "1.10.3" )]
-        public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, Person person, bool alreadyPlacedInGroup, string registrationInstanceName, GetGroupPlacementRegistrantsParameters options )
-            : this( registrationRegistrant, person, alreadyPlacedInGroup, registrationRegistrant.Registration.RegistrationInstance, options )
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupPlacementRegistrant" /> class.
-        /// </summary>
-        /// <param name="registrationRegistrant">The registration registrant.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="alreadyPlacedInGroup">if set to <c>true</c> [already placed in group].</param>
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="options">The options.</param>
         public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, Person person, bool alreadyPlacedInGroup, RegistrationInstance registrationInstance, GetGroupPlacementRegistrantsParameters options )

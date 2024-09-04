@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -165,22 +166,14 @@ namespace Rock.Blocks.Reporting
                 return;
             }
 
-            var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
             {
-                // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
-                {
-                    box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( MergeTemplate.FriendlyTypeName );
-                }
+                box.Entity = GetEntityBagForView( entity );
+                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
@@ -315,7 +308,7 @@ namespace Rock.Blocks.Reporting
                 () => entity.Description = box.Entity.Description );
 
             box.IfValidProperty( nameof( box.Entity.MergeTemplateTypeEntityType ),
-                () => entity.MergeTemplateTypeEntityTypeId = box.Entity.MergeTemplateTypeEntityType.GetEntityId<EntityType>( rockContext ) ?? 0);
+                () => entity.MergeTemplateTypeEntityTypeId = box.Entity.MergeTemplateTypeEntityType.GetEntityId<EntityType>( rockContext ) ?? 0 );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
@@ -324,7 +317,7 @@ namespace Rock.Blocks.Reporting
                 () => entity.PersonAliasId = box.Entity.PersonAlias.GetEntityId<PersonAlias>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.TemplateBinaryFile ),
-                () => entity.TemplateBinaryFileId = box.Entity.TemplateBinaryFile.GetEntityId<BinaryFile>( rockContext ) ?? 0);
+                () => entity.TemplateBinaryFileId = box.Entity.TemplateBinaryFile.GetEntityId<BinaryFile>( rockContext ) ?? 0 );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -431,7 +424,7 @@ namespace Rock.Blocks.Reporting
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${MergeTemplate.FriendlyTypeName}." );
                 return false;

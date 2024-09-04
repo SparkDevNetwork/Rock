@@ -130,60 +130,101 @@ namespace Rock.Model
         /// <returns></returns>
         public static AttendanceCode GetNew( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized )
         {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var service = new AttendanceCodeService( rockContext );
+
+                return service.CreateNewCode( alphaNumericLength, alphaLength, numericLength, isRandomized );
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Creates a new <see cref="Rock.Model.AttendanceCode" />. The code will contain the specified number of alphanumeric characters,
+        /// followed by the alpha characters and then the specified number of numeric characters. The character sequence will not repeat for "today".
+        /// Also the numeric character sequence will not repeat for "today". In both cases ensure that you're using a sufficient length for each
+        /// otherwise there will not be enough possible codes.
+        /// </para>
+        /// <para>
+        /// Also note as the issued numeric codes reaches the maximum (from the set of possible), it will take longer and
+        /// longer to find an unused number. So specifing a larger number of characters then needed will increase performance.
+        /// </para>
+        /// <para>
+        /// The security code will be persisted to the database before it is
+        /// returned. That is, <see cref="DbContext.SaveChanges"/> will be called.
+        /// </para>
+        /// </summary>
+        /// <param name="alphaNumericLength">A <see cref="System.Int32"/> representing the length for a mixed alphanumberic code.</param>
+        /// <param name="alphaLength">A <see cref="System.Int32"/> representing the length of the (alpha) portion of the code.</param>
+        /// <param name="numericLength">A <see cref="System.Int32"/> representing the length of the (digit) portion of the code.</param>
+        /// <param name="isRandomized">A <see cref="System.Boolean"/> that controls whether or not the AttendanceCodes should be generated randomly or in order (starting from the smallest). Only effect the numeric code.</param>
+        /// <returns>A new instance of <see cref="AttendanceCode"/>.</returns>
+        /// <exception cref="TimeoutException">Timeout while trying to create a new code.</exception>
+        internal AttendanceCode CreateNewCode( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized )
+        {
             lock ( _obj )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                DateTime today = RockDateTime.Today;
+                if ( _todaysUsedCodes == null || !_todaysDate.HasValue || !_todaysDate.Value.Equals( today ) )
                 {
-                    var service = new AttendanceCodeService( rockContext );
+                    _todaysDate = today;
+                    DateTime tomorrow = today.AddDays( 1 );
 
-                    DateTime today = RockDateTime.Today;
-                    if ( _todaysUsedCodes == null || !_todaysDate.HasValue || !_todaysDate.Value.Equals( today ) )
+                    _todaysUsedCodes = new HashSet<string>( Queryable().AsNoTracking().Where( c => c.IssueDateTime >= today && c.IssueDateTime < tomorrow ).Select( c => c.Code ).ToList() );
+                }
+
+                string alphaNumericCode = string.Empty;
+                string alphaCode = string.Empty;
+                string numericCode = string.Empty;
+                string code = string.Empty;
+                string lastCode = string.Empty;
+
+                for ( int attempts = 0; attempts <= _maxAttempts; attempts++ )
+                {
+                    if ( attempts == _maxAttempts )
                     {
-                        _todaysDate = today;
-                        DateTime tomorrow = today.AddDays( 1 );
-
-                        _todaysUsedCodes = new HashSet<string>( service.Queryable().AsNoTracking().Where( c => c.IssueDateTime >= today && c.IssueDateTime < tomorrow ).Select( c => c.Code ).ToList() );
+                        throw new TimeoutException( timeoutExceptionMessage );
                     }
 
-                    string alphaNumericCode = string.Empty;
-                    string alphaCode = string.Empty;
-                    string numericCode = string.Empty;
-                    string code = string.Empty;
-                    string lastCode = string.Empty;
-
-                    for ( int attempts = 0; attempts <= _maxAttempts; attempts++ )
+                    if ( alphaNumericLength > 0 )
                     {
-                        if ( attempts == _maxAttempts )
+                        alphaNumericCode = GenerateRandomCode( alphaNumericLength );
+                    }
+
+                    if ( alphaLength > 0 )
+                    {
+                        alphaCode = GenerateRandomAlphaCode( alphaLength );
+                    }
+
+                    if ( numericLength > 0 )
+                    {
+                        int codeLen = alphaNumericLength + alphaLength + numericLength;
+
+                        if ( lastCode.IsNullOrWhiteSpace() )
                         {
-                            throw new TimeoutException( timeoutExceptionMessage );
+                            lastCode = _todaysUsedCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
                         }
 
-                        if ( alphaNumericLength > 0 )
-                        {
-                            alphaNumericCode = GenerateRandomCode( alphaNumericLength );
-                        }
+                        numericCode = GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
+                    }
 
-                        if ( alphaLength > 0 )
-                        {
-                            alphaCode = GenerateRandomAlphaCode( alphaLength );
-                        }
+                    code = alphaNumericCode + alphaCode + numericCode;
 
-                        if ( numericLength > 0 )
-                        {
-                            int codeLen = alphaNumericLength + alphaLength + numericLength;
+                    // Check if code is already in use or contains bad/non-allowed strings.
+                    if ( NoGood.Any( s => code.Contains( s ) ) || _todaysUsedCodes.Contains( code ) )
+                    {
+                        lastCode = code;
+                        alphaNumericCode = string.Empty;
+                        alphaCode = string.Empty;
+                        numericCode = string.Empty;
+                        code = string.Empty;
+                        continue;
+                    }
 
-                            if ( lastCode.IsNullOrWhiteSpace() )
-                            {
-                                lastCode = _todaysUsedCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
-                            }
-
-                            numericCode = GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
-                        }
-
-                        code = alphaNumericCode + alphaCode + numericCode;
-
-                        // Check if code is already in use or contains bad/non-allowed strings.
-                        if ( NoGood.Any( s => code.Contains( s ) ) || _todaysUsedCodes.Contains( code ) )
+                    // When using a clustered environment we need to check the DB to make sure the code hasn't been assigned by another server
+                    if ( WebFarm.RockWebFarm.IsEnabled() )
+                    {
+                        if ( IsCodeAlreadyInUse( code ) )
                         {
                             lastCode = code;
                             alphaNumericCode = string.Empty;
@@ -192,36 +233,22 @@ namespace Rock.Model
                             code = string.Empty;
                             continue;
                         }
-
-                        // When using a clustered environment we need to check the DB to make sure the code hasn't been assigned by another server
-                        if ( Rock.Utility.Settings.RockInstanceConfig.IsClustered )
-                        {
-                            if ( service.IsCodeAlreadyInUse( code ) )
-                            {
-                                lastCode = code;
-                                alphaNumericCode = string.Empty;
-                                alphaCode = string.Empty;
-                                numericCode = string.Empty;
-                                code = string.Empty;
-                                continue;
-                            }
-                        }
-
-                        // If we get to this point the code can be used
-                        break;
                     }
 
-                    _todaysUsedCodes.Add( code );
-
-                    var attendanceCode = new AttendanceCode();
-                    attendanceCode.IssueDateTime = RockDateTime.Now;
-                    attendanceCode.Code = code;
-
-                    service.Add( attendanceCode );
-                    rockContext.SaveChanges();
-
-                    return attendanceCode;
+                    // If we get to this point the code can be used
+                    break;
                 }
+
+                _todaysUsedCodes.Add( code );
+
+                var attendanceCode = new AttendanceCode();
+                attendanceCode.IssueDateTime = RockDateTime.Now;
+                attendanceCode.Code = code;
+
+                Add( attendanceCode );
+                Context.SaveChanges();
+
+                return attendanceCode;
             }
         }
 

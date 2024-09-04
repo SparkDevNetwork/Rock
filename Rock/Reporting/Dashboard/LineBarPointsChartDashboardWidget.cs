@@ -52,6 +52,8 @@ namespace Rock.Reporting.Dashboard
 
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", "CustomSetting", Order = 4 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Category = "CustomSetting", DefaultValue = "1||4||", Order = 6 )]
+    [RockObsolete( "1.15.0" )]
+    [Obsolete( "Use LineChartDashboardWidget or BarChartDashboardWidget instead." )]
     public abstract class LineBarPointsChartDashboardWidget : DashboardWidget
     {
         private Panel pnlEditModel

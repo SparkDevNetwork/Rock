@@ -347,12 +347,12 @@ namespace Rock.Web
 
             foreach ( var p in Parameters )
             {
-                parameters.AddOrIgnore( p.Key, p.Value );
+                parameters.TryAdd( p.Key, p.Value );
             }
 
             foreach ( var k in QueryString.AllKeys )
             {
-                parameters.AddOrIgnore( k, QueryString[k] );
+                parameters.TryAdd( k, QueryString[k] );
             }
 
             return parameters;
@@ -436,8 +436,15 @@ namespace Rock.Web
                 }
             }
 
-            // add base path to url -- Fixed bug #84
-            url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+            if ( HttpContext.Current != null )
+            {
+                // add base path to url -- Fixed bug #84
+                url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+            }
+            else
+            {
+                url = "/" + url;
+            }
 
             return url;
         }
@@ -850,12 +857,12 @@ namespace Rock.Web
                 return new List<PageReference>();
             }
 
-            // Get previous page references in nav history
+            // Get previous page references in nav history.
             var key = BuildStorageKey( keySuffix );
-            var pageReferenceHistory = ( Dictionary<int, List<BreadCrumb>> ) HttpContext.Current.Session[key];
-            var newPageReferenceHistory = new Dictionary<int, List<BreadCrumb>>();
+            var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) HttpContext.Current.Session[key];
+            var newPageReferenceHistory = new Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)>();
 
-            // Current page hierarchy references
+            // Current page hierarchy references.
             var pageReferences = new List<PageReference>();
 
             // Initial starting parameters.
@@ -865,14 +872,14 @@ namespace Rock.Web
             {
                 foreach ( var p in initialPageReference.Parameters )
                 {
-                    trackedPageParameters.AddOrIgnore( p.Key, p.Value );
+                    trackedPageParameters.TryAdd( p.Key, p.Value );
                 }
 
                 // As Querystring is a NameValueCollection, it may contain entries with key as null.
                 // However, adding null as a key to a Dictionary throws an exception and so we would like to filter those entries out of Querystring.
                 foreach ( var qs in initialPageReference.QueryString.AllKeys.Where( k => k != null ) )
                 {
-                    trackedPageParameters.AddOrIgnore( qs, initialPageReference.QueryString[qs] );
+                    trackedPageParameters.TryAdd( qs, initialPageReference.QueryString[qs] );
                 }
             }
 
@@ -881,7 +888,9 @@ namespace Rock.Web
             foreach ( PageCache page in currentParentPages )
             {
                 var pageBlocks = page.Blocks.Where( b => b.BlockLocation == BlockLocation.Page );
-                var pageBreadCrumbs = new List<BreadCrumb>();
+
+                BreadCrumb pageBreadCrumb = null;
+                var blockBreadCrumbs = new List<BreadCrumb>();
 
                 // Check the blocks that support the new breadcrumb behavior.
                 foreach ( var block in pageBlocks )
@@ -903,7 +912,7 @@ namespace Rock.Web
                         {
                             // In the future, when we can change PageReference.BreadCrumbs
                             // to be a list of IBreadCrumb then this can be simplified.
-                            pageBreadCrumbs.Add( new BreadCrumb( crumb.Name, crumb.Url, crumb.Active ) );
+                            blockBreadCrumbs.Add( new BreadCrumb( crumb.Name, crumb.Url, crumb.Active ) );
                         }
                     }
 
@@ -918,13 +927,16 @@ namespace Rock.Web
 
                 if ( initialPage.Id != page.Id && pageReferenceHistory != null && pageReferenceHistory.TryGetValue( page.Id, out var cachedBreadCrumbs ) )
                 {
-                    pageBreadCrumbs.AddRange( cachedBreadCrumbs );
+                    pageBreadCrumb = cachedBreadCrumbs.pageBreadCrumb;
+                    blockBreadCrumbs.AddRange( cachedBreadCrumbs.blockBreadCrumbs );
+
                     newPageReferenceHistory.Add( page.Id, cachedBreadCrumbs );
                 }
                 else
                 {
                     var blockPageReference = page.Id == initialPage.Id ? new PageReference( initialPageReference ) : new PageReference( page.Id );
 
+                    // Check the legacy blocks for custom breadcrumbs.
                     foreach ( var block in pageBlocks.Where( b => b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
                     {
                         try
@@ -944,19 +956,24 @@ namespace Rock.Web
                         }
                     }
 
-                    pageBreadCrumbs.AddRange( blockPageReference.BreadCrumbs );
-                    newPageReferenceHistory.Add( page.Id, blockPageReference.BreadCrumbs );
+                    blockBreadCrumbs.AddRange( blockPageReference.BreadCrumbs );
+
+                    if ( page.BreadCrumbText.IsNotNullOrWhiteSpace() )
+                    {
+                        pageBreadCrumb = new BreadCrumb( page.BreadCrumbText, blockPageReference.BuildUrl() );
+                    }
+
+                    newPageReferenceHistory.Add( page.Id, (pageBreadCrumb, blockPageReference.BreadCrumbs) );
                 }
 
                 var parentPageReference = new PageReference( page.Id );
 
-                var bcName = page.BreadCrumbText;
-                if ( bcName != string.Empty )
+                if ( pageBreadCrumb != null )
                 {
-                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
+                    parentPageReference.BreadCrumbs.Add( pageBreadCrumb );
                 }
 
-                parentPageReference.BreadCrumbs.AddRange( pageBreadCrumbs );
+                parentPageReference.BreadCrumbs.AddRange( blockBreadCrumbs );
                 parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );
                 pageReferences.Add( parentPageReference );
             }

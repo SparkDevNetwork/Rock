@@ -27,7 +27,7 @@ import { Guid } from "@Obsidian/Types";
 /** Bag containing information required to download a Content Library item. */
 export type LibraryViewerDownloadItemBag = {
     /** Gets or sets the Content Library item unique identifier. */
-    contentLibraryItemGuid?: Guid | null;
+    contentLibraryItemGuid: Guid;
 
     /** Gets or sets the end date of the downloaded Content Channel Item. */
     endDate?: string | null;

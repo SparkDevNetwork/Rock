@@ -231,5 +231,29 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         /// Gets or sets the child communication preference field.
         /// </summary>
         public FamilyPreRegistrationFieldBag ChildCommunicationPreferenceField { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether captcha support should be disabled for this block.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// The label that should be used when referring to adults on the form.
+        /// </summary>
+        /// <value>
+        /// The adult label.
+        /// </value>
+        public string AdultLabel { get; set; }
+
+        /// <summary>
+        /// The label that should be used when referring to children on the form.
+        /// </summary>
+        /// <value>
+        /// The adult label.
+        /// </value>
+        public string ChildLabel { get; set; }
     }
 }

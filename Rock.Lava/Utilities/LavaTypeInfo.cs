@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 namespace Rock.Lava
@@ -21,6 +22,8 @@ namespace Rock.Lava
     /// <summary>
     /// Information about the Lava-related properties of a data type.
     /// </summary>
+    [Obsolete( "Use Rock.Lava.Shared.LavaDataTypeInfo instead." )]
+    [RockObsolete( "1.17" )]
     public class LavaTypeInfo
     {
         /// <summary>

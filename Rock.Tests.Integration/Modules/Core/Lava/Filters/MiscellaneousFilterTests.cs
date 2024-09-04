@@ -15,20 +15,24 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Model;
 using Rock.Lava.Fluid;
+using Rock.Model;
+using Rock.Tests.Integration.Core;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using Rock.Lava.RockLiquid;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 {
     /// <summary>
     /// Tests for Lava Filters categorized as "Miscellaneous".
@@ -63,55 +67,8 @@ namespace Rock.Tests.Integration.Core.Lava
             rockContext.SaveChanges();
 
             // Add a Persisted Dataset containing some test people.
-            var datasetLava = @"
-[
-{%- person where:'Guid == `<benJonesGuid>` || Guid == `<billMarbleGuid>` || Guid == `<alishaMarbleGuid>`' iterator:'People' -%}
-  {%- for item in People -%}
-    {
-        `Id`: {{ item.Id | ToJSON }},
-        `FirstName`: {{ item.NickName | ToJSON }},
-        `LastName`: {{ item.LastName | ToJSON }},
-        `FullName`: {{ item.FullName | ToJSON }},
-    }
-    {%- unless forloop.last -%},{%- endunless -%}
-  {%- endfor -%}
-{%- endperson -%}
-]
-";
-
-            datasetLava = datasetLava.Replace( "<benJonesGuid>", TestGuids.TestPeople.BenJones )
-                .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
-                .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
-
-            // Create a Persisted Dataset.
-            const string PersistedDataSetPeopleGuid = "99FF9EFA-D9E3-48DE-AD08-C67389FF688F";
-
-            datasetLava = datasetLava.Replace( "`", @"""" );
-
-            var ps = new PersistedDatasetService( rockContext );
-
-            var pds = ps.Get( PersistedDataSetPeopleGuid.AsGuid() );
-
-            if ( pds == null )
-            {
-                pds = new PersistedDataset();
-
-                pds.Guid = PersistedDataSetPeopleGuid.AsGuid();
-
-                ps.Add( pds );
-            }
-
-            pds.Name = "Persons";
-            pds.AccessKey = "persons";
-            pds.Description = "A persisted dataset created for testing purposes.";
-            pds.BuildScriptType = PersistedDatasetScriptType.Lava;
-            pds.BuildScript = datasetLava;
-            pds.EnabledLavaCommands = "RockEntity";
-            pds.EntityTypeId = EntityTypeCache.Get( typeof( Person ), createIfNotFound: false, rockContext ).Id;
-
-            pds.UpdateResultData();
-
-            rockContext.SaveChanges();
+            PersistedDatasetDataManager.Instance.AddPersistedDatasetForPersonBasicInfo( "99FF9EFA-D9E3-48DE-AD08-C67389FF688F".AsGuid(),
+                "persons" );
         }
 
         #region Debug
@@ -135,7 +92,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void RockInstanceConfigFilter_MachineName_RendersExpectedValue()
         {
             var template = "{{ 'MachineName' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.MachineName;
+            var expectedValue = RockApp.Current.HostingSettings.MachineName;
 
             TestHelper.AssertTemplateOutput( expectedValue, template );
         }
@@ -144,7 +101,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void RockInstanceConfigFilter_ApplicationDirectory_RendersExpectedValue()
         {
             var template = "{{ 'ApplicationDirectory' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.ApplicationDirectory;
+            var expectedValue = RockApp.Current.HostingSettings.VirtualRootPath;
 
             TestHelper.AssertTemplateOutput( expectedValue, template );
         }
@@ -153,7 +110,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void RockInstanceConfigFilter_PhysicalDirectory_RendersExpectedValue()
         {
             var template = "{{ 'PhysicalDirectory' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.PhysicalDirectory;
+            var expectedValue = RockApp.Current.HostingSettings.WebRootPath;
 
             TestHelper.AssertTemplateOutput( expectedValue, template );
         }
@@ -162,7 +119,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void RockInstanceConfigFilter_IsClustered_RendersExpectedValue()
         {
             var template = "{{ 'IsClustered' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.IsClustered.ToTrueFalse();
+            var expectedValue = WebFarm.RockWebFarm.IsEnabled().ToTrueFalse();
 
             TestHelper.AssertTemplateOutput( expectedValue, template, new LavaTestRenderOptions { IgnoreCase = true } );
         }
@@ -171,7 +128,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void RockInstanceConfigFilter_SystemDateTime_RendersExpectedValue()
         {
             var template = "{{ 'SystemDateTime' | RockInstanceConfig | Date:'yyyy-MM-dd HH:mm:ss' }}";
-            var expectedValue = RockInstanceConfig.SystemDateTime;
+            var expectedValue = RockDateTime.SystemDateTime;
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
@@ -201,7 +158,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template, result.Text );
 
-                var expectedOutput = RockInstanceConfig.LavaEngineName;
+                var expectedOutput = RockApp.Current.GetCurrentLavaEngineName();
 
                 Assert.That.AreEqual( expectedOutput, result.Text );
             } );
@@ -447,12 +404,51 @@ BD8F1DCA377B95D905033E5FFC41CFCF8D4C11AE14A9BC964DFBD4BCEEB618F9795BE7F71295D3B7
 
         #endregion
 
+        #region FilterUnfollowed
+
+        [TestMethod]
+        public void FilterUnfollowed_ForEntityCollectionWithFollowedAndUnfollowed_ReturnsOnlyUnfollowed()
+        {
+            var values = AddPersonTedDeckerToMergeDictionary();
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "rockentity", MergeFields = values };
+
+            var template = @"
+{%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
+  {%- assign followedItems = People | AppendFollowing | FilterUnfollowed | Sort:'FullName' -%}
+<ul>
+  {%- for item in followedItems -%}
+    <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
+  {%- endfor -%}
+</ul>
+{%- endperson -%}
+";
+            template = template.Replace( "<benJonesGuid>", TestGuids.TestPeople.BenJones )
+                .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
+                .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
+
+            // Alisha Marble should be excluded because she is not followed by Ted.
+            var matches = new List<LavaTestOutputMatchRequirement>()
+            {
+                new LavaTestOutputMatchRequirement("<li>Alisha Marble - false</li>", LavaTestOutputMatchTypeSpecifier.Contains ),
+                new LavaTestOutputMatchRequirement("<li>Ben Jones - true</li>", LavaTestOutputMatchTypeSpecifier.DoesNotContain ),
+                new LavaTestOutputMatchRequirement("<li>Bill Marble - true</li>", LavaTestOutputMatchTypeSpecifier.DoesNotContain ),
+            };
+
+            TestHelper.AssertTemplateOutput( matches,
+                template,
+                options );
+        }
+
+        #endregion
+
         #region FromCache
 
         /// <summary>
         /// Verify the documentation example for this filter.
         /// </summary>
         [TestMethod]
+        [Ignore( "Test needs to add Stepping Stone campus before running." )]
         public void FromCache_DocumentationExample_ReturnsExpectedOutput()
         {
             var template = @"

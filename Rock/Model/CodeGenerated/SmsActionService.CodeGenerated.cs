@@ -128,6 +128,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsInteractionLoggedAfterProcessing = source.IsInteractionLoggedAfterProcessing;
             target.Name = source.Name;
             target.Order = source.Order;
             target.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;

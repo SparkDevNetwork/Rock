@@ -67,6 +67,8 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SuggestionDetailBag } from "@Obsidian/ViewModels/Blocks/Core/SuggestionDetail/suggestionDetailBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -117,14 +119,21 @@
     // #endregion
 
     watch(() => suggestionType.value, async () => {
-        if (!suggestionType.value.value) {
+        const entityTypeGuid = toGuidOrNull(suggestionType.value.value);
+
+        if (!entityTypeGuid || areEqual(entityTypeGuid, emptyGuid)) {
             return;
         }
 
-        const result = await invokeBlockAction<SuggestionDetailBag>("GetEntityAttributes", {
-            entityTypeGuid: suggestionType.value.value,
-            IdKey: props.modelValue.idKey
-        });
+        const request: {
+            entityTypeGuid: Guid | null;
+            idKey: string | null | undefined;
+        } = {
+            entityTypeGuid,
+            idKey: props.modelValue.idKey
+        };
+
+        const result = await invokeBlockAction<SuggestionDetailBag>("GetEntityAttributes", request);
 
         if (result.isSuccess && result.data) {
             entityAttributes.value = result.data.attributes ?? {};

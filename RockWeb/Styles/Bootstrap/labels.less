@@ -62,3 +62,15 @@
 .label-danger {
   .label-variant(@label-danger-bg);
 }
+
+// Nested Labels (ex. labels with badges in them)
+.label {
+    .label-value{
+        align-self: center;
+        padding: 2px 0;
+    }
+    .badge{
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+}

@@ -22,6 +22,13 @@
                             <asp:Literal ID="lPerson" runat="server" />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
+                    <Rock:RockTemplateField SortExpression="" ExcelExportBehavior="NeverInclude" ItemStyle-CssClass="flex-column">
+                        <ItemTemplate>
+                            <div class="d-flex align-items-end">
+                                <asp:Literal ID="lIcons" runat="server" />
+                            </div>
+                        </ItemTemplate>
+                    </Rock:RockTemplateField>
                     <Rock:DateField 
                         DataField="BirthDate" 
                         HeaderText="Birthdate" 

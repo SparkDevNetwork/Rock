@@ -1,0 +1,656 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ModalAlert v-model="isChannelTypeModalVisible" :type="ModalAlertType.Warning">Changing the content type will result in all of this channel's items losing any data that is specific to the original content type!</ModalAlert>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="contentChannelTypeValue"
+                              label="Type"
+                              :items="contentChannelTypes"
+                              rules="required" />
+
+                <CategoryPicker v-model="categories"
+                                label="Categories"
+                                :entityTypeGuid="EntityType.ContentChannel"
+                                multiple />
+
+                <div v-if="isButtonGroupVisible" class="form-group button-group toggle-container">
+                    <RockLabel class="control-label">Editor Type</RockLabel>
+                    <div class="control-wrapper">
+                        <ButtonGroup v-model="editorType"
+                                     :btnSize="BtnSize.ExtraSmall"
+                                     :btnType="BtnType.Default"
+                                     :items="editorTypes" />
+                    </div>
+                </div>
+
+                <DefinedValuePicker v-if="isEditorToolPickerVisible"
+                                    v-model="structuredContentToolValue"
+                                    label="Editor Tool Configuration"
+                                    :definedTypeGuid="DefinedType.StructuredContentEditorTools"
+                                    showBlankItem />
+
+                <DropDownList v-if="isContentControTypeVisible"
+                              v-model="contentControlType"
+                              label="Default Content Control"
+                              :items="contentControlTypes"
+                              rules="required" />
+
+                <TextBox v-if="isRootImageDirectoryVisible"
+                         v-model="rootImageDirectory"
+                         label="Root Image Directory"
+                         help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="iconCssClass"
+                         label="Icon CSS Class" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                <CheckBoxList v-model="settings" :items="settingsOptions" label="Settings" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+
+            </div>
+            <div class="col-md-6">
+                <RockLabel>Child Content Channels</RockLabel>
+                <HelpBlock text="The types of content channel items that can be added as children to items of this type. This is used to define the item hierarchy. To allow an unlimited hierarchy add this type as an allowed child content channel type.">Child Content Channels</HelpBlock>
+                <div class="grid">
+                    <Grid :data="childContentChannelGridData" keyField="key" itemTerm="Content Channel" liveUpdates light @addItem="onAddChildChannel">
+                        <TextColumn name="name" field="name" />
+                        <DeleteColumn @click="onDeleteChildChannel" />
+                    </Grid>
+                </div>
+                <Modal v-model="isContentChannelModalOpen" saveText="Save" @save="onSaveChildChannel">
+                    <DropDownList v-model="childChannel"
+                                  label="Child Content Channel"
+                                  :items="availableChannels"
+                                  ValidationGroup="ChildContentChannels" />
+                </Modal>
+            </div>
+        </div>
+
+        <Panel :isDrawerOpen="false" :hasCollapse="true" title="Item Attributes">
+            <div class="grid">
+                <Grid :data="attributesGridData" keyField="key" itemTerm="Item Attribute" liveUpdates light @addItem="onAddAttribute">
+                    <ReorderColumn @orderChanged="onOrderChanged" />
+                    <TextColumn field="name" name="attribute" title="Attribute" />
+                    <TextColumn field="description" name="description" title="Description" />
+                    <BooleanColumn field="isRequired" name="isRequired" title="Required" />
+                    <EditColumn @click="onEditAttribute" />
+                    <DeleteColumn @click="onDeleteAttribute" :disableConfirmation="true" />
+                </Grid>
+            </div>
+            <Modal v-model="isAttributeModalOpen" title="Content Channel Item Attributes" saveText="Save" @save="onSaveAttribute">
+                <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
+                    Please correct the following:
+                    <ul>
+                        <li v-for="error of attributeErrors">
+                            {{ error }}
+                        </li>
+                    </ul>
+                </NotificationBox>
+                <AttributeEditor v-model="itemAttribute" :reservedKeyNames="reservedKeyNames" />
+            </Modal>
+        </Panel>
+
+        <Panel :isDrawerOpen="false" :hasCollapse="true" title="Content Library">
+            <div class="form-group">
+                The Content Library feature enables you to upload and download content from the community library. By enabling this feature, you agree to allow other organizations to use your uploaded content based on the license you have chosen. Please note that once the content has been uploaded to the library, you will not be able to change to a more restrictive license. For further details on this feature, refer to the <a href="https://www.rockrms.com/library/licenses?utm_source=rock-channel-update" target="_blank" rel="noopener noreferrer">Spark Content Library License</a> page.
+            </div>
+
+            <div v-if="isOrganizationConfigured">
+                <div class="form-group">
+                    <CheckBox v-model="isContentLibraryEnabled" label="" text="Enable Library for This Channel" />
+                </div>
+                <RadioButtonList v-model="licenseTypeGuid" label="License" :items="availableLicenses" :rules="licenseTypeRules" horizontal />
+                <NotificationBox v-if="licenceMessage" alertType="info" v-html="licenceMessage"></NotificationBox>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="summaryAttributeGuid" :items="contentLibraryAttributes" label="Summary Attribute" />
+                        <div>
+                            <DropDownList v-model="imageAttributeGuid" :items="contentLibraryAttributes" label="Image Attribute" />
+                            <span class="-mt-form-group help-block small">Recommend image size 1140x570.</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <DropDownList v-model="authorAttributeGuid" :items="contentLibraryAttributes" label="Author Attribute" />
+                    </div>
+                </div>
+            </div>
+
+            <NotificationBox v-else heading="Link Your Organization" alertType="warning"> Your Rock instance is currently not associated with any organization. To proceed, <a :href="linkOrganizationUrl">please link your instance to an organization</a>.</NotificationBox>
+        </Panel>
+
+        <Panel :isDrawerOpen="false" :hasCollapse="true" title="Advanced">
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBox v-model="enableRss" label="Enable RSS" text="Yes" />
+                    <div v-if="enableRss">
+                        <TextBox v-model="channelUrl"
+                                 label="Channel URL"
+                                 help="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <TextBox v-model="timeToLive"
+                                         :rules="validateNumberValue"
+                                         label="Time to Live (TTL)"
+                                         help="The number of minutes a feed can stay cached before it is refreshed from the source." />
+                            </div>
+                        </div>
+                    </div>
+                    <TextBox v-model="itemUrl"
+                             label="Content Channel Publishing Point"
+                             help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId', 'Slug')." />
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <CheckBox v-model="isTaggingEnabled"
+                                      label="Enable Tagging"
+                                      help="When enabled, items can be tagged by editors however if categories (below) are used, the category must have 'Tag' security rights for people to use existing organizational tags." />
+                        </div>
+                        <div v-if="isTaggingEnabled" class="col-xs-6">
+                            <CategoryPicker v-model="itemTagCategory"
+                                            :entityTypeGuid="EntityType.Tag"
+                                            label="Tag Category"
+                                            help="Remember to apply appropriate security (action level 'Tag') to these categories." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Panel>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import Grid, { EditColumn, TextColumn, DeleteColumn, BooleanColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ContentChannelBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelBag";
+    import { ContentChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ContentChannelBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ContentChannelBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const contentChannelTypeValue = propertyRef(props.modelValue.contentChannelType?.value ?? "", "ContentChannelTypeId");
+    const categories = propertyRef(props.modelValue.categories ?? [], "Categories");
+    const isStructuredContent = propertyRef(props.modelValue.isStructuredContent, "IsStructuredContent");
+    const structuredContentToolValue = propertyRef(props.modelValue.structuredContentToolValue ?? null, "StructuredContentToolValueId");
+    const contentControlType = propertyRef(props.modelValue.contentControlType.toString(), "ContentControlType");
+    const rootImageDirectory = propertyRef(props.modelValue.rootImageDirectory ?? "", "RootImageDirectory");
+    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
+    const enableRss = propertyRef(props.modelValue.enableRss ?? "", "EnableRss");
+    const channelUrl = propertyRef(props.modelValue.channelUrl ?? "", "ChannelUrl");
+    const timeToLive = propertyRef(props.modelValue.timeToLive || "0", "TimeToLive");
+    const itemUrl = propertyRef(props.modelValue.itemUrl ?? "", "ItemUrl");
+    const isTaggingEnabled = propertyRef(props.modelValue.isTaggingEnabled, "IsTaggingEnabled");
+    const itemTagCategory = propertyRef(props.modelValue.itemTagCategory ?? null, "ItemTagCategoryId");
+
+    const settings = ref(props.modelValue.settings ?? []);
+    const isContentLibraryEnabled = ref(props.modelValue.isContentLibraryEnabled);
+    const licenseTypeGuid = ref(props.modelValue.licenseTypeGuid ?? "");
+    const summaryAttributeGuid = ref(props.modelValue.summaryAttributeGuid ?? "");
+    const authorAttributeGuid = ref(props.modelValue.authorAttributeGuid ?? "");
+    const imageAttributeGuid = ref(props.modelValue.imageAttributeGuid ?? "");
+    const licenceMessage = ref("");
+    const isChannelTypeModalVisible = ref(false);
+
+    const childChannel = ref("");
+    const isContentChannelModalOpen = ref(false);
+    const childContentChannels = ref(props.modelValue.childContentChannels ?? []);
+    const contentChannelList = ref(props.options.contentChannelList ?? []);
+
+    const itemAttributes = ref(props.modelValue.itemAttributes ?? []);
+    const isAttributeModalOpen = ref(false);
+    const itemAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const reservedKeyNames = ref<string[]>([]);
+    const attributeErrors = ref<string[]>([]);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const contentLibraryAttributes = ref(props.options.contentLibraryAttributes ?? []);
+    const settingsOptions = ref(props.options.settingsOptions ?? []);
+    const contentChannelTypes = ref(props.options.contentChannelTypes ?? []);
+    const contentControlTypes = ref(props.options.contentControlTypes ?? []);
+    const availableLicenses = ref(props.options.availableLicenses ?? []);
+    const isOrganizationConfigured = ref(props.options.isOrganizationConfigured);
+    const disableContentField = ref(props.options.disableContentField);
+    const editorType = ref(props.modelValue.isStructuredContent == true ? "1" : "2");
+    const editorTypes = [
+        {
+            text: "Structured Content",
+            value: "1",
+        },
+        {
+            text: "HTML",
+            value: "2",
+        }
+    ];
+    const linkOrganizationUrl = `/page/358?ReturnUrl=${props.options.currentPageUrl}`;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, contentChannelTypeValue, categories, isStructuredContent, structuredContentToolValue, contentControlType, rootImageDirectory,
+        iconCssClass, enableRss, channelUrl, timeToLive, itemUrl, isTaggingEnabled, itemTagCategory];
+
+    const contentLibraryRefs = [isContentLibraryEnabled, licenseTypeGuid, summaryAttributeGuid, authorAttributeGuid, imageAttributeGuid];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const attributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: itemAttributes.value.map(x => convertToAttributeGridRowItem(x))
+    });
+
+    const childContentChannelGridData: GridDataBag = reactive<GridDataBag>({
+        rows: childContentChannels.value.map(x => convertToChildContentGridRowItem(x))
+    });
+
+    const availableChannels = computed((): ListItemBag[] => {
+        return contentChannelList.value.filter(channel => !childContentChannels.value.find(child => child.value == channel.value));
+    });
+
+    const licenseTypeRules = computed((): string => {
+        return isContentLibraryEnabled.value == true ? "required" : "";
+    });
+
+    const isButtonGroupVisible = computed((): boolean => {
+        return !disableContentField.value;
+    });
+
+    const isContentControTypeVisible = computed((): boolean => {
+        return !disableContentField.value && !isStructuredContent.value;
+    });
+
+    const isEditorToolPickerVisible = computed((): boolean => {
+        return !disableContentField.value && isStructuredContent.value;
+    });
+
+    const isRootImageDirectoryVisible = computed((): boolean => {
+        return contentControlType.value == "1";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+
+        if (attribute.key && !reservedKeyNames.value.includes(attribute.key)) {
+            reservedKeyNames.value.push(attribute.key);
+        }
+
+        return {
+            key: attribute.key,
+            name: attribute.name,
+            description: attribute.description,
+            isRequired: attribute.isRequired,
+            guid: attribute.guid
+        };
+    }
+
+    function convertToChildContentGridRowItem(childContentChannel: ListItemBag): Record<string, unknown> {
+        return {
+            key: childContentChannel.value,
+            name: childContentChannel.text
+        };
+    }
+
+    function validateNumberValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #region Child Content Channels
+
+    async function onAddChildChannel(): Promise<void> {
+        const firstAvailableChannel = availableChannels.value[0];
+        childChannel.value = firstAvailableChannel ? firstAvailableChannel.value ?? "" : "";
+        isContentChannelModalOpen.value = true;
+    }
+
+    function onSaveChildChannel(): void {
+        if (childChannel.value) {
+            const addedChannel = contentChannelList.value.find(a => a.value === childChannel.value);
+
+            if (addedChannel) {
+                childContentChannels.value.push(addedChannel);
+                // Add new RowItem to the grid to represent the newly added channel.
+                const newRowItem = convertToChildContentGridRowItem(addedChannel);
+                childContentChannelGridData.rows?.push(newRowItem);
+                isContentChannelModalOpen.value = false;
+            }
+        }
+    }
+
+    const onDeleteChildChannel = async (key: string): Promise<void> => {
+        // Close modal and remove deleted channel from the current collection of channels.
+        isContentChannelModalOpen.value = false;
+        childContentChannels.value = childContentChannels.value.filter(s => s.value !== key);
+
+        // Update the grid.
+        if (childContentChannelGridData.rows) {
+            const index = childContentChannelGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                childContentChannelGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    // #endregion
+
+    // #region Item Attributes
+
+    async function onAddAttribute(): Promise<void> {
+        itemAttribute.value = {} as PublicEditableAttributeBag;
+        isAttributeModalOpen.value = true;
+        attributeErrors.value = [];
+    }
+
+    const onEditAttribute = async (key: string): Promise<void> => {
+        attributeErrors.value = [];
+        const selectedAttribute = itemAttributes.value.find(x => x.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedAttribute) {
+            itemAttribute.value = selectedAttribute;
+            isAttributeModalOpen.value = true;
+        }
+        else {
+            onAddAttribute();
+        }
+    };
+
+    const onDeleteAttribute = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isAttributeModalOpen.value = false;
+        itemAttributes.value = itemAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
+
+        // Update the grid.
+        if (attributesGridData.rows) {
+            const index = attributesGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                attributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveAttribute(): void {
+        attributeErrors.value = [];
+        const isExistingKey = reservedKeyNames.value.includes(itemAttribute.value?.key ?? "") && !itemAttribute.value?.guid;
+
+        if (isExistingKey) {
+            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+        else {
+
+
+            if (itemAttribute.value) {
+                const index = itemAttributes.value.findIndex(a => a.key === itemAttribute.value?.key);
+                if (index !== -1) {
+                    // Get the updated attribute and rowItem.
+                    let editedAttribute = itemAttributes.value.find(a => a.key == itemAttribute.value?.key);
+                    let rowItem = attributesGridData.rows?.find(x => x.key == itemAttribute.value?.key);
+
+                    if (editedAttribute) {
+                        // Replace old attribute with updated attribute.
+                        editedAttribute = itemAttribute.value;
+                        itemAttributes.value.splice(index, 1, editedAttribute);
+                    }
+
+                    if (rowItem && attributesGridData.rows && editedAttribute) {
+                        // Update GridRowItem so changes are reflected in the UI.
+                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        attributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                    }
+                }
+                else {
+                    itemAttributes.value.push(itemAttribute.value);
+
+                    // Add new RowItem to the grid to represent the newly added attribute.
+                    const newRowItem = convertToAttributeGridRowItem(itemAttribute.value);
+                    attributesGridData.rows?.push(newRowItem);
+                }
+
+                isAttributeModalOpen.value = false;
+            }
+        }
+    }
+
+    /**
+    * Called when a row has been dragged from one position to a new position.
+    *
+    * @param item The item that was moved to a new position.
+    * @param beforeItem The item that the first item was dropped before.
+    *
+    * @returns `true` if the operation succeeded; otherwise `false`.
+    */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const data = {
+            idKey: props.modelValue?.idKey,
+            guid: item["guid"],
+            beforeGuid: beforeItem?.["guid"] ?? null
+        };
+
+        const result = await invokeBlockAction<string>("ReorderAttributes", data);
+
+        return result.isSuccess;
+    }
+    // # endregion
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(contentChannelTypeValue, props.modelValue.contentChannelType?.value ?? "");
+        updateRefValue(categories, props.modelValue.categories ?? []);
+        updateRefValue(isStructuredContent, props.modelValue.isStructuredContent);
+        updateRefValue(structuredContentToolValue, props.modelValue.structuredContentToolValue ?? null);
+        updateRefValue(contentControlType, props.modelValue.contentControlType.toString());
+        updateRefValue(rootImageDirectory, props.modelValue.rootImageDirectory ?? "");
+        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(enableRss, props.modelValue.enableRss);
+        updateRefValue(channelUrl, props.modelValue.channelUrl ?? "");
+        updateRefValue(timeToLive, props.modelValue.timeToLive ?? "");
+        updateRefValue(itemUrl, props.modelValue.itemUrl ?? "");
+        updateRefValue(isTaggingEnabled, props.modelValue.isTaggingEnabled);
+        updateRefValue(itemTagCategory, props.modelValue.itemTagCategory ?? null);
+        updateRefValue(settings, props.modelValue.settings ?? []);
+        updateRefValue(isContentLibraryEnabled, props.modelValue.isContentLibraryEnabled);
+        updateRefValue(licenseTypeGuid, props.modelValue.licenseTypeGuid ?? "");
+        updateRefValue(summaryAttributeGuid, props.modelValue.summaryAttributeGuid ?? "");
+        updateRefValue(authorAttributeGuid, props.modelValue.authorAttributeGuid ?? "");
+        updateRefValue(imageAttributeGuid, props.modelValue.imageAttributeGuid ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, settings, itemAttributes, childContentChannels, ...contentLibraryRefs, ...propRefs], () => {
+        const newValue: ContentChannelBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            name: name.value,
+            contentChannelType: {
+                text: "",
+                value: contentChannelTypeValue.value
+            },
+            categories: categories.value,
+            isStructuredContent: isStructuredContent.value,
+            structuredContentToolValue: structuredContentToolValue.value,
+            contentControlType: toNumber(contentControlType.value),
+            rootImageDirectory: rootImageDirectory.value,
+            iconCssClass: iconCssClass.value,
+            enableRss: enableRss.value,
+            channelUrl: channelUrl.value,
+            timeToLive: timeToLive.value,
+            itemUrl: itemUrl.value,
+            isTaggingEnabled: isTaggingEnabled.value,
+            itemTagCategory: itemTagCategory.value,
+            settings: settings.value,
+            itemAttributes: itemAttributes.value,
+            childContentChannels: childContentChannels.value,
+            isContentLibraryEnabled: isContentLibraryEnabled.value,
+            licenseTypeGuid: licenseTypeGuid.value,
+            summaryAttributeGuid: summaryAttributeGuid.value,
+            authorAttributeGuid: authorAttributeGuid.value,
+            imageAttributeGuid: imageAttributeGuid.value,
+        };
+
+        if (props.modelValue.idKey && props.modelValue.contentChannelType?.value !== contentChannelTypeValue.value && childContentChannels.value.length > 0) {
+            isChannelTypeModalVisible.value = true;
+        }
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(contentChannelTypeValue, async () => {
+        const data = {
+            guid: contentChannelTypeValue.value
+        };
+
+        const result = await invokeBlockAction<{ disableStatus: boolean | null, disableContentField: boolean | null }>("GetContentChannelStatus", data);
+
+        const requireApprovalSettingValue = "ItemsRequireApproval";
+
+        if (result.isSuccess && result.data) {
+
+            disableContentField.value = result.data.disableContentField ?? false;
+            const requireApprovalSetting = settingsOptions.value.find(s => s.value == requireApprovalSettingValue);
+            if (result.data.disableStatus) {
+                settingsOptions.value = settingsOptions.value.filter(s => s.value !== requireApprovalSettingValue);
+            }
+            else if (!requireApprovalSetting) {
+                settingsOptions.value.push({
+                    text: "Items Require Approval",
+                    value: requireApprovalSettingValue
+                });
+            }
+        }
+    });
+
+    watch(editorType, () => {
+        const isStructuredContentChecked = editorType.value == "1";
+
+        if (isStructuredContentChecked) {
+            isStructuredContent.value = true;
+            contentControlType.value = contentControlTypes.value[0]?.value ?? "";
+            rootImageDirectory.value = "";
+        }
+        else {
+            isStructuredContent.value = false;
+            structuredContentToolValue.value = null;
+        }
+    });
+
+    watch(licenseTypeGuid, async () => {
+        licenceMessage.value = "";
+        if (props.modelValue.idKey) {
+            const data = {
+                selectedLicenseType: licenseTypeGuid.value,
+                idKey: props.modelValue.idKey
+            };
+
+            const result = await invokeBlockAction<{ isMessageVisible: boolean, message: string }>("GetLicenseMessage", data);
+
+            if (result.isSuccess && result.data) {
+                licenceMessage.value = result.data.message;
+            }
+        }
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -19,9 +19,10 @@ import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import DateKey from "@Obsidian/Utility/dateKey";
 import { isEmail } from "@Obsidian/Utility/email";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 import { isUrl } from "@Obsidian/Utility/url";
 import { containsRequiredRule, defineRule, normalizeRules, parseRule, rulesPropType, validateValue } from "@Obsidian/Utility/validationRules";
+import { getSpecialCharacterPattern, getEmojiPattern, getSpecialFontPattern } from "@Obsidian/Utility/regexPatterns";
 
 // For backwards compatibility:
 export {
@@ -104,6 +105,30 @@ defineRule("required", (value: unknown, params?: unknown[]): ValidationResult =>
 
     if (!value) {
         return "is required";
+    }
+
+    return true;
+});
+
+defineRule("nospecialcharacters", (value: unknown): ValidationResult => {
+    // Gets or sets a value indicating whether the an input will allow special characters. This property is meant to be used when dealing with Person names.
+    if (typeof value === "string") {
+        // Checks if a string contains special characters
+        if (getSpecialCharacterPattern().test(value)) {
+            return "cannot contain special characters such as quotes, parentheses, etc.";
+        }
+    }
+
+    return true;
+});
+
+defineRule("noemojisorspecialfonts", (value: unknown): ValidationResult => {
+    // Gets or sets a value indicating whether the an input will allow emojis and special fonts. This property is meant to be used when dealing with Person names.
+    if (typeof value === "string") {
+        // Checks if a string contains emojis or special fonts.
+        if (getEmojiPattern().test(value) || getSpecialFontPattern().test(value)) {
+            return "cannot contain emojis or special fonts.";
+        }
     }
 
     return true;
@@ -379,4 +404,13 @@ defineRule("equalsfield", (value: unknown, params?: unknown[]) => {
 
     // Do not expose the value in case we are matching sensitive confirmation fields.
     return typeof error === "string" ? error : "must match value";
+});
+
+defineRule("nohtml", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    return !containsHtmlTag(String(value)) || "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
 });

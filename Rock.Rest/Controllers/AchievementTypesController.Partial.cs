@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,41 +34,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AchievementTypesController
     {
-        /// <summary>
-        /// Gets the progress for the person.
-        /// </summary>
-        /// <param name="personId">The person identifier. The current person is used if this is omitted.</param>
-        /// <param name="includeOnlyEligible">Include only progress statements for achievement types that have no unmet prerequisites</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
-        [Authenticate, Secured]
-        [HttpGet]
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use api/AchievementTypes/Progress instead" )]
-        [System.Web.Http.Route( "api/StreakTypeAchievementTypes/Progress" )]
-        [Rock.SystemGuid.RestActionGuid( "828FA4EE-74B0-4D7F-AB32-92B48D28741A" )]
-        public virtual List<ProgressStatement> GetProgressForPerson( [FromUri] int personId = default, [FromUri] bool includeOnlyEligible = default )
-        {
-            var rockContext = Service.Context as RockContext;
-            var personAliasId = default( int );
-
-            // If not specified, use the current person id
-            if ( personId != default )
-            {
-                var personAliasService = new PersonAliasService( rockContext );
-                personAliasId = personAliasService.Queryable().AsNoTracking().FirstOrDefault( pa => pa.PersonId == personId )?.Id ?? default;
-
-                if ( personAliasId == default )
-                {
-                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"The personAliasId for the person with id {personId} did not resolve" );
-                    throw new HttpResponseException( errorResponse );
-                }
-            }
-
-            var personAliasEntityTypeId = EntityTypeCache.Get<PersonAlias>().Id;
-            return GetProgressForAchiever( personAliasEntityTypeId, personAliasId, includeOnlyEligible );
-        }
-
         /// <summary>
         /// Gets the progress for the achiever.
         /// </summary>

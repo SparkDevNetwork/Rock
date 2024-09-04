@@ -1,0 +1,249 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :title="panelTitle"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="isAuditHidden"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="authClientViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="authClientEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./AuthClientDetail/editPanel.partial.obs";
+    import ViewPanel from "./AuthClientDetail/viewPanel.partial.obs";
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./AuthClientDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { AuthClientBag } from "@Obsidian/ViewModels/Blocks/Core/AuthClientDetail/authClientBag";
+    import { AuthClientDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AuthClientDetail/authClientDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<AuthClientBag, AuthClientDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const authClientViewBag = ref(config.entity);
+    const authClientEditBag = ref<ValidPropertiesBox<AuthClientBag>>({
+        bag: config.entity,
+        validProperties: config.validProperties
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: authClientEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return authClientViewBag.value?.name ?? "";
+    });
+
+    /**
+    * Show audit details if is existing entity.
+    */
+    const isAuditHidden = computed((): boolean => {
+        return !authClientViewBag.value?.idKey;
+    });
+
+    /**
+    * The title to display in the block panel.
+    */
+    const panelTitle = computed((): string => {
+        if (panelMode.value === DetailPanelMode.View) {
+            return authClientViewBag.value?.name ?? "Auth Client";
+        }
+        return authClientViewBag.value?.idKey ? "Edit Client" : "Add Client";
+    });
+
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return authClientViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (authClientViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): AuthClientDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: authClientViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete auth client.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AuthClientBag>>("Edit", {
+            key: authClientViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            authClientEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<AuthClientBag> | string>("Save", {
+            box: authClientEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                authClientViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if ((result.statusCode === 201 || result.statusCode === 200) && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save auth client.";
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified auth client could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        authClientEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

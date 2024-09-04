@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
@@ -23,6 +25,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Rock Authorization Cache Consumer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class AuthorizationCacheConsumer : RockConsumer<CacheEventQueue, AuthorizationCacheWasUpdatedMessage>
     {
         /// <summary>
@@ -49,7 +52,7 @@ namespace Rock.Web.Cache
             
             */
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Authorization Cache Update message." );
+            Logger.LogDebug( "Consumed Authorization Cache Update message." );
 
             ApplyCacheMessage( message );
         }

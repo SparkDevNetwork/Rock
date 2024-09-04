@@ -12,6 +12,17 @@ export class Raw extends EditorRaw {
 
         if (textarea) {
             textarea.spellcheck = false;
+
+            // Workaround for https://github.com/editor-js/raw/issues/16
+            if (navigator.userAgent.toLowerCase().includes("firefox")) {
+                const blockKeys = ["ArrowLeft", "ArrowUp", "Backspace"];
+
+                textarea.addEventListener("keydown", function (event) {
+                    if (blockKeys.includes(event.key)) {
+                        event.stopPropagation();
+                    }
+                });
+            }
         }
 
         return container;

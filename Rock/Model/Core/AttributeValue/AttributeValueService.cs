@@ -64,6 +64,22 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an IQueryable of <see cref="Rock.Model.AttributeValue">AttributeValues</see>
+        /// by EntityTypeId, EntityTypeQualifierColumn and EntityTypeQualifierValue.
+        /// </summary>
+        /// <param name="entityTypeId">The Id of the <see cref="EntityType"/> for <see cref="Attribute"/> to search for.</param>
+        /// <param name="qualifierColumn">The value of the EntityTypeQualifierColumn to search for (e.g. 'BlockTypeId' or 'EntityTypeId').</param>
+        /// <param name="qualifierValue">The value of the EntityTypeQualifierValue to search for (e.g. 'BlockTypeId' or 'EntityTypeId').</param>
+        /// <returns>An IQueryable of <see cref="Rock.Model.AttributeValue">AttributeValues</see> for the specified parameters.</returns>
+        public IQueryable<AttributeValue> GetByEntityTypeQualified( int entityTypeId, string qualifierColumn, string qualifierValue )
+        {
+            return Queryable().Where( t =>
+                t.Attribute.EntityTypeId == entityTypeId
+                && t.Attribute.EntityTypeQualifierColumn == qualifierColumn
+                && t.Attribute.EntityTypeQualifierValue == qualifierValue );
+        }
+
+        /// <summary>
         /// Returns a <see cref="Rock.Model.AttributeValue"/> for a <see cref="Rock.Model.Attribute"/> by Key.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the Global <see cref="Rock.Model.Attribute">Attribute's</see> key value.</param>

@@ -15,14 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -66,13 +64,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -225,8 +223,8 @@ namespace RockWeb.Blocks.Core
                     Properties = a.Details.Count(),
                     PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : nullInt,
                     PersonName = (a.PersonAlias != null && a.PersonAlias.Person != null) ? 
-                        a.PersonAlias.Person.NickName + " " + a.PersonAlias.Person.LastName + ( a.PersonAlias.Person.SuffixValueId.HasValue ? " " + a.PersonAlias.Person.SuffixValue.Value : "" ) :
-                        ""
+                        a.PersonAlias.Person.NickName + " " + a.PersonAlias.Person.LastName : "",
+                    PersonSuffix = a.PersonAlias.Person.SuffixValueId.HasValue ? " " + a.PersonAlias.Person.SuffixValue.Value : null
                 } );
 
 
@@ -240,8 +238,26 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderByDescending( q => q.Id );
             }
 
+            // Create the list items by materializing the query results and then constructing the PersonName text.
+            // This is necessary to avoid errors that result from attempting to combine database columns with different collation orders;
+            // in this case, the Person name fields and the Defined Value fields.
+            var auditItems = queryable.ToList()
+                .Select( a => new
+                {
+                    a.Id,
+                    a.DateTime,
+                    a.AuditType,
+                    a.EntityType,
+                    a.EntityId,
+                    a.Title,
+                    a.Properties,
+                    a.PersonId,
+                    PersonName = a.PersonName + ( a.PersonSuffix != null ? " " + a.PersonSuffix : "" )
+                } )
+                .ToList();
+
             gAuditInformationList.EntityTypeId = EntityTypeCache.Get<Rock.Model.Audit>().Id;
-            gAuditInformationList.DataSource = queryable.ToList();
+            gAuditInformationList.DataSource = auditItems;
             gAuditInformationList.DataBind();
         }
 

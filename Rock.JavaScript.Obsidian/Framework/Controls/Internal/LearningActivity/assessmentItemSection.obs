@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="[ComponentScreen.Configuration, ComponentScreen.Completion].includes(screenToShow)" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <TextBox v-model="title"
+                     label="Title"
+                     :disabled="disabled"
+                     inputClasses="form-control"
+                     rules="required" />
+
+            <TextBox v-model="summary"
+                     :disabled="disabled"
+                     textMode="multiline"
+                     inputClasses="form-control" />
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <h3>{{ title }}</h3>
+            <div class="text-muted">{{ summary }}</div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, toValue, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ComponentScreen } from "./learningActivity";
+    import { AssessmentItem, SectionItem } from "./assessmentLearningActivity.partial";
+
+    const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The assessment item's configuration. */
+        modelValue: {
+            type: Object as PropType<SectionItem | AssessmentItem>,
+            required: true
+        },
+
+        screenToShow: {
+            type: Object as PropType<ComponentScreen>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: SectionItem): void
+    }>();
+
+    const disabled = ref(props.disabled ?? false);
+    const internalModelValue = props.modelValue as SectionItem;
+
+    const screenToShow = ref(props.screenToShow);
+    const title = ref(internalModelValue.title ?? "");
+    const summary = ref(internalModelValue.summary ?? "");
+
+    watch([title, summary], () => {
+        const newModelValue = {
+            typeName: internalModelValue.typeName,
+            title: title.value,
+            summary: summary.value,
+        } as SectionItem;
+
+        emit("update:modelValue", newModelValue);
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed((): string[] => {
+        const screenName = toValue(screenToShow);
+        return [
+            "lms-assessment-item-container",
+            `lms-assessment-item-${screenName.toLowerCase()}-container`,
+            `lms-assessment-item-section-container`
+        ];
+    });
+
+</script>

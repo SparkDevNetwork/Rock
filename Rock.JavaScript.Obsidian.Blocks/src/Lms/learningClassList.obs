@@ -1,0 +1,226 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="showBlock"
+          :class="visibleCssClass"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          title="Current Classes"
+          :entityTypeGuid="EntityType.LearningClass"
+          :isCountMessageVisible="false"
+          stickyHeader
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          liveUpdates
+          :onAddItem="config.isAddEnabled && hasValidCourse ? onAddItem : undefined"
+          :onSelectItem="onRowClick"
+          @deleteClick="onDeleteClick">
+
+        <TextColumn
+                    v-if="config.options?.showCourseColumn"
+                    name="course"
+                    title="Course"
+                    field="course"
+                    :filter="textValueFilter"
+                    width="25%"
+                    visiblePriority="sm">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showCourseColumn"
+                    name="code"
+                    title="Code"
+                    field="code"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="xs">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showSemesterColumn"
+                    name="semester"
+                    title="Semester"
+                    field="semester"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="sm">
+        </TextColumn>
+
+        <TextColumn
+                    name="facilitators"
+                    title="Facilitators"
+                    field="facilitators"
+                    :filter="textValueFilter"
+                    width="20%"
+                    visiblePriority="md">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showLocationColumn"
+                    name="location"
+                    title="Location"
+                    field="location"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="sm">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showScheduleColumn"
+                    name="schedule"
+                    title="Schedule"
+                    field="schedule"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="sm">
+        </TextColumn>
+
+        <Column name="category"
+                title="Category"
+                field="category"
+                :filter="pickExistingValueFilter"
+                width="15%"
+                visiblePriority="lg">
+            <template #format="{ row }">
+                <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
+                    {{ row.category }}
+                </span>
+            </template>
+        </Column>
+
+        <Column name="students"
+                title="Students"
+                field="students"
+                :filter="numberValueFilter"
+                width="10%"
+                visiblePriority="lg">
+        </Column>
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./LearningClassList/types.partial";
+    import { reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+
+    const config = useConfigurationValues<ListBlockBox<LearningClassListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    // Because this block may be used without a learningCourse page parameter
+    // we may need to dynamically include that value in the detail page navigation.
+    const courseIdKeyColumnName = "learningCourseIdKey";
+    const courseIdPlaceholder = "((LearningCourseIdKey))";
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const showBlock = ref(config.options?.showBlock || false);
+    const hasValidCourse = ref(config.options?.hasValidCourse || false);
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        onRowClick("0");
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onRowClick(idKey: string): void {
+        let detailPageUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage] ?? "";
+
+        if (detailPageUrl.length > 0) {
+            if (detailPageUrl.includes(courseIdPlaceholder)) {
+                detailPageUrl = detailPageUrl.replace(courseIdPlaceholder, getCourseIdForKey(idKey));
+            }
+
+            window.location.href = detailPageUrl.replace("((Key))", idKey);
+        }
+    }
+
+    function getCourseIdForKey(idKey: string): string {
+        const row = gridData?.rows?.find(r => r.idKey === idKey);
+        if (row != null) {
+            return row[courseIdKeyColumnName] as string;
+        }
+
+        return "";
+    }
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -26,8 +26,8 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains the add person request information. */
 export type GroupAttendanceDetailAddPersonRequestBag = {
     /** Gets or sets the attendance occurrence unique identifier. */
-    attendanceOccurrenceGuid?: Guid | null;
+    attendanceOccurrenceGuid: Guid;
 
     /** Gets or sets the person alias unique identifier. */
-    personAliasGuid?: Guid | null;
+    personAliasGuid: Guid;
 };

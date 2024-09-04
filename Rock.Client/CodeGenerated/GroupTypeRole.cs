@@ -56,6 +56,9 @@ namespace Rock.Client
         public int? GroupTypeId { get; set; }
 
         /// <summary />
+        public bool IsExcludedFromPeerNetwork { get; set; }
+
+        /// <summary />
         public bool IsLeader { get; set; }
 
         /// <summary />
@@ -121,6 +124,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupTypeId = source.GroupTypeId;
+            this.IsExcludedFromPeerNetwork = source.IsExcludedFromPeerNetwork;
             this.IsLeader = source.IsLeader;
             this.IsSystem = source.IsSystem;
             this.MaxCount = source.MaxCount;

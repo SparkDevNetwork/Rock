@@ -7,16 +7,15 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="ServiceJob"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
                  :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -58,11 +57,11 @@
     const errorMessage = ref("");
 
     const serviceJobViewBag = ref(config.entity);
-    const serviceJobEditBag = ref<ServiceJobBag>({} as ServiceJobBag);
+    const serviceJobEditBag = ref<ServiceJobBag>(config.entity as ServiceJobBag);
 
     const entityTypeGuid = EntityType.ServiceJob;
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -91,7 +90,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return serviceJobViewBag.value?.name ?? "Add Service Job";
+        return serviceJobViewBag.value?.name ?? "";
     });
 
     /**
@@ -130,7 +129,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true && serviceJobViewBag.value?.isSystem !== true;
+        return config.isEditable === true;
     });
 
     const options = computed((): ServiceJobDetailOptionsBag => {
@@ -152,12 +151,8 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!serviceJobEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
 
         return true;

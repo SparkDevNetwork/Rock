@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventItemDetail;
 using Rock.ViewModels.Utility;
@@ -66,8 +67,6 @@ namespace Rock.Blocks.Event
         }
 
         #endregion Keys
-
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}";
 
         #region Methods
 
@@ -215,7 +214,16 @@ namespace Rock.Blocks.Event
             }
 
             var bag = GetCommonEntityBag( entity );
-            bag.PhotoUrl = RequestContext.ResolveRockUrl( $"~/GetImage.ashx?id={entity.PhotoId}" );
+
+            if ( entity.PhotoId.HasValue )
+            {
+                bag.PhotoUrl = FileUrlHelper.GetImageUrl( entity.PhotoId.Value );
+            }
+            else
+            {
+                bag.PhotoUrl = string.Empty;
+            }
+
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;

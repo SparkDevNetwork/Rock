@@ -28,6 +28,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -203,23 +204,53 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void ProcessBinaryFileRequest( HttpContext context, RockContext rockContext )
         {
-            int fileId = context.Request.QueryString["id"].AsInteger();
-            Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+            var disablePredictableIds = securitySettings.DisablePredictableIds;
 
-            if ( fileId == 0 && fileGuid == Guid.Empty )
+            int? fileId = null;
+            Guid? fileGuid = null;
+
+            if ( disablePredictableIds )
             {
-                SendBadRequest( context, "File id key must be a guid or an int." );
+                var fileIdKey = context.Request.QueryString["fileIdKey"];
+                var fileGuidString = context.Request.QueryString["guid"];
+
+                if ( !string.IsNullOrEmpty( fileIdKey ) )
+                {
+                    fileId = IdHasher.Instance.GetId( fileIdKey );
+                }
+
+                if ( !string.IsNullOrEmpty( fileGuidString ) )
+                {
+                    fileGuid = new Guid( fileGuidString );
+                }
+            }
+            else
+            {
+                fileId = context.Request.QueryString["id"].AsIntegerOrNull(); 
+                fileGuid = context.Request.QueryString["guid"].AsGuidOrNull();
+            }
+
+            if ( !fileId.HasValue && !fileGuid.HasValue )
+            {
+                SendBadRequest( context, "File ID or GUID must be provided." );
+                return;
+            }
+
+            if ((fileId.HasValue && fileId.Value == 0) || (fileGuid.HasValue && fileGuid.Value == Guid.Empty))
+            {
+                SendBadRequest( context, "Invalid File ID or GUID provided." );
                 return;
             }
 
             var binaryFileQuery = new BinaryFileService( rockContext ).Queryable();
-            if ( fileGuid != Guid.Empty )
+            if ( fileGuid.HasValue )
             {
-                binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid );
+                binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid.Value );
             }
             else
             {
-                binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId );
+                binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId.Value );
             }
 
             //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
@@ -499,6 +530,12 @@ namespace RockWeb
         /// <returns></returns>
         private Stream GetResized( NameValueCollection queryString, Stream fileContent )
         {
+            // Check if the request has disabled optimizations. If so return.
+            if ( queryString["disableoptimizations"] != null )
+            {
+                return fileContent;
+            }
+
             try
             {
                 ResizeSettings settings = new ResizeSettings( queryString );

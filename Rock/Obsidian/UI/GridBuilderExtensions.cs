@@ -36,7 +36,7 @@ namespace Rock.Obsidian.UI
     /// Extension methods for <see cref="GridBuilder{T}"/>. This provides much of
     /// specific use functionality of the builder.
     /// </summary>
-    internal static class GridBuilderExtensions
+    public static class GridBuilderExtensions
     {
         /// <summary>
         /// Adds a new person field to the grid definition.
@@ -57,11 +57,24 @@ namespace Rock.Obsidian.UI
                     return null;
                 }
 
+                string connectionStatus = null;
+                if ( person.ConnectionStatusValueId.HasValue )
+                {
+                    var connectionStatusValue = DefinedValueCache.Get(person.ConnectionStatusValueId.Value );
+                    if (connectionStatusValue != null )
+                    {
+                        connectionStatus = connectionStatusValue.Value;
+                    }
+                }
+
                 return new PersonFieldBag
                 {
+                    IdKey = person.IdKey,
                     NickName = person.NickName,
                     LastName = person.LastName,
-                    PhotoUrl = person.PhotoUrl
+                    PhotoUrl = person.PhotoUrl,
+                    ConnectionStatus = connectionStatus
+
                 };
             } );
         }
@@ -196,32 +209,32 @@ namespace Rock.Obsidian.UI
 
                 if ( communicationUrl.IsNotNullOrWhiteSpace() )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.Communicate, communicationUrl );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.Communicate, communicationUrl );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/PersonMerge/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.MergePerson, "/PersonMerge/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.MergePerson, "/PersonMerge/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/BusinessMerge/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.MergeBusiness, "/BusinessMerge/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.MergeBusiness, "/BusinessMerge/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/BulkUpdate/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.BulkUpdate, "/BulkUpdate/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.BulkUpdate, "/BulkUpdate/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/LaunchWorkflows/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.LaunchWorkflow, "/LaunchWorkflows/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.LaunchWorkflow, "/LaunchWorkflows/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/MergeTemplate/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.MergeTemplate, "/MergeTemplate/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.MergeTemplate, "/MergeTemplate/{EntitySetId}" );
                 }
             } );
         }
@@ -306,6 +319,8 @@ namespace Rock.Obsidian.UI
             {
                 return;
             }
+
+            System.Diagnostics.Activity.Current?.AddTag( "rock.grid.custom_column", true );
 
             for ( int i = 0; i < additionalColumns.ColumnsConfig.Count; i++ )
             {

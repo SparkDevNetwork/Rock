@@ -173,6 +173,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningCourse>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, LearningCourse.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, LearningProgram.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ImageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );

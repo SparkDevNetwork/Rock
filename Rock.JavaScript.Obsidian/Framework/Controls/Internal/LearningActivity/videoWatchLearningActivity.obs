@@ -1,0 +1,165 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="[ComponentScreen.Summary, ComponentScreen.Configuration].includes(screenToShow)" :title="panelTitle" :class="containerClasses" :hasFullscreen="false">
+        <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container">
+            <div class="header-content-section">
+                <RockLabel>Header Content</RockLabel>
+                <StructuredContentEditor v-model="headerContent" :disabled="disabled" />
+            </div>
+            <div class="video-file-media-section">
+                <div class="media-account-field">
+                    <RockLabel>Video File</RockLabel>
+                    <MediaElementPicker v-model="video" media-element-label="Video" :disabled="disabled" />
+                </div>
+                <div class="completion-threshold-field">
+                    <NumberBox v-model="completionThresholdForView"
+                               :disabled="disabled"
+                               :decimalCount="0"
+                               :minimumValue="0"
+                               :maximumValue="100"
+                               label="Completion Threshold"
+                               help="Set the minimum percentage of the video that must be watched to count as viewed."
+                               inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">%</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <div class="footer-content-section">
+                <RockLabel>Footer Content</RockLabel>
+                <StructuredContentEditor
+                                         v-model="footerContent"
+                                         :disabled="disabled" />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox :alertType="notificationAlertType">
+                {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ watchedPercentage }}% of this video.
+            </NotificationBox>
+        </div>
+    </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion">
+        <fieldset>
+            <div class="header-section">
+                <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+            </div>
+
+            <div class="video-section">
+                <MediaPlayer v-model:watchedPercentage="watchedPercentage"
+                             :mediaElementGuid="video?.value ?? ''" />
+            </div>
+            <div class="footer-section">
+                <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+            </div>
+            <div class="footer-buttons">
+                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || isStudentCompleted"
+                            @click="emits('completed', true)">
+                    {{ isStudentCompleted ? 'Completed' : 'Complete' }}
+                </RockButton>
+            </div>
+        </fieldset>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, ref, toRef, toValue, watch } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { VideoWatchActivityCompletion, VideoWatchActivityConfiguration, VideoWatchActivityDefaults } from "./videoWatchLearningActivity.partial";
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+
+    const disabled = ref(props.disabled ?? false);
+
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = toRef(() => props.activityBag);
+    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        completionThreshold,
+        containerClasses,
+        defaultAssigneeDescription,
+        footerContent,
+        headerContent,
+        panelTitle,
+        video,
+        watchedPercentage
+    } = useLearningComponent<VideoWatchActivityConfiguration, VideoWatchActivityCompletion>(
+        activityBag,
+        completionBag,
+        screenToShow,
+        new VideoWatchActivityDefaults()
+    );
+
+    const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
+    const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
+    const isStudentCompleted = ref(completionBag.value.isStudentCompleted);
+
+    // The threshold control should show as a number between 0 and 100;
+    // while the saved value will be normalized as a decimal < 1.
+    const completionThresholdForView = ref((
+        completionThreshold.value < 1 ?
+            completionThreshold.value * 100 :
+            completionThreshold.value
+    ));
+
+    watch(completionThresholdForView, () => {
+        completionThreshold.value = completionThresholdForView.value / 100;
+    });
+
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
+
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            completionThreshold: completionThreshold.value,
+            footerContent: footerContent.value,
+            headerContent: headerContent.value,
+            video: video.value
+        }) ?? "";
+
+        emits("update:activityBag", updatedActivityBag);
+    });
+    watch([completionThreshold, footerContent, headerContent, video], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
+
+    /** Watch for modified component completion. */
+    const debouncedCompletionBagEmits = debounce(() => {
+        // Only update completion bag when we're on the completion screen.
+        if (screenToShow.value === ComponentScreen.Completion) {
+            const updatedCompletionBag = {
+                ...toValue(completionBag)
+            } as LearningActivityCompletionBag;
+
+            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+                watchedPercentage: watchedPercentage.value
+            }) ?? "{}";
+            emits("update:completionBag", updatedCompletionBag);
+        }
+    });
+    watch(watchedPercentage, () => {
+        debouncedCompletionBagEmits();
+    }, { deep: true });
+</script>

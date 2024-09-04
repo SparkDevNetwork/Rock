@@ -15,7 +15,7 @@
                     <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                 </div>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -31,6 +31,10 @@
 
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                    </div>
+
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.PersonalizationSegment, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                     </div>
                 </div>
 
@@ -106,8 +110,8 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="InteractionChannelName" HeaderText="Channel" />
                                 <Rock:RockBoundField DataField="InteractionComponentName" HeaderText="Component" />
-                                <Rock:RockBoundField DataField="Operation" HeaderText="Operation"  />
-                                <Rock:RockBoundField DataField="ComparisonText" HeaderText="Quantity"  />
+                                <Rock:RockBoundField DataField="Operation" HeaderText="Operation" />
+                                <Rock:RockBoundField DataField="ComparisonText" HeaderText="Quantity" />
                                 <Rock:RockBoundField DataField="DateRangeText" HeaderText="Date Range" />
                                 <Rock:EditField OnClick="gInteractionFilters_EditClick" />
                                 <Rock:DeleteField OnClick="gInteractionFilters_DeleteClick" />
@@ -119,8 +123,8 @@
                 <Rock:NotificationBox ID="nbSegmentDataUpdateError" runat="server" NotificationBoxType="Warning" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
             </div>
 
@@ -171,18 +175,18 @@
             <Rock:ModalDialog ID="mdPageViewFilterConfiguration" runat="server" OnSaveClick="mdPageViewFilterConfiguration_SaveClick" ValidationGroup="vgPageViewFilterConfiguration">
                 <Content>
 
-                        <asp:HiddenField ID="hfPageViewFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfPageViewFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsPageViewFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgPageViewFilterConfiguration" />
+                    <asp:ValidationSummary ID="vsPageViewFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgPageViewFilterConfiguration" />
                     <div class="row form-row d-flex flex-wrap align-items-center form-group">
                         <div class="col flex-grow-0">
                             <div class="form-group">
-                            <Rock:RockDropDownList ID="ddlPageViewFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                <Rock:RockDropDownList ID="ddlPageViewFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
                             </div>
                         </div>
                         <div class="col flex-grow-0">
                             <div class="form-group">
-                            <Rock:NumberBox ID="nbPageViewFilterCompareValue" runat="server" Required="true" CssClass="input-width-sm js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                <Rock:NumberBox ID="nbPageViewFilterCompareValue" runat="server" Required="true" CssClass="input-width-sm js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
                             </div>
                         </div>
 
@@ -215,7 +219,10 @@
                         <div class="col flex-grow-0"><span class="text-nowrap">optionally limited to the following pages</span></div>
 
                         <div class="col">
-                            <Rock:PagePicker ID="ppPageViewFilterPages" runat="server" AllowMultiSelect="true" ValidationGroup="vgPageViewFilterConfiguration" Label=""/>
+                            <Rock:PagePicker ID="ppPageViewFilterPages" runat="server" AllowMultiSelect="true" ValidationGroup="vgPageViewFilterConfiguration" Label="" ShowSelectCurrentPage="false" />
+                        </div>
+                        <div class="col">
+                            <Rock:RockCheckBox ID="cbIncludeChildPages" runat="server" Label="Include descendant pages" />
                         </div>
                     </div>
 
@@ -228,27 +235,27 @@
                         <div class="row form-row d-flex flex-wrap align-items-center form-group mt-3">
 
                             <div class="col flex-sm-grow-0">
-                            <div class="form-group"><span class="text-nowrap">where the URL</span></div>
-                        </div>
-
-                        <div class="col flex-grow-0">
-                            <div class="form-group">
-                            <Rock:RockDropDownList ID="ddlPageUrlFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                <div class="form-group"><span class="text-nowrap">where the URL</span></div>
                             </div>
-                        </div>
 
-                        <div class="col flex-grow-0">
-                            <div class="form-group">
-                                <Rock:RockTextBox ID="rtbPageUrlCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlPageUrlFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbPageUrlCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
 
                         </div>
 
                         <div class="row form-row d-flex flex-wrap align-items-center form-group">
 
                             <div class="col flex-sm-grow-0">
-                                <div class="form-group"><span class="text-nowrap">and the referrer</span></div>
+                                <div class="form-group"><span class="text-nowrap">and the Referrer</span></div>
                             </div>
 
                             <div class="col flex-grow-0">
@@ -263,6 +270,86 @@
                                 </div>
                             </div>
 
+                        </div>
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                            <div class="col flex-sm-grow-0">
+                                <div class="form-group"><span class="text-nowrap">and the Source</span></div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlPageSourceFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbPageSourceCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                            <div class="col flex-sm-grow-0">
+                                <div class="form-group"><span class="text-nowrap">and the Medium</span></div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlMediumComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbMediumCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                            <div class="col flex-sm-grow-0">
+                                <div class="form-group"><span class="text-nowrap">and the Campaign</span></div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlCampaignComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbCampaignCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                            <div class="col flex-sm-grow-0">
+                                <div class="form-group"><span class="text-nowrap">and the Content</span></div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlContentComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbContentCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                            <div class="col flex-sm-grow-0">
+                                <div class="form-group"><span class="text-nowrap">and the Term</span></div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlTermComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbTermCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
                         </div>
 
                     </asp:Panel>
@@ -317,7 +404,7 @@
                         <div class="col flex-grow-0"><span class="text-nowrap">In the following date range</span></div>
 
                         <div class="col">
-                        <Rock:SlidingDateRangePicker ID="drpInteractionFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgInteractionFilterConfiguration" ToolTip="<div class='js-slidingdaterange-info'></>" />
+                            <Rock:SlidingDateRangePicker ID="drpInteractionFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgInteractionFilterConfiguration" ToolTip="<div class='js-slidingdaterange-info'></>" />
                         </div>
                     </div>
 

@@ -26,19 +26,20 @@ using System.Web;
 using System.Web.UI.WebControls;
 
 using DotLiquid;
-using Context = DotLiquid.Context;
 
+using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Lava.Blocks;
+using Rock.Lava.DotLiquid;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Rock.Lava.Blocks;
-using Rock.Attribute;
-using Rock.Lava.DotLiquid;
-using Rock.Utility.Settings;
+
+using Context = DotLiquid.Context;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -539,7 +540,7 @@ namespace Rock.Lava.RockLiquid.Blocks
         {
             // If the database is not connected, do not register these commands.
             // This can occur when the Lava engine is started without an attached database.
-            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            if ( !RockApp.Current.IsDatabaseAvailable() )
             {
                 return;
             }
@@ -742,7 +743,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                         foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
                             filterAttribute = attribute;
-                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute, limitToFilterableAttributes:false );
 
                             var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
                             if ( filterExpression is NoAttributeFilterExpression )

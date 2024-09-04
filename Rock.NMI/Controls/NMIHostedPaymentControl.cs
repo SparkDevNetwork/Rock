@@ -15,16 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Web.UI;
-
-using Rock.Web.UI.Controls;
-using System.Collections.Generic;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+
 using Rock.Financial;
 using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.NMI.Controls
 {
@@ -33,11 +33,10 @@ namespace Rock.NMI.Controls
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="System.Web.UI.INamingContainer" />
-    public class NMIHostedPaymentControl : CompositeControl,
-        INamingContainer,
-        Rock.Financial.IHostedGatewayPaymentControlTokenEvent,
-        Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
+    public class NMIHostedPaymentControl : CompositeControl, INamingContainer, IHostedGatewayPaymentControlTokenEvent, IHostedGatewayPaymentControlCurrencyTypeEvent
     {
+        #region Keys/Constants
+
         private static class ViewStateKey
         {
             public const string EnabledPaymentTypes = "EnabledPaymentTypes";
@@ -49,7 +48,9 @@ namespace Rock.NMI.Controls
             public const string CurrencyTypeChange = "CurrencyTypeChange";
         }
 
-        #region Controls
+        #endregion Keys/Constants
+
+        #region Private Control Declarations
 
         private HiddenFieldWithClass _hfPaymentInfoToken;
         private HiddenFieldWithClass _hfCollectJSRawResponse;
@@ -66,6 +67,13 @@ namespace Rock.NMI.Controls
         private HtmlGenericControl _aPaymentButton;
         private HtmlGenericControl _divValidationMessage;
 
+        private TextBox _tbCardFirstName;
+        private TextBox _tbCardLastName;
+        private HtmlGenericControl _divBillingAddressOption;
+        private CheckBox _cbUseBillingAddress;
+        private HtmlGenericControl _divBillingAddress;
+        private AddressControl _acBillingAddress;
+
         private TextBox _hiddenInputStyleHook;
 
         private HtmlGenericControl _divInputInvalid;
@@ -74,20 +82,18 @@ namespace Rock.NMI.Controls
         private Panel _gatewayCreditCardContainer;
         private Panel _gatewayACHContainer;
 
-        #endregion
+        #endregion Private Control Declarations
 
-        private Rock.NMI.Gateway _nmiGateway;
-
-        #region Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+        #region IHostedGatewayPaymentControlTokenEvent
 
         /// <summary>
         /// Occurs when a payment token is received from the hosted gateway
         /// </summary>
-        public event EventHandler<Rock.Financial.HostedGatewayPaymentControlTokenEventArgs> TokenReceived;
+        public event EventHandler<HostedGatewayPaymentControlTokenEventArgs> TokenReceived;
 
-        #endregion Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+        #endregion IHostedGatewayPaymentControlTokenEvent
 
-        #region Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
+        #region IHostedGatewayPaymentControlCurrencyTypeEvent
 
         /// <summary>
         /// Occurs when the CurrencyType option is changed (ACH or CreditCard)
@@ -105,20 +111,8 @@ namespace Rock.NMI.Controls
             get
             {
                 EnsureChildControls();
-                var currencyTypeValue = _hfSelectedPaymentType.Value.ConvertToEnumOrNull<NMIPaymentType>();
-                if ( currencyTypeValue == null )
-                {
-                    if ( EnabledPaymentTypes.Contains( NMIPaymentType.card ) )
-                    {
-                        currencyTypeValue = NMIPaymentType.card;
-                    }
-                    else
-                    {
-                        currencyTypeValue = NMIPaymentType.ach;
-                    }
-                }
 
-                if ( currencyTypeValue == NMIPaymentType.ach )
+                if ( this.SelectedPaymentType == NMIPaymentType.ach )
                 {
                     return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                 }
@@ -127,7 +121,9 @@ namespace Rock.NMI.Controls
             }
         }
 
-        #endregion Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
+        #endregion IHostedGatewayPaymentControlCurrencyTypeEvent
+
+        #region Public Properties
 
         /// <summary>
         /// Gets or sets the enabled payment types.
@@ -168,12 +164,12 @@ namespace Rock.NMI.Controls
             {
                 return _nmiGateway;
             }
-
             set
             {
                 _nmiGateway = value;
             }
         }
+        private Gateway _nmiGateway;
 
         /// <summary>
         /// Gets the payment information token.
@@ -204,6 +200,214 @@ namespace Rock.NMI.Controls
                 return _hfCollectJSRawResponse.Value;
             }
         }
+
+        /// <summary>
+        /// Gets the selected payment type.
+        /// </summary>
+        /// <value>
+        /// The selected payment type.
+        /// </value>
+        public NMIPaymentType SelectedPaymentType
+        {
+            get
+            {
+                EnsureChildControls();
+
+                var selectedPaymentType = _hfSelectedPaymentType.Value.ConvertToEnumOrNull<NMIPaymentType>();
+
+                if ( selectedPaymentType == null )
+                {
+                    if ( EnabledPaymentTypes.Contains( NMIPaymentType.card ) )
+                    {
+                        selectedPaymentType = NMIPaymentType.card;
+                    }
+                    else
+                    {
+                        selectedPaymentType = NMIPaymentType.ach;
+                    }
+                }
+
+                return selectedPaymentType.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether this payment control should prompt for billing address.
+        /// </summary>
+        /// <value>
+        /// A flag indicating whether this payment control should prompt for billing address.
+        /// </value>
+        public bool PromptForBillingAddress
+        {
+            get
+            {
+                return _promptForBillingAddress;
+            }
+            set
+            {
+                _promptForBillingAddress = value;
+            }
+        }
+        private bool _promptForBillingAddress;
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether this payment control should prompt for name on card.
+        /// </summary>
+        /// <value>
+        /// A flag indicating whether this payment control should prompt for name on card.
+        /// </value>
+        public bool PromptForNameOnCard
+        {
+            get
+            {
+                return _promptForNameOnCard;
+            }
+            set
+            {
+                _promptForNameOnCard = value;
+            }
+        }
+        private bool _promptForNameOnCard;
+
+        /// <summary>
+        /// Gets a value indicating whether the card holder name input is valid.
+        /// </summary>
+        public bool CardHolderNameIsValid
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace( this.CardFirstName ) && !string.IsNullOrWhiteSpace( this.CardLastName );
+            }
+        }
+
+        /// <summary>
+        /// Gets the card first name.
+        /// </summary>
+        public string CardFirstName
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbCardFirstName.Text;
+            }
+        }
+
+        /// <summary>
+        /// Gets the card last name.
+        /// </summary>
+        public string CardLastName
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbCardLastName.Text;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the user specified a billing address to use.
+        /// </summary>
+        public bool UseBillingAddress
+        {
+            get
+            {
+                EnsureChildControls();
+                return PromptForBillingAddress && _cbUseBillingAddress.Checked;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the billing address input is valid.
+        /// </summary>
+        public bool BillingAddressIsValid
+        {
+            get
+            {
+                var isRequired = this.UseBillingAddress;
+                _acBillingAddress.Required = isRequired;
+                _acBillingAddress.Validate( out _ );
+                return _acBillingAddress.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets the billing address street 1.
+        /// </summary>
+        public string BillingAddressStreet1
+        {
+            get
+            {
+                EnsureChildControls();
+                return _acBillingAddress.Street1;
+            }
+        }
+
+        /// <summary>
+        /// Gets the billing address street 2.
+        /// </summary>
+        public string BillingAddressStreet2
+        {
+            get
+            {
+                EnsureChildControls();
+                return _acBillingAddress.Street2;
+            }
+        }
+
+        /// <summary>
+        /// Gets the billing address city.
+        /// </summary>
+        public string BillingAddressCity
+        {
+            get
+            {
+                EnsureChildControls();
+                return _acBillingAddress.City;
+            }
+        }
+
+        /// <summary>
+        /// Gets the billing address state.
+        /// </summary>
+        public string BillingAddressState
+        {
+            get
+            {
+                EnsureChildControls();
+                return _acBillingAddress.State;
+            }
+        }
+
+        /// <summary>
+        /// Gets the billing address postal code.
+        /// </summary>
+        public string BillingAddressPostalCode
+        {
+            get
+            {
+                EnsureChildControls();
+                return _acBillingAddress.PostalCode;
+            }
+        }
+
+        /// <summary>
+        /// Gets the billing address country.
+        /// </summary>
+        /// <value>
+        /// The asdf.
+        /// </value>
+        public string BillingAddressCountry
+        {
+            get
+            {
+                EnsureChildControls();
+                return _acBillingAddress.Country;
+            }
+        }
+
+        #endregion Public Properties
+
+        #region Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -317,7 +521,7 @@ namespace Rock.NMI.Controls
         /// </summary>
         private void HandleTokenizerPostback()
         {
-            Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
+            HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new HostedGatewayPaymentControlTokenEventArgs();
 
             var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
 
@@ -395,6 +599,83 @@ namespace Rock.NMI.Controls
                 _gatewayCreditCardContainer = new Panel() { ID = "_gatewayCreditCardContainer", CssClass = "gateway-creditcard-container gateway-payment-container js-gateway-creditcard-container" };
                 pnlPaymentInputs.Controls.Add( _gatewayCreditCardContainer );
 
+                if ( this.PromptForNameOnCard || this.PromptForBillingAddress )
+                {
+                    string nameInputStyles = @"
+                        .credit-card-name-input {
+                            background-color: rgb(255, 255, 255);
+                            border-width: 0.666667px;
+                            border-style: solid;
+                            border-radius: 4px;
+                            border-color: rgb(204, 204, 204);
+                            color: rgb(85, 85, 85);
+                            font-family: system-ui, -apple-system, ""Segoe UI"", Roboto, ""Helvetica Neue"", Arial, ""Noto Sans"", ""Liberation Sans"", sans-serif, ""Apple Color Emoji"", ""Segoe UI Emoji"", ""Segoe UI Symbol"", ""Noto Color Emoji"";
+                            font-size: 14px;
+                            height: 34px;
+                            margin-top: 0px;
+                            margin-bottom: 5px;
+                            padding: 6px 12px;
+                            width: 100%;
+                        }
+
+                        .credit-card-name-input:focus {
+                            border-color: rgb(102, 175, 233) !important;
+                            outline-style: none !important;
+                        }
+
+                        .address-container {
+                            margin-bottom: 10px;
+                            padding: 0 3px;
+                            overflow: hidden;
+                            width: 100%;
+                        }
+
+                        .address-input {
+                        }";
+
+                    var inlineStyles = new HtmlGenericControl( "style" );
+                    inlineStyles.Attributes.Add( "scoped", "scoped" );
+                    inlineStyles.InnerText = nameInputStyles;
+                    _gatewayCreditCardContainer.Controls.Add( inlineStyles );
+                }
+
+                var divCardFirstName = new HtmlGenericControl( "div" )
+                {
+                    Visible = this.PromptForNameOnCard
+                };
+                divCardFirstName.AddCssClass( "iframe-input credit-card-input" );
+                _tbCardFirstName = new TextBox
+                {
+                    ID = "_tbCardFirstName",
+                    CssClass = "js-creditcard-firstname credit-card-name-input",
+                    Visible = this.PromptForNameOnCard
+                };
+                _tbCardFirstName.Attributes.Add( "placeholder", "First Name on Card" );
+                divCardFirstName.Controls.Add( _tbCardFirstName );
+                _gatewayCreditCardContainer.Controls.Add( divCardFirstName );
+
+                var divCardLastName = new HtmlGenericControl( "div" )
+                {
+                    Visible = this.PromptForNameOnCard
+                };
+                divCardLastName.AddCssClass( "iframe-input credit-card-input" );
+                _tbCardLastName = new TextBox
+                {
+                    ID = "_tbCardLastName",
+                    CssClass = "js-creditcard-lastname credit-card-name-input",
+                    Visible = this.PromptForNameOnCard
+                };
+                _tbCardLastName.Attributes.Add( "placeholder", "Last Name on Card" );
+                divCardLastName.Controls.Add( _tbCardLastName );
+                _gatewayCreditCardContainer.Controls.Add( divCardLastName );
+
+                if ( this.PromptForNameOnCard )
+                {
+                    var breakDiv = new HtmlGenericControl( "div" );
+                    breakDiv.Attributes.Add( "style", "flex-basis:100%;height:0" );
+                    _gatewayCreditCardContainer.Controls.Add( breakDiv );
+                }
+
                 _divCreditCardNumber = new HtmlGenericControl( "div" );
                 _divCreditCardNumber.AddCssClass( "js-credit-card-input iframe-input credit-card-input" );
                 _gatewayCreditCardContainer.Controls.Add( _divCreditCardNumber );
@@ -410,6 +691,59 @@ namespace Rock.NMI.Controls
                 _divCreditCardCVV = new HtmlGenericControl( "div" );
                 _divCreditCardCVV.AddCssClass( "js-credit-card-cvv-input iframe-input credit-card-cvv-input" );
                 _gatewayCreditCardContainer.Controls.Add( _divCreditCardCVV );
+
+                if ( this.PromptForBillingAddress )
+                {
+                    var breakDiv = new HtmlGenericControl( "div" );
+                    breakDiv.Attributes.Add( "style", "flex-basis:100%;height:0" );
+                    _gatewayCreditCardContainer.Controls.Add( breakDiv );
+
+                    string billingAddressControlScript = @"
+// Hide or show a div based on selection of checkbox
+$('input:checkbox.toggle-input').unbind('click').on('click', function () {{
+    $(this).parents('.checkbox').next('.toggle-content').slideToggle();
+}});
+
+$('input:checkbox.toggle-input').each(function () {
+    if ($(this).prop('checked')) {
+        $(this).parents('.checkbox').next('.toggle-content').show();
+    }
+    else {
+        $(this).parents('.checkbox').next('.toggle-content').hide();
+    }
+});
+";
+
+                    ScriptManager.RegisterStartupScript( this, this.GetType(), "nmi-billing-address", billingAddressControlScript, true );
+                }
+
+                _divBillingAddressOption = new HtmlGenericControl( "div" )
+                {
+                    Visible = this._promptForBillingAddress
+                };
+                _divBillingAddressOption.AddCssClass( "address-container" );
+                _cbUseBillingAddress = new CheckBox
+                {
+                    ID = "_cbUseBillingAddress",
+                    CssClass = "toggle-input js-billing-address-checkbox",
+                    Text = "Enter a different billing address",
+                    Visible = this.PromptForBillingAddress
+                };
+                _divBillingAddressOption.Controls.Add( _cbUseBillingAddress );
+
+                _divBillingAddress = new HtmlGenericControl( "div" );
+                _divBillingAddress.AddCssClass( "toggle-content" );
+                _acBillingAddress = new AddressControl
+                {
+                    ID = "acBillingAddress",
+                    UseStateAbbreviation = true,
+                    UseCountryAbbreviation = false,
+                    CssClass = "js-billingaddress-control",
+                    Visible = this.PromptForBillingAddress
+                };
+                _divBillingAddress.Controls.Add( _acBillingAddress );
+                _divBillingAddressOption.Controls.Add( _divBillingAddress );
+                _gatewayCreditCardContainer.Controls.Add( _divBillingAddressOption );
             }
 
             /* ACH Inputs */
@@ -461,5 +795,7 @@ namespace Rock.NMI.Controls
             _divInputInvalid.Style["display"] = "none";
             Controls.Add( _divInputInvalid );
         }
+
+        #endregion Control Methods
     }
 }

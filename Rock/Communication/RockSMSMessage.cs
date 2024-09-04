@@ -165,6 +165,7 @@ namespace Rock.Communication
             this.FromSystemPhoneNumber = systemCommunication.SmsFromSystemPhoneNumberId.HasValue
                 ? SystemPhoneNumberCache.Get( systemCommunication.SmsFromSystemPhoneNumberId.Value )
                 : null;
+            this.CommunicationName = systemCommunication.Title;
             this.Message = systemCommunication.SMSMessage;
             this.SystemCommunicationId = systemCommunication.Id;
         }

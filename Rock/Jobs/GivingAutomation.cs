@@ -125,11 +125,12 @@ namespace Rock.Jobs
             }
 
             // Create a context object that will help transport state and helper information so as to not rely on the
-            // job class itself being a single use instance
+            // job class itself being a single use instance.
             var context = new GivingAutomationContext
             {
                 SqlCommandTimeoutSeconds = GetAttributeValue( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout,
-                MaxDaysSinceLastGift = GetAttributeValue( GivingAutomation.AttributeKey.MaxDaysSinceLastGift ).AsIntegerOrNull() ?? AttributeDefaultValue.MaxDaysSinceLastGift
+                MaxDaysSinceLastGift = GetAttributeValue( GivingAutomation.AttributeKey.MaxDaysSinceLastGift ).AsIntegerOrNull() ?? AttributeDefaultValue.MaxDaysSinceLastGift,
+                TransactionWindowDurationHours = settings.GivingJourneySettings.TransactionWindowDurationHours
             };
 
             // First determine the ranges for each of the 4 giving bins by looking at all contribution transactions in the last 12 months.
@@ -320,8 +321,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return null;
             }
 
-            var dataViewService = new DataViewService( rockContext );
-            var dataview = dataViewService.Get( alertType.DataViewId.Value );
+            var dataview = DataViewCache.Get( alertType.DataViewId.Value );
 
             if ( dataview == null )
             {
@@ -330,7 +330,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             // We can use the dataview to get the person query
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = rockContext
             };

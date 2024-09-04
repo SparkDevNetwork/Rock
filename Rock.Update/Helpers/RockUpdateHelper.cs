@@ -37,6 +37,7 @@ namespace Rock.Update.Helpers
     /// <summary>
     /// Helper class for collecting environmental information about Rock install that is saved during update
     /// </summary>
+    [Obsolete( "Use Rock.Web.Utilities.RockUpdateHelper instead." )]
     public static class RockUpdateHelper
     {
         private const int DOT_NET_4_7_2_RELEASE_NUMBER = 461808;

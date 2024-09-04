@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 
@@ -111,13 +110,5 @@ namespace Rock.ViewModels.Blocks.Tv.AppleTvAppDetail
         ///   <c>true</c> if [show application javascript]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowApplicationJavascript { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable page view geo tracking].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
-        /// </value>
-        public bool EnablePageViewGeoTracking { get; set; }
     }
 }

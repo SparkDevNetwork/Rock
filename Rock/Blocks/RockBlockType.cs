@@ -19,9 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -55,6 +60,27 @@ namespace Rock.Blocks
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// The logger backing field for the <see cref="Logger"/> property.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
+        /// The serializer settings to use when encoding block configurationd ata.
+        /// </summary>
+        private static readonly Lazy<Newtonsoft.Json.JsonSerializerSettings> _serializerSettings = new Lazy<Newtonsoft.Json.JsonSerializerSettings>( () =>
+        {
+            var settings = Rock.JsonExtensions.CreateSerializerSettings( false, true, true );
+
+            settings.StringEscapeHandling = Newtonsoft.Json.StringEscapeHandling.EscapeHtml;
+
+            return settings;
+        } );
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -71,7 +97,7 @@ namespace Rock.Blocks
         /// <value>
         /// The block cache.
         /// </value>
-        public BlockCache BlockCache { get; set ; }
+        public BlockCache BlockCache { get; set; }
 
         /// <summary>
         /// Gets or sets the page cache.
@@ -98,6 +124,16 @@ namespace Rock.Blocks
         /// </value>
         public IRockResponseContext ResponseContext => RequestContext.Response;
 
+        /// <summary>
+        /// Gets the database context to use for this block instance. It can
+        /// be used for both reading and writing data, though it should be up
+        /// to the subclass implementation to decide when to call SaveChanges().
+        /// </summary>
+        /// <value>
+        /// The database context to use for this block instance.
+        /// </value>
+        public RockContext RockContext { get; internal set; }
+
         /// <inheritdoc/>
         [Obsolete( "Use RequiredMobileVersion instead." )]
         [RockObsolete( "1.16" )]
@@ -117,20 +153,59 @@ namespace Rock.Blocks
         /// <inheritdoc/>
         public virtual string ObsidianFileUrl => GetObsidianFileUrl();
 
+        /// <summary>
+        /// Gets the logger instance that can be used to write log messages for
+        /// this block.
+        /// </summary>
+        /// <value>The logger instance.</value>
+        public ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
+
         #endregion
 
         #region Methods
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the object that will be used to initialize the block by the client.
+        /// </summary>
+        /// <param name="clientType">The type of client that is requesting the configuration data.</param>
+        /// <returns>An object that will be JSON encoded and sent to the client.</returns>
+        [Obsolete( "Use GetBlockInitializationAsync instead." )]
+        [RockObsolete( "1.16.4" )]
         public virtual object GetBlockInitialization( RockClientType clientType )
         {
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public virtual Task<object> GetBlockInitializationAsync( RockClientType clientType )
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var legacyInitialization = GetBlockInitialization( clientType );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if ( legacyInitialization != null )
+            {
+                return Task.FromResult( legacyInitialization );
+            }
+
             if ( clientType == RockClientType.Web )
             {
-                return GetObsidianBlockInitialization();
+                return GetObsidianBlockInitializationAsync();
             }
             else if ( clientType == RockClientType.Mobile )
             {
-                return GetMobileConfigurationValues();
+                return GetMobileConfigurationValuesAsync();
             }
 
             return null;
@@ -148,6 +223,17 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Gets the property values that will be sent to the browser and available to the client side code as it initializes.
+        /// </summary>
+        /// <returns>
+        /// A collection of string/object pairs.
+        /// </returns>
+        public virtual Task<object> GetObsidianBlockInitializationAsync()
+        {
+            return Task.FromResult( GetObsidianBlockInitialization() );
+        }
+
+        /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
         /// </summary>
         /// <returns>
@@ -156,6 +242,17 @@ namespace Rock.Blocks
         public virtual object GetMobileConfigurationValues()
         {
             return null;
+        }
+
+        /// <summary>
+        /// Gets the property values that will be sent to the device in the application bundle.
+        /// </summary>
+        /// <returns>
+        /// A collection of string/object pairs.
+        /// </returns>
+        public virtual Task<object> GetMobileConfigurationValuesAsync()
+        {
+            return Task.FromResult( GetMobileConfigurationValues() );
         }
 
         /// <summary>
@@ -308,17 +405,41 @@ namespace Rock.Blocks
             // Filename convention is camelCase.
             var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
 
-            return $"/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
+            return $"~/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the HTML markup needed to fully initialize this block. This
+        /// method can be overridden to provide content for a fully static
+        /// block. Fully static blocks do not reload automatically when the
+        /// block settings have been modified.
         /// </summary>
-        /// <returns></returns>
-        public string GetControlMarkup()
+        /// <returns>An HTML string.</returns>
+        [Obsolete( "Use GetControlMarkupAsync instead." )]
+        [RockObsolete( "1.16.4" )]
+        public virtual string GetControlMarkup()
         {
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<string> GetControlMarkupAsync()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var legacyMarkup = GetControlMarkup();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if ( legacyMarkup != null )
+            {
+                return legacyMarkup;
+            }
+
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
+            var rootElementClasses = "obsidian-block-loading";
+            var placeholderContent = GetPlaceholderContent( RockClientType.Web );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
+            var config = await GetConfigBagAsync( rootElementId );
 
             if ( !IsBrowserSupported() )
             {
@@ -338,17 +459,50 @@ namespace Rock.Blocks
                 rootElementStyle += $" --initial-block-height: {initialHeight.Value}px";
             }
 
-            var config = GetConfigBag( rootElementId );
+            if ( initialContent.IsNullOrWhiteSpace() && placeholderContent.IsNotNullOrWhiteSpace() )
+            {
+                rootElementClasses += " obsidian-block-has-placeholder";
+            }
 
-            return
-$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}""></div>
+            // If any text value contains "</script>" then it will be interpreted
+            // by the browser as the end of the main script tag, even if it is
+            // inside a JavaScript string. Use custom JSON serializer settings
+            // that have an option enabled to escape HTML characters in strings.
+            var configJson = Newtonsoft.Json.JsonConvert.SerializeObject( config, _serializerSettings.Value );
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"<div id=\"{rootElementId}\" class=\"{rootElementClasses}\" style=\"{rootElementStyle.Trim()}\">" );
+
+            if ( initialContent.IsNullOrWhiteSpace() && placeholderContent.IsNotNullOrWhiteSpace() )
+            {
+                sb.AppendLine( $"    <div class=\"obsidian-block-placeholder\">{placeholderContent}</div>" );
+            }
+
+            sb.AppendLine( $@"    <div class=""obsidian-block-wrapper"">{initialContent}</div>
+</div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
-        module.initializeBlock({config.ToCamelCaseJson( false, true )});
+        module.initializeBlock({configJson});
     }});
 }});
-</script>";
+</script>" );
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the initial HTML content to use when rendering an Obsidian
+        /// block. This can be overridden to create a psuedo-static block. This
+        /// content will be included in the HTML page for SEO indexing as well
+        /// as initial page rendering. The Obsidian code can then choose to
+        /// continue using this content or replace it once it loads.
+        /// </summary>
+        /// <returns>A string of HTML content.</returns>
+        protected virtual string GetInitialHtmlContent()
+        {
+            return string.Empty;
         }
 
         /// <summary>
@@ -357,9 +511,10 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <param name="rootElementId">The identifier of the root element the block will be rendered in.</param>
         /// <returns>The configuration bag for this block instance.</returns>
-        private ObsidianBlockConfigBag GetConfigBag( string rootElementId )
+        private async Task<ObsidianBlockConfigBag> GetConfigBagAsync( string rootElementId )
         {
             List<BlockCustomActionBag> configActions = null;
+            var reloadModeAttribute = GetType().GetCustomAttribute<ConfigurationChangedReloadAttribute>();
 
             if ( this is IHasCustomActions customActionsBlock )
             {
@@ -373,19 +528,21 @@ Obsidian.onReady(() => {{
             {
                 EntityTypeKey = EntityTypeCache.Get<Rock.Model.Block>().IdKey,
                 EntityKey = BlockCache.IdKey,
-                Values = GetBlockPersonPreferences().GetAllValueBags().ToList()
+                Values = GetBlockPersonPreferences().GetAllValueBags().ToList(),
+                TimeStamp = DateTimeOffset.Now.ToUnixTimeMilliseconds()
             };
 
             return new ObsidianBlockConfigBag
             {
-                BlockFileUrl = ObsidianFileUrl,
+                BlockFileUrl = RequestContext.ResolveRockUrl( ObsidianFileUrl ),
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
-                ConfigurationValues = GetBlockInitialization( RockClientType.Web ),
+                BlockTypeGuid = BlockCache.BlockType.Guid,
+                ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
                 CustomConfigurationActions = configActions,
-                Preferences = blockPreferences
+                Preferences = blockPreferences,
+                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None
             };
-
         }
 
         /// <summary>
@@ -440,6 +597,22 @@ Obsidian.onReady(() => {{
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the placeholder content to use for the block. On a web block this
+        /// would be HTML and a mobile block would use XAML.
+        /// </summary>
+        /// <param name="clientType">Type of the client.</param>
+        /// <returns>System.String.</returns>
+        protected virtual string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return $"<div class=\"skeleton skeleton-block h-100\"></div>";
+            }
+
+            return string.Empty;
         }
 
         #endregion
@@ -646,7 +819,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A BlockActionResult instance.</returns>
-        protected virtual BlockActionResult ActionInternalServerError( string message = null)
+        protected virtual BlockActionResult ActionInternalServerError( string message = null )
         {
             return new BlockActionResult( System.Net.HttpStatusCode.InternalServerError )
             {
@@ -677,11 +850,15 @@ Obsidian.onReady(() => {{
         /// <returns>An action result that contains the block configuration data.</returns>
         [BlockAction]
         [RockInternal( "1.14" )]
-        public BlockActionResult RefreshObsidianBlockInitialization()
+        public async Task<BlockActionResult> RefreshObsidianBlockInitialization()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
 
-            return ActionOk( GetConfigBag( rootElementId ) );
+            var config = await GetConfigBagAsync( rootElementId );
+
+            config.InitialContent = GetInitialHtmlContent();
+
+            return ActionOk( config );
         }
 
         #endregion

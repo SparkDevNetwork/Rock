@@ -4,6 +4,8 @@ import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./dataViewField.partial";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+import { Guid } from "@Obsidian/Types";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
 export const EditComponent = defineComponent({
     name: "DataViewField.Edit",
@@ -17,9 +19,9 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref({} as ListItemBag[]);
 
-        const entityTypeGuid = computed((): string | null | undefined => {
+        const entityTypeGuid = computed<Guid | null>(() => {
             const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
-            return entityType?.value;
+            return toGuidOrNull(entityType?.value);
         });
 
         watch(() => props.modelValue, () => {

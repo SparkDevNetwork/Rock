@@ -69,8 +69,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
@@ -92,6 +90,8 @@ namespace RockWeb.Blocks.Groups
                     this.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Groups
 
             string timelineLavaTemplate = this.GetAttributeValue( "TimelineLavaTemplate" );
 
-            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, EntityTypeCache.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields );
+            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, EntityTypeCache.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields, CurrentPerson );
             lTimelineHtml.Text = "<div class='panel-body'>" + timelineHtml + "</div>";
         }
 

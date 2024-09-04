@@ -29,7 +29,7 @@
                                 <Rock:PersonField DataField="AssignedToPersonAlias.Person" HeaderText="Assigned To" />
                                 <Rock:PersonField DataField="SignedByPersonAlias.Person" HeaderText="Signed By" />
                                 <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                                <asp:HyperLinkField HeaderText="Document" DataNavigateUrlFields="FileId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="FileText" Target="_blank" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-columncommand" HeaderStyle-HorizontalAlign="Center" ControlStyle-CssClass="js-signature-document-link btn btn-default"/>
+                                <asp:HyperLinkField HeaderText="Document" DataNavigateUrlFields="FileGuid" DataNavigateUrlFormatString="~/GetFile.ashx?guid={0}" DataTextField="FileText" Target="_blank" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-columncommand" HeaderStyle-HorizontalAlign="Center" ControlStyle-CssClass="js-signature-document-link btn btn-default"/>
                                 <Rock:DeleteField OnClick="gSignatureDocuments_Delete" />
                             </Columns>
                         </Rock:Grid>

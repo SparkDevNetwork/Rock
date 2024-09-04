@@ -137,7 +137,7 @@ Update Family Status: {updateFamilyStatus}
                         rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                         rockContext.Database.CommandTimeout = commandTimeout;
                         // attach the person object to this rockContext so that it will do changetracking on it
-                        rockContext.People.Attach( person );
+                        new PersonService( rockContext ).Attach( person );
 
                         // find the name
                         var metaFirstNameGenderLookup = firstNameGenderDictionary.GetValueOrNull( person.FirstName );
@@ -251,12 +251,6 @@ Update Family Status: {updateFamilyStatus}
                     personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, excludeAttributeIds, settings.PersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsInteractionsEnabled, settings.Interactions, rockContext ) );
 
-                    var dataViewQry = GetPeopleInDataViewQuery( settings.IsIncludeDataViewEnabled, settings.IncludeDataView, rockContext );
-                    if ( dataViewQry != null )
-                    {
-                        personIds.AddRange( dataViewQry.ToList() );
-                    }
-
                     // Get the distinct person ids
                     personIds = personIds.Distinct().ToList();
 
@@ -275,12 +269,21 @@ Update Family Status: {updateFamilyStatus}
                         .ToList();
                     personIds = personIds.Distinct().ToList();
 
+                    // If any people should be included based on being part of a dataview, add those people.
+                    // Do this after expanding the list to include family members so only the people in the dataview
+                    // are reactivated.
+                    var dataViewQry = GetPeopleInDataViewQuery( settings.IsIncludeDataViewEnabled, settings.IncludeDataView, rockContext );
+                    if ( dataViewQry != null )
+                    {
+                        personIds.AddRange( dataViewQry.ToList() );
+                    }
+
                     // Create a new queryable of family member person ids
                     personIdQry = CreateEntitySetIdQuery( personIds, rockContext );
 
                     // Start the person qry by getting any of the people who are currently inactive
                     var personQry = new PersonService( rockContext )
-                        .Queryable().AsNoTracking()
+                        .Queryable( new PersonService.PersonQueryOptions() { IncludeRestUsers = false } ).AsNoTracking()
                         .Where( p =>
                             personIdQry.Contains( p.Id ) &&
                             p.RecordStatusValueId == inactiveStatus.Id );
@@ -484,7 +487,7 @@ Update Family Status: {updateFamilyStatus}
                     var maxRecordCreationDate = RockDateTime.Now.AddDays( settings.RecordsOlderThan * -1 );
                     // Start the person qry by getting any of the people who are currently active and not in the list of people with activity
                     var personQry = new PersonService( rockContext )
-                        .Queryable().AsNoTracking()
+                        .Queryable(new PersonService.PersonQueryOptions() { IncludeRestUsers = false } ).AsNoTracking()
                         .Where( p =>
                             !personIdQry.Contains( p.Id ) &&
                             p.RecordStatusValueId == activeStatus.Id &&
@@ -1249,13 +1252,13 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
-                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
                         continue;
                     }
 
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1275,8 +1278,8 @@ Update Family Status: {updateFamilyStatus}
                             using ( var updateRockContext = new RockContext() )
                             {
                                 updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                                updateRockContext.People.Attach( person );
+                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext
+                                new PersonService( updateRockContext ).Attach( person );
 
                                 recordsUpdated++;
                                 person.ConnectionStatusValueId = connectionStatusValueId;
@@ -1335,13 +1338,13 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
-                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
                         continue;
                     }
 
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1359,8 +1362,8 @@ Update Family Status: {updateFamilyStatus}
                         using ( var updateRockContext = new RockContext() )
                         {
                             updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                            // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                            updateRockContext.Groups.Attach( group );
+                            // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext
+                            new GroupService( updateRockContext ).Attach( group );
 
                             recordsUpdated++;
                             group.StatusValueId = groupStatusValueId;
@@ -1662,13 +1665,13 @@ Update Family Status: {updateFamilyStatus}
                 return null;
             }
 
-            var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
+            var dataView = DataViewCache.Get( dataviewId.Value );
             if ( dataView == null )
             {
                 return null;
             }
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = rockContext
             };

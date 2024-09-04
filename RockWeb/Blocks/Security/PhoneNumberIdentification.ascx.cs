@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -180,14 +183,14 @@ namespace RockWeb.Blocks.Security
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             ValidateBlockConfigured();
 
             if ( Page.IsPostBack )
             {
                 nbWarningMessage.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         private void ValidateBlockConfigured()
@@ -251,7 +254,7 @@ namespace RockWeb.Blocks.Security
             catch ( Exception ex )
             {
                 ShowWarningMessage( ex.Message );
-                RockLogger.Log.Error( RockLogDomains.Core, ex );
+                Logger.LogError( ex, ex.Message );
                 ExceptionLogService.LogException( ex );
             }
         }
@@ -506,7 +509,31 @@ namespace RockWeb.Blocks.Security
                     {
                         var userName = user.UserName;
                         UserLoginService.UpdateLastLogin( userName );
-                        Authorization.SetAuthCookie( userName, false, false );
+
+                        /*
+                            10/20/2023 - JMH
+
+                            If 2FA is required for the person's protection profile,
+                            then 2FA will need to be bypassed here by hard-coding a true value in their auth cookie.
+
+                            If 2FA is not required, then the auth cookie will be created without bypassing 2FA
+                            since there is no need to bypass it.
+
+                            Reason: Two-Factor Authentication
+                         */
+                        var isTwoFactorAuthenticated = false;
+                        var securitySettings = new SecuritySettingsService().SecuritySettings;
+
+                        if ( securitySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( person.AccountProtectionProfile ) == true )
+                        {
+                            isTwoFactorAuthenticated = true;
+                        }
+
+                        Authorization.SetAuthCookie(
+                            userName,
+                            isPersisted: false,
+                            isImpersonated: false,
+                            isTwoFactorAuthenticated );
                     }
                     else
                     {
@@ -521,13 +548,12 @@ namespace RockWeb.Blocks.Security
             }
 
             var returnUrl = PageParameter( "returnUrl" );
-            if ( returnUrl.IsNullOrWhiteSpace() )
+            if ( returnUrl.IsNullOrWhiteSpace() || returnUrl.RedirectUrlContainsXss() )
             {
                 returnUrl = "/";
             }
             else
             {
-                returnUrl = returnUrl.ScrubEncodedStringForXSSObjects();
                 returnUrl = Server.UrlDecode( returnUrl );
             }
 

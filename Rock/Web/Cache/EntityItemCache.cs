@@ -119,20 +119,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache with an expiration timespan.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="itemFactory">The item factory.</param>
-        /// <param name="expiration">The expiration.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
-        protected static T GetOrAddExisting( int key, Func<T> itemFactory, TimeSpan expiration )
-        {
-            return GetOrAddExisting( key, itemFactory );
-        }
-
-        /// <summary>
         /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -141,20 +127,6 @@ namespace Rock.Web.Cache
         protected static T GetOrAddExisting( string key, Func<T> itemFactory )
         {
             return ItemCache<T>.GetOrAddExisting( key, itemFactory );
-        }
-
-        /// <summary>
-        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache with an expiration timespan.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="itemFactory">The item factory.</param>
-        /// <param name="expiration">The expiration.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
-        protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
-        {
-            return GetOrAddExisting( key, itemFactory );
         }
 
         /// <summary>

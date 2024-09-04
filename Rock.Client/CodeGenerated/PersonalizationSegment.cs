@@ -38,6 +38,12 @@ namespace Rock.Client
         public string AdditionalFilterJson { get; set; }
 
         /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
         public int? FilterDataViewId { get; set; }
 
         /// <summary />
@@ -49,6 +55,9 @@ namespace Rock.Client
         /// <summary />
         public bool IsActive { get; set; } = true;
 
+        /// <summary />
+        public bool IsDirty { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -59,6 +68,9 @@ namespace Rock.Client
 
         /// <summary />
         public string SegmentKey { get; set; }
+
+        /// <summary />
+        public double? TimeToUpdateDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -94,13 +106,17 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdditionalFilterJson = source.AdditionalFilterJson;
+            this.CategoryId = source.CategoryId;
+            this.Description = source.Description;
             this.FilterDataViewId = source.FilterDataViewId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
+            this.IsDirty = source.IsDirty;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.SegmentKey = source.SegmentKey;
+            this.TimeToUpdateDurationMilliseconds = source.TimeToUpdateDurationMilliseconds;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -116,6 +132,9 @@ namespace Rock.Client
     /// </summary>
     public partial class PersonalizationSegment : PersonalizationSegmentEntity
     {
+        /// <summary />
+        public Category Category { get; set; }
+
         /// <summary />
         public DataView FilterDataView { get; set; }
 

@@ -583,22 +583,6 @@ namespace Rock.Web.UI.Controls
         public bool AllowMultiSelect { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [allow category selection].
-        /// If set to true then the user will be allowed to select a Category in addition to the Items.
-        /// Default value is false.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [allow category selection]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "ItemPicker no longer supports selection of both items and categories concurrently.", false )]
-        public bool AllowCategorySelection
-        {
-            get => UseCategorySelection;
-            set => UseCategorySelection = value;
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether category selection is used.
         /// If set to true then the user will be allowed to select a Category but not Items.
         /// </summary>
@@ -712,7 +696,7 @@ $@"Rock.controls.itemPicker.initialize({{
     restUrl: '{this.ResolveUrl( ItemRestUrl )}',
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
     allowCategorySelection: {this.UseCategorySelection.ToString().ToLower()},
-    categoryPrefix: '{( this.UseCategorySelection ? CategoryPrefix : "")}',
+    categoryPrefix: '{CategoryPrefix}',
     defaultText: '{this.DefaultText}',
     restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
     expandedIds: [{this.InitialItemParentIds}],

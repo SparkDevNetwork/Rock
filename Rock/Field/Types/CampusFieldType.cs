@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Campus
     /// Stored as Campus's Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M5.38,7.67A.32.32,0,0,0,5.7,8H6.8a.32.32,0,0,0,.32-.33V6.58a.32.32,0,0,0-.32-.33H5.7a.32.32,0,0,0-.32.33ZM7.12,10.3V9.2a.32.32,0,0,0-.32-.32H5.7a.32.32,0,0,0-.32.32v1.1a.32.32,0,0,0,.32.32H6.8A.32.32,0,0,0,7.12,10.3ZM5.7,5.38H6.8a.32.32,0,0,0,.32-.33V4a.32.32,0,0,0-.32-.33H5.7A.32.32,0,0,0,5.38,4v1.1A.32.32,0,0,0,5.7,5.38ZM11.5,1h-7A1.75,1.75,0,0,0,2.75,2.75V14.34a.66.66,0,1,0,1.31,0V2.75a.44.44,0,0,1,.44-.44h7a.44.44,0,0,1,.44.44V14.34a.66.66,0,1,0,1.31,0V2.75A1.75,1.75,0,0,0,11.5,1ZM10.3,3.62H9.2A.32.32,0,0,0,8.88,4v1.1a.32.32,0,0,0,.32.33h1.1a.32.32,0,0,0,.32-.33V4A.32.32,0,0,0,10.3,3.62Zm0,2.63H9.2a.32.32,0,0,0-.32.33V7.67A.32.32,0,0,0,9.2,8h1.1a.32.32,0,0,0,.32-.33V6.58A.32.32,0,0,0,10.3,6.25Zm0,2.63H9.2a.32.32,0,0,0-.32.32v1.1a.32.32,0,0,0,.32.32h1.1a.32.32,0,0,0,.32-.32V9.2A.32.32,0,0,0,10.3,8.88ZM8,11.5a1.35,1.35,0,0,0-1.29,1.37v1.47a.65.65,0,0,0,.65.66H8.66a.65.65,0,0,0,.65-.66V12.85A1.35,1.35,0,0,0,8,11.5Z""/></g></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CAMPUS )]
@@ -50,6 +51,7 @@ namespace Rock.Field.Types
         private const string FORCE_VISIBLE_KEY = "forceVisible";
         private const string SELECTABLE_CAMPUSES_KEY = "SelectableCampusIds";
         private const string VALUES_PUBLIC_KEY = "values";
+        private const string VALUES_INACTIVE_KEY = "valuesInactive";
         private const string SELECTABLE_CAMPUSES_PUBLIC_KEY = "selectableCampuses";
         private const string CAMPUSES_PROPERTY_KEY = "campuses";
         private const string CAMPUS_TYPES_PROPERTY_KEY = "campusTypes";
@@ -127,13 +129,20 @@ namespace Rock.Field.Types
                     Text = kvp.Value
                 } );
 
+            var inactiveListItems = GetInactiveListSource( privateConfigurationValues )
+                .Select( kvp => new ListItemBag
+                {
+                    Value = kvp.Key,
+                    Text = kvp.Value
+                } );
+
             if ( usage == ConfigurationValueUsage.View )
             {
                 publicValues = publicValues.Where( v => v.Value.AsGuid() == privateValue.AsGuid() );
             }
 
             publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues.ToCamelCaseJson( false, true );
-
+            publicConfigurationValues[VALUES_INACTIVE_KEY] = inactiveListItems.ToCamelCaseJson( false, true );
             if ( usage == ConfigurationValueUsage.View )
             {
                 publicConfigurationValues.Remove( INCLUDE_INACTIVE_KEY );
@@ -204,6 +213,38 @@ namespace Rock.Field.Types
 
             var campusList = allCampuses
                 .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
+                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
+                .ToList();
+
+            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+        }
+
+        /// <summary>
+        /// Gets the inactive list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private Dictionary<string, string> GetInactiveListSource( Dictionary<string, string> configurationValues )
+        {
+            var allCampuses = CampusCache.All();
+
+            if ( configurationValues == null )
+            {
+                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            }
+
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
+            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_CAMPUSES_KEY].SplitDelimitedValues( false ).AsIntegerList()
+                : null;
+
+            var campusList = allCampuses
+                .Where( c => !includeInactive && c.IsActive.HasValue && !c.IsActive.Value
                     && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
                     && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
                     && selectableCampuses.ContainsOrEmpty( c.Id ) )

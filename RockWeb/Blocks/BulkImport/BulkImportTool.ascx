@@ -2,6 +2,21 @@
 
 <script src="/SignalR/hubs"></script>
 <script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('.js-show-additional-notes').off('click').on('click', function () {
+            var isVisible = !$('.js-additional-notes').is(':visible');
+            $('#<%=hfShowAdditionalNotes.ClientID %>').val(isVisible);
+            $('.js-show-additional-notes').text(isVisible ? 'Hide Additional Notes' : 'Show Additional Notes');
+            $('.js-additional-notes').slideToggle();
+            return false;
+        });
+
+        if ($('#<%=hfShowAdditionalNotes.ClientID %>').val() == "true") {
+            $('.js-additional-notes').show();
+            $('.js-show-additional-notes').text('Hide Additional Notes');
+        }
+    });
+
     $(function ()
     {
         var proxy = $.connection.rockMessageHub;
@@ -89,9 +104,11 @@
                         </asp:Panel>
                     </Rock:RockControlWrapper>
 
-                    <Rock:RockControlWrapper ID="rcwAdditionalNotes" runat="server" Label="Additional Notes">
-                        <asp:Panel ID="pnlAdditionalNotes" runat="server">
-                            <Rock:HelpBlock ID="hbPostImportHelp" runat="server"><pre>
+                    <asp:HiddenField ID="hfShowAdditionalNotes" runat="server" />
+                    <a href="#" class="btn btn-xs btn-link js-show-additional-notes">Show Additional Notes</a>
+
+                    <asp:Panel ID="pnlAdditionalNotes" runat="server" CssClass="js-additional-notes" Style="display: none;">
+                            <pre>
 Before Importing
 -- Backup the Customer’s Database
 -- Verify that Rock > Home / General Settings / File Types / ‘Person Image’, has the Storage Type set to what you want.  Slingshot will use that when importing Person and Family Photos
@@ -112,7 +129,7 @@ SELECT gt.NAME [GroupType.Name], gt.Id, max(gt.CreatedDateTime) [GroupType.Creat
               WHERE ChildGroupTypeId = gt.id
               ) [Parent Group Type]
 FROM Attendance a
-INNER JOIN [Group] g ON a.GroupId = g.Id
+INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
 INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
 GROUP BY gt.NAME,gt.Id
 order by gt.Id desc
@@ -127,7 +144,7 @@ SELECT gt.NAME [GroupType.Name]
        ,MAX(PGT.GroupTypePurpose) [Parent Group Type Purpose]
 	   ,max(gt.CreatedDateTime) [GroupType.CreateDateTime]
 FROM Attendance a
-INNER JOIN [Group] g ON a.GroupId = g.Id
+INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
 INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
 OUTER APPLY (
        SELECT TOP 1 pgt.NAME
@@ -148,10 +165,8 @@ order by Gt.Id, Gt.Name, g.Name
 	-- Ones that sound like Volunteer Check-in will go in Volunteer Check-in GroupType, then the 'General' panelwidget | Child Group Types
 
 -- Now Attendance Analytics will be able to show the import Attendance Data
-                </pre></Rock:HelpBlock>
+                            </pre>
                         </asp:Panel>
-                    
-                    </Rock:RockControlWrapper>
 
                 </Rock:PanelWidget>
 

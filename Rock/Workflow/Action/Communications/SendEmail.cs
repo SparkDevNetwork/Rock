@@ -217,6 +217,7 @@ namespace Rock.Workflow.Action
 
             string fromName = string.Empty;
             string fromEmailAddress = string.Empty;
+            int? fromPersonId = null;
             Guid? fromGuid = fromValue.AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
@@ -239,6 +240,7 @@ namespace Rock.Workflow.Action
                                 {
                                     fromEmailAddress = person.Email;
                                     fromName = person.FullName;
+                                    fromPersonId = person.Id;
                                 }
                             }
                         }
@@ -275,6 +277,11 @@ namespace Rock.Workflow.Action
                                 if ( person != null && !string.IsNullOrWhiteSpace( person.FullName ) )
                                 {
                                     fromName = person.FullName;
+
+                                    if ( !fromPersonId.HasValue )
+                                    {
+                                        fromPersonId = person.Id;
+                                    }
                                 }
                             }
                         }
@@ -343,11 +350,11 @@ namespace Rock.Workflow.Action
 
                 if ( !string.IsNullOrWhiteSpace( toDelimitedEmails ) )
                 {
-                    Send( toDelimitedEmails, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, attachments, out errorMessages );
+                    Send( toDelimitedEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, attachments, out errorMessages );
                 }
                 else if ( toRecipients != null )
                 {
-                    Send( toRecipients, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
+                    Send( toRecipients, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
                 }
             }
 
@@ -574,6 +581,7 @@ namespace Rock.Workflow.Action
         /// Sends the specified recipient emails.
         /// </summary>
         /// <param name="recipientEmails">The recipient emails.</param>
+        /// <param name="fromPersonId">From person identifier.</param>
         /// <param name="fromEmail">From email.</param>
         /// <param name="fromName">From name.</param>
         /// <param name="replyToEmail">Reply To email.</param>
@@ -585,16 +593,17 @@ namespace Rock.Workflow.Action
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( string recipientEmails, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( string recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
-            Send( recipients, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
+            Send( recipients, fromPersonId, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
         }
 
         /// <summary>
         /// Sends the specified recipients.
         /// </summary>
         /// <param name="recipients">The recipients.</param>
+        /// <param name="fromPersonId">From person identifier.</param>
         /// <param name="fromEmail">From email.</param>
         /// <param name="fromName">From name.</param>
         /// <param name="replyToEmail">Reply To email.</param>
@@ -605,10 +614,11 @@ namespace Rock.Workflow.Action
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( List<RockEmailMessageRecipient> recipients, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( List<RockEmailMessageRecipient> recipients, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var emailMessage = new RockEmailMessage();
             emailMessage.SetRecipients( recipients );
+            emailMessage.FromPersonId = fromPersonId;
             emailMessage.FromEmail = fromEmail;
             emailMessage.FromName = fromName.IsNullOrWhiteSpace() ? fromEmail : fromName;
             emailMessage.ReplyToEmail = replyToEmail;
@@ -627,7 +637,17 @@ namespace Rock.Workflow.Action
             }
 
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
-            emailMessage.AppRoot = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
+
+            /* 
+                [2024-06-20] - DJL
+
+                Changed the AppRoot from InternalApplicationRoot to PublicApplicationRoot.
+
+                Reason:
+                    To ensure that links embedded in the email are accessible to both
+                    internal and external recipients.
+             */
+            emailMessage.AppRoot = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty;
 
             emailMessage.Send( out errorMessages );
         }

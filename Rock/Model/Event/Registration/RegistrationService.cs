@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
@@ -414,6 +415,16 @@ namespace Rock.Model
         /// The gateway person identifier.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        private readonly List<int> _personIdsRegisteredWithinThisSession = new List<int>();
+
+        /// <summary>
+        /// Gets the identifiers of the people who have been registered within a registration session.
+        /// </summary>
+        /// <value>
+        /// The identifiers of the people who have been registered within a registration session.
+        /// </value>
+        public List<int> PersonIdsRegisteredWithinThisSession => _personIdsRegisteredWithinThisSession;
     }
 
     /// <summary>
@@ -456,6 +467,7 @@ namespace Rock.Model
             AllowExternalRegistrationUpdates = template.AllowExternalRegistrationUpdates;
             ShowSmsOptIn = template.ShowSmsOptIn;
             SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+            ConnectionStatusValueId = template.ConnectionStatusValueId;
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -480,6 +492,7 @@ namespace Rock.Model
             AttributeTitleEnd = template.RegistrationAttributeTitleEnd.IsNullOrWhiteSpace() ? "Registration Information" : template.RegistrationAttributeTitleEnd;
             RegistrationTerm = template.RegistrationTerm.IsNullOrWhiteSpace() ? "Registration" : template.RegistrationTerm;
             Name = instance.Name.IsNullOrWhiteSpace() ? template.Name : instance.Name;
+            DiscountCodeTerm = template.DiscountCodeTerm.IsNullOrWhiteSpace() ? "Discount Code" : template.DiscountCodeTerm;
 
             // Gateway related
             FinancialGatewayId = template.FinancialGatewayId;
@@ -487,6 +500,24 @@ namespace Rock.Model
             ExternalGatewayMerchantId = instance.ExternalGatewayMerchantId;
             FinancialAccountId = instance.AccountId;
             BatchNamePrefix = template.BatchNamePrefix;
+
+            // Payment plan
+            IsPaymentPlanAllowed = template.IsPaymentPlanAllowed;
+            PaymentDeadlineDate = instance.PaymentDeadlineDate;
+            PaymentPlanFrequencyValueIds = template.PaymentPlanFrequencyValueIdsCollection.ToList();
+            if ( PaymentPlanFrequencyValueIds?.Any() != true )
+            {
+                // If no payment plan frequencies were selected in the template,
+                // then allow any frequency defined in the gateway.
+                PaymentPlanFrequencyValueIds = template
+                    .FinancialGateway
+                    ?.GetGatewayComponent()
+                    ?.SupportedPaymentSchedules
+                    // Ignore "One-Time" option.
+                    ?.Where( f => f.Guid != SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+                    .Select( f => f.Id )
+                    .ToList() ?? new List<int>();
+            }
 
             // Group placement
             GroupTypeId = template.GroupTypeId;
@@ -712,6 +743,14 @@ namespace Rock.Model
         /// The registration term.
         /// </value>
         public string RegistrationTerm { get; private set; }
+        
+        /// <summary>
+        /// Gets the discount code term.
+        /// </summary>
+        /// <value>
+        /// The discount code term.
+        /// </value>
+        public string DiscountCodeTerm { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -760,6 +799,38 @@ namespace Rock.Model
         /// The batch name prefix.
         /// </value>
         public string BatchNamePrefix { get; private set; }
+
+        /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; private set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTime? PaymentDeadlineDate { get; private set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequency value IDs from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequency value IDs from which a registrant can select.
+        /// </value>
+        public List<int> PaymentPlanFrequencyValueIds { get; private set; }
+
+        /// <summary>
+        /// Gets the connection status value identifier.
+        /// </summary>
+        /// <value>
+        /// The connection status value identifier.
+        /// </value>
+        public int? ConnectionStatusValueId { get; private set; }
 
         /// <summary>
         /// Gets the group type identifier.

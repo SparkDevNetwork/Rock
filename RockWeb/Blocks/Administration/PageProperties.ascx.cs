@@ -20,14 +20,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Services.NuGet;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web;
@@ -125,6 +126,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Gets the interaction intent defined type cache.
+        /// </summary>
+        protected DefinedTypeCache InteractionIntentDefinedTypeCache => DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+
         #endregion
 
         #region Base Control Methods
@@ -202,6 +208,16 @@ namespace RockWeb.Blocks.Administration
 
                         phContext.Controls.Add( tbContext );
                     }
+                }
+
+                if ( InteractionIntentDefinedTypeCache != null )
+                {
+                    dvpPageIntents.DefinedTypeId = InteractionIntentDefinedTypeCache.Id;
+                    dvpPageIntents.Visible = true;
+                }
+                else
+                {
+                    dvpPageIntents.Visible = false;
                 }
             }
             else
@@ -580,6 +596,22 @@ namespace RockWeb.Blocks.Administration
             ceHeaderContent.Text = page.HeaderContent;
             tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
+            if ( InteractionIntentDefinedTypeCache != null )
+            {
+                var intentValueIds = page.Id > 0
+                    ? new EntityIntentService( rockContext ).GetIntentValueIds<Rock.Model.Page>( page.Id )
+                    : null;
+
+                if ( intentValueIds?.Any() == true )
+                {
+                    dvpPageIntents.SetValues( intentValueIds );
+                }
+                else
+                {
+                    dvpPageIntents.ClearSelection();
+                }
+            }
+
             // Add enctype attribute to page's <form> tag to allow file upload control to function
             Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
         }
@@ -822,6 +854,15 @@ namespace RockWeb.Blocks.Administration
                     rockContext.SaveChanges();
 
                     page.SaveAttributeValues( rockContext );
+
+                    // Interaction Intents
+                    if ( InteractionIntentDefinedTypeCache != null )
+                    {
+                        new EntityIntentService( rockContext )
+                            .SetIntents<Rock.Model.Page>( page.Id, dvpPageIntents.SelectedValuesAsInt );
+
+                        rockContext.SaveChanges();
+                    }
                 } );
 
                 Rock.Web.RockRouteHandler.ReregisterRoutes();

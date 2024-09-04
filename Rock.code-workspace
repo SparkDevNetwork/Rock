@@ -8,7 +8,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"url": "http://localhost:6229",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			},
 			{
 				"name": "Debug Framework (Attach to existing Chrome)",
@@ -16,7 +20,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"urlFilter": "http://localhost:6229*",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			},
 			{
 				"name": "Debug Blocks",
@@ -24,7 +32,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"url": "http://localhost:6229",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			},
 			{
 				"name": "Debug Blocks (Attach to existing Chrome)",
@@ -32,7 +44,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"urlFilter": "http://localhost:6229*",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			}
 		]
 	},
@@ -40,8 +56,7 @@
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
 			"vue.volar",
-			"orta.vscode-jest",
-			"vue.vscode-typescript-vue-plugin"
+			"orta.vscode-jest"
 		]
 	},
 	"folders": [
@@ -56,16 +71,15 @@
 		"files.associations": {
 			"*.obs": "vue"
 		},
+		"vue.format.template.initialIndent": true,
+		"vue.format.script.initialIndent": true,
 		"volar.format.initialIndent": {
 			"typescript": true,
 			"html": true
 		},
-		"volar.completion.preferredAttrNameCase": "camel",
-		"volar.completion.preferredTagNameCase": "pascal",
 		"volar.vueserver.additionalExtensions": [
 			"obs"
 		],
-		"vue.features.complete.propNameCasing": "camel",
 		"vue.complete.casing.props": "camel",
 		"vue.complete.casing.tags": "pascal",
 		"vue.server.additionalExtensions": [
@@ -75,7 +89,7 @@
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
 		"editor.codeActionsOnSave": {
-			"source.fixAll.eslint": true
+			"source.fixAll.eslint": "explicit"
 		},
 		"eslint.validate": [
 			"javascript",

@@ -95,12 +95,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Reporting
                 lTitle.Text = channel.Name.FormatAsHtmlTitle();
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.AddOrIgnore( "CurrentPerson", CurrentPerson );
+                mergeFields.TryAdd( "CurrentPerson", CurrentPerson );
                 mergeFields.Add( "InteractionChannel", channel );
 
                 string template = GetAttributeValue( "DefaultTemplate" );

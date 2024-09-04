@@ -21,6 +21,8 @@ using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Microsoft.ServiceBus.Messaging;
+
 #endif
 
 using Rock.Attribute;
@@ -38,6 +40,7 @@ namespace Rock.Field.Types
     /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M14.12,10.62V2.31A1.31,1.31,0,0,0,12.81,1H4.06A2.19,2.19,0,0,0,1.88,3.19v9.62A2.19,2.19,0,0,0,4.06,15h9.41a.66.66,0,0,0,0-1.31h-.22V11.86A1.32,1.32,0,0,0,14.12,10.62Zm-2.18,3.07H4.06a.88.88,0,0,1,0-1.75h7.88Zm.87-3.07H4.06a2.13,2.13,0,0,0-.87.19V3.19a.87.87,0,0,1,.87-.88h8.75Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE )]
@@ -154,6 +157,7 @@ namespace Rock.Field.Types
                 }
             }
 
+            // Get the list of values that can be selected.
             if ( definedType != null )
             {
                 int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
@@ -161,10 +165,17 @@ namespace Rock.Field.Types
                     : null;
 
                 var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
-
-                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
+                var definedValues = definedType.DefinedValues
                     .Where( v => ( includeInactive || v.IsActive )
-                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
+                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) );
+
+                if ( usage == ConfigurationValueUsage.View )
+                {
+                    var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                    definedValues = definedValues.Where( dv => selectedValues.Contains( dv.Guid ) );
+                }
+
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedValues
                     .OrderBy( v => v.Order )
                     .Select( v => new
                     {
@@ -442,36 +453,6 @@ namespace Rock.Field.Types
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
             var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
             return string.Format( format, titleJs );
-        }
-
-        /// <inheritdoc/>
-        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateValue.FromJsonOrNull<List<string>>();
-
-            if ( values?.Count == 2 )
-            {
-                return new ComparisonValue
-                {
-                    ComparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains ),
-                    Value = values[1]
-                };
-            }
-            else if ( values?.Count == 1 )
-            {
-                return new ComparisonValue
-                {
-                    ComparisonType = ComparisonType.Contains,
-                    Value = values[0]
-                };
-            }
-            else
-            {
-                return new ComparisonValue
-                {
-                    Value = string.Empty
-                };
-            }
         }
 
         /// <summary>
@@ -1395,7 +1376,7 @@ namespace Rock.Field.Types
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
             if ( allowMultiple && string.IsNullOrWhiteSpace( value ) )
             {
-                return null;
+                return string.Empty;
             }
 
             return value;

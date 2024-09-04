@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
@@ -60,20 +61,28 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         public SlidingDateRangeBag DateRange { get; set; }
 
         /// <summary>
-        /// Gets or sets the first "end of week" date, based on the selected date range.
+        /// Gets or set sets the start date, based on the selected date range.
         /// </summary>
         /// <value>
-        /// The first "end of week" date, based on the selected date range.
+        /// The start date, based on the selected date range.
         /// </value>
-        public DateTimeOffset FirstEndOfWeekDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the last "end of week" date, based on the selected date range.
+        /// Gets or sets the end date, based on the selected date range.
         /// </summary>
         /// <value>
-        /// The last "end of week" date, based on the selected date range.
+        /// The end date, based on the selected date range.
         /// </value>
-        public DateTimeOffset LastEndOfWeekDate { get; set; }
+        public DateTimeOffset EndDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days included in the date range.
+        /// </summary>
+        /// <value>
+        /// The number of days included in the date range.
+        /// </value>
+        public int NumberOfDays { get; set; }
 
         /// <summary>
         /// Gets or sets the friendly date range, based on the selected date range.

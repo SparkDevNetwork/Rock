@@ -350,8 +350,6 @@ namespace Rock.Model
         /// <summary>
         /// List leaders names, in order by males → females.
         /// Examples: Ted &#38; Cindy Decker -or- Ted Decker &#38; Cindy Wright.
-        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
-        /// with includeChildren=false, and useFormalNames=false.
         /// </summary>
         /// <value>
         /// The group salutation.
@@ -363,8 +361,6 @@ namespace Rock.Model
         /// <summary>
         /// List all active group members, or order by leaders males → females - non leaders by age.
         /// Examples: Ted, Cindy, Noah and Alex Decker.
-        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
-        /// with includeChildren=true, and useFormalNames=false.
         /// </summary>
         /// <value>
         /// The group salutation.
@@ -418,6 +414,64 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public ScheduleConfirmationLogic? ScheduleConfirmationLogic { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether relationship growth is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [relationship growth enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? RelationshipGrowthEnabledOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relationship strength.
+        /// </summary>
+        /// <value>
+        /// The relationship strength.
+        /// </value>
+        [DataMember]
+        public int? RelationshipStrengthOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? LeaderToLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? LeaderToNonLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? NonLeaderToNonLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? NonLeaderToLeaderRelationshipMultiplierOverride { get; set; }
 
         #endregion
 

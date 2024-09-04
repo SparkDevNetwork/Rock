@@ -156,6 +156,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the optional <see cref="Rock.Model.SignatureDocument"/> that may be associated with the Registrant.
+        /// </summary>
+        /// <value>
+        /// The signature document.
+        /// </value>
+        public virtual SignatureDocument SignatureDocument { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of the optional <see cref="Rock.Model.SignatureDocument"/> that may be associated with the Registrant.
+        /// </summary>
+        /// <value>
+        /// The signature document.
+        /// </value>
+        [DataMember]
+        public int? SignatureDocumentId { get; set; }
+
+        /// <summary>
         /// Gets or sets the fees.
         /// </summary>
         /// <value>
@@ -195,6 +212,7 @@ namespace Rock.Model
             this.HasRequired( r => r.Registration ).WithMany( t => t.Registrants ).HasForeignKey( r => r.RegistrationId ).WillCascadeOnDelete( true );
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.GroupMember ).WithMany().HasForeignKey( r => r.GroupMemberId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.SignatureDocument ).WithMany().HasForeignKey( r => r.SignatureDocumentId ).WillCascadeOnDelete ( false );
         }
     }
 

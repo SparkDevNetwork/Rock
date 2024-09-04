@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// EntitySetItem POCO Service class
+    /// EntitySet Service class.
     /// </summary>
     public partial class EntitySetService
     {
@@ -38,26 +38,41 @@ namespace Rock.Model
         /// <remarks>
         /// This method uses a bulk insert to improve performance when creating large Entity Sets.
         /// </remarks>
-        /// <param name="name"></param>
-        /// <param name="entityTypeId"></param>
-        /// <param name="entityIdList"></param>
-        /// <param name="expiryMinutes"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public int AddEntitySet( string name, int entityTypeId, IEnumerable<int> entityIdList, int expiryMinutes = 20 )
+        public int AddEntitySet( AddEntitySetActionOptions options )
         {
             // Create a new Entity Set.
             var entitySet = new Rock.Model.EntitySet();
-            entitySet.Name = name;
-            entitySet.EntityTypeId = entityTypeId;
-            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( expiryMinutes );
+            entitySet.Name = options.Name;
+            entitySet.EntityTypeId = options.EntityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( options.ExpiryInMinutes ?? 20 );
+            entitySet.Note = options.Note;
+
+            entitySet.ParentEntitySetId = options.ParentEntitySetId;
+            
+            // Set the Entity Set Purpose.
+             if ( options.PurposeValueId != null )
+            {
+                var purposeDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.ENTITY_SET_PURPOSE );
+
+                var purposeIsValid = purposeDefinedType.DefinedValues.Any( v => v.Id == options.PurposeValueId );
+                if ( !purposeIsValid )
+                {
+                    throw new Exception( $"Invalid Entity Set Purpose Value. [Value={options.PurposeValueId}]" );
+                }
+
+                entitySet.EntitySetPurposeValueId = options.PurposeValueId;
+            }
 
             Add( entitySet );
 
             var rockContext = ( RockContext ) this.Context;
-
             rockContext.SaveChanges();
 
-            // Add items to the new Entity Set, using a bulk insert to improve performance.
+            // Add items to the new Entity Set, using a bulk insert to optimize performance.
+            var entityIdList = options.EntityIdList;
+
             if ( entityIdList != null
                  && entityIdList.Any() )
             {
@@ -76,6 +91,32 @@ namespace Rock.Model
             }
 
             return entitySet.Id;
+        }
+
+        /// <summary>
+        /// Create a new Entity Set for the specified entities.
+        /// </summary>
+        /// <remarks>
+        /// This method uses a bulk insert to improve performance when creating large Entity Sets.
+        /// </remarks>
+        /// <param name="name"></param>
+        /// <param name="entityTypeId"></param>
+        /// <param name="entityIdList"></param>
+        /// <param name="expiryMinutes"></param>
+        /// <returns></returns>
+        [Obsolete( "Use AddEntitySet(options) instead." )]
+        [RockObsolete( "1.16" )]
+        public int AddEntitySet( string name, int entityTypeId, IEnumerable<int> entityIdList, int expiryMinutes = 20 )
+        {
+            var options = new AddEntitySetActionOptions()
+            {
+                Name = name,
+                EntityTypeId = entityTypeId,
+                ExpiryInMinutes = expiryMinutes,
+                EntityIdList = entityIdList
+            };
+
+            return AddEntitySet( options );
         }
 
         /// <summary>
@@ -245,13 +286,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityItemIds">The list of entity item IDs to include in the entity set.</param>
         /// <param name="entityTypeId">The ID of the entity type of the entity set.</param>
+        /// <param name="timeToExpire">The amount of time (in minutes) before the entity set is expired.</param>
         /// <param name="rockContext">The optional rock context to use for the operation.</param>
         /// <returns>The ID of the newly created entity set, or null if it was unable to create.</returns>
         [RockInternal("1.15")]
-        internal static int? CreateEntitySetFromItems( List<int> entityItemIds, int entityTypeId, RockContext rockContext = null )
+        internal static int? CreateEntitySetFromItems( List<int> entityItemIds, int entityTypeId, int timeToExpire = 15, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            return CreateEntitySetFromItemIds( entityItemIds, entityTypeId, rockContext )?.Id;
+            return CreateEntitySetFromItemIds( entityItemIds, entityTypeId, timeToExpire, rockContext )?.Id;
         }
 
         /// <summary>
@@ -259,10 +301,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityItemGuids">The list of entity item GUIDs to include in the entity set.</param>
         /// <param name="entityTypeGuid">The GUID of the entity type of the entity set.</param>
+        /// <param name="timeToExpire">The amount of times in minutes until the entity set expires. 0 to disable.</param>
         /// <param name="rockContext">The optional rock context to use for the operation.</param>
         /// <returns>The GUID of the newly created entity set, or null if the entity service for the entity type was not found.</returns>
         [RockInternal( "1.15" )]
-        internal static Guid? CreateEntitySetFromItems( List<Guid> entityItemGuids, Guid entityTypeGuid, RockContext rockContext = null )
+        internal static Guid? CreateEntitySetFromItems( List<Guid> entityItemGuids, Guid entityTypeGuid, int timeToExpire = 15, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -300,7 +343,7 @@ namespace Rock.Model
             }
 
             // Create an entity set from the entity item IDs.
-            return CreateEntitySetFromItemIds( entityIds, entityType.Id, rockContext )?.Guid;
+            return CreateEntitySetFromItemIds( entityIds, entityType.Id, timeToExpire, rockContext )?.Guid;
         }
 
         /// <summary>
@@ -308,16 +351,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityItemIds">The entity item ids.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="timeToExpire">The amount of time in minutes before the entity set expires.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The Guid and the Id of the entity set that was created, or null if it was unable to create.</returns>
-        private static (int Id, Guid Guid)? CreateEntitySetFromItemIds( List<int> entityItemIds, int entityTypeId, RockContext rockContext = null )
+        private static (int Id, Guid Guid)? CreateEntitySetFromItemIds( List<int> entityItemIds, int entityTypeId, int timeToExpire = 15, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
             // Create the entity set and set the default expiration date.
             var entitySet = new Rock.Model.EntitySet();
             entitySet.EntityTypeId = entityTypeId;
-            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+            if ( timeToExpire > 0 )
+            {
+                entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( timeToExpire );
+            }
 
             // For each entity item id, add a new entity set item to the entity set.
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
@@ -351,119 +399,6 @@ namespace Rock.Model
             }
 
             return null;
-        }
-
-        internal class CreateEntitySetFromDataViewActionArgs
-        {
-            /// <summary>
-            /// A unique identifier for the Entity Set.
-            /// If specified, any existing item having the same identifier will be replaced.
-            /// </summary>
-            public Guid? EntitySetGuid;
-
-            public int DataViewId;
-            public TimeSpan? ExpirationPeriod;
-            public int? DatabaseTimeoutInSeconds;
-
-            public string EntitySetName;
-            public string EntitySetNote;
-
-            public bool IgnorePersistedValues;
-        }
-
-        /// <summary>
-        /// Creates an entity set containing the results of a specified Data View.
-        /// </summary>
-        /// <param name="args">The set of arguments to use for this action.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The Id of the new entity set, or null if the action failed.</returns>
-        internal static int? CreateEntitySetFromDataView( CreateEntitySetFromDataViewActionArgs args, RockContext rockContext = null )
-        {
-            rockContext = rockContext ?? new RockContext();
-            rockContext.Database.CommandTimeout = args.DatabaseTimeoutInSeconds;
-
-            var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Queryable().AsNoTracking().FirstOrDefault( dv => dv.Id == args.DataViewId );
-
-            var dataViewFilterOverrides = new DataViewFilterOverrides();
-            dataViewFilterOverrides.ShouldUpdateStatics = false;
-            if ( args.IgnorePersistedValues )
-            {
-                dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( args.DataViewId );
-            }
-
-            // Get the list of keys in the Data View result set.
-            var resultSetContext = new RockContext();
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = resultSetContext,
-                DataViewFilterOverrides = dataViewFilterOverrides,
-                DatabaseTimeoutSeconds = args.DatabaseTimeoutInSeconds,
-            };
-
-            var dataViewQuery = dataView.GetQuery( dataViewGetQueryArgs );
-
-            // Materialize the key list. Note that this approach could be made more efficient
-            // by using direct SQL to insert the Data View results directly into the Entity Set values table,
-            // bypassing the Entity Framework completely.
-            var entityItemIds = dataViewQuery.Select( a => a.Id ).ToList();
-
-            // Create the entity set.
-            var entitySetService = new EntitySetService( rockContext );
-
-            EntitySet entitySet = null;
-            if ( !string.IsNullOrWhiteSpace( args.EntitySetName ) )
-            {
-                entitySet = entitySetService.Queryable()
-                    .FirstOrDefault( es => es.Name == args.EntitySetName );
-                if ( entitySet != null )
-                {
-                    // Remove the existing items from the Entity Set.
-                    var entitySetItemService = new EntitySetItemService( rockContext );
-                    var entitySetItemQuery = entitySetItemService.Queryable()
-                        .Where( esi => esi.EntitySetId == entitySet.Id );
-
-                    rockContext.BulkDelete( entitySetItemQuery );
-                }
-            }
-
-            if ( entitySet == null )
-            {
-                entitySet = new EntitySet();
-                entitySetService.Add( entitySet );
-            }
-            entitySet.EntityTypeId = dataView.EntityTypeId;
-            entitySet.Name = args.EntitySetName;
-            entitySet.Note = args.EntitySetNote;
-
-            var expirationPeriod = args.ExpirationPeriod ?? new TimeSpan( 0, 5, 0 );
-            entitySet.ExpireDateTime = RockDateTime.Now.Add( expirationPeriod );
-
-            // For each entity item id, add a new entity set item to the entity set.
-            var entitySetItems = new List<EntitySetItem>();
-            foreach ( var entityItemId in entityItemIds )
-            {
-                var item = new EntitySetItem
-                {
-                    EntityId = ( int ) entityItemId
-                };
-                entitySetItems.Add( item );
-            }
-
-            rockContext.SaveChanges();
-
-            // Add the items.
-            if ( entitySetItems.Any() )
-            {
-                entitySetItems.ForEach( a =>
-                {
-                    a.EntitySetId = entitySet.Id;
-                } );
-
-                rockContext.BulkInsert( entitySetItems );
-            }
-
-            return entitySet.Id;
         }
 
         /// <summary>

@@ -20,10 +20,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
+                        <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                     </div>
                 </div>
 

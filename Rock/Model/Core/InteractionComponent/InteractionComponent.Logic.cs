@@ -54,41 +54,5 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region Obsolete Properties
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
-        /// </value>
-        [LavaVisible]
-        [NotMapped]
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use InteractionChannelId instead", false )]
-        public int ChannelId
-        {
-            get { return InteractionChannelId; }
-            set { InteractionChannelId = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the channel.
-        /// </summary>
-        /// <value>
-        /// The channel.
-        /// </value>
-        [LavaVisible]
-        [NotMapped]
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use InteractionChannel instead", false )]
-        public virtual InteractionChannel Channel
-        {
-            get { return InteractionChannel; }
-            set { InteractionChannel = value; }
-        }
-
-        #endregion
     }
 }

@@ -18,6 +18,8 @@ namespace Rock.Mobile.JsonFields
 {
     /// <summary>
     /// Determines the field's format. This will be used to properly format the Json sent to the client.
+    /// This is copied to Rock.Enums/Controls/FieldFormat.cs. If any changes are made here,
+    /// they may need to be copied there as well.
     /// </summary>
     public enum FieldFormat
     {

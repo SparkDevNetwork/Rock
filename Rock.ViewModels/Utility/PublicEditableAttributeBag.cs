@@ -159,6 +159,16 @@ namespace Rock.ViewModels.Utility
         public Guid? FieldTypeGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the field type unique identifier as it is known by the
+        /// server. If this value is <c>null</c> then the value from the
+        /// FieldTypeGuid property should be used instead. This is only used
+        /// by special field types that use a shared client control but have
+        /// distinct server features.
+        /// </summary>
+        /// <value>The server field type unique identifier.</value>
+        public Guid? RealFieldTypeGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration values for the attribute.
         /// </summary>
         /// <value>The configuration values for the attribute.</value>
@@ -169,5 +179,20 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The default value of the attribute.</value>
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary>
+        /// Gets or sets a color to visually distinguish this attribute.
+        /// </summary>
+        public string AttributeColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the icon to show as a distinguishing mark for this attribute.
+        /// </summary>
+        public string IconCssClass { get; set; }
     }
 }

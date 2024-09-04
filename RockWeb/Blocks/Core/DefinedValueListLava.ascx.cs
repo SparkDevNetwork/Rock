@@ -100,12 +100,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadContent();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-            mergeFields.AddOrIgnore( "Person", CurrentPerson );
+            mergeFields.TryAdd( "Person", CurrentPerson );
 
 
             string selectedDefinedType = GetAttributeValue( AttributeKey.DefinedType );

@@ -17,8 +17,11 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Newtonsoft.Json;
+
 using Rock.Lava;
 using Rock.Utility;
 
@@ -115,6 +118,8 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
         }
 
+        #region LavaDataObject
+
         /// <summary>
         /// Referencing a valid property of an input object should return the property value.
         /// </summary>
@@ -188,6 +193,19 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
         }
+
+        /// <summary>
+        /// Referencing a valid property of an input object that is decorated with the [LavaHidden] attribute should return an empty string.
+        /// </summary>
+        [TestMethod]
+        public void LavaDataObjectType_ProxiedObjectWithLavaHiddenProperty_HidesProperty()
+        {
+            var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetLavaDataObjectTestPersonTedDecker() } };
+
+            TestHelper.AssertTemplateOutput( "Ted's Password:", "{{ CurrentPerson.NickName }}'s Password:{{ CurrentPerson.Password }}", mergeValues );
+        }
+
+        #endregion
 
         #region Test Data
 
@@ -304,7 +322,15 @@ namespace Rock.Tests.UnitTests.Lava
         public PersonLavaDataObject GetLavaDataObjectTestPersonTedDecker()
         {
             var campus = new CampusLavaDataObject { Name = "North Campus", Id = 1 };
-            var person = new PersonLavaDataObject { FirstName = "Edward", NickName = "Ted", LastName = "Decker", Campus = campus, Id = 1 };
+            var person = new PersonLavaDataObject
+            {
+                FirstName = "Edward",
+                NickName = "Ted",
+                LastName = "Decker",
+                Campus = campus,
+                Id = 1,
+                Password = "secret"
+            };
 
             return person;
         }
@@ -319,6 +345,9 @@ namespace Rock.Tests.UnitTests.Lava
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public CampusLavaDataObject Campus { get; set; }
+
+            [LavaHidden]
+            public string Password { get; set; }
 
             public override string ToString()
             {

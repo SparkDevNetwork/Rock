@@ -1,0 +1,203 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           modalWrapperClasses="schedule-toolbox-add-edit-assignment"
+           saveText="Save"
+           :title="title"
+           :isSaveButtonDisabled="isSaveButtonDisabled"
+           @save="onSave">
+
+        <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+            {{ blockActionErrorMessage }}
+        </NotificationBox>
+
+        <DropDownList v-model="selectedScheduleGuidOrEmptyString"
+                      label="Schedule"
+                      formGroupClasses="assignment-schedules"
+                      rules="required"
+                      :items="schedules"
+                      :disabled="isBusy || !schedules.length" />
+
+        <DropDownList v-model="selectedLocationGuidOrEmptyString"
+                      label="Location"
+                      formGroupClasses="assignment-location"
+                      :items="locations"
+                      :disabled="isBusy || !locations.length" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { AssignmentOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/assignmentOptionsBag";
+    import { GetAssignmentOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/getAssignmentOptionsRequestBag";
+    import { SaveAssignmentRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveAssignmentRequestBag";
+    import { SaveAssignmentResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveAssignmentResponseBag";
+    import { SchedulePreferenceAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferenceAssignmentBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        optionsRequest: {
+            type: Object as PropType<GetAssignmentOptionsRequestBag | null>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "updatedAssignments", assignments: SchedulePreferenceAssignmentBag[]): void
+    }>();
+
+    // #region Values
+
+    /*
+        10/13/2023 - JPH
+
+        This value is intented to be used in both the `v-if` and `v-model:isVisible` directives
+        of this `EditAssignment` partial within the parent component. This is to prevent issues
+        that may arise with misaligned requests/responses if the individual rapidly opens/closes/reopens
+        the modal. If we introduce a way to cancel HTTP requests in the future, we can rethink this
+        usage at that time.
+    */
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    const blockActionErrorMessage = ref("");
+
+    const isLoadingAssignmentOptions = ref(false);
+    const isSavingAssignment = ref(false);
+
+    const schedules = ref<ListItemBag[]>([]);
+    const locationsBySchedule = ref<Record<string, ListItemBag[]>>({});
+    const editAssignmentGuid = ref<Guid | null | undefined>(toGuidOrNull(props.optionsRequest?.editAssignmentGuid));
+
+    /** The selected schedule guid (or empty string if none selected). */
+    const selectedScheduleGuidOrEmptyString = ref<string>("");
+
+    /** The selected location guid (or empty string if none selected). */
+    const selectedLocationGuidOrEmptyString = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return `${editAssignmentGuid.value ? "Edit" : "Add"} Assignment`;
+    });
+
+    const locations = computed((): ListItemBag[] => {
+        return locationsBySchedule.value?.[selectedScheduleGuidOrEmptyString.value] ?? [];
+    });
+
+    const isBusy = computed((): boolean => {
+        return isLoadingAssignmentOptions.value
+            || isSavingAssignment.value;
+    });
+
+    const isSaveButtonDisabled = computed((): boolean => {
+        return isBusy.value || !selectedScheduleGuidOrEmptyString.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the assignment options for the selected person, group and optional assignment.
+     */
+    async function getAssignmentOptions(): Promise<void> {
+        if (isBusy.value || !props.optionsRequest) {
+            return;
+        }
+
+        isLoadingAssignmentOptions.value = true;
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<AssignmentOptionsBag>("GetAssignmentOptions", { bag: props.optionsRequest });
+        isLoadingAssignmentOptions.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to load assignment options.";
+            return;
+        }
+
+        setInternalValues(result.data);
+
+        emit("updatedAssignments", result.data?.assignments ?? []);
+    }
+
+    /**
+     * Sets the internal values using the provided options.
+     *
+     * @param options The options value from which to set the internal values.
+     */
+    function setInternalValues(options: AssignmentOptionsBag | null | undefined): void {
+        schedules.value = options?.schedules ?? [];
+        locationsBySchedule.value = options?.locationsBySchedule ?? {};
+        editAssignmentGuid.value = options?.editAssignmentGuid;
+        selectedScheduleGuidOrEmptyString.value = options?.selectedScheduleGuid ?? "";
+        selectedLocationGuidOrEmptyString.value = options?.selectedLocationGuid ?? "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the Modal component.
+     */
+    async function onSave(): Promise<void> {
+        if (isBusy.value) {
+            return;
+        }
+
+        isSavingAssignment.value = true;
+        blockActionErrorMessage.value = "";
+
+        const bag: SaveAssignmentRequestBag = {
+            selectedPersonGuid: toGuidOrNull(props.optionsRequest?.selectedPersonGuid) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(props.optionsRequest?.selectedGroupGuid) ?? emptyGuid,
+            editAssignmentGuid: toGuidOrNull(editAssignmentGuid.value),
+            selectedScheduleGuid: toGuidOrNull(selectedScheduleGuidOrEmptyString.value) ?? emptyGuid,
+            selectedLocationGuid: toGuidOrNull(selectedLocationGuidOrEmptyString.value)
+        };
+
+        const result = await invokeBlockAction<SaveAssignmentResponseBag>("SaveAssignment", { bag });
+        isSavingAssignment.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to save assignment.";
+            return;
+        }
+
+        // Always emit the latest assignments, regardless of success or [known] failure.
+        emit("updatedAssignments", result.data?.assignmentOptions?.assignments ?? []);
+
+        if (result.data?.saveError) {
+            blockActionErrorMessage.value = result.data.saveError;
+            setInternalValues(result.data.assignmentOptions);
+            return;
+        }
+
+        // Only close the modal if the save was successful.
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    getAssignmentOptions();
+</script>

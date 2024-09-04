@@ -27,6 +27,8 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Results;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -34,6 +36,8 @@ using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility.CaptchaApi;
+using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.v2
@@ -45,6 +49,28 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "31D6B6FC-7740-483A-81D2-D62283F67C0A")]
     public class BlockActionsController : ApiControllerBase 
     {
+        #region Fields
+
+        /// <summary>
+        /// The service provider for this instance.
+        /// </summary>
+        private readonly IServiceProvider _serviceProvider;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockActionsController"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider for this instance.</param>
+        public BlockActionsController( IServiceProvider serviceProvider )
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        #endregion
+
         #region API Methods
 
         /// <summary>
@@ -60,7 +86,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
         public async Task<IHttpActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
-            return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
+            return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
         }
 
         /// <summary>
@@ -79,7 +105,7 @@ namespace Rock.Rest.v2
         {
             if ( parameters == string.Empty )
             {
-                return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
+                return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
             }
 
             //
@@ -95,7 +121,7 @@ namespace Rock.Rest.v2
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return await ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken );
+                    return await ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken, _serviceProvider );
                 }
             }
         }
@@ -112,8 +138,9 @@ namespace Rock.Rest.v2
         /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters )
+        /// <param name="serviceProvider">The provider of the services that will be used to process the action.</param>
+        /// <returns>The result of the block action method.</returns>
+        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters, IServiceProvider serviceProvider )
         {
             try
             {
@@ -165,11 +192,25 @@ namespace Rock.Rest.v2
                     return new StatusCodeResult( HttpStatusCode.Unauthorized, controller );
                 }
 
+                // Check if we need to apply rate limiting to this request.
+                if ( pageCache.IsRateLimited )
+                {
+                    var canProcess = RateLimiterCache.CanProcessPage( pageCache.Id,
+                        controller.RockRequestContext.ClientInformation.IpAddress,
+                        TimeSpan.FromSeconds( pageCache.RateLimitPeriod.Value ),
+                        pageCache.RateLimitRequestPerPeriod.Value );
+
+                    if ( !canProcess )
+                    {
+                        return new StatusCodeResult( ( HttpStatusCode ) 429, controller );
+                    }
+                }
+
                 //
                 // Get the class that handles the logic for the block.
                 //
                 var blockCompiledType = blockCache.BlockType.GetCompiledType();
-                var block = Activator.CreateInstance( blockCompiledType );
+                var block = ActivatorUtilities.CreateInstance( serviceProvider, blockCompiledType );
 
                 if ( !( block is Blocks.IRockBlockType rockBlock ) )
                 {
@@ -185,6 +226,11 @@ namespace Rock.Rest.v2
                 rockBlock.PageCache = pageCache;
                 rockBlock.RequestContext = requestContext;
 
+                if ( rockBlock is RockBlockType rockBlockType )
+                {
+                    rockBlockType.RockContext = serviceProvider.GetRequiredService<RockContext>();
+                }
+
                 var actionParameters = new Dictionary<string, JToken>( StringComparer.InvariantCultureIgnoreCase );
 
                 //
@@ -198,15 +244,34 @@ namespace Rock.Rest.v2
                         {
                             if ( kvp.Key == "__context" )
                             {
+                                var actionContext = kvp.Value.ToObject<BlockActionContextBag>();
+
                                 // If we are given any page parameters then
                                 // override the query string parameters. This
                                 // is what allows mobile and obsidian blocks to
                                 // pass in the original page parameters.
-                                if ( kvp.Value["pageParameters"] != null )
+                                if ( actionContext?.PageParameters != null )
                                 {
-                                    var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+                                    rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
+                                }
 
-                                    rockBlock.RequestContext.SetPageParameters( pageParameters );
+                                /*
+                                    02/22/2024 - JSC
+
+                                    It's important that we perform the captcha
+                                    validation even when the actionContext.Captcha
+                                    is whitespace. Null indicates the captcha is
+                                    not in use by the block, but an empty string
+                                    indicates that the global configuration is missing.
+                                    In the latter case we still need to return true
+                                    so captcha doesn't fail when it's not configured.
+                                */
+                                if ( actionContext?.Captcha != null )
+                                {
+                                    var api = new CloudflareApi();
+                                    var ipAddress = rockBlock.RequestContext.ClientInformation.IpAddress;
+
+                                    rockBlock.RequestContext.IsCaptchaValid = await api.IsTurnstileTokenValidAsync( actionContext.Captcha, ipAddress );
                                 }
                             }
                             else
@@ -264,7 +329,7 @@ namespace Rock.Rest.v2
                     // parameters take precedence.
                     foreach ( var kvp in bodyParameters.ToObject<Dictionary<string, JToken>>() )
                     {
-                        actionParameters.AddOrIgnore( kvp.Key, kvp.Value );
+                        actionParameters.TryAdd( kvp.Key, kvp.Value );
                     }
                 }
                 catch

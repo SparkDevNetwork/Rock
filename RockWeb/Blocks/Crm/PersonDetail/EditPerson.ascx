@@ -48,20 +48,20 @@
                                         <Rock:DefinedValuePicker ID="dvpTitle" runat="server" CssClass="input-width-md" Label="Title" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" autocomplete="off" />
+                                        <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" autocomplete="off" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" Label="Nickname" autocomplete="off" />
+                                        <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" Label="Nickname" autocomplete="off" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" autocomplete="off" />
+                                        <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" autocomplete="off" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" autocomplete="off" />
+                                        <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" autocomplete="off" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />

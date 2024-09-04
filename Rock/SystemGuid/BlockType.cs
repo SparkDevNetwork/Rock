@@ -305,9 +305,19 @@ namespace Rock.SystemGuid
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL = "EF537CC9-5E53-4832-A473-0D5EA439C296";
 
         /// <summary>
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest">Add Connection Request</see> block type.
+        /// </summary>
+        public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "1380115A-B3F0-49BC-A6BC-432A59DC27A2";
+
+        /// <summary>
         /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.Core.Search"/> block type.
         /// </summary>
         public const string MOBILE_CORE_SEARCH = "41174BEA-6567-430C-AAD4-A89A5CF70FB0";
+
+        /// <summary>
+        /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.Core.SmartSearch"/> block type.
+        /// </summary>
+        public const string MOBILE_CORE_SMART_SEARCH = "9AA64485-9641-4A06-9450-B5244BC1464A";
 
         /// <summary>
         /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration">Group Registration</see> block type.
@@ -377,6 +387,11 @@ namespace Rock.SystemGuid
         #endregion
 
         #region Obsidian Block Types
+
+        /// <summary>
+        /// The obsidian category detail block type.
+        /// </summary>
+        public const string OBSIDIAN_CATEGORY_DETAIL = "515dc5c2-4fbd-4eea-9d8e-a807409defde";
 
         /// <summary>
         /// The obsidian event registration entry

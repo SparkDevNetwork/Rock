@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Decline Reason"
+           modalWrapperClasses="schedule-toolbox-decline-reason"
+           saveText="Save"
+           cancelText=""
+           :isSaveButtonDisabled="isSavingDeclineReason"
+           :isCloseButtonHidden="true"
+           @save="onSave">
+
+        <p class="decline-reason-instructions">
+            Your feedback on declining this schedule would be valuable to us.
+        </p>
+
+        <DefinedValuePicker v-model="declineReason"
+                            label="Reason for Decline"
+                            formGroupClasses="decline-reason-defined-value"
+                            rules="required"
+                            :definedTypeGuid="DefinedType.GroupScheduleDeclineReason"
+                            :disabled="isSavingDeclineReason" />
+
+        <NoteTextEditor v-if="isDeclineNoteVisible"
+                        v-model="declineReasonNote"
+                        label="Elaborate on Your Decline Reason"
+                        formGroupClasses="decline-reason-note"
+                        :rules="declineNoteRules"
+                        :disabled="isSavingDeclineReason" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref } from "vue";
+    import { SelectedPersonGuid } from "./types.partial";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { SaveDeclineReasonRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveDeclineReasonRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        attendanceGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+
+        wasSchedulePreviouslyConfirmed: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDeclineNoteVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDeclineNoteRequired: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    /** The selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
+    const isSavingDeclineReason = ref(false);
+
+    const declineReason = ref<ListItemBag | null>(null);
+    const declineReasonNote = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const declineNoteRules = computed((): string => {
+        return props.isDeclineNoteRequired ? "required" : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the Modal component.
+     */
+    async function onSave(): Promise<void> {
+        if (isSavingDeclineReason.value) {
+            return;
+        }
+
+        isSavingDeclineReason.value = true;
+
+        const bag: SaveDeclineReasonRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            attendanceGuid: toGuidOrNull(props.attendanceGuid) ?? emptyGuid,
+            wasSchedulePreviouslyConfirmed: props.wasSchedulePreviouslyConfirmed,
+            declineReason: declineReason.value,
+            declineReasonNote: declineReasonNote.value
+        };
+
+        try {
+            await invokeBlockAction("SaveDeclineReason", { bag });
+        }
+        finally {
+            // Since this is nice-to-have info, we'll just fail silently (by closing the modal)
+            // even if the response contains an error. The schedule row has already been marked
+            // as declined by a separate request.
+
+            isSavingDeclineReason.value = false;
+            isVisible.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

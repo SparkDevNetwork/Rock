@@ -7,7 +7,6 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.BlockType"
@@ -83,7 +82,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return "Edit Block Type";
+        return  blockTypeViewBag.value?.name ?? "";
     });
 
     /**

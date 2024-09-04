@@ -16,7 +16,9 @@
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,6 +35,8 @@ using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 namespace Rock.Utility
 {
     /// <summary>
@@ -45,16 +49,36 @@ namespace Rock.Utility
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public SampleDataManager() : this( null )
+        public SampleDataManager() : this( ( ILogger ) null )
         {
         }
 
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public SampleDataManager( IRockLogger logDevice )
+        public SampleDataManager( ILogger logger )
         {
-            _taskLog = logDevice ?? new RockLoggerMemoryBuffer( new RockLogConfiguration() );
+            _taskLog = logger ?? new RockLoggerMemoryBuffer();
+        }
+
+        /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        public SampleDataManager( ILavaEngine lavaEngine, ILogger logger = null )
+        {
+            _taskLog = logger ?? new RockLoggerMemoryBuffer();
+
+            _lavaEngine = lavaEngine;
+        }
+
+        /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
+        public SampleDataManager( IRockLogger logDevice )
+            : this( ( ILogger ) null )
+        {
         }
 
         #endregion
@@ -62,7 +86,9 @@ namespace Rock.Utility
         #region Fields
 
         private SampleDataImportActionArgs _args = new SampleDataImportActionArgs();
-        private readonly IRockLogger _taskLog;
+
+        private readonly ILogger _taskLog;
+        private readonly ILavaEngine _lavaEngine;
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -251,13 +277,15 @@ namespace Rock.Utility
         /// <summary>
         /// The log device used to record processing details.
         /// </summary>
-        public IRockLogger LogDevice
-        {
-            get
-            {
-                return _taskLog;
-            }
-        }
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
+        public IRockLogger LogDevice => null;
+
+        /// <summary>
+        /// Gets the logger associated with this instance.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger => _taskLog;
 
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
@@ -285,6 +313,33 @@ namespace Rock.Utility
             this.ProcessXmlDocument( xdoc, args );
         }
 
+        private void VerifyEnvironment()
+        {
+            if ( _lavaEngine == null && LavaService.GetCurrentEngine() == null )
+            {
+                throw new Exception( "SampleDataManager processing failed. The LavaService must be initialized to process sample data correctly." );
+            }
+        }
+
+        /// <summary>
+        /// Resolves the merge fields using either the lava engine we were
+        /// initialized with or the default environment engine.
+        /// </summary>
+        /// <param name="template">The template to be resolved.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <returns>The rendered lava output.</returns>
+        private string ResolveMergeFields( string template, Dictionary<string, object> mergeFields )
+        {
+            if ( _lavaEngine != null )
+            {
+                return _lavaEngine.RenderTemplate( template, new LavaDataDictionary( mergeFields ) ).Text;
+            }
+            else
+            {
+                return template.ResolveMergeFields( mergeFields );
+            }
+        }
+
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
         /// as per https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification#wiki-xml-data
@@ -293,6 +348,9 @@ namespace Rock.Utility
         /// <param name="args"></param>
         internal void ProcessXmlDocument( XDocument xdoc, SampleDataImportActionArgs args )
         {
+            // Prior to processing, verify the environment.
+            VerifyEnvironment();
+
             _args = args ?? new SampleDataImportActionArgs();
 
             // Re-seed the randomizer with the given seed if it's non-0.
@@ -456,7 +514,7 @@ namespace Rock.Utility
 
                 if ( _args.EnableStopwatch )
                 {
-                    _taskLog.WriteToLog( RockLogLevel.Debug, _sb.ToString() );
+                    Logger.LogDebug( _sb.ToString() );
                 }
 
                 // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
@@ -498,7 +556,7 @@ namespace Rock.Utility
             {
                 var x = string.Format( format, args );
                 _sb.Append( x );
-                _taskLog.WriteToLog( RockLogLevel.Debug, x );
+                Logger.LogDebug( x );
             }
         }
 
@@ -941,7 +999,7 @@ namespace Rock.Utility
 
                 // Merge lava fields
                 // LAVA additionalReminderDetails
-                Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+                var mergeFields = new Dictionary<string, object>();
                 DateTime? registrationStartsDate = null;
                 DateTime? registrationEndsDate = null;
                 DateTime? sendReminderDate = null;
@@ -950,30 +1008,32 @@ namespace Rock.Utility
 
                 if ( element.Attribute( "registrationStarts" ) != null )
                 {
-                    var y = element.Attribute( "registrationStarts" ).Value.ResolveMergeFields( mergeObjects );
-                    registrationStartsDate = DateTime.Parse( y );
+                    var renderResult = ResolveMergeFields( element.Attribute( "registrationStarts" ).Value, mergeFields );
+                    registrationStartsDate = DateTime.Parse( renderResult );
                 }
 
                 if ( element.Attribute( "registrationEnds" ) != null )
                 {
-                    registrationEndsDate = DateTime.Parse( element.Attribute( "registrationEnds" ).Value.ResolveMergeFields( mergeObjects ) );
+                    var renderResult = ResolveMergeFields( element.Attribute( "registrationEnds" ).Value, mergeFields );
+                    registrationEndsDate = DateTime.Parse( renderResult );
                 }
 
                 if ( element.Attribute( "sendReminderDate" ) != null )
                 {
-                    sendReminderDate = DateTime.Parse( element.Attribute( "sendReminderDate" ).Value.ResolveMergeFields( mergeObjects ) );
+                    var renderResult = ResolveMergeFields( element.Attribute( "sendReminderDate" ).Value, mergeFields );
+                    sendReminderDate = DateTime.Parse( renderResult );
                 }
 
                 if ( element.Attribute( "additionalReminderDetails" ) != null )
                 {
-                    additionalReminderDetails = element.Attribute( "additionalReminderDetails" ).Value;
-                    additionalReminderDetails = additionalReminderDetails.ResolveMergeFields( mergeObjects );
+                    var renderResult = ResolveMergeFields( element.Attribute( "additionalReminderDetails" ).Value, mergeFields );
+                    additionalReminderDetails = renderResult;
                 }
 
                 if ( element.Attribute( "additionalConfirmationDetails" ) != null )
                 {
-                    additionalConfirmationDetails = element.Attribute( "additionalConfirmationDetails" ).Value;
-                    additionalConfirmationDetails = additionalConfirmationDetails.ResolveMergeFields( mergeObjects );
+                    var renderResult = ResolveMergeFields( element.Attribute( "additionalConfirmationDetails" ).Value, mergeFields );
+                    additionalConfirmationDetails = renderResult;
                 }
 
                 // Get the contact info
@@ -1281,7 +1341,7 @@ namespace Rock.Utility
                         GroupTypeId = knownRelationshipGroup.GroupTypeId
                     };
 
-                    rockContext.GroupMembers.Add( groupMember );
+                    new GroupMemberService( rockContext ).Add( groupMember );
                 }
 
                 // Now create thee inverse relationship.
@@ -1322,7 +1382,7 @@ namespace Rock.Utility
             _personImageBinaryFileTypeSettings = settings.ToJson();
 
             GroupService groupService = new GroupService( rockContext );
-            var allFamilies = rockContext.Groups;
+            var attributeValueService = new AttributeValueService( rockContext );
 
             List<Group> allGroups = new List<Group>();
             var attendanceData = new Dictionary<Guid, List<Attendance>>();
@@ -1338,7 +1398,7 @@ namespace Rock.Utility
                 family.Guid = guid;
 
                 // add the family to the context's list of groups
-                allFamilies.Add( family );
+                groupService.Add( family );
 
                 // add the families address(es)
                 AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ), rockContext );
@@ -1387,7 +1447,7 @@ namespace Rock.Utility
                             attributeValue.Value = newValue.Value;
                             // PA: setting the dirty bit so that the Update Persisted Attribute Values job can populate the field related columns like ValueAsDateTime
                             attributeValue.IsPersistedValueDirty = true;
-                            rockContext.AttributeValues.Add( attributeValue );
+                            attributeValueService.Add( attributeValue );
                         }
                     }
                 }
@@ -2885,7 +2945,7 @@ namespace Rock.Utility
                     if ( personElem.Attribute( "email" ) != null )
                     {
                         var emailAddress = personElem.Attribute( "email" ).Value.Trim();
-                        if ( emailAddress.IsValidEmail() )
+                        if ( EmailAddressFieldValidator.IsValid( emailAddress ) )
                         {
                             person.Email = emailAddress;
                             person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.AsBoolean();

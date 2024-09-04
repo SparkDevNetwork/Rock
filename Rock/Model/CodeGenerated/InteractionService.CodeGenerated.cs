@@ -124,6 +124,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Campaign = source.Campaign;
+            target.CampaignValueId = source.CampaignValueId;
             target.ChannelCustom1 = source.ChannelCustom1;
             target.ChannelCustom2 = source.ChannelCustom2;
             target.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
@@ -140,12 +141,14 @@ namespace Rock.Model
             target.InteractionSummary = source.InteractionSummary;
             target.InteractionTimeToServe = source.InteractionTimeToServe;
             target.Medium = source.Medium;
+            target.MediumValueId = source.MediumValueId;
             target.Operation = source.Operation;
             target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.Source = source.Source;
+            target.SourceValueId = source.SourceValueId;
             target.Term = source.Term;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

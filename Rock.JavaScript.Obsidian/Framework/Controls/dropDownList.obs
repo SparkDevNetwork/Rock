@@ -23,19 +23,37 @@
                                :mode="mode"
                                :getPopupContainer="getPopupContainer"
                                showArrow
+                               :virtual="false"
+                               :maxTagCount="maxTagCount"
                                @dropdownVisibleChange="onDropdownVisibleChange">
+
+                        <template v-if="$slots.tagRender" #tagRender="slotProps">
+                            <slot name="tagRender" v-bind="{
+                                label: slotProps.label as string,
+                                value: slotProps.value as string,
+                                disabled: isDisabled,
+                                closable: slotProps.closable as boolean
+                            }"></slot>
+                        </template>
+
+                        <template v-if="$slots.maxTagPlaceholder" #maxTagPlaceholder="slotProps">
+                            <slot name="maxTagPlaceholder" v-bind="{ omittedValues: getMaxTagPlaceholderSlotProps(slotProps) }"></slot>
+                        </template>
+
                         <template #clearIcon>
                             <i class="fa fa-times"></i>
                         </template>
 
                         <template #suffixIcon>
-                            <i v-if="!computedLoading" class="fa fa-caret-down"></i>
-                            <i v-else class="fa fa-spinner fa-spin"></i>
+                            <slot name="suffixIcon">
+                                <i v-if="!computedLoading" class="fa fa-caret-down"></i>
+                                <i v-else class="fa fa-spinner fa-spin"></i>
+                            </slot>
                         </template>
 
                         <template #notFoundContent>
                             <div style="color:#999">
-                                <slot name="empty">No Data</slot>
+                                <slot name="empty">No results match {{ searchText }}</slot>
                             </div>
                         </template>
 
@@ -75,7 +93,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<string | string[]>,
+            type: [String, Array] as PropType<string | string[]>,
             required: true
         },
 
@@ -135,6 +153,21 @@
             default: defaultControlCompareValue
         },
 
+        /**
+         * If set then this element will contain the popup picker, otherwise
+         * a default container will be chosen.
+         */
+        popupContainerOverride: {
+            type: Object as PropType<HTMLElement>,
+            required: false
+        },
+
+        maxTagCount: {
+            type: Object as PropType<number | "responsive" | undefined>,
+            required: false,
+            default: undefined
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -148,6 +181,7 @@
     const internalValue = ref(props.modelValue ? props.modelValue : null);
     const controlWrapper = ref<HTMLElement | null>(null);
     const standardFieldProps = useStandardRockFormFieldProps(props);
+    const searchText = ref("");
 
     // #endregion
 
@@ -249,6 +283,19 @@
 
     // #region Functions
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function getMaxTagPlaceholderSlotProps(slotProps: any): {
+        label: string;
+        value: string;
+        disabled: boolean;
+    }[] {
+        return slotProps?.map(p => ({
+            label: p.label as string,
+            value: p.value as string,
+            disabled: isDisabled.value
+        })) ?? [];
+    }
+
     /**
      * Synchronizes our internal value with the modelValue and current
      * component property values.
@@ -312,6 +359,7 @@
      * @returns true if the option should be included in the list, otherwise false.
      */
     const filterItem = (input: string, option: SelectOption): boolean => {
+        searchText.value = input;
         return (option.label || "").toLocaleLowerCase().indexOf(input.toLocaleLowerCase()) >= 0;
     };
 
@@ -323,7 +371,9 @@
      * @returns The HTML element to place the popup into.
      */
     const getPopupContainer = (): HTMLElement => {
-        return controlWrapper.value ?? document.body;
+        return props.popupContainerOverride
+            ?? controlWrapper.value
+            ?? document.body;
     };
 
     // #endregion

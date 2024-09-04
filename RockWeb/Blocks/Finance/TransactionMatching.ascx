@@ -170,10 +170,10 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn btn-default" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
+                        <asp:LinkButton ID="btnPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
                         <div class="pull-right">
                             <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
-                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
 
@@ -313,8 +313,8 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveNewMatch" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveNewMatch_Click" CausesValidation="true" ValidationGroup="vgAddNewMatch" />
-                        <asp:LinkButton ID="btnCancelNewMatch" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelNewMatch_Click" />
+                        <asp:LinkButton ID="btnSaveNewMatch" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveNewMatch_Click" CausesValidation="true" ValidationGroup="vgAddNewMatch" />
+                        <asp:LinkButton ID="btnCancelNewMatch" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelNewMatch_Click" />
                     </div>
                 </div>
 
@@ -481,11 +481,10 @@
              * @param successLocation the Postback javascript if navigation is allowed
             */
             function navigateNext(e, successLocation) {
+                if (e) {
+                    e.preventDefault();
+                }
                 if (hasUnallocated()) {
-                    if (e) {
-                        e.preventDefault();
-                    }
-
                     var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
                     var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
                     var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
@@ -498,7 +497,7 @@
                     });
                 }
                 else {
-                    // do the Postback (which will save the changes)
+                    // Do the Postback wired up via the button's OnClick handler (which will save the changes).
                     window.location = successLocation;
                 }
             }

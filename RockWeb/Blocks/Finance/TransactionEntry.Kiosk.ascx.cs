@@ -149,8 +149,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // set campus
             var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
             var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
@@ -196,6 +194,8 @@ namespace RockWeb.Blocks.Finance
                     BuildAccountControls();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

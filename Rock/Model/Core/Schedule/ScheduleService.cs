@@ -16,10 +16,13 @@
 
 // <copyright>
 
+using System;
+using System.Linq;
+
 using Ical.Net;
 using Ical.Net.DataTypes;
-using System.Linq;
-using System;
+
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -94,6 +97,31 @@ namespace Rock.Model
                 occurrenceText = string.Format( "{0} to {1} ( {2} hours) ", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
             }
             return occurrenceText;
+        }
+
+        /// <summary>
+        /// Clones a schedule given the id.
+        /// </summary>
+        /// <param name="id"> The idkey of the Schedule to be copied</param>
+        /// <returns></returns>
+        public Schedule Copy( string id )
+        {
+            var schedule = Get( id );
+            var newSchedule = schedule.CloneWithoutIdentity();
+            newSchedule.Name += " - Copy";
+            this.Add( newSchedule );
+            schedule.LoadAttributes();
+            newSchedule.LoadAttributes();
+            newSchedule.CopyAttributesFrom( schedule );
+
+            var rockContext = this.Context as RockContext;
+
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                newSchedule.SaveAttributeValues( rockContext );
+            } );
+            return newSchedule;
         }
     }
 }

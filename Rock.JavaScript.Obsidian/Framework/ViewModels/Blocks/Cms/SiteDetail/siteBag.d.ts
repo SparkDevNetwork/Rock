@@ -48,7 +48,7 @@ export type SiteBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the binary file type identifier. */
-    binaryFileTypeGuid?: Guid | null;
+    binaryFileTypeGuid: Guid;
 
     /** Gets or sets the change password page. */
     changePasswordPage?: ListItemBag | null;
@@ -82,9 +82,6 @@ export type SiteBag = {
 
     /** Gets or sets a value indicating whether [enable mobile redirect]. */
     enableMobileRedirect: boolean;
-
-    /** Gets or sets a value indicating whether geo-location lookups should be performed on interactions. */
-    enablePageViewGeoTracking: boolean;
 
     /** Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site */
     enablePageViews: boolean;

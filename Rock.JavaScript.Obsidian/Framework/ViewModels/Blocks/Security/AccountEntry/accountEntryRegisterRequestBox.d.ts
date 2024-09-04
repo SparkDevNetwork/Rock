@@ -32,9 +32,6 @@ export type AccountEntryRegisterRequestBox = {
     /** Gets or sets the passwordless verification code. */
     code?: string | null;
 
-    /** Gets or sets the fullname of the person. */
-    fullName?: string | null;
-
     /** Gets or sets the person info. */
     personInfo?: AccountEntryPersonInfoBag | null;
 

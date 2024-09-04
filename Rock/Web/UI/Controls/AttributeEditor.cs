@@ -201,6 +201,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected CustomValidator _cvAttribute;
 
+        /// <summary>
+        /// The Enable History checkbox
+        /// </summary>
+        protected RockCheckBox _cbSuppressHistoryLogging;
+
         #endregion Controls
 
         #region Properties
@@ -948,6 +953,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if changes should not be logged; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSuppressHistoryLogging
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbSuppressHistoryLogging.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbSuppressHistoryLogging.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the pre HTML.
         /// </summary>
         /// <value>
@@ -1454,6 +1479,13 @@ namespace Rock.Web.UI.Controls
             _cbEnableHistory.Help = "If selected, changes to the value of this attribute will be stored in attribute value history";
             pnlAdvancedTopRowCol1.Controls.Add( _cbEnableHistory );
 
+            _cbSuppressHistoryLogging = new RockCheckBox();
+            _cbSuppressHistoryLogging.ID = "_cbSuppressHistoryLogging";
+            _cbSuppressHistoryLogging.Label = "Suppress History Logging";
+            _cbSuppressHistoryLogging.Text = "Yes";
+            _cbSuppressHistoryLogging.Help = "If selected, changes to the attribute values will not be recorded into the generic History log table";
+            pnlAdvancedTopRowCol1.Controls.Add( _cbSuppressHistoryLogging );
+
             _cbAllowSearch = new RockCheckBox();
             _cbAllowSearch.ID = "cbAllowSearch";
             _cbAllowSearch.Label = "Allow Search";
@@ -1883,6 +1915,7 @@ namespace Rock.Web.UI.Controls
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
                 this.AbbreviatedName = attribute.AbbreviatedName;
+                this.IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
 
                 // only allow the fieldtype to be set if this a new attribute
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
@@ -1985,6 +2018,7 @@ namespace Rock.Web.UI.Controls
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;
                 attribute.AbbreviatedName = this.AbbreviatedName;
+                attribute.IsSuppressHistoryLogging = this.IsSuppressHistoryLogging;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
@@ -2067,7 +2101,7 @@ namespace Rock.Web.UI.Controls
 
                 // Set a configuration flag to indicate that the control is accepting a default value.
                 // Some controls apply different validation rules to default values, such as allowing partial input.
-                qualifiers?.AddOrIgnore( "DataEntryMode", new ConfigurationValue { Name = "DataEntryMode", Value = "DefaultValue" } );
+                qualifiers?.TryAdd( "DataEntryMode", new ConfigurationValue { Name = "DataEntryMode", Value = "DefaultValue" } );
 
                 // make sure each default control has a unique/predictable ID to help avoid viewstate issues
                 var defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString("N")}" );

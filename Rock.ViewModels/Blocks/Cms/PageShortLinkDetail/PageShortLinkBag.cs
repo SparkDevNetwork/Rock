@@ -15,9 +15,11 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
+namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
 {
     /// <summary>
     /// 
@@ -25,6 +27,11 @@ namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
     /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class PageShortLinkBag : EntityBagBase
     {
+        /// <summary>
+        /// Get the Default Domain URL of the site to be passed to the front end.
+        /// </summary>
+        public string DefaultDomainURL { get; set; }
+
         /// <summary>
         /// Gets or sets the Rock.Model.Site that is associated with this PageShortLink.
         /// </summary>
@@ -45,5 +52,16 @@ namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
         /// </summary>
         /// <value>The link to be copied.</value>
         public string CopyLink { get; set; }
+
+        /// <summary>
+        /// The UTM settings to apply to this short link.
+        /// </summary>
+        public UtmSettingsBag UtmSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of scheduled redirects that have been
+        /// configured for this short link.
+        /// </summary>
+        public List<ScheduledRedirectBag> ScheduledRedirects { get; set; }
     }
 }

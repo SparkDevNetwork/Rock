@@ -1,0 +1,297 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
+<template>
+    <Panel title="Configuration"
+           :modelValue="true"
+           hasCollapse>
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList label="Template"
+                              v-model="templateId"
+                              :disabled="disableUpdates"
+                              :items="templateItems"
+
+                              rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList label="Kiosk"
+                              v-model="kioskId"
+                              :disabled="disableUpdates"
+                              :items="blockConfig.kiosks ?? []"
+                              rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBoxList label="Primary Areas"
+                              v-model="primaryAreaIds"
+                              :items="primaryAreas"
+                              :disabled="disableUpdates"
+                              horizontal
+                              :repeatColumns="4" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBoxList label="Secondary Areas"
+                              v-model="secondaryAreaIds"
+                              :items="secondaryAreas"
+                              :disabled="disableUpdates"
+                              horizontal
+                              :repeatColumns="4" />
+            </div>
+        </div>
+
+        <hr style="margin-left: calc(var(--panel-body-padding, 0) * -1); margin-right: calc(var(--panel-body-padding, 0) * -1);" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox label="Benchmark Iterations"
+                           v-model="benchmarkIterations"
+                           :minimumValue="0"
+                           :disabled="disableUpdates"
+                           help="The maximum number of iterations to run during a benchmark." />
+            </div>
+
+            <div class="col-md-6">
+                <NumberBox label="Benchmark Duration"
+                           v-model="benchmarkDuration"
+                           :minimumValue="0"
+                           help="The maximum number of seconds to run during a benchmark." />
+            </div>
+        </div>
+
+        <div class="actions">
+            <RockButton btnType="default"
+                        autoDisable
+                        @click="deleteAttendance">
+                Delete Today's Simulated Attendance
+            </RockButton>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { Configuration } from "./utils.partial";
+    import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
+    import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
+    import { CheckInSimulatorOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInSimulator/checkInSimulatorOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, watch } from "vue";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        blockConfig: {
+            type: Object as PropType<CheckInSimulatorOptionsBag>,
+            required: true
+        },
+
+        config: {
+            type: Object as PropType<Configuration>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:config", value: Configuration): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    const templateItems: ListItemBag[] = props.blockConfig.templates?.map(c => ({
+        value: c.id,
+        text: c.name
+    })) ?? [];
+
+    let disableUpdates = false;
+
+    const templateId = ref(props.config.templateId ?? "");
+    const kioskId = ref(props.config.kioskId ?? "");
+    const primaryAreaIds = ref(props.config.primaryAreaIds ?? []);
+    const secondaryAreaIds = ref(props.config.secondaryAreaIds ?? []);
+    const benchmarkIterations = ref(props.config.benchmarkIterations);
+    const benchmarkDuration = ref(props.config.benchmarkDuration);
+
+    const primaryAreas = ref<ListItemBag[]>([]);
+    const secondaryAreas = ref<ListItemBag[]>([]);
+
+    /**
+     * Gets the area items from the server and updates the selected values
+     * to only those which are still valid.
+     */
+    async function updateAreaItems(): Promise<void> {
+        if (!kioskId.value) {
+            primaryAreaIds.value = [];
+            primaryAreas.value = [];
+            secondaryAreaIds.value = [];
+            secondaryAreas.value = [];
+
+            return;
+        }
+
+        const request: ConfigurationOptionsBag = {
+            kioskId: kioskId.value
+        };
+
+        const response = await http.post<ConfigurationResponseBag>("/api/v2/checkin/Configuration", undefined, request);
+
+        if (response.isSuccess && response.data?.areas) {
+            primaryAreas.value = response.data.areas
+                .filter(a => (a.primaryTemplateIds ?? []).includes(props.config.templateId ?? ""))
+                .map(a => ({ value: a.id, text: a.name }));
+
+            secondaryAreas.value = response.data.areas
+                .filter(a => !(a.primaryTemplateIds ?? []).includes(props.config.templateId ?? ""))
+                .map(a => ({ value: a.id, text: a.name }));
+        }
+    }
+
+    /**
+     * Emits a new config value that contains all the information on the UI.
+     */
+    function emitConfig(): void {
+        emit("update:config", {
+            templateId: templateId.value || undefined,
+            kioskId: kioskId.value || undefined,
+            primaryAreaIds: primaryAreaIds.value,
+            secondaryAreaIds: secondaryAreaIds.value,
+            benchmarkIterations: benchmarkIterations.value,
+            benchmarkDuration: benchmarkDuration.value
+        });
+    }
+
+    /**
+     * Restores the state of the UI from the URL.
+     */
+    async function restoreState(): Promise<void> {
+        const originalUrl = new URL(location.href);
+
+        disableUpdates = true;
+
+        try {
+            templateId.value = originalUrl.searchParams.get("template") ?? "";
+            kioskId.value = originalUrl.searchParams.get("kiosk") ?? "";
+
+            benchmarkIterations.value = toNumberOrNull(originalUrl.searchParams.get("cfgBenchIter")) ?? undefined;
+            benchmarkDuration.value = toNumberOrNull(originalUrl.searchParams.get("cfgBenchDur")) ?? undefined;
+
+            if (!templateId.value || !kioskId.value) {
+                return;
+            }
+
+            // Update the list of allowed items, otherwise setting the area
+            // ids will be overwritten.
+            await updateAreaItems();
+
+            primaryAreaIds.value = originalUrl.searchParams.get("primaryAreas")?.split(",") ?? [];
+            secondaryAreaIds.value = originalUrl.searchParams.get("secondaryAreas")?.split(",") ?? [];
+        }
+        finally {
+            disableUpdates = false;
+        }
+
+        emitConfig();
+    }
+
+    /**
+     * Save the configuration state to the URL.
+     */
+    function saveState(): void {
+        const url = new URL(location.href);
+
+        if (templateId.value) {
+            url.searchParams.set("template", templateId.value);
+        }
+        else {
+            url.searchParams.delete("template");
+        }
+
+        if (kioskId.value) {
+            url.searchParams.set("kiosk", kioskId.value);
+        }
+        else {
+            url.searchParams.delete("kiosk");
+        }
+
+        if (primaryAreaIds.value && primaryAreaIds.value.length > 0) {
+            url.searchParams.set("primaryAreas", primaryAreaIds.value.join(","));
+        }
+        else {
+            url.searchParams.delete("primaryAreas");
+        }
+
+        if (secondaryAreaIds.value && secondaryAreaIds.value.length > 0) {
+            url.searchParams.set("secondaryAreas", secondaryAreaIds.value.join(","));
+        }
+        else {
+            url.searchParams.delete("secondaryAreas");
+        }
+
+        if (benchmarkIterations.value) {
+            url.searchParams.set("cfgBenchIter", benchmarkIterations.value.toString());
+        }
+        else {
+            url.searchParams.delete("cfgBenchIter");
+        }
+
+        if (benchmarkDuration.value) {
+            url.searchParams.set("cfgBenchDur", benchmarkDuration.value.toString());
+        }
+        else {
+            url.searchParams.delete("cfgBenchDur");
+        }
+
+        if (window.location.href != url.href) {
+            history.replaceState(undefined, "", url);
+        }
+    }
+
+    /**
+     * Calls the block action to delete today's simulated attendance data.
+     */
+    async function deleteAttendance(): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteSimulatedAttendance", { batch: null });
+
+        if (result.isSuccess && result.data) {
+            alert(result.data);
+        }
+        else {
+            alert(result.errorMessage || "Unknown error trying to delete attendance.");
+        }
+    }
+
+    watch(() => props.config, () => {
+        templateId.value = props.config.templateId ?? "";
+        kioskId.value = props.config.kioskId ?? "";
+        primaryAreaIds.value = props.config.primaryAreaIds ?? [];
+        secondaryAreaIds.value = props.config.secondaryAreaIds ?? [];
+        benchmarkIterations.value = props.config.benchmarkIterations;
+        benchmarkDuration.value = props.config.benchmarkDuration;
+    });
+
+    watch([templateId, kioskId, primaryAreaIds, secondaryAreaIds, benchmarkIterations, benchmarkDuration], () => {
+        if (disableUpdates) {
+            return;
+        }
+
+        saveState();
+        emitConfig();
+    });
+
+    watch(kioskId, () => updateAreaItems());
+
+    if (props.config.kioskId) {
+        updateAreaItems();
+    }
+
+    restoreState();
+</script>

@@ -1,0 +1,285 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+        {{ blockActionErrorMessage }}
+    </NotificationBox>
+
+    <NotificationBox v-else-if="isNoGroupsNotificationVisible" :alertType="AlertType.Info">
+        You are currently not in any scheduled groups.
+    </NotificationBox>
+
+    <template v-if="isContentVisible">
+        <TabbedBar v-model="selectedGroupGuidOrEmptyString"
+                   class="schedule-toolbox-group-tabs"
+                   :tabs="groupList"
+                   :disabled="disabled || isLoadingSignUps" />
+
+        <NotificationBox v-if="!anySignUps"
+                         class="schedule-toolbox-no-sign-ups-available"
+                         :alertType="AlertType.Info">
+            No sign-ups available.
+        </NotificationBox>
+
+        <template v-else>
+            <NotificationBox v-if="saveSignUpErrorMessage"
+                             class="schedule-toolbox-signup-save-error-message"
+                             :alertType="AlertType.Warning">
+                {{ saveSignUpErrorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="anyImmediateSignUps"
+                             class="schedule-toolbox-signup-immediate-needs"
+                             :alertType="AlertType.Info"
+                             :heading="immediateNeedsTitle ?? ''">
+
+                <div v-if="immediateNeedsIntroduction"
+                     class="schedule-toolbox-immediate-needs-introduction">
+                    {{ immediateNeedsIntroduction }}
+                </div>
+
+                <SignUpOccurrenceDate v-for="[date, occurrences] in immediateOccurrencesByDate"
+                                      :key="`${selectedGroupGuidOrEmptyString}-${date}`"
+                                      :title="formatToolboxDate(date)"
+                                      :occurrences="occurrences"
+                                      :disabled="disabled || isLoadingSignUps"
+                                      @updatedSignUps="setSignUps($event)" />
+            </NotificationBox>
+
+            <div v-if="anyNonImmediateSignups" class="schedule-toolbox-signup-non-immediate-needs">
+                <SignUpOccurrenceDate v-for="[date, occurrences] in nonImmediateOccurrencesByDate"
+                                      :key="`${selectedGroupGuidOrEmptyString}-${date}`"
+                                      :title="formatToolboxDate(date)"
+                                      :occurrences="occurrences"
+                                      :disabled="disabled || isLoadingSignUps"
+                                      @updatedSignUps="setSignUps($event)" />
+            </div>
+        </template>
+    </template>
+</template>
+
+<style scoped>
+.schedule-toolbox-no-sign-ups-available,
+.schedule-toolbox-signup-save-error-message,
+.schedule-toolbox-signup-immediate-needs {
+    margin-top: 20px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, provide, ref, watch } from "vue";
+    import SignUpOccurrenceDate from "./signUpOccurrenceDate.partial.obs";
+    import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid } from "./types.partial";
+    import { formatToolboxDate } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { GetSignUpsRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/getSignUpsRequestBag";
+    import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
+    import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceBag";
+    import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isLoadingSignUps: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        immediateNeedsTitle: {
+            type: String as PropType<string | null | undefined>,
+            default: ""
+        },
+
+        immediateNeedsIntroduction: {
+            type: String as PropType<string | null | undefined>,
+            default: ""
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isLoadingSignUps"): void
+    }>();
+
+    // #region Values
+
+    /** The selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
+    const selectedGroup = inject(SelectedGroup);
+
+    const blockActionErrorMessage = ref("");
+
+    const isLoadingSignUps = useVModelPassthrough(props, "isLoadingSignUps", emit);
+    const hasCompletedInitialLoad = ref(false);
+
+    const schedulableGroups = ref<GroupBag[]>([]);
+    const signUpOccurrences = ref<SignUpOccurrenceBag[]>([]);
+
+    const saveSignUpErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isNoGroupsNotificationVisible = computed((): boolean => {
+        return !!(!isLoadingSignUps.value && (!schedulableGroups.value?.length || !selectedGroup?.value));
+    });
+
+    const groupList = computed((): ListItemBag[] => {
+        return schedulableGroups.value
+            .filter((group: GroupBag) => group?.guid && group?.name)
+            .map((group: GroupBag) => ({
+                text: `${group.name}${group.campusName ? ` (${group.campusName})` : ""}`,
+                value: group.guid
+            }));
+    });
+
+    const selectedGroupGuidOrEmptyString = computed<string>({
+        get() {
+            return selectedGroup?.value?.guid ?? "";
+        },
+        set(newValue) {
+            getSignUps(newValue);
+        }
+    });
+
+    const isContentVisible = computed((): boolean => {
+        return !isNoGroupsNotificationVisible.value && hasCompletedInitialLoad.value;
+    });
+
+    const immediateOccurrencesByDate = computed((): Map<string, SignUpOccurrenceBag[]> => {
+        const immediateOccurrences = signUpOccurrences.value
+            ?.filter((o: SignUpOccurrenceBag) => o?.occurrenceDateTime && o.isImmediateNeed)
+            ?? [];
+
+        return groupOccurrencesByDate(immediateOccurrences);
+    });
+
+    const anyImmediateSignUps = computed((): boolean => {
+        return !!immediateOccurrencesByDate.value.size;
+    });
+
+    const nonImmediateOccurrencesByDate = computed((): Map<string, SignUpOccurrenceBag[]> => {
+        const nonImmediateOccurrences = signUpOccurrences.value
+            ?.filter((o: SignUpOccurrenceBag) => o?.occurrenceDateTime && !o.isImmediateNeed)
+            ?? [];
+
+        return groupOccurrencesByDate(nonImmediateOccurrences);
+    });
+
+    const anyNonImmediateSignups = computed((): boolean => {
+        return !!nonImmediateOccurrencesByDate.value.size;
+    });
+
+    const anySignUps = computed((): boolean => {
+        return anyImmediateSignUps.value || anyNonImmediateSignups.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the additional time sign-ups for the selected person and group.
+     *
+     * @param groupGuidOrEmptyString The selected group unique identifier (or empty string if none selected).
+     */
+    async function getSignUps(groupGuidOrEmptyString: string): Promise<void> {
+        if (isLoadingSignUps.value) {
+            return;
+        }
+
+        isLoadingSignUps.value = true;
+        blockActionErrorMessage.value = "";
+        saveSignUpErrorMessage.value = "";
+
+        const bag: GetSignUpsRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(groupGuidOrEmptyString)
+        };
+
+        const result = await invokeBlockAction<SignUpsBag>("GetSignUps", { bag });
+        isLoadingSignUps.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to get additional time sign-ups.";
+            setSignUps(null);
+        }
+
+        setSignUps(result.data);
+
+        hasCompletedInitialLoad.value = true;
+    }
+
+    /**
+     * Sets the internal values using the provided sign-ups data.
+     *
+     * @param signUps The sign-ups data from which to set the internal values.
+     */
+    function setSignUps(signUps: SignUpsBag | null | undefined): void {
+        if (selectedGroup) {
+            selectedGroup.value = signUps?.selectedGroup;
+        }
+
+        schedulableGroups.value = signUps?.schedulableGroups ?? [];
+        signUpOccurrences.value = signUps?.occurrences ?? [];
+    }
+
+    /**
+     * Groups the provided occurrences by date.
+     *
+     * @param occurrences The occurrences to be grouped.
+     */
+    function groupOccurrencesByDate(occurrences: SignUpOccurrenceBag[]): Map<string, SignUpOccurrenceBag[]> {
+        const groupedOccurrences = new Map<string, SignUpOccurrenceBag[]>();
+
+        occurrences.forEach((o: SignUpOccurrenceBag) => {
+            if (!o.occurrenceDateTime) {
+                return; // Should never happen, but continue to the next iteration if date isn't defined.
+            }
+
+            const date = RockDateTime.parseISO(o.occurrenceDateTime)?.date?.toISOString();
+            if (!date) {
+                return; // Should never happen, but continue to the next iteration if unable to parse date.
+            }
+
+            let dateOccurrences = groupedOccurrences.get(date);
+            if (!dateOccurrences) {
+                dateOccurrences = [];
+                groupedOccurrences.set(date, dateOccurrences);
+            }
+
+            dateOccurrences.push(o);
+        });
+
+        return groupedOccurrences;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(selectedPersonGuidOrEmptyString, () => {
+        if (selectedPersonGuidOrEmptyString.value) {
+            hasCompletedInitialLoad.value = false;
+            getSignUps(selectedGroupGuidOrEmptyString.value);
+        }
+    });
+
+    // #endregion Watchers
+
+    provide(SaveSignUpErrorMessage, saveSignUpErrorMessage);
+
+    getSignUps(selectedGroupGuidOrEmptyString.value);
+</script>

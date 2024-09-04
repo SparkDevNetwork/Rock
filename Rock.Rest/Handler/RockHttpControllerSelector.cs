@@ -74,7 +74,7 @@ namespace Rock.Rest.Handler
 
             foreach ( var item in _duplicateControllerTypes.Value )
             {
-                result.AddOrIgnore( item.Key, item.Value );
+                result.TryAdd( item.Key, item.Value );
             }
 
             return result;
@@ -90,7 +90,7 @@ namespace Rock.Rest.Handler
 
                 if ( parts.Length == 2 )
                 {
-                    prefixes.AddOrIgnore( parts[1], kvp.Value );
+                    prefixes.TryAdd( parts[1], kvp.Value );
                 }
             }
 
@@ -118,11 +118,11 @@ namespace Rock.Rest.Handler
 
                     if ( prefix.IsNotNullOrWhiteSpace() )
                     {
-                        result.AddOrIgnore( $"{controllerTypeGroup.Key}-{prefix}", controllerDescriptor );
+                        result.TryAdd( $"{controllerTypeGroup.Key}-{prefix}", controllerDescriptor );
                     }
                     else
                     {
-                        result.AddOrIgnore( controllerTypeGroup.Key, controllerDescriptor );
+                        result.TryAdd( controllerTypeGroup.Key, controllerDescriptor );
                     }
                 }
             }

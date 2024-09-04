@@ -1,0 +1,117 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <DateRangePicker v-model="dateRange"
+                                 label="Next Start Date Range"
+                                 :disallowPastDateSelection="false" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBoxList v-model="campuses"
+                              label="Campuses"
+                              :items="campusItems"
+                              :horizontal="false" />
+            </div>
+
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="audiences"
+                                    label="Audiences"
+                                    :definedTypeGuid="DefinedType.MarketingCampaignAudienceType"
+                                    :multiple="true"
+                                    :displayStyle="PickerDisplayStyle.List"
+                                    :columnCount="2" />
+            </div>
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        campusItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref<DateRangeParts | undefined>({
+        lowerValue: props.modelValue.startDate,
+        upperValue: props.modelValue.endDate
+    });
+    const status = ref(props.modelValue.status ?? "");
+    const approvalStatus = ref(props.modelValue.approvalStatus ?? "");
+    const campuses = ref(props.modelValue.campuses);
+    const audiences = ref(props.modelValue.audiences);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            startDate: dateRange.value?.lowerValue,
+            endDate: dateRange.value?.upperValue,
+            status: status.value,
+            approvalStatus: approvalStatus.value,
+            campuses: campuses.value,
+            audiences: audiences.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = {
+            lowerValue: props.modelValue.startDate,
+            upperValue: props.modelValue.endDate
+        };
+        status.value = props.modelValue.status ?? "";
+        approvalStatus.value = props.modelValue.approvalStatus ?? "";
+        campuses.value = props.modelValue.campuses;
+        audiences.value = props.modelValue.audiences;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

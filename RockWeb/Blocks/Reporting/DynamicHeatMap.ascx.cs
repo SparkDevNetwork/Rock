@@ -113,8 +113,6 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !this.IsPostBack )
             {
                 var preferences = GetBlockPersonPreferences();
@@ -164,7 +162,7 @@ namespace RockWeb.Blocks.Reporting
                         if ( ex is RockDataViewFilterExpressionException )
                         {
                             RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                            nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( this.GetDataView() );
+                            nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) this.GetDataView() );
                         }
                         else
                         {
@@ -182,6 +180,8 @@ namespace RockWeb.Blocks.Reporting
             {
                 mdSaveLocation_SaveClick( null, null );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -351,12 +351,12 @@ namespace RockWeb.Blocks.Reporting
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
             int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
-            DataView dataView = GetDataView();
+            var dataView = GetDataView();
             IQueryable<int> qryPersonIds = null;
 
             if ( dataView != null )
             {
-                var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                var dataViewGetQueryArgs = new GetQueryableOptions { DbContext = rockContext };
                 qryPersonIds = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Person>().Select( a => a.Id );
             }
 
@@ -440,10 +440,9 @@ namespace RockWeb.Blocks.Reporting
         /// Gets the data view.
         /// </summary>
         /// <returns></returns>
-        private DataView GetDataView()
+        private DataViewCache GetDataView()
         {
-            var rockContext = new RockContext();
-            DataView dataView = null;
+            DataViewCache dataView = null;
 
             // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
             int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
@@ -463,11 +462,11 @@ namespace RockWeb.Blocks.Reporting
                 // if a DataViewId page parameter was specified, use that, otherwise use the blocksetting or filter selection
                 if ( dataViewId.HasValue )
                 {
-                    dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                    dataView = DataViewCache.Get( dataViewId.Value );
                 }
                 else
                 {
-                    dataView = new DataViewService( rockContext ).Get( dataViewGuid.Value );
+                    dataView = DataViewCache.Get( dataViewGuid.Value );
                 }
             }
 

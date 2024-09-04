@@ -56,6 +56,12 @@ export type FinancialAccountBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets the Image that can be used when displaying this Financial Account */
+    imageBinaryFile?: ListItemBag | null;
+
+    /** Gets or sets the image URL. */
+    imageUrl?: string | null;
+
     /** Gets or sets a value indicating if this FinancialAccount is active. */
     isActive: boolean;
 

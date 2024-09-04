@@ -88,7 +88,7 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
         public string NodeDetailPageUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the chart HTML.
+        /// Gets or sets the chart data.
         /// </summary>
         /// <value>
         /// The chart HTML.

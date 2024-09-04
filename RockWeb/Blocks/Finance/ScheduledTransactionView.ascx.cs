@@ -212,14 +212,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
                 ShowView( GetScheduledTransaction() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Finance
             var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
 #pragma warning restore CS0618
 
-            if ( financialScheduledTransactionGuid.HasValue  )
+            if ( financialScheduledTransactionGuid.HasValue )
             {
                 return financialScheduledTransactionGuid.Value;
             }
@@ -312,8 +312,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( financialScheduledTransaction.IsActive == false )
                     {
-                        // if GetStatus failed, but the scheduled transaction is inactive, just show Schedule is Inactive
-                        // This takes care of dealing with gateways that delete the scheduled payment vs inactivating them on the gateway side
+                        // Save changes to the database, because financialScheduledTransactionService.GetStatus() may have deactivated this transaction.
+                        rockContext.SaveChanges();
+
+                        // If GetStatus failed, but the scheduled transaction is inactive, just show Schedule is Inactive.
+                        // This takes care of dealing with gateways that delete the scheduled payment vs inactivating them on the gateway side.
                         ShowErrorMessage( "Schedule is inactive" );
                     }
                     else
@@ -384,7 +387,7 @@ namespace RockWeb.Blocks.Finance
             {
                 return;
             }
-
+            
             using ( var rockContext = new RockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
@@ -395,6 +398,12 @@ namespace RockWeb.Blocks.Finance
 
                 if ( financialScheduledTransaction == null )
                 {
+                    return;
+                }
+                else if ( IsEventRegistrationTransactionType( financialScheduledTransaction ) )
+                {
+                    // Prevent reactivating Event Registration financial scheduled transactions.
+                    ShowErrorMessage( "Event Registration Scheduled Transactions cannot be reactivated once canceled." );
                     return;
                 }
 
@@ -625,13 +634,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChangeAccounts_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var financialScheduledTransaction = GetTransaction( rockContext );
-                {
-                    ShowAccountEdit( financialScheduledTransaction );
-                }
-            }
+            var rockContext = new RockContext();
+            var financialScheduledTransaction = GetTransaction( rockContext );
+            ShowAccountEdit( financialScheduledTransaction );
         }
 
         /// <summary>
@@ -745,8 +750,10 @@ namespace RockWeb.Blocks.Finance
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 return financialScheduledTransactionService
                     .Queryable()
+                    .Include( a => a.ScheduledTransactionDetails )
                     .Include( a => a.AuthorizedPersonAlias.Person )
                     .Include( a => a.FinancialGateway )
+                    .AsNoTracking()
                     .FirstOrDefault( t => t.Guid == scheduledTransactionGuid.Value );
             }
 
@@ -853,9 +860,27 @@ namespace RockWeb.Blocks.Finance
             gAccountsView.DataBind();
 
             btnRefresh.Visible = gateway != null && gateway.GetScheduledPaymentStatusSupported;
-            btnUpdate.Visible = gateway != null && gateway.UpdateScheduledPaymentSupported;
-            btnCancelSchedule.Visible = financialScheduledTransaction.IsActive;
-            btnReactivateSchedule.Visible = !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
+            var isEventRegistrationTransactionType = IsEventRegistrationTransactionType( financialScheduledTransaction );
+            btnUpdate.Visible =
+                !isEventRegistrationTransactionType
+                && gateway != null
+                && gateway.UpdateScheduledPaymentSupported;
+            btnCancelSchedule.Visible = financialScheduledTransaction.IsActive && gateway.UpdateScheduledPaymentSupported;
+            btnReactivateSchedule.Visible =
+                !isEventRegistrationTransactionType
+                && !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
+        }
+
+        /// <summary>
+        /// Determines if the financial scheduled transaction is an event registration.
+        /// </summary>
+        /// <param name="financialScheduledTransaction">The financial scheduled transaction.</param>
+        private bool IsEventRegistrationTransactionType( FinancialScheduledTransaction financialScheduledTransaction )
+        {
+            var eventRegistrationTransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+
+            return eventRegistrationTransactionTypeValueId.HasValue
+                && eventRegistrationTransactionTypeValueId == financialScheduledTransaction?.TransactionTypeValueId;
         }
 
         /// <summary>

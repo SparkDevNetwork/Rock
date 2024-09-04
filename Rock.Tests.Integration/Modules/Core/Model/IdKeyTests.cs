@@ -4,11 +4,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Model
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class IdKeyTests
+    public class IdKeyTests : DatabaseTestsBase
     {
         #region Service<T>.Get( string, bool )
 

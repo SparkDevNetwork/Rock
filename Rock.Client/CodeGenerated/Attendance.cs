@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? CheckedOutByPersonAliasId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.Event.CheckInStatus CheckInStatus { get; set; }
+
+        /// <summary />
         public int? DeclineReasonValueId { get; set; }
 
         /// <summary />
@@ -127,6 +130,9 @@ namespace Rock.Client
         public string SearchValue { get; set; }
 
         /// <summary />
+        public int? SourceValueId { get; set; }
+
+        /// <summary />
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -167,6 +173,7 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             this.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
+            this.CheckInStatus = source.CheckInStatus;
             this.DeclineReasonValueId = source.DeclineReasonValueId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
@@ -192,6 +199,7 @@ namespace Rock.Client
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
+            this.SourceValueId = source.SourceValueId;
             this.StartDateTime = source.StartDateTime;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -231,6 +239,9 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue SearchTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

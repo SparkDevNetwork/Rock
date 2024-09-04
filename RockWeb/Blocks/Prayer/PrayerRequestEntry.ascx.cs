@@ -144,18 +144,38 @@ namespace RockWeb.Blocks.Prayer
         Order = 13,
         Key = AttributeKey.RequireCampus )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        Category = "Features",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 14 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        Category = "Features",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 15 )]
+
     [BooleanField( "Enable Person Matching",
         Description = "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.",
         DefaultBooleanValue = false,
         Category = "Features",
-        Order = 14,
+        Order = 16,
         Key = AttributeKey.EnablePersonMatching )]
 
     [BooleanField( "Create Person If No Match Found",
         Description = "When person matching is enabled this setting determines if a person should be created if a matched record is not found. This setting has no impact if person matching is disabled.",
         DefaultBooleanValue = true,
         Category = "Features",
-        Order = 15,
+        Order = 17,
         Key = AttributeKey.CreatePersonIfNoMatchFound )]
 
     [DefinedValueField( "Connection Status",
@@ -165,7 +185,7 @@ namespace RockWeb.Blocks.Prayer
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT,
         Category = "Features",
-        Order = 16,
+        Order = 18,
         Key = AttributeKey.ConnectionStatus )]
 
     [DefinedValueField( "Record Status",
@@ -175,7 +195,7 @@ namespace RockWeb.Blocks.Prayer
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Category = "Features",
-        Order = 17,
+        Order = 19,
         Key = AttributeKey.RecordStatus )]
 
     // On Save Behavior
@@ -183,14 +203,14 @@ namespace RockWeb.Blocks.Prayer
         Description = "If enabled, on successful save control will redirect back to the parent page.",
         DefaultBooleanValue = false,
         Category = "On Save Behavior",
-        Order = 18,
+        Order = 20,
         Key = AttributeKey.NavigateToParentOnSave )]
 
     [BooleanField( "Refresh Page On Save",
         Description = "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.",
         DefaultBooleanValue = false,
         Category = "On Save Behavior",
-        Order = 19,
+        Order = 21,
         Key = AttributeKey.RefreshPageOnSave )]
 
     [CodeEditorField( "Save Success Text",
@@ -201,7 +221,7 @@ namespace RockWeb.Blocks.Prayer
         IsRequired = false,
         DefaultValue = "<p>Thank you for allowing us to pray for you.</p>",
         Category = "On Save Behavior",
-        Order = 20,
+        Order = 22,
         Key = AttributeKey.SaveSuccessText )]
 
     [WorkflowTypeField( "Workflow",
@@ -210,7 +230,7 @@ namespace RockWeb.Blocks.Prayer
         IsRequired = false,
         DefaultValue = "",
         Category = "On Save Behavior",
-        Order = 21,
+        Order = 23,
         Key = AttributeKey.Workflow )]
 
     [ContextAware(typeof(Rock.Model.Person))]
@@ -238,6 +258,8 @@ namespace RockWeb.Blocks.Prayer
             public const string RequireLastName = "RequireLastName";
             public const string ShowCampus = "ShowCampus";
             public const string RequireCampus = "RequireCampus";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string EnablePersonMatching = "EnablePersonMatching";
             public const string CreatePersonIfNoMatchFound = "CreatePersonIfNoMatchFound";
             public const string ConnectionStatus = "ConnectionStatus";
@@ -298,7 +320,33 @@ namespace RockWeb.Blocks.Prayer
 
             cpCampus.Campuses = CampusCache.All( false );
             cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
-            
+
+            var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                .SplitDelimitedValues( true )
+                .AsGuidList()
+                .Select( a => DefinedValueCache.Get( a ) )
+                .Where( a => a != null )
+                .Select( a => a.Id )
+                .ToList();
+
+            if ( selectedCampusTypeIds.Any() )
+            {
+                cpCampus.CampusTypesFilter = selectedCampusTypeIds;
+            }
+
+            var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                .SplitDelimitedValues( true )
+                .AsGuidList()
+                .Select( a => DefinedValueCache.Get( a ) )
+                .Where( a => a != null )
+                .Select( a => a.Id )
+                .ToList();
+
+            if ( selectedCampusStatusIds.Any() )
+            {
+                cpCampus.CampusStatusFilter = selectedCampusStatusIds;
+            }
+
             if ( cpCampus.Visible )
             {
                 cpCampus.Visible = GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean();
@@ -375,8 +423,6 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( CurrentPerson != null )
@@ -397,6 +443,8 @@ namespace RockWeb.Blocks.Prayer
                 avcEditAttributes.AddEditControls( prayerRequest );
                 avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -82,8 +83,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 int? mergeTemplateIdParam = PageParameter( "MergeTemplateId" ).AsIntegerOrNull();
@@ -96,6 +95,8 @@ namespace RockWeb.Blocks.Core
                     pnlDetails.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -583,14 +584,13 @@ namespace RockWeb.Blocks.Core
             hfMergeTemplateId.SetValue( mergeTemplate.Id );
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
-            var getFileUrl = string.Format(
-                "{0}GetFile.ashx?guid={1}",
-                System.Web.VirtualPathUtility.ToAbsolute( "~" ),
-                mergeTemplate.TemplateBinaryFile != null ? mergeTemplate.TemplateBinaryFile.Guid : ( Guid? ) null );
+            var getFileUrl = mergeTemplate.TemplateBinaryFile != null ? FileUrlHelper.GetFileUrl( mergeTemplate.TemplateBinaryFile.Guid ) : string.Format( "{0}GetFile.ashx?guid=", System.Web.VirtualPathUtility.ToAbsolute( "~" ) );
 
             DescriptionList descriptionListCol1 = new DescriptionList()
-                .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", getFileUrl, mergeTemplate.TemplateBinaryFile.FileName ) )
-                .Add( "Description", mergeTemplate.Description ?? string.Empty )
+               .Add( "Template File", mergeTemplate.TemplateBinaryFile != null
+                   ? string.Format( "<a href='{0}'>{1}</a>", getFileUrl, mergeTemplate.TemplateBinaryFile.FileName )
+                   : string.Empty )
+               .Add( "Description", mergeTemplate.Description ?? string.Empty )
                 .Add( "Type", mergeTemplate.MergeTemplateTypeEntityType );
 
             DescriptionList descriptionListCol2 = new DescriptionList()

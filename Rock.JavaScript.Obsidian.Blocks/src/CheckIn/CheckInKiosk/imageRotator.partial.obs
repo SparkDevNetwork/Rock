@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <transition enterActiveClass="promotion-enter-active"
+                leaveActiveClass="promotion-leave-active"
+                enterFromClass="promotion-enter-from"
+                leaveToClass="promotion-leave-to"
+                @afterEnter="onAfterEnter">
+        <div v-if="currentImage" ref="currentImageElement" :key="currentImage.url ?? undefined" class="promotion"></div>
+        <div v-else-if="newImage" ref="newImageElement" :key="newImage.url ?? undefined" class="promotion"></div>
+    </transition>
+</template>
+
+<script setup lang="ts">
+    import { onBeforeUnmount, PropType, ref, toRaw, watch } from "vue";
+    import { PromotionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/promotionBag";
+
+    const props = defineProps({
+        promotions: {
+            type: Array as PropType<PromotionBag[]>,
+            required: true
+        }
+    });
+
+    const currentImageElement = ref<HTMLElement>();
+    const newImageElement = ref<HTMLElement>();
+    const currentImage = ref<PromotionBag>();
+    const newImage = ref<PromotionBag>();
+
+    let currentImageIndex: number | undefined = undefined;
+    let lastPromotionsJson: string = "";
+    let nextImageTimer: number | undefined = undefined;
+
+    // #region Functions
+
+    /**
+     * Called when the list of promotions we are displaying has changed.
+     */
+    function updatePromotions(): void {
+        const json = JSON.stringify(toRaw(props.promotions));
+
+        // If the promotion list didn't actually change then do nothing.
+        if (json === lastPromotionsJson) {
+            return;
+        }
+
+        lastPromotionsJson = json;
+        currentImageIndex = undefined;
+
+        if (nextImageTimer !== undefined) {
+            window.clearTimeout(nextImageTimer);
+            nextImageTimer = undefined;
+        }
+
+        showNextImage(true);
+    }
+
+    /**
+     * Displays the next promotion in the list of promotions.
+     *
+     * @param force If true then the new promotion is forced to display.
+     */
+    function showNextImage(force: boolean): void {
+        // If we don't have any promotions then nothing to do.
+        if (props.promotions.length === 0) {
+            if (force) {
+                currentImageIndex = undefined;
+                currentImage.value = undefined;
+                newImage.value = undefined;
+            }
+
+            return;
+        }
+
+        // If we only have one promotion then nothing to do.
+        if (props.promotions.length === 1) {
+            if (force) {
+                currentImageIndex = 0;
+                currentImage.value = props.promotions[0];
+                newImage.value = undefined;
+            }
+
+            return;
+        }
+
+        // Move to the next (or first) promotions.
+        if (currentImageIndex === undefined) {
+            currentImageIndex = 0;
+        }
+        else {
+            currentImageIndex++;
+        }
+
+        // Check if we reached the end of the promotion list.
+        if (currentImageIndex >= props.promotions.length) {
+            currentImageIndex = 0;
+        }
+
+        // Start the animation to display the new promotion.
+        currentImage.value = undefined;
+        newImage.value = props.promotions[currentImageIndex];
+
+        // If we have more than one promotion then start a timer to display
+        // the next promotion.
+        if (props.promotions.length > 1) {
+            nextImageTimer = window.setTimeout(() => showNextImage(false), newImage.value.duration * 1000);
+        }
+    }
+
+    /**
+     * Event handler for after a transition has completed.
+     */
+     function onAfterEnter(): void {
+        // Swap the images.
+        if (newImage.value) {
+            currentImage.value = newImage.value;
+            newImage.value = undefined;
+        }
+    }
+
+    // #endregion
+
+    // Clear the slide timer before we get removed.
+    onBeforeUnmount(() => {
+        if (nextImageTimer !== undefined) {
+            window.clearTimeout(nextImageTimer);
+            nextImageTimer = undefined;
+        }
+    });
+
+    // Set the background image of the current image element when it appears.
+    watch(currentImageElement, () => {
+        if (currentImageElement.value && currentImage.value) {
+            currentImageElement.value.style.backgroundImage = `url('${currentImage.value.url}')`;
+        }
+    });
+
+    // Set the background image of the new image element when it appears.
+    watch(newImageElement, () => {
+        if (newImageElement.value && newImage.value) {
+            newImageElement.value.style.backgroundImage = `url('${newImage.value.url}')`;
+        }
+    });
+
+    watch(() => props.promotions, updatePromotions);
+
+    updatePromotions();
+</script>

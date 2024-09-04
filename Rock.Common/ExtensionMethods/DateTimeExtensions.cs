@@ -129,8 +129,21 @@ namespace Rock
         /// <returns></returns>
         public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
         {
+            return ToElapsedString( dateTime, RockDateTime.Now, condensed, includeTime );
+        }
+
+        /// <summary>
+        /// Returns a friendly elapsed time string.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="currentDateTime">The time to use as the current date time for the calculation.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
+        /// <returns></returns>
+        internal static string ToElapsedString( DateTime dateTime, DateTime currentDateTime, bool condensed = false, bool includeTime = true )
+        {
             var start = dateTime;
-            var end = RockDateTime.Now;
+            var end = currentDateTime;
             var direction = " Ago";
             var duration = "";
             var timeSpan = end.Subtract( start );
@@ -434,28 +447,6 @@ namespace Rock
         public static DateTime SundayDate( this DateTime dt )
         {
             return RockDateTime.GetSundayDate( dt );
-        }
-
-        /// <summary>
-        /// Sundays the date.
-        /// </summary>
-        /// <param name="dt">The date to check.</param>
-        /// <param name="startOfWeek">The start of week.</param>
-        /// <returns></returns>
-        [Obsolete( "Use SundayDate without the firstDayOfWeek parameter", true )]
-        [RockObsolete( "1.10" )]
-        public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
-        {
-            if ( dt.DayOfWeek == DayOfWeek.Sunday )
-            {
-                return dt.Date;
-            }
-            else
-            {
-                int intDayofWeek = (int)dt.DayOfWeek;
-                int diff = 7 - (int)dt.DayOfWeek;
-                return dt.AddDays( diff ).Date;
-            }
         }
 
         /// <summary>

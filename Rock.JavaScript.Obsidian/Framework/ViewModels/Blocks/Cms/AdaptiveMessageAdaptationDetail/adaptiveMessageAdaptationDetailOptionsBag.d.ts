@@ -23,6 +23,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Adaptive Message Adaptation Detail Options Bag */
 export type AdaptiveMessageAdaptationDetailOptionsBag = {
     /** Gets or sets the segment options. */
     segmentOptions?: ListItemBag[] | null;

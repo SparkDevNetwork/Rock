@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,13 +70,12 @@ namespace Rock.Workflow.Action
                         var dataViewAttributeGuid = GetAttributeValue( action, "DataView" ).AsGuid();
                         if ( dataViewAttributeGuid != Guid.Empty )
                         {
-                            var dataViewService = new DataViewService( rockContext );
-                            var dataView = dataViewService.Get( dataViewAttributeGuid );
+                            var dataView = DataViewCache.Get( dataViewAttributeGuid );
                             if ( dataView != null )
                             {
                                 var timeout = GetAttributeValue( action, "Timeout" ).AsIntegerOrNull();
                                 Stopwatch stopwatch = Stopwatch.StartNew();
-                                var qry = dataView.GetQuery( new DataViewGetQueryArgs
+                                var qry = dataView.GetQuery( new Reporting.GetQueryableOptions
                                 {
                                     DatabaseTimeoutSeconds = timeout
                                 } );

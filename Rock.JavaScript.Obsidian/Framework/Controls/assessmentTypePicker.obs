@@ -70,7 +70,7 @@ import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle"
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<AssessmentTypePickerGetAssessmentTypesOptionsBag> = {
+        const options: AssessmentTypePickerGetAssessmentTypesOptionsBag = {
             isInactiveIncluded: props.isInactiveIncluded
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/AssessmentTypePickerGetAssessmentTypes", undefined, options);

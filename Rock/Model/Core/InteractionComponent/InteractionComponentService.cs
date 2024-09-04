@@ -18,6 +18,7 @@
 using System;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -38,22 +39,6 @@ namespace Rock.Model
             return Queryable()
                 .Where( c => c.InteractionChannelId == channelId )
                 .OrderBy( c => c.Name );
-        }
-
-        /// <summary>
-        /// Gets the component by entity identifier, and creates it if it doesn't exist
-        /// </summary>
-        /// <param name="channelId">The channel identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the GetComponentByChannelIdAndEntityId method instead." )]
-        [RockObsolete( "1.11" )]
-        public InteractionComponent GetComponentByEntityId( int channelId, int entityId, string name )
-        {
-            return GetComponentByPredicate( channelId, entityId, name, c =>
-                c.InteractionChannelId == channelId &&
-                c.EntityId == entityId );
         }
 
         /// <summary>
@@ -117,6 +102,8 @@ namespace Rock.Model
         /// Returns a queryable of Interaction Components that are tied to Rock Sites with Geo Tracking enabled.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of a Site's EnablePageViewGeoTracking setting." )]
         public IQueryable<InteractionComponent> QueryByPagesOnSitesWithGeoTracking()
         {
             var rockContext = this.Context as Rock.Data.RockContext;

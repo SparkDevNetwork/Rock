@@ -23,8 +23,10 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialBatchDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Finance
@@ -43,10 +45,12 @@ namespace Rock.Blocks.Finance
     #region Block Attributes
     [LinkedPage( "Transaction Matching Page",
         Description = "Page used to match transactions for a batch.",
+        Key = AttributeKey.TransactionMatchingPage,
         Order = 1 )]
 
     [LinkedPage( "Audit Page",
         Description = "Page used to display the history of changes to a batch.",
+        Key = AttributeKey.AuditPage,
         Order = 2 )]
 
     [DefinedTypeField( "Batch Names",
@@ -54,12 +58,20 @@ namespace Rock.Blocks.Finance
         IsRequired = false,
         DefaultValue = "",
         Category = "",
+        Key = AttributeKey.BatchNames,
         Order = 3 )]
+
+    [BooleanField(
+        "Hide Account Totals Section",
+        Description = "When enabled the Account Totals section of the Financial Batch Detail block will be hidden.",
+        Key = AttributeKey.IsAccountTotalsHidden,
+        Order = 4
+        )]
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b5976e12-a3e4-4faf-95b5-3d54f25405da" )]
     [Rock.SystemGuid.BlockTypeGuid( "6be58680-8795-46a0-8bfa-434a01feb4c8" )]
-    public class FinancialBatchDetail : RockDetailBlockType
+    public class FinancialBatchDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private const string AuthorizationReopenBatch = "ReopenBatch";
 
@@ -77,6 +89,13 @@ namespace Rock.Blocks.Finance
             public const string AuditLogs = "AuditLogs";
         }
 
+        private static class AttributeKey
+        {
+            public const string TransactionMatchingPage = "TransactionMatchingPage";
+            public const string AuditPage = "AuditPage";
+            public const string IsAccountTotalsHidden = "IsAccountTotalsHidden";
+            public const string BatchNames = "BatchNames";
+        }
         #endregion Keys
 
         #region Block State
@@ -105,7 +124,7 @@ namespace Rock.Blocks.Finance
                 SetBoxInitialEntityState( box, rockContext );
 
                 // this computation is redundant for this block. But, keeping it as it was generated as part of the code generator.
-                int id = Rock.Utility.IdHasher.Instance.GetId( box.Entity.IdKey ) ?? 0;
+                int id = Rock.Utility.IdHasher.Instance.GetId( box.Entity?.IdKey ) ?? 0;
 
                 box.NavigationUrls = GetBoxNavigationUrls( id );
                 box.Options = GetBoxOptions( box.Entity, rockContext );
@@ -125,6 +144,12 @@ namespace Rock.Blocks.Finance
         private FinancialBatchDetailOptionsBag GetBoxOptions( FinancialBatchBag entity, RockContext rockContext )
         {
             var options = new FinancialBatchDetailOptionsBag();
+            options.IsReopenAuthorized = IsReopenAuthorized;
+
+            if ( entity == null )
+            {
+                return options;
+            }
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var batchTransactionsQuery = financialTransactionService.Queryable()
                 .Where( a => a.BatchId.HasValue && a.BatchId.Value == entity.Id );
@@ -156,12 +181,14 @@ namespace Rock.Blocks.Finance
                     .GroupBy( d => new
                     {
                         AccountId = d.AccountId,
-                        AccountName = d.Account.Name
+                        AccountName = d.Account.Name,
+                        GlCode = d.Account.GlCode,
                     } )
                     .Select( s => new FinancialBatchAccountTotalsBag
                     {
                         Name = s.Key.AccountName,
-                        Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M
+                        Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M,
+                        GlCode = s.Key.GlCode
                     } )
                     .OrderBy( s => s.Name )
                     .ToList();
@@ -173,7 +200,20 @@ namespace Rock.Blocks.Finance
             // copying the logic from the web forms
             options.IsStatusChangeDisabled = entity.IsAutomated && entity.Status == BatchStatus.Pending || IsReopenDisabled;
 
-            options.IsReopenAuthorized = IsReopenAuthorized;
+            // The Attribute Value for Batch Name needs to be sent only if a new Financial Batch is being created.
+            if ( entity.Id == 0 )
+            {
+                options.BatchNameDefinedTypeGuid = GetAttributeValue( AttributeKey.BatchNames );
+            }
+
+            options.IsAccountTotalsHidden = GetAttributeValue( AttributeKey.IsAccountTotalsHidden ).AsBoolean();
+            var currencyInfo = new RockCurrencyCodeInfo();
+            options.CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
 
             return options;
         }
@@ -189,6 +229,11 @@ namespace Rock.Blocks.Finance
         private bool ValidateFinancialBatch( FinancialBatch financialBatch, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
+            if ( !financialBatch.IsValid )
+            {
+                errorMessage = string.Join( "</br>", financialBatch.ValidationResults.Select( v => v.ErrorMessage ) );
+                return false;
+            }
 
             return true;
         }
@@ -401,9 +446,9 @@ namespace Rock.Blocks.Finance
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.MatchTransactions] = this.GetLinkedPageUrl( "TransactionMatchingPage",
+                [NavigationUrlKey.MatchTransactions] = this.GetLinkedPageUrl( AttributeKey.TransactionMatchingPage,
                     new Dictionary<string, string>() { { "BatchId", $"{id}" } } ),
-                [NavigationUrlKey.AuditLogs] = this.GetLinkedPageUrl( "AuditPage",
+                [NavigationUrlKey.AuditLogs] = this.GetLinkedPageUrl( AttributeKey.AuditPage,
                     new Dictionary<string, string>() { { "BatchId", $"{id}" } } )
             };
         }
@@ -529,6 +574,32 @@ namespace Rock.Blocks.Finance
                     return actionError;
                 }
 
+                string errorMessage;
+                if ( !entity.IsValidBatchStatusChange( entity.Status, box.Entity.Status.GetValueOrDefault(), RequestContext.CurrentPerson, out errorMessage ) )
+                {
+                    return ActionUnauthorized( errorMessage );
+                }
+
+                var isNew = entity.Id == 0;
+                var isStatusChanged = box.Entity.Status != entity.Status;
+
+                var changes = new History.HistoryChangeList();
+                if ( isNew )
+                {
+                    changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                }
+
+                History.EvaluateChange( changes, "Batch Name", entity.Name, box.Entity?.Name );
+                var currentCampusName = CampusCache.Get( entity.CampusId ?? 0 )?.Name ?? "None";
+                History.EvaluateChange( changes, "Campus", currentCampusName, box.Entity?.Campus?.Text ?? "None" );
+                History.EvaluateChange( changes, "Status", entity?.Status, box.Entity?.Status );
+                History.EvaluateChange( changes, "Start Date/Time", entity.BatchStartDateTime, box.Entity?.BatchStartDateTime );
+                History.EvaluateChange( changes, "End Date/Time", entity.BatchEndDateTime, box.Entity?.BatchEndDateTime );
+                History.EvaluateChange( changes, "Control Amount", entity?.ControlAmount.FormatAsCurrency(), ( box.Entity?.ControlAmount ?? 0.0m ).FormatAsCurrency() );
+                History.EvaluateChange( changes, "Control Item Count", entity.ControlItemCount, box.Entity?.ControlItemCount );
+                History.EvaluateChange( changes, "Accounting System Code", entity.AccountingSystemCode, box.Entity?.AccountingSystemCode );
+                History.EvaluateChange( changes, "Notes", entity.Note, box.Entity?.Note );
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
@@ -541,11 +612,20 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( validationMessage );
                 }
 
-                var isNew = entity.Id == 0;
-
                 rockContext.WrapTransaction( () =>
                 {
-                    rockContext.SaveChanges();
+                    if ( rockContext.SaveChanges() > 0 )
+                    {
+                        if ( changes.Any() )
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                entity.Id,
+                                changes );
+                        }
+                    }
                     entity.SaveAttributeValues( rockContext );
                 } );
 
@@ -557,10 +637,30 @@ namespace Rock.Blocks.Finance
                     } ) );
                 }
 
+                /**
+                 * 11/18/2023 - KA
+                 * If the status has been updated return current page url to trigger
+                 * a page refresh on the client. The Batch Detail block is typically
+                 * used with the Transaction List block and an update may be required
+                 * to reflect the change in the batch's status. This will required some
+                 * refactoring once Obsidian blocks can signal each other.
+                 */
+                if ( isStatusChanged )
+                {
+                    return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
+                    {
+                        [PageParameterKey.BatchId] = entity.IdKey
+                    } ) );
+                }
+
                 // Ensure navigation properties will work now.
                 entity = entityService.Get( entity.Id );
 
                 entity.LoadAttributes( rockContext );
+
+                // Put the financial batch to the context entities.
+                var contextEntity = RequestContext.GetContextEntity<FinancialBatch>();
+                contextEntity?.CopyPropertiesFrom( entity );
 
                 return ActionOk( GetEntityBagForView( entity ) );
             }
@@ -646,6 +746,26 @@ namespace Rock.Blocks.Finance
                 }
 
                 return ActionOk( refreshedBox );
+            }
+        }
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var batchId = pageReference.GetPageParameter( PageParameterKey.BatchId );
+                var batchName = new FinancialBatchService( rockContext )
+                    .GetSelect( batchId, b => b.Name );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( batchName ?? "New Batch", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
             }
         }
 

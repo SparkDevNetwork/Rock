@@ -978,7 +978,27 @@ namespace Rock.Model
             return this.FullName;
         }
 
-#endregion
+        #endregion
+
+        #region Lava
+
+        /// <inheritdoc />
+        protected override object OnGetValue( string key )
+        {
+            // Intercept these properties and return alternate values.
+            if ( key == "DaysToAnniversary" )
+            {
+                return this.DaysToAnniversaryOrNull;
+            }
+            else if ( key == "DaysToBirthday" )
+            {
+                return this.DaysToBirthdayOrNull;
+            }
+
+            return base.OnGetValue( key );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

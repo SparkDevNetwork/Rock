@@ -53,6 +53,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ConnectionRequestId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionRequest.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
+                return false;
+            }
+
             // ignoring ConnectionRequestActivity,ConnectionRequestId
             return true;
         }

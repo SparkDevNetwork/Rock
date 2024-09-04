@@ -10,8 +10,8 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
-                 :isAuditHidden="false"
+                 entityTypeName="AppleTVApp"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
@@ -71,8 +71,7 @@
         "description",
         "isActive",
         "loginPage",
-        "enablePageViews",
-        "enablePageViewGeoTracking"
+        "enablePageViews"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvAppEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -81,11 +80,15 @@
 
     // #region Computed Values
 
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value != DetailPanelMode.View;
+    });
+
     /**
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return appleTvAppViewBag.value?.name ?? "New Application";
+        return appleTvAppViewBag.value?.name ?? "";
     });
 
     /**
@@ -103,6 +106,21 @@
 
         if (panelMode.value !== DetailPanelMode.View) {
             return undefined;
+        }
+
+        if (appleTvAppViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
         }
 
         return labels;

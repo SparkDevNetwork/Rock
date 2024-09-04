@@ -158,6 +158,7 @@ namespace Rock.Obsidian.UI
             var definition = new GridDefinitionBag
             {
                 Fields = new List<FieldDefinitionBag>(),
+                DynamicFields = new List<DynamicFieldDefinitionBag>(),
                 AttributeFields = new List<AttributeFieldDefinitionBag>(),
                 ActionUrls = new Dictionary<string, string>()
             };

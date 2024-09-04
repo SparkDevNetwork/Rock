@@ -34,57 +34,6 @@ namespace Rock.Model
         /// <summary>
         /// Creates the email communication
         /// </summary>
-        /// <param name="recipientEmails">A list of email addresses to use for finding which people to send the email to</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="replyTo">The reply to.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
-        /// <param name="sendDateTime">The send date time.</param>
-        /// <param name="recipientStatus">The recipient status.</param>
-        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the CreateEmailCommunication method that takes List<RockEmailMessageRecipient> as a parameter instead.", true )]
-        public Communication CreateEmailCommunication
-        (
-            List<string> recipientEmails,
-            string fromName,
-            string fromAddress,
-            string replyTo,
-            string subject,
-            string message,
-            bool bulkCommunication,
-            DateTime? sendDateTime,
-            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
-            int? senderPersonAliasId = null )
-        {
-            var recipients = new PersonService( ( RockContext ) Context )
-                .Queryable()
-                .Where( p => recipientEmails.Contains( p.Email ) )
-                .ToList()
-                .Select( a => new RockEmailMessageRecipient( a, null ) )
-                .ToList();
-
-            return CreateEmailCommunication( new CreateEmailCommunicationArgs
-            {
-                Recipients = recipients,
-                FromName = fromName,
-                FromAddress = fromAddress,
-                ReplyTo = replyTo,
-                Subject = subject,
-                Message = message,
-                BulkCommunication = bulkCommunication,
-                SendDateTime = sendDateTime,
-                RecipientStatus = recipientStatus,
-                SenderPersonAliasId = senderPersonAliasId
-            } );
-        }
-
-        /// <summary>
-        /// Creates the email communication
-        /// </summary>
         /// <param name="recipients">The recipients.</param>
         /// <param name="fromName">From name.</param>
         /// <param name="fromAddress">From address.</param>

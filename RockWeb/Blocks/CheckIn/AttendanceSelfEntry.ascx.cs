@@ -450,12 +450,12 @@ ORDER BY [Text]",
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetStart();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -645,6 +645,26 @@ ORDER BY [Text]",
                 if ( tbOtherLastName.Text.IsNullOrWhiteSpace() )
                 {
                     errors.Add( "Last Name is required." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errors.Add( "First Name cannot contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errors.Add( "Last Name cannot contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errors.Add( "First Name cannot contain emojis or special fonts." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errors.Add( "Last Name cannot contain emojis or special fonts." );
                 }
 
                 if ( bpOtherBirthDay.Visible && GetAttributeValue( AttributeKey.OtherPersonBirthdayRequired ).AsBoolean() && !bpOtherBirthDay.SelectedDate.HasValue )
@@ -837,7 +857,30 @@ ORDER BY [Text]",
 
             if ( isAccountRequired )
             {
-                Authorization.SetAuthCookie( txtUserName.Text, false, false );
+                /*
+                    10/20/2023 - JMH
+
+                    If 2FA is required for the person's protection profile,
+                    then 2FA will need to be bypassed here by hard-coding a true value in their auth cookie.
+
+                    If 2FA is not required, then the auth cookie will be created without bypassing 2FA
+                    since there is no need to bypass it.
+
+                    Reason: Two-Factor Authentication
+                 */
+                var isTwoFactorAuthenticated = false;
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+
+                if ( securitySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( person.AccountProtectionProfile ) == true )
+                {
+                    isTwoFactorAuthenticated = true;
+                }
+
+                Authorization.SetAuthCookie(
+                    txtUserName.Text,
+                    isPersisted: false,
+                    isImpersonated: false,
+                    isTwoFactorAuthenticated );
             }
 
             pnlAccount.Visible = false;

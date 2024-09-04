@@ -132,6 +132,7 @@ namespace Rock.Model
             target.PersonAliasId = source.PersonAliasId;
             target.RegistrationId = source.RegistrationId;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
+            target.SignatureDocumentId = source.SignatureDocumentId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

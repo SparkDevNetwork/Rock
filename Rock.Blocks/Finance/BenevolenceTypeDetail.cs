@@ -35,7 +35,6 @@ namespace Rock.Blocks.Finance
     /// <summary>
     /// Displays the details of a particular benevolence type.
     /// </summary>
-
     [DisplayName( "Benevolence Type Detail" )]
     [Category( "Finance" )]
     [Description("Block to display the benevolence type detail.")]
@@ -90,7 +89,7 @@ namespace Rock.Blocks.Finance
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions();
 
                 return box;
             }
@@ -100,15 +99,14 @@ namespace Rock.Blocks.Finance
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BenevolenceTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private BenevolenceTypeDetailOptionsBag GetBoxOptions()
         {
-            var options = new BenevolenceTypeDetailOptionsBag();
-
-            options.Statuses = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS.AsGuid() ).DefinedValues.ToListItemBagList();
-            options.TriggerTypes = ToListItemBag( typeof( BenevolenceWorkflowTriggerType ) );
+            var options = new BenevolenceTypeDetailOptionsBag
+            {
+                Statuses = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS.AsGuid() ).DefinedValues.ToListItemBagList(),
+                TriggerTypes = ToListItemBag( typeof( BenevolenceWorkflowTriggerType ) )
+            };
 
             return options;
         }
@@ -176,50 +174,32 @@ namespace Rock.Blocks.Finance
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            if ( entity.Id != 0 )
+            if ( box.IsEditable )
             {
-                // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
-                {
-                    box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( BenevolenceType.FriendlyTypeName );
-                }
+                box.Entity = GetEntityBag( entity );
+                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
-                if ( box.IsEditable )
-                {
-                    box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( BenevolenceType.FriendlyTypeName );
-                }
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( BenevolenceType.FriendlyTypeName );
             }
         }
 
         /// <summary>
-        /// Gets the entity bag that is common between both view and edit modes.
+        /// Gets the bag for editing the specified entity.
         /// </summary>
-        /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="BenevolenceTypeBag"/> that represents the entity.</returns>
-        private BenevolenceTypeBag GetCommonEntityBag( BenevolenceType entity )
+        private BenevolenceTypeBag GetEntityBag( BenevolenceType entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            return new BenevolenceTypeBag
+            var bag = new BenevolenceTypeBag
             {
                 IdKey = entity.IdKey,
                 Description = entity.Description,
@@ -228,43 +208,11 @@ namespace Rock.Blocks.Finance
                 RequestLavaTemplate = entity.RequestLavaTemplate,
                 ShowFinancialResults = entity.Id == 0 || entity.ShowFinancialResults,
                 MaximumNumberOfDocuments = entity.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>()?.MaximumNumberOfDocuments,
-                CanAdminstrate = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                CanAdminstrate = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
+                Workflows = entity.BenevolenceWorkflows.Select( w => ToWorkflowBag( w ) ).OrderByDescending( w => w.IsInherited )
+                .ThenBy( w => w.WorkflowTypeName )
+                .ToList()
             };
-        }
-
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="BenevolenceTypeBag"/> that represents the entity.</returns>
-        private BenevolenceTypeBag GetEntityBagForView( BenevolenceType entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="BenevolenceTypeBag"/> that represents the entity.</returns>
-        private BenevolenceTypeBag GetEntityBagForEdit( BenevolenceType entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-            bag.Workflows = entity.BenevolenceWorkflows.Select( w => ToWorkflowBag( w ) ).OrderByDescending( w => w.IsInherited )
-            .ThenBy( w => w.WorkflowTypeName )
-            .ToList();
 
             return bag;
         }
@@ -285,7 +233,7 @@ namespace Rock.Blocks.Finance
                 return new BenevolenceWorkflowBag()
                 {
                     BenevolenceTypeId = workflow.BenevolenceTypeId,
-                    Guid = workflow.Guid,
+                    Guid = workflow.Guid.ToString(),
                     WorkflowType = workflow.WorkflowType.ToListItemBag(),
                     Trigger = workflow.TriggerType.ConvertToString(),
                     WorkflowTypeName = workflow.BenevolenceTypeId > 0 ? workflow.WorkflowType.Name + " <span class='label label-default'>Inherited</span>" : workflow.WorkflowType.Name,
@@ -362,6 +310,12 @@ namespace Rock.Blocks.Finance
 
             box.IfValidProperty( nameof( box.Entity.ShowFinancialResults ),
                 () => entity.ShowFinancialResults = box.Entity.ShowFinancialResults );
+
+            box.IfValidProperty( nameof( box.Entity.Workflows ),
+                () => SaveWorkflows( box.Entity, entity, rockContext ) );
+
+            box.IfValidProperty( nameof( box.Entity.MaximumNumberOfDocuments ),
+                () => SaveAdditionalSettings( box.Entity, entity ) );
 
             return true;
         }
@@ -454,64 +408,31 @@ namespace Rock.Blocks.Finance
             return true;
         }
 
-        #endregion
-
-        #region Block Actions
-
         /// <summary>
-        /// Gets the box that will contain all the information needed to begin
-        /// the edit operation.
+        /// Saves the additional settings.
         /// </summary>
-        /// <param name="key">The identifier of the entity to be edited.</param>
-        /// <returns>A box that contains the entity and any other information required.</returns>
-        [BlockAction]
-        public BlockActionResult Edit( string key )
+        /// <param name="bag">The bag.</param>
+        /// <param name="entity">The entity.</param>
+        private static void SaveAdditionalSettings( BenevolenceTypeBag bag, BenevolenceType entity )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var box = new DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
-            }
+            var additionalSettings = entity.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>() ?? new BenevolenceType.AdditionalSettings();
+            additionalSettings.MaximumNumberOfDocuments = bag.MaximumNumberOfDocuments;
+            entity.AdditionalSettingsJson = additionalSettings.ToJson();
         }
 
         /// <summary>
-        /// Saves the entity contained in the box.
+        /// Saves the workflows.
         /// </summary>
-        /// <param name="box">The box that contains all the information required to save.</param>
-        /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
-        [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box )
+        /// <param name="bag">The bag.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private static void SaveWorkflows( BenevolenceTypeBag bag, BenevolenceType entity, RockContext rockContext )
         {
-            using ( var rockContext = new RockContext() )
+            if ( bag.Workflows != null )
             {
                 var benevolenceWorkflowService = new BenevolenceWorkflowService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                var additionalSettings = entity.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>() ?? new BenevolenceType.AdditionalSettings();
-                additionalSettings.MaximumNumberOfDocuments = box.Entity.MaximumNumberOfDocuments;
-                entity.AdditionalSettingsJson = additionalSettings.ToJson();
-
                 // remove any workflows that were removed in the UI
-                var uiWorkflows = box.Entity.Workflows.Select( l => l.Guid );
+                var uiWorkflows = bag.Workflows.Select( l => l.Guid.AsGuid() );
 
                 foreach ( var benevolenceWorkflow in entity.BenevolenceWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
@@ -520,10 +441,10 @@ namespace Rock.Blocks.Finance
                 }
 
                 // Add or Update workflows from the UI
-                foreach ( var workflowBag in box.Entity.Workflows )
+                foreach ( var workflowBag in bag.Workflows )
                 {
                     BenevolenceWorkflow benevolenceWorkflow = entity.BenevolenceWorkflows
-                        .FirstOrDefault( b => !workflowBag.Guid.Equals( Guid.Empty ) && b.Guid == workflowBag.Guid );
+                        .FirstOrDefault( b => !workflowBag.Guid.Equals( Guid.Empty ) && b.Guid.ToString() == workflowBag.Guid );
 
                     if ( benevolenceWorkflow == null )
                     {
@@ -539,6 +460,33 @@ namespace Rock.Blocks.Finance
                     benevolenceWorkflow.TriggerType = workflowBag.Trigger.ConvertToEnum<BenevolenceWorkflowTriggerType>();
                     benevolenceWorkflow.QualifierValue = $"|{DefinedValueCache.GetId( workflowBag.PrimaryQualifier.AsGuid() )}|{DefinedValueCache.GetId( workflowBag.SecondaryQualifier.AsGuid() )}|";
                 }
+            }
+        }
+
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Saves the entity contained in the box.
+        /// </summary>
+        /// <param name="box">The box that contains all the information required to save.</param>
+        /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
+        [BlockAction]
+        public BlockActionResult Save( DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                {
+                    return actionError;
+                }
+
+                // Update the entity instance from the information in the bag.
+                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
 
                 // Ensure everything is valid before saving.
                 if ( !ValidateBenevolenceType( entity, rockContext, out var validationMessage ) )
@@ -547,35 +495,6 @@ namespace Rock.Blocks.Finance
                 }
 
                 rockContext.WrapTransaction( () => rockContext.SaveChanges() );
-
-                return ActionOk( this.GetParentPageUrl() );
-            }
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new BenevolenceTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
 
                 return ActionOk( this.GetParentPageUrl() );
             }
@@ -610,6 +529,7 @@ namespace Rock.Blocks.Finance
                 var trigger = workflowBag.Trigger.ConvertToEnum<BenevolenceWorkflowTriggerType>();
                 var workflowTypeId = workflowBag.WorkflowType.GetEntityId<WorkflowType>( rockContext );
                 var workflowQualifier = $"|{DefinedValueCache.GetId( workflowBag.PrimaryQualifier.AsGuid() )}|{DefinedValueCache.GetId( workflowBag.SecondaryQualifier.AsGuid() )}|";
+                var benevolenceWorkflowService = new BenevolenceWorkflowService( rockContext );
 
                 if ( !id.HasValue )
                 {
@@ -623,13 +543,13 @@ namespace Rock.Blocks.Finance
 
                 if ( id.HasValue )
                 {
-                    findWorkFlow = rockContext.BenevolenceWorkflows?.FirstOrDefault( w => w.BenevolenceTypeId == id.Value
+                    findWorkFlow = benevolenceWorkflowService.Queryable().FirstOrDefault( w => w.BenevolenceTypeId == id.Value
                         && w.TriggerType == trigger
                         && w.WorkflowTypeId == workflowTypeId );
                 }
                 else if (guid.HasValue)
                 {
-                    findWorkFlow = rockContext.BenevolenceWorkflows?.FirstOrDefault( w => w.BenevolenceType.Guid == guid.Value
+                    findWorkFlow = benevolenceWorkflowService.Queryable().FirstOrDefault( w => w.BenevolenceType.Guid == guid.Value
                         && w.TriggerType == trigger
                         && w.WorkflowTypeId == workflowTypeId );
                 }

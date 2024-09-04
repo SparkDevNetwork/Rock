@@ -81,45 +81,29 @@ namespace Rock.Tasks
                     var workflowAttributeValues = new Dictionary<string, string>();
                     workflowAttributeValues.Add( nameof( FinancialTransactionAlert ), alert.Guid.ToString() );
                     workflowAttributeValues.Add( nameof( FinancialTransactionAlertType ), alertType.Guid.ToString() );
+                    workflowAttributeValues.Add( "FinancialTransactionId", alert.FinancialTransaction.Id.ToStringSafe() );
                     workflowAttributeValues.Add( nameof( Person ), person.Guid.ToString() );
-                    alert.LaunchWorkflow( alertType.WorkflowTypeId, string.Empty, workflowAttributeValues, null );
+                    alert.LaunchWorkflow( alertType.WorkflowTypeId, string.Empty, workflowAttributeValues, alert.PersonAliasId );
                 }
 
                 // Add the person to a connection opportunity if configured
                 if ( alertType.ConnectionOpportunityId.HasValue )
                 {
-                    var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-                    var statuses = connectionOpportunityService.Queryable()
-                        .AsNoTracking()
-                        .Where( co =>
-                            co.Id == alertType.ConnectionOpportunityId )
-                        .SelectMany( co => co.ConnectionType.ConnectionStatuses )
-                        .Where( cs => cs.IsActive )
-                        .ToList()
-                        .OrderBy( cs => cs.Order );
+                    var connectionRequestService = new ConnectionRequestService( rockContext );
 
-                    var status = statuses.FirstOrDefault( cs => cs.IsDefault ) ?? statuses.FirstOrDefault();
-
-                    if ( status != null )
+                    int personAliasId = alert.PersonAliasId;
+                    var request = connectionRequestService.CreateConnectionRequestWithDefaultConnector( alertType.ConnectionOpportunityId.Value, personAliasId, alertType.CampusId, rockContext: rockContext );
+                    if ( alert.TransactionId.HasValue )
                     {
-                        var connectionRequestService = new ConnectionRequestService( rockContext );
-                        var request = new ConnectionRequest
-                        {
-                            ConnectionOpportunityId = alertType.ConnectionOpportunityId.Value,
-                            PersonAliasId = alert.PersonAliasId,
-                            ConnectionStatusId = status.Id
-                        };
-
-                        if ( alert.TransactionId.HasValue )
-                        {
-                            request.LoadAttributes();
-                            request.SetAttributeValue( "FinancialTransactionId", alert.TransactionId.Value.ToString() );
-                        }
-
-                        connectionRequestService.Add( request );
+                        request.LoadAttributes();
+                        request.SetAttributeValue( "FinancialTransactionId", alert.TransactionId.Value.ToString() );
                     }
-                }
 
+                    connectionRequestService.Add( request );
+                    rockContext.SaveChanges();
+                    request.SaveAttributeValues( rockContext );
+                }
+               
                 // Send a bus event if configured
                 if ( alertType.SendBusEvent )
                 {

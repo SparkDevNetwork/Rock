@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -220,12 +221,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             SetPageParameters();
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
             LoadEditDetails();
             LoadViewDetails();
             ConfigureRaceAndEthnicityControls();
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -444,15 +445,14 @@ namespace RockWeb.Blocks.Finance
             if ( person == null )
             {
                 person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress, RaceValueId = rpRace.SelectedValueAsId(), EthnicityValueId = epEthnicity.SelectedValueAsId() };
-                var group = PersonService.SaveNewPerson( person, rockContext );
 
-                SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
-
-                if ( group != null )
+                // set the person's connection status using the form fields
+                if ( person.ConnectionStatusValueId == null || !person.ConnectionStatusValueId.HasValue )
                 {
-                    SaveHomeAddress( rockContext, lapEditAddress.Location, group );
+                    person.ConnectionStatusValueId = dvpEditConnectionStatus.SelectedValue.AsIntegerOrNull();
                 }
 
+                // set the person's record status to active.
                 if ( person.RecordStatusValueId == null || !person.RecordStatusValueId.HasValue )
                 {
                     var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
@@ -460,6 +460,15 @@ namespace RockWeb.Blocks.Finance
                     {
                         person.RecordStatusValueId = newRecordStatus.Id;
                     }
+                }
+
+                var group = PersonService.SaveNewPerson( person, rockContext );
+
+                SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
+
+                if ( group != null )
+                {
+                    SaveHomeAddress( rockContext, lapEditAddress.Location, group );
                 }
 
                 ppEditPerson.SetValue( person );
@@ -772,7 +781,7 @@ namespace RockWeb.Blocks.Finance
             var benevolenceRequestDocument = e.Item.DataItem as BenevolenceRequestDocument;
             if ( benevolenceRequestDocument?.BinaryFile != null )
             {
-                var getFileUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), benevolenceRequestDocument.BinaryFile.Guid );
+                var getFileUrl = FileUrlHelper.GetFileUrl( benevolenceRequestDocument.BinaryFile.Guid );
 
                 uploadLink.NavigateUrl = getFileUrl;
                 uploadLink.Text = benevolenceRequestDocument.BinaryFile.FileName;

@@ -713,7 +713,7 @@ tryGeoLocation();
 
             foreach ( var groupType in locationGroupTypes )
             {
-                groupTypes.AddOrIgnore( groupType.Id, groupType );
+                groupTypes.TryAdd( groupType.Id, groupType );
             }
 
             return groupTypes

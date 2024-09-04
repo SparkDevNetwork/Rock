@@ -14,8 +14,16 @@
                 <Rock:NotificationBox ID="nbLoggingMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                 <asp:Panel runat="server" ID="pnlReadOnlySettings">
-                    <Rock:RockLiteral runat="server" ID="litVerbosityLevel" Label="Verbosity Level" CssClass="col-sm-3" />
-                    <Rock:RockLiteral runat="server" ID="litDomains" Label="Domains" CssClass="col-sm-9" />
+                    <div class="row">
+                        <Rock:RockLiteral runat="server" ID="litVerbosityLevel" Label="Verbosity Level" CssClass="col-md-3 col-lg-6" />
+                        <Rock:RockLiteral runat="server" ID="litCategories" Label="Categories" CssClass="col-md-9 col-lg-6" />
+                    </div>
+
+                    <div class="row">
+                        <Rock:RockLiteral runat="server" ID="litLocalFileSystem" Label="Local File System" CssClass="col-md-6" />
+                        <Rock:RockLiteral runat="server" ID="litObservability" Label="Observability" CssClass="col-md-6" />
+                    </div>
+
                     <div class="actions">
                         <asp:Button runat="server" ID="btnEdit" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
 
@@ -38,25 +46,68 @@
                         ValidationGroup="LoggingSettings">
                     </Rock:RockRadioButtonList>
 
-                    <Rock:RockCheckBoxList ID="cblDomainsToLog" runat="server"
-                        Label="Domains to Output"
+                    <Rock:RockListBox ID="rlbCategoriesToLog" runat="server"
+                        Label="Categories to Log"
                         ValidationGroup="LoggingSettings"
-                        RepeatColumns="5"
-                        RepeatDirection="Horizontal" />
+                        DisplayDropAsAbsolute="true" />
 
-                    <Rock:NumberBox runat="server" ID="txtMaxFileSize" Label="Max File Size (MB)"
-                        NumberType="Integer" MinimumValue="1"
-                        Help="The maximum size that the output file is allowed to reach before being rolled over to backup files."
-                        CssClass="input-width-md js-max-file-size"
-                        ValidationGroup="LoggingSettings"></Rock:NumberBox>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbLogToLocal" runat="server"
+                                Label="Log to Local File System"
+                                Help="Enables writing logs to the local file system of the Rock server."
+                                OnCheckedChanged="cbLogToLocal_CheckedChanged"
+                                CausesValidation="false"
+                                AutoPostBack="true"/>
+                        </div>
 
-                    <Rock:NumberBox runat="server" ID="txtFilesToRetain" Label="Retained Backup Files"
-                        NumberType="Integer" MinimumValue="1"
-                        Help="The maximum number of backup files that are kept before the oldest is erased."
-                        CssClass="input-width-md js-files-to-retain"
-                        ValidationGroup="LoggingSettings"></Rock:NumberBox>
-                    <div class="clearfix"></div>
-                    <p>Logs could take up to <span id="maxLogSize">400</span> MB on the server's filesystem.</p>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbLogToObservability" runat="server"
+                                Label="Log to Observability"
+                                Help="Enables writing logs to the observability framework, this is recommended when running in a web farm." />
+                        </div>
+                    </div>
+
+                    <Rock:PanelWidget ID="wpLocalSettings" runat="server" Title="Local File System Settings">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberBox runat="server" ID="nbMaxFileSize" Label="Max File Size (MB)"
+                                    NumberType="Integer" MinimumValue="1"
+                                    Help="The maximum size that the output file is allowed to reach before being rolled over to backup files."
+                                    CssClass="input-width-md js-max-file-size"
+                                    ValidationGroup="LoggingSettings"></Rock:NumberBox>
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:NumberBox runat="server" ID="nbFilesToRetain" Label="Retained Backup Files"
+                                    NumberType="Integer" MinimumValue="1"
+                                    Help="The maximum number of backup files that are kept before the oldest is erased."
+                                    CssClass="input-width-md js-files-to-retain"
+                                    ValidationGroup="LoggingSettings"></Rock:NumberBox>
+                            </div>
+                        </div>
+
+                        <p>Logs could take up to <span id="maxLogSize">400</span> MB on the server's filesystem.</p>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced">
+                        <Rock:ValueList ID="vlCustomCategories"
+                            runat="server"
+                            Label="Custom Categories"
+                            Help="Enter any custom categories that should be included in the logged results." />
+
+                        <Rock:CodeEditor ID="ceCustomConfiguration"
+                            runat="server"
+                            Label="Custom Configuration"
+                            Help="This allows custom configuration by way of writing a JSON object that will be passed to the configuration parser. Example:<pre><small><small>{
+  &quot;LogLevel&quot;: {
+    &quot;CMS&quot;: &quot;Information&quot;,
+    &quot;org.rsc.MyClass&quot;: &quot;Error&quot;
+  }
+}</small></small></pre>"
+                            EditorMode="JavaScript"
+                            />
+                    </Rock:PanelWidget>
 
                     <div class="actions">
                         <Rock:BootstrapButton

@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Finance
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
+            rGridGateway.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialGateway>();
             rGridGateway.DataKeyNames = new string[] { "Id" };
             rGridGateway.Actions.ShowAdd = canEdit;
             rGridGateway.Actions.AddClick += rGridGateway_Add;
@@ -176,8 +177,13 @@ namespace RockWeb.Blocks.Finance
             var entityType = entityTypeObject as EntityType;
             if ( entityType != null )
             {
+                var name = string.Empty;
                 var gatewayEntityType = EntityTypeCache.Get( entityType.Guid );
-                var name = Rock.Reflection.GetDisplayName( gatewayEntityType.GetEntityType() );
+                var type = gatewayEntityType.GetEntityType();
+                if ( type != null )
+                {
+                    name = Rock.Reflection.GetDisplayName( type );
+                }
 
                 // If it has a DisplayName, use it as is
                 if ( !string.IsNullOrWhiteSpace( name ) )
@@ -187,7 +193,8 @@ namespace RockWeb.Blocks.Finance
                 else
                 {
                     // Otherwise use the previous logic with SplitCase on the ComponentName
-                    return Rock.Financial.GatewayContainer.GetComponentName( entityType.Name ).ToStringSafe().SplitCase();
+                    name = Rock.Financial.GatewayContainer.GetComponentName( entityType.Name ).ToStringSafe().SplitCase();
+                    return !string.IsNullOrWhiteSpace( name ) ? name : "<span class='label label-danger'>not found</span>";
                 }
             }
 

@@ -188,12 +188,14 @@ namespace Rock.Blocks.Core
                 if ( GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" )
                 {
                     notes = notes.OrderByDescending( n => n.IsAlert == true )
+                        .ThenByDescending( n => n.IsPinned == true )
                         .ThenByDescending( n => n.CreatedDateTime )
                         .ToList();
                 }
                 else
                 {
                     notes = notes.OrderByDescending( n => n.IsAlert == true )
+                        .ThenByDescending( n => n.IsPinned == true )
                         .ThenBy( n => n.CreatedDateTime )
                         .ToList();
                 }
@@ -261,7 +263,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the identifiers of the notes currently being watched by the person.
         /// </summary>
-        /// <param name="notes">The notes that willbe displayed to the person.</param>
+        /// <param name="notes">The notes that will be displayed to the person.</param>
         /// <param name="currentPerson">The current person the notes will be displayed to.</param>
         /// <param name="rockContext">The rock context to use when accessing the database.</param>
         /// <returns>A list of identifiers representing which notes are currently being watched.</returns>
@@ -280,7 +282,7 @@ namespace Rock.Blocks.Core
                     && noteIds.Contains( nw.NoteId.Value )
                     && nw.WatcherPersonAlias.PersonId == currentPerson.Id
                     && nw.IsWatching )
-                .Select( n => n.Id )
+                .Select( nw => nw.NoteId.Value )
                 .ToList();
 
             return watchedNoteIds;
@@ -305,6 +307,7 @@ namespace Rock.Blocks.Core
                 Text = note.Text,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
+                IsPinned = note.IsPinned,
                 IsPrivate = note.IsPrivateNote,
                 IsWatching = noteType.AllowsWatching && watchedNoteIds.Contains( note.Id ),
                 IsEditable = note.IsAuthorized( Authorization.EDIT, currentPerson ),
@@ -345,7 +348,7 @@ namespace Rock.Blocks.Core
 
             foreach ( var item in items )
             {
-                values.AddOrIgnore( item.Name, item.Value );
+                values.TryAdd( item.Name, item.Value );
             }
 
             return values;
@@ -449,6 +452,7 @@ namespace Rock.Blocks.Core
                     Text = note.Text,
                     IsAlert = note.IsAlert ?? false,
                     IsPrivate = note.IsPrivateNote,
+                    IsPinned = note.IsPinned,
                     CreatedDateTime = note.CreatedDateTime?.ToRockDateTimeOffset(),
                     AttributeValues = note.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
                 };
@@ -545,7 +549,8 @@ namespace Rock.Blocks.Core
                         return ActionBadRequest( "Note type is invalid." );
                     }
 
-                    note.NoteTypeId = noteType.Id;
+                    // If the note has child notes, ensure that they have the same note type as the parent.
+                    SetParentNoteType( note, noteType.Id );
                 }
 
                 request.IfValidProperty( nameof( request.Bag.Text ), () =>
@@ -566,6 +571,11 @@ namespace Rock.Blocks.Core
                     note.IsPrivateNote = request.Bag.IsPrivate;
 
                     note.UpdateCaption();
+                } );
+
+                request.IfValidProperty( nameof( request.Bag.IsPinned ), () =>
+                {
+                    note.IsPinned = request.Bag.IsPinned;
                 } );
 
                 if ( GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean() )
@@ -626,6 +636,29 @@ namespace Rock.Blocks.Core
                     savedNote.LoadAttributes( rockContext2 );
 
                     return ActionOk( GetNoteBag( savedNote, watchedNoteIds, RequestContext.CurrentPerson ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the note type for a parent note and all child notes.
+        /// </summary>
+        /// <param name="parentNote">The parent note object.</param>
+        /// <param name="noteTypeId">The identifier of the new Note Type.</param>
+        private void SetParentNoteType( Note parentNote, int noteTypeId )
+        {
+            if ( parentNote == null )
+            {
+                return;
+            }
+
+            parentNote.NoteTypeId = noteTypeId;
+
+            if ( parentNote.ChildNotes != null )
+            {
+                foreach ( var childNote in parentNote.ChildNotes )
+                {
+                    SetParentNoteType( childNote, noteTypeId );
                 }
             }
         }

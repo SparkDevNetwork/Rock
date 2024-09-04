@@ -109,6 +109,22 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets the Category Name if a Category is associated with the Defined Type. Otherwise returns an empty string.
+        /// </summary>
+        [DataMember]
+        public string CategoryName
+        {
+            get
+            {
+                if ( !CategoryId.HasValue )
+                {
+                    return string.Empty;
+                }
+                return CategoryCache.Get( CategoryId.Value )?.Name ?? string.Empty;
+            }
+        }
+
         #endregion
 
         #region Navigation Properties

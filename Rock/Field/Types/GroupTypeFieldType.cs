@@ -75,7 +75,7 @@ namespace Rock.Field.Types
                             new ClientService.Core.DefinedValue.Options.DefinedValueOptions { UseDescription = true } )
                         .ToCamelCaseJson( false, true );
 
-                if ( groupTypePurposeValueGuid != Guid.Empty )
+                if ( groupTypePurposeValueGuid.HasValue && groupTypePurposeValueGuid != Guid.Empty )
                 {
                     publicEditConfigurationValues[VALUES] = GroupTypeCache.All()
                         .Where( g => g.GroupTypePurposeValue?.Guid == groupTypePurposeValueGuid )

@@ -78,27 +78,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets or sets a flag indicating whether to allow caching on any <see cref="Rock.Model.BinaryFile"/> child entities.
-        /// </summary>
-        /// <value>
-        ///  A <see cref="System.Boolean"/> value that is <c>true</c> if caching is allowed; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.11" )]
-        [System.Obsolete( "Use CacheToServerFileSystem instead." )]
-        [NotMapped]
-        public bool AllowCaching
-        {
-            get
-            {
-                return CacheToServerFileSystem;
-            }
-            set
-            {
-                CacheToServerFileSystem = value;
-            }
-        }
-
         #region ICacheable
 
         /// <summary>

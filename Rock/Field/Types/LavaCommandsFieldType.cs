@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited list of LavaCommand names
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA_COMMANDS )]
     public class LavaCommandsFieldType : FieldType

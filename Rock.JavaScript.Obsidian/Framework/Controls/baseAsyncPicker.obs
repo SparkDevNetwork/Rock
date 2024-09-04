@@ -11,6 +11,7 @@
                   :showBlankItem="showBlankItem"
                   :blankValue="blankValue"
                   :enhanceForLongLists="enhanceForLongLists"
+                  :maxTagCount="maxTagCount"
                   @open="onOpen">
 
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
@@ -24,6 +25,15 @@
         </template>
         <template #append="{ isInputGroupSupported }" v-if="$slots.append">
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #suffixIcon="slotProps" v-if="$slots.suffixIcon">
+            <slot name="suffixIcon" v-bind="slotProps"></slot>
+        </template>
+        <template #tagRender="slotProps" v-if="$slots.tagRender">
+            <slot name="tagRender" v-bind="slotProps"></slot>
+        </template>
+        <template #maxTagPlaceholder="slotProps" v-if="$slots.maxTagPlaceholder">
+            <slot name="maxTagPlaceholder" v-bind="slotProps"></slot>
         </template>
 
     </DropDownList>
@@ -88,13 +98,28 @@
      */
     function modelValueToInternalValue(value: ListItemBag | ListItemBag[] | undefined | null, isMultiple: boolean): string | string[] {
         if (value === undefined || value === null) {
-            return isMultiple ? [] : "";
+            if (isMultiple && !isRadioButtonListStyle?.value) {
+                return [];
+            }
+            else {
+                return "";
+            }
         }
         else if (Array.isArray(value)) {
-            return value.map(v => v.value ?? "");
+            const valuesAsStrings = value.map(v => v.value ?? "");
+
+            if (isMultiple && !isRadioButtonListStyle?.value) {
+                return valuesAsStrings;
+            }
+            else {
+                return valuesAsStrings[0] ?? "";
+            }
+        }
+        else if (value.value) {
+            return isMultiple ? [value.value] : value.value;
         }
         else {
-            return value.value ?? "";
+            return isMultiple ? [] : "";
         }
     }
 
@@ -118,6 +143,12 @@
         items: {
             type: Object as PropType<ListItemBag[] | Promise<ListItemBag[]> | (() => ListItemBag[] | Promise<ListItemBag[]>) | null>,
             required: false
+        },
+
+        maxTagCount: {
+            type: Object as PropType<number | "responsive" | undefined>,
+            required: false,
+            default: undefined
         },
 
         ...standardAsyncPickerProps

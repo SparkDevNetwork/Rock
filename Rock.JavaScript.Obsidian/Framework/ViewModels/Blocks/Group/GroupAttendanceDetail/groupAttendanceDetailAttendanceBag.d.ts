@@ -47,5 +47,5 @@ export type GroupAttendanceDetailAttendanceBag = {
     personAliasId: number;
 
     /** Gets or sets the Person's unique identifier. */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 };

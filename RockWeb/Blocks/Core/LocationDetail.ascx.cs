@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -86,8 +87,11 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            var locationId = PageParameter( "LocationId" ).AsInteger();
+            var location = NamedLocationCache.Get( locationId );
+            var locationName = location != null ? location.Name : string.Empty;
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" location');", locationName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Location ) ).Id;
 
             ddlPrinter.Items.Clear();
@@ -132,8 +136,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             _personId = PageParameter( "PersonId" ).AsIntegerOrNull();
 
             if ( !Page.IsPostBack )
@@ -141,6 +143,8 @@ namespace RockWeb.Blocks.Core
                 Location location = GetLocation();
                 ShowDetail( location.Id );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -464,11 +468,13 @@ namespace RockWeb.Blocks.Core
             LocationService locationService = new LocationService( rockContext );
             Location location = GetLocation( locationService );
 
-            divAdvSettings.Visible = !_personId.HasValue;
-            cbIsActive.Visible = !_personId.HasValue;
-            geopFence.Visible = !_personId.HasValue;
-            nbSoftThreshold.Visible = !_personId.HasValue;
-            nbFirmThreshold.Visible = !_personId.HasValue;
+            var areNamedLocationFeaturesEnabled = !( _personId.HasValue || ( location.Id != 0 && string.IsNullOrEmpty( location.Name ) ) );
+
+            divAdvSettings.Visible = areNamedLocationFeaturesEnabled;
+            cbIsActive.Visible = areNamedLocationFeaturesEnabled;
+            geopFence.Visible = areNamedLocationFeaturesEnabled;
+            nbSoftThreshold.Visible = areNamedLocationFeaturesEnabled;
+            nbFirmThreshold.Visible = areNamedLocationFeaturesEnabled;
 
             if ( location.Id == 0 )
             {
@@ -559,7 +565,7 @@ namespace RockWeb.Blocks.Core
             string imgTag = GetImageTag( location.ImageId, 150, 150 );
             if ( location.ImageId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", location.ImageId.Value ) );
+                string imageUrl = FileUrlHelper.GetImageUrl( location.ImageId.Value );
                 lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
             }
             else

@@ -130,6 +130,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsGridField = source.IsGridField;
             target.IsInternal = source.IsInternal;
+            target.IsLockedIfValuesExist = source.IsLockedIfValuesExist;
             target.IsRequired = source.IsRequired;
             target.IsSharedValue = source.IsSharedValue;
             target.Order = source.Order;

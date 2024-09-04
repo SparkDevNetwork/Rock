@@ -19,6 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -33,7 +36,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request Entry" )]
     [Category( "Prayer" )]
     [Description( "Allows prayer requests to be added via visitors on the website." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    //[SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -841,7 +844,7 @@ namespace Rock.Blocks.Prayer
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Prayer, ex, "Unable to start workflow after prayer request was created." );
+                    Logger.LogError( ex, "Unable to start workflow after prayer request was created." );
                 }
             }
         }

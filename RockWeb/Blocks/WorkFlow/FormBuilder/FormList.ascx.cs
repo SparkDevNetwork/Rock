@@ -135,8 +135,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -213,6 +211,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowActivityType.ActionTypes.Add( workflowActionType );
             workflowActionType.WorkflowForm = new WorkflowActionForm();
             workflowActionType.WorkflowForm.PersonEntryPersonAttributeGuid = personAttribute.Guid;
-            workflowActionType.WorkflowForm.PersonEntrySpouseAttributeGuid = spouseQualifier.Guid;
+            workflowActionType.WorkflowForm.PersonEntrySpouseAttributeGuid = spouseAttribute.Guid;
             workflowActionType.WorkflowForm.PersonEntryFamilyAttributeGuid = familyAttribute.Guid;
             workflowActionType.WorkflowForm.AllowPersonEntry = true;
             workflowActionType.WorkflowForm.PersonEntryRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );

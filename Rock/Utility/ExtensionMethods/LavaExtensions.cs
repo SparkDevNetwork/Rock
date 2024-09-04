@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -152,7 +153,7 @@ namespace Rock
                     {
                         entityHistory = new Dictionary<int, List<int>>();
                     }
-                    entityHistory.AddOrIgnore( entityTypeCache.Id, new List<int>() );
+                    entityHistory.TryAdd( entityTypeCache.Id, new List<int>() );
                     if ( entityHistory[entityTypeCache.Id].Contains( entity.Id ) )
                     {
                         return "--See Previous Entry--";
@@ -203,7 +204,7 @@ namespace Rock
                     // Ignore the person property of the person's primary alias (prevent unnecessary recursion)
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
-                        result.AddOrIgnore( key, string.Empty );
+                        result.TryAdd( key, string.Empty );
                     }
                     else
                     {
@@ -274,12 +275,12 @@ namespace Rock
                             }
                             else
                             {
-                                result.AddOrIgnore( key, string.Empty );
+                                result.TryAdd( key, string.Empty );
                             }
                         }
                         catch ( Exception ex )
                         {
-                            result.AddOrIgnore( key, ex.ToString() );
+                            result.TryAdd( key, ex.ToString() );
                         }
                     }
                 }
@@ -800,10 +801,20 @@ namespace Rock
 
             if ( currentPersonOverride != null )
             {
-                context.SetMergeField( "CurrentPerson", currentPersonOverride );
+                context.SetInternalField( "CurrentPerson", currentPersonOverride );
             }
 
-            context.SetMergeFields( mergeObjects );
+            foreach ( var kvp in mergeObjects )
+            {
+                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
+                {
+                    context.SetInternalField( kvp.Key.Substring( LavaHelper.InternalMergeFieldPrefix.Length ), kvp.Value );
+                }
+                else
+                {
+                    context.SetMergeField( kvp.Key, kvp.Value );
+                }
+            }
 
             var parameters = LavaRenderParameters.WithContext( context );
             parameters.ShouldEncodeStringsAsXml = encodeStringOutput;
@@ -940,6 +951,23 @@ namespace Rock
         internal static bool IsStrictLavaTemplate( this string content )
         {
             return LavaHelper.IsStrictLavaTemplate( content );
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the <see cref="RockRequestContext"/> from the <see cref="ILavaRenderContext"/>.
+        /// </summary>
+        /// <param name="renderContext">The <see cref="ILavaRenderContext"/>.</param>
+        /// <returns>The <see cref="RockRequestContext"/> or null if not found.</returns>
+        internal static RockRequestContext GetRockRequestContext( this ILavaRenderContext renderContext )
+        {
+            if ( renderContext == null )
+            {
+                return null;
+            }
+
+            var rockRequestContext = renderContext.GetInternalField( "RockRequestContext" ) as RockRequestContext;
+
+            return rockRequestContext;
         }
 
         #endregion Lava Extensions

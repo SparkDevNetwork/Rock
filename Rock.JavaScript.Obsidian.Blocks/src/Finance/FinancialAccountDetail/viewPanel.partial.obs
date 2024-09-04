@@ -87,6 +87,14 @@ import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
         valueBuilder.addTextValue("Is Tax Deductible", asTrueOrFalseString(props.modelValue.isTaxDeductible));
 
+        if (props.modelValue.imageUrl) {
+            const img = `
+            <a href="${props.modelValue.imageUrl}">
+                <img class="img-thumbnail" src="${props.modelValue.imageUrl}&maxwidth=150&maxheight=150">
+            </a>`;
+            valueBuilder.addHtmlValue("Image", img);
+        }
+
         return valueBuilder.build();
     });
 

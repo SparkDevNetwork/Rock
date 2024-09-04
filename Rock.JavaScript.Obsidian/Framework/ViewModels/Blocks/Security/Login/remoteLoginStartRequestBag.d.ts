@@ -25,4 +25,7 @@
 export type RemoteLoginStartRequestBag = {
     /** Gets or sets the authentication entity type guid. */
     authenticationType?: string | null;
+
+    /** Gets or sets the current URL path. */
+    route?: string | null;
 };

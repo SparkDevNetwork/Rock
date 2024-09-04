@@ -4,6 +4,23 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
+    <div v-if="isConfirmDeleteVisible" class="panel panel-body">
+        <NotificationBox alertType="warning">
+            Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?
+        </NotificationBox>
+        <RockButton :btnSize="BtnSize.Default"
+                    :btnType="BtnType.Danger"
+                    @click="onConfirmDelete">
+            Confirm Delete
+        </RockButton>
+        <RockButton :btnSize="BtnSize.Default"
+                    :btnType="BtnType.Primary"
+                    class="ml-1"
+                    @click="onCancelConfirmDelete">
+            Cancel
+        </RockButton>
+    </div>
+
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
             <template v-if="siteViewBag?.idKey" #headerActions>
@@ -17,7 +34,7 @@
                            v-model="siteEditBag"
                            :isEditable="isEditable"
                            :options="options"
-                           :onPropertyChanged="onPropertyChanged" />
+                           @propertyChanged="baseBlock.onPropertyChanged" />
 
                 <ModalAlert v-model="isShowing" :type="alertType">{{ compileMessage }}</ModalAlert>
 
@@ -56,7 +73,7 @@
             </template>
             <template #footerSecondaryActions>
                 <RockButton v-if="panelMode === DetailPanelMode.View"
-                            :btnSize="BtnSize.Default"
+                            :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             :isLoading="isCompiling"
                             loadingText="Compiling..."
@@ -85,8 +102,7 @@
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./SiteDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
@@ -95,10 +111,10 @@
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<SiteBag, SiteDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -106,7 +122,7 @@
     const errorMessage = ref("");
 
     const siteViewBag = ref(config.entity);
-    const siteEditBag = ref<SiteBag>({} as SiteBag);
+
     const submitForm = ref(false);
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
@@ -119,57 +135,21 @@
     const compileMessage = ref("");
     const allowsCompile = config.entity?.allowsCompile;
     const compileBtnText = allowsCompile ? "Compile Theme" : "Theme Doesn't Support Compiling";
+    const isConfirmDeleteVisible = ref(false);
+    const isActionButtonsVisible = ref(true);
 
 
     const entityTypeGuid = EntityType.Site;
+    const siteEditBag = ref<ValidPropertiesBox<SiteBag>>({
+        bag: {} as SiteBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "allowedFrameDomains",
-        "allowIndexing",
-        "changePasswordPage",
-        "changePasswordPageRoute",
-        "communicationPage",
-        "communicationPageRoute",
-        "defaultPage",
-        "defaultPageRoute",
-        "description",
-        "disablePredictableIds",
-        "enabledForShortening",
-        "enableExclusiveRoutes",
-        "enableMobileRedirect",
-        "enablePageViewGeoTracking",
-        "enablePageViews",
-        "enablePersonalization",
-        "enableVisitorTracking",
-        "errorPage",
-        "externalUrl",
-        "favIconBinaryFile",
-        "googleAnalyticsCode",
-        "indexStartingLocation",
-        "isActive",
-        "isIndexEnabled",
-        "loginPage",
-        "loginPageRoute",
-        "mobilePage",
-        "name",
-        "pageHeaderContent",
-        "pageNotFoundPage",
-        "pageNotFoundPageRoute",
-        "redirectTablets",
-        "registrationPage",
-        "registrationPageRoute",
-        "requiresEncryption",
-        "siteLogoBinaryFile",
-        "theme",
-        "siteDomains"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(siteEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: siteEditBag
+    });
 
     // #endregion
 
@@ -207,7 +187,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true;
+        return config.isEditable === true && isActionButtonsVisible.value;
     });
 
     const options = computed((): SiteDetailOptionsBag => {
@@ -263,7 +243,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     function onCancelEdit(): void {
-        if (!siteEditBag.value.idKey) {
+        if (!siteEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
             }
@@ -274,8 +254,7 @@
     }
 
     /**
-     * Event handler for the Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
+     * Event handler for the Delete button being clicked. Shows the confirm delete panel.
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
@@ -285,6 +264,19 @@
         if (!await confirmDelete("Site")) {
             return;
         }
+
+        isConfirmDeleteVisible.value = true;
+        isActionButtonsVisible.value = false;
+    }
+
+    /**
+     * Event handler for the Confirm Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+     async function onConfirmDelete(): Promise<void> {
+        errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
             key: siteViewBag.value?.idKey
@@ -299,6 +291,15 @@
     }
 
     /**
+     * Event handler for the Cancel Confirm Delete button being clicked. Hides the confirm delete panel.
+     *
+     */
+     function onCancelConfirmDelete(): void {
+        isConfirmDeleteVisible.value = false;
+        isActionButtonsVisible.value = true;
+    }
+
+    /**
      * Event handler for the Edit button being clicked. Request the edit
      * details from the server and then enter edit mode.
      *
@@ -309,28 +310,14 @@
             key: siteViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            siteEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data) {
+            siteEditBag.value = {
+                bag: result.data.entity,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.entity ?? {})
+            };
             config.options = result.data.options;
             panelMode.value = DetailPanelMode.Edit;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -342,20 +329,13 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<SiteBag, SiteDetailOptionsBag> = {
-            entity: siteEditBag.value,
-            isEditable: true,
-            validProperties: validProperties,
-            options: options.value
-        };
-
-        const result = await invokeBlockAction<SiteBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<SiteBag> | string>("Save", {
+            box: siteEditBag?.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                siteViewBag.value = result.data;
+                siteViewBag.value = result.data.bag;
                 panelMode.value = DetailPanelMode.View;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
@@ -365,8 +345,6 @@
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
         }
-
-
     }
 
     const onStartSubmitForm = (): void => {
@@ -374,8 +352,6 @@
     };
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -385,7 +361,7 @@
         blockError.value = "The specified site could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        siteEditBag.value = config.entity;
+        siteEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

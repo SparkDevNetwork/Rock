@@ -30,30 +30,36 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using DotLiquid;
-using Context = DotLiquid.Context;
-using Condition = DotLiquid.Condition;
 
 using Humanizer;
 using Humanizer.Localisation;
+
 using ImageResizer;
+
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Lava.DotLiquid;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using UAParser;
-using Ical.Net;
 using Rock.Web.UI.Controls;
-using System.Web.UI;
-using Rock.Lava.DotLiquid;
-using Rock.Cms.StructuredContent;
+
+using UAParser;
+
+using Condition = DotLiquid.Condition;
+using Context = DotLiquid.Context;
 
 namespace Rock.Lava
 {
@@ -64,9 +70,17 @@ namespace Rock.Lava
     /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
     /// </remarks>
     [RockInternal( "1.15", true )]
+    [RockLoggingCategory]
     public static class RockFilters
     {
         static Random _randomNumberGenerator = new Random();
+
+        /// <summary>
+        /// The logger to use for the static methods of this class.
+        /// This is not normal initialization, but we have to do it this way
+        /// since we are in a static class.
+        /// </summary>
+        private static readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Lava.RockFilters" );
 
         #region String Filters
 
@@ -389,7 +403,7 @@ namespace Rock.Lava
                 catch { }
             }
 
-            if ( numericQuantity > 1 )
+            if ( numericQuantity != 1 && numericQuantity != -1 )
             {
                 return input.Pluralize();
             }
@@ -2318,7 +2332,7 @@ namespace Rock.Lava
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
                     if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
                     {
-                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                        return item.AttributeValues[attributeKey].PersistedHtmlValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
@@ -3855,6 +3869,19 @@ namespace Rock.Lava
             return LavaFilters.IsInSecurityRole( lavaContext, input, roleId );
         }
 
+        /// <summary>
+        /// Gets a Person the by person action identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="action">The action.</param>
+        /// <returns><see cref="Person"/></returns>
+        public static Person PersonByPersonActionIdentifier( Context context, object input, string action )
+        {
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.PersonByPersonActionIdentifier( lavaContext, input, action );
+        }
+
         #endregion Person Filters
 
         #region Personalize Filters
@@ -4249,7 +4276,7 @@ namespace Rock.Lava
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Lava, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
+                    _logger.LogError( ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
 
                     return null;
                 }
@@ -4525,7 +4552,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="dataObject">The data object.</param>
         /// <returns></returns>
-        public static object FilterNotFollowed( Context context, object dataObject )
+        public static object FilterUnfollowed( Context context, object dataObject )
         {
             return FilterFollowedOrNotFollowed( context, GetCurrentPerson( context ), dataObject, FollowFilterType.NotFollowed );
         }
@@ -4823,7 +4850,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = RockDateTime.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );
@@ -5359,8 +5386,8 @@ namespace Rock.Lava
         public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
         {
             string inputString = input?.ToString();
-            var queryStringKey = "Id";
             var useFallbackUrl = false;
+            var queryStringKey = "Id";
 
             if ( !inputString.AsIntegerOrNull().HasValue )
             {
@@ -5368,7 +5395,7 @@ namespace Rock.Lava
 
                 if ( !inputString.AsGuidOrNull().HasValue )
                 {
-                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    _logger.LogInformation( $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
                     useFallbackUrl = true;
                 }
             }
@@ -5413,12 +5440,19 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) : string.Empty;
 
-                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+                if ( queryStringKey == "Id" )
+                {
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions() );
+                }
+                else
+                {
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions() );
+                }
             }
 
-            return url;
+            return url ?? fallbackUrl ?? string.Empty;
         }
 
         /// <summary>
@@ -5432,31 +5466,31 @@ namespace Rock.Lava
 
             if ( valueName == "applicationdirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+                return RockApp.Current.HostingSettings.VirtualRootPath;
             }
             else if ( valueName == "isclustered" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+                return WebFarm.RockWebFarm.IsEnabled();
             }
             else if ( valueName == "machinename" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+                return RockApp.Current.HostingSettings.MachineName;
             }
             else if ( valueName == "physicaldirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+                return RockApp.Current.HostingSettings.WebRootPath;
             }
             else if ( valueName == "systemdatetime" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+                return RockDateTime.SystemDateTime;
             }
             else if ( valueName == "aspnetversion" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
+                return RockApp.Current.HostingSettings.DotNetVersion;
             }
             else if ( valueName == "lavaengine" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.LavaEngineName;
+                return RockApp.Current.GetCurrentLavaEngineName();
             }
 
             return $"Configuration setting \"{ input }\" is not available.";
@@ -5600,19 +5634,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Determines whether [contains] [the specified input].
+        /// Determines whether the input collection contains the specified value.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="containValue">The contain value.</param>
+        /// <param name="input">The input collection.</param>
+        /// <param name="containValue">The search value.</param>
         /// <returns>
-        ///   <c>true</c> if [contains] [the specified input]; otherwise, <c>false</c>.
+        ///   <c>true</c> if the input collection contains the specified value; otherwise, <c>false</c>.
         /// </returns>
         public static bool Contains( object input, object containValue )
         {
-            var inputList = ( input as IList );
-            if ( inputList != null )
+            if ( input == null || containValue == null )
+            {
+                return false;
+            }
+
+            if ( input is IList inputList )
             {
                 return inputList.Contains( containValue );
+            }
+            else if ( input is IEnumerable<object> inputGenericEnumerable )
+            {
+                return inputGenericEnumerable.ToList().Contains( containValue );
+            }
+            else if ( input is IEnumerable inputEnumerable )
+            {
+                return inputEnumerable.Cast<object>().ToList().Contains( containValue );
             }
 
             return false;
@@ -6290,25 +6336,7 @@ namespace Rock.Lava
         /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
         public static string ToIdHash( object input )
         {
-            int? entityId = null;
-
-            if ( input is int )
-            {
-                entityId = Convert.ToInt32( input );
-            }
-
-            if ( input is IEntity )
-            {
-                IEntity entity = input as IEntity;
-                entityId = entity.Id;
-            }
-
-            if ( !entityId.HasValue )
-            {
-                return null;
-            }
-
-            return IdHasher.Instance.GetHash( entityId.Value );
+            return LavaFilters.ToIdHash( input );
         }
 
         /// <summary>
@@ -6318,12 +6346,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static int? FromIdHash( string input )
         {
-            if ( string.IsNullOrWhiteSpace( input ) )
-            {
-                return null;
-            }
-
-            return IdHasher.Instance.GetId( input );
+            return LavaFilters.FromIdHash( input );
         }
 
         /// <summary>

@@ -26,50 +26,55 @@ export const AgeBracket = {
     /** Unknown Age range */
     Unknown: 0,
 
-    /** Age range 0 - 12 */
-    ZeroToTwelve: 1,
+    /** Age range 0 - 5 */
+    ZeroToFive: 1,
+
+    /** Age range 6 - 12 */
+    SixToTwelve: 2,
 
     /** Age range 13 - 17 */
-    ThirteenToSeventeen: 2,
+    ThirteenToSeventeen: 3,
 
     /** Age range 18 - 24 */
-    EighteenToTwentyFour: 3,
+    EighteenToTwentyFour: 4,
 
     /** Age range 25 - 34 */
-    TwentyFiveToThirtyFour: 4,
+    TwentyFiveToThirtyFour: 5,
 
     /** Age range 35 - 44 */
-    ThirtyFiveToFortyFour: 5,
+    ThirtyFiveToFortyFour: 6,
 
     /** Age range 45 - 54 */
-    FortyFiveToFiftyFour: 6,
+    FortyFiveToFiftyFour: 7,
 
     /** Age range 55 - 64 */
-    FiftyFiveToSixtyFour: 7,
+    FiftyFiveToSixtyFour: 8,
 
     /** Age range 65+ */
-    SixtyFiveOrOlder: 8
+    SixtyFiveOrOlder: 9
 } as const;
 
 /** The age bracket of a person */
 export const AgeBracketDescription: Record<number, string> = {
     0: "Unknown",
 
-    1: "Zero To Twelve",
+    1: "0 - 5",
 
-    2: "Thirteen To Seventeen",
+    2: "6 - 12",
 
-    3: "Eighteen To Twenty Four",
+    3: "13 - 17",
 
-    4: "Twenty Five To Thirty Four",
+    4: "18 - 24",
 
-    5: "Thirty Five To Forty Four",
+    5: "25 - 34",
 
-    6: "Forty Five To Fifty Four",
+    6: "35 - 44",
 
-    7: "Fifty Five To Sixty Four",
+    7: "45 - 54",
 
-    8: "Sixty Five Or Older"
+    8: "55 - 64",
+
+    9: "65+"
 };
 
 /** The age bracket of a person */

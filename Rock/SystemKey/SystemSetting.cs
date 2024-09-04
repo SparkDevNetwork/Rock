@@ -30,6 +30,13 @@ namespace Rock.SystemKey
         public const string ROCK_INSTANCE_ID = "RockInstanceId";
 
         /// <summary>
+        /// The organization timezone setting, identified by Windows standard format timezone name.
+        /// This identifier format corresponds to the <see cref="TimeZoneInfo.Id"/> property and the
+        /// SQL Server table [sys].[time_zone_info].[name] column.
+        /// </summary>
+        public const string ORG_TIME_ZONE = "core_OrgTimeZone";
+
+        /// <summary>
         /// Holds the System Setting key for the sample data load date/time.
         /// </summary>
         public const string SAMPLEDATA_DATE = "com.rockrms.sampledata.datetime";
@@ -291,11 +298,15 @@ namespace Rock.SystemKey
         /// <summary>
         /// The name of the standard Rock Context.
         /// </summary>
+        [Obsolete( "Use RockInstanceConfig to get connection strings." )]
+        [RockObsolete( "1.16.3" )]
         public const string ROCK_CONTEXT = "RockContext";
 
         /// <summary>
         /// The name of the standard Rock Context for Read Only queries.
         /// </summary>
+        [Obsolete( "Use RockInstanceConfig to get connection strings." )]
+        [RockObsolete( "1.16.3" )]
         public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
 
         /// <summary>
@@ -334,6 +345,25 @@ namespace Rock.SystemKey
         public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
 
         /// <summary>
+        /// Determines if all SQL query statements are included in database
+        /// activities. Query statements will always be included in targeted
+        /// queries.
+        /// </summary>
+        public const string OBSERVABILITY_INCLUDE_QUERY_STATEMENTS = "core_ObservabilityIncludeQueryStatements";
+
+        /// <summary>
+        /// The maximum number of spans that can be created for a single trace
+        /// in observability.
+        /// </summary>
+        public const string OBSERVABILITY_SPAN_COUNT_LIMIT = "core_ObservabilitySpanCountLimit";
+
+        /// <summary>
+        /// The maximum length of any single attribute value in observability
+        /// traces.
+        /// </summary>
+        public const string OBSERVABILITY_MAX_ATTRIBUTE_LENGTH = "core_ObservabilityMaxAttributeLength";
+
+        /// <summary>
         /// The label text for the SMS Opt-In checkbox
         /// </summary>
         public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
@@ -342,5 +372,30 @@ namespace Rock.SystemKey
         /// The content library data (JSON).
         /// </summary>
         public const string CONTENT_LIBRARY_DATA_JSON = "core_ContentLibraryDataJson";
+
+        /// <summary>
+        /// Determine if Same Sex Couples are allowed.
+        /// </summary>
+        public const string BIBLE_STRICT_SPOUSE = "core_BibleStrictSpouse";
+
+        /// <summary>
+        /// The start date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_START_DATE = "core_AnalyticsCalendarDimensionStartDate";
+
+        /// <summary>
+        /// The end date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_END_DATE = "core_AnalyticsCalendarDimensionEndDate";
+
+        /// <summary>
+        /// The fiscal start month for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_FISCAL_START_MONTH = "core_AnalyticsCalendarDimensionFiscalStartMonth";
+
+        /// <summary>
+        /// Whether the giving month should use Sunday date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
     }
 }

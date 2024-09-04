@@ -9,6 +9,7 @@
                           showBlankItem
                           formGroupClasses="mt-0"
                           :entityTypeGuids="entityTypeGuidsFilter"
+                          enhanceForLongLists
                           :rules="entityTypeRules" />
         <RockField v-if="fieldConfiguration" :attribute="fieldConfiguration" v-model="internalValue" isEditMode />
     </RockFormField>
@@ -21,7 +22,7 @@
     import RockFormField from "./rockFormField.obs";
     import RockField from "./rockField.obs";
     import { Guid } from "@Obsidian/Types";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { useHttp } from "@Obsidian/Utility/http";
     import { EntityPickerGetEntityTypeGuidsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetEntityTypeGuidsOptionsBag";
@@ -117,7 +118,8 @@
                 fieldTypeGuid: fieldType.value,
                 configurationValues: fieldConfigurationValues.value,
                 disabled: props.disabled,
-                description: props.entityControlHelpTextFormat.replace("{0}", fieldTypeName.value).replace("{1}", fieldTypePluralName.value)
+                description: props.entityControlHelpTextFormat.replace("{0}", fieldTypeName.value).replace("{1}", fieldTypePluralName.value),
+                attributeGuid: emptyGuid
             };
         }
 
@@ -180,7 +182,7 @@
 
     async function getFieldTypeFromEntityType(): Promise<void> {
         const options: EntityPickerGetFieldTypeConfigurationOptionsBag = {
-            entityTypeGuid: internalTypeValue.value?.value,
+            entityTypeGuid: internalTypeValue.value?.value || emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

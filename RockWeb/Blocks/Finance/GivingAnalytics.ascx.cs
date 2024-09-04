@@ -193,8 +193,6 @@ btnCopyToClipboard.ClientID );
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var chartStyle = GetChartStyle();
             lcAmount.SetChartStyle( chartStyle );
             lcAmount.YValueFormatString = "currency";
@@ -231,6 +229,8 @@ btnCopyToClipboard.ClientID );
 
                 lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1386,8 +1386,8 @@ var headerText = dp.label;
                         int accountId = ( int ) row["AccountId"];
                         decimal amount = ( decimal ) row["Amount"];
 
-                        accountSummaries.AddOrIgnore( givingId, new Dictionary<int, decimal>() );
-                        accountSummaries[givingId].AddOrIgnore( accountId, amount );
+                        accountSummaries.TryAdd( givingId, new Dictionary<int, decimal>() );
+                        accountSummaries[givingId].TryAdd( accountId, amount );
                     }
                 }
 
@@ -1731,7 +1731,7 @@ var headerText = dp.label;
                 {
                     foreach ( var keyval in accountSummaries[personInfo.GivingId] )
                     {
-                        personInfo.AccountAmounts.AddOrIgnore( keyval.Key, keyval.Value );
+                        personInfo.AccountAmounts.TryAdd( keyval.Key, keyval.Value );
                     }
                 }
             }
@@ -1841,7 +1841,7 @@ var headerText = dp.label;
                             l.Location.Street1 != string.Empty &&
                             l.Location.City != string.Empty ) )
                     {
-                        personLocations.AddOrIgnore( item.PersonId, item.Location );
+                        personLocations.TryAdd( item.PersonId, item.Location );
                     }
                 }
 

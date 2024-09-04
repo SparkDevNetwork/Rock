@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="screenToShow !== ComponentScreen.Completion" :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <div class="instructions-section">
+                <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
+            </div>
+            <div class="rubric-section">
+                <StructuredContentEditor label="Grading Rubric" v-model="rubric" :disabled="disabled" />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <div class="scoring-section">
+                <StructuredContentEditor v-model="rubric" disabled />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox v-if="hasScore" alertType="success">
+                {{ assignee?.name ?? defaultAssigneeDescription }} assessed this activity.
+            </NotificationBox>
+            <NotificationBox v-if="!hasScore" alertType="warning">
+                {{ assignee?.name ?? defaultAssigneeDescription }} has not assessed this activity.
+            </NotificationBox>
+        </div>
+    </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion">
+        <div :class="containerClasses">
+            <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
+        </div>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, ref, toRef, toValue, watch, } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion, PointAssessmentActivityDefaults } from "./pointAssessmentLearningActivity.partial";
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = toRef(() => props.activityBag);
+    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        containerClasses,
+        defaultAssigneeDescription,
+        instructions,
+        rubric,
+        panelTitle
+    } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
+        activityBag,
+        completionBag,
+        screenToShow,
+        new PointAssessmentActivityDefaults()
+    );
+
+    const disabled = ref(props.disabled ?? false);
+    const hasScore = computed(() => completionBag.value?.pointsEarned != null);
+
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+            const updatedActivityBag = {
+                ...toValue(activityBag)
+            } as LearningActivityBag;
+
+            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+                instructions: instructions.value,
+                rubric: rubric.value
+            }) ?? "{}";
+
+            emits("update:activityBag", updatedActivityBag);
+    });
+    watch([instructions, rubric], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
+</script>
