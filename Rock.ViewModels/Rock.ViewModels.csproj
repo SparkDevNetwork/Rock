@@ -173,6 +173,7 @@
     <Compile Include="Blocks\Engagement\StreakMapEditor\StreakMapEditorBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
+    <Compile Include="Blocks\Security\SecurityChangeAuditList\SecurityChangeAuditListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
