@@ -177,6 +177,15 @@
                                     Help="The system communication template to use for passwordless confirmations." />
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <Rock:DateTimePicker
+                                    runat="server"
+                                    ID="dtpRejectAuthenticationCookiesIssuedBefore"
+                                    Label="Reject Authentication Cookies Issued Before"
+                                    Help="If a date and time are entered here, any authentication cookies issued before then will be rejected." />
+                            </div>
+                        </div>
                     </Body>
                 </Rock:PanelWidget>
                 <asp:Panel ID="pnlEditModeActions" runat="server" CssClass="actions">
