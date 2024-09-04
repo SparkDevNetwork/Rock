@@ -82,6 +82,7 @@
     <Compile Include="Engagement\StreakMapEditor.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
+    <Compile Include="Security\SecurityChangeAuditList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
