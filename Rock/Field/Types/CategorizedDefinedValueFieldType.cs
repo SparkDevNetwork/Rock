@@ -36,12 +36,13 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and display a selection from a Defined Type that supports categorized values.
+    /// Field Name: Defined Value (Categorized)
     /// </summary>
     [Serializable]
     [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D" )]
-    public class CategorizedDefinedValueFieldType : FieldType, IEntityReferenceFieldType
+    public class CategorizedDefinedValueFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -868,6 +869,48 @@ namespace Rock.Field.Types
         }
 
 #endif
+        #endregion
+
+        #region IEntityFieldType
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetEditValue( control, configurationValues ).ToIntSafe();
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            SetEditValue( control, configurationValues, id.ToString() );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity(value, null );
+        }
+
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new DefinedValueService( rockContext ).Get( value );
+        }
+
         #endregion
     }
 }
