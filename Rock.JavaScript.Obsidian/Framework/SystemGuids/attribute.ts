@@ -29,8 +29,6 @@ export const Attribute = {
     AccumulativeAchievementStreakType: "BEDD14D0-450E-475C-8D9F-404DDE350530",
     /** The accumulative achievement time span in days */
     AccumulativeAchievementTimeSpanInDays: "1C0F4BE1-81E9-4974-A24E-2DFBA8320AE5",
-    /** The AI model to use for requests. */
-    AiAutomationAiModel: "185B32D2-4D2D-43C9-A4F7-CABA31735940",
     /** The AI service to use for the Category. */
     AiAutomationAiProvider: "6A1991F6-AB4A-4B92-9790-0E2ED62C079F",
     /** Determines whether to auto-categorize the request based on the text. */

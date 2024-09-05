@@ -18,7 +18,6 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
-using MassTransit.AzureServiceBusTransport;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.ServiceBus;

@@ -25,6 +25,7 @@ import { CampusScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail
 import { CampusTopicBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusTopicBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
 /**
  * Class CampusBag.
  * Implements the Rock.ViewModels.Utility.EntityBagBase
@@ -41,6 +42,9 @@ export type CampusBag = {
 
     /** Gets or sets the campus status value. */
     campusStatusValue?: ListItemBag | null;
+
+    /** Gets or sets the campus topics. The Campus Topic is a Defined Value. */
+    campusTopics?: CampusTopicBag[] | null;
 
     /** Gets or sets the campus type value. */
     campusTypeValue?: ListItemBag | null;
@@ -75,6 +79,9 @@ export type CampusBag = {
     /** Gets or sets the phone number. */
     phoneNumber?: string | null;
 
+    /** Get or sets the Country Code of the Phone Number */
+    phoneNumberCountryCode?: string | null;
+
     /** Gets or sets the service times. */
     serviceTimes?: ListItemBag[] | null;
 
@@ -86,10 +93,4 @@ export type CampusBag = {
 
     /** Gets or sets the URL. */
     url?: string | null;
-
-    /** Get or sets the Country Code of the Phone Number. */
-    phoneNumberCountryCode?: string | null;
-
-    /** Gets or sets the campus topics. */
-    campusTopics?: CampusTopicBag[] | null;
 };

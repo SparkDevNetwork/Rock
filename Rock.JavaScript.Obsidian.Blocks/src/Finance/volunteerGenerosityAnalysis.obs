@@ -42,6 +42,7 @@
                             <DropDownList v-model="teamValue"
                                           :items="uniqueGroups"
                                           :onUpdate:modelValue="onTeamSelected"
+                                          :enhanceForLongLists="true"
                                           label="Team" />
                         </div>
                     </div>

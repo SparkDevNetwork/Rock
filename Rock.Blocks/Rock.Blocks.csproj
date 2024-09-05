@@ -108,6 +108,7 @@
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
+    <Compile Include="Cms\LogSettings.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\PageShortLinkDialog.cs" />
+    <Compile Include="Administration\PageProperties.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\PersonalLinkList.cs" />
@@ -153,6 +155,7 @@
     <Compile Include="Engagement\StreakMapEditor.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
+    <Compile Include="Security\SecurityChangeAuditList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />

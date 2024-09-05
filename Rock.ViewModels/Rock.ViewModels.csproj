@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -58,6 +58,10 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInHeaderTextBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\BlockContextInfoBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\CopyPageRequestBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\DeletePageRequestBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesValidationResponseBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
@@ -99,6 +103,8 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushNotificationOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
+    <Compile Include="Blocks\Cms\LogSettings\LogSettingsBag.cs" />
+    <Compile Include="Blocks\Cms\LogSettings\LogSettingsDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
@@ -150,6 +156,8 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\PersonalLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
@@ -171,6 +179,7 @@
     <Compile Include="Blocks\Engagement\StreakMapEditor\StreakMapEditorBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
+    <Compile Include="Blocks\Security\SecurityChangeAuditList\SecurityChangeAuditListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />

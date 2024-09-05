@@ -29,10 +29,10 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
     /// Test DataFilter: Person/StepsTaken.
     /// </summary>
     [TestClass]
+    [TestCategory( TestFeatures.Steps )]
+    [TestCategory( "Reporting.DataFilters" )]
     public class StepsTakenDataFilterTests : DataFilterTestBase
     {
-        private const string _TestCategory = "Rock.Crm.Steps.Reporting.StepsTakenDataFilter.Tests";
-
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
@@ -43,8 +43,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that the settings can be correctly serialized to a string and deserialized from the same string.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void SettingsSerializationCanRoundTrip()
         {
             var startPeriod = new TimePeriod( new DateTime( 2019, 2, 1 ), new DateTime( 2019, 3, 1 ) );
@@ -81,8 +79,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that filtering by Step Program only returns the complete set of participants in any of the associated Step Types.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void FilterByProgramShouldReturnAllStepTypeParticipants()
         {
             var settings = new StepsTakenFilter.FilterSettings();
@@ -106,8 +102,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that filtering by a single Step Type returns only participants in that specific Step Type.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void FilterBySingleStepTypeShouldReturnCorrectParticipants()
         {
             var settings = new StepsTakenFilter.FilterSettings();
@@ -133,8 +127,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that filtering by Step Program returns Steps associated with all Step Types.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void FilterByMultipleStepTypesShouldReturnAnyParticipants()
         {
             var settings = new StepsTakenFilter.FilterSettings();
@@ -162,8 +154,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that filtering by Step Program returns Steps associated with all Step Types.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void FilterBySingleStatusShouldReturnCorrectParticipants()
         {
             var settings = new StepsTakenFilter.FilterSettings();
@@ -187,8 +177,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that filtering by Step Program returns Steps associated with all Step Types.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void FilterByMultipleStatusesShouldReturnAnyParticipants()
         {
             var settings = new StepsTakenFilter.FilterSettings();
@@ -212,8 +200,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         /// Verify that filtering by Step Program returns Steps associated with all Step Types.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Steps )]
         public void FilterByDateCompletedShouldReturnCorrectParticipants()
         {
             var settings = new StepsTakenFilter.FilterSettings();

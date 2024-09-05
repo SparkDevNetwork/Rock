@@ -468,35 +468,6 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new ContentChannelTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
-            }
-        }
-
-        /// <summary>
         /// Refreshes the list of attributes that can be displayed for editing
         /// purposes based on any modified values on the entity.
         /// </summary>

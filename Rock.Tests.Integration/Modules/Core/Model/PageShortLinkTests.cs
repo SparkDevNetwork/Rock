@@ -32,8 +32,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    [TestCategory( "Interactions" )]
-    [TestCategory( "Feature.Cms.UtmTracking" )]
+    [TestCategory( "Cms.Interactions.UtmTracking" )]
     public class PageShortLinkTests : DatabaseTestsBase
     {
         [ClassInitialize]
