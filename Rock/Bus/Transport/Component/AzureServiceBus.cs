@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,6 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
-using MassTransit.AzureServiceBusTransport;
 using Microsoft.ServiceBus;
 using Rock.Attribute;
 using Rock.Data;

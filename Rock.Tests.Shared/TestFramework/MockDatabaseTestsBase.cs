@@ -2,8 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using GreenPipes;
-
 using MassTransit;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
