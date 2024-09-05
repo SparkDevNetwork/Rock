@@ -52,7 +52,8 @@ export class RockCurrency {
         }
         else {
             // Always truncate the currency value decimal places (with Big.roundDown).
-            this.big = new Big(value).round(this.currencyInfo.decimalPlaces, Big.roundDown);
+            // Default to 0 if the value is nullish.
+            this.big = new Big(value ?? 0).round(this.currencyInfo.decimalPlaces, Big.roundDown);
         }
     }
 
