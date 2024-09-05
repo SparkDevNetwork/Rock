@@ -27,6 +27,7 @@ using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
@@ -296,6 +297,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
         }
 
         [TestMethod]
+        [IsolatedTestDatabase]
         public void InteractionWriteBlock_ForMultipleChannelInteractions_WritesInteractionsToCorrectChannels()
         {
             var interaction1Summary = Guid.NewGuid().ToString();
