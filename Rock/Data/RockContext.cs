@@ -196,60 +196,79 @@ namespace Rock.Data
         {
             var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
             var genericEntityMethod = modelBuilder.GetType().GetMethod( "Entity" );
+            var entityAttributeValuesPropertyName = nameof( IHasQueryableAttributes<Person.PersonQueryableAttributeValue>.EntityAttributeValues );
 
             foreach ( var entityType in entityTypes )
             {
-                var hasEntityAttributes = entityType
-                    .GetInterfaces()
-                    .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
-
-                var entityTableName = entityType.GetCustomAttribute<TableAttribute>()?.Name;
-
-                if ( hasEntityAttributes == null || entityTableName.IsNullOrWhiteSpace() )
+                try
                 {
-                    continue;
+                    var hasEntityAttributes = entityType
+                        .GetInterfaces()
+                        .Except( entityType.BaseType.GetInterfaces() )
+                        .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+
+                    var entityTableName = entityType.GetCustomAttribute<TableAttribute>()?.Name;
+
+                    // This is a bit unusual, but we have a few models (like
+                    // LearningClass) that inherit from other concrete models.
+                    // This causes a problem for normal GetProperty() method
+                    // because it will find two properties, even though one is
+                    // hidden in C#.
+                    var entityAttributeValuesProperty = entityType.GetProperties()
+                        .Where( p => p.Name == entityAttributeValuesPropertyName
+                            && p.DeclaringType == entityType )
+                        .FirstOrDefault();
+
+                    if ( hasEntityAttributes == null || entityTableName.IsNullOrWhiteSpace() || entityAttributeValuesProperty == null )
+                    {
+                        continue;
+                    }
+
+                    var entityAttributeValueType = hasEntityAttributes.GetGenericArguments()[0];
+
+                    // First configure the real entity so that the EntityAttributeValues
+                    // navigation property works.
+
+                    // modelBuilder.Entity<entityType>()
+                    var entityMethod = genericEntityMethod.MakeGenericMethod( entityType );
+                    var entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
+
+                    // .HasMany( a => a.EntityAttributeValues )
+                    var navigationPropertyType = typeof( ICollection<> ).MakeGenericType( entityAttributeValueType );
+                    var navigationPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, navigationPropertyType );
+                    var navigationPropertyParameter = Expression.Parameter( entityType );
+                    var navigationPropertyExpression = Expression.Lambda( Expression.Property( navigationPropertyParameter, entityAttributeValuesProperty ), navigationPropertyParameter );
+                    var hasManyMethod = entityTypeConfiguration.GetType().GetMethod( "HasMany" ).MakeGenericMethod( entityAttributeValueType );
+                    var manyNavigationPropertyConfiguration = hasManyMethod.Invoke( entityTypeConfiguration, new object[] { navigationPropertyExpression } );
+
+                    // .WithRequired()
+                    var withRequiredMethod = manyNavigationPropertyConfiguration.GetType().GetMethod( "WithRequired", new Type[0] );
+                    var dependentNavigationPropertyConfiguration = withRequiredMethod.Invoke( manyNavigationPropertyConfiguration, new object[0] );
+
+                    // .HasForeignKey( a => a.EntityId )
+                    var foreignKeyPropertyType = typeof( int );
+                    var foreignKeyPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityAttributeValueType, typeof( int ) );
+                    var foreignKeyParameter = Expression.Parameter( entityAttributeValueType );
+                    var foreignKeyExpression = Expression.Lambda( foreignKeyPropertyAccessorType, Expression.Property( foreignKeyParameter, "EntityId" ), foreignKeyParameter );
+                    var foreignKeyMethod = dependentNavigationPropertyConfiguration.GetType().GetMethod( "HasForeignKey" ).MakeGenericMethod( foreignKeyPropertyType );
+                    var cascadableNavigationPropertyConfiguration = ( System.Data.Entity.ModelConfiguration.Configuration.CascadableNavigationPropertyConfiguration ) foreignKeyMethod.Invoke( dependentNavigationPropertyConfiguration, new object[] { foreignKeyExpression } );
+
+                    cascadableNavigationPropertyConfiguration.WillCascadeOnDelete( false );
+
+                    // Now configure the entity attribute value type's table name.
+
+                    // modelBuilder.Entity<entityAttributeValueType>()
+                    entityMethod = genericEntityMethod.MakeGenericMethod( entityAttributeValueType );
+                    entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
+
+                    // .ToTable( "name" )
+                    var toTableMethod = entityTypeConfiguration.GetType().GetMethod( "ToTable", new[] { typeof( string ) } );
+                    toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"AttributeValue_{entityTableName}" } );
                 }
-
-                var entityAttributeValueType = hasEntityAttributes.GetGenericArguments()[0];
-
-                // First configure the real entity so that the EntityAttributeValues
-                // navigation property works.
-
-                // modelBuilder.Entity<entityType>()
-                var entityMethod = genericEntityMethod.MakeGenericMethod( entityType );
-                var entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
-
-                // .HasMany( a => a.EntityAttributeValues )
-                var navigationPropertyType = typeof( ICollection<> ).MakeGenericType( entityAttributeValueType );
-                var navigationPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, navigationPropertyType );
-                var navigationPropertyParameter = Expression.Parameter( entityType );
-                var navigationPropertyExpression = Expression.Lambda( Expression.Property( navigationPropertyParameter, "EntityAttributeValues" ), navigationPropertyParameter );
-                var hasManyMethod = entityTypeConfiguration.GetType().GetMethod( "HasMany" ).MakeGenericMethod( entityAttributeValueType );
-                var manyNavigationPropertyConfiguration = hasManyMethod.Invoke( entityTypeConfiguration, new object[] { navigationPropertyExpression } );
-
-                // .WithRequired()
-                var withRequiredMethod = manyNavigationPropertyConfiguration.GetType().GetMethod( "WithRequired", new Type[0] );
-                var dependentNavigationPropertyConfiguration = withRequiredMethod.Invoke( manyNavigationPropertyConfiguration, new object[0] );
-
-                // .HasForeignKey()
-                var foreignKeyPropertyType = typeof( int );
-                var foreignKeyPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityAttributeValueType, typeof( int ) );
-                var foreignKeyParameter = Expression.Parameter( entityAttributeValueType );
-                var foreignKeyExpression = Expression.Lambda( foreignKeyPropertyAccessorType, Expression.Property( foreignKeyParameter, "EntityId" ), foreignKeyParameter );
-                var foreignKeyMethod = dependentNavigationPropertyConfiguration.GetType().GetMethod( "HasForeignKey" ).MakeGenericMethod( foreignKeyPropertyType );
-                var cascadableNavigationPropertyConfiguration = ( System.Data.Entity.ModelConfiguration.Configuration.CascadableNavigationPropertyConfiguration ) foreignKeyMethod.Invoke( dependentNavigationPropertyConfiguration, new object[] { foreignKeyExpression } );
-
-                cascadableNavigationPropertyConfiguration.WillCascadeOnDelete( false );
-
-                // Now configure the entity attribute value type's table name.
-
-                // modelBuilder.Entity<entityAttributeValueType>()
-                entityMethod = genericEntityMethod.MakeGenericMethod( entityAttributeValueType );
-                entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
-
-                // .ToTable( "name" )
-                var toTableMethod = entityTypeConfiguration.GetType().GetMethod( "ToTable", new [] { typeof( string ) } );
-                toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"AttributeValue_{entityTableName}" } );
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Exception occurred when configuring Entity Attributes for entity type {entityType.FullName}.", ex ), null );
+                }
             }
         }
     }

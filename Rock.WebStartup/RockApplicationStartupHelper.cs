@@ -933,7 +933,8 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
             // Find all properties that have been decorated as valid for use
             // with attribute qualification.
             var qualifierColumns = type.GetProperties()
-                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null )
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
+                    && p.DeclaringType == type )
                 .Select( p => p.Name )
                 .ToList();
 

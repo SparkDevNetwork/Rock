@@ -66,8 +66,8 @@ namespace Rock.Attribute
                 {
                     var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
                     var hasEntityAttributes = entityType
-                       .GetInterfaces()
-                       .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+                        .GetInterfaces()
+                        .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
 
                     if ( hasEntityAttributes == null )
                     {
