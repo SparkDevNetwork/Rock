@@ -61,7 +61,7 @@
     //#region Computed Values
 
     const scheduleSendText = computed<string>(() => {
-        const dateTimeString = RockDateTime.parseISO(internalScheduleSendIsoString.value)?.toASPString("M/d/yyyy hh:mm tt");
+        const dateTimeString = RockDateTime.parseISO(internalScheduleSendIsoString.value)?.toASPString("g"); // "<short date> <short time>" such as "1/1/2024 9:49 AM"
 
         return isScheduled.value && dateTimeString ? `Scheduled: ${dateTimeString}` : "Schedule Send";
     });
