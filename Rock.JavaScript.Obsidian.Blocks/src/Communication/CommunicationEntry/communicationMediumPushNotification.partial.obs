@@ -782,6 +782,11 @@
             }
 
             mediumOptions.value = response.data;
+
+            // Set the open action if it is currently set to No Action.
+            if (openAction.value === OpenAction.NoAction) {
+                openAction.value = getOpenAction(null);
+            }
         }
         finally {
             isLoadingMediumOptions.value = false;
