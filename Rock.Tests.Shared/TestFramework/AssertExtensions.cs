@@ -272,7 +272,7 @@ namespace Rock.Tests.Shared
         }
         public static void IsTrue( this Assert assert, System.Boolean condition, System.String message, params System.Object[] parameters )
         {
-            Assert.IsTrue( condition, message, parameters );
+             Assert.IsTrue( condition, message, parameters );
         }
         public static void IsTrue( this Assert assert, System.Boolean condition )
         {

@@ -33,6 +33,7 @@ namespace Rock.Tests.Integration.Modules.Crm
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
+    [TestCategory( "Crm.ConnectionStatusChangeReport" )]
     public class ConnectionStatusChangeReportTests : DatabaseTestsBase
     {
         private readonly int _InvalidCampusId = 99;
@@ -66,7 +67,6 @@ namespace Rock.Tests.Integration.Modules.Crm
         /// Verify the report can be correctly filtered by Campus.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByCampus_MatchesExist_ShouldReturnPeopleInMatchedCampusOnly()
         {
             var dataContext = new RockContext();
@@ -98,7 +98,6 @@ namespace Rock.Tests.Integration.Modules.Crm
         /// the time period filter should always resolve to a start and end date if it is working correctly.
         /// </remarks>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByCurrentYear_MatchesExist_ShouldReturnChangesInCurrentYearOnly()
         {
             var dataContext = new RockContext();
@@ -127,7 +126,6 @@ namespace Rock.Tests.Integration.Modules.Crm
         /// Verify the correct result when a Status Filter is set for both Original Value and Updated Value.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByStatus_OriginalAndUpdatedStatusSpecified_ShouldReturnMatchingStatusesOnly()
         {
             var dataContext = new RockContext();
@@ -165,7 +163,6 @@ namespace Rock.Tests.Integration.Modules.Crm
         /// Verify the correct result when a Status Filter is set for Updated Value only.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByStatus_OriginalStatusIsUnspecified_ShouldReturnAllStatuses()
         {
             var dataContext = new RockContext();
@@ -199,7 +196,6 @@ namespace Rock.Tests.Integration.Modules.Crm
         /// Verify the correct result when a Status Filter is set for Original Value only.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByStatus_UpdatedStatusUnspecified_ShouldReturnAllStatuses()
         {
             var dataContext = new RockContext();
@@ -234,7 +230,6 @@ namespace Rock.Tests.Integration.Modules.Crm
         /// </summary>
         [TestMethod]
         [TestProperty( "Purpose", TestPurposes.Performance )]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void Performance_LargeHistoryDataSet_ShouldNotTimeout()
         {
             int monthsToInclude = 2;

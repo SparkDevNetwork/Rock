@@ -33,6 +33,7 @@ namespace Rock.Tests.Integration.Modules.Reporting.ReportBuilder
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
+    [TestCategory( TestFeatures.Reporting )]
     public class ReportBuilderTests : DatabaseTestsBase
     {
         #region Tests
@@ -41,8 +42,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.ReportBuilder
         /// Verify the Report Builder can correctly build all Person Attribute columns.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Reporting.Tests" )]
-        [TestProperty( "Feature", TestFeatures.Reporting )]
         public void AllPersonAttributeColumnsCanBuild()
         {
             var dataContext = new RockContext();
@@ -106,8 +105,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.ReportBuilder
         /// Verify the Report Builder returns an empty Attribute column if the user generating the report does not have View permission for the Attribute.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Reporting.Tests" )]
-        [TestProperty( "Feature", TestFeatures.Reporting )]
         public void UnauthorizedUserCannotViewAttributeColumnOutput()
         {
             var dataContext = new RockContext();

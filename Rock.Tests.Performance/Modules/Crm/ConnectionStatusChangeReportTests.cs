@@ -64,7 +64,7 @@ namespace Rock.Tests.Performance.Crm
         /// </summary>
         [TestMethod]
         [TestProperty( "Purpose", TestPurposes.Performance )]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
+        [TestCategory( "Crm.ConnectionStatusChangeReport" )]
         public void Performance_LargeHistoryDataSet_ShouldNotTimeout()
         {
             int monthsToInclude = 2;
