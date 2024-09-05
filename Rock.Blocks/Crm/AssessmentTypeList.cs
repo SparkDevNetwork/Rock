@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,7 +40,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays a list of assessment types." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the assessment type details.",
