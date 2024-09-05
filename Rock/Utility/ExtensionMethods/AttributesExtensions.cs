@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.ViewModels;
 using Rock.ViewModels.Utility;
@@ -599,7 +600,7 @@ namespace Rock
         /// <param name="key">The key that identifies the attribute.</param>
         /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
         /// <returns>A <see cref="string"/> that represents the attribute text value.</returns>
-        internal static string GetAttributeTextValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        public static string GetAttributeTextValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
         {
             (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
 
@@ -631,6 +632,20 @@ namespace Rock
             var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
             var field = attributeCache.FieldType.Field;
 
+            // If this field type wants entity context and we have it, then
+            // call the appropriate method.
+            if ( field is IEntityContextFieldType entityContextField )
+            {
+                if ( entity is IEntity fullEntity )
+                {
+                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                }
+                else if ( entity is IEntityCache entityCache )
+                {
+                    return entityContextField.GetTextValue( rawValue, entityCache.CachedEntityTypeId, entityCache.Id, attributeCache.ConfigurationValues );
+                }
+            }
+
             return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
         }
 
@@ -641,7 +656,7 @@ namespace Rock
         /// <param name="key">The key that identifies the attribute.</param>
         /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
         /// <returns>A <see cref="string"/> that represents the attribute HTML value.</returns>
-        internal static string GetAttributeHtmlValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        public static string GetAttributeHtmlValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
         {
             (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
 
@@ -673,6 +688,20 @@ namespace Rock
             var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
             var field = attributeCache.FieldType.Field;
 
+            // If this field type wants entity context and we have it, then
+            // call the appropriate method.
+            if ( field is IEntityContextFieldType entityContextField )
+            {
+                if ( entity is IEntity fullEntity )
+                {
+                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                }
+                else if ( entity is IEntityCache entityCache )
+                {
+                    return entityContextField.GetHtmlValue( rawValue, entityCache.CachedEntityTypeId, entityCache.Id, attributeCache.ConfigurationValues );
+                }
+            }
+
             return field?.GetHtmlValue( rawValue, attributeCache.ConfigurationValues );
         }
 
@@ -687,7 +716,7 @@ namespace Rock
         /// <param name="key">The key that identifies the attribute.</param>
         /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
         /// <returns>A <see cref="string"/> that represents the attribute condensed text value.</returns>
-        internal static string GetAttributeCondensedTextValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        public static string GetAttributeCondensedTextValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
         {
             (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
 
@@ -719,6 +748,20 @@ namespace Rock
             var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
             var field = attributeCache.FieldType.Field;
 
+            // If this field type wants entity context and we have it, then
+            // call the appropriate method.
+            if ( field is IEntityContextFieldType entityContextField )
+            {
+                if ( entity is IEntity fullEntity )
+                {
+                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                }
+                else if ( entity is IEntityCache entityCache )
+                {
+                    return entityContextField.GetCondensedTextValue( rawValue, entityCache.CachedEntityTypeId, entityCache.Id, attributeCache.ConfigurationValues );
+                }
+            }
+
             return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
         }
 
@@ -733,7 +776,7 @@ namespace Rock
         /// <param name="key">The key that identifies the attribute.</param>
         /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
         /// <returns>A <see cref="string"/> that represents the attribute condensed HTML value.</returns>
-        internal static string GetAttributeCondensedHtmlValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        public static string GetAttributeCondensedHtmlValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
         {
             (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
 
@@ -764,6 +807,20 @@ namespace Rock
             // No persisted value available and it isn't forced so calculate.
             var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
             var field = attributeCache.FieldType.Field;
+
+            // If this field type wants entity context and we have it, then
+            // call the appropriate method.
+            if ( field is IEntityContextFieldType entityContextField )
+            {
+                if ( entity is IEntity fullEntity )
+                {
+                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                }
+                else if ( entity is IEntityCache entityCache )
+                {
+                    return entityContextField.GetCondensedHtmlValue( rawValue, entityCache.CachedEntityTypeId, entityCache.Id, attributeCache.ConfigurationValues );
+                }
+            }
 
             return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
         }

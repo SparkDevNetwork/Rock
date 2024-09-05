@@ -23,22 +23,6 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-        #region AI Models
-
-        /// <summary>
-        /// Open AI's high-intelligence flagship model for complex, multi-step tasks.
-        /// GPT-4o is cheaper and faster than GPT-4 Turbo.
-        /// </summary>
-        public const string OPEN_AI_GPT_4O = "4A315E26-8FD9-4F4E-A178-7F7CB4D9BDB7";
-
-        /// <summary>
-        /// Open AI's affordable and intelligent small model for fast, lightweight tasks.
-        /// GPT-4o mini is cheaper and more capable than GPT-3.5 Turbo.
-        /// </summary>
-        public const string OPEN_AI_GPT_4O_MINI = "D29074BA-FE6D-483D-8C4C-B7114AA050A5";
-
-        #endregion
-
         #region Attendance
 
         /// <summary>

@@ -110,7 +110,7 @@ import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
         // Create a function for constructing the html that will represent a single requirement.
         const requirementHtml = (r: LearningCourseRequirementBag): string => {
             const updatedUrl = window.location.href.replace(r.learningCourseIdKey ?? "", r.requiredLearningCourseIdKey ?? "");
-            const courseCodeElement = r.requiredLearningCourseCode ? ` - <span class="text-muted text-sm">${r.requiredLearningCourseCode}</span>` : "";
+            const courseCodeElement = r.requiredLearningCourseCode ? ` <span class="text-muted text-sm">${r.requiredLearningCourseCode}</span>` : "";
             return `<li><a target="_blank" href="${updatedUrl}">${r.requiredLearningCourseName}</a>${courseCodeElement}</li>`;
         };
 

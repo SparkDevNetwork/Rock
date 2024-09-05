@@ -25,4 +25,7 @@
 export type FinancialAccountListOptionsBag = {
     /** Gets or sets the grid title. */
     gridTitle?: string | null;
+
+    /** Gets or sets a value indicating whether the block should be visible. */
+    isBlockVisible: boolean;
 };

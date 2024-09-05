@@ -4,6 +4,23 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
+    <div v-if="isConfirmDeleteVisible" class="panel panel-body">
+        <NotificationBox alertType="warning">
+            Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?
+        </NotificationBox>
+        <RockButton :btnSize="BtnSize.Default"
+                    :btnType="BtnType.Danger"
+                    @click="onConfirmDelete">
+            Confirm Delete
+        </RockButton>
+        <RockButton :btnSize="BtnSize.Default"
+                    :btnType="BtnType.Primary"
+                    class="ml-1"
+                    @click="onCancelConfirmDelete">
+            Cancel
+        </RockButton>
+    </div>
+
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
             <template v-if="siteViewBag?.idKey" #headerActions>
@@ -56,7 +73,7 @@
             </template>
             <template #footerSecondaryActions>
                 <RockButton v-if="panelMode === DetailPanelMode.View"
-                            :btnSize="BtnSize.Default"
+                            :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             :isLoading="isCompiling"
                             loadingText="Compiling..."
@@ -118,6 +135,8 @@
     const compileMessage = ref("");
     const allowsCompile = config.entity?.allowsCompile;
     const compileBtnText = allowsCompile ? "Compile Theme" : "Theme Doesn't Support Compiling";
+    const isConfirmDeleteVisible = ref(false);
+    const isActionButtonsVisible = ref(true);
 
 
     const entityTypeGuid = EntityType.Site;
@@ -168,7 +187,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true;
+        return config.isEditable === true && isActionButtonsVisible.value;
     });
 
     const options = computed((): SiteDetailOptionsBag => {
@@ -235,8 +254,7 @@
     }
 
     /**
-     * Event handler for the Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
+     * Event handler for the Delete button being clicked. Shows the confirm delete panel.
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
@@ -246,6 +264,19 @@
         if (!await confirmDelete("Site")) {
             return;
         }
+
+        isConfirmDeleteVisible.value = true;
+        isActionButtonsVisible.value = false;
+    }
+
+    /**
+     * Event handler for the Confirm Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+     async function onConfirmDelete(): Promise<void> {
+        errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
             key: siteViewBag.value?.idKey
@@ -257,6 +288,15 @@
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete group member schedule template.";
         }
+    }
+
+    /**
+     * Event handler for the Cancel Confirm Delete button being clicked. Hides the confirm delete panel.
+     *
+     */
+     function onCancelConfirmDelete(): void {
+        isConfirmDeleteVisible.value = false;
+        isActionButtonsVisible.value = true;
     }
 
     /**

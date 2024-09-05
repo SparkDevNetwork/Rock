@@ -43,11 +43,12 @@ import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/sav
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
 import { Screen } from "./types.partial";
-import { InvalidCheckInStateError, UnexpectedErrorMessage, clone, isAnyIdInList } from "./utils.partial";
+import { InvalidCheckInStateError, UnexpectedErrorMessage, clone, isAnyIdInList, printLabels } from "./utils.partial";
 import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -144,6 +145,9 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /** The labels that need to be printed by this device. */
+    public readonly labels: ClientLabelBag[] = [];
+
     /**
      * Any messages that should be displayed. This is currently only used
      * by the check-in and check-out success screens.
@@ -224,6 +228,7 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.labels = clone(configurationOrSession.labels);
             this.messages = clone(configurationOrSession.messages);
             this.isCheckoutAction = configurationOrSession.isCheckoutAction;
             this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
@@ -342,9 +347,20 @@ export class CheckInSession {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
         }
 
+        const messages = response.data.messages ?? [];
+
+        if (response.data.labels) {
+            const printErrors = await printLabels(response.data.labels);
+
+            if (printErrors.length > 0) {
+                messages.push(...printErrors);
+            }
+        }
+
         return new CheckInSession(this, {
             attendances: [...this.attendances, ...response.data.attendances],
-            allAttendeeSelections: []
+            allAttendeeSelections: [],
+            messages: [...this.messages, ...messages]
         });
     }
 
@@ -389,10 +405,21 @@ export class CheckInSession {
             }
         }
 
+        const messages = response.data.messages ?? [];
+
+        if (response.data.labels) {
+            const printErrors = await printLabels(response.data.labels);
+
+            if (printErrors.length > 0) {
+                messages.push(...printErrors);
+            }
+        }
+
         return new CheckInSession(this, {
             attendances,
+            labels: [...this.labels, ...response.data.labels ?? []],
             allAttendeeSelections: [],
-            messages: response.data.messages ?? []
+            messages: messages
         });
     }
 

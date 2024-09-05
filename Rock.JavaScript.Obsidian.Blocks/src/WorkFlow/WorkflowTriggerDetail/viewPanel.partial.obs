@@ -54,8 +54,17 @@
             valueBuilder.addTextValue("Workflow Name", props.modelValue.workflowName);
         }
 
+        const triggerType = props.modelValue.workflowTriggerTypes?.find(t => t.value == props.modelValue?.workflowTriggerType);
+        if (triggerType?.text) {
+            valueBuilder.addTextValue("Trigger Type", triggerType?.text);
+        }
+
         if (props.modelValue.workflowType?.text) {
             valueBuilder.addTextValue("Workflow Type", props.modelValue.workflowType?.text);
+        }
+
+        if (props.modelValue.entityType?.text) {
+            valueBuilder.addTextValue("Entity Type", props.modelValue.entityType?.text);
         }
 
         return valueBuilder.build();

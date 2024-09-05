@@ -23,12 +23,14 @@
         <TextColumn name="entityType"
                     title="Type"
                     field="entityType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       width="120"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <SecurityColumn />
@@ -40,7 +42,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, pickExistingValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { EventListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EventList/eventListOptionsBag";

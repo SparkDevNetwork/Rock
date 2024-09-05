@@ -55,13 +55,13 @@
             </template>
             <template #footerSecondaryActions>
                 <RockButton v-if="panelMode === DetailPanelMode.View"
-                            :btnSize="BtnSize.Default"
+                            :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             @click="onStepFlowClick">
                     <i class="fas fa-project-diagram"></i> Step Flow
                 </RockButton>
                 <RockButton v-if="panelMode === DetailPanelMode.View && stepProgramViewBag?.canAdministrate"
-                            :btnSize="BtnSize.Default"
+                            :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             @click="onSecurityClick">
                     <i class="fa fa-lock"></i>

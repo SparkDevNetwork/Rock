@@ -1,0 +1,37 @@
+<template>
+    <div class="checkbox">
+        <label title="">
+            <input type="checkbox" v-model="internalValue">
+            <span class="label-text ">{{ text }}</span>
+        </label>
+        <HelpBlock v-if="help" :text="help" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean | undefined | null>,
+            required: true
+        },
+
+        text: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        help: {
+            type: String as PropType<string | null | undefined>
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: boolean): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+</script>

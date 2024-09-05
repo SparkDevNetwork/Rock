@@ -3,7 +3,8 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Persisted Data View"
+          itemTerm="Data View"
+          title="Persisted Data View List"
           :entityTypeGuid="EntityType.Dataview"
           stickyHeader
           liveUpdates
@@ -36,16 +37,25 @@
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date Time"
                         field="lastRunDateTime"
+                        itemClass="grid-item-pull-left"
                         :filter="dateValueFilter"
                         visiblePriority="md" />
 
         <DateTimeColumn name="persistedLastRefreshDateTime"
                         title="Last Refresh"
                         field="persistedLastRefreshDateTime"
+                        itemClass="grid-item-pull-left"
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
     </Grid>
 </template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

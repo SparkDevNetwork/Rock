@@ -28,7 +28,7 @@
         </div>
 
         <!-- General Settings -->
-        <Panel title="General Settings" :v-model="true" :hasCollapse="true">
+        <Panel title="General Settings" :v-model="true" :hasCollapse="true" :isDrawerOpen="true">
             <div class="row">
                 <div class="col-md-6">
                     <DropDownList v-model="checkInType"

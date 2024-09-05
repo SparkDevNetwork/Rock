@@ -17,6 +17,7 @@
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {
@@ -152,7 +153,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// Gets or sets the required error message. If blank, the LabelName name will be used
         /// </summary>
         /// <value>
         /// The required error message.
@@ -172,6 +173,70 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> will allow emojis or special fonts. This property is meant to be used when dealing with Person names.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if emojis and special fonts are not allowed; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Are emojis and special fonts allowed?" )
+        ]
+        public virtual bool NoEmojisOrSpecialFonts
+        {
+            get
+            {
+                return ViewState["NoEmojisOrSpecialFonts"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["NoEmojisOrSpecialFonts"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the no emojis or special fonts error message. If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The no emojis or special fonts error message.
+        /// </value>
+        public string NoEmojisOrSpecialFontsErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> will allow special characters. This property is meant to be used when dealing with Person names.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if special characters are not allowed; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Are special characters allowed?" )
+        ]
+        public virtual bool NoSpecialCharacters
+        {
+            get
+            {
+                return ViewState["NoSpecialCharacters"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["NoSpecialCharacters"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the no special characters error message. If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The no special characters error message.
+        /// </value>
+        public string NoSpecialCharactersErrorMessage { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
@@ -212,6 +277,22 @@ namespace Rock.Web.UI.Controls
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         /// <summary>
+        /// Gets or sets the special characters field validator.
+        /// </summary>
+        /// <value>
+        /// The special characters field validator.
+        /// </value>
+        public RegularExpressionValidator SpecialCharactersValidator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the special characters field validator.
+        /// </summary>
+        /// <value>
+        /// The special characters field validator.
+        /// </value>
+        public RegularExpressionValidator EmojiAndSpecialFontValidator { get; set; }
+
+        /// <summary>
         /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
         /// </summary>
         /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
@@ -236,6 +317,16 @@ namespace Rock.Web.UI.Controls
                 if ( _regexValidator != null )
                 {
                     _regexValidator.ValidationGroup = value;
+                }
+
+                if ( SpecialCharactersValidator != null )
+                {
+                    SpecialCharactersValidator.ValidationGroup = value;
+                }
+
+                if ( EmojiAndSpecialFontValidator != null )
+                {
+                    EmojiAndSpecialFontValidator.ValidationGroup = value;
                 }
             }
         }
@@ -389,6 +480,22 @@ namespace Rock.Web.UI.Controls
             _regexValidator.CssClass = "validation-error help-inline";
             _regexValidator.Enabled = false;
             Controls.Add( _regexValidator );
+
+            SpecialCharactersValidator = new RegularExpressionValidator();
+            SpecialCharactersValidator.ID = this.ID + "_SpecialCharRE";
+            SpecialCharactersValidator.ControlToValidate = this.ID;
+            SpecialCharactersValidator.Display = ValidatorDisplay.Dynamic;
+            SpecialCharactersValidator.CssClass = "validation-error help-inline";
+            SpecialCharactersValidator.Enabled = false;
+            Controls.Add( SpecialCharactersValidator );
+
+            EmojiAndSpecialFontValidator = new RegularExpressionValidator();
+            EmojiAndSpecialFontValidator.ID = this.ID + "_EmojiAndSpecialFontRE";
+            EmojiAndSpecialFontValidator.ControlToValidate = this.ID;
+            EmojiAndSpecialFontValidator.Display = ValidatorDisplay.Dynamic;
+            EmojiAndSpecialFontValidator.CssClass = "validation-error help-inline";
+            EmojiAndSpecialFontValidator.Enabled = false;
+            Controls.Add( EmojiAndSpecialFontValidator );
         }
 
         /// <summary>
@@ -535,6 +642,38 @@ namespace Rock.Web.UI.Controls
                 _regexValidator.ErrorMessage = Rock.Constants.WarningMessage.TextLengthInvalid( this.Label.StripHtml().Trim(), this.MaxLength );
                 _regexValidator.ValidationGroup = this.ValidationGroup;
                 _regexValidator.RenderControl( writer );
+            }
+
+            if ( SpecialCharactersValidator != null && NoSpecialCharacters )
+            {
+                SpecialCharactersValidator.Enabled = true;
+                SpecialCharactersValidator.ValidationExpression = RegexPatterns.SpecialCharacterPattern;
+                if ( NoSpecialCharactersErrorMessage.IsNullOrWhiteSpace() )
+                {
+                    SpecialCharactersValidator.ErrorMessage = $"{this.Label} cannot contain special characters such as quotes, parentheses, etc.";
+                }
+                else
+                {
+                    SpecialCharactersValidator.ErrorMessage = NoSpecialCharactersErrorMessage;
+                }
+                SpecialCharactersValidator.ValidationGroup = this.ValidationGroup;
+                SpecialCharactersValidator.RenderControl( writer );
+            }
+
+            if ( EmojiAndSpecialFontValidator != null && NoEmojisOrSpecialFonts )
+            {
+                EmojiAndSpecialFontValidator.Enabled = true;
+                EmojiAndSpecialFontValidator.ValidationExpression = RegexPatterns.EmojiAndSpecialFontPattern;
+                if ( NoEmojisOrSpecialFontsErrorMessage.IsNullOrWhiteSpace() )
+                {
+                    EmojiAndSpecialFontValidator.ErrorMessage = $"{this.Label} cannot contain emojis or special fonts.";
+                }
+                else
+                {
+                    EmojiAndSpecialFontValidator.ErrorMessage = NoEmojisOrSpecialFontsErrorMessage;
+                }
+                EmojiAndSpecialFontValidator.ValidationGroup = this.ValidationGroup;
+                EmojiAndSpecialFontValidator.RenderControl( writer );
             }
         }
 

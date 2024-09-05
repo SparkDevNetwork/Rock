@@ -30,57 +30,46 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessList
         /// <summary>
         /// Gets or sets the ID of the businesses in the Business List
         /// </summary>
-        ///
         public int Id { get; set; }
         /// <summary>
         /// Gets or sets the ID Key of the businesses in the list 
         /// </summary>
-        ///
         public string IdKey { get; set; }
         /// <summary>
         /// Gets or sets the name of the business in the Business List
         /// </summary>
-        ///
         public string BusinessName { get; set; }
         /// <summary>
         /// Gets or sets the contacts of the business
         /// </summary>
-        ///
         public string Contacts { get; set; }
         /// <summary>
         /// Gets or sets the street address of the business
         /// </summary>
-        ///
         public string Street { get; set; }
         /// <summary>
         /// Gets or sets the city of the business
         /// </summary>
-        ///
         public string City { get; set; }
         /// <summary>
         /// Gets or sets the state of the business
         /// </summary>
-        ///
         public string State { get; set; }
         /// <summary>
         /// Gets or sets the postal code of the business
         /// </summary>
-        ///
         public string Zip { get; set; }
         /// <summary>
         /// Gets or sets the email of the business
         /// </summary>
-        ///
         public string Email { get; set; }
         /// <summary>
         /// Gets or sets the mobile number of the business
         /// </summary>
-        ///
         public string Phone { get; set; }
         /// <summary>
         /// Gets or sets the Campus of the business
         /// </summary>
-        ///
         public ListItemBag Campus { get; set; }
     }
 }

@@ -5,8 +5,8 @@
                         :person="person" />
 
         <div v-if="title || subtitle" class="panel-header">
-            <h1 v-if="!person" class="title">{{ title }}</h1>
-            <h2 v-else class="title">{{ title }}</h2>
+            <h3 v-if="!person" class="title">{{ title }}</h3>
+            <h4 v-else class="title">{{ title }}</h4>
 
             <div class="subtitle">{{ subtitle }}</div>
         </div>

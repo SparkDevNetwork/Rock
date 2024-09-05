@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Group Member Schedule Template"
+          title="Group Member Schedule Templates"
           :entityTypeGuid="EntityType.GroupMemberScheduleTemplate"
           stickyHeader
           liveUpdates

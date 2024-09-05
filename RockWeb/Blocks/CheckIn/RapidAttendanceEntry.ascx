@@ -247,10 +247,10 @@
                                 <Rock:RockRadioButtonList ID="rblRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" ValidationGroup="vgEditMember" />
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" ValidationGroup="vgEditMember" />
+                                        <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" ValidationGroup="vgEditMember" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" ValidationGroup="vgEditMember" />
+                                        <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" ValidationGroup="vgEditMember" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                 </div>
                                 <div class="row">

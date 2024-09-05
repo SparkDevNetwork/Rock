@@ -7,12 +7,12 @@
                 v-model="internalFirstName"
                 :disabled="disabled"
                 label="First Name"
-                rules="required" />
+                :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <TextBox
                 v-model="internalLastName"
                 :disabled="disabled"
                 label="Last Name"
-                rules="required" />
+                :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <EmailBox
                 v-if="!isEmailHidden"
                 v-model="internalEmail"

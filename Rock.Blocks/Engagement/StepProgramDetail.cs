@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepProgramDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -76,7 +77,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "7260278e-efb7-4b98-a862-15bf0a40ba2e" )]
     [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
-    public class StepProgramDetail : RockDetailBlockType
+    public class StepProgramDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -132,6 +133,32 @@ namespace Rock.Blocks.Engagement
         private StepProgram _stepProgram;
 
         #region Methods
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.StepProgramId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new StepProgramService( rockContext )
+                    .GetSelect( key, mf => mf.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.StepProgramId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Step Program", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
+        }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()

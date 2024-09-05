@@ -115,12 +115,12 @@
 
     /** Initializes the plugin. */
     function init(editor: Editor): void {
-        // Register toolbar buttons.
-        // Open the modal when the toolbar button is clicked.
+        // Register toolbar button.
         editor.ui.registry.addToggleButton(id, {
             // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
             icon: "image",
             tooltip: "Image Browser",
+            // Open the modal when the toolbar button is clicked.
             onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
                 isShown.value = true;
             },

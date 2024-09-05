@@ -32,7 +32,7 @@
         <TextColumn name="category"
                     title="Category"
                     field="category"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="from"
@@ -42,7 +42,10 @@
                     visiblePriority="xs" />
 
         <Column name="mediums"
-                title="Mediums">
+                title="Mediums"
+                field="mediums"
+                :filter="pickExistingValueFilter"
+                :filterValue="getMediumRowFilterValue">
             <template #format="{ row }">
                 <span v-if="row.smsMessage" class='label label-info mr-1'>SMS</span>
                 <span v-if="row.pushMessage" class='label label-info'>Push</span>
@@ -58,6 +61,7 @@
                        title="Active"
                        field="isActive"
                        width="57"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <SecurityColumn />
@@ -72,7 +76,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn, SecurityColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SystemCommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SystemCommunicationList/systemCommunicationListOptionsBag";
@@ -125,6 +129,18 @@
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function getMediumRowFilterValue(row: Record<string, unknown>): string {
+        if (row.smsMessage) {
+            return "SMS";
+        }
+        else if (row.pushMessage) {
+            return "Push";
+        }
+        else {
+            return "";
         }
     }
 

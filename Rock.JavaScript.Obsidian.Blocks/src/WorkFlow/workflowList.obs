@@ -9,6 +9,7 @@
           :data="gridDataSource"
           keyField="idKey"
           :itemTerm="config.options?.itemTerm ?? 'Workflow'"
+          :title="title"
           :entityTypeGuid="EntityType.Workflow"
           stickyHeader
           liveUpdates
@@ -174,7 +175,7 @@
     import { Guid } from "@Obsidian/Types";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -214,6 +215,10 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
             || !!gridSettings.value.completedDateRangeLowerValue
             || !!gridSettings.value.completedDateRangeUpperValue
             || (!!gridSettings.value.state && gridSettings.value.state.length > 0);
+    });
+
+    const title = computed((): string => {
+        return `${config.options?.itemTerm ?? "Workflow"}s`;
     });
 
     // #endregion

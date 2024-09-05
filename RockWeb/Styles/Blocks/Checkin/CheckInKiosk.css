@@ -1,71 +1,154 @@
-﻿/* These are default styles to be moved to the theme or something. */
+﻿/* Temporary set of v2 CSS variables until they get merged into core. */
+:root {
+    /* INTERFACE COLORS  */
+    --color-interface-strongest: #000000;
+    --color-interface-stronger: #1C1C1E;
+    --color-interface-strong: #5D5D6F;
+    --color-interface-medium: #8B8BA7;
+    --color-interface-soft: #D9D9E3;
+    --color-interface-softer: #F2F2F7;
+    --color-interface-softest: #FFFFFF;
+
+    /* APPLICATION COLORS  */
+    --color-critical-soft: #FEDEC8;
+    --color-critical-strong: #EE7624;
+    --color-danger-soft: #FFCCD1;
+    --color-danger-strong: #D70015;
+    --color-info-soft: #D6EAFF;
+    --color-info-strong: #007AFF;
+    --color-success-soft: #D7F4DE;
+    --color-success-strong: #248A3D;
+    --color-warning-soft: #FFECD1;
+    --color-warning-strong: #E58600;
+
+    /* SYSTEM COLORS  */
+    --color-primary: #EE7725;
+    --color-campus: #83758f;
+    --color-link: #006DCC;
+    --color-link-hover: #003766;
+
+    /* CATEGORICAL COLORS  */
+    --color-categorial-1: #007aff;
+    --color-categorial-2: #5856D6;
+    --color-categorial-3: #4cd964;
+    --color-categorial-4: #ff2d55;
+    --color-categorial-5: #ff9500;
+    --color-categorial-6: #5ac8fa;
+    --color-categorial-7: #ffcc00;
+    --color-categorial-8: #8e8e93;
+
+    /* DIVERGING COLORS */
+    --color-diverging-1: #2507b7;
+    --color-diverging-2: #3109f5;
+    --color-diverging-3: #6447f7;
+    --color-diverging-4: #9884fa;
+    --color-diverging-5: #CBC1FC;
+    --color-diverging-6: #E5EEF9;
+    --color-diverging-7: #C8F5F0;
+    --color-diverging-8: #92ece2;
+    --color-diverging-9: #5be2d4;
+    --color-diverging-10: #22c8b7;
+    --color-diverging-11: #1ca394;
+
+    /* SEQUENTIAL COLORS */
+    --color-sequential-1: #1a844a;
+    --color-sequential-2: #209f58;
+    --color-sequential-3: #25b967;
+    --color-sequential-4: #2AD476;
+    --color-sequential-5: #45D987;
+    --color-sequential-6: #5FDE98;
+    --color-sequential-7: #7AE4A9;
+    --color-sequential-8: #94E9BA;
+    --color-sequential-9: #AFEECB;
+    --color-sequential-10: #C9F4DC;
+    --color-sequential-11: #E4F9ED;
+
+    /* FONT SIZES */
+    --font-size-xsmall: 12px;
+    --font-size-small: 14px;
+    --font-size-regular: 16px;
+    --font-size-h1: 44px;
+    --font-size-h2: 36px;
+    --font-size-h3: 28px;
+    --font-size-h4: 22px;
+    --font-size-h5: 18px;
+    --font-size-h6: 16px;
+
+    /* FONT WEIGHTS  */
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-black: 900;
+
+    /* LINE HEIGHTS  */
+    --line-height-normal: 1.5;
+    --line-height-tight: 1.1;
+    --line-height-compact: 1.055;
+
+    /* SPACING */
+    --spacing-tiny: 4px;
+    --spacing-small: 8px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xlarge: 48px;
+    --spacing-huge: 80px;
+
+    /* BORDER RADIUS */
+    --rounded-tiny: 2px;
+    --rounded-small: 6px;
+    --rounded-medium: 8px;
+    --rounded-large: 12px;
+    --rounded-xlarge: 16px;
+    --rounded-huge: 24px;
+}
+
+
+/* These are default styles to be moved to the theme or something. */
 .check-in-page {
     position: absolute;
     left: 0;
     top: 0;
     width: 100vw;
     height: 100vh;
-    background-color: var(--tones-lightest);
+    background-color: var(--color-interface-softer);
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
-    padding: var(--unit-md) var(--unit-lg);
-    font-size: var(--font-size-body);
-    font-weight: 400;
-
-    --item-spacing: var(--unit-lg);
-
-    --tones-darkest: #425466;
-    --tones-dark: #77889a;
-    --tones-medium: #d8ddec;
-    --tones-light: #e0e4ec;
-    --tones-lightest: #f2f4f9;
-
-    --unit-xs: calc(var(--unit-md) * 0.25);
-    --unit-sm: calc(var(--unit-md) * 0.5);
-    --unit-md: 8px;
-    --unit-lg: calc(var(--unit-md) * 2);
-    --unit-xl: calc(var(--unit-md) * 3);
-
-    --font-size-h1: calc(var(--font-size-body) * 1.75);
-    --font-size-h2: calc(var(--font-size-body) * 1.25);
-    --font-size-body: 14px;
-    --font-size-small: calc(var(--font-size-body) * 0.85);
-    --font-size-btn-primary: calc(var(--font-size-body) * 1.6);
-    --font-size-btn-secondary: var(--font-size-body);
-    --font-size-btn-small: var(--font-size-body);
+    gap: var(--spacing-small);
+    padding: var(--spacing-small) var(--spacing-medium);
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
 }
 
 .check-in-page .check-in-panel {
-    background-color: #fff;
-    border-radius: var(--unit-lg) var(--unit-lg) var(--unit-lg) var(--unit-lg);
-    padding: var(--unit-md) var(--unit-lg);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+    padding: var(--spacing-small) var(--spacing-medium);
     display: flex;
     flex-direction: column;
 }
 
-.check-in-page .btn-default {
-    background-color: var(--tones-lightest);
-    color: var(--tones-dark);
+.check-in-page .btn {
     border: 0;
+}
+
+.check-in-page .btn-default {
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
 }
 
 .check-in-page .button-list {
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 .check-in-page .button-list .btn {
     display: flex;
-    padding: var(--unit-xl);
-    gap: var(--item-spacing);
+    padding: var(--spacing-large);
+    gap: var(--spacing-small);
     align-items: center;
-}
-
-.check-in-page .button-list .subtitle {
-    font-size: var(--font-size-btn-secondary);
-    font-weight: 400;
 }
 
 .check-in-page .page-body .notice {
@@ -76,20 +159,20 @@
 }
 
 .check-in-page .avatar {
-    width: 50px;
-    height: 50px;
-    border: 3px solid #fff;
+    width: 48px;
+    height: 48px;
+    border: var(--rounded-tiny) solid var(--color-interface-softest);
     border-radius: 50%;
     background-size: cover;
 }
 
 .check-in-page .attendee-banner {
-    background-color: var(--tones-light);
-    border-radius: var(--unit-sm);
+    background-color: var(--color-interface-soft);
+    border-radius: var(--spacing-tiny);
     display: flex;
     flex-direction: column;
-    gap: calc(var(--item-spacing) * 0.5);
-    padding: var(--unit-md);
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-small);
     align-items: center;
 }
 
@@ -98,20 +181,20 @@
     margin: auto;
     grid-template-columns: 130px 130px 130px;
     grid-template-rows: 56px 56px 56px 56px;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 .check-in-page .number-pad .btn {
-    color: var(--tones-darkest);
-    background-color: var(--tones-light);
-    font-size: var(--font-size-btn-primary);
-    font-weight: 600;
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .body {
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 
@@ -119,11 +202,11 @@
  * Styles for the page header.
  */
 .check-in-page .page-header {
-    border-radius: var(--unit-lg) var(--unit-lg) 0 0;
+    border-radius: var(--spacing-medium) var(--spacing-medium) 0 0;
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
     min-height: 56px;
 
     /* Overrides from bootstrap. */
@@ -137,7 +220,7 @@
 
 .check-in-page .page-header .back-button {
     background-color: transparent;
-    border: 1px solid var(--tones-medium);
+    border: var(--rounded-tiny) solid var(--color-interface-soft);
 }
 
 /*
@@ -149,22 +232,22 @@
 }
 
 .check-in-page .page-body .check-in-panel {
-    padding: var(--unit-xl);
-    gap: var(--unit-lg);
-}
-
-.check-in-page h1 {
-    color: var(--tones-darkest);
-    font-size: var(--font-size-h1);
-    font-weight: 600;
-    margin: 0 0 var(--unit-sm) 0;
+    padding: var(--spacing-large);
+    gap: var(--spacing-medium);
 }
 
 .check-in-page h2 {
-    color: var(--tones-dark);
-    font-size: var(--font-size-h2);
-    font-weight: 600;
-    margin: 0 0 var(--unit-sm) 0;
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-tiny) 0;
+}
+
+.check-in-page h3 {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-tiny) 0;
 }
 
 .check-in-page .panel-header .title {
@@ -175,45 +258,90 @@
     text-align: center;
 }
 
+.check-in-page .btn .title {
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .btn .subtitle {
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
+}
+
 .check-in-page .btn-primary {
-    font-size: var(--font-size-btn-primary);
-    font-weight: 600;
+    padding: var(--spacing-small) var(--spacing-medium);
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .btn-default {
-    font-size: var(--font-size-btn-secondary);
-    font-weight: 400;
+    padding: var(--spacing-small) var(--spacing-medium);
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
 }
 
-.check-in-page .btn-default.btn-sm {
-    font-size: var(--font-size-btn-small);
-    font-weight: 600;
+.check-in-page .btn.btn-sm {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
 }
+
+.check-in-page .btn.btn-lg {
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .btn-toggle .btn {
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .button-list .illustrated-button {
+    padding: 0;
+    min-height: 82px;
+}
+
+.check-in-page .illustrated-button > * {
+    margin: var(--spacing-medium) 0;
+}
+
+.check-in-page .illustrated-button > *:first-child {
+    margin-left: var(--spacing-large);
+}
+
+.check-in-page .illustrated-button > *:last-child {
+    margin-right: var(--spacing-large);
+}
+
+.check-in-page .illustrated-button .selection {
+    font-size: 48px;
+    line-height: 1;
+}
+
 
 /*
  * Styles for the pager footer.
  */
 .check-in-page .page-footer {
-    border-radius: 0 0 var(--unit-lg) var(--unit-lg);
+    border-radius: 0 0 var(--spacing-medium) var(--spacing-medium);
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
     min-height: 64px;
-    color: var(--tones-dark);
+    color: var(--color-interface-strong);
 }
 
 .check-in-page .page-footer .actions {
     flex-grow: 1;
     display: flex;
     justify-content: end;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 .check-in-page .page-footer .configure-button {
-    padding: var(--unit-xs) var(--unit-md);
-    font-size: 28px;
-    color: var(--tones-medium);
+    padding: 0;
+    font-size: var(--font-size-h3);
+    color: var(--color-interface-soft);
 }
 
 /*
@@ -228,18 +356,18 @@
 .check-in-page .configuration-screen .saved-configurations {
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 .check-in-page .configuration-screen .saved-configurations .header,
 .check-in-page .configuration-screen .custom-configuration .header {
     display: flex;
     align-items: center;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
-.check-in-page .configuration-screen .saved-configurations .header h2,
-.check-in-page .configuration-screen .custom-configuration .header h2 {
+.check-in-page .configuration-screen .saved-configurations .header h4,
+.check-in-page .configuration-screen .custom-configuration .header h4 {
     flex-grow: 1;
 }
 
@@ -258,14 +386,14 @@
     height: 100%;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 2fr 1fr;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 .check-in-page .welcome-screen .promotions {
-    background: #e5dcd1;
+    background: var(--color-interface-soft);
     grid-row: 1/3;
     grid-column: 1/2;
-    border-radius: var(--unit-lg);
+    border-radius: var(--spacing-medium);
     position: relative;
     overflow: hidden;
 }
@@ -296,8 +424,8 @@
     width: 100%;
     height: 100%;
     font-size: 110px;
-    font-weight: 700;
-    border-radius: var(--unit-lg);
+    font-weight: var(--font-weight-bold);
+    border-radius: var(--spacing-medium);
 }
 
 .check-in-page .welcome-screen .scan-barcode-button {
@@ -309,9 +437,9 @@
     grid-column: 2/3;
     width: 100%;
     height: 100%;
-    background-color: var(--tones-light);
+    background-color: var(--color-interface-soft);
     padding: 0;
-    border-radius: var(--unit-lg);
+    border-radius: var(--spacing-medium);
 }
 
 .check-in-page .welcome-screen .scan-barcode-button .title {
@@ -368,30 +496,6 @@
 /**
  * Person Select Screen.
  */
-.check-in-page .attendee-button.btn {
-    justify-content: initial;
-    padding: 0;
-    border: 0;
-}
-
-.check-in-page .attendee-button .selection {
-    font-size: 50px;
-    line-height: 1;
-    margin: var(--unit-lg) 0 var(--unit-xl) var(--unit-lg);
-}
-
-.check-in-page .attendee-button > * {
-    margin: var(--unit-lg) 0;
-}
-
-.check-in-page .attendee-button > *:first-child {
-    margin-left: var(--unit-xl);
-}
-
-.check-in-page .attendee-button > *:last-child {
-    margin-right: var(--unit-xl);
-}
-
 .check-in-page .attendee-button .title {
     display: flex;
     flex-direction: column;
@@ -401,16 +505,16 @@
 
 .check-in-page .attendee-button .opportunity {
     display: flex;
-    gap: calc(var(--item-spacing) * 0.5);
-    font-size: var(--font-size-btn-secondary);
+    gap: var(--spacing-tiny);
+    font-size: var(--font-size-regular);
 }
 
 .check-in-page .attendee-button .opportunity + .opportunity {
-    margin-top: calc(var(--item-spacing) * 0.25);
+    margin-top: var(--spacing-tiny);
 }
 
 .check-in-page .attendee-button .message {
-    font-size: var(--font-size-btn-secondary);
+    font-size: var(--font-size-regular);
 }
 
 .check-in-page .attendee-button .change-selection-button {
@@ -418,7 +522,7 @@
     align-self: stretch;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    padding: 0 var(--unit-xl);
+    padding: 0 var(--spacing-large);
 }
 
 
@@ -430,35 +534,10 @@
     justify-content: center;
 }
 
-.check-in-page .schedule-select-screen .schedule-button {
-    background-color: var(--tones-lightest);
-    border-color: var(--tones-medium);
-    color: var(--tones-dark);
-}
-
-.check-in-page .schedule-select-screen .schedule-button.checked {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--theme-white);
-}
-
-.check-in-page .schedule-select-screen .schedule-button .selection {
-    font-size: 50px;
-    line-height: 1;
-    margin-top: calc(var(--unit-md) * -1);
-    margin-bottom: calc(var(--unit-md) * -1);
-}
-
 
 /**
  * Ability Level Select Screen
 */
-.check-in-page .ability-level-button .selection {
-    font-size: 50px;
-    line-height: 1;
-    margin-top: calc(var(--unit-md) * -1);
-    margin-bottom: calc(var(--unit-md) * -1);
-}
 
 
 /**
@@ -468,27 +547,27 @@
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
-    padding-bottom: var(--unit-md);
+    padding-bottom: var(--spacing-small);
 }
 
 .check-in-page .achievement-card {
-    border-radius: var(--unit-sm);
+    border-radius: var(--spacing-tiny);
     background-color: white;
-    border: 1px solid var(--tones-light);
-    padding: var(--unit-md) var(--unit-lg);
+    border: var(--rounded-tiny) solid var(--color-interface-soft);
+    padding: var(--spacing-small) var(--spacing-medium);
     display: grid;
     line-height: 1.3em;
 }
 
 .check-in-page .achievement-card svg {
     grid-row: 1 / span 2;
-    margin-right: var(--unit-lg);
+    margin-right: var(--spacing-medium);
 }
 
 .check-in-page .achievement-card .title {
     grid-column: 2;
     align-content: end;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .achievement-card .subtitle {
@@ -499,25 +578,25 @@
 
 .check-in-page .attendance-cards {
     display: flex;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .check-in-page .attendance-card {
-    width: calc(33.33% - calc(var(--item-spacing) * 2 / 3));
+    width: calc(33.33% - calc(var(--spacing-small) * 2 / 3));
     display: flex;
     flex-direction: column;
-    gap: var(--unit-md);
-    border-radius: var(--unit-sm);
-    background-color: var(--tones-light);
-    border: var(--tones-medium);
-    padding: var(--unit-lg) var(--unit-lg);
+    gap: var(--spacing-small);
+    border-radius: var(--spacing-tiny);
+    background-color: var(--color-interface-soft);
+    border: var(--color-interface-medium);
+    padding: var(--spacing-medium) var(--spacing-medium);
 }
 
 .check-in-page .attendance-card .header {
     display: flex;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
     justify-content: center;
     align-items: center;
 }
@@ -525,7 +604,7 @@
 .check-in-page .attendance-card .attendance-list {
     display: flex;
     flex-direction: column;
-    gap: var(--unit-sm);
+    gap: var(--spacing-tiny);
 }
 
 .check-in-page .attendance-card label {
@@ -533,32 +612,32 @@
 }
 
 .check-in-page .attendance-card .attendance-detail {
-    border-radius: var(--unit-md);
+    border-radius: var(--spacing-small);
     background-color: var(--color-primary);
     color: var(--theme-white);
-    padding: var(--unit-sm) var(--unit-md);
+    padding: var(--spacing-tiny) var(--spacing-small);
     display: flex;
     justify-content: space-between;
 }
 
 .check-in-page .attendance-card .attendance-detail .title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .attendance-card .achievement-list {
     flex-grow: 1;
     align-content: end;
-    padding-top: var(--unit-lg);
+    padding-top: var(--spacing-medium);
     display: flex;
     flex-direction: column;
-    gap: var(--unit-lg);
+    gap: var(--spacing-medium);
     justify-content: end;
 }
 
 .check-in-page .attendance-card .achievement {
     display: flex;
     flex-direction: column;
-    gap: var(--unit-sm);
+    gap: var(--spacing-tiny);
 }
 
 .check-in-page .attendance-card .achievement .header {
@@ -567,12 +646,12 @@
 }
 
 .check-in-page .attendance-card .achievement .title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .attendance-card .achievement .completion-progress {
     display: flex;
-    gap: var(--unit-sm);
+    gap: var(--spacing-tiny);
     flex-wrap: wrap;
 }
 
@@ -582,16 +661,16 @@
 }
 
 .check-in-page .attendance-card .achievement .completion-item-empty {
-    color: var(--tones-dark);
+    color: var(--color-interface-strong);
 }
 
 .check-in-page .attendance-card .achievement:first-of-type {
-    margin-top: calc(var(--unit-md) * -1);
+    margin-top: calc(var(--spacing-small) * -1);
 }
 
 .check-in-page .attendance-card .achievement + .achievement {
-    padding-top: var(--unit-md);
-    border-top: 1px solid var(--tones-medium);
+    padding-top: var(--spacing-small);
+    border-top: var(--rounded-tiny) solid var(--color-interface-medium);
 }
 
 
@@ -601,7 +680,7 @@
 .supervisor-login-screen {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
     align-items: start;
 }
 
@@ -615,13 +694,13 @@
 .supervisor-login-screen .current-counts {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: calc(var(--item-spacing) * 2);
-    font-size: var(--font-size-h2)
+    column-gap: var(--spacing-large);
+    font-size: var(--font-size-h5)
 }
 
 .supervisor-login-screen .current-counts .count-row {
     display: flex;
-    gap: var(--item-spacing);
+    gap: var(--spacing-small);
 }
 
 .supervisor-login-screen .current-counts .title {
@@ -632,15 +711,14 @@
 /**
  * Supervisor Action Screen
 */
-
 .supervisor-action-screen {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    column-gap: var(--item-spacing);
+    column-gap: var(--spacing-small);
     align-items: start;
 }
 
-.supervisor-action-screen .location-button .count {
+.supervisor-action-screen .location-button .subtitle {
     margin-left: auto;
 }
 
@@ -648,7 +726,6 @@
 /**
  * Supervisor Reprint Screen
 */
-
 .supervisor-reprint-screen .attendance-button .btn {
     justify-content: initial;
     border: 0;
@@ -662,9 +739,9 @@
 
 .supervisor-reprint-screen .attendance-button .details {
     display: flex;
-    gap: calc(var(--item-spacing) * 0.5);
+    gap: var(--spacing-tiny);
     margin-left: auto;
-    font-size: var(--font-size-h2);
+    font-size: var(--font-size-h5);
 }
 
 .supervisor-reprint-screen input.search-term {
@@ -679,33 +756,31 @@
 /**
  * Supervisor Schedule Locations Screen
 */
-
 .supervisor-schedule-locations-screen .schedule-grid {
     display: grid;
-    row-gap: var(--item-spacing);
+    row-gap: var(--spacing-small);
     grid-template-columns: 1fr 1fr repeat(var(--schedule-count, 0), minmax(90px, max-content));
 }
 
 .supervisor-schedule-locations-screen .schedule-grid > * {
-    border-bottom: 1px solid var(--tones-light);
-    padding-bottom: var(--unit-md);
+    border-bottom: var(--rounded-tiny) solid var(--color-interface-soft);
+    padding-bottom: var(--spacing-small);
 }
 
 .supervisor-schedule-locations-screen .schedule-grid > .header {
-    font-weight: 600;
-    font-size: var(--font-size-h2);
-    border-bottom: 1px solid var(--tones-medium);
-    padding-bottom: var(--unit-sm);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-h6);
+    border-bottom: var(--rounded-tiny) solid var(--color-interface-medium);
+    padding-bottom: var(--spacing-tiny);
     align-self: end;
 }
 
 .supervisor-schedule-locations-screen .schedule-grid .title {
-    font-weight: 600;
-    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-semibold);
 }
 
 .supervisor-schedule-locations-screen .schedule-grid .subtitle {
-    opacity: 0.8;
+    color: var(--color-interface-medium);
 }
 
 .supervisor-schedule-locations-screen .schedule-grid .checkbox .label-text::before,

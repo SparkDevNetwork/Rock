@@ -42,6 +42,7 @@
                             <DropDownList v-model="teamValue"
                                           :items="uniqueGroups"
                                           :onUpdate:modelValue="onTeamSelected"
+                                          :enhanceForLongLists="true"
                                           label="Team" />
                         </div>
                     </div>
@@ -242,8 +243,8 @@
     const campusValue = ref<string>("");
     const teamValue = ref<string>("");
     const teamDonationStats = ref<{ month: string; donatedPercentage: number; notDonatedPercentage: number }[]>([] as { month: string; donatedPercentage: number; notDonatedPercentage: number }[]);
-    const lastUpdated = ref(bag.lastUpdated || "N/A");
-    const estimatedRefreshTime = ref(bag.estimatedRefreshTime || 0);
+    const lastUpdated = ref(bag?.lastUpdated || "N/A");
+    const estimatedRefreshTime = ref(bag?.estimatedRefreshTime || 0);
     const dataRefreshed = ref<boolean>(false);
     const isRefreshing = ref(false);
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
@@ -271,6 +272,10 @@
      * @returns A string representing the time difference
      */
     const calculateTimeDifference = (lastUpdatedString: string): string => {
+        if (!lastUpdatedString || lastUpdatedString === "N/A") {
+            return "Data last updated N/A";
+        }
+
         const lastUpdatedDate = RockDateTime.parseISO(lastUpdatedString);
         const now = RockDateTime.now();
 
@@ -304,7 +309,6 @@
 
         return timeDiffStr;
     };
-
 
     /**
      * Calculate the donation percentages for each month

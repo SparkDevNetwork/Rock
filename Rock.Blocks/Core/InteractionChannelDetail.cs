@@ -216,10 +216,10 @@ namespace Rock.Blocks.Core
                 IdKey = entity.IdKey,
                 ChannelDetailTemplate = entity.ChannelDetailTemplate,
                 ChannelListTemplate = entity.ChannelListTemplate,
-                ComponentCacheDuration = entity.ComponentCacheDuration,
+                ComponentCacheDuration = entity.ComponentCacheDuration.ToString(),
                 ComponentDetailTemplate = entity.ComponentDetailTemplate,
                 ComponentListTemplate = entity.ComponentListTemplate,
-                EngagementStrength = entity.EngagementStrength,
+                EngagementStrength = entity.EngagementStrength.ToString(),
                 InteractionCustom1Label = entity.InteractionCustom1Label,
                 InteractionCustom2Label = entity.InteractionCustom2Label,
                 InteractionCustomIndexed1Label = entity.InteractionCustomIndexed1Label,
@@ -227,7 +227,7 @@ namespace Rock.Blocks.Core
                 InteractionListTemplate = entity.InteractionListTemplate,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                RetentionDuration = entity.RetentionDuration,
+                RetentionDuration = entity.RetentionDuration.ToString(),
                 SessionListTemplate = entity.SessionListTemplate
             };
         }
@@ -303,7 +303,7 @@ namespace Rock.Blocks.Core
                 () => entity.ChannelListTemplate = box.Entity.ChannelListTemplate );
 
             box.IfValidProperty( nameof( box.Entity.ComponentCacheDuration ),
-                () => entity.ComponentCacheDuration = box.Entity.ComponentCacheDuration );
+                () => entity.ComponentCacheDuration = box.Entity.ComponentCacheDuration.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.ComponentDetailTemplate ),
                 () => entity.ComponentDetailTemplate = box.Entity.ComponentDetailTemplate );
@@ -312,7 +312,7 @@ namespace Rock.Blocks.Core
                 () => entity.ComponentListTemplate = box.Entity.ComponentListTemplate );
 
             box.IfValidProperty( nameof( box.Entity.EngagementStrength ),
-                () => entity.EngagementStrength = box.Entity.EngagementStrength );
+                () => entity.EngagementStrength = box.Entity.EngagementStrength.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.InteractionCustom1Label ),
                 () => entity.InteractionCustom1Label = box.Entity.InteractionCustom1Label );
@@ -336,7 +336,7 @@ namespace Rock.Blocks.Core
                 () => entity.Name = box.Entity.Name );
 
             box.IfValidProperty( nameof( box.Entity.RetentionDuration ),
-                () => entity.RetentionDuration = box.Entity.RetentionDuration );
+                () => entity.RetentionDuration = box.Entity.RetentionDuration.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.SessionListTemplate ),
                 () => entity.SessionListTemplate = box.Entity.SessionListTemplate );

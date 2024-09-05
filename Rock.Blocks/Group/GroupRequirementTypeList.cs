@@ -33,7 +33,6 @@ namespace Rock.Blocks.Group
     /// <summary>
     /// Displays a list of group requirement types.
     /// </summary>
-
     [DisplayName( "Group Requirement Type List" )]
     [Category( "Group" )]
     [Description( "List of Group Requirement Types." )]

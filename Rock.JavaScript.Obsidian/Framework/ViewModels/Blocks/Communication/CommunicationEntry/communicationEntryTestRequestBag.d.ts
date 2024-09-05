@@ -42,6 +42,15 @@ export type CommunicationEntryTestRequestBag = {
     /** Gets or sets the communication unique identifier. */
     communicationGuid: Guid;
 
+    /** Gets or sets the communication list group unique identifier. */
+    communicationListGroupGuid?: Guid | null;
+
+    /** Gets or sets the communication list name. */
+    communicationListName?: string | null;
+
+    /** Gets or sets the number of recipients in the communication list. */
+    communicationListRecipientCount?: number | null;
+
     /** Gets or sets the communication template unique identifier. */
     communicationTemplateGuid?: Guid | null;
 

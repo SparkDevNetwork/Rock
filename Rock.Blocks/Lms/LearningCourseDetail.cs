@@ -119,19 +119,16 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var RockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>();
+            var box = new DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box );
+            SetBoxInitialEntityState( box );
 
-                var entity = box.Entity;
+            var entity = box.Entity;
 
-                box.NavigationUrls = GetBoxNavigationUrls( entity );
-                box.Options = GetBoxOptions( entity, RockContext );
+            box.NavigationUrls = GetBoxNavigationUrls( entity );
+            box.Options = GetBoxOptions( entity );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -139,21 +136,18 @@ namespace Rock.Blocks.Lms
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="RockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LearningCourseDetailOptionsBag GetBoxOptions( LearningCourseBag entity, RockContext RockContext )
+        private LearningCourseDetailOptionsBag GetBoxOptions( LearningCourseBag entity )
         {
+            var disablePredictableIds = PageCache.Layout?.Site?.DisablePredictableIds ?? false;
             // Get the ConfigurationMode for the parent Program.
-            var courseId = IdHasher.Instance.GetId( entity.IdKey );
-            var options = new LearningCourseService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Include( c => c.LearningProgram )
-                .Select( c => new LearningCourseDetailOptionsBag
-                {
-                    ConfigurationMode = c.LearningProgram.ConfigurationMode
-                } ).FirstOrDefault();
+            var programConfigurationMode = new LearningCourseService( RockContext )
+                .GetSelect( entity.IdKey, c => c.LearningProgram.ConfigurationMode, !disablePredictableIds );
 
-            return options;
+            return new LearningCourseDetailOptionsBag
+            {
+                ConfigurationMode = programConfigurationMode
+            };
         }
 
         /// <summary>
@@ -353,6 +347,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
+            var publicName = box.Bag.PublicName ?? box.Bag.Name;
+
             box.IfValidProperty( nameof( box.Bag.PublicName ),
                 () => entity.PublicName = box.Bag.PublicName );
 
@@ -390,7 +386,8 @@ namespace Rock.Blocks.Lms
                 {
                     LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId ),
                     Id = 0,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    IsActive = true
                 };
             }
 
@@ -1020,7 +1017,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );
 
-            var orderedItems = GetOrderedLearningPlan( RockContext ).AsNoTracking();
+            var orderedItems = GetOrderedLearningPlan().AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
         }
 
@@ -1106,7 +1103,7 @@ namespace Rock.Blocks.Lms
         public BlockActionResult ReorderActivity( string key, string beforeKey )
         {
             // Get the queryable and make sure it is ordered correctly.
-            var items = GetOrderedLearningPlan( RockContext ).ToList();
+            var items = GetOrderedLearningPlan().ToList();
 
             if ( !items.ReorderEntity( key, beforeKey ) )
             {
@@ -1122,7 +1119,7 @@ namespace Rock.Blocks.Lms
 
         #region Private methods
 
-        private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext RockContext )
+        private IQueryable<LearningActivity> GetOrderedLearningPlan()
         {
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 

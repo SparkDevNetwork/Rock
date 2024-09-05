@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Web.Hosting;
 
 using DotLiquid;
 
@@ -589,7 +590,6 @@ namespace Rock.Blocks.Cms
 
             entity.LoadAttributes( RockContext );
 
-            var id = IdHasher.Instance.GetId( key );
             var box = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>
             {
                 Entity = GetEntityBagForEdit( entity ),
@@ -702,7 +702,8 @@ namespace Rock.Blocks.Cms
                 var pageService = new PageService( RockContext );
 
                 // Create the layouts for the site, and find the first one
-                // LayoutService.RegisterLayouts( HttpRequest.MapPath( "~" ), siteCache );
+                string applicationRootPath = HostingEnvironment.MapPath( "~" );
+                LayoutService.RegisterLayouts( applicationRootPath, siteCache );
 
                 var layoutService = new LayoutService( RockContext );
                 var layouts = layoutService.GetBySiteId( siteCache.Id );
@@ -772,16 +773,27 @@ namespace Rock.Blocks.Cms
                 return actionError;
             }
 
-            var sitePages = new List<int> {
-                    entity.DefaultPageId ?? -1,
-                    entity.LoginPageId ?? -1,
-                    entity.RegistrationPageId ?? -1,
-                    entity.PageNotFoundPageId ?? -1
-                };
-
             var pageService = new PageService( RockContext );
-            foreach ( var page in pageService.Queryable( "Layout" )
-                .Where( t => !t.IsSystem && ( t.Layout.SiteId == entity.Id || sitePages.Contains( t.Id ) ) ) )
+            var layoutService = new LayoutService( RockContext );
+
+            var sitePages = new List<int> {
+                entity.DefaultPageId ?? -1,
+                entity.LoginPageId ?? -1,
+                entity.RegistrationPageId ?? -1,
+                entity.PageNotFoundPageId ?? -1
+            };
+
+            var otherSitesQry = entityService.Queryable().Where( s => s.Id != entity.Id );
+
+            var pageQry = pageService.Queryable( "Layout" )
+                .Where( t =>
+                    !t.IsSystem &&
+                    ( t.Layout.SiteId == entity.Id ||
+                    sitePages.Contains( t.Id ) ) );
+
+            pageQry = pageQry.Where( p => !otherSitesQry.Any( s => s.DefaultPageId == p.Id || s.LoginPageId == p.Id || s.RegistrationPageId == p.Id || s.PageNotFoundPageId == p.Id ) );
+
+            foreach ( var page in pageQry )
             {
                 if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
                 {
@@ -789,12 +801,11 @@ namespace Rock.Blocks.Cms
                 }
             }
 
-            var layoutService = new LayoutService( RockContext );
             var layoutQry = layoutService.Queryable()
                 .Where( l =>
-                l.SiteId == entity.Id );
+                    !l.IsSystem &&
+                    l.SiteId == entity.Id );
             layoutService.DeleteRange( layoutQry );
-
             RockContext.SaveChanges( true );
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -811,7 +822,7 @@ namespace Rock.Blocks.Cms
         /// <summary>
         /// Gets the attribute.
         /// </summary>
-        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="attributeGuid">The attribute identifier.</param>
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult GetAttribute( Guid? attributeGuid )
@@ -845,10 +856,8 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCompileTheme control.
+        /// Handles the Click event of the CompileTheme button.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         [BlockAction]
         public BlockActionResult CompileTheme( string idKey )
         {

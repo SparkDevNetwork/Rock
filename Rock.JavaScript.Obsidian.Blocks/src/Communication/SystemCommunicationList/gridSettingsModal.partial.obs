@@ -9,22 +9,9 @@
         <div class="row">
 
             <div class="col-md-4">
-                <CategoryPicker v-model="category"
-                                label="Category"
-                                :entityTypeGuid="EntityType.SystemCommunication"
-                                showBlankItem />
-            </div>
-
-            <div class="col-md-4">
                 <DropDownList v-model="supports"
                               label="Supports"
                               :items="supportsItems" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="activeStatus"
-                              label="Active Status"
-                              :items="activeStatusItems" />
             </div>
 
         </div>
@@ -35,13 +22,11 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import { ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const props = defineProps({
         modelValue: {
@@ -73,17 +58,6 @@ import { EntityType } from "@Obsidian/SystemGuids/entityType";
         {
             text: "Push Notification",
             value: "Push Notification"
-        }
-    ] as ListItemBag[];
-
-    const activeStatusItems = [
-        {
-            text: "Active",
-            value: "Active"
-        },
-        {
-            text: "Inactive",
-            value: "Inactive"
         }
     ] as ListItemBag[];
 

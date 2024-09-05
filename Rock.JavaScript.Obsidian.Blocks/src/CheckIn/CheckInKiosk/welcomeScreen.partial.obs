@@ -541,6 +541,12 @@
             codeScanner = undefined;
         }
 
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
+            native.StopCamera?.();
+        }
+
         clearAllTimers();
     });
 

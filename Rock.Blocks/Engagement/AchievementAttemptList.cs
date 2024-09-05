@@ -190,7 +190,7 @@ namespace Rock.Blocks.Engagement
 
             if ( achievementType != null )
             {
-                queryParams.Add( PageParameterKey.AchievementTypeId, achievementType.Id.ToString() );
+                queryParams.Add( PageParameterKey.AchievementTypeId, achievementType.IdKey );
             }
 
             return new Dictionary<string, string>

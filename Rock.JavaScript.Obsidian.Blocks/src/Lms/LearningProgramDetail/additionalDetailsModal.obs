@@ -4,10 +4,10 @@
         <SectionHeader :title="name" />
         <div class="row">
             <div class="col-md-6">
-                <ValueDetailList :modelValue="leftSideValues" />
+                <StaticFormControl v-model="publicName" label="Public Name" />
             </div>
             <div class="col-md-6">
-                <ValueDetailList :modelValue="rightSideValues" />
+                <StaticFormControl v-model="completionWorkflowType" label="Completion Workflow Type" />
             </div>
         </div>
 
@@ -24,14 +24,12 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
-    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
-    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
 
     const props = defineProps({
         modelValue: {
@@ -46,36 +44,12 @@
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const description = ref(props.modelValue?.description ?? "");
     const name = ref(props.modelValue?.name ?? "");
+    const publicName = ref(props.modelValue?.publicName ?? "");
+    const completionWorkflowType = ref(props.modelValue?.completionWorkflowType?.text ?? "");
 
     // #endregion
 
     // #region Computed Values
-
-    /** The values to display at half-width on the left side of the block. */
-    const leftSideValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
-        valueBuilder.addHtmlValue("", `<h3 class="title">Public Name</h3>${props.modelValue?.publicName ?? ""}`);
-
-        return valueBuilder.build();
-    });
-
-    /** The values to display at half-width on the left side of the block. */
-    const rightSideValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
-        valueBuilder.addHtmlValue("", `<h3 class="title">Completion Workflow Type</h3>${props.modelValue?.completionWorkflowType?.text ?? ""}`);
-
-        return valueBuilder.build();
-    });
 
     // #endregion
 

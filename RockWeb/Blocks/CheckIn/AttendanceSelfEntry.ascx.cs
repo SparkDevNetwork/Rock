@@ -647,6 +647,26 @@ ORDER BY [Text]",
                     errors.Add( "Last Name is required." );
                 }
 
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errors.Add( "First Name cannot contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errors.Add( "Last Name cannot contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errors.Add( "First Name cannot contain emojis or special fonts." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errors.Add( "Last Name cannot contain emojis or special fonts." );
+                }
+
                 if ( bpOtherBirthDay.Visible && GetAttributeValue( AttributeKey.OtherPersonBirthdayRequired ).AsBoolean() && !bpOtherBirthDay.SelectedDate.HasValue )
                 {
                     errors.Add( "Birthday is required." );

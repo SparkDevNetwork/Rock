@@ -407,5 +407,15 @@ namespace Rock.SystemGuid
         /// The job for updating learning program completions. <see cref="Rock.Jobs.UpdateProgramCompletions"/>.
         /// </summary>
         public const string UPDATE_PROGRAM_COMPLETIONS = "4E805A88-C031-4BA0-BAD6-0A706E647870";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_CHOP_OBSIDIAN_BLOCKS = "74265B89-31DF-4430-84D4-8343C64F2580";
+
+        /// <summary>
+        /// The job for updating the IX_EntityTypeId_EntityId index on the History table.
+        /// </summary>
+        public const string POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX = "48D7629C-1FB5-425A-AFAB-E8F220ABADB0";
     }
 }

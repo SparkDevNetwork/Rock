@@ -43,6 +43,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
     [IconCssClass( "fa fa-question" )]
+    [Rock.Web.UI.ContextAware]
 
     #region Block Attributes
 
@@ -187,28 +188,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
         private BusinessDetailOptionsBag GetBoxOptions( bool isEditable, Person business )
         {
             var options = new BusinessDetailOptionsBag();
 
-            if ( business != null )
-            {
-                var validSearchTypes = GetValidSearchKeyTypes();
-                var dvAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
-                var searchKeys = business.GetPersonSearchKeys()
-                    .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.SearchTypeValueId != dvAlternateId.Id )
-                    .ToList();
+            options.TagCategoryGuid = GetAttributeValue( AttributeKey.TagCategory ).AsGuidOrNull();
 
-                var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
-                var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
+            options.DisplayTags = GetAttributeValue( AttributeKey.DisplayTags ).AsBoolean();
 
-                options.SearchKeys = searchKeys.ConvertAll(a => new SearchKeyBag() { Guid = a.Guid, SearchType = a.SearchTypeValue.ToListItemBag(), SearchValue = a.SearchValue });
-                options.SearchTypesList = searchTypesList.ConvertAll( dv => new ViewModels.Utility.ListItemBag { Text = dv.Value, Value = dv.Guid.ToString() } );
+            var validSearchTypes = GetValidSearchKeyTypes();
+            var dvAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
 
-                options.TagCategoryGuid = GetAttributeValue( AttributeKey.TagCategory ).AsGuidOrNull();
-            }
+            var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+            var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
+            options.SearchTypesList = searchTypesList.ConvertAll( dv => new ViewModels.Utility.ListItemBag { Text = dv.Value, Value = dv.Guid.ToString() } );
 
             return options;
         }
@@ -292,7 +286,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 var phoneNumber = entity.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
                 if ( phoneNumber != null )
                 {
-                    bag.PhoneNumber = phoneNumber.ToString();
+                    bag.PhoneNumber = phoneNumber.NumberFormatted;
                     bag.IsSmsChecked = phoneNumber.IsMessagingEnabled;
                     bag.IsUnlistedChecked = phoneNumber.IsUnlisted;
                     bag.CountryCode = phoneNumber.CountryCode;
@@ -311,6 +305,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            bag.EmailTag = GetEmailTag( entity );
+
+            var badgeList = GetAttributeValue( AttributeKey.Badges );
+            if ( !string.IsNullOrWhiteSpace( badgeList ) )
+            {
+                bag.BadgeTypeGuids = new List<Guid>();
+                foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
+                {
+                    var guid = badgeGuid.AsGuid();
+                    if ( guid != Guid.Empty )
+                    {
+                        bag.BadgeTypeGuids.Add( guid );
+                    }
+                }
+            }
 
             // Get addresses
             var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
@@ -337,7 +347,38 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             return bag;
         }
 
-       /// <inheritdoc/>
+        private string GetEmailTag( Person entity )
+        {
+            var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.CommunicationPage );
+            Rock.Web.PageReference communicationPageReference;
+            if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
+            {
+                communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+            }
+            else
+            {
+                communicationPageReference = null;
+            }
+
+            return entity.GetEmailTag( RequestContext.ResolveRockUrl( "/" ), communicationPageReference );
+        }
+
+        private List<SearchKeyBag> GetSearchKeyBags( Person business )
+        {
+            var validSearchTypes = GetValidSearchKeyTypes();
+            var dvAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+
+            var searchKeys = business.GetPersonSearchKeys()
+                .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.SearchTypeValueId != dvAlternateId.Id )
+                .ToList();
+
+            var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+            var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
+
+            return searchKeys.ConvertAll( a => new SearchKeyBag() { Guid = a.Guid, SearchType = a.SearchTypeValue.ToListItemBag(), SearchValue = a.SearchValue } );
+        }
+
+        /// <inheritdoc/>
         protected override BusinessDetailBag GetEntityBagForEdit( Person entity )
         {
             if ( entity == null )
@@ -348,6 +389,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var bag = GetCommonEntityBag( entity );
 
             bag.EmailPreference = entity.EmailPreference.ToString();
+            bag.SearchKeys = GetSearchKeyBags( entity );
 
             // Get addresses
             var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
