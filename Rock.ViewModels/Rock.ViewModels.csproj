@@ -58,6 +58,10 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInHeaderTextBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\BlockContextInfoBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\CopyPageRequestBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\DeletePageRequestBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesValidationResponseBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
@@ -152,6 +156,8 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\PersonalLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
