@@ -590,7 +590,7 @@ tr.row-highlight {
 }
 
 .grid-columncommand .btn-danger {
-  color:              var(--color-interface-medium);
+  color:              var(--color-interface-strong);
   background-color:   transparent;
   border-color:       transparent;
   
@@ -665,7 +665,7 @@ tr.row-highlight {
   }
 
   .btn-danger {
-    color: var(--color-interface-medium);
+    color: var(--color-interface-strong);
     background: transparent;
     &:active,
     &:hover {

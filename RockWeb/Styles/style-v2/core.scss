@@ -25,10 +25,12 @@
 @import 'legacy/carousel';                  // Fully Format. **It is not working**. There are Some hard coded value. 
 @import 'legacy/jumbotron';                 // Fully Format. When color-mix() use, go in the file there's TODO comments at where it is need to be use.
 @import 'legacy/media';                     // Fully Format. 
+@import 'legacy/grid-layoutLegacy'; 
+@import 'legacy/spacing-utilitiesLegacy';            
 
 /* ======================= CORE  ======================*/
 @import 'core/page-admin';                  // Fully Format. There are Some hard coded value.
-@import 'core/layout-grid';                 // Fully Format. Most of the value is hard coded because we are not using mixin.
+@import 'utilities/grid-layout';
 @import 'core/print';                       // Fully Format.
 @import 'core/scroll';
 
@@ -111,6 +113,7 @@
 @import 'rock-components/html-editor';
 @import 'rock-components/ant-select';
 @import 'rock-components/card';
+@import 'rock-components/range-slider';
 
 
 /* ===================== BLOCK =================== */

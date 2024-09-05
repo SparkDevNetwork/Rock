@@ -121,26 +121,40 @@
 }
 
 
+// Moved to _scroll.scss
 // Fancy Scrollbars
+// .styled-scroll {
+//   & ::-webkit-scrollbar {
+//     width:              8px;
+//     height:             8px;
+//     // background-color: var(--color-interface-softer);
+//     // border-radius:      4px;
+//   }
 
-.styled-scroll {
-  &::-webkit-scrollbar {
-    width:              8px;
-    height:             8px;
-    background-color: rgba(0,0,0,.03);
-    border-radius:      4px;
-  }
+//   & ::-webkit-scrollbar-thumb {
+//     width:              8px;
+//     // background-color:   var(--color-interface-soft);
+//     // border-radius:      4px;
 
-  &::-webkit-scrollbar-thumb {
-    width:              8px;
-    background-color: rgba(0,0,0, .2);
-    border-radius:      4px;
+//     &:hover {
+//       background-color: var(--color-interface-medium);
+//     }
+//   }
+// }
 
-    &:hover {
-      background-color: rgba(0,0,0, .3);
-    }
-  }
-}
+// .styled-scroll ::-webkit-scrollbar {
+//   width: 8px;
+//   height: 8px;
+// }
+
+// .styled-scroll ::-webkit-scrollbar-thumb {
+//   width: 8px;
+// }
+
+// .styled-scroll-white ::-webkit-scrollbar-track .styled-scroll-white::-webkit-scrollbar-track {
+//   background-color: #000 !important;
+// }
+// ==============
 
 // 1. Notes
 // -------------------------
@@ -608,7 +622,7 @@
   border: 0;
   box-shadow: none;
   &:focus-within {
-    box-shadow: 0 0 0 3px #fad5bc;
+    box-shadow: var(--input-focus-box-shadow);
   }
 }
 
@@ -997,7 +1011,7 @@
     overflow:             hidden;
     line-height:          1.3333333;
     text-overflow:        ellipsis;
-    -webkit-line-clamp:   2;
+    line-clamp:   2;
     -webkit-box-orient:   vertical;
   }
 

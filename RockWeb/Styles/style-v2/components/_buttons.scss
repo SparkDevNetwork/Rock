@@ -185,7 +185,7 @@
 
 // ========================== ALTERNATIVE BUTTON ==========================
 .btn.btn-default {
-  color:            var(--color-interface-medium);
+  color:            var(--color-interface-strong);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
  
@@ -204,7 +204,7 @@
   &.active,
   .open > .dropdown-toggle & {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-medium);
+    background-color: var(--color-interface-soft);
     border-color:     var(--color-interface-soft);
     background-image: none;
  
@@ -530,7 +530,7 @@
 }
 
 .btn-security{
-  color:            var(--color-interface-medium);
+  color:            var(--color-interface-strong);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
 
@@ -800,7 +800,7 @@
   &:hover,
   &:focus {
     color:            var(--color-link-hover);
-    text-decoration:  var(--link-hover-decoration);
+    text-decoration:  underline;
     background-color: transparent;
   }
   &[disabled],

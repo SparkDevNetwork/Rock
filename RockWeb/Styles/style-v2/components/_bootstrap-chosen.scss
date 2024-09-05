@@ -354,7 +354,7 @@
 .chosen-container-active {
   .chosen-single {
     border: 1px solid var(--color-primary);
-    box-shadow: 0 0 0 2px #fad5bc;
+    box-shadow: var(--input-focus-box-shadow);
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
   }
 
@@ -363,14 +363,14 @@
     border: 1px solid var(--color-primary);
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
-    box-shadow: 0 0 0 2px #fad5bc;
+    box-shadow: var(--input-focus-box-shadow);
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
   }
   .chosen-choices {
     border: 1px solid var(--color-primary);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    box-shadow: 0 0 0 2px #fad5bc; 
+    box-shadow: var(--input-focus-box-shadow); 
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
     .search-field .chosen-search-input {

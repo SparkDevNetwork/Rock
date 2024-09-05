@@ -78,7 +78,7 @@
       flex-basis: calc(50% * var(--schedule-count));
       height: fit-content;
       padding: 0 var(--spacing-large);
-      border-right: 4px solid #d4d4d4;
+      border-right: 4px solid var(--color-interface-soft);
     }
 
     @media (min-width: $screen-medium) {
@@ -317,7 +317,7 @@
 
 .featured-content {
   .group-scheduler-v2 {
-    @media screen and (max-width: $screen-medium - 1 ) {
+    @media screen and (max-width: ($screen-medium - 1) ) {
       .panel.panel-block {
         height: auto;
       }
@@ -342,3 +342,4 @@
     }
   }
 }
+

@@ -23,10 +23,11 @@
   --color-warning-strong:  #E58600;
 
   // SYSTEM COLORS 
-  --color-primary:        #EE7725;
-  --color-campus:         #83758f;
-  --color-link:           #006DCC;
-  --color-link-hover:     #003766;
+  --color-primary:            #EE7725;
+  --color-primary-box-shadow: #fad5bc;
+  --color-campus:             #83758f;
+  --color-link:               #006DCC;
+  --color-link-hover:         #003766;
 
   // CATEGORICAL COLORS 
   --color-categorial-1: #007aff;
@@ -117,7 +118,7 @@
   --spacing-medium:    16px;
   --spacing-large:     24px;
   --spacing-xlarge:    48px;
-  --spacing-huge:      80px;
+  --spacing-huge:      80px; 
 
   // ========================== END SPACING ===========================
 
@@ -127,9 +128,8 @@
   
   --adminbar-bg:              #45474c;
 
-  --link-hover-decoration:    underline;
-
   --dropdown-box-shadow:      0 4px 8px 0 rgba(0,0,0,.1);
+  --input-focus-box-shadow:   0 0 0 2px var(--color-primary-box-shadow);
 
   // BORDER RADIUS
   --rounded-tiny:     2px;
