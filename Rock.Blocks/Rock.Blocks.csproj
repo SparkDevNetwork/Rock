@@ -70,6 +70,7 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Administration\PageProperties.cs" />
     <Compile Include="Cms\ShortLink.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />

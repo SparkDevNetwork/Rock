@@ -47,6 +47,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Administration\PageProperties\BlockContextInfoBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\CopyPageRequestBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\DeletePageRequestBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesValidationResponseBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
@@ -76,6 +80,8 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesBag.cs" />
+    <Compile Include="Blocks\Administration\PageProperties\PagePropertiesOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />

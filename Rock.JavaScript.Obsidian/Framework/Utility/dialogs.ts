@@ -335,3 +335,11 @@ export function confirmDelete(typeName: string, additionalMessage?: string): Pro
 export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKey: Guid | string | number, entityTitle: string = "Item"): void {
     Rock.controls.modal.show(undefined, `/Secure/${entityTypeIdKey}/${entityIdKey}?t=Secure ${entityTitle}&pb=&sb=Done`);
 }
+
+/**
+ * Shows the child pages for the given page.
+ * @param pageId The page identifier
+ */
+export function showChildPages(pageId: Guid | string | number): void {
+    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&amp;pb=&amp;sb=Done`);
+}
