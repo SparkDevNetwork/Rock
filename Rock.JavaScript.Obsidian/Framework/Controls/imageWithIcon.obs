@@ -81,7 +81,7 @@
 
     const imgSrc = computed(() =>
         guidIsValid.value === true ?
-            `/GetImage.ashx?guid=${imageFileGuid.value}&maxwidth=${container.value?.clientWidth}` :
+            `/GetImage.ashx?guid=${imageFileGuid.value}&width=${container.value?.clientWidth}` :
             "/Assets/Images/no-picture.svg"
     );
 
