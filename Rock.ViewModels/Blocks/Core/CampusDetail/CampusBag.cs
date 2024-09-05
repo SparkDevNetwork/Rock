@@ -114,7 +114,6 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
         public string Url { get; set; }
 
         /// <summary>
-
         /// Gets or sets the opened date.
         /// </summary>
         /// <value>
@@ -130,6 +129,7 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
         /// </value>
         public DateTime? ClosedDate { get; set; }
 
+        /// <summary>
         /// Get or sets the Country Code of the Phone Number
         /// </summary>
         /// <value>The Phone Number Country Code.</value>

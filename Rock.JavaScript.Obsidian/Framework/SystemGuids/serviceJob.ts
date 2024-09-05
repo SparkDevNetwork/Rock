@@ -128,6 +128,8 @@ export const ServiceJob = {
     DataMigrations166UpdateAchievementtypeTargetcountColumn: "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5",
     /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
     DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
+    /** The Job to run Post v17.0 Data Migrations to chop Block. */
+    DataMigrations170ChopObsidianBlocks: "74265B89-31DF-4430-84D4-8343C64F2580",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
     DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
@@ -153,6 +155,8 @@ export const ServiceJob = {
     JobPulse: "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7",
     /** The Job to Migrate pre-v8.0 History Summary Data */
     MigrateHistorySummaryData: "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14",
+    /** The job for updating the IX_EntityTypeId_EntityId index on the History table. */
+    Post170UpdateHistoryEntitytypeidIndex: "48D7629C-1FB5-425A-AFAB-E8F220ABADB0",
     /** A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer. */
     PostInstallDataMigrations: "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3",
     /** The Process Elevated Security Job. Rock.Jobs.ProcessElevatedSecurity */
