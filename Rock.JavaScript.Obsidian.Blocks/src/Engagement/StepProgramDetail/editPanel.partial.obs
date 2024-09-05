@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <Panel title="Step Type Attributes" :hasCollapse="true" :isDrawerOpen="true">
+        <Panel title="Step Type Attributes" :hasCollapse="true">
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Grid :data="attributesGridData" keyField="key" itemTerm="Step Type Attribute" liveUpdates light @addItem="onAddAttribute">
@@ -64,7 +64,7 @@
             </Modal>
         </Panel>
 
-        <Panel title="Statuses" :hasCollapse="true" :isDrawerOpen="true">
+        <Panel title="Statuses" :hasCollapse="true">
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Grid :data="statusesGridData" keyField="key" itemTerm="Page Attribute" liveUpdates light @addItem="onAddStatus">
@@ -112,7 +112,7 @@
             </Modal>
         </Panel>
 
-        <Panel title="Workflows" :hasCollapse="true" :isDrawerOpen="true">
+        <Panel title="Workflows" :hasCollapse="true">
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Grid :data="workflowGridData" keyField="key" itemTerm="Workflow" liveUpdates light @addItem="onAddWorkflow">

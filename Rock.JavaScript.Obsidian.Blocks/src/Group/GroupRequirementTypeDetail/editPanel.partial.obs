@@ -35,7 +35,7 @@
         <span class="text-muted">The configuration below determines the how we'll know if an individual meets the requirement or not.</span>
         <hr class="margin-t-sm">
         <ButtonGroup v-model="requirementCheckType"
-                     :selectedBtnType="BtnType.Default"
+                     :selectedBtnType="BtnType.Tool"
                      :btnSize="BtnSize.Default"
                      :btnType="BtnType.Default"
                      :items="requirementCheckTypes" />
@@ -58,7 +58,7 @@
                 <div v-if="requirementCheckType === 'Sql'">
                     <div class="col-md-12">
                         <RockLabel>SQL Syntax</RockLabel>
-                         <a class="help" href="javascriot:void(0);"><i class="fa fa-question-circle" :onClick="onSqlInfoClick"></i></a>
+                        <a class="help" href="javascriot:void(0);"><i class="fa fa-question-circle" :onClick="onSqlInfoClick"></i></a>
                         <TransitionVerticalCollapse>
                             <div v-if="showSqlHelpHTML" class="alert alert-info js-sourcesql-help" v-html="sqlHelpHTML"></div>
                         </TransitionVerticalCollapse>
@@ -152,15 +152,18 @@
                           label="Can Expire"
                           :disabled="requirementCheckType === 'Manual'"
                           help="Determines if a requirement should expire after a configured period of time." />
-                <NumberBox v-if="canExpire"
-                           v-model="expireInDays"
-                           label="Expire Duration"
-                           inputGroupClasses="input-width-lg"
-                           help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">days</span>
-                    </template>
-                </NumberBox>
+
+                <div class="col-md-3" style="padding-left: 0%;">
+                    <TextBox v-if="canExpire"
+                             v-model="expireInDays"
+                             label="Expire Duration"
+                             :rules="validateNumber"
+                             help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </TextBox>
+                </div>
             </div>
             <div class="col-md-6">
                 <RadioButtonList v-model="dueDateType"
@@ -168,16 +171,18 @@
                                  help="Determines if a requirement has a period of time to be met."
                                  :items="dueDateOptions" />
 
-                <NumberBox v-if="dueDateType === 'DaysAfterJoining'"
-                           v-model="dueDateOffsetInDays"
-                           label="Due Date Offset"
-                           AppendText="days"
-                           inputGroupClasses="input-width-lg"
-                           help="The number of days before/after the configured date setting to determine the due date period.">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">days</span>
-                    </template>
-                </NumberBox>
+                <div class="col-md-3" style="padding-left: 0%;">
+                    <TextBox v-if="dueDateType === 'DaysAfterJoining' || dueDateType === 'GroupAttribute'"
+                             size="small"
+                             v-model="dueDateOffsetInDays"
+                             label="Due Date Offset"
+                             :rules="validateNumber"
+                             help="The number of days before/after the configured date setting to determine the due date period.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </TextBox>
+                </div>
 
             </div>
         </div>
@@ -187,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
@@ -197,7 +202,6 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -207,7 +211,6 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         modelValue: {
@@ -249,10 +252,10 @@
     const doesNotMeetWorkflowLinkText = propertyRef(props.modelValue.doesNotMeetWorkflowLinkText ?? "", "DoesNotMeetWorkflowLinkText");
     const warningWorkflowLinkText = propertyRef(props.modelValue.warningWorkflowLinkText ?? "", "WarningWorkflowLinkText");
     const canExpire = propertyRef(props.modelValue.canExpire, "CanExpire");
-    const expireInDays = propertyRef(props.modelValue.expireInDays, "ExpireInDays");
-    const dueDateOffsetInDays = propertyRef(props.modelValue.dueDateOffsetInDays, "DueDateOffsetInDays");
+    const expireInDays = propertyRef(props.modelValue.expireInDays ?? "", "ExpireInDays");
+    const dueDateOffsetInDays = propertyRef(props.modelValue.dueDateOffsetInDays ?? "", "DueDateOffsetInDays");
     const dueDateType = propertyRef(props.modelValue.dueDateType ?? "", "dueDateType");
-    const requirementCheckType = propertyRef(props.modelValue.requirementCheckType ?? "", "RequirementCheckType");
+    const requirementCheckType = propertyRef(props.modelValue.requirementCheckType ?? "Manual", "RequirementCheckType");
     const checkboxLabel = propertyRef(props.modelValue.checkboxLabel ?? "", "CheckboxLabel");
     const dueDateOptions = ref(props.options.dueDateOptions ?? []);
     const requirementCheckTypes = ref(props.options.requirementTypeOptions?.map(x => ({
@@ -272,9 +275,42 @@
 
     // #region Computed Values
 
+    const sqlButtonGroupClass = computed((): string => {
+        return requirementCheckType.value === "Sql" ? "active" : "";
+    });
+
+    const manualButtonGroupClass = computed((): string => {
+        return requirementCheckType.value === "Manual" ? "active" : "";
+    });
+
+    const dataviewButtonGroupClass = computed((): string => {
+        return requirementCheckType.value === "Dataview" ? "active" : "";
+    });
+
     // #endregion
 
     // #region Functions
+
+    function validateNumber(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be an integer value.";
+            }
+            else if (num < 0 || num > 2147483648) {
+                return "must be an integer value.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
 
     // #endregion
 
@@ -309,11 +345,11 @@
         updateRefValue(doesNotMeetWorkflowLinkText, props.modelValue.doesNotMeetWorkflowLinkText ?? "");
         updateRefValue(warningWorkflowLinkText, props.modelValue.warningWorkflowLinkText ?? "");
         updateRefValue(canExpire, props.modelValue.canExpire);
-        updateRefValue(expireInDays, props.modelValue.expireInDays);
+        updateRefValue(expireInDays, props.modelValue.expireInDays ?? "");
         updateRefValue(dueDateType, props.modelValue.dueDateType ?? "");
         updateRefValue(requirementCheckType, props.modelValue.requirementCheckType ?? "");
         updateRefValue(checkboxLabel, props.modelValue.checkboxLabel ?? "");
-        updateRefValue(dueDateOffsetInDays, props.modelValue.dueDateOffsetInDays);
+        updateRefValue(dueDateOffsetInDays, props.modelValue.dueDateOffsetInDays ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the

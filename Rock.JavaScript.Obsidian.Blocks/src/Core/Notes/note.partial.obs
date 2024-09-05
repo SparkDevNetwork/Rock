@@ -316,7 +316,7 @@
         const createdDateTime = RockDateTime.parseISO(props.note.createdDateTime ?? "");
 
         if (createdDateTime) {
-            text = createdDateTime.localDateTime.humanizeElapsed();
+            text = createdDateTime.localDateTime.toElapsedString();
         }
 
         return text;
@@ -334,7 +334,7 @@
         const editedDateTime = RockDateTime.parseISO(props.note.editedDateTime ?? "");
 
         if (editedDateTime && (!createdDateTime || editedDateTime.isLaterThan(createdDateTime))) {
-            let editedText = editedDateTime.localDateTime.humanizeElapsed();
+            let editedText = editedDateTime.localDateTime.toElapsedString();
 
             if (props.note.editedByName && props.note.editedByName !== props.note.createdByName) {
                 editedText += ` by ${props.note.editedByName}`;

@@ -71,7 +71,10 @@
             </div>
         </div>
 
-        <AttributeEditor v-model="editableAttribute" :reservedKeyNames="usedKeyNames" :isShowInGridVisible="config?.options?.enableShowInGrid" />
+        <AttributeEditor v-model="editableAttribute"
+                         :attributeEntityTypeGuid="entityTypeGuid"
+                         :reservedKeyNames="usedKeyNames"
+                         :isShowInGridVisible="config?.options?.enableShowInGrid" />
     </Modal>
 
     <Modal v-model="showFilterModal" title="Filter Options" @save="applyFilters">
@@ -166,11 +169,7 @@
 
     /** The title to display in the edit attribute modal. */
     const editAttributeModalTitle = computed((): string => {
-        if (editableAttribute.value) {
-            return `Edit ${editableAttribute.value.name}`;
-        }
-
-        return "";
+        return editableAttribute.value?.name ? `Edit ${editableAttribute.value.name}` : "Add Attribute";
     });
 
     const usedKeyNames = ref<string[]>([]);
@@ -267,7 +266,8 @@
             isAllowSearch: false,
             isAnalyticHistory: false,
             isEnableHistory: false,
-            isIndexEnabled: false
+            isIndexEnabled: false,
+            isSuppressHistoryLogging: false
         };
         showEditAttributeModal.value = true;
         entityTypeGuidForEditOrEmptyString.value = entityTypeGuid.value;
@@ -415,7 +415,6 @@
     // #region Filters
 
     const entityTypeGuidFilter = ref(preferences.getValue(PreferenceKey.FilterEntityTypeGuid));
-    const categoriesFilter = ref(preferences.getValue(PreferenceKey.FilterCategories));
     const activeFilter = ref(preferences.getValue(PreferenceKey.FilterActive));
 
     /** The currently selected entity type by the user. */

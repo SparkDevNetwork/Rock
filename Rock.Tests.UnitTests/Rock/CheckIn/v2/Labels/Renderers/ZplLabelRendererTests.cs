@@ -1857,7 +1857,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 CallBase = true
             };
 
-            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<ZplImageOptions>(), It.IsAny<bool>() ) )
+            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<ZplImageOptions>() ) )
                 .Returns( new ZplImageCache( imageData, 0, 0 ) );
 
             var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
@@ -1901,7 +1901,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 CallBase = true
             };
 
-            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<ZplImageOptions>(), It.IsAny<bool>() ) )
+            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<ZplImageOptions>() ) )
                 .Returns( new ZplImageCache( imageData, 0, 0 ) );
 
             var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
@@ -1945,7 +1945,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 CallBase = true
             };
 
-            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<ZplImageOptions>(), It.IsAny<bool>() ) )
+            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<ZplImageOptions>() ) )
                 .Returns( new ZplImageCache( imageData, 0, 0 ) );
 
             var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
@@ -1991,7 +1991,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 CallBase = true
             };
 
-            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<ZplImageOptions>(), It.IsAny<bool>() ) )
+            renderer.Setup( f => f.GetImage( It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<ZplImageOptions>() ) )
                 .Throws<InvalidOperationException>();
 
             var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag

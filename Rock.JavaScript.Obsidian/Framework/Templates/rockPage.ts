@@ -235,12 +235,6 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 * @param url
 */
 export function showShortLink(url: string): void {
-
-    // create an iframe
-    // set width and height = 400
-    // set postiion to abs
-    // set the src attribute
-
     const rootElement = document.createElement("div");
     const modalPopup = document.createElement("div");
     const modalPopupContentPanel = document.createElement("div");

@@ -45,7 +45,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Category( "Check-in > Configuration" )]
     [Description( "Designs a check-in label with a nice drag and drop experience." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -187,6 +187,11 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <returns>A label data object or <c>null</c>.</returns>
         internal static object GetPreviewLabelData( LabelType labelType, Person currentPerson, RockContext rockContext )
         {
+            if ( currentPerson.Attributes == null )
+            {
+                currentPerson.LoadAttributes( rockContext );
+            }
+
             if ( labelType == LabelType.Family )
             {
                 return new FamilyLabelData( currentPerson.PrimaryFamily,

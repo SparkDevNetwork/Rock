@@ -29,6 +29,26 @@ export const Attribute = {
     AccumulativeAchievementStreakType: "BEDD14D0-450E-475C-8D9F-404DDE350530",
     /** The accumulative achievement time span in days */
     AccumulativeAchievementTimeSpanInDays: "1C0F4BE1-81E9-4974-A24E-2DFBA8320AE5",
+    /** The AI model to use for requests. */
+    AiAutomationAiModel: "185B32D2-4D2D-43C9-A4F7-CABA31735940",
+    /** The AI service to use for the Category. */
+    AiAutomationAiProvider: "6A1991F6-AB4A-4B92-9790-0E2ED62C079F",
+    /** Determines whether to auto-categorize the request based on the text. */
+    AiAutomationAutoCategorize: "6614A615-1744-4BC8-BBEC-12DB89A1E29C",
+    /** Determines whether the public appropriateness should be checked for the text. */
+    AiAutomationCheckPublicAppropriateness: "3C72AF29-9F11-4FE8-88AC-8A5FE3B8565A",
+    /** Determines whether child categories inherit the AI Automations of this category. */
+    AiAutomationChildCategoriesInheritConfiguration: "065ECB63-A468-4892-AAC4-39CC998EAA70",
+    /** Determines whether the emotional sentiment should be classified based on the text and provided sentiment options. */
+    AiAutomationClassifySentiment: "DDAE804B-A166-4302-812C-E12E29EB118B",
+    /** Determines if AI should moderate the request. */
+    AiAutomationEnableAiModeration: "7472FD09-E6A6-4857-BB41-A34ABA7676A3",
+    /** The workflow to launch if any of the moderation categories are found. */
+    AiAutomationModerationAlertWorkflowType: "4C9F5F7C-9A33-4588-9D2C-2C32553D3CD3",
+    /** Determines whether the AI should remove names from the text. */
+    AiAutomationRemoveNames: "0AAC2E68-CB3B-4123-AAB2-D087F1729C02",
+    /** Determines whether the AI should polish the text of the request. */
+    AiAutomationTextEnhancement: "6BF93B6F-0EC9-4CF0-8EC5-636F524C830A",
     /** The attendance type label */
     AttendanceTypeLabel: "6916359C-C168-4DBA-A893-365526C9F4C4",
     /** The binaryfiletype filestorage rootpath attribute */

@@ -50,6 +50,8 @@ namespace Rock.Tests.Shared.TestFramework
 
             // Start the bus.
             await RockMessageBus.StartBusInternalAsync( busComponentMock.Object );
+
+            RockDateTime.Initialize();
         }
 
         /// <summary>

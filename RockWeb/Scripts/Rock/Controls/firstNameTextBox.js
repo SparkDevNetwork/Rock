@@ -32,10 +32,9 @@
                         }
                     }
                 }
-
                 if (!isValid) {
                     const labelText = firstNameTextBox.dataset.itemLabel;
-                    validator.errormessage = `${labelText} cannot contain: ${invalidString}`;
+                    validator.innerHTML =  `${labelText} cannot contain: ${invalidString}`;
                 }
 
                 args.IsValid = isValid;

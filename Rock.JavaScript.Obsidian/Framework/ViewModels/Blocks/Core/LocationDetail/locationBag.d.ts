@@ -38,7 +38,7 @@ export type LocationBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets threshold that will prevent checkin (no option to override) */
-    firmRoomThreshold?: number | null;
+    firmRoomThreshold?: string | null;
 
     /** Gets or sets the formatted HTML address. */
     formattedHtmlAddress?: string | null;
@@ -89,5 +89,5 @@ export type LocationBag = {
     printerDevice?: ListItemBag | null;
 
     /** Gets or sets a threshold that will prevent checkin unless a manager overrides */
-    softRoomThreshold?: number | null;
+    softRoomThreshold?: string | null;
 };

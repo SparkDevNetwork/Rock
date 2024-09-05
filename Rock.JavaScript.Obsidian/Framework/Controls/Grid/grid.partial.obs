@@ -45,6 +45,7 @@
                       :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
+                      :emptyDataText="emptyDataText"
                       @click="onRowClick" />
         </div>
 
@@ -58,6 +59,7 @@
                       :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
+                      :emptyDataText="emptyDataText"
                       @click="onRowClick" />
         </div>
 
@@ -70,6 +72,7 @@
                          :itemTerm="gridState.itemTerm"
                          :markInactiveRows="markInactiveRows"
                          :rowClass="rowClass"
+                         :emptyDataText="emptyDataText"
                          @click="onRowClick" />
 
         <div class="grid-footing">
@@ -130,7 +133,7 @@
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
     flex-grow: 1;
-    font-size: 22px;
+    font-size: var(--font-size-h5);
     font-weight: 500;
     line-height: 1;
     padding-left: 24px;
@@ -775,6 +778,15 @@
         rowClass: {
             type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
             default: undefined
+        },
+
+        /**
+         * The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.
+         */
+        emptyDataText: {
+            type: String,
+            default: "",
+            required: false,
         },
 
         /**
@@ -2123,8 +2135,13 @@
         saveSortPreferences();
     });
 
-    watch([currentPage, pageSize], () => {
+    watch([currentPage, pageSize], (newValues, oldValues) => {
+        // If the page size changed, reset to the first page.
+        if (newValues[1] !== oldValues[1] && currentPage.value !== 1) {
+            currentPage.value = 1;
+        }
         updateVisibleRows();
+        updatePageCount();
     });
 
     watch(() => props.keyField, () => {

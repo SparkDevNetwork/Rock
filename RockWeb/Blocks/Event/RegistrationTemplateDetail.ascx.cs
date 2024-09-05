@@ -719,8 +719,6 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
@@ -755,6 +753,8 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -4444,6 +4444,22 @@ The logged-in person's information will be used to complete the registrar inform
                             Selected = paymentPlansFeatureData.PaymentPlanFrequencyValueIds.Contains( frequency.Id ),
                         } );
                 }
+            }
+
+            /*
+                9/3/2024 - JMH
+
+                The "Minimum Initial Payment" field cannot be left blank if "Payment Plans" are enabled.
+                If the "Minimum Initial Payment" is blank, full payment is required, making payment plans unnecessary.
+                To avoid this conflict, require a value in the "Minimum Initial Payment" field when "Payment Plans" are enabled.
+             */            
+            if ( paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed ) )
+            {
+                cbMinimumInitialPayment.Required = true;
+            }
+            else
+            {
+                cbMinimumInitialPayment.Required = false;
             }
         }
 

@@ -237,8 +237,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             hfLocalDeviceConfiguration.Value = this.LocalDeviceConfig.ToJson();
             hfKioskType.Value = CurrentCheckInState?.Kiosk?.Device?.KioskType?.ConvertToString( false );
 
@@ -292,6 +290,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -751,10 +751,20 @@ namespace RockWeb.Blocks.CheckIn
                 // next-gen check-in labels. If that still comes back with no
                 // labels then assume there just aren't any for this attendance.
                 var attendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
-                var printer = DeviceCache.Get( CurrentCheckInState.Kiosk.Device.PrinterDeviceId ?? 0 );
+                var kiosk = DeviceCache.Get( CurrentCheckInState.DeviceId );
 
-                if ( printer != null && ZebraPrint.TryReprintNextGenLabels( attendanceIds, printer, out var messages ) )
+                if ( kiosk != null && ZebraPrint.TryReprintNextGenLabels( attendanceIds, kiosk, out var messages, out var clientLabels ) )
                 {
+                    if ( clientLabels.Any() )
+                    {
+                        var script = $@"
+if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
+    window.RockCheckinNative.PrintV2Labels(JSON.stringify({clientLabels.ToJson()}));
+}}
+";
+                        ScriptManager.RegisterClientScriptBlock( pnlReprintResults, pnlReprintResults.GetType(), "addV2LabelScript", script, true );
+                    }
+
                     pnlReprintResults.Visible = true;
                     pnlReprintSelectedPersonLabels.Visible = false;
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,11 +34,41 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Redirect to Page" )]
 
-    [WorkflowTextOrAttribute( "Url", "Url Attribute", "The full URL to redirect to, for example: http://www.rockrms.com  <span class='tip tip-lava'></span>", true, "", "", 0, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType", "Rock.Field.Types.AudioUrlFieldType", "Rock.Field.Types.VideoUrlFieldType" } )]
-    [CustomDropdownListField( "Processing Options", "How should workflow continue processing?", "0^Always continue,1^Only continue on redirect,2^Never continue", true, "0", "", 1 )]
+
+    [WorkflowTextOrAttribute( "Url",
+        "Url Attribute",
+        Description = "The full URL to redirect to, for example: http://www.rockrms.com  <span class='tip tip-lava'></span>",
+        Key = AttributeKey.Url,
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType", "Rock.Field.Types.AudioUrlFieldType", "Rock.Field.Types.VideoUrlFieldType" },
+        Order = 0 )]
+
+    [CustomDropdownListField(
+        "Processing Options",
+        Key = AttributeKey.ProcessingOptions,
+        Description = "Select how the workflow should proceed based on the action's outcome: <ul><li>Always Continue: proceed regardless of redirect status,</li><li>Only Continue on Redirect: continue workflow only on successful redirects, or</li><li>Fail and Stop: halt the Workflow and mark the Action as failed unless skipped by the 'Run If' filter.</li></ul>",
+        ListSource = "0^Always Continue,1^Only Continue on Redirect,2^Fail and Stop",
+        IsRequired = true,
+        DefaultValue = "0",
+        Category = "",
+        Order = 1 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "E2F3DFC1-415D-45C9-B84E-D91562139FDA")]
     public class Redirect : ActionComponent
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Url = "Url";
+            public const string ProcessingOptions = "ProcessingOptions";
+        }
+
+        #endregion Attribute Keys
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -51,7 +81,7 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            string url = GetAttributeValue( action, "Url" );
+            string url = GetAttributeValue( action, AttributeKey.Url );
             Guid guid = url.AsGuid();
             if ( guid.IsEmpty() )
             {
@@ -62,7 +92,7 @@ namespace Rock.Workflow.Action
                 url = action.GetWorkflowAttributeValue( guid );
             }
 
-            var processOpt = GetAttributeValue( action, "ProcessingOptions" );
+            var processOpt = GetAttributeValue( action, AttributeKey.ProcessingOptions );
             bool canSendRedirect = !string.IsNullOrWhiteSpace( url ) && HttpContext.Current != null;
 
             if ( canSendRedirect )

@@ -172,8 +172,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbAddPerson.Visible = false;
 
             if ( ppPersonFilter.PersonId != null )
@@ -195,6 +193,8 @@ namespace RockWeb.Blocks.Communication
                     divMain.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Overrides

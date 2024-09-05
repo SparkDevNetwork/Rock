@@ -73,6 +73,12 @@ namespace Rock.ViewModels.Event
         public AttendanceStatus Status { get; set; }
 
         /// <summary>
+        /// Gets or sets the check in status of the attendance record.
+        /// </summary>
+        /// <value>The status of the attendance record.</value>
+        public CheckInStatus CheckInStatus { get; set; }
+
+        /// <summary>
         /// Gets or sets the RSVP state of this attendance record.
         /// </summary>
         /// <value>The RSVP state of this attendance record.</value>

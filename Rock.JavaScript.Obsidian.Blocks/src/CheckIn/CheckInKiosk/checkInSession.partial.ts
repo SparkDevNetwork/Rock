@@ -43,11 +43,12 @@ import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/sav
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
 import { Screen } from "./types.partial";
-import { InvalidCheckInStateError, UnexpectedErrorMessage, clone, isAnyIdInList } from "./utils.partial";
+import { InvalidCheckInStateError, UnexpectedErrorMessage, clone, isAnyIdInList, printLabels } from "./utils.partial";
 import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -144,6 +145,15 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /** The labels that need to be printed by this device. */
+    public readonly labels: ClientLabelBag[] = [];
+
+    /**
+     * Any messages that should be displayed. This is currently only used
+     * by the check-in and check-out success screens.
+     */
+    public readonly messages: string[] = [];
+
     /** `true` if the current operation is for checkout. */
     public readonly isCheckoutAction: boolean = false;
 
@@ -165,6 +175,9 @@ export class CheckInSession {
 
     /** The API key to use to authorize requests from this session. */
     public readonly apiKey?: string;
+
+    /** The PIN code to use to request override access to the API. */
+    public readonly overridePinCode?: string;
 
     // #endregion
 
@@ -195,6 +208,7 @@ export class CheckInSession {
             this.configuration = configurationOrSession.configuration;
             this.http = configurationOrSession.http;
             this.apiKey = configurationOrSession.apiKey;
+            this.overridePinCode = configurationOrSession.overridePinCode;
             this.currentScreen = configurationOrSession.currentScreen;
             this.searchTerm = configurationOrSession.searchTerm;
             this.searchType = configurationOrSession.searchType;
@@ -214,6 +228,8 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.labels = clone(configurationOrSession.labels);
+            this.messages = clone(configurationOrSession.messages);
             this.isCheckoutAction = configurationOrSession.isCheckoutAction;
             this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
 
@@ -331,9 +347,20 @@ export class CheckInSession {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
         }
 
+        const messages = response.data.messages ?? [];
+
+        if (response.data.labels) {
+            const printErrors = await printLabels(response.data.labels);
+
+            if (printErrors.length > 0) {
+                messages.push(...printErrors);
+            }
+        }
+
         return new CheckInSession(this, {
             attendances: [...this.attendances, ...response.data.attendances],
-            allAttendeeSelections: []
+            allAttendeeSelections: [],
+            messages: [...this.messages, ...messages]
         });
     }
 
@@ -378,9 +405,21 @@ export class CheckInSession {
             }
         }
 
+        const messages = response.data.messages ?? [];
+
+        if (response.data.labels) {
+            const printErrors = await printLabels(response.data.labels);
+
+            if (printErrors.length > 0) {
+                messages.push(...printErrors);
+            }
+        }
+
         return new CheckInSession(this, {
             attendances,
-            allAttendeeSelections: []
+            labels: [...this.labels, ...response.data.labels ?? []],
+            allAttendeeSelections: [],
+            messages: messages
         });
     }
 
@@ -452,7 +491,8 @@ export class CheckInSession {
             configurationTemplateId: this.configuration.template.id,
             kioskId: this.configuration.kiosk.id,
             areaIds: this.configuration.areas?.filter(a => !!a.id).map(a => a.id as string),
-            familyId: familyId
+            familyId: familyId,
+            overridePinCode: this.overridePinCode
         };
 
         const response = await this.http.post<FamilyMembersResponseBag>(this.getApiUrl("/api/v2/checkin/FamilyMembers"), undefined, request);
@@ -523,7 +563,8 @@ export class CheckInSession {
         }
 
         return new CheckInSession(this, {
-            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances]
+            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -599,7 +640,8 @@ export class CheckInSession {
             kioskId: this.configuration.kiosk.id,
             areaIds: this.configuration.areas?.filter(a => !!a.id).map(a => a.id as string),
             familyId: this.currentFamilyId,
-            personId: attendeeId
+            personId: attendeeId,
+            overridePinCode: this.overridePinCode
         };
 
         const response = await this.http.post<AttendeeOpportunitiesResponseBag>(this.getApiUrl("/api/v2/checkin/AttendeeOpportunities"), undefined, request);
@@ -1018,7 +1060,9 @@ export class CheckInSession {
         }
 
         const attendeeGroups = this.attendeeOpportunities.groups
-            .filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id);
+            .filter(g => (this.overridePinCode !== undefined && this.overridePinCode !== "")
+                || !g.abilityLevelId
+                || g.abilityLevelId === this.selectedAbilityLevel?.id);
 
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
             // In individual mode we need to filter the groups by the selected
@@ -1227,6 +1271,24 @@ export class CheckInSession {
         });
     }
 
+    /**
+     * Configures a new cloned check-in session for supervisor override with
+     * the specified PIN code.
+     *
+     * @param pinCode The PIN code used to authentication the supervisor.
+     *
+     * @returns A new check-in session instance.
+     */
+    public withStartOverride(pinCode: string): CheckInSession {
+        if (this.currentScreen !== Screen.Welcome) {
+            throw new InvalidCheckInStateError("Can only start override on welcome screen.");
+        }
+
+        return new CheckInSession(this, {
+            overridePinCode: pinCode
+        }).withScreen(Screen.Search);
+    }
+
     // #endregion
 
     // #region Screen Switch Functions
@@ -1293,7 +1355,7 @@ export class CheckInSession {
             return Promise.resolve(this.withScreen(Screen.Search));
         }
         else if (this.families.length === 1) {
-            return Promise.resolve(this.withScreen(Screen.PersonSelect));
+            return this.withNextScreenFromFamilySelect();
         }
 
         return Promise.resolve(this.withScreen(Screen.FamilySelect));
@@ -1321,16 +1383,16 @@ export class CheckInSession {
      *
      * @returns A new CheckInSession object.
      */
-    private withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
+    private async withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
         const canCheckout = this.configuration.template?.isCheckoutAtKioskAllowed === true
             && this.currentlyCheckedIn
             && this.currentlyCheckedIn.length > 0;
 
         if (!this.getCurrentFamily() || !this.attendees) {
-            return Promise.resolve(this.withScreen(Screen.Welcome));
+            return this.withScreen(Screen.Welcome);
         }
         else if (!forceCheckin && canCheckout) {
-            return Promise.resolve(this.withScreen(Screen.ActionSelect));
+            return this.withScreen(Screen.ActionSelect);
         }
 
         const isFamilyAutoMode = this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family
@@ -1354,10 +1416,29 @@ export class CheckInSession {
                 allAttendeeSelections: newAttendeeSelections
             });
 
-            return Promise.resolve(copy.withScreen(Screen.PersonSelect));
+            return copy.withScreen(Screen.PersonSelect);
         }
 
-        return Promise.resolve(this.withScreen(Screen.PersonSelect));
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            const validAttendees = this.attendees
+                ?.filter(a => !a.isUnavailable)
+                ?? [];
+
+            // If there is only 1 person available for check-in and we are
+            // in individual mode, and registration is not allowed (meaning no
+            // chance to fix an incorrect family anyway) then automatically
+            // select this person and move on.
+            if (validAttendees.length === 1 && !this.configuration.kiosk?.isRegistrationModeEnabled) {
+                if (validAttendees[0].person?.id) {
+                    let newSession = this.withSelectedAttendees([validAttendees[0].person.id]);
+                    newSession = await newSession.withAttendee(validAttendees[0].person.id);
+
+                    return await newSession.withNextScreenFromPersonSelect();
+                }
+            }
+        }
+
+        return this.withScreen(Screen.PersonSelect);
     }
 
     /**
@@ -1442,6 +1523,11 @@ export class CheckInSession {
                     }
                 });
             }
+        }
+
+        // When in override mode, we don't ask for ability level.
+        if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+            return await newSession.withNextScreenFromAbilityLevelSelect();
         }
 
         // If we have more than 1 ability level to pick from then show the
@@ -1624,8 +1710,13 @@ export class CheckInSession {
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
-            if (groupsWithAbilityLevels.length === 0) {
+            if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            // When in override mode, we don't ask for ability level.
+            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+                return await familySession.withNextScreenFromAbilityLevelSelect();
             }
 
             return familySession.withScreen(Screen.AbilityLevelSelect);
@@ -1669,13 +1760,18 @@ export class CheckInSession {
             }
 
             // If there are no groups that filter by ability level then we
-            // can also skip the ability levle screen.
+            // can also skip the ability level screen.
             const groupsWithAbilityLevels = familySession.attendeeOpportunities
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
             if (groupsWithAbilityLevels.length === 0) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            // When in override mode, we don't ask for ability level.
+            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+                return await familySession.withNextScreenFromAbilityLevelSelect();
             }
 
             return familySession.withScreen(Screen.AbilityLevelSelect);

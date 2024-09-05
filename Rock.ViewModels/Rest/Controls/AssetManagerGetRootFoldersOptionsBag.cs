@@ -44,6 +44,13 @@ namespace Rock.ViewModels.Rest.Controls
         public string RootFolder { get; set; } = "";
 
         /// <summary>
+        /// If set to true, instead of using the given root directly, the root folder shown will be a
+        /// folder under the given root that is named after the current person's username. If the folder
+        /// does not exist, it will be created.
+        /// </summary>
+        public bool UserSpecificRoot { get; set; } = false;
+
+        /// <summary>
         /// Whether Asset providers should be included in the result.
         /// </summary>
         public bool EnableAssetManager { get; set; } = false;
@@ -52,5 +59,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Whether local file system folders should be included in the result.
         /// </summary>
         public bool EnableFileManager { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

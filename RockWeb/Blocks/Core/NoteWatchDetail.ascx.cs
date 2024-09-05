@@ -77,8 +77,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
@@ -92,6 +90,8 @@ namespace RockWeb.Blocks.Core
                     this.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -320,6 +320,10 @@ namespace RockWeb.Blocks.Core
         protected void cbIsWatching_CheckedChanged( object sender, EventArgs e )
         {
             cbAllowOverride.Visible = cbIsWatching.Checked;
+            if ( !cbIsWatching.Checked && cbAllowOverride.Checked )
+            {
+                cbAllowOverride.Checked = false;
+            }
         }
 
         #endregion

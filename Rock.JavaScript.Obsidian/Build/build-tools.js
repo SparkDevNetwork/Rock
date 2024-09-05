@@ -655,7 +655,20 @@ class DeclarationBuilder {
 
                 clearInterval(timer);
 
-                if (this.projectsToBuild.some(p => p.failed)) {
+                if (this.projectsToBuild.some(p => !p.built)) {
+                    const neverBuiltProjects = this.projectsToBuild
+                        .filter(p => !p.built)
+                        .map(p => path.relative(process.cwd(), p.projectFile))
+                        .join(", ");
+
+                    console.error(`Error: The following projects never attempted to build: ${neverBuiltProjects}`);
+
+                    resolve({
+                        success: false,
+                        duration
+                    });
+                }
+                else if (this.projectsToBuild.some(p => p.failed)) {
                     resolve({
                         success: false,
                         duration

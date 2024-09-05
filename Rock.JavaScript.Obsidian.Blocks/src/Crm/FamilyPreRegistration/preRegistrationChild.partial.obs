@@ -33,11 +33,11 @@
                                v-if="child.isFirstNameReadOnly"
                                label="First Name"
                                :modelValue="child.firstName" />
-            <TextBox v-else
-                     v-model="child.firstName"
-                     :disabled="disabled"
-                     label="First Name"
-                     :rules="requiredRules" />
+            <FirstNameTextBox v-else
+                              v-model="child.firstName"
+                              :disabled="disabled"
+                              label="First Name"
+                              :rules="[...requiredRules, ...noSpecialCharactersRules, ...noEmojisOrSpecialFontsRules]" />
         </div>
 
         <div class="col-sm-6">
@@ -49,7 +49,7 @@
                      v-model="child.lastName"
                      :disabled="disabled"
                      label="Last Name"
-                     :rules="requiredRules" />
+                     :rules="[...requiredRules, ...noSpecialCharactersRules, ...noEmojisOrSpecialFontsRules]" />
         </div>
     </div>
     <div class="row clearfix">
@@ -181,7 +181,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { ChildRequestBag } from "./types.partial";
-    import { createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, getNumberAsOrdinalString, monthAndDayAndYearRequiredRule, required } from "./utils.partial";
+    import { createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, getNumberAsOrdinalString, monthAndDayAndYearRequiredRule, required, noSpecialCharacters, noEmojisOrSpecialFonts } from "./utils.partial";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -198,6 +198,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -275,6 +276,16 @@
         "required"
     ]);
 
+    const noSpecialCharactersRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noSpecialCharacters, `for ${caption.value}`),
+        "nospecialcharacters"
+    ]);
+
+    const noEmojisOrSpecialFontsRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noEmojisOrSpecialFonts, `for ${caption.value}`),
+        "noemojisorspecialfonts"
+    ]);
+
     //#endregion
 
     //#region Watchers
@@ -283,5 +294,5 @@
         childRequest.value = props.child;
     });
 
-    //#endregion
+        //#endregion
 </script>

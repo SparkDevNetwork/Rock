@@ -251,9 +251,9 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RenderViewMode();
+
+            base.OnLoad( e );
         }
 
         /// <summary>

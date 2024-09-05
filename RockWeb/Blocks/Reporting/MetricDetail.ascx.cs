@@ -182,8 +182,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // in case called normally
@@ -225,6 +223,8 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     pnlDetails.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -441,7 +441,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 if ( measurementClassificationValue != null )
                 {
                     measurementClassificationValue.LoadAttributes();
-                    var allowMultiple = measurementClassificationValue.GetAttributeValue( "AllowMultiple" ).AsBoolean();
+                    var allowMultiple = measurementClassificationValue.GetAttributeValue( "AllowMultipleMetrics" ).AsBoolean();
 
                     if ( !allowMultiple )
                     {

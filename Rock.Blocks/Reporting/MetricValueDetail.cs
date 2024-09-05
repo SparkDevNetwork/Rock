@@ -38,20 +38,15 @@ namespace Rock.Blocks.Reporting
     /// <summary>
     /// Displays the details of a particular metric value.
     /// </summary>
-
     [DisplayName( "Metric Value Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular metric value." )]
     [IconCssClass( "fa fa-question" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region Block Attributes
-
-    #endregion
-
     [Rock.SystemGuid.EntityTypeGuid( "af69aa1a-3eee-4f25-8014-1a02ba82ac32" )]
     [Rock.SystemGuid.BlockTypeGuid( "b52e7cae-c5cc-41cb-a5ec-1cf027074a2c" )]
-    public class MetricValueDetail : RockDetailBlockType
+    public class MetricValueDetail : RockEntityDetailBlockType<MetricValue, MetricValueBag>
     {
         #region Keys
 
@@ -75,18 +70,14 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag>();
+            var box = new DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<MetricValue>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -94,9 +85,8 @@ namespace Rock.Blocks.Reporting
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private MetricValueDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private MetricValueDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new MetricValueDetailOptionsBag();
             options.MetricValueTypes = typeof( MetricValueType ).ToEnumListItemBag();
@@ -134,10 +124,9 @@ namespace Rock.Blocks.Reporting
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -147,21 +136,27 @@ namespace Rock.Blocks.Reporting
 
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             // New entity is being created, prepare for edit mode by default.
             if ( box.IsEditable )
             {
-                box.Entity = GetEntityBag( entity, rockContext );
-                box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                box.Entity = GetEntityBagForEdit( entity );
             }
             else
             {
                 box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( MetricValue.FriendlyTypeName );
             }
+
+            PrepareDetailBox( box, entity );
         }
 
-        private List<MetricValuePartitionBag> ToPublicAttributeBag( MetricValue metricValue, RockContext rockContext )
+        /// <summary>
+        /// Retrieves the metric value partitions as a <see cref="MetricValuePartitionBag"/>
+        /// </summary>
+        /// <param name="metricValue">The metric value.</param>
+        /// <returns></returns>
+        private List<MetricValuePartitionBag> ToMetricValuePartitionBag( MetricValue metricValue )
         {
             List<MetricValuePartitionBag> attributeBags = new List<MetricValuePartitionBag>();
 
@@ -189,7 +184,7 @@ namespace Rock.Blocks.Reporting
 
                             var privateConfigurationValues = configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value );
                             var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, ConfigurationValueUsage.Edit, metricValuePartition?.EntityId?.ToString() );
-                            var entity = GetEntity( metricValuePartition?.EntityId, entityTypeCache.GetEntityType(), rockContext );
+                            var entity = GetEntity( metricValuePartition?.EntityId, entityTypeCache.GetEntityType() );
 
                             var attributeBag = new MetricValuePartitionBag
                             {
@@ -217,10 +212,8 @@ namespace Rock.Blocks.Reporting
         /// Gets the metric partition entity.
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        private IEntity GetEntity( int? entityId, Type entityType, RockContext rockContext )
+        private IEntity GetEntity( int? entityId, Type entityType )
         {
             if ( entityId.HasValue )
             {
@@ -231,12 +224,12 @@ namespace Rock.Blocks.Reporting
 
                 if ( entityType == typeof( Person ) )
                 {
-                    entityService = new PersonAliasService( rockContext );
+                    entityService = new PersonAliasService( RockContext );
                     getMethod = entityService.GetType().GetMethod( "GetByAliasId", methodParamTypes );
                 }
                 else
                 {
-                    entityService = Reflection.GetServiceForEntityType( entityType, rockContext );
+                    entityService = Reflection.GetServiceForEntityType( entityType, RockContext );
                     getMethod = entityService.GetType().GetMethod( "Get", methodParamTypes );
                 }
 
@@ -247,11 +240,11 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the bag for editing the specified entity.
+        /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="MetricValueBag"/> that represents the entity.</returns>
-        private MetricValueBag GetEntityBag( MetricValue entity, RockContext rockContext )
+        /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <returns>A <see cref="MetricValue"/> that represents the entity.</returns>
+        private MetricValueBag GetCommonEntityBag( MetricValue entity )
         {
             if ( entity == null )
             {
@@ -261,7 +254,7 @@ namespace Rock.Blocks.Reporting
             var bag = new MetricValueBag
             {
                 IdKey = entity.IdKey,
-                MetricValuePartitions = ToPublicAttributeBag( entity, rockContext ),
+                MetricValuePartitions = ToMetricValuePartitionBag( entity ),
                 MetricValueType = ( int ) entity.MetricValueType,
                 Note = entity.Note,
                 XValue = entity.XValue,
@@ -269,46 +262,71 @@ namespace Rock.Blocks.Reporting
                 MetricValueDateTime = entity.MetricValueDateTime
             };
 
+            return bag;
+        }
+
+        /// <inheritdoc/>
+        protected override MetricValueBag GetEntityBagForView( MetricValue entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+
+            return bag;
+        }
+
+        /// <inheritdoc/>
+        protected override MetricValueBag GetEntityBagForEdit( MetricValue entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( MetricValue entity, DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( MetricValue entity, ValidPropertiesBox<MetricValueBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.MetricValueType ),
-                () => entity.MetricValueType = ( MetricValueType ) box.Entity.MetricValueType );
+            box.IfValidProperty( nameof( box.Bag.MetricValueType ),
+                () => entity.MetricValueType = ( MetricValueType ) box.Bag.MetricValueType );
 
-            box.IfValidProperty( nameof( box.Entity.Note ),
-                () => entity.Note = box.Entity.Note );
+            box.IfValidProperty( nameof( box.Bag.Note ),
+                () => entity.Note = box.Bag.Note );
 
-            box.IfValidProperty( nameof( box.Entity.XValue ),
-                () => entity.XValue = box.Entity.XValue );
+            box.IfValidProperty( nameof( box.Bag.XValue ),
+                () => entity.XValue = box.Bag.XValue );
 
-            box.IfValidProperty( nameof( box.Entity.YValue ),
-                () => entity.YValue = box.Entity.YValue );
+            box.IfValidProperty( nameof( box.Bag.YValue ),
+                () => entity.YValue = box.Bag.YValue );
 
-            box.IfValidProperty( nameof( box.Entity.MetricValuePartitions ),
-                () => SaveMetricPartitionValues( entity, box.Entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.MetricValueDateTime ),
+                () => entity.MetricValueDateTime = box.Bag.MetricValueDateTime );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.MetricValuePartitions ),
+                () => SaveMetricPartitionValues( entity, box.Bag ) );
+
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
@@ -319,57 +337,53 @@ namespace Rock.Blocks.Reporting
         /// </summary>
         /// <param name="metricValue">The metric value.</param>
         /// <param name="bag">The metric value details from the client.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        private void SaveMetricPartitionValues( MetricValue metricValue, MetricValueBag bag, RockContext rockContext )
+        private void SaveMetricPartitionValues( MetricValue metricValue, MetricValueBag bag )
         {
-            foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
+            if ( metricValue.Metric?.MetricPartitions != null )
             {
-                var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
-                var metricValuePartitionBag = bag.MetricValuePartitions.Find( a => a.MetricPartitionGuid == metricPartition.Guid );
-                var metricValuePartition = metricValue.MetricValuePartitions.FirstOrDefault( a => a.MetricPartitionId == metricPartition.Id );
-
-                if ( metricValuePartition == null )
+                foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
                 {
-                    metricValuePartition = new MetricValuePartition();
-                    metricValuePartition.MetricPartitionId = metricPartition.Id;
-                    metricValue.MetricValuePartitions.Add( metricValuePartition );
-                }
+                    var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
+                    var metricValuePartitionBag = bag.MetricValuePartitions.Find( a => a.MetricPartitionGuid == metricPartition.Guid );
+                    var metricValuePartition = metricValue.MetricValuePartitions.FirstOrDefault( a => a.MetricPartitionId == metricPartition.Id );
 
-                if ( entityTypeCache?.SingleValueFieldType != null && entityTypeCache.SingleValueFieldType.Field is IEntityFieldType entityFieldType )
-                {
-                    var fieldType = entityTypeCache.SingleValueFieldType;
-                    Dictionary<string, Rock.Field.ConfigurationValue> configurationValues;
-                    if ( fieldType.Field is IEntityQualifierFieldType )
+                    if ( metricValuePartition == null )
                     {
-                        configurationValues = ( fieldType.Field as IEntityQualifierFieldType ).GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
+                        metricValuePartition = new MetricValuePartition();
+                        metricValuePartition.MetricPartitionId = metricPartition.Id;
+                        metricValue.MetricValuePartitions.Add( metricValuePartition );
+                    }
+
+                    if ( entityTypeCache?.SingleValueFieldType != null && entityTypeCache.SingleValueFieldType.Field is IEntityFieldType entityFieldType )
+                    {
+                        var fieldType = entityTypeCache.SingleValueFieldType;
+                        Dictionary<string, Rock.Field.ConfigurationValue> configurationValues;
+                        if ( fieldType.Field is IEntityQualifierFieldType )
+                        {
+                            configurationValues = ( fieldType.Field as IEntityQualifierFieldType ).GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
+                        }
+                        else
+                        {
+                            configurationValues = new Dictionary<string, ConfigurationValue>();
+                        }
+
+                        var privateConfigurationValues = configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value );
+                        var editValue = fieldType.Field.GetPrivateEditValue( metricValuePartitionBag?.Value, privateConfigurationValues );
+                        var entity = entityFieldType.GetEntity( editValue, RockContext );
+                        metricValuePartition.EntityId = entity?.Id;
                     }
                     else
                     {
-                        configurationValues = new Dictionary<string, ConfigurationValue>();
+                        metricValuePartition.EntityId = null;
                     }
-
-                    var privateConfigurationValues = configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value );
-                    var editValue = fieldType.Field.GetPrivateEditValue( metricValuePartitionBag?.Value, privateConfigurationValues );
-                    var entity = entityFieldType.GetEntity( editValue, rockContext );
-                    metricValuePartition.EntityId = entity?.Id;
-                }
-                else
-                {
-                    metricValuePartition.EntityId = null;
                 }
             }
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="MetricValue"/> to be viewed or edited on the page.</returns>
-        private MetricValue GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override MetricValue GetInitialEntity()
         {
-            var entity = GetInitialEntity<MetricValue, MetricValueService>( rockContext, PageParameterKey.MetricValueId );
+            var entity = GetInitialEntity<MetricValue, MetricValueService>( RockContext, PageParameterKey.MetricValueId );
 
             if ( entity.Id == 0 )
             {
@@ -379,7 +393,7 @@ namespace Rock.Blocks.Reporting
                 if ( metricCategoryId > 0 )
                 {
                     // editing a metric, but get the metricId from the metricCategory
-                    var metricCategory = new MetricCategoryService( rockContext ).Get( metricCategoryId.Value );
+                    var metricCategory = new MetricCategoryService( RockContext ).Get( metricCategoryId.Value );
                     if ( metricCategory != null )
                     {
                         entity.MetricId = metricCategory.MetricId;
@@ -388,7 +402,7 @@ namespace Rock.Blocks.Reporting
                 }
                 else if ( metricId > 0 )
                 {
-                    var metric = new MetricService( rockContext ).Get( metricId.Value );
+                    var metric = new MetricService( RockContext ).Get( metricId.Value );
                     if ( metric != null )
                     {
                         entity.MetricId = metric.Id;
@@ -414,6 +428,10 @@ namespace Rock.Blocks.Reporting
             };
         }
 
+        /// <summary>
+        /// Gets the query parameters to be used for URL generations.
+        /// </summary>
+        /// <returns></returns>
         private Dictionary<string, string> GetQueryParams()
         {
             var qryParams = new Dictionary<string, string>();
@@ -440,46 +458,9 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out MetricValue entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( MetricValue entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out MetricValue entity, out BlockActionResult error )
-        {
-            var entityService = new MetricValueService( rockContext );
+            var entityService = new MetricValueService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -492,7 +473,7 @@ namespace Rock.Blocks.Reporting
             else
             {
                 // Create a new entity.
-                entity = new MetricValue();
+                entity = GetInitialEntity();
                 entityService.Add( entity );
             }
 
@@ -524,22 +505,22 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag>
-                {
-                    Entity = GetEntityBag( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            var box = new ValidPropertiesBox<MetricValueBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            };
+
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -548,35 +529,32 @@ namespace Rock.Blocks.Reporting
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<MetricValueBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateMetricValue( entity, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                return ActionOk( this.GetParentPageUrl( GetQueryParams() ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateMetricValue( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            return ActionOk( this.GetParentPageUrl( GetQueryParams() ) );
         }
 
         /// <summary>
@@ -587,79 +565,22 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new MetricValueService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new MetricValueService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag>
-                {
-                    Entity = GetEntityBag( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

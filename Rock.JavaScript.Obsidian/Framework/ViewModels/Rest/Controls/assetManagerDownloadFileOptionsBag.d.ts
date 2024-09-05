@@ -31,4 +31,7 @@ export type AssetManagerDownloadFileOptionsBag = {
 
     /** The identifier for the file that is to be downloaded. */
     file?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

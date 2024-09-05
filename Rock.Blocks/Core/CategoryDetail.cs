@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.CategoryDetail;
 using Rock.ViewModels.Cms;
@@ -93,6 +94,7 @@ namespace Rock.Blocks.Core
         private static class PageParameterKey
         {
             public const string CategoryId = "CategoryId";
+            public const string ParentCategoryId = "ParentCategoryId";
         }
 
         private static class NavigationUrlKey
@@ -101,6 +103,15 @@ namespace Rock.Blocks.Core
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// Child Categories should be filtered to the EntityType that's selected in the EntityType block setting.
+        /// </summary>
+        private const string ChildCategoryQualifierColumn = "EntityTypeId";
+
+        #endregion
 
         #region Methods
 
@@ -229,7 +240,8 @@ namespace Rock.Blocks.Core
                 IconCssClass = entity.IconCssClass,
                 IsSystem = entity.IsSystem,
                 Name = entity.Name,
-                ParentCategory = entity.ParentCategory.ToListItemBag()
+                ParentCategory = entity.ParentCategory.ToListItemBag(),
+                RootCategoryGuid = GetAttributeValue( AttributeKey.RootCategory ).AsGuidOrNull()
             };
         }
 
@@ -268,7 +280,6 @@ namespace Rock.Blocks.Core
             {
                 bag.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
                 bag.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
-                bag.RootCategoryGuid = GetAttributeValue( AttributeKey.RootCategory ).AsGuidOrNull();
                 var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
                 if ( entityTypeGuid.HasValue )
                 {
@@ -278,6 +289,12 @@ namespace Rock.Blocks.Core
                         Text = entityType.Name,
                         Value = entityType.Guid.ToString()
                     };
+                }
+
+                var parentCategory = PageParameter( PageParameterKey.ParentCategoryId );
+                if ( parentCategory.IsNotNullOrWhiteSpace() )
+                {
+                    bag.ParentCategory = CategoryCache.Get( parentCategory, !PageCache.Layout.Site.DisablePredictableIds ).ToListItemBag();
                 }
             }
 
@@ -579,6 +596,60 @@ namespace Rock.Blocks.Core
             block.SaveAttributeValues( RockContext );
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets a list of Categories that are a direct child of specified Category.Guid.
+        /// </summary>
+        /// <returns>A List of Categories.</returns>
+        [BlockAction]
+        public BlockActionResult GetChildCategoriesGridDefinition()
+        {
+            var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuid();
+            var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
+
+            return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).BuildDefinition() );
+        }
+
+        /// <summary>
+        /// Gets a list of Categories that are direct children of specified category identifer.
+        /// </summary>
+        /// <returns>A list of categories.</returns>
+        [BlockAction]
+        public BlockActionResult GetChildCategories( string idKey )
+        {
+            var categoryService = new CategoryService( RockContext );
+            var guid = categoryService.GetSelect( idKey, c => c.Guid );
+
+            var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuid();
+            var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
+
+            var childCategories = categoryService
+                .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
+                {
+                    ParentGuid = guid
+                } );
+
+            return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( childCategories ) );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="GridBuilder"/> for the child categories list.
+        /// </summary>
+        /// <returns>a <see cref="GridBuilder{Category}"/> for the child categories grid.</returns>
+        private GridBuilder<Category> ChildCategoriesGridBuilder( string qualifierValue )
+        {
+            var entityTypeId = EntityTypeCache.Get<Category>()?.Id;
+
+            // Get the Show on Grid attributes for the child categories
+            // for QualifierColumn = 'EntityType' and QualifierValue = EntityType in the Block setting.
+            var gridAttributes = AttributeCache.GetOrderedGridAttributes( entityTypeId, ChildCategoryQualifierColumn, qualifierValue );
+
+            return new GridBuilder<Category>()
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "name", a => a.Name )
+                .AddField( "isSystem", a => a.IsSystem )
+                .AddAttributeFields( gridAttributes );
         }
 
         #endregion

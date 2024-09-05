@@ -66,6 +66,8 @@ namespace Rock.Blocks.Finance
         private static class PageParameterKey
         {
             public const string AccountId = "AccountId";
+            public const string ParentAccountId = "ParentAccountId";
+            public const string ExpandedIds = "ExpandedIds";
             public const string TopLevel = "TopLevel";
         }
 
@@ -157,7 +159,8 @@ namespace Rock.Blocks.Finance
 
             var options = new FinancialAccountListOptionsBag
             {
-                GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle()
+                GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle(),
+                IsBlockVisible = parentAccountId.HasValue && parentAccountId > 0
             };
 
             return options;
@@ -178,9 +181,13 @@ namespace Rock.Blocks.Finance
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( PageParameterKey.AccountId, "((Key))" );
+            queryParams.Add( PageParameterKey.ParentAccountId, PageParameter( PageParameterKey.AccountId ) );
+            queryParams.Add( PageParameterKey.ExpandedIds, PageParameter( PageParameterKey.ExpandedIds ) );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "FinancialAccountId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
@@ -203,7 +210,8 @@ namespace Rock.Blocks.Finance
         /// <returns></returns>
         private IQueryable<FinancialAccount> GetAccounts( RockContext rockContext )
         {
-            var parentAccountId = PageParameter( PageParameterKey.AccountId ).AsIntegerOrNull();
+            var key = PageParameter( PageParameterKey.AccountId );
+            var parentAccountId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsIntegerOrNull();
             var topLevelOnly = PageParameter( PageParameterKey.TopLevel ).AsBoolean();
 
             var accountService = new FinancialAccountService( rockContext );

@@ -320,9 +320,9 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Location ),
                 () =>
                 {
-                    var locationId = box.Bag.Location.GetEntityId<Location>( RockContext );
+                    var locationId = box.Bag.Location.GetEntityId<Location>( RockContext ).ToIntSafe();
                     var currentLocation = entity.GroupLocations.FirstOrDefault();
-                    if ( currentLocation?.LocationId != locationId )
+                    if ( currentLocation?.LocationId.ToIntSafe() != locationId )
                     {
                         var groupLocationService = new GroupLocationService( RockContext );
 
@@ -337,10 +337,13 @@ namespace Rock.Blocks.Lms
                         // If there's a new location add it.
                         if ( locationId > 0 )
                         {
-                            entity.GroupLocations.Add( groupLocationService.GetByLocation( locationId.Value ).FirstOrDefault() );
+                            entity.GroupLocations.Add( new GroupLocation
+                            {
+                                LocationId = locationId,
+                                GroupId = entity.Id
+                            } );
                         }
                     }
-
                 } );
 
             // If there was an error deleting the location then return false to notify the caller of the error.
@@ -398,6 +401,7 @@ namespace Rock.Blocks.Lms
                 .Queryable()
                 .Include( c => c.GroupType )
                 .Include( c => c.Campus )
+                .Include( c => c.GroupLocations )
                 .Include( c => c.LearningCourse )
                 .Include( c => c.LearningCourse.LearningProgram )
                 .Include( c => c.LearningGradingSystem )

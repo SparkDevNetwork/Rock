@@ -389,6 +389,11 @@ namespace Rock.SystemGuid
         #region Obsidian Block Types
 
         /// <summary>
+        /// The obsidian category detail block type.
+        /// </summary>
+        public const string OBSIDIAN_CATEGORY_DETAIL = "515dc5c2-4fbd-4eea-9d8e-a807409defde";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "0252E237-0684-4426-9E5C-D454A13E152A";

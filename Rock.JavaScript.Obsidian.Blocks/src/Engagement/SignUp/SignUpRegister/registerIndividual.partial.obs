@@ -4,16 +4,16 @@
 
     <div class="row sign-up-anonymous-name">
         <div class="col-md-6">
-            <TextBox v-model="firstName"
-                     label="First Name"
-                     rules="required"
-                     :validationTitle="`${title} First Name`"
-                     :disabled="disabled" />
+            <FirstNameTextBox v-model="firstName"
+                              label="First Name"
+                              :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']"
+                              :validationTitle="`${title} First Name`"
+                              :disabled="disabled" />
         </div>
         <div class="col-md-6">
             <TextBox v-model="lastName"
                      label="Last Name"
-                     rules="required"
+                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']"
                      :validationTitle="`${title} Last Name`"
                      :disabled="disabled" />
         </div>
@@ -75,6 +75,7 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 
     const props = defineProps({
@@ -193,5 +194,5 @@
         }
     });
 
-    // #endregion
+        // #endregion
 </script>

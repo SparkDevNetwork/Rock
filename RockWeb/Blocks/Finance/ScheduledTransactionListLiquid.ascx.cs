@@ -172,8 +172,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             lbAddScheduledTransaction.Text = string.Format( "Create New {0}", GetAttributeValue( AttributeKey.TransactionLabel ) );
             _transferToGatewayGuid = GetAttributeValue( AttributeKey.TransferToGateway ).AsGuidOrNull();
             lbAddScheduledTransaction.Visible = GetAttributeValue( AttributeKey.ScheduledTransactionEntryPage ).IsNotNullOrWhiteSpace();
@@ -183,6 +181,8 @@ namespace RockWeb.Blocks.Finance
             {
                 ShowContent();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

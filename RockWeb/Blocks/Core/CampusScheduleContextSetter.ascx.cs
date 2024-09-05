@@ -162,12 +162,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             LoadCampusDropdowns();
             LoadScheduleDropdowns();
 
             lCurrentSelections.Text = string.Format( "{0} <br/> {1}", _currentCampusText, _currentScheduleText );
+
+            base.OnLoad( e );
         }
 
         /// <summary>

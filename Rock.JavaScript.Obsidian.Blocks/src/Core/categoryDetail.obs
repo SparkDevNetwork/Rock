@@ -7,23 +7,63 @@
     <DetailBlock v-if="!blockError && isBlockVisible"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Category"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
+                 :isAuditHidden="selectedTab !== 'Details'"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="isDeletable"
-                 :isEditVisible="isEditable"
-
+                 :isEditVisible="isEditable && selectedTab === 'Details'"
+                 :isFullScreenVisible="false"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="selectedTab !== 'Details'"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
-        <template #view>
-            <ViewPanel :modelValue="categoryViewBag" :options="options" />
+            <template #view>
+            <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab">
+                <template #tabpane="{ item }">
+                    <div v-if="item === 'Details'">
+                        <ViewPanel :modelValue="categoryViewBag" :options="options"  />
+                    </div>
+                    <div v-else-if="item === 'Child Categories'">
+                        <span class="ml-4">Below are the child categories for the {{ panelName }}. From here you can add, delete or reorder the categories as needed.</span>
+                        <Grid light
+                            :data="gridData"
+                            keyField="idKey"
+                            itemTerm="Category"
+                            :isTitleHidden="true"
+                            :isCountMessageVisible="false"
+                            :hideFilterHeaderRow="true"
+                            :showMergeTemplate="false"
+                            :showLaunchWorkflow="false"
+                            :showExport="false"
+                            @selectItem="onCategoryClick"
+                            stickyHeader >
+                            <ReorderColumn />
+
+                            <Column name="name"
+                                    title="Category"
+                                    field="name"
+                                    :filter="textValueFilter"
+                                    width="15%"
+                                    visiblePriority="lg">
+                            </Column>
+
+                            <AttributeColumns :attributes="gridDefinition?.attributeFields ?? []" />
+
+                            <DeleteColumn v-if="categoryViewBag?.isDeletable" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isSystem === true"  />
+
+                            <template #gridFooterAppend>
+                                <div class="add-button pull-right">
+                                    <i class="fa fa-plus-circle" @click.prevent="onNewChildCategoryClick"></i>
+                                </div>
+                            </template>
+                        </Grid>
+                    </div>
+                </template>
+            </TabbedContent>
         </template>
 
         <template #edit>
@@ -32,13 +72,21 @@
     </DetailBlock>
 </template>
 
+<style scoped>
+
+.add-button > i.fa-plus-circle {
+    color: #69717a;
+    padding: 8px;
+    cursor: pointer;
+}
+
+</style>
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
-    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./CategoryDetail/editPanel.partial.obs";
     import ViewPanel from "./CategoryDetail/viewPanel.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
@@ -47,7 +95,10 @@
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
     import { CategoryDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-
+    import Grid, { Column, textValueFilter, DeleteColumn, ReorderColumn, AttributeColumns } from "@Obsidian/Controls/grid";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const config = useConfigurationValues<DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -70,6 +121,18 @@
         blockConfig: config,
         entity: categoryEditBag
     });
+    const tabs = ref(["Details", "Child Categories"]);
+    const selectedTab = ref("Details");
+    let hasLoadedChildCategories = false;
+
+    watch(selectedTab, () => {
+        if (!hasLoadedChildCategories) {
+            loadGridData();
+        }
+    });
+
+    let gridData: GridDataBag | undefined;
+    const gridDefinition = ref<GridDefinitionBag | undefined>();
 
     // #endregion
 
@@ -87,19 +150,6 @@
      */
     const entityKey = computed((): string => {
         return categoryViewBag.value?.idKey ?? "";
-    });
-
-    /**
-     * Additional labels to display in the block panel.
-     */
-    const blockLabels = computed((): PanelAction[] | undefined => {
-        const labels: PanelAction[] = [];
-
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
-        }
-
-        return labels;
     });
 
     const isEditable = computed((): boolean => {
@@ -138,6 +188,20 @@
         }
 
         return true;
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+     function onCategoryClick(key: string): void {
+        const params = new URLSearchParams(window.location.search);
+        params.set("CategoryId", key);
+        params.set("autoEdit", "true");
+        params.set("returnUrl", window.location.href);
+        params.delete("ParentCategoryId");
+        window.location.search = params.toString();
     }
 
     /**
@@ -199,6 +263,12 @@
         });
 
         if (result.isSuccess && result.data) {
+            const params = new URLSearchParams(window.location.search);
+            const returnUrl = params.get("returnUrl") ?? "";
+            if (returnUrl.length > 0) {
+                return returnUrl;
+            }
+
             if (result.statusCode === 200 && typeof result.data === "object") {
                 categoryViewBag.value = result.data.bag;
 
@@ -214,10 +284,76 @@
         return false;
     }
 
+
+    /**
+     * Called at startup to get the definition for the child categories grid.
+     */
+     async function getGridDefinition(): Promise<void> {
+        const result = await invokeBlockAction<GridDefinitionBag>("GetChildCategoriesGridDefinition");
+
+        if (result.isSuccess && result.data) {
+            gridDefinition.value = result.data;
+            return;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid definition.");
+        }
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+     async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetChildCategories", {
+            idKey: categoryViewBag.value?.idKey ?? ""
+        });
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            hasLoadedChildCategories = true;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteChildCategoryClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete category.");
+        }
+    }
+
+    function onNewChildCategoryClick(): void {
+        const params = new URLSearchParams(window.location.search);
+        params.set("CategoryId", "0");
+        params.set("ParentCategoryId", categoryViewBag.value?.idKey ?? "");
+        params.set("returnUrl", window.location.href);
+        window.location.search = params.toString();
+    }
+
     // #endregion
 
     const params = new URLSearchParams(window.location.search);
     const categoryId = params.get("CategoryId");
+
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -236,4 +372,6 @@
     else if (!categoryId) {
         isBlockVisible.value = false;
     }
+
+    getGridDefinition();
 </script>

@@ -25,10 +25,14 @@
 export const DefinedType = {
     /** Lists checklist items to be completed by the administrator after installs and updates. */
     AdministratorChecklist: "4BF34677-37E9-4E71-BD03-252B66C9373D",
+    /** AI Models. */
+    AiProviderModels: "0829EF1C-028C-44D6-AB8D-90F0905E030E",
     /** The apple device models */
     AppleDeviceModels: "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
     /** Guid for the Conflict Profile assessment. */
     AssessmentConflictProfile: "EE7E089E-DF81-4407-8BFA-AD865FA5427A",
+    /** Guid for Attendance record SourceValueId. */
+    AttendanceSource: "A27BF9DD-7AF0-47B4-8FE4-0B5E510381DB",
     /** Background check package types */
     BackgroundCheckTypes: "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF",
     /** Guid for the types of Benevolence Request status (e.g. pending, active, answered, etc.) */
@@ -207,6 +211,8 @@ export const DefinedType = {
     SchoolGrades: "24E5A79F-1E62-467A-AD5D-0D10A2328B4D",
     /** The section types defined type, which has values that determine the CSS class to apply to the section div. */
     SectionType: "A72D940B-2A69-44B8-931C-7FE99824D84C",
+    /** List of possible sentiments for classification. */
+    SentimentEmotions: "C9751C20-DA81-4521-81DE-0099D6F598BA",
     /** Used to manage the topic options for small groups. */
     SmallGroupTopic: "D4111631-6B42-1CBD-4019-427D6BC6F475",
     /** The Spiritual Gifts */

@@ -13,6 +13,12 @@
              :class="getRowClass(row)"
              @click="onRowClick" />
 
+    <div class="grid-row" v-else-if="emptyDataText">
+        <div class="grid-cell table-empty">
+            {{ emptyDataText }}
+        </div>
+    </div>
+
     <div class="grid-row" v-else>
         <div class="grid-cell table-empty">
             No {{ pluralItemTerm }} Found
@@ -85,6 +91,15 @@
         rowClass: {
             type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
             default: undefined
+        },
+
+        /**
+         * The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.
+         */
+        emptyDataText: {
+            type: String,
+            default: "",
+            required: false,
         }
     });
 

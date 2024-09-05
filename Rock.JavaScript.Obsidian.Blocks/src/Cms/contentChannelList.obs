@@ -22,12 +22,14 @@
         <TextColumn name="contentChannelType"
                     title="Type"
                     field="contentChannelType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <Column name="channelUrl"
                 title="Channel URL"
                 :filter="textValueFilter"
+                :quickFilterValue="getChannelUrlFilterValue"
+                :filterValue="getChannelUrlFilterValue"
                 width="20%"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -43,16 +45,19 @@
                            title="Total Items"
                            field="totalItems"
                            :infoMinimum="1"
+                           :filter="numberValueFilter"
                            visiblePriority="md" />
 
         <NumberBadgeColumn name="activeItems"
                            title="Active Items"
                            field="activeItems"
                            :infoMinimum="1"
+                           :filter="numberValueFilter"
                            visiblePriority="md" />
 
         <Column name="itemLastCreated"
                 title="Last Item Created"
+                :sortValue="getLastItemCreatedSortValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 {{ getElapsedTime(row.itemLastCreated) }}
@@ -76,7 +81,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, SecurityColumn, NumberBadgeColumn, DateColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, SecurityColumn, NumberBadgeColumn, pickExistingValueFilter, numberValueFilter, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ContentChannelListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelList/contentChannelListOptionsBag";
@@ -99,7 +104,6 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        type: preferences.getValue(PreferenceKey.FilterType),
         categories: JSON.parse(preferences.getValue(PreferenceKey.FilterCategories) || "[]"),
     });
 
@@ -109,8 +113,7 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.type
-            || gridSettings.value.categories.length > 0;
+        return gridSettings.value.categories.length > 0;
     });
 
     // #endregion
@@ -132,6 +135,31 @@
         }
     }
 
+    /**
+    * Gets the filter value to use for the settlement column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getChannelUrlFilterValue(row: Record<string, unknown>): string {
+        return row.channelUrl as string ?? "";
+    }
+
+    /**
+    * Gets the sort value to use for the variances column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getLastItemCreatedSortValue(row: Record<string, unknown>): number {
+        const value = row.itemLastCreated as string;
+
+        if (!value) {
+            return 0;
+        }
+
+        const dateValue = RockDateTime.parseISO(value);
+        return dateValue?.toMilliseconds() ?? 0;
+    }
+
     // #endregion
 
     // #region Watchers
@@ -141,7 +169,6 @@
     */
     watch(gridSettings, async () => {
         // Set the preferences with the appropriate values
-        preferences.setValue(PreferenceKey.FilterType, gridSettings.value.type ?? "");
         preferences.setValue(PreferenceKey.FilterCategories, JSON.stringify(gridSettings.value.categories));
 
         // Save the preferences

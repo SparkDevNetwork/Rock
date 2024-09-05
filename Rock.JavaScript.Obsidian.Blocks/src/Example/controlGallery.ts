@@ -48,7 +48,8 @@
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
-import { onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+import { ControlGalleryInitializationBox} from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -124,7 +125,7 @@ import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDateRange";
+import { SlidingDateRange, rangeTypeOptions, RangeType } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
@@ -263,7 +264,7 @@ import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partia
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
-import AssetAndFileManagerGallery from "./ControlGallery/assetAndFileManagerGallery.partial.obs";
+import FileAssetManagerGallery from "./ControlGallery/fileAssetManagerGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -2173,20 +2174,32 @@ const slidingDateRangePickerGallery = defineComponent({
     },
     setup() {
         const value = ref<SlidingDateRange | null>(null);
+        const rangeTypeNameHash = Object.fromEntries(rangeTypeOptions.map(rt => [rt.value, rt.text]));
+        const rangeTypes = ref<RangeType[]>([]);
+        const rangeTypeNames = computed(() => {
+            return rangeTypes.value.map(rt => `RangeType.${rangeTypeNameHash[rt]}`);
+        });
+
+        const previewLocation = ref("Top");
+
+        const exampleCode = computed(() => {
+            const rangeTypeProp = rangeTypes.value.length > 0 ? `, :enabledSlidingDateRangeUnits="[${rangeTypeNames.value.join(", ")}]"` : "";
+            return `<SlidingDateRangePicker v-model="value" label="Sliding Date Range"${rangeTypeProp} previewLocation="${previewLocation.value}" />`;
+        });
 
         return {
             value,
             rangeTypeOptions: rangeTypeOptions,
-            rangeTypes: ref(null),
-            previewLocation: ref("Right"),
+            rangeTypes,
+            previewLocation,
             previewLocationOptions: [
                 {
-                    text: "Right (Default)",
-                    value: "Right"
+                    text: "Top (Default)",
+                    value: "Top"
                 },
                 {
-                    text: "Top",
-                    value: "Top"
+                    text: "Right",
+                    value: "Right"
                 },
                 {
                     text: "None",
@@ -2196,7 +2209,7 @@ const slidingDateRangePickerGallery = defineComponent({
             importCode: getSfcControlImportPath("slidingDateRangePicker") +
                 "\n// If Customizing Date Range Types" +
                 "\nimport { RangeType } from \"@Obsidian/Utility/slidingDateRange\";",
-            exampleCode: `<SlidingDateRangePicker v-model="value" label="Sliding Date Range" :enabledSlidingDateRangeUnits="[RangeType.Current, RangeType.Previous, RangeType.Next]" previewLocation="Right" />`
+            exampleCode
         };
     },
     template: `
@@ -3212,13 +3225,16 @@ const scheduleBuilderGallery = defineComponent({
     name: "ScheduleBuilderGallery",
     components: {
         GalleryAndResult,
+        CheckBox,
         ScheduleBuilder
     },
     setup() {
         return {
             value: ref(""),
+            hideStartDateTime: ref(false),
+            hideDuration: ref(false),
             importCode: getControlImportPath("scheduleBuilder"),
-            exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" />`
+            exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" :hideStartDateTime="false" :hideDuration="false" />`
         };
     },
     template: `
@@ -3229,9 +3245,19 @@ const scheduleBuilderGallery = defineComponent({
     enableReflection
     displayAsRaw>
     <ScheduleBuilder label="Schedule Builder"
-        v-model="value" />
+        v-model="value"
+        :hideStartDateTime="hideStartDateTime"
+        :hideDuration="hideDuration" />
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Hide Start Date / Time" v-model="hideStartDateTime" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Hide Duration" v-model="hideDuration" />
+            </div>
+        </div>
     </template>
 </GalleryAndResult>`
 });
@@ -8143,18 +8169,18 @@ const controlGalleryComponents: Record<string, Component> = [
     JsonFieldsBuilderGallery,
     HtmlEditorGallery,
     TextBoxGallery,
-    AssetAndFileManagerGallery,
+    FileAssetManagerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
-        a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));
+        a.name = upperCaseFirstCharacter((a.__name ?? a.name!).replace(/\.partial$/, ""));
         return a;
     })
     // Sort list by component name
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name!.localeCompare(b.name!))
     // Convert list to an object where the key is the component name and the value is the component
     .reduce((newList, comp) => {
-        newList[comp.name] = comp;
+        newList[comp.name!] = comp;
         return newList;
     }, {});
 
@@ -8390,9 +8416,9 @@ const templateGalleryComponents = [
         a.name = a.__name ?? a.name;
         return a;
     })
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name!.localeCompare(b.name!))
     .reduce((newList, comp) => {
-        newList[comp.name] = comp;
+        newList[comp.name!] = comp;
         return newList;
     }, {});
 
@@ -8408,12 +8434,21 @@ export default defineComponent({
     },
 
     setup() {
+        const config = useConfigurationValues<ControlGalleryInitializationBox>();
+        const securityGrant = getSecurityGrant(config.securityGrantToken);
+        provideSecurityGrant(securityGrant);
+
         onConfigurationValuesChanged(useReloadBlock());
 
         const currentComponent = ref<Component>(Object.values(controlGalleryComponents)[0]);
 
         function getComponentFromHash(): void {
             const hashComponent = new URL(document.URL).hash.replace("#", "");
+
+            if (!hashComponent) {
+                return;
+            }
+
             const component = controlGalleryComponents[hashComponent] ?? templateGalleryComponents[hashComponent];
 
             if (component) {
@@ -8421,9 +8456,9 @@ export default defineComponent({
             }
         }
 
-        onMounted(() => {
-            getComponentFromHash();
+        getComponentFromHash();
 
+        onMounted(() => {
             window.addEventListener("hashchange", getComponentFromHash);
         });
 

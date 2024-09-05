@@ -18,7 +18,6 @@
                               modelValue,
                               multiple,
                               disableFolderSelection,
-                              disableDeselect,
                               autoExpand,
                               showChildCount,
                               initiallyExpanded
@@ -59,7 +58,8 @@
 
         /**
          * List of items (by their `value` property) that should be expanded when the tree list is first loaded
-         * (after root is loaded).
+         * (after root is loaded). This allows us to auto-expand more than just the selected items and their
+         * parents.
          */
         initiallyExpanded: {
             type: Array as PropType<string[]>,
@@ -81,14 +81,6 @@
             type: Boolean,
             default: false
         },
-
-        /**
-         * When using the tree list outside of a picker,
-         */
-        disableDeselect: {
-            type: Boolean,
-            default: false
-        }
     });
 
     const emit = defineEmits<{
@@ -229,7 +221,7 @@
     /**
      * Event handler for when this item is selected or deselected.
      */
-    function onSelect(): void {
+     function onSelect(): void {
         let canSelect = !props.item.isFolder || !props.disableFolderSelection;
 
         if (props.provider?.canSelectItem) {
@@ -240,25 +232,17 @@
             return;
         }
 
-        const isAlreadySelected = props.modelValue.includes(props.item.value ?? "");
-
-        if (props.disableDeselect && isAlreadySelected) {
-            return;
-        }
-        else if (props.multiple) {
-            if (props.item.value && !isAlreadySelected) {
+        if (props.multiple) {
+            if (props.item.value && !props.modelValue.includes(props.item.value)) {
                 emit("update:modelValue", [...props.modelValue, props.item.value]);
             }
-            else if (props.item.value && isAlreadySelected) {
+            else if (props.item.value && props.modelValue.includes(props.item.value)) {
                 emit("update:modelValue", [...props.modelValue.filter(v => v !== props.item.value)]);
             }
         }
         else {
-            if (props.item.value && !isAlreadySelected) {
+            if (props.item.value) {
                 emit("update:modelValue", [props.item.value]);
-            }
-            else if (props.item.value && isAlreadySelected) {
-                emit("update:modelValue", []);
             }
         }
     }

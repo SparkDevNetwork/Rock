@@ -976,6 +976,8 @@ namespace Rock.Web.UI.Controls
                 ID = "tbPersonFirstName",
                 Label = "First Name",
                 Required = true,
+                NoSpecialCharacters = true,
+                NoEmojisOrSpecialFonts = true,
                 AutoCompleteType = AutoCompleteType.None,
                 ValidationGroup = ValidationGroup,
                 FormGroupCssClass = "field-firstname"
@@ -986,6 +988,8 @@ namespace Rock.Web.UI.Controls
                 ID = "tbPersonLastName",
                 Label = "Last Name",
                 Required = true,
+                NoSpecialCharacters = true,
+                NoEmojisOrSpecialFonts = true,
                 AutoCompleteType = AutoCompleteType.None,
                 ValidationGroup = ValidationGroup,
                 FormGroupCssClass = "field-lastname"

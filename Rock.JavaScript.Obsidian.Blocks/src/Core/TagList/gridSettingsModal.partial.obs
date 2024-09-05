@@ -12,20 +12,6 @@
                                 label="Category"
                                 :entityTypeGuid="EntityType.Tag" />
             </div>
-
-            <div class="col-md-4">
-                <EntityTypePicker v-model="entityType"
-                                  label="Entity Type"
-                                  showBlankItem />
-            </div>
-
-            <div class="col-md-4">
-                <CheckBoxList v-model="scopes"
-                              label="Scope"
-                              :items="scopeItems"
-                              horizontal
-                              :repeatColumns="2" />
-            </div>
         </div>
         <div class="row">
             <div class="col-md-4">
@@ -38,11 +24,9 @@
 </template>
 
 <script setup lang="ts">
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import { ref, PropType, watch, computed } from "vue";
     import { GridSettingsOptions } from "./types.partial";
@@ -70,7 +54,6 @@
     }>();
 
     const category = ref(props.modelValue.category);
-    const entityType = ref(props.modelValue.entityType);
     const scopes = ref(props.modelValue.scopes);
     const owner = ref(props.modelValue.owner);
     const isVisible = useVModelPassthrough(props, "visible", emit);
@@ -93,7 +76,6 @@
         const value: GridSettingsOptions = {
             category: category.value,
             scopes: scopes.value,
-            entityType: entityType.value,
             owner: owner.value
         };
 
@@ -107,7 +89,6 @@
     watch(() => props.modelValue, () => {
         category.value = props.modelValue.category;
         scopes.value = props.modelValue.scopes;
-        entityType.value = props.modelValue.entityType;
         owner.value = props.modelValue.owner;
     });
 

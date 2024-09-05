@@ -33,6 +33,7 @@ using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
 {
@@ -364,11 +365,11 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
                 () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            var isMovingToOnDemandMode =
-                box.Bag.ConfigurationMode != entity.ConfigurationMode &&
-                box.Bag.ConfigurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning;
-
             // We're unable to move to academic calendar mode from On-Demand due to the fact that none of the current participants will have records.
+            var isMovingToOnDemandMode =
+                entity.Id > 0 &&
+                entity.ConfigurationMode == ConfigurationMode.AcademicCalendar &&
+                box.Bag.ConfigurationMode == ConfigurationMode.OnDemandLearning;
             if ( isMovingToOnDemandMode )
             {
                 throw new ApplicationException( "Unable to move from Academic Calendar mode to On-Demand mode." );
@@ -428,7 +429,19 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningProgram"/> to be viewed or edited on the page.</returns>
         protected override LearningProgram GetInitialEntity()
         {
-            return GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
+            var initialEntity = GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
+
+            if (initialEntity.Id == 0 )
+            {
+                const string infoColor = "#007aff";
+                initialEntity.IsActive = true;
+                var defaultSystemCommunication = new SystemCommunicationService( RockContext ).Get( SystemGuid.SystemCommunication.LEARNING_ACTIVITY_NOTIFICATIONS.AsGuid() );
+                initialEntity.SystemCommunicationId = defaultSystemCommunication.Id;
+                initialEntity.SystemCommunication = defaultSystemCommunication;
+                initialEntity.HighlightColor = infoColor;
+            }
+
+            return initialEntity;
         }
 
         /// <summary>

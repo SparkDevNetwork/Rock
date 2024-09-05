@@ -434,7 +434,7 @@
       <HintPath>..\packages\SixLabors.Fonts.1.0.0-beta18\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.ImageSharp.2.1.8\lib\net472\SixLabors.ImageSharp.dll</HintPath>
+      <HintPath>..\packages\SixLabors.ImageSharp.2.1.9\lib\net472\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
@@ -808,6 +808,7 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\CloudPrintLabelMessage.cs" />
     <Compile Include="Bus\Message\CloudPrintProxyStatusMessage.cs" />
     <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
@@ -837,12 +838,16 @@
     <Compile Include="CheckIn\v2\AreaOpportunity.cs" />
     <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
     <Compile Include="CheckIn\v2\CheckInFieldFilterBuilder.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintLabelConsumer.cs" />
     <Compile Include="CheckIn\v2\CloudPrintProxyStatusConsumer.cs" />
     <Compile Include="CheckIn\v2\CloudPrintSocket.cs" />
     <Compile Include="CheckIn\v2\DefaultLabelProvider.cs" />
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
+    <Compile Include="CheckIn\v2\FamilyRegistration.cs" />
+    <Compile Include="CheckIn\v2\FamilyRegistrationSaveResult.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendeePhotoFieldConfiguration.cs" />
@@ -944,6 +949,9 @@
     <Compile Include="Cms\ContentCollection\Search\SearchResults.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchSortOrder.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchTerm.cs" />
+    <Compile Include="Cms\PageShortLinkSchedule.cs" />
+    <Compile Include="Cms\PageShortLinkScheduleData.cs" />
+    <Compile Include="Cms\UtmSettings.cs" />
     <Compile Include="Cms\Utm\UtmHelper.cs" />
     <Compile Include="Cms\Utm\UtmCookieData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
@@ -1076,6 +1084,7 @@
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
     <Compile Include="Core\InteractionInfo.cs" />
+    <Compile Include="Constants\RegexPatterns.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
@@ -1110,6 +1119,7 @@
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\WordCloud.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeContainer.cs" />
+    <Compile Include="Field\IEntityContextFieldType.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
     <Compile Include="Field\ISplitMultiValueFieldType.cs" />
     <Compile Include="Field\PersistedValues.cs" />
@@ -1131,9 +1141,11 @@
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
+    <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
@@ -1230,6 +1242,7 @@
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AIProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
@@ -1270,6 +1283,9 @@
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
+    <Compile Include="Model\Core\AIProvider\AIProvider.cs" />
+    <Compile Include="Model\Core\AIProvider\AIProvider.Logic.cs" />
+    <Compile Include="Model\Core\AIProvider\AIProviderService.cs" />
     <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProvider.Logic.cs" />
     <Compile Include="Model\Core\Attribute\Attribute.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
@@ -1453,6 +1469,8 @@
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
     <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
+    <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
+    <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1539,6 +1557,8 @@
     <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
+    <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
+    <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
@@ -2389,6 +2409,7 @@
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
+    <Compile Include="Web\Cache\Entities\AIProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\EntityIntentCache.cs" />
@@ -2407,6 +2428,7 @@
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\PageShortLinkCache.cs" />
     <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
     <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />

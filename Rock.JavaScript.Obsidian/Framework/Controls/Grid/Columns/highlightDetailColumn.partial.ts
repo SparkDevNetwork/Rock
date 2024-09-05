@@ -80,7 +80,6 @@ function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinit
             grid
         };
 
-        console.log("has detailFormat", component);
         const detailValue = extractText(component, cellProps);
 
         return `${value} ${detailValue}`;

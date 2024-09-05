@@ -4,7 +4,8 @@
           :data="gridDataSource"
           keyField="idKey"
           personKeyField="personIdKey"
-          itemTerm="Following Suggestions"
+          title="Your Following Suggestions"
+          itemTerm="Following Suggestion"
           :showCommunicate="true"
           :showPersonMerge="true"
           :showBulkUpdate="true"
@@ -50,9 +51,7 @@
                 :filterValue="getStatusRowFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div v-html="getStatusLabel(row.status)">
-
-                </div>
+                <div v-html="getStatusLabel(row.status)" />
             </template>
         </Column>
 
@@ -65,7 +64,7 @@
                         width="200"/>
 
         <template #gridFooterAppend>
-            <div class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+            <div class="d-flex" style="padding: var(--table-cell-padding-y) var(--table-cell-padding-x) var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <RockButton @click="onFollowClick" :btnType="BtnType.Primary" :btnSize="BtnSize.Small" class="mr-2">
                     <i class='fa fa-flag'></i> Follow
                 </RockButton>
@@ -105,7 +104,7 @@
     import { Guid } from "@Obsidian/Types";
     import { PreferenceKey, GridSettingsOptions } from "./PersonSuggestionList/types.partial";
     import GridSettingsModal from "./PersonSuggestionList/gridSettingsModal.partial.obs";
-import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PersonSuggestionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -178,8 +177,8 @@ import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     }
 
     /**
-     * Called when the individual clicks the Unfollow button, sends a request to the server
-     * with the selected person's to be unfollowed.
+     * Called when the individual clicks the Ignore button, sends a request to the server
+     * with the selected suggestions(s) to be ignored.
      */
     async function onIgnoreClick(): Promise<void> {
         let selectedGuids: string[] = [];
@@ -212,8 +211,8 @@ import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     }
 
     /**
-    * Called when the individual clicks the Unfollow button, sends a request to the server
-    * with the selected person's to be unfollowed.
+    * Called when the individual clicks the Follow button, sends a request to the server
+    * with the selected person(s) to be followed.
     */
     async function onFollowClick(): Promise<void> {
         let selectedGuids: string[] = [];

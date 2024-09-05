@@ -12,17 +12,17 @@
                     <fieldset>
 
                         <div v-if="config.isRequesterInfoShown" class="prayer-requester">
-                            <TextBox v-model="firstName"
-                                     autocomplete="given-name"
-                                     :disabled="isSaving || isNavigating"
-                                     label="First Name"
-                                     rules="required" />
+                            <FirstNameTextBox v-model="firstName"
+                                              autocomplete="given-name"
+                                              :disabled="isSaving || isNavigating"
+                                              label="First Name"
+                                              :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <TextBox v-model="lastName"
                                      autocomplete="family-name"
                                      :disabled="isSaving || isNavigating"
                                      label="Last Name"
-                                     :rules="config.isLastNameRequired ? 'required' : ''" />
+                                     :rules="config.isLastNameRequired ? ['required', 'nospecialcharacters', 'noemojisorspecialfonts'] : ['nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <EmailBox v-model="email"
                                       autocomplete="email"
@@ -121,6 +121,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PrayerRequestEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveResponseBag";
     import { PrayerRequestEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveRequestBag";

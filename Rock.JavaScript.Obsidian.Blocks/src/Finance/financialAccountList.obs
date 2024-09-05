@@ -1,9 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config.options?.isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="itemTerm"
+          itemTerm="Account"
+          :title="gridTitle"
           :entityTypeGuid="EntityType.FinancialAccount"
           stickyHeader
           liveUpdates
@@ -31,26 +33,31 @@
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <BooleanColumn name="isPublic"
                        title="Public"
                        field="isPublic"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <BooleanColumn name="isTaxDeductible"
                        title="Tax Deductible"
                        field="isTaxDeductible"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <DateColumn name="startDate"
                     title="Starts On"
                     field="startDate"
+                    :filter="dateValueFilter"
                     visiblePriority="md" />
 
         <DateColumn name="endDate"
                     title="Ends On"
                     field="endDate"
+                    :filter="dateValueFilter"
                     visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -65,7 +72,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, DateColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, dateValueFilter, DeleteColumn, ReorderColumn, DateColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialAccountListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountList/financialAccountListOptionsBag";
@@ -105,7 +112,7 @@
             || !!gridSettings.value.campus?.value;
     });
 
-    const itemTerm = computed((): string => {
+    const gridTitle = computed((): string => {
         return config.options?.gridTitle ?? "Account";
     });
 

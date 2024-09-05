@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -534,7 +535,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             if ( CurrentPerson == null )
             {
                 pnlView.Visible = false;
@@ -559,6 +559,8 @@ namespace RockWeb.Blocks.Cms
             {
                 var handled = HandleLavaPostback( this.Request.Params["__EVENTTARGET"], this.Request.Params["__EVENTARGUMENT"] );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1134,6 +1136,16 @@ namespace RockWeb.Blocks.Cms
                         var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypeValueGuids ).Split( ',' ).AsGuidList();
 
                         var phoneNumberService = new PhoneNumberService( rockContext );
+
+                        // Remove any empty numbers
+                        foreach ( var phoneNumber in person.PhoneNumbers
+                                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value )
+                                            && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
+                                        .ToList() )
+                        {
+                            person.PhoneNumbers.Remove( phoneNumber );
+                            phoneNumberService.Delete( phoneNumber );
+                        }
 
                         // Remove any duplicate numbers
                         var hasDuplicate = person.PhoneNumbers.GroupBy( pn => pn.Number ).Where( g => g.Count() > 1 ).Any();
@@ -1714,6 +1726,40 @@ namespace RockWeb.Blocks.Cms
             }
 
             BindPhoneNumbers( person );
+
+            if ( person.Id != CurrentPerson.Id && ( person.AccountProtectionProfile == AccountProtectionProfile.High || person.AccountProtectionProfile == AccountProtectionProfile.Extreme ) )
+            {
+                var accountProtectionWarningMessage = "Only the account owner can update the email.";
+
+                if ( GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean() )
+                {
+                    accountProtectionWarningMessage = "Only the account owner can update the email and phone number.";
+
+                    foreach ( RepeaterItem item in rContactInfo.Items )
+                    {
+                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+                        HtmlGenericControl phoneNumberContainer = ( HtmlGenericControl ) item.FindControl( "divPhoneNumberContainer" );
+
+                        pnbPhone.Enabled = false;
+                        pnbPhone.Required = false;
+                        cbSms.Enabled = false;
+                        phoneNumberContainer.RemoveCssClass( "required" );
+                    }
+                }
+
+                tbEmail.Enabled = false;
+                tbEmail.Required = false;
+                nbAccountProtectionWarning.Visible = true;
+                nbAccountProtectionWarning.NotificationBoxType = NotificationBoxType.Warning;
+                nbAccountProtectionWarning.Text = accountProtectionWarningMessage;
+
+            }
+            else
+            {
+                tbEmail.Enabled = true;
+                nbAccountProtectionWarning.Visible = false;
+            }
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;

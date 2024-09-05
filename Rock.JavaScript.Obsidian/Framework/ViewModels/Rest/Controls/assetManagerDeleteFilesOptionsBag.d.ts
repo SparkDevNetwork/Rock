@@ -31,4 +31,7 @@ export type AssetManagerDeleteFilesOptionsBag = {
 
     /** The list of IDs of files to be deleted */
     files?: string[] | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

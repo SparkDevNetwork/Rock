@@ -127,6 +127,8 @@ export const BlockType = {
     Motivators: "18CF8DA8-5DE0-49EC-A279-D5507CFA5713",
     /** The notes */
     Notes: "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3",
+    /** The obsidian category detail block type. */
+    ObsidianCategoryDetail: "515dc5c2-4fbd-4eea-9d8e-a807409defde",
     /** The obsidian event registration entry */
     ObsidianEventRegistrationEntry: "0252E237-0684-4426-9E5C-D454A13E152A",
     /** The obsidian event control gallery */

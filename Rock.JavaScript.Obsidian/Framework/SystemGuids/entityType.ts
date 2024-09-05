@@ -37,6 +37,8 @@ export const EntityType = {
     AdaptiveMessageAdaptation: "39753CCE-184A-4F14-AE80-08241DE8FC2E",
     /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptationSegment  */
     AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
+    /** The EntityType Guid for Rock.Model.AIProvider  */
+    AiProvider: "945A994F-F15E-43AC-B503-A54BDE70F77F",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */

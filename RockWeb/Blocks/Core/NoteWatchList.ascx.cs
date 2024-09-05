@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -97,12 +97,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -262,6 +262,7 @@ namespace RockWeb.Blocks.Core
             if ( blockNoteTypeGuid.HasValue )
             {
                 var noteType = NoteTypeCache.Get( blockNoteTypeGuid.Value );
+
                 if ( noteType != null )
                 {
                     int noteTypeId = noteType.Id;

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.CloudPrint.Shared
 {
     internal class PipeRequest
@@ -24,5 +26,11 @@ namespace Rock.CloudPrint.Shared
     internal class PipeStatusResponse
     {
         public bool IsConnected { get; set; }
+
+        public DateTimeOffset StartedDateTime { get; set; }
+
+        public DateTimeOffset? ConnectedDateTime { get; set; }
+
+        public int TotalLabelsPrinted { get; set; }
     }
 }

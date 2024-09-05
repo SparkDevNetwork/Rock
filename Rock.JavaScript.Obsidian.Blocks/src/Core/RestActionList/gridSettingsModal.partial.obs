@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+  <Modal v-model="isVisible"
+         title="Action Settings"
+         :subtitle="actionTitle"
+         saveText="Save"
+         @save="onSave">
+      <div>
+        <CacheabilityPicker v-model="cacheSettings" />
+      </div>
+  </Modal>
+</template>
+
+<script setup lang="ts">
+  import { ref, PropType, watch } from "vue";
+  import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
+  import Modal from "@Obsidian/Controls/modal.obs";
+  import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+  import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+  const props = defineProps({
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        actionTitle: {
+            type: String as PropType<string>,
+            required: true
+        },
+        actionCacheSettings: {
+            type: Object as PropType<RockCacheabilityBag | null>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "save", value: { cacheSettings: RockCacheabilityBag | null }): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const cacheSettings = ref<RockCacheabilityBag | null>(props.actionCacheSettings);
+
+    function onSave(): void {
+        emit("save", { cacheSettings: cacheSettings.value });
+    }
+
+    watch(() => props.actionCacheSettings, (newValue) => {
+        cacheSettings.value = newValue ? { ...newValue } : null;
+    });
+</script>

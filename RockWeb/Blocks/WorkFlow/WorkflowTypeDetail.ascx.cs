@@ -187,8 +187,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbValidationError.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -241,6 +239,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -814,6 +814,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     workflowActionType.CriteriaAttributeGuid = editorWorkflowActionType.CriteriaAttributeGuid;
                     workflowActionType.CriteriaComparisonType = editorWorkflowActionType.CriteriaComparisonType;
                     workflowActionType.CriteriaValue = editorWorkflowActionType.CriteriaValue;
+                    workflowActionType.IsActionCompletedIfCriteriaUnmet = editorWorkflowActionType.IsActionCompletedIfCriteriaUnmet;
                     workflowActionType.Name = editorWorkflowActionType.Name;
                     workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
                     workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
@@ -1279,7 +1280,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             while ( workflowTypeService.Queryable().Any( w => w.WorkflowIdPrefix == newPrefix ) )
             {
-                newPrefix = $"{basePrefix}{suffix}";
+                newPrefix = $"{basePrefix} - {suffix}";
                 suffix++;
             }
 

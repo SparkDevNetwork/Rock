@@ -8,20 +8,9 @@
 
         <div class="row">
             <div class="col-md-4">
-                <TextBox v-model="subject"
-                         label="Subject" />
-            </div>
-
-            <div class="col-md-4">
                 <DropDownList v-model="communicationType"
                               label="Communication Type"
                               :items="communcationTypeItems" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="status"
-                              label="Status"
-                              :items="statusItems" />
             </div>
 
             <div class="col-md-4">

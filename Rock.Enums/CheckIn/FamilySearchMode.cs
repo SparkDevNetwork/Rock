@@ -45,7 +45,8 @@ namespace Rock.Enums.CheckIn
         ScannedId = 3,
 
         /// <summary>
-        /// Search for family based on a Family Id.
+        /// Search for family based on a Family Id. This must currently be
+        /// the encrypted IdKey value.
         /// </summary>
         FamilyId = 4
     }

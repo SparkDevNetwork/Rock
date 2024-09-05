@@ -42,6 +42,7 @@
                             <DropDownList v-model="teamValue"
                                           :items="uniqueGroups"
                                           :onUpdate:modelValue="onTeamSelected"
+                                          :enhanceForLongLists="true"
                                           label="Team" />
                         </div>
                     </div>
@@ -107,15 +108,15 @@
                         visiblePriority="xs"
                         width="10%" />
 
-            <Column name="givingMonths"
+            <Column name="donationDateKey"
                     title="Giving Months"
-                    field="givingMonths"
+                    field="donationDateKey"
                     itemClass="giving-trends"
                     :disableSort="true"
                     width="30%">
                 <template #format="{ row }">
                     <div class="trend-chart">
-                        <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class" :title="getTooltipContent(bar.month)" ref="setBarRef">
+                        <div v-for="(bar, index) in getBarChart(row.donationDateKeys)" :key="index" class="bar" :class="bar.class" :title="getTooltipContent(bar.month)" ref="setBarRef">
                         </div>
                     </div>
                 </template>
@@ -242,8 +243,8 @@
     const campusValue = ref<string>("");
     const teamValue = ref<string>("");
     const teamDonationStats = ref<{ month: string; donatedPercentage: number; notDonatedPercentage: number }[]>([] as { month: string; donatedPercentage: number; notDonatedPercentage: number }[]);
-    const lastUpdated = ref(bag.lastUpdated || "N/A");
-    const estimatedRefreshTime = ref(bag.estimatedRefreshTime || 0);
+    const lastUpdated = ref(bag?.lastUpdated || "N/A");
+    const estimatedRefreshTime = ref(bag?.estimatedRefreshTime || 0);
     const dataRefreshed = ref<boolean>(false);
     const isRefreshing = ref(false);
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
@@ -271,6 +272,10 @@
      * @returns A string representing the time difference
      */
     const calculateTimeDifference = (lastUpdatedString: string): string => {
+        if (!lastUpdatedString || lastUpdatedString === "N/A") {
+            return "Data last updated N/A";
+        }
+
         const lastUpdatedDate = RockDateTime.parseISO(lastUpdatedString);
         const now = RockDateTime.now();
 
@@ -305,7 +310,6 @@
         return timeDiffStr;
     };
 
-
     /**
      * Calculate the donation percentages for each month
      * @returns An array of objects representing the donation percentages
@@ -320,10 +324,13 @@
         // Group donations by giving ID and track the months each group donated
         gridData?.rows?.forEach(person => {
             const givingId = person.givingId;
-            if (typeof person.givingMonths === "string") {
-                person.givingMonths.toString().split(", ").forEach((monthYear: string) => {
-                    if (last13Months.includes(monthYear)) {
-                        donationData[monthYear].donated.add(givingId); // Add giving ID to the set of donors for the month
+            if (typeof person.donationDateKeys === "string" && person.donationDateKeys) {
+                const dateKeys = person.donationDateKeys.split("|");
+                dateKeys.forEach(dateKey => {
+                    const date = new Date(parseInt(dateKey.slice(0, 4)), parseInt(dateKey.slice(4, 6)) - 1, parseInt(dateKey.slice(6, 8)));
+                    const monthYear = date.toLocaleString("default", {month: "short", year: "numeric"});
+                    if (last13Months.includes(monthYear)){
+                        donationData[monthYear].donated.add(givingId);
                     }
                 });
             }
@@ -429,20 +436,29 @@
     };
 
     /**
-     * @param givenMonthsStr A comma separated string of months and years
+     * @param donationDateKeys A pipe-separated string of date keys
      * @returns An array of objects representing the bar chart
      */
-    const getBarChart = (givenMonthsStr: string): { month: string; full: string; class: string; }[] => {
-        const givenMonths = givenMonthsStr ? givenMonthsStr.split(",").map(monthYear => monthYear.trim()) : [];
-        const allEmpty = givenMonths.length === 0; // Check if all months are empty
+    const getBarChart = (donationDateKeys: string | undefined): { month: string; full: string; class: string; }[] => {
+        const donatedMonths = new Set<string>();
+
+        if (donationDateKeys){
+            const dateKeys = donationDateKeys.split("|");
+            dateKeys.forEach(dateKey => {
+                const year = parseInt(dateKey.slice(0, 4));
+                const month = parseInt(dateKey.slice(4, 6)) - 1;
+                const day = parseInt(dateKey.slice(6, 8));
+                const date = new Date(year, month, day);
+                const monthYear = date.toLocaleString("default", {month: "short", year: "numeric"});
+
+                donatedMonths.add(monthYear);
+            });
+        }
 
         return last13Months.map(displayedMonth => {
-            const isFull = givenMonths.includes(displayedMonth);
-            let barClass = isFull ? "full" : "empty";
-            if (allEmpty) barClass = "empty";
-
+            const isFull = donatedMonths.has(displayedMonth);
+            const barClass = isFull ? "full" : "empty";
             return { month: displayedMonth, full: isFull.toString(), class: barClass };
-
         });
     };
 

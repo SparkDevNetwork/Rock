@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -977,7 +976,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 // Add the value for each attribute defined on the entity type.
                 foreach ( var attribute in entityAttributes )
                 {
-                    if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
+                    if ( allAttributeValues.TryGetValue( (entity.Id, attribute.Id), out var value ) )
                     {
                         var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value, value.PersistedTextValue, value.PersistedHtmlValue, value.PersistedCondensedTextValue, value.PersistedCondensedHtmlValue, value.IsPersistedValueDirty );
 
@@ -1203,7 +1202,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 .ToList();
             }
 
-            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => i );
+            return items.ToDictionary( i => (i.RealEntityId, i.AttributeId), i => i );
         }
 
         #endregion
@@ -1404,6 +1403,9 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             newAttribute.PostHtml = attribute.PostHtml;
             newAttribute.FieldTypeId = fieldTypeCache.Id;
             newAttribute.DefaultValue = fieldTypeCache.Field.GetPrivateEditValue( attribute.DefaultValue, configurationValues );
+            newAttribute.IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
+            newAttribute.IconCssClass = attribute.IconCssClass;
+            newAttribute.AttributeColor = attribute.AttributeColor;
 
             var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
             newAttribute.Categories.Clear();
@@ -1904,7 +1906,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             attributeValue.UpdateValueAsProperties( rockContext );
 
-            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", (object) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
             var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
             var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
             var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
@@ -2370,7 +2372,7 @@ WHERE [AV].[AttributeId] = @AttributeId
             // We only need to add rows if we have any referenced entities.
             if ( referenceDictionary.Any() )
             {
-                foreach (var kvpReference in referenceDictionary )
+                foreach ( var kvpReference in referenceDictionary )
                 {
                     var valueId = kvpReference.Key;
                     var referencedEntities = kvpReference.Value;
@@ -2914,7 +2916,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                         {
                             // No need to wrap the title in another div when there is no description.
                             panelHeader.Controls.Add( panelTitle );
-                        } 
+                        }
                     }
 
                     panel.Controls.Add( panelHeader );

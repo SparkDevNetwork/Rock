@@ -72,11 +72,11 @@
                                                        v-if="adult1.isFirstNameReadOnly"
                                                        label="First Name"
                                                        :modelValue="adult1.firstName" />
-                                    <TextBox v-else
-                                             v-model="adult1.firstName"
-                                             :disabled="isSaving || isNavigating"
-                                             label="First Name"
-                                             :rules="adult1RequiredRules" />
+                                    <FirstNameTextBox v-else
+                                                      v-model="adult1.firstName"
+                                                      :disabled="isSaving || isNavigating"
+                                                      label="First Name"
+                                                      :rules="[...adult1RequiredRules, ...adult1NoSpecialCharactersRules, ...adult1NoEmojisOrSpecialFontsRules]" />
                                 </div>
                                 <div class="col-sm-6">
                                     <StaticFormControl
@@ -87,7 +87,7 @@
                                              v-model="adult1.lastName"
                                              :disabled="isSaving || isNavigating"
                                              label="Last Name"
-                                             :rules="adult1RequiredRules" />
+                                             :rules="[...adult1RequiredRules, ...adult1NoSpecialCharactersRules, ...adult1NoEmojisOrSpecialFontsRules]" />
                                 </div>
                             </div>
                             <div class="row">
@@ -275,11 +275,11 @@
                                                            v-if="adult2.isFirstNameReadOnly"
                                                            label="First Name"
                                                            :modelValue="adult2.firstName" />
-                                        <TextBox v-else
-                                                 v-model="adult2.firstName"
-                                                 :disabled="isSaving || isNavigating"
-                                                 label="First Name"
-                                                 :rules="isAdult2Entered ? adult2RequiredRules : ''" />
+                                        <FirstNameTextBox v-else
+                                                          v-model="adult2.firstName"
+                                                          :disabled="isSaving || isNavigating"
+                                                          label="First Name"
+                                                          :rules="isAdult2Entered ? [...adult2RequiredRules, ...adult2NoSpecialCharactersRules, ...adult2NoEmojisOrSpecialFontsRules] : ''" />
                                     </div>
                                     <div class="col-sm-6">
                                         <StaticFormControl
@@ -290,7 +290,7 @@
                                                  v-model="adult2.lastName"
                                                  :disabled="isSaving || isNavigating"
                                                  label="Last Name"
-                                                 :rules="isAdult2Entered ? adult2RequiredRules : ''" />
+                                                 :rules="isAdult2Entered ? [...adult2RequiredRules, ...adult2NoSpecialCharactersRules, ...adult2NoEmojisOrSpecialFontsRules] : ''" />
                                     </div>
                                 </div>
                                 <div class="row">
@@ -476,7 +476,7 @@
     import { computed, nextTick, ref } from "vue";
     import PreRegistrationChildren from "./FamilyPreRegistration/preRegistrationChildren.partial.obs";
     import { ChildRequestBag, CreateAccountRequest, PersonRequestBag } from "./FamilyPreRegistration/types.partial";
-    import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, } from "./FamilyPreRegistration/utils.partial";
+    import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, noSpecialCharacters, noEmojisOrSpecialFonts } from "./FamilyPreRegistration/utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -498,6 +498,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
@@ -576,6 +577,16 @@
         "required"
     ]);
 
+    const adult1NoSpecialCharactersRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noSpecialCharacters, `for First Adult`),
+        "nospecialcharacters"
+    ]);
+
+    const adult1NoEmojisOrSpecialFontsRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noEmojisOrSpecialFonts, `for First Adult`),
+        "noemojisorspecialfonts"
+    ]);
+
     const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
         createRuleWithSuffix(required, `for First ${adultLabel}`),
         createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for First ${adultLabel}`),
@@ -585,6 +596,16 @@
     const adult2RequiredRules = computed<ValidationRule[]>(() => [
         createRuleWithSuffix(required, `for Second ${adultLabel}`),
         "required"
+    ]);
+
+    const adult2NoSpecialCharactersRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noSpecialCharacters, `for Second Adult`),
+        "nospecialcharacters"
+    ]);
+
+    const adult2NoEmojisOrSpecialFontsRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noEmojisOrSpecialFonts, `for Second Adult`),
+        "noemojisorspecialfonts"
     ]);
 
     const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [

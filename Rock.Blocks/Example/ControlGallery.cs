@@ -19,6 +19,7 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks.Example.ControlGallery;
 
 namespace Rock.Blocks.Example
@@ -58,8 +59,31 @@ namespace Rock.Blocks.Example
             var box = new ControlGalleryInitializationBox();
 
             box.ShowReflection = GetAttributeValue( AttributeKey.ShowReflection ).AsBoolean();
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+            return securityGrant.ToToken();
         }
     }
 }

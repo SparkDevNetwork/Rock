@@ -15,12 +15,9 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.ChatCompletions;
-using Rock.AI.OpenAI.OpenAIApiClient.Attributes;
 using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.AI.OpenAI.Utilities;
 
@@ -41,7 +38,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// The role that OpenAI is expecting.
         /// </summary>
         [JsonProperty( "role" )]
-        public string OpenAIRole {
+        public string OpenAIRole
+        {
             get
             {
                 return this.Role.ToString().ToLower();
@@ -58,9 +56,9 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// Converts a generic chat message to the OpenAI version.
         /// </summary>
         /// <param name="message"></param>
-        internal OpenAIChatCompletionsRequestMessage ( ChatCompletionsRequestMessage message )
+        internal OpenAIChatCompletionsRequestMessage( ChatCompletionsRequestMessage message )
         {
-            
+
             this.Role = OpenAIUtilities.ConvertRockChatRoleToOpenAIRole( message.Role );
             this.Content = message.Content;
         }

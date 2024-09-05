@@ -445,7 +445,11 @@ namespace Rock.CheckIn.v2
         /// <returns>A queryable of family <see cref="Group"/> objects.</returns>
         protected virtual IQueryable<Group> SearchForFamiliesByFamilyId( string searchTerm )
         {
-            var searchFamilyIds = searchTerm.SplitDelimitedValues().AsIntegerList();
+            var searchFamilyIds = searchTerm.SplitDelimitedValues()
+                .Select( id => IdHasher.Instance.GetId( id ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
 
             return GetFamilyGroupMemberQuery()
                 .Where( gm => searchFamilyIds.Contains( gm.GroupId ) )
@@ -540,7 +544,8 @@ namespace Rock.CheckIn.v2
             var canCheckInFamilyMemberQry = groupMemberService
                 .Queryable()
                 .AsNoTracking()
-                .Where( gm => relationshipGroupIdQry.Contains( gm.GroupId ) );
+                .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active
+                    && relationshipGroupIdQry.Contains( gm.GroupId ) );
 
             canCheckInFamilyMemberQry = CheckInDirector.WhereContains( canCheckInFamilyMemberQry, canCheckInRoleIds, gm => gm.GroupRoleId );
 

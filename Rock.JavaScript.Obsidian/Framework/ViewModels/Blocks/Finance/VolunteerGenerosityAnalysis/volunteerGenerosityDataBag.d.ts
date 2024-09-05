@@ -21,8 +21,17 @@
 // </copyright>
 //
 
+import { AgeClassification } from "@Obsidian/Enums/Crm/ageClassification";
+import { Gender } from "@Obsidian/Enums/Crm/gender";
+
 /** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityDataBag = {
+    /** Gets or sets the person's age */
+    age?: number | null;
+
+    /** Gets or sets the person's age classification */
+    ageClassification?: AgeClassification | null;
+
     /** Gets or sets the Campus ID. */
     campusId?: string | null;
 
@@ -32,11 +41,14 @@ export type VolunteerGenerosityDataBag = {
     /** Gets or sets the person's connection status */
     connectionStatus?: string | null;
 
+    /** Gets or sets the person's bit mask */
+    donationDateKeys?: string | null;
+
     /** Gets or sets the person's donation months */
     donationMonths?: string | null;
 
-    /** Gets or sets the person's bit mask */
-    donationMonthYearBitmask?: string | null;
+    /** Gets or sets the person's gender */
+    gender: Gender;
 
     /** Gets or sets the person's giving identifier. */
     givingId?: string | null;
@@ -64,6 +76,9 @@ export type VolunteerGenerosityDataBag = {
 
     /** Gets or sets the person identifier. */
     personId: number;
+
+    /** Gets or sets the person's photo Id. */
+    photoId?: number | null;
 
     /** Gets or sets the person's photo URL. */
     photoUrl?: string | null;

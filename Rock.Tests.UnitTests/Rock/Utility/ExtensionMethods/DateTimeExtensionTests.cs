@@ -17,6 +17,7 @@
 using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Rock.Utility.ExtensionMethods
@@ -234,7 +235,9 @@ namespace Rock.Tests.Rock.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_LessThanTwoMonthsInFutureGivesSingularNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMonths( 1 ).AddDays( 2 ).ToElapsedString(), "Month From Now" );
+            var nowDate = RockDateTime.New( 2024, 5, 1 ).Value;
+            var date = RockDateTime.New( 2024, 6, 30 ).Value;
+            Assert.That.Equal( "1 Month From Now", DateTimeExtensions.ToElapsedString( date, nowDate ) );
         }
 
         [TestMethod]

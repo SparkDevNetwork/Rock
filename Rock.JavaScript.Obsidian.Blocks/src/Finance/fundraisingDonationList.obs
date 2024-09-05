@@ -4,7 +4,9 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Fundraising Donations"
+          personKeyField="donorIdKey"
+          title="Fundraising Donations"
+          itemTerm="Donations"
           :entityTypeGuid="EntityType.FinancialTransactionDetail"
           stickyHeader
           liveUpdates
@@ -18,7 +20,9 @@
 
         <Column name="donor"
                 title="Donor"
+                field="donor"
                 width="10%"
+                :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.donor">
@@ -31,6 +35,7 @@
                 name="donorAddress"
                 title="Donor Address"
                 width="18%"
+                :filter="textValueFilter"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div v-html="row.donorAddress">
@@ -50,7 +55,9 @@
         <Column v-if="!config.options?.columnsToHide?.includes(ColumnKey.Participant) && !config.options?.isContextEntityGroupMember"
                 name="participant"
                 title="Participant"
+                field="participant"
                 width="18%"
+                :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.participant" />
@@ -91,7 +98,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column, CurrencyColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FundraisingDonationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingDonationList/fundraisingDonationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

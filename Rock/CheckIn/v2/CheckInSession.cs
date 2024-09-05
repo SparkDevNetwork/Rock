@@ -23,7 +23,6 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
-using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -68,6 +67,20 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The attendees.</value>
         public IReadOnlyList<Attendee> Attendees { get; private set; }
+
+        /// <summary>
+        /// Determines if this session will operate in override mode. When in
+        /// override mode no filtering is performed on attendees for the
+        /// opportunities they can attend.
+        /// </summary>
+        public bool IsOverrideEnabled { get; set; }
+
+        /// <summary>
+        /// The value to use for <see cref="Attendance.SourceValueId"/>. This is
+        /// used to identify where the attendance record came from. If <c>null</c>
+        /// then the value for Kiosk will be used.
+        /// </summary>
+        public int? AttendanceSourceValueId { get; set; }
 
         /// <summary>
         /// Gets the opportunity filter provider to be used with this instance.
@@ -269,6 +282,11 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
         public void FilterPersonOpportunities( Attendee attendee )
         {
+            if ( IsOverrideEnabled )
+            {
+                return;
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );

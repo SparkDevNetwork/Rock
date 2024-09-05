@@ -77,12 +77,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

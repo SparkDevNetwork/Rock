@@ -4,13 +4,11 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Streak Type"
+          title="Streak Types"
           :entityTypeGuid="EntityType.StreakType"
           stickyHeader
           liveUpdates
-          gridSettings
           :showLaunchWorkflow="false"
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -30,7 +28,7 @@
         <TextColumn name="occurrenceFrequency"
                     title="Frequency"
                     field="occurrenceFrequency"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="startDate"
@@ -49,22 +47,18 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, numberValueFilter, booleanValueFilter, dateValueFilter, DeleteColumn, SecurityColumn, DateColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter, dateValueFilter, DeleteColumn, SecurityColumn, DateColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { StreakTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeList/streakTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./StreakTypeList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./StreakTypeList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./StreakTypeList/types.partial";
+    import { reactive, ref, watch } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<StreakTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -74,20 +68,6 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        activeStatus: preferences.getValue(PreferenceKey.FilterActiveStatus),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.activeStatus;
-    });
 
     // #endregion
 
@@ -154,24 +134,6 @@
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-    // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterActiveStatus, gridSettings.value.activeStatus ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

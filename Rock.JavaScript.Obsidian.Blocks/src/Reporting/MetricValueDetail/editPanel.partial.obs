@@ -12,9 +12,16 @@
         </div>
 
         <div class="row">
+            <NotificationBox v-if="isValidationWarningVisible" alertType="warning" dismissible @dismiss="isValidationWarningVisible = false">
+                {{ validationError }}
+            </NotificationBox>
             <div class="col-md-6">
                 <div v-for="partition in partitions">
-                    <RockField v-if="partition.attribute" :attribute="partition.attribute" :modelValue="partition.value || ''" @update:modelValue="partition.value = $event" :isEditMode="isEditable" />
+                    <RockField v-if="partition.attribute"
+                               :attribute="partition.attribute"
+                               :modelValue="partition.value || ''"
+                               @update:modelValue="partition.value = $event"
+                               :isEditMode="isEditable" />
                 </div>
             </div>
         </div>
@@ -39,20 +46,22 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { MetricValueBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueBag";
     import { MetricValueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueDetailOptionsBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<MetricValueBag>,
+            type: Object as PropType<ValidPropertiesBox<MetricValueBag>>,
             required: true
         },
 
@@ -64,23 +73,29 @@
         isEditable: {
             type: Object as PropType<boolean>,
             required: true
+        },
+
+        validationError: {
+            type: Object as PropType<string | null>,
+            required: false
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: MetricValueBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<MetricValueBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const metricValueType = propertyRef(props.modelValue.metricValueType.toString() ?? "", "MetricValueType");
-    const metricValueDateTime = propertyRef(props.modelValue.metricValueDateTime ?? "", "MetricValueDateTime");
-    const yValue = propertyRef(props.modelValue.yValue, "YValue");
-    const xValue = propertyRef(props.modelValue.xValue ?? "", "XValue");
-    const note = propertyRef(props.modelValue.note ?? "", "Note");
+    const metricValueType = propertyRef(props.modelValue.bag?.metricValueType?.toString() ?? "", "MetricValueType");
+    const metricValueDateTime = propertyRef(props.modelValue.bag?.metricValueDateTime ?? "", "MetricValueDateTime");
+    const yValue = propertyRef(props.modelValue.bag?.yValue, "YValue");
+    const xValue = propertyRef(props.modelValue.bag?.xValue ?? "", "XValue");
+    const note = propertyRef(props.modelValue.bag?.note ?? "", "Note");
+    const partitions = ref(props.modelValue.bag?.metricValuePartitions ?? []);
     const metricValueTypes = ref(props.options.metricValueTypes ?? []);
-    const partitions = ref(props.modelValue.metricValuePartitions ?? []);
+    const isValidationWarningVisible = ref(false);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -90,29 +105,36 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(metricValueType, props.modelValue.metricValueType.toString() ?? "");
-        updateRefValue(metricValueDateTime, props.modelValue.metricValueDateTime ?? "");
-        updateRefValue(yValue, props.modelValue.yValue);
-        updateRefValue(xValue, props.modelValue.xValue ?? "");
-        updateRefValue(note, props.modelValue.note ?? "");
-        updateRefValue(partitions, props.modelValue.metricValuePartitions ?? []);
+        updateRefValue(metricValueType, props.modelValue.bag?.metricValueType?.toString() ?? "");
+        updateRefValue(metricValueDateTime, props.modelValue.bag?.metricValueDateTime ?? "");
+        updateRefValue(yValue, props.modelValue.bag?.yValue);
+        updateRefValue(xValue, props.modelValue.bag?.xValue ?? "");
+        updateRefValue(note, props.modelValue.bag?.note ?? "");
+        updateRefValue(partitions, props.modelValue.bag?.metricValuePartitions ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([...propRefs, partitions], () => {
-        const newValue: MetricValueBag = {
-            ...props.modelValue,
-            metricValueType: toNumber(metricValueType.value),
-            metricValueDateTime: metricValueDateTime.value,
-            yValue: yValue.value,
-            xValue: xValue.value,
-            note: note.value,
-            metricValuePartitions: partitions.value
+
+        const newValue: ValidPropertiesBox<MetricValueBag> = {
+            bag: { ...props.modelValue.bag } as MetricValueBag
         };
 
+        setPropertiesBoxValue(newValue, "metricValueType", toNumber(metricValueType.value));
+        setPropertiesBoxValue(newValue, "metricValueDateTime", metricValueDateTime.value);
+        setPropertiesBoxValue(newValue, "yValue", yValue.value);
+        setPropertiesBoxValue(newValue, "xValue", xValue.value);
+        setPropertiesBoxValue(newValue, "note", note.value);
+        setPropertiesBoxValue(newValue, "metricValuePartitions", partitions.value);
+
         emit("update:modelValue", newValue);
+
     }, { deep: true });
+
+    watch(() => props.validationError, () => {
+        isValidationWarningVisible.value = true;
+    });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.

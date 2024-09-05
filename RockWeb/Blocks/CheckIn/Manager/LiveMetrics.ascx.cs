@@ -179,8 +179,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbWarning.Visible = false;
 
             var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
@@ -200,6 +198,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 nbWarning.Text = "Check-in Manager requires that a valid campus exists.";
                 nbWarning.Visible = true;
                 pnlContent.Visible = false;
+                base.OnLoad( e );
                 return;
             }
 
@@ -251,6 +250,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 BuildNavigationControls();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

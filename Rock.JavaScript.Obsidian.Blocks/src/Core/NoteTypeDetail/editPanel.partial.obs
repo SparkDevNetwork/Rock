@@ -184,17 +184,19 @@
         const stringValue = value as string;
 
         if (stringValue) {
-            if (!isValidNumber(stringValue)) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
                 return "must be a valid number.";
+            }
+            else if (num < 0 || num > 9999) {
+                return "must have a value between 0 and 9999.";
             }
         }
 
         return true;
     }
 
-    function isValidNumber(value: string): boolean {
-        if(!value) return false;
-        const num = Number(value);
+    function isValidNumber(num: number): boolean {
         return !isNaN(num) && isFinite(num);
     }
 

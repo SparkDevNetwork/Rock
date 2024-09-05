@@ -95,8 +95,6 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbDeleteWarning.Visible = false;
             nbInvalid.Visible = false;
             nbSaveSuccess.Visible = false;
@@ -149,6 +147,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()
@@ -1121,7 +1121,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 .Queryable()
                 .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
                     && a.TargetEntityTypeId == checkInLabelEntityTypeId
-                    && a.SourceEntityId == areaId );
+                    && a.SourceEntityId == areaId
+                    && a.PurposeKey == RelatedEntityPurposeKey.AreaCheckInLabel );
 
             checkinArea.NextGenCheckInLabels = new CheckInLabelService( rockContext )
                 .Queryable()
@@ -1183,6 +1184,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     TargetEntityTypeId = checkInLabelEntityTypeId,
                     SourceEntityId = areaId,
                     TargetEntityId = labelId,
+                    PurposeKey = RelatedEntityPurposeKey.AreaCheckInLabel,
                     Order = labelIndex
                 } );
             }

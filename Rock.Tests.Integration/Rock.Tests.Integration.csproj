@@ -225,11 +225,13 @@
     <Compile Include="Issues\Issues_v16.cs" />
     <Compile Include="Issues\Issues_v15.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
+    <Compile Include="Modules\CheckIn\v2\FamilyRegistrationTests.cs" />
     <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\WorkflowActivateTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
     <Compile Include="Modules\Core\Lava\Documentation\IfTagExamples.cs" />
     <Compile Include="Modules\Core\Lava\Filters\PersonalizationFilterTests.cs" />
+    <Compile Include="Modules\Core\Lava\Shortcodes\AiCompletionTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\ScheduledContentTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\KpiShortcodeTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\GoogleMapShortcodeTests.cs" />
@@ -237,6 +239,7 @@
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
     <Compile Include="Modules\Core\Model\PageShortLinkTests.cs" />
+    <Compile Include="Modules\Core\OpenAI\AIProviderTests.cs" />
     <Compile Include="Modules\Core\Workflow\BackgroundCheckRequestTests.cs" />
     <Compile Include="Modules\Core\Model\DataModelEmailFieldValidationTests.cs" />
     <Compile Include="Modules\Reporting\ExpressionHelperTests.cs" />
@@ -274,6 +277,7 @@
     <Compile Include="TestData\Cms\WebsiteDataManager.cs" />
     <Compile Include="TestData\Communications\CommunicationsDataManager.cs" />
     <Compile Include="TestData\Cms\Shortcodes\ShortcodeDataManager.cs" />
+    <Compile Include="TestData\AI\AIDataManager.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\PersistedDatasetDataManager.cs" />
     <Compile Include="TestData\Core\SecurityDataManager.cs" />
@@ -468,6 +472,10 @@
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj">
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
+      <Name>Rock.ViewModels</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.WebStartup\Rock.WebStartup.csproj">
       <Project>{515e22e4-4b9b-4886-8477-e5b312b75eb4}</Project>

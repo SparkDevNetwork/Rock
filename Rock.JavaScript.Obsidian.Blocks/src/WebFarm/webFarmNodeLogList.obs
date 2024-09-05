@@ -27,10 +27,7 @@
           <TextColumn name="id" title="Id" field="id" :hideOnScreen="true" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
-        v-model:visible="isGridSettingsVisible"
-        :severityTypes="config.options?.severityTypes ?? []"
-        :eventTypes="config.options?.eventTypes ?? []"  />
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
@@ -59,11 +56,6 @@
 
     const gridSettings = ref<GridSettingsOptions>({
         dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
-        nodeName: preferences.getValue(PreferenceKey.FilterNodeName),
-        writerNodeName: preferences.getValue(PreferenceKey.FilterWriterNodeName),
-        severity: preferences.getValue(PreferenceKey.FilterSeverity),
-        eventType: preferences.getValue(PreferenceKey.FilterEventType),
-        text: preferences.getValue(PreferenceKey.FilterText),
     });
 
     const logSeverityColors: Record<string, string> = {
@@ -87,12 +79,7 @@
 
         /** `true` if the grid settings is performing any filtering. */
         const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.dateRange
-            || !!gridSettings.value.nodeName
-            || !!gridSettings.value.writerNodeName
-            || !!gridSettings.value.severity
-            || !!gridSettings.value.eventType
-            || !!gridSettings.value.text;
+        return !!gridSettings.value.dateRange;
     });
 
     // #endregion
@@ -118,11 +105,6 @@
 
     watch(gridSettings, async () => {
         preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
-        preferences.setValue(PreferenceKey.FilterNodeName, gridSettings.value.nodeName ?? "");
-        preferences.setValue(PreferenceKey.FilterWriterNodeName, gridSettings.value.writerNodeName ?? "");
-        preferences.setValue(PreferenceKey.FilterSeverity, gridSettings.value.severity ?? "");
-        preferences.setValue(PreferenceKey.FilterEventType, gridSettings.value.eventType ?? "");
-        preferences.setValue(PreferenceKey.FilterText, gridSettings.value.text ?? "");
 
         await preferences.save();
 

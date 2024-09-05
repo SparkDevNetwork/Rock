@@ -18,6 +18,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -42,7 +43,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./CheckinTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./CheckinTypeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./CheckinTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -201,7 +202,7 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
             iconCssClass: "fa fa-calendar",
             title: "Schedule",
             handler: onScheduleClick
-            });
+        });
 
         return labels;
     });
@@ -361,4 +362,6 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
         groupTypeEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

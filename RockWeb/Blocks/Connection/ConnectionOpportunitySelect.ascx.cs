@@ -191,8 +191,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var preferences = GetBlockPersonPreferences();
@@ -204,6 +202,8 @@ namespace RockWeb.Blocks.Connection
                 cpCampusFilter.SelectedCampusId = preferences.GetValue( UserPreferenceKey.ConnectionOpportunitiesSelectedCampus ).AsIntegerOrNull();
                 GetSummaryData();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -500,10 +500,16 @@ namespace RockWeb.Blocks.Connection
                     // get list of idle requests (no activity in past X days)
 
                     var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable()
-                        .Where( cr => cr.ConnectionOpportunityId == opportunity.Id
-                            && ( cr.ConnectionState == ConnectionState.Active
-                            || ( cr.ConnectionState == ConnectionState.FutureFollowUp
-                            && cr.FollowupDate.HasValue && cr.FollowupDate.Value < midnightToday ) ) );
+                        .Where( cr =>
+                            cr.ConnectionOpportunityId == opportunity.Id
+                            && (
+                                cr.ConnectionState == ConnectionState.Active
+                            || (
+                                cr.ConnectionState == ConnectionState.FutureFollowUp
+                                && cr.FollowupDate.HasValue && cr.FollowupDate.Value < midnightToday
+                                )
+                            )
+                        );
 
                     if ( cpCampusFilter.SelectedCampusId.HasValue )
                     {
@@ -525,8 +531,12 @@ namespace RockWeb.Blocks.Connection
                     var currentDateTime = RockDateTime.Now;
                     int activeRequestCount = connectionRequestsQry
                         .Where( cr =>
-                                cr.ConnectionState == ConnectionState.Active
-                                || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < midnightToday )
+                            cr.ConnectionState == ConnectionState.Active
+                            || (
+                                cr.ConnectionState == ConnectionState.FutureFollowUp
+                                && cr.FollowupDate.HasValue
+                                && cr.FollowupDate.Value < midnightToday
+                            )
                         )
                         .Count();
 
@@ -538,12 +548,17 @@ namespace RockWeb.Blocks.Connection
                         //  AND
                         //  (where the activity is more than DaysUntilRequestIdle days old OR no activity but created more than DaysUntilRequestIdle days ago)
                         List<int> idleConnectionRequests = connectionRequestsQry
-                                                    .Where( cr =>
-                                                            ( cr.ConnectionRequestActivities.Any()
-                                                            && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                                            || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                                    )
-                                                    .Select( a => a.Id ).ToList();
+                            .Where( cr =>
+                                (
+                                    cr.ConnectionRequestActivities.Any()
+                                    && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime )
+                                )
+                                || (
+                                    !cr.ConnectionRequestActivities.Any()
+                                    && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime )
+                                )
+                            )
+                            .Select( a => a.Id ).ToList();
 
                         // get list of requests that have a status that is considered critical.
                         List<int> criticalConnectionRequests = connectionRequestsQry
@@ -581,9 +596,16 @@ namespace RockWeb.Blocks.Connection
             var activeRequestsQry = new ConnectionRequestService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( r =>
-                    allOpportunities.Contains( r.ConnectionOpportunityId ) &&
-                    ( r.ConnectionState == ConnectionState.Active ||
-                        ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ) )
+                    allOpportunities.Contains( r.ConnectionOpportunityId )
+                    && (
+                        r.ConnectionState == ConnectionState.Active
+                        || (
+                            r.ConnectionState == ConnectionState.FutureFollowUp
+                            && r.FollowupDate.HasValue
+                            && r.FollowupDate.Value < midnightToday
+                        )
+                    )
+                )
                 .Select( r => new
                 {
                     r.Id,

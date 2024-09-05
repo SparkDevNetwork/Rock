@@ -269,7 +269,8 @@
 
         const rules = normalizeRules(props.rules);
 
-        if (!props.allowHtml) {
+        // Mentions use HTML text, so we need to allow it.
+        if (!props.allowHtml && !props.mentionEnabled) {
             rules.push("nohtml");
         }
 

@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis;
 using Rock.Obsidian.UI;
+using System.Globalization;
 
 namespace Rock.Blocks.Finance
 {
@@ -85,7 +86,8 @@ namespace Rock.Blocks.Finance
 
                             foreach ( var person in peopleData )
                             {
-                                person.DonationMonths = DecodeDonationMonthBitmask( person.DonationMonthYearBitmask );
+                                person.LastAttendanceDate = person.LastAttendanceDate?.ToLocalTime();
+                                person.DonationMonths = DecodeDonationDateKeys( person.DonationDateKeys );
                             }
                         }
 
@@ -154,13 +156,22 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "campus", d => d.CampusShortCode )
                 .AddDateTimeField( "lastAttendanceDate", d => d.LastAttendanceDate )
                 .AddTextField( "team", d => d.GroupName )
-                .AddTextField( "givingMonths", d => DecodeDonationMonthBitmask( d.DonationMonthYearBitmask ) )
+                .AddTextField( "givingMonths", d => DecodeDonationDateKeys( d.DonationDateKeys ) )
+                .AddField( "donationDateKeys", d => d.DonationDateKeys )
                 .AddField( "person", d => new VolunteerGenerosityPersonBag
                 {
                     PersonId = d.PersonId,
                     LastName = d.LastName,
                     NickName = d.NickName,
-                    PhotoUrl = d.PhotoUrl,
+                    PhotoUrl = Person.GetPersonPhotoUrl(
+                                initials: $"{d.NickName.Substring( 0, 1 )}{d.LastName.Substring( 0, 1 )}",
+                                photoId: d.PhotoId,
+                                age: d.Age,
+                                gender: d.Gender,
+                                recordTypeValueId: null,
+                                ageClassification: d.AgeClassification,
+                                size: null
+                               ),
                     ConnectionStatus = d.ConnectionStatus
                 } )
                 .AddField( "givingId", d => d.GivingId )
@@ -194,39 +205,25 @@ namespace Rock.Blocks.Finance
             }
         }
 
-        private string DecodeDonationMonthBitmask( string donationMonthYearBitmask )
+        private string DecodeDonationDateKeys( string donationDateKeys )
         {
-            if ( string.IsNullOrEmpty( donationMonthYearBitmask ) )
+            if ( string.IsNullOrEmpty( donationDateKeys ) )
             {
                 return null;
             }
 
-            var donationMonths = new List<string>();
-            var monthAbbreviations = new string[] {
-                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-            };
-
-            var yearBitmaskPairs = donationMonthYearBitmask.Split( '|' );
-            foreach ( var yearBitmaskPair in yearBitmaskPairs )
+            var donationMonths = new HashSet<string>();
+            var dateKeys = donationDateKeys.Split( '|' );
+            foreach ( var dateKey in dateKeys )
             {
-                var parts = yearBitmaskPair.Split( '-' );
-                if ( parts.Length == 2 && int.TryParse( parts[0], out int year ) && int.TryParse( parts[1], out int bitmask ) )
+                if ( DateTime.TryParseExact( dateKey, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date ) )
                 {
-                    for ( int i = 0; i < 12; i++ )
-                    {
-                        if ( ( bitmask & ( int ) Math.Pow( 2, i ) ) != 0 )
-                        {
-                            donationMonths.Add( $"{monthAbbreviations[i]} {year}" );
-                        }
-                    }
+                    donationMonths.Add( date.ToString( "MMM yyyy", CultureInfo.InvariantCulture ) );
                 }
             }
 
-            return string.Join( ", ", donationMonths );
+            return string.Join( ", ", donationMonths.OrderBy( m => DateTime.ParseExact( m, "MMM yyyy", CultureInfo.InvariantCulture ) ) );
         }
-
-
 
         #endregion
     }

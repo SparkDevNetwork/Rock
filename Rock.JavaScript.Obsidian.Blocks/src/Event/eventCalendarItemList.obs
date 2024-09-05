@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Event Item"
+          itemTerm="Item"
+          title="Event Items"
           :entityTypeGuid="EntityType.EventCalendarItem"
           stickyHeader
           liveUpdates
@@ -28,7 +29,8 @@
 
         <Column name="calendars"
                 title="Calendars"
-                :filter="textValueFilter"
+                field="calendars"
+                :filter="pickExistingValueFilter"
                 :filterValue="getRowCalendarsFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
@@ -40,6 +42,7 @@
 
         <Column name="audiences"
                 title="Audiences"
+                field="audiences"
                 :filter="textValueFilter"
                 :filterValue="getRowAudiencesFilterValue"
                 visiblePriority="md">
@@ -64,7 +67,8 @@
         <Column name="isActive"
                 title="Status"
                 field="isActive"
-                :filter="booleanValueFilter"
+                :filter="pickExistingValueFilter"
+                :filterValue="getActiveStatusFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isActive" class="label label-success">
@@ -79,7 +83,8 @@
         <Column name="isApproved"
                 title="Approval Status"
                 field="isApproved"
-                :filter="booleanValueFilter"
+                :filter="pickExistingValueFilter"
+                :filterValue="getApprovalStatusRowFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isApproved" class="label label-info">
@@ -102,7 +107,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, booleanValueFilter, numberValueFilter, DeleteColumn, Column, NumberBadgeColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, booleanValueFilter, pickExistingValueFilter, numberValueFilter, DeleteColumn, Column, NumberBadgeColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { EventCalendarItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarItemList/eventCalendarItemListOptionsBag";
@@ -176,6 +181,26 @@
         }
 
         return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the calendars column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getApprovalStatusRowFilterValue(row: Record<string, unknown>): string {
+        const isApproved = row.isApproved as boolean;
+        return isApproved ? "Approved" : "Not Approved";
+    }
+
+    /**
+    * Gets the filter value text to use for the calendars column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getActiveStatusFilterValue(row: Record<string, unknown>): string {
+        const isActive = row.isActive as boolean;
+        return isActive ? "Active" : "Inactive";
     }
 
     /**

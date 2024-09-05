@@ -2,7 +2,7 @@
 
 <template>
 
-    <NotificationBox v-if="!config.options?.isAuthorizedToViewProgram" alertType="warning">
+    <NotificationBox v-if="config.options?.isBlockVisible && !config.options?.isAuthorizedToViewProgram" alertType="warning">
         <strong>Note</strong> You are not authorized to view Step Types of this Step Program.
     </NotificationBox>
 
@@ -11,6 +11,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Step Type"
+          title="Step Types"
           :entityTypeGuid="EntityType.StepType"
           stickyHeader
           liveUpdates

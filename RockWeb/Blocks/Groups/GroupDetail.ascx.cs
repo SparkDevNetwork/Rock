@@ -476,8 +476,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int? groupId = 0;
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
@@ -486,6 +484,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
                 if ( groupId.HasValue )
                 {
                     ShowDetail( groupId.Value, PageParameter( PageParameterKey.ParentGroupId ).AsIntegerOrNull() );
@@ -494,8 +493,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     pnlDetails.Visible = false;
                 }
-
-                btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
             }
             else
             {
@@ -533,6 +530,8 @@ namespace RockWeb.Blocks.Groups
                     FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1374,6 +1373,13 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupId > 0 )
             {
+                var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+                if ( currentGroup != null && !currentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbEditModeMessage.Visible = true;
+                    nbEditModeMessage.Text = "You are not authorized to copy the group";
+                    return;
+                }
                 var copyGroupOptions = new CopyGroupOptions
                 {
                     GroupId = groupId,
@@ -1494,8 +1500,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
             var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+            btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean() && currentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
             if ( currentGroup != null )
             {
                 ShowReadonlyDetails( currentGroup );
@@ -1650,6 +1656,7 @@ namespace RockWeb.Blocks.Groups
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
                 btnArchive.Visible = false;
+                btnCopy.Visible = false;
                 ShowReadonlyDetails( group );
             }
             else
@@ -4485,24 +4492,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbIsSecurityRole_CheckedChanged( object sender, EventArgs e )
         {
-            // Grouptype changed, so load up the new attributes and set controls to the default attribute values
-            if ( ddlGroupType.Visible )
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( !groupId.HasValue )
             {
-                CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+                return;
             }
 
-            if ( CurrentGroupTypeId > 0 )
+            var groupType = CurrentGroupTypeCache;
+            var group = GetGroup( groupId.Value );
+            if ( group == null || groupType == null)
             {
-                var groupType = CurrentGroupTypeCache;
-
-                var group = new Group
-                {
-                    GroupTypeId = CurrentGroupTypeId,
-                    IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid()
-                };
-
-                ShowGroupTypeEditDetails( groupType, group, true );
+                return;
             }
+
+            group.IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            ShowGroupTypeEditDetails( groupType, group, true );
         }
 
         /// <summary>

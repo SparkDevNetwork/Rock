@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
+using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 
@@ -26,12 +28,121 @@ namespace Rock.Blocks.Mobile.CheckIn
 
     #region Block Attributes
 
+    [CodeEditorField(
+        "Loading Screen Template",
+        Description = "The template to use for the loading screen. Lava is disabled.",
+        DefaultValue = "",
+        IsRequired = false,
+        Key = AttributeKey.LoadingScreenTemplate,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
+        Order = 0 )]
+
+    [CodeEditorField(
+        "Completion Screen Template",
+        Description = "The template to use for the success screen.",
+        DefaultValue = "",
+        IsRequired = false,
+        Key = AttributeKey.CompletionScreenTemplate,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
+        Order = 1 )]
+
+    [CodeEditorField(
+        "Login Screen Template",
+        Description = "The template to use for the screen that displays if a person is not logged in. Lava is disabled.",
+        DefaultValue = "",
+        IsRequired = false,
+        Key = AttributeKey.LoginScreenTemplate,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
+        Order = 2 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CHECKIN_CHECKIN )]
     [Rock.SystemGuid.BlockTypeGuid( "85A9DDF0-D199-4D7B-887C-9AE8B3508444" )]
     public class CheckIn : RockBlockType
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets the defined loading screen template for the block.
+        /// </summary>
+        protected string LoadingScreenTemplate => GetAttributeValue( AttributeKey.LoadingScreenTemplate );
+
+        /// <summary>
+        /// Gets the defined completion screen template for the block.
+        /// </summary>
+        protected string CompletionScreenTemplate => GetAttributeValue( AttributeKey.CompletionScreenTemplate );
+
+        /// <summary>
+        /// Gets the defined login screen template for the block.
+        /// </summary>
+        protected string LoginScreenTemplate => GetAttributeValue( AttributeKey.LoginScreenTemplate );
+
+        #endregion
+
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for attribute storage.
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The attribute key for the loading screen template attribute.
+            /// </summary>
+            public const string LoadingScreenTemplate = "LoadingScreenTemplate";
+
+            /// <summary>
+            /// The attribute key for the completion screen template attribute.
+            /// </summary>
+            public const string CompletionScreenTemplate = "CompletionScreenTemplate";
+
+            /// <summary>
+            /// The attribute key for the login screen template attribute.
+            /// </summary>
+            public const string LoginScreenTemplate = "LoginScreenTemplate";
+        }
+
+        #endregion
+
+        #region IRockMobileBlockType
+
+        /// <inheritdoc />
+        public override object GetMobileConfigurationValues()
+        {
+            return new
+            {
+                LoadingScreenTemplate = LoadingScreenTemplate,
+                LoginScreenTemplate = LoginScreenTemplate
+            };
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the XAML template used to display the completion screen.
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        private string GetCompletionScreenTemplate( List<RecordedAttendanceBag> attendances )
+        {
+            if( CompletionScreenTemplate.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+
+            var lavaSafeAttendances = attendances.Select( a => new Lava.LavaDataWrapper( a ) ).ToList();
+            mergeFields.Add( "RecordedAttendances", lavaSafeAttendances );
+             
+            return CompletionScreenTemplate.ResolveMergeFields( mergeFields );
+        }
+
+        #endregion
+
         #region Block Actions
 
         /// <summary>
@@ -47,6 +158,17 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionUnauthorized();
             }
 
+            DeviceCache kiosk = null;
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
             var familyId = RequestContext.CurrentPerson.PrimaryFamily.IdKey;
             var configuration = GroupTypeCache.GetByIdKey( options.ConfigurationTemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
             var areas = options.AreaIds.Select( id => GroupTypeCache.GetByIdKey( id, RockContext ) ).ToList();
@@ -55,13 +177,14 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 return ActionBadRequest( "Configuration was not found." );
             }
+
             try
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
 
                 var locations = options.LocationIds.Select( id => NamedLocationCache.GetByIdKey( id ) ).ToList();
-                session.LoadAndPrepareAttendeesForFamily( familyId, areas, null, locations );
+                session.LoadAndPrepareAttendeesForFamily( familyId, areas, kiosk, locations );
 
                 return ActionOk( new FamilyMembersResponseBag
                 {
@@ -93,13 +216,24 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionBadRequest( "Configuration was not found." );
             }
 
+            DeviceCache kiosk = null;
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
             try
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
 
                 var locations = options.LocationIds.Select( id => NamedLocationCache.GetByIdKey( id ) ).ToList();
-                session.LoadAndPrepareAttendeesForPerson( options.PersonId, options.FamilyId, areas, null, locations );
+                session.LoadAndPrepareAttendeesForPerson( options.PersonId, options.FamilyId, areas, kiosk, locations );
 
                 if ( session.Attendees.Count == 0 )
                 {
@@ -158,10 +292,11 @@ namespace Rock.Blocks.Mobile.CheckIn
                     await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, new LabelPrintProvider(), cts.Token );
                 }
 
-                return ActionOk( new SaveAttendanceResponseBag
+                return ActionOk( new MobileCheckInResultBag
                 {
                     Messages = result.Messages,
-                    Attendances = result.Attendances
+                    Attendances = result.Attendances,
+                    Template = GetCompletionScreenTemplate( result.Attendances )
                 } );
             }
             catch ( CheckInMessageException ex )
@@ -207,10 +342,11 @@ namespace Rock.Blocks.Mobile.CheckIn
                 var cts = new CancellationTokenSource( 5000 );
                 await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
 
-                return ActionOk( new ConfirmAttendanceResponseBag
+                return ActionOk( new MobileCheckInResultBag
                 {
                     Messages = result.Messages,
-                    Attendances = result.Attendances
+                    Attendances = result.Attendances,
+                    Template = GetCompletionScreenTemplate( result.Attendances )
                 } );
             }
             catch ( CheckInMessageException ex )
@@ -294,6 +430,18 @@ namespace Rock.Blocks.Mobile.CheckIn
             /// which options are available for each family member.
             /// </summary>
             public List<string> LocationIds { get; set; }
+        }
+
+        /// <summary>
+        /// A helper class that extends the standard check-in result bag to include
+        /// a parsed XAML template.
+        /// </summary>
+        public class MobileCheckInResultBag : CheckInResultBag
+        {
+            /// <summary>
+            /// The XAML to display.
+            /// </summary>
+            public string Template { get; set; }
         }
 
         #endregion

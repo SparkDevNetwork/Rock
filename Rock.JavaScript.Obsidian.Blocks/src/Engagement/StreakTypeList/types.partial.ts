@@ -18,11 +18,3 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export const enum PreferenceKey {
-    FilterActiveStatus = "filter-active-status",
-}
-
-export type GridSettingsOptions = {
-    activeStatus?: string | null;
-};

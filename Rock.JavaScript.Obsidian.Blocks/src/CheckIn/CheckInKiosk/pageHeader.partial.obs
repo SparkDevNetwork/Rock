@@ -3,10 +3,15 @@
     <header class="check-in-panel page-header">
         <div class="title">{{ props.title }}</div>
 
-        <RockButton v-if="!hideNavigation"
+        <span v-if="isOverrideMode"
+                class="label label-warning text-lg">
+            Override
+        </span>
+
+        <RockButton v-if="!hideNavigation && hasBack"
                     btnType="default"
+                    btnSize="sm"
                     class="back-button"
-                    :disabled="!hasBack"
                     @click="onBack">
             <i class="fa fa-chevron-left"></i>
         </RockButton>
@@ -42,6 +47,11 @@
         hideNavigation: {
             type: Boolean as PropType<boolean>,
             required: false
+        },
+
+        isOverrideMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

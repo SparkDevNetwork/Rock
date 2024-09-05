@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -232,12 +233,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1732,6 +1733,10 @@ namespace RockWeb.Blocks.Event
                     // Filter query by any configured person attribute filters
                     if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                     {
+                        /*
+                            SK - 07/23/2024
+                            The logic below evaluates if any filter is applied to any group member attribute. If not, it returns all the data irrespective of whether the registrant is part of any group. If a filter is applied, the registrant must be part of a group.
+                        */
                         var groupMemberService = new GroupMemberService( rockContext );
                         var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
                         bool isFilterModeApplied = false;
@@ -1739,10 +1744,17 @@ namespace RockWeb.Blocks.Event
                         {
                             var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
                             var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                            if ( filterValues.Count > 1 )
+                            {
+                                var comparisionType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                                if ( comparisionType.HasValue && ( comparisionType == ComparisonType.IsBlank || comparisionType == ComparisonType.IsNotBlank || filterValues.Last().IsNotNullOrWhiteSpace() ) )
+                                {
+                                    isFilterModeApplied = true;
+                                }
+                            }
+                            else if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
                             {
                                 isFilterModeApplied = true;
-                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
                             }
                         }
 

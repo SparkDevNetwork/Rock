@@ -83,7 +83,7 @@
         "WatchFilterMustBeSelected",
         "UnableToOverride",
         "NoteTypeDoesNotAllowWatch"
-    ]
+    ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(noteWatchEditBag, validProperties, invokeBlockAction), undefined, true);
 
@@ -240,8 +240,9 @@
         if (result.errorMessage) {
             if (!anticipatedErrors.includes(result.errorMessage)) {
                 errorMessage.value = result.errorMessage ?? "Unknown error while trying to save note watch.";
-            } else {
-                noteWatchErrorDetails.value = result.errorMessage
+            }
+            else {
+                noteWatchErrorDetails.value = result.errorMessage;
             }
         }
 

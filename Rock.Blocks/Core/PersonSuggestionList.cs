@@ -182,8 +182,8 @@ namespace Rock.Blocks.Core
                     .Queryable()
                     .Where( f => selectedItems.Contains( f.Guid ) )
                     .Select( f => f.EntityId )
-                    .Distinct()
-                    .ToList();
+                    .AsEnumerable()
+                    .Distinct();
 
                 // Find any of the selected person alias ids that current person is already following
                 var followingService = new FollowingService( RockContext );
@@ -195,8 +195,8 @@ namespace Rock.Blocks.Core
                         string.IsNullOrEmpty( f.PurposeKey ) &&
                         selectedPersonAliasIds.Contains( f.EntityId ) )
                     .Select( f => f.EntityId )
-                    .Distinct()
-                    .ToList();
+                    .AsEnumerable()
+                    .Distinct();
 
                 // For each selected person alias id that the current person is not already following
                 foreach ( var personAliasId in selectedPersonAliasIds.Where( p => !alreadyFollowing.Contains( p ) ) )
@@ -251,14 +251,76 @@ namespace Rock.Blocks.Core
         /// </summary>
         public class PersonSuggestionData
         {
+            /// <summary>
+            /// Gets or sets the identifier key.
+            /// </summary>
+            /// <value>
+            /// The identifier key.
+            /// </value>
             public string IdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person.
+            /// </summary>
+            /// <value>
+            /// The person.
+            /// </value>
             public Person Person { get; set; }
+
+            /// <summary>
+            /// Gets or sets the suggested following.
+            /// </summary>
+            /// <value>
+            /// The suggested following.
+            /// </value>
             public FollowingSuggested FollowingSuggested { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last promoted date time.
+            /// </summary>
+            /// <value>
+            /// The last promoted date time.
+            /// </value>
             public DateTime? LastPromotedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status changed date time.
+            /// </summary>
+            /// <value>
+            /// The status changed date time.
+            /// </value>
             public DateTime? StatusChangedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the reason note.
+            /// </summary>
+            /// <value>
+            /// The reason note.
+            /// </value>
             public string ReasonNote { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status.
+            /// </summary>
+            /// <value>
+            /// The status.
+            /// </value>
             public FollowingSuggestedStatus Status { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
             public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the nick.
+            /// </summary>
+            /// <value>
+            /// The name of the nick.
+            /// </value>
             public string NickName { get; set; }
         }
 

@@ -64,6 +64,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the default <see cref="LearningSemester"/> for the specified Learning Program.
+        /// </summary>
+        /// <param name="learningProgramId">The </param>
+        /// <returns></returns>
+        public LearningSemester DefaultSemester( int learningProgramId )
+        {
+            return Queryable()
+                .Where( p => p.Id == learningProgramId )
+                .Include( p => p.LearningSemesters )
+                .Select( p => p.LearningSemesters.FirstOrDefault() )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets a list of several Key Performance Indicators for the specified Learning Program.
         /// </summary>
         /// <param name="learningProgramId">The identifier of the learning program for which to get the KPIs.</param>

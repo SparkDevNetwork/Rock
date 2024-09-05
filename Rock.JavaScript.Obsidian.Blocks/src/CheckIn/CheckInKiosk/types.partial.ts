@@ -25,6 +25,11 @@ import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
+import { RegistrationFamilyBag } from "@Obsidian/ViewModels/CheckIn/registrationFamilyBag";
+import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registrationPersonBag";
+import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
+import { Guid } from "@Obsidian/Types";
+import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
 // #region Temporary Types
 
@@ -182,6 +187,25 @@ export enum SupervisorScreen {
 }
 
 /**
+ * Identifies each of the registration screens that are available when the
+ * kiosk has registration mode enabled.
+ */
+export enum RegistrationScreen {
+    /**
+     * The edit family screen displays a list of individuals in the family
+     * and allows editing family information as well as removing existing
+     * family members.
+     */
+    EditFamily = 200,
+
+    /**
+     * The edit individual screen allows for both adding and editing family
+     * members.
+     */
+    EditIndividual = 201
+}
+
+/**
  * Defines a button that will be displayed by the main kiosk page at the
  * request of child screens.
  */
@@ -228,25 +252,61 @@ export type AggregateAttendance = {
  */
 export interface IRockCheckInNative {
     /**
-     * Sets the kiosk identifier for the native application.
+     * Prints the legacy labels from check-in v1.
      *
-     * @param kioskId The kiosk integer identifier.
+     * @param tagJson The JSON data that contains the label details.
      */
-    SetKioskId?(kioskId: number): void;
+    PrintLabels?(tagJson: string): Promise<void>;
+
+    /**
+     * Prints the labels from check-in v2.
+     *
+     * @param tagJson The JSON data that contains the label details.
+     */
+    PrintV2Labels?(tagJson: string): Promise<string[]>;
 
     /**
      * Starts the native camera scanning feature of the application.
      *
      * @param isPassive True if the camera should be in passive mode.
      */
-    StartCamera?(isPassive: boolean): void;
+    StartCamera?(isPassive: boolean): Promise<void>;
+
+    /**
+     * Stops the native camera scanning feature of the application.
+     */
+    StopCamera?(): Promise<void>;
+
+    /**
+     * Sets the kiosk identifier for the native application.
+     *
+     * @param kioskId The kiosk integer identifier.
+     */
+    SetKioskId?(kioskId: number): Promise<void>;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Makes all properties on the type not nullable and not undefined.
+ */
+type NoNullishField<T> = { [P in keyof T]-?: NonNullable<T[P]> };
 
 export type SupervisorScreenData = {
     pinCode: string;
 
     counts?: GetCurrentAttendanceResponseBag;
+};
+
+export type RegistrationScreenData = Omit<Omit<EditFamilyResponseBag, "people">, "family"> & {
+    editPersonGuid?: string | null;
+
+    family: NoNullishField<ValidPropertiesBox<RegistrationFamilyBag>>;
+
+    people: NoNullishField<ValidPropertiesBox<AugmentedRegistrationPersonBag>>[];
+};
+
+export type AugmentedRegistrationPersonBag = RegistrationPersonBag & {
+    guid: Guid;
 };
 
 export type AttendanceCountGroup = {

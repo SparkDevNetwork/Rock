@@ -6,7 +6,8 @@
                     :editorHeight="editorHeight > 0 ? editorHeight : undefined"
                     :mergeFields="mergeFields"
                     toolbar="full"
-                    :startInCodeEditorMode="false" />
+                    :startInCodeEditorMode="false"
+                    label="HTML Editor" />
 
         <template #settings>
             <div class="row">

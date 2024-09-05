@@ -2433,7 +2433,7 @@ namespace Rock.Model
         /// of type. Then order by those with a matching number and SMS enabled; then further order
         /// by matching number with type == mobile; finally order by person Id to get the oldest
         /// person in the case of duplicate records. If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = true, a
-        /// Nameless person record will created which can later be matched to a person
+        /// Nameless person record will be created which can later be matched to a person
         /// </summary>
         /// <param name="phoneNumber">The phone number.</param>
         /// <param name="createNamelessPersonIfNotFound">if set to <c>true</c> [create nameless person if not found].</param>
@@ -2470,6 +2470,57 @@ namespace Rock.Model
                     person = new Person();
                     person.RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
                     person.PhoneNumbers.Add( smsPhoneNumber );
+                    new PersonService( nameLessPersonRockContext ).Add( person );
+                    nameLessPersonRockContext.SaveChanges();
+
+                    person = this.Get( person.Id );
+                }
+            }
+
+            return person;
+        }
+
+        /// <summary>
+        /// Get the person associated with an email address.
+        /// If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = <see langword="true"/>,
+        /// a Nameless person record will be created which can later be matched to a person.
+        /// </summary>
+        /// <param name="emailAddress">The email address.</param>
+        /// <param name="createNamelessPersonIfNotFound">if set to <see langword="true"/>, creates a nameless person if a person is not found.</param>
+        /// <returns>The located person or a new nameless person.</returns>
+        internal Person GetPersonFromEmailAddress( string emailAddress, bool createNamelessPersonIfNotFound )
+        {
+            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            // Order so that non-nameless people with the email address are listed first,
+            // then sort by the oldest person record in case there are multiple people with the same email.
+            var person = Queryable(
+                new PersonQueryOptions
+                {
+                    IncludeDeceased = true,
+                    IncludeNameless = true
+                } )
+                .Where( pn => pn.Email == emailAddress )
+                .OrderByDescending( p => p.RecordTypeValueId != recordTypeValueIdNameless )
+                .ThenBy( pn => pn.Id )
+                .FirstOrDefault();
+
+            if ( person == null && createNamelessPersonIfNotFound )
+            {
+                using ( var nameLessPersonRockContext = new RockContext() )
+                {
+                    var emailUsername = emailAddress.Substring( 0, emailAddress.IndexOf( "@" ) );
+
+                    person = new Person
+                    {
+                        RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ),
+                        Email = emailAddress,
+
+                        // Set the first name and nickname to the username portion of the email address (text to the left of @).
+                        FirstName = emailUsername,
+                        NickName = emailUsername
+                    };
+
                     new PersonService( nameLessPersonRockContext ).Add( person );
                     nameLessPersonRockContext.SaveChanges();
 
@@ -4688,63 +4739,17 @@ FROM (
                 Medium
                   - one or more of the following -
                     + Individual Has Login
-                    + Individual has a Family Member with Medium Security
 
                 High
                   - one or more of the following -
                     + Active Scheduled Financial Transaction (inactive are not viewable)
                     + Saved Payment Account
                     + in a Security Role Marked w/ High Elevated Security
-                    + Individual has a Family Member with High Security
 
                 Extreme
                   - one or more of the following -
                     + in a Security Role marked w/ Extreme Elevated Security Level
-                    + Individual has a Family Member with Extreme Security
              */
-
-
-            /* Retrieve person IDs for families with medium, high, and extreme security levels,
-               excluding children, based on the highest security level within each family */
-            var personIdsInFamilyWithMediumSecurity = personService
-                .Queryable()
-                .Where( p => p.PrimaryFamilyId != null )
-                .GroupBy( p => p.PrimaryFamilyId )
-                .Where( group =>
-                    group.Any( p => personIdsWithLoginsQuery.Contains( p.Id )
-                        && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to high APP based on Group
-                        && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) // Check to see if any family members will be promoted to high APP based on Financial data
-                        && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to extreme APP based on Group
-                    )
-                )
-                .SelectMany( group => group
-                   .Select( p => p.Id )
-               );
-
-            var personIdsInFamilyWithHighSecurity = personService
-               .Queryable()
-               .Where( p => p.PrimaryFamilyId != null )
-               .GroupBy( p => p.PrimaryFamilyId )
-               .Where( group =>
-                    group.Any( p => ( personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
-                            || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
-                        && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to extreme APP based on Group
-                    )
-               )
-               .SelectMany( group => group
-                   .Select( p => p.Id )
-               );
-
-            var personIdsInFamilyWithExtremeSecurity = personService
-               .Queryable()
-               .Where( p => p.PrimaryFamilyId != null )
-               .GroupBy( p => p.PrimaryFamilyId )
-               .Where( group =>
-                    group.Any( p => personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id ) )
-               )
-               .SelectMany( group => group
-                   .Select( p => p.Id )
-               );
 
             // set up query as all person records regardless of Deceased, record type, etc
             var personQuery = personService.AsNoFilter();
@@ -4758,37 +4763,39 @@ FROM (
             //  -- No Risk Items
             var personToSetAsAccountProtectionProfileLowQuery = personQuery.Where( p =>
                     !personIdsWithLoginsQuery.Contains( p.Id )
-                    && !personIdsInFamilyWithMediumSecurity.Contains( p.Id )
-                    && !personIdsInFamilyWithHighSecurity.Contains( p.Id )
-                    && !personIdsInFamilyWithExtremeSecurity.Contains( p.Id )
+                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.Low );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileLowQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Low } );
 
             // update the people that meet the AccountProtectionProfile.Medium criteria:
-            //  -- In a Family with Medium Security
+            //  -- Has login
+            //  -- No other Risk items
             var personToSetAsAccountProtectionProfileMediumQuery = personQuery.Where( p =>
-                    personIdsInFamilyWithMediumSecurity.Contains( p.Id )
-                    && !personIdsInFamilyWithHighSecurity.Contains( p.Id )
-                    && !personIdsInFamilyWithExtremeSecurity.Contains( p.Id )
+                    personIdsWithLoginsQuery.Contains( p.Id )
+                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.Medium );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileMediumQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Medium } );
 
             // update the people that meet the AccountProtectionProfile.High criteria:
-            //   -- In a Low Security Role Group or Has Financial Data
-            //   -- Not in a Family with Extreme Security
+            //   -- In a High Security Role Group or Has Financial Data
+            //   -- Not in an Extreme security role group
             var personToSetAsAccountProtectionProfileHighQuery = personQuery.Where( p =>
-                    personIdsInFamilyWithHighSecurity.Contains( p.Id )
-                    && !personIdsInFamilyWithExtremeSecurity.Contains( p.Id )
+                    ( personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.High );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileHighQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.High } );
 
             // update the people that meet the AccountProtectionProfile.Extreme criteria:
-            //   -- In a Family with Extreme Security
+            //   -- In an Extreme security role group
             var personToSetAsAccountProtectionProfileExtremeQuery = personQuery.Where( p =>
-                personIdsInFamilyWithExtremeSecurity.Contains( p.Id )
+                personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                 && p.AccountProtectionProfile != AccountProtectionProfile.Extreme );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileExtremeQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Extreme } );

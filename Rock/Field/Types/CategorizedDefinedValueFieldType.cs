@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 #endif
 using Rock.Data;
@@ -28,18 +29,20 @@ using Rock.Model;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and display a selection from a Defined Type that supports categorized values.
+    /// Field Name: Defined Value (Categorized)
     /// </summary>
     [Serializable]
     [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D" )]
-    public class CategorizedDefinedValueFieldType : FieldType, IEntityReferenceFieldType
+    public class CategorizedDefinedValueFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -47,7 +50,6 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPES_KEY = "DefinedTypes";
         private const string DEFINED_TYPE_VALUES_KEY = "DefinedTypeValues";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValues";
-        private const string CONFIGURATION_MODE_KEY = "ConfigurationMode";
 
         /// <summary>
         /// The settings for this Field Type.
@@ -178,7 +180,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetPublicValue(string privateValue, Dictionary<string, string> privateConfigurationValues)
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues );
         }
@@ -209,7 +211,6 @@ namespace Rock.Field.Types
 
             privateConfigurationValues.Remove( DEFINED_TYPES_KEY );
             privateConfigurationValues.Remove( DEFINED_TYPE_VALUES_KEY );
-            privateConfigurationValues.Remove( CONFIGURATION_MODE_KEY );
 
             return privateConfigurationValues;
         }
@@ -280,8 +281,6 @@ namespace Rock.Field.Types
                 }
 
                 publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
-
-                publicConfigurationValues[CONFIGURATION_MODE_KEY] = usage.ToString();
 
             }
 
@@ -870,6 +869,48 @@ namespace Rock.Field.Types
         }
 
 #endif
+        #endregion
+
+        #region IEntityFieldType
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetEditValue( control, configurationValues ).ToIntSafe();
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            SetEditValue( control, configurationValues, id.ToString() );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity(value, null );
+        }
+
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new DefinedValueService( rockContext ).Get( value );
+        }
+
         #endregion
     }
 }

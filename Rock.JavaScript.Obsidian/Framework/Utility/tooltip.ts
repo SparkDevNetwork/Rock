@@ -49,9 +49,14 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
     }
 
     if (typeof $ === "function") {
-        $(node).tooltip({
+        const $node = $(node);
+        $node.tooltip({
             html: options?.html,
             sanitize: options?.sanitize ?? true
+        });
+
+        $node.on("mouseleave", function () {
+            $node.tooltip("hide");
         });
     }
 }

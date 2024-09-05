@@ -15,9 +15,11 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
+namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
 {
     /// <summary>
     /// 
@@ -52,28 +54,14 @@ namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
         public string CopyLink { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValue of the UTM Source to be passed to the remote device.
+        /// The UTM settings to apply to this short link.
         /// </summary>
-        public ListItemBag UtmSourceValue { get; set; }
+        public UtmSettingsBag UtmSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValue of the UTM Medium to be passed to the remote device.
+        /// Gets or sets the list of scheduled redirects that have been
+        /// configured for this short link.
         /// </summary>
-        public ListItemBag UtmMediumValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the DefinedValue of the UTM Campaign to be passed to the remote device.
-        /// </summary>
-        public ListItemBag UtmCampaignValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Utm Term to be passed to the remote device.
-        /// </summary>
-        public string UtmTerm { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Utm Content to be passed to the remote device.
-        /// </summary>
-        public string UtmContent { get; set; }
+        public List<ScheduledRedirectBag> ScheduledRedirects { get; set; }
     }
 }

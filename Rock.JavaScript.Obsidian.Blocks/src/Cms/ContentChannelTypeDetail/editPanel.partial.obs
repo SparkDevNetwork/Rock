@@ -171,6 +171,7 @@
     // #endregion
 
     // #region Functions
+
     function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
 
         if (attribute.key) {
@@ -191,9 +192,8 @@
             guid: attribute.guid
         };
     }
-    // #endregion
 
-    // #region Event Handlers
+    // #endregion
 
     // #region Item Attributes
 
@@ -240,7 +240,6 @@
             itemAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
         }
         else {
-
             if (itemAttribute.value) {
                 const index = itemAttributes.value.findIndex(a => a.key === itemAttribute.value?.key);
                 if (index !== -1) {
@@ -297,6 +296,7 @@
     // #endregion
 
     // #region Channel Attributes
+
     async function onAddChannelAttribute(): Promise<void> {
         channelAttribute.value = {} as PublicEditableAttributeBag;
         isChannelAttributeModalOpen.value = true;
@@ -340,7 +340,6 @@
             channelAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
         }
         else {
-
             if (channelAttribute.value) {
                 const index = channelAttributes.value.findIndex(a => a.key === channelAttribute.value?.key);
                 if (index !== -1) {
@@ -394,7 +393,6 @@
 
         return result.isSuccess;
     }
-    // #endregion
 
     // #endregion
 

@@ -33,7 +33,7 @@ namespace Rock.Blocks.Cms
     /// Lists clicks for a particular short link.
     /// </summary>
 
-    [DisplayName( "Short Link Click List" )]
+    [DisplayName( "Page Short Link Click List" )]
     [Category( "CMS" )]
     [Description( "Lists clicks for a particular short link." )]
     [IconCssClass( "fa fa-question" )]

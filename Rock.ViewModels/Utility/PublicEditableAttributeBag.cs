@@ -179,5 +179,20 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The default value of the attribute.</value>
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary>
+        /// Gets or sets a color to visually distinguish this attribute.
+        /// </summary>
+        public string AttributeColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the icon to show as a distinguishing mark for this attribute.
+        /// </summary>
+        public string IconCssClass { get; set; }
     }
 }

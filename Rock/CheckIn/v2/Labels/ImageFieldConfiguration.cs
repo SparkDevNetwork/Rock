@@ -23,6 +23,9 @@ namespace Rock.CheckIn.v2.Labels
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag"/>
     internal class ImageFieldConfiguration : IFieldConfiguration
     {
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.ImageId" path="/summary"/>
+        public Guid? ImageId { get; set; }
+
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.ImageData" path="/summary"/>
         public byte[] ImageData { get; set; }
 

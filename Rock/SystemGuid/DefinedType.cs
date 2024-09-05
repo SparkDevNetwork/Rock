@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// Guid for Attendance record SourceValueId.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE = "A27BF9DD-7AF0-47B4-8FE4-0B5E510381DB";
+
+        /// <summary>
         /// Background check package types
         /// </summary>
         public const string BACKGROUND_CHECK_TYPES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
@@ -530,6 +535,11 @@ namespace Rock.SystemGuid
         /// List of different campaigns that may generate website traffic.
         /// </summary>
         public const string UTM_CAMPAIGN = "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F";
+
+        /// <summary>
+        /// List of possible sentiments for classification.
+        /// </summary>
+        public const string SENTIMENT_EMOTIONS = "C9751C20-DA81-4521-81DE-0099D6F598BA";
 
         /// <summary>
         /// The statement generator lava template (Legacy)

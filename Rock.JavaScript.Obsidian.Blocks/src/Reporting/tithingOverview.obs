@@ -1,6 +1,6 @@
 <template>
     <div class="tithing-overview">
-        <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics.</NotificationBox>
+        <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics available.</NotificationBox>
         <Panel v-else title="Tithing Overview By Campus" type="block">
             <template #headerActions>
                 <div class="control-wrapper mr-3">
@@ -348,7 +348,7 @@
 
             for (const dataset of datasets) {
                 let legendItem = {
-                    text: dataset.label,
+                    text: dataset.label ?? "Unknown",
                     fillStyle: dataset.borderColor,
                     datasetIndex: datasets.indexOf(dataset),
                     lineWidth: 0

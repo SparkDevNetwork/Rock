@@ -45,10 +45,10 @@ export type AttributeMatrixTemplateBag = {
     isActive: boolean;
 
     /** Gets or sets the maximum rows. */
-    maximumRows?: number | null;
+    maximumRows?: string | null;
 
     /** Gets or sets the minimum rows. */
-    minimumRows?: number | null;
+    minimumRows?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;

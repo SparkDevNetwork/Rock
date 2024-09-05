@@ -59,7 +59,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "The template to use when rendering event items.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST,
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = "4482BB6D-9C02-48D0-8475-4BA0948131A0",
         Key = AttributeKeys.EventTemplate,
         Order = 2 )]
 
@@ -158,7 +158,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The day header template default value.
             /// </summary>
-            public const string DayHeaderTemplate = @"<Label Text=""{Binding ., StringFormat='{}{0:dddd MMMM d}'}"" StyleClass=""calendar-events-day, h2"" />";
+            public const string DayHeaderTemplate = @"<Label Text=""{Binding ., StringFormat='{}{0:dddd MMMM d}'}"" StyleClass=""calendar-events-day, h2, title2, bold, text-interface-stronger"" />";
         }
 
         /// <summary>

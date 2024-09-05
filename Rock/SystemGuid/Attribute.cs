@@ -1044,6 +1044,51 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
 
+        /// <summary>
+        /// The AI service to use for the Category.
+        /// </summary>
+        public const string AI_AUTOMATION_AI_PROVIDER = "6A1991F6-AB4A-4B92-9790-0E2ED62C079F";
+
+        /// <summary>
+        /// Determines whether to auto-categorize the request based on the text.
+        /// </summary>
+        public const string AI_AUTOMATION_AUTO_CATEGORIZE = "6614A615-1744-4BC8-BBEC-12DB89A1E29C";
+
+        /// <summary>
+        /// Determines whether child categories inherit the AI Automations of this category.
+        /// </summary>
+        public const string AI_AUTOMATION_CHILD_CATEGORIES_INHERIT_CONFIGURATION = "065ECB63-A468-4892-AAC4-39CC998EAA70";
+
+        /// <summary>
+        /// Determines whether the public appropriateness should be checked for the text.
+        /// </summary>
+        public const string AI_AUTOMATION_CHECK_PUBLIC_APPROPRIATENESS = "3C72AF29-9F11-4FE8-88AC-8A5FE3B8565A";
+
+        /// <summary>
+        /// Determines whether the emotional sentiment should be classified based on the text and provided sentiment options.
+        /// </summary>
+        public const string AI_AUTOMATION_CLASSIFY_SENTIMENT = "DDAE804B-A166-4302-812C-E12E29EB118B";
+
+        /// <summary>
+        /// Determines if AI should moderate the request.
+        /// </summary>
+        public const string AI_AUTOMATION_ENABLE_AI_MODERATION = "7472FD09-E6A6-4857-BB41-A34ABA7676A3";
+
+        /// <summary>
+        /// The workflow to launch if any of the moderation categories are found.
+        /// </summary>
+        public const string AI_AUTOMATION_MODERATION_ALERT_WORKFLOW_TYPE = "4C9F5F7C-9A33-4588-9D2C-2C32553D3CD3";
+
+        /// <summary>
+        /// Determines whether the AI should remove names from the text.
+        /// </summary>
+        public const string AI_AUTOMATION_REMOVE_NAMES = "0AAC2E68-CB3B-4123-AAB2-D087F1729C02";
+
+        /// <summary>
+        /// Determines whether the AI should polish the text of the request.
+        /// </summary>
+        public const string AI_AUTOMATION_TEXT_ENHANCEMENT = "6BF93B6F-0EC9-4CF0-8EC5-636F524C830A";
+
         #region Sign-Up Group (GroupType) Attributes
 
         /// <summary>

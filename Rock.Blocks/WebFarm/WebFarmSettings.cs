@@ -291,19 +291,19 @@ namespace Rock.Blocks.WebFarm
 
             box.IfValidProperty( nameof( box.Entity.LowerPollingLimit ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_LOWER_LIMIT_SECONDS,
-                ( box.Entity.LowerPollingLimit == 0 ? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalLowerLimitSeconds : box.Entity.LowerPollingLimit ).ToString() ) );
+                ( box.Entity.LowerPollingLimit ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalLowerLimitSeconds ).ToString() ) );
 
             box.IfValidProperty( nameof( box.Entity.UpperPollingLimit ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS,
-                ( box.Entity.UpperPollingLimit == 0 ? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds : box.Entity.UpperPollingLimit ).ToString() ) );
+                ( box.Entity.UpperPollingLimit ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds ).ToString() ) );
 
             box.IfValidProperty( nameof( box.Entity.MaxPollingWaitSeconds ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS,
-                ( box.Entity.MaxPollingWaitSeconds == 0 ? RockWebFarm.DefaultValue.DefaultPollingMaxWaitSeconds : box.Entity.MaxPollingWaitSeconds ).ToString() ) );
+                ( box.Entity.MaxPollingWaitSeconds ?? RockWebFarm.DefaultValue.DefaultPollingMaxWaitSeconds ).ToString() ) );
 
             box.IfValidProperty( nameof( box.Entity.MinimumPollingDifference ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS,
-                ( box.Entity.MinimumPollingDifference == 0 ? RockWebFarm.DefaultValue.DefaultMinimumPollingDifferenceSeconds : box.Entity.MinimumPollingDifference ).ToString() ) );
+                ( box.Entity.MinimumPollingDifference ?? RockWebFarm.DefaultValue.DefaultMinimumPollingDifferenceSeconds ).ToString() ) );
 
             return true;
         }
