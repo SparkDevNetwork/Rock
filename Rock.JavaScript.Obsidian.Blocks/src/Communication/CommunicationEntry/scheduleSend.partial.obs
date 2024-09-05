@@ -8,8 +8,9 @@
             v-bind="$attrs" />
 
     <Modal v-model="isScheduleSendModalOpen"
-           title="Schedule Send"
+           :isSaveButtonDisabled="!tempScheduleSendIsoString"
            saveText="Save"
+           title="Schedule Send"
            @save="onScheduleSendModalSave"
            @closeModal="onScheduleSendModalClose">
         <div class="schedule-send-modal">
