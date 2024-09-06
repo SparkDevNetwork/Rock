@@ -57,6 +57,12 @@ export type CommunicationEntrySaveRequestBag = {
     /** Gets or sets the email attachment binary files. */
     emailAttachmentBinaryFiles?: ListItemBag[] | null;
 
+    /**
+     * Option to prevent communications from being sent to people with the same email/SMS addresses.
+     * This will mean two people who share an address will not receive a personalized communication, only one of them will.
+     */
+    excludeDuplicateRecipientAddress: boolean;
+
     /** Gets or sets from email address. */
     fromAddress?: string | null;
 

@@ -128,5 +128,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         ///   <see langword="true"/> if additional email recipients are allowed; otherwise, <see langword="false"/>.
         /// </value>
         public bool AreAdditionalEmailRecipientsAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the duplicate prevention option is shown.
+        /// </summary>
+        /// <value>
+        ///   <see langword="true"/> if the duplicate prevention option shown; otherwise,<see langword="false"/>.
+        /// </value>
+        public bool IsDuplicatePreventionOptionShown { get; set; }
     }
 }

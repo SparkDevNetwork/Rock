@@ -156,6 +156,12 @@ namespace Rock.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 15 )]
 
+    [BooleanField( "Show Duplicate Prevention Option",
+        Key = AttributeKey.ShowDuplicatePreventionOption,
+        Description = "Set this to true to show an option to prevent communications from being sent to people with the same email/SMS addresses. Typically, in Rock you’d want to send two emails as each will be personalized to the individual.",
+        DefaultBooleanValue = false,
+        Order = 16 )]
+
     [TextField( "Document Root Folder",
         Key = AttributeKey.DocumentRootFolder,
         Description = "The folder to use as the root when browsing or uploading documents.",
@@ -220,6 +226,7 @@ namespace Rock.Blocks.Communication
             public const string EnablePersonParameter = "EnablePersonParameter";
             public const string ShowEmailMetricsReminderOptions = "ShowEmailMetricsReminderOptions";
             public const string ShowAdditionalEmailRecipients = "ShowAdditionalEmailRecipients";
+            public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
         }
 
         /// <summary>
@@ -389,6 +396,11 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private Guid? TemplateGuidPageParameter => PageParameter( PageParameterKey.TemplateGuid ).AsGuidOrNull();
 
+        /// <summary>
+        /// Set this to true to show an option to prevent communications from being sent to people with the same email/SMS addresses. Typically, in Rock you’d want to send two emails as each will be personalized to the individual.
+        /// </summary>
+        private bool IsDuplicatePreventionOptionShown => GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+
         #endregion
 
         #region Base Control Methods
@@ -410,6 +422,7 @@ namespace Rock.Blocks.Communication
 
                     box.AreAdditionalEmailRecipientsAllowed = this.AreAdditionalEmailRecipientsAllowed;
                     box.AreEmailMetricsReminderOptionsShown = this.AreEmailMetricsReminderOptionsShown;
+                    box.IsDuplicatePreventionOptionShown = this.IsDuplicatePreventionOptionShown;
                     box.Authorization = authorization;
                     box.IsCcBccEntryAllowed = this.IsCcBccEntryAllowed;
                     box.IsHidden = false;
@@ -1647,6 +1660,7 @@ namespace Rock.Blocks.Communication
 
             communication.EnabledLavaCommands = this.EnabledLavaCommands;
             communication.IsBulkCommunication = bag.IsBulkCommunication;
+            communication.ExcludeDuplicateRecipientAddress = bag.ExcludeDuplicateRecipientAddress;
 
             if ( medium != null )
             {

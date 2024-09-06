@@ -78,6 +78,13 @@
                 </div>
             </div>
 
+            <div v-if="isDuplicatePreventionOptionShown">
+                <CheckBox label="Prevent Duplicate SMS Addresses"
+                          text="Yes"
+                          help="Check this option to prevent communications from being sent to people with the same SMS addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
+                          v-model="excludeDuplicateRecipientAddress" />
+            </div>
+
             <div class="row">
                 <div class="col-sm-6">
                     <SmsMessageEditor v-model="message"
@@ -171,6 +178,7 @@
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
 
     const props = defineProps({
         disabled: {
@@ -197,7 +205,12 @@
         communicationListGroupGuid: {
             type: String as PropType<Guid | null | undefined>,
             required: true
-        }
+        },
+
+        isDuplicatePreventionOptionShown: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -248,6 +261,7 @@
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
     const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? emptyGuid);
     const isLoadingMediumOptions = ref<boolean>(true);
+    const excludeDuplicateRecipientAddress = ref<boolean>(config.communication?.excludeDuplicateRecipientAddress ?? false);
 
     //#endregion
 
@@ -470,7 +484,8 @@
                 smsAttachmentBinaryFiles: attachments.value ?? [],
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient
+                status: CommunicationStatus.Transient,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -503,7 +518,8 @@
                 smsAttachmentBinaryFiles: attachments.value ?? [],
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient
+                status: CommunicationStatus.Transient,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -538,6 +554,7 @@
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
                 status: CommunicationStatus.Transient,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
