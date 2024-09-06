@@ -909,68 +909,6 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
         #endregion
 
-        #region IsAdult
-
-        [TestMethod]
-        public void CreateOrUpdatePerson_WithAdult_UpdatesAgeClassification()
-        {
-            var expectedAgeClassification = AgeClassification.Adult;
-
-            var rockContextMock = CreateRockContextWithoutSaveChanges();
-
-            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
-            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
-
-            Group primaryFamily = null;
-            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
-            {
-                Bag = new RegistrationPersonBag
-                {
-                    IsAdult = true
-                },
-                ValidProperties = new List<string>
-                {
-                    nameof( RegistrationPersonBag.IsAdult )
-                }
-            };
-
-            var saveResult = new FamilyRegistrationSaveResult();
-            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
-
-            Assert.That.AreEqual( expectedAgeClassification, person.AgeClassification );
-        }
-
-        [TestMethod]
-        public void CreateOrUpdatePerson_WithChild_UpdatesAgeClassification()
-        {
-            var expectedAgeClassification = AgeClassification.Child;
-
-            var rockContextMock = CreateRockContextWithoutSaveChanges();
-
-            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
-            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
-
-            Group primaryFamily = null;
-            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
-            {
-                Bag = new RegistrationPersonBag
-                {
-                    IsAdult = false
-                },
-                ValidProperties = new List<string>
-                {
-                    nameof( RegistrationPersonBag.IsAdult )
-                }
-            };
-
-            var saveResult = new FamilyRegistrationSaveResult();
-            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
-
-            Assert.That.AreEqual( expectedAgeClassification, person.AgeClassification );
-        }
-
-        #endregion
-
         #region Gender
 
         [TestMethod]
@@ -2817,15 +2755,13 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
-            var person = new Person
-            {
-                AgeClassification = AgeClassification.Adult
-            };
+            var person = new Person();
 
             var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
             {
                 Bag = new RegistrationPersonBag
                 {
+                    IsAdult = true,
                     AttributeValues = new Dictionary<string, string>
                     {
                         ["Allergy"] = expectedAllergyValue,
@@ -2861,15 +2797,13 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
-            var person = new Person
-            {
-                AgeClassification = AgeClassification.Child
-            };
+            var person = new Person();
 
             var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
             {
                 Bag = new RegistrationPersonBag
                 {
+                    IsAdult = false,
                     AttributeValues = new Dictionary<string, string>
                     {
                         ["Allergy"] = expectedAllergyValue,
@@ -2896,15 +2830,13 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
-            var person = new Person
-            {
-                AgeClassification = AgeClassification.Adult
-            };
+            var person = new Person();
 
             var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
             {
                 Bag = new RegistrationPersonBag
                 {
+                    IsAdult = true,
                     AttributeValues = new Dictionary<string, string>
                     {
                         ["Allergy"] = "unit-test-value"
@@ -2935,10 +2867,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
-            var person = new Person
-            {
-                AgeClassification = AgeClassification.Child
-            };
+            var person = new Person();
             person.LoadAttributes( rockContextMock.Object );
             person.SetAttributeValue( "Allergy", expectedAllergyValue );
 
@@ -2946,6 +2875,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             {
                 Bag = new RegistrationPersonBag
                 {
+                    IsAdult = false,
                     AttributeValues = new Dictionary<string, string>
                     {
                         ["Allergy"] = string.Empty
@@ -2974,10 +2904,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
-            var person = new Person
-            {
-                AgeClassification = AgeClassification.Child
-            };
+            var person = new Person();
             person.LoadAttributes( rockContextMock.Object );
             person.SetAttributeValue( "Allergy", "unit-test-value" );
 
@@ -2985,6 +2912,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             {
                 Bag = new RegistrationPersonBag
                 {
+                    IsAdult = false,
                     AttributeValues = new Dictionary<string, string>
                     {
                         ["Allergy"] = string.Empty

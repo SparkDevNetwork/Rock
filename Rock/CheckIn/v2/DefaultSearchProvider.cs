@@ -528,7 +528,7 @@ namespace Rock.CheckIn.v2
                 .Select( fm => fm.PersonId );
             var groupMemberService = new GroupMemberService( Session.RockContext );
             var canCheckInRoleIds = knownRelationshipGroupType.Roles
-                .Where( r => TemplateConfiguration.CanCheckInKnownRelationshipRoleGuids.Contains( r.Guid ) )
+                .Where( r => r.GetAttributeValue( "CanCheckin" ).AsBoolean() )
                 .Select( r => r.Id )
                 .ToList();
 
