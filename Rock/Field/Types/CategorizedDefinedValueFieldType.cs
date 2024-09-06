@@ -870,38 +870,25 @@ namespace Rock.Field.Types
 
         #region IEntityFieldType
 
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return GetEditValue( control, configurationValues ).ToIntSafe();
         }
 
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
+        /// <inheritdoc/>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
             SetEditValue( control, configurationValues, id.ToString() );
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public IEntity GetEntity( string value )
         {
             return GetEntity(value, null );
         }
 
+        /// <inheritdoc/>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();
