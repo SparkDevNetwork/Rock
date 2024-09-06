@@ -314,6 +314,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEVICE_TYPE_PRINTER = "8284B128-E73B-4863-9FC2-43E6827B65E6";
 
+        /// <summary>
+        /// Proxy device type
+        /// </summary>
+        public const string DEVICE_TYPE_PROXY = "EF5BF148-C9E0-4F96-8152-BB23CD85D845";
+
         #endregion
 
         #region Entity Set Purpose
