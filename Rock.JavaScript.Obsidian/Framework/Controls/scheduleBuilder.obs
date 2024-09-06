@@ -598,8 +598,20 @@
     function getCalendarString(): string {
         const event = new Event();
 
-        event.startDateTime = RockDateTime.parseISO(startDateTime.value ?? "") ?? RockDateTime.now();
-        event.endDateTime = event.startDateTime?.addSeconds(durationInSeconds.value ?? 1);
+        let start = RockDateTime.parseISO(startDateTime.value ?? "");
+        if (!start && specificDates.value.length) {
+            // If they set some specific dates but no start date, assume the min
+            // specific date is the start date.
+            start = specificDates.value[0];
+        }
+
+        if (!start) {
+            // If we still don't have a start date, default to now.
+            start = RockDateTime.now();
+        }
+
+        event.startDateTime = start;
+        event.endDateTime = event.startDateTime?.addSeconds(durationInSeconds.value || 1);
 
         if (scheduleType.value === "recurring") {
             if (occurrencePattern.value === "specificDates") {
