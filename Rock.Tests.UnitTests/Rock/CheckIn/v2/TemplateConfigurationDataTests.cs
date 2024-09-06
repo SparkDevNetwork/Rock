@@ -383,27 +383,26 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         private void SetupGroupTypeRoleMocks( Mock<RockContext> rockContextMock )
         {
             var knownRelationshipsGroupType = CreateEntityMock<GroupType>( 2, SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var relationshipOne = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeOneId, KnownRelationshipTypeOneGuid );
+            var relationshipTwo = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeTwoId, KnownRelationshipTypeTwoGuid );
+            var relationshipThree = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeThreeId, KnownRelationshipTypeThreeGuid );
+
+            var relationshipOneCache = new GroupTypeRoleCache();
+            var relationshipTwoCache = new GroupTypeRoleCache();
+            var relationshipThreeCache = new GroupTypeRoleCache();
+
+            relationshipOneCache.SetFromEntity( relationshipOne.Object );
+            relationshipTwoCache.SetFromEntity( relationshipTwo.Object );
+            relationshipThreeCache.SetFromEntity( relationshipThree.Object );
 
             rockContextMock.SetupDbSet( knownRelationshipsGroupType.Object );
 
             var knownRelationshipsGroupTypeCache = GroupTypeCache.Get( knownRelationshipsGroupType.Object.Id, rockContextMock.Object );
             var roles = new List<GroupTypeRoleCache>
             {
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeOneId,
-                    Guid = KnownRelationshipTypeOneGuid
-                } ),
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeTwoId,
-                    Guid = KnownRelationshipTypeTwoGuid
-                } ),
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeThreeId,
-                    Guid = KnownRelationshipTypeThreeGuid
-                } )
+                relationshipOneCache,
+                relationshipTwoCache,
+                relationshipThreeCache
             };
 
             // Use reflection to set the backing field since we can't currently
