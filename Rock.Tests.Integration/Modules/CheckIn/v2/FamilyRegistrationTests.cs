@@ -1024,7 +1024,41 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
         }
 
         [TestMethod]
-        public void CreateOrUpdatePerson_WithoutIsMarried_UpdatesMartialStatusToSingle()
+        public void CreateOrUpdatePerson_WithoutIsMarriedAndCurrentValueIsMarried_UpdatesMartialStatusToSingle()
+        {
+            var expectedMaritalStatusValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE );
+
+            var rockContextMock = CreateRockContextWithoutSaveChanges();
+
+            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
+
+            var tedDecker = new PersonService( rockContextMock.Object ).Get( TestGuids.TestPeople.TedDecker );
+            tedDecker.MaritalStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id;
+
+            Group primaryFamily = null;
+            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
+            {
+                Bag = new RegistrationPersonBag
+                {
+                    Id = tedDecker.IdKey,
+                    IsMarried = false
+                },
+                ValidProperties = new List<string>
+                {
+                    nameof( RegistrationPersonBag.IsMarried )
+                }
+            };
+
+            var saveResult = new FamilyRegistrationSaveResult();
+            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
+
+            Assert.That.AreEqual( tedDecker.Id, person.Id );
+            Assert.That.AreEqual( expectedMaritalStatusValue.Id, tedDecker.MaritalStatusValueId );
+        }
+
+        [TestMethod]
+        public void CreateOrUpdatePerson_WithoutIsMarriedAndCurrentValueIsNull_UpdatesMartialStatusToSingle()
         {
             var expectedMaritalStatusValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE );
 
@@ -1050,6 +1084,41 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
             Assert.That.AreEqual( expectedMaritalStatusValue.Id, person.MaritalStatusValueId );
+        }
+
+        [TestMethod]
+        public void CreateOrUpdatePerson_WithoutIsMarriedAndCurrentValueIsNotMarried_DoesNotUpdateMartialStatusValueId()
+        {
+            var expectedMaritalStatusValue = -1;
+
+            var rockContextMock = CreateRockContextWithoutSaveChanges();
+
+            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
+
+            var tedDecker = new PersonService( rockContextMock.Object ).Get( TestGuids.TestPeople.TedDecker );
+            tedDecker.MaritalStatusValueId = expectedMaritalStatusValue;
+
+            Group primaryFamily = null;
+
+            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
+            {
+                Bag = new RegistrationPersonBag
+                {
+                    Id = tedDecker.IdKey,
+                    IsMarried = false
+                },
+                ValidProperties = new List<string>
+                {
+                    nameof( RegistrationPersonBag.IsMarried )
+                }
+            };
+
+            var saveResult = new FamilyRegistrationSaveResult();
+            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
+
+            Assert.That.AreEqual( tedDecker.Id, person.Id );
+            Assert.That.AreEqual( expectedMaritalStatusValue, tedDecker.MaritalStatusValueId );
         }
 
         #endregion
