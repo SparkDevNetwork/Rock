@@ -115,22 +115,16 @@ namespace Rock.CheckIn.v2
             _currentPerson = currentPerson;
             _template = template;
 
-            GroupTypeRoleAdultId = new Lazy<int>( () => GroupTypeCache
-                .Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), _rockContext )
-                .Roles
-                .FirstOrDefault( a => a.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
+            GroupTypeRoleAdultId = new Lazy<int>( () => GroupTypeRoleCache
+                .Get( SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid(), _rockContext )
                 .Id );
 
-            GroupTypeRoleChildId = new Lazy<int>( () => GroupTypeCache
-                .Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), _rockContext )
-                .Roles
-                .FirstOrDefault( a => a.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
+            GroupTypeRoleChildId = new Lazy<int>( () => GroupTypeRoleCache
+                .Get( SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid(), _rockContext )
                 .Id );
 
-            GroupTypeRoleCanCheckInId = new Lazy<int>( () => GroupTypeCache
-                .Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), _rockContext )
-                .Roles
-                .FirstOrDefault( a => a.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid() )
+            GroupTypeRoleCanCheckInId = new Lazy<int>( () => GroupTypeRoleCache
+                .Get( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid(), _rockContext )
                 .Id );
 
             PersonSearchAlternateId = new Lazy<int>( () => DefinedValueCache
@@ -1163,11 +1157,9 @@ namespace Rock.CheckIn.v2
                 }
 
                 var relationshipToAdultGuid = individual.RegistrationPerson.Bag.RelationshipToAdult?.Value.AsGuid();
-                var relationshipToAdultId = GroupTypeCache
-                    .Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), _rockContext )
-                    .Roles
-                    .FirstOrDefault( a => a.Guid == relationshipToAdultGuid )
-                    ?.Id;
+                var relationshipToAdultId = relationshipToAdultGuid.HasValue
+                    ? GroupTypeRoleCache.Get( relationshipToAdultGuid.Value )?.Id
+                    : null;
 
                 if ( relationshipToAdultId.HasValue )
                 {
@@ -1291,12 +1283,8 @@ namespace Rock.CheckIn.v2
         private void RemoveCanCheckInRelationships( int personId, int familyId )
         {
             var groupMemberService = new GroupMemberService( _rockContext );
-            var knownRelationshipGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), _rockContext );
-            var ownerRoleId = knownRelationshipGroupType.Roles
-                .FirstOrDefault( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() )
-                .Id;
-            var canCheckInRoleIds = knownRelationshipGroupType.Roles
-                .Where( r => _template.CanCheckInKnownRelationshipRoleGuids.Contains( r.Guid ) )
+            var ownerRoleId = GroupTypeRoleCache.Get( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), _rockContext ).Id;
+            var canCheckInRoleIds = GroupTypeRoleCache.GetMany( _template.CanCheckInKnownRelationshipRoleGuids.ToList(), _rockContext )
                 .Select( r => r.Id )
                 .ToList();
 
@@ -1364,8 +1352,8 @@ namespace Rock.CheckIn.v2
             // in their new family.
             if ( ( person.Age ?? 0 ) >= 18 )
             {
-                oldFamilyGroupMember.GroupRoleId = familyGroupType.Roles
-                    .First( a => a.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
+                oldFamilyGroupMember.GroupRoleId = GroupTypeRoleCache
+                    .Get( SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid(), _rockContext )
                     .Id;
             }
 

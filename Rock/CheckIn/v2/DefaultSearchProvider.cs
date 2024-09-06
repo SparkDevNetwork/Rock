@@ -517,7 +517,7 @@ namespace Rock.CheckIn.v2
             }
 
             var knownRelationshipsOwnerGuid = SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
-            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == knownRelationshipsOwnerGuid );
+            var ownerRole = GroupTypeRoleCache.Get( knownRelationshipsOwnerGuid );
 
             if ( ownerRole == null )
             {
