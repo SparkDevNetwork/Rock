@@ -2803,17 +2803,17 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
         [TestMethod]
         public void UpdatePersonAttributeValues_WithAdult_SetsAdultAttributeValues()
         {
-            var expectedTwitterValue = "unit-test-twitter";
-            var expectedFacebookValue = "unit-test-facebook";
+            var expectedAllergyValue = "unit-test-allergy";
+            var expectedLegalNotesValue = "unit-test-leagal-notes";
 
             var rockContextMock = CreateRockContextWithoutSaveChanges();
 
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
 
             templateConfigurationDataMock.Setup( m => m.OptionalAttributeGuidsForAdults )
-                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_TWITTER.AsGuid() } );
+                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() } );
             templateConfigurationDataMock.Setup( m => m.RequiredAttributeGuidsForAdults )
-                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid() } );
+                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_LEGAL_NOTE.AsGuid() } );
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
@@ -2828,8 +2828,8 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 {
                     AttributeValues = new Dictionary<string, string>
                     {
-                        ["Twitter"] = expectedTwitterValue,
-                        ["Facebook"] = expectedFacebookValue
+                        ["Allergy"] = expectedAllergyValue,
+                        ["LegalNotes"] = expectedLegalNotesValue
                     }
                 },
                 ValidProperties = new List<string>
@@ -2840,24 +2840,24 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.AreEqual( expectedTwitterValue, person.GetAttributeValue( "Twitter" ) );
-            Assert.That.AreEqual( expectedFacebookValue, person.GetAttributeValue( "Facebook" ) );
+            Assert.That.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
+            Assert.That.AreEqual( expectedLegalNotesValue, person.GetAttributeValue( "LegalNotes" ) );
         }
 
         [TestMethod]
         public void UpdatePersonAttributeValues_WithChild_SetsChildAttributeValues()
         {
-            var expectedTwitterValue = "unit-test-twitter";
-            var expectedFacebookValue = "unit-test-facebook";
+            var expectedAllergyValue = "unit-test-allergy";
+            var expectedLegalNotesValue = "unit-test-legal-notes";
 
             var rockContextMock = CreateRockContextWithoutSaveChanges();
 
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
 
             templateConfigurationDataMock.Setup( m => m.OptionalAttributeGuidsForChildren )
-                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_TWITTER.AsGuid() } );
+                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() } );
             templateConfigurationDataMock.Setup( m => m.RequiredAttributeGuidsForChildren )
-                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid() } );
+                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_LEGAL_NOTE.AsGuid() } );
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
@@ -2872,8 +2872,8 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 {
                     AttributeValues = new Dictionary<string, string>
                     {
-                        ["Twitter"] = expectedTwitterValue,
-                        ["Facebook"] = expectedFacebookValue
+                        ["Allergy"] = expectedAllergyValue,
+                        ["LegalNotes"] = expectedLegalNotesValue
                     }
                 },
                 ValidProperties = new List<string>
@@ -2884,8 +2884,8 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.AreEqual( expectedTwitterValue, person.GetAttributeValue( "Twitter" ) );
-            Assert.That.AreEqual( expectedFacebookValue, person.GetAttributeValue( "Facebook" ) );
+            Assert.That.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
+            Assert.That.AreEqual( expectedLegalNotesValue, person.GetAttributeValue( "LegalNotes" ) );
         }
 
         [TestMethod]
@@ -2907,7 +2907,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 {
                     AttributeValues = new Dictionary<string, string>
                     {
-                        ["Twitter"] = "unit-test-value"
+                        ["Allergy"] = "unit-test-value"
                     }
                 },
                 ValidProperties = new List<string>
@@ -2918,20 +2918,20 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.IsEmpty( person.GetAttributeValue( "Twitter" ) );
+            Assert.That.IsEmpty( person.GetAttributeValue( "Allergy" ) );
         }
 
         [TestMethod]
         public void UpdatePersonAttributeValues_WithBlankValueAndDontSaveEmptyValues_DoesNotSetAttributeValues()
         {
-            var expectedTwitterValue = "unit-test-twitter";
+            var expectedAllergyValue = "unit-test-allergy";
 
             var rockContextMock = CreateRockContextWithoutSaveChanges();
 
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
 
             templateConfigurationDataMock.Setup( m => m.OptionalAttributeGuidsForChildren )
-                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_TWITTER.AsGuid() } );
+                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() } );
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
@@ -2940,7 +2940,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 AgeClassification = AgeClassification.Child
             };
             person.LoadAttributes( rockContextMock.Object );
-            person.SetAttributeValue( "Twitter", expectedTwitterValue );
+            person.SetAttributeValue( "Allergy", expectedAllergyValue );
 
             var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
             {
@@ -2948,7 +2948,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 {
                     AttributeValues = new Dictionary<string, string>
                     {
-                        ["Twitter"] = string.Empty
+                        ["Allergy"] = string.Empty
                     }
                 },
                 ValidProperties = new List<string>
@@ -2959,7 +2959,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.AreEqual( expectedTwitterValue, person.GetAttributeValue( "Twitter" ) );
+            Assert.That.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
         }
 
         [TestMethod]
@@ -2970,7 +2970,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
 
             templateConfigurationDataMock.Setup( m => m.OptionalAttributeGuidsForChildren )
-                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_TWITTER.AsGuid() } );
+                .Returns( new List<Guid> { SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() } );
 
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
 
@@ -2979,7 +2979,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 AgeClassification = AgeClassification.Child
             };
             person.LoadAttributes( rockContextMock.Object );
-            person.SetAttributeValue( "Twitter", "unit-test-value" );
+            person.SetAttributeValue( "Allergy", "unit-test-value" );
 
             var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
             {
@@ -2987,7 +2987,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 {
                     AttributeValues = new Dictionary<string, string>
                     {
-                        ["Twitter"] = string.Empty
+                        ["Allergy"] = string.Empty
                     }
                 },
                 ValidProperties = new List<string>
@@ -2998,7 +2998,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, true );
 
-            Assert.That.IsEmpty( person.GetAttributeValue( "Twitter" ) );
+            Assert.That.IsEmpty( person.GetAttributeValue( "Allergy" ) );
         }
 
         #endregion

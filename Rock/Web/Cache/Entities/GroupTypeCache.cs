@@ -643,12 +643,17 @@ namespace Rock.Web.Cache
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        _roles = new GroupTypeRoleService( rockContext )
-                            .Queryable().AsNoTracking()
+                        var roleIds = new GroupTypeRoleService( rockContext )
+                            .Queryable()
                             .Where( r => r.GroupTypeId == Id )
+                            .Select( r => r.Id )
+                            .ToList();
+
+                        // GroupTypeRole invalidates the GroupTypeCache object
+                        // when it is changed, so it is safe to cache the full
+                        // GroupTypeRoleCache objects instead of just the Ids.
+                        _roles = GroupTypeRoleCache.GetMany( roleIds, rockContext )
                             .OrderBy( r => r.Order )
-                            .ToList()
-                            .Select( r => new GroupTypeRoleCache( r ) )
                             .ToList();
                     }
                 }
@@ -1103,137 +1108,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Cached version of GroupTypeRole
-    /// </summary>
-    [Serializable]
-    [DataContract]
-    public class GroupTypeRoleCache
-    {
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        [DataMember]
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        /// <value>
-        /// The unique identifier.
-        /// </value>
-        [DataMember]
-        public Guid Guid { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        [DataMember]
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the order.
-        /// </summary>
-        /// <value>
-        /// The order.
-        /// </value>
-        [DataMember]
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the maximum count.
-        /// </summary>
-        /// <value>
-        /// The maximum count.
-        /// </value>
-        [DataMember]
-        public int? MaxCount { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the minimum count.
-        /// </summary>
-        /// <value>
-        /// The minimum count.
-        /// </value>
-        [DataMember]
-        public int? MinCount { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is leader.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is leader; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsLeader { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can view.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can view; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CanView { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can edit.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CanEdit { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can manage members.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can manage members; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CanManageMembers { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
-        /// </summary>
-        /// <param name="role">The role.</param>
-        public GroupTypeRoleCache( GroupTypeRole role )
-        {
-            if ( role == null )
-            {
-                return;
-            }
-
-            Id = role.Id;
-            Guid = role.Guid;
-            Name = role.Name;
-            Order = role.Order;
-            MaxCount = role.MaxCount;
-            MinCount = role.MinCount;
-            IsLeader = role.IsLeader;
-            CanView = role.CanView;
-            CanEdit = role.CanEdit;
-            CanManageMembers = role.CanManageMembers;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return Name;
-        }
     }
 }
