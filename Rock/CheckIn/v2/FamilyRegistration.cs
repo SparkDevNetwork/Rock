@@ -686,12 +686,9 @@ namespace Rock.CheckIn.v2
 
             // NOTE: NickName, LastName, Gender, MaritalStatusValueId should
             // replace existing values if they were provided even if it is a
-            // matched person. AgeClassification will be set automatically
-            // but we do it now so that it can be used by other logic later on
-            // in this process.
+            // matched person.
             person.NickName = registrationPerson.Bag.NickName;
             person.LastName = registrationPerson.Bag.LastName;
-            person.AgeClassification = registrationPerson.Bag.IsAdult ? AgeClassification.Adult : AgeClassification.Child;
 
             registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.Gender ),
                 () => person.Gender = registrationPerson.Bag.Gender );
@@ -794,6 +791,10 @@ namespace Rock.CheckIn.v2
 
                 // If this is a new family, but we found a matching adult
                 // person, use that person's family as the family.
+                // NOTE: We are using person.AgeClassification here instead of
+                // registrationPerson.Bag.IsAdult because we want to know if
+                // the original matched person was an Adult - not what was set
+                // in the UI.
                 if ( person != null && primaryFamily == null && person.AgeClassification == AgeClassification.Adult )
                 {
                     primaryFamily = person.GetFamily( _rockContext );
@@ -950,7 +951,7 @@ namespace Rock.CheckIn.v2
 
             List<Guid> attributeGuids;
 
-            if ( person.AgeClassification == AgeClassification.Adult )
+            if ( registrationPerson.Bag.IsAdult )
             {
                 attributeGuids = _template.OptionalAttributeGuidsForAdults
                     .Union( _template.RequiredAttributeGuidsForAdults )
@@ -1175,6 +1176,25 @@ namespace Rock.CheckIn.v2
                     // primary family.
                     foreach ( var primaryFamilyAdult in adultsInPrimaryFamily )
                     {
+                        /*
+                         * Daniel Hazelbaker - 9/6/2024
+                         * 
+                         * This logic was discussed during PO review. The point
+                         * of discussion was the fact that we only create the
+                         * selected known relationship if the person is NOT in
+                         * the same family.
+                         * 
+                         * There were good arguments on both sides for also
+                         * creating the known relationship when the child is in
+                         * the same family and also when not. For example, a
+                         * known relationship of "Step Child" would be good to
+                         * know. But a counter argument is that "Step Child" is
+                         * only correct for one parent/adult.
+                         * 
+                         * For now, we decided to leave the logic as-is to match
+                         * the current v1 functionality.
+                         */
+
                         groupMemberService.CreateKnownRelationship( primaryFamilyAdult.Id, individual.Person.Id, relationshipToAdultId.Value );
 
                         var canCheckIn = _template.CanCheckInKnownRelationshipRoleGuids.Contains( relationshipToAdultGuid.Value );
