@@ -249,11 +249,13 @@
         updateRefValue(kioskType, props.modelValue.kioskType?.toString() ?? "");
         updateRefValue(cameraBarcodeConfigurationType, props.modelValue.cameraBarcodeConfigurationType?.toString() ?? "");
         updateRefValue(locations, props.modelValue.locations ?? []);
+        updateRefValue(geoPoint, props.modelValue.geoPoint ?? "");
+        updateRefValue(geoFence, props.modelValue.geoFence ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, locations, ...propRefs], () => {
+    watch([attributeValues, locations, geoFence, geoPoint, ...propRefs], () => {
         const newValue: DeviceBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -268,7 +270,9 @@
             printerDevice: { text: "", value: printerDevice.value },
             kioskType: toNumberOrNull(kioskType.value) as KioskType | null,
             cameraBarcodeConfigurationType: toNumberOrNull(cameraBarcodeConfigurationType.value) as CameraBarcodeConfiguration | null,
-            locations: locations.value
+            locations: locations.value,
+            geoFence: geoFence.value,
+            geoPoint: geoPoint.value
         };
 
         emit("update:modelValue", newValue);
