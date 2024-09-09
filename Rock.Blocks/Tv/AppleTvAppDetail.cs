@@ -208,7 +208,7 @@ namespace Rock.Blocks.Tv
             bag.PageViewRetentionPeriod = new InteractionChannelService( new RockContext() ).Queryable()
                     .Where( c => c.ChannelTypeMediumValueId == channelMediumWebsiteValueId && c.ChannelEntityId == entity.Id )
                     .Select( c => c.RetentionDuration )
-                    .FirstOrDefault();
+                    .FirstOrDefault()?.ToString();
 
             return bag;
         }
@@ -563,7 +563,7 @@ namespace Rock.Blocks.Tv
                 }
 
                 interactionChannelForSite.Name = entity.Name;
-                interactionChannelForSite.RetentionDuration = entity.EnablePageViews ? box.Entity.PageViewRetentionPeriod : null;
+                interactionChannelForSite.RetentionDuration = entity.EnablePageViews ? box.Entity.PageViewRetentionPeriod.AsIntegerOrNull() : null;
                 interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Page>().Id;
 
                 rockContext.SaveChanges();

@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -133,10 +134,6 @@
     const options = computed((): AppleTvAppDetailOptionsBag => {
         return config.options ?? {};
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

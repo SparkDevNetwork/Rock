@@ -2508,6 +2508,7 @@
     <Compile Include="Web\Cache\Entities\DataViewCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
+    <Compile Include="Web\Cache\Entities\GroupTypeRoleCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupLocationCache.cs" />

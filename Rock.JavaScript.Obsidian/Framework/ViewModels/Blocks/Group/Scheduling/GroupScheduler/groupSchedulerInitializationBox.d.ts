@@ -37,6 +37,12 @@ export type GroupSchedulerInitializationBox = {
      */
     errorMessage?: string | null;
 
+    /** Gets or sets whether the "auto schedule" feature is enabled. */
+    isAutoScheduleEnabled: boolean;
+
+    /** Gets or sets whether the "clone schedules" feature is enabled. */
+    isCloneSchedulesEnabled: boolean;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 

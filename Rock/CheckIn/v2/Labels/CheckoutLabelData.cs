@@ -93,10 +93,7 @@ namespace Rock.CheckIn.v2.Labels
             CurrentTime = RockDateTime.Now;
 
             GroupRoleNames = Attendance.GroupMembers
-                .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, rockContext )
-                    ?.Roles
-                    .FirstOrDefault( r => r.Id == gm.GroupRoleId )
-                    ?.Name )
+                .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
                 .Where( n => n != null )
                 .ToList();
         }

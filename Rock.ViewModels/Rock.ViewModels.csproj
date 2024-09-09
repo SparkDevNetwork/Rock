@@ -71,6 +71,7 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetScheduledLocationsResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\LocationStatusItemBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\PrintResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\PromotionBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ReprintAttendanceBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SavedKioskConfigurationBag.cs" />

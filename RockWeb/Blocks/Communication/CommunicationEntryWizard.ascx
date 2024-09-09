@@ -233,6 +233,16 @@
                         </div>
                     </asp:Panel>
 
+                    <div>
+                        <Rock:RockCheckBox
+                            ID="cbRecipientListDuplicatePreventionOption"
+                            runat="server"
+                            Label="Prevent Duplicate Email/SMS Addresses"
+                            Text="Yes"
+                            Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.
+                            This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                    </div>
+
                     <%-- Panel Actions  --%>
                     <div class="actions panel-actions-bordered">
                         <asp:LinkButton ID="btnRecipientListNext"

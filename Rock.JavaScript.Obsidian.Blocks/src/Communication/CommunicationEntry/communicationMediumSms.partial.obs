@@ -78,6 +78,13 @@
                 </div>
             </div>
 
+            <div v-if="isDuplicatePreventionOptionShown">
+                <CheckBox label="Prevent Duplicate SMS Addresses"
+                          text="Yes"
+                          help="Check this option to prevent communications from being sent to people with the same SMS addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
+                          v-model="excludeDuplicateRecipientAddress" />
+            </div>
+
             <div class="row">
                 <div class="col-sm-6">
                     <SmsMessageEditor v-model="message"
@@ -92,7 +99,8 @@
                 </div>
 
                 <div class="col-sm-6" v-if="isFullMode">
-                    <FileUploader :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
+                    <FileUploader :modelValue="attachment"
+                                  :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
                                   :disabled="disabled"
                                   label="Attachment"
                                   @error="onAttachmentError"
@@ -171,6 +179,7 @@
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
 
     const props = defineProps({
         disabled: {
@@ -197,7 +206,12 @@
         communicationListGroupGuid: {
             type: String as PropType<Guid | null | undefined>,
             required: true
-        }
+        },
+
+        isDuplicatePreventionOptionShown: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -235,7 +249,7 @@
     const internalCommunicationListGroupGuid = useVModelPassthrough(props, "communicationListGroupGuid", emit);
     const disabledMessage = ref<string | null | undefined>();
     const testResultElement = ref<HTMLElement | undefined>();
-    const fromNumberGuidOrEmptyString = ref<string>("");
+    const fromNumberGuidOrEmptyString = ref<string>(config.communication?.smsFromSystemPhoneNumberGuid ?? "");
     const mediumOptions = ref<CommunicationEntrySmsMediumOptionsBag | null>(isSmsMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
     const errorMessage = ref<string | null | undefined>();
     const message = ref<string>(config.communication?.smsMessage ?? "");
@@ -243,11 +257,12 @@
     const submitFormTrigger = ref<boolean>(false);
     const actionToExecuteOnSubmit = ref<() => PromiseLike<void>>();
     const attachmentErrorMessage = ref<string | null | undefined>();
-    const attachments = ref<ListItemBag[]>(config.communication?.emailAttachmentBinaryFiles ?? []);
+    const attachment = ref<ListItemBag | null | undefined>(config.communication?.smsAttachmentBinaryFiles?.[0]);
     const minimumRecipientCount = ref<number>(0);
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
     const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? emptyGuid);
     const isLoadingMediumOptions = ref<boolean>(true);
+    const excludeDuplicateRecipientAddress = ref<boolean>(config.communication?.excludeDuplicateRecipientAddress ?? false);
 
     //#endregion
 
@@ -300,12 +315,12 @@
     }
 
     function onAttachmentAdded(file: ListItemBag | undefined): void {
+        // SMS only supports one attachment currently.
         if (file) {
-            const allAttachments = [...attachments.value];
-
-            allAttachments.push(file);
-
-            attachments.value = allAttachments;
+            attachment.value = file;
+        }
+        else {
+            attachment.value = null;
         }
     }
 
@@ -467,10 +482,11 @@
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
-                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient
+                status: CommunicationStatus.Transient,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -500,10 +516,11 @@
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
-                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient
+                status: CommunicationStatus.Transient,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -534,10 +551,11 @@
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
-                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
                 status: CommunicationStatus.Transient,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });

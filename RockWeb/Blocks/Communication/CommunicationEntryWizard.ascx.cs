@@ -638,6 +638,8 @@ function onTaskCompleted( resultData )
             lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
             cbDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
             cbDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
+            cbRecipientListDuplicatePreventionOption.Checked = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean(); ;
+            cbRecipientListDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
             tbCommunicationName.Text = communication.Name;
             swBulkCommunication.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
 
@@ -1316,6 +1318,8 @@ function onTaskCompleted( resultData )
 
             pnlIndividualRecipientSummary.Visible = showIndividualRecipientsSummary;
             pnlIndividualRecipientList.Visible = !showIndividualRecipientsSummary;
+
+            cbRecipientListDuplicatePreventionOption.Visible = GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
         }
 
         /// <summary>
@@ -1506,6 +1510,7 @@ function onTaskCompleted( resultData )
             {
                 pnlHeadingLabels.Visible = false;
                 pnlListSelection.Visible = false;
+                cbRecipientListDuplicatePreventionOption.Checked = cbDuplicatePreventionOption.Checked;
                 ShowManualList();
             }
             else
@@ -1524,6 +1529,7 @@ function onTaskCompleted( resultData )
         {
             pnlHeadingLabels.Visible = false;
             nbRecipientsAlert.Visible = false;
+            cbDuplicatePreventionOption.Checked = cbRecipientListDuplicatePreventionOption.Checked;
 
             if ( !this.IndividualRecipientPersonIds.Any() )
             {

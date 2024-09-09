@@ -21,6 +21,17 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Group Archived List block. */
-export type GroupArchivedListOptionsBag = {
+import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
+import { LegacyClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/legacyClientLabelBag";
+
+/** The response bag for various print operations in the check-in kiosk. */
+export type PrintResponseBag = {
+    /** Any error messages that were encountered while printing the labels. */
+    errorMessages?: string[] | null;
+
+    /** Contains all new labels that need to be printed on the client. */
+    labels?: ClientLabelBag[] | null;
+
+    /** Contains all legacy labels that need to be printed on the client. */
+    legacyLabels?: LegacyClientLabelBag[] | null;
 };

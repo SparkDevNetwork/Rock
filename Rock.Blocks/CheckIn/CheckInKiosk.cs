@@ -29,7 +29,6 @@ using Rock.CheckIn;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
-using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
@@ -609,6 +608,188 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             }
         }
 
+        /// <summary>
+        /// Converts the scanned PCL+ code into a list of check-in session guids.
+        /// </summary>
+        /// <param name="scannedCode">The code that was scanned.</param>
+        /// <returns>A list of session unique identifiers contained in the code.</returns>
+        private List<Guid> GetPreCheckInSessionGuids( string scannedCode )
+        {
+            try
+            {
+                if ( scannedCode.StartsWith( "PCL+" ) )
+                {
+                    scannedCode = scannedCode.Substring( 4 );
+                }
+
+                return scannedCode.SplitDelimitedValues()
+                    .Select( a =>
+                    {
+                        if ( Guid.TryParse( a, out var guid ) )
+                        {
+                            return guid;
+                        }
+
+                        return GuidHelper.FromShortStringOrNull( a );
+
+                    } )
+                    .Where( a => a.HasValue )
+                    .Select( a => a.Value )
+                    .ToList();
+            }
+            catch
+            {
+                return new List<Guid>();
+            }
+        }
+
+        /// <summary>
+        /// Prints the legacy labels for the specified attendance identifier.
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier to print labels for.</param>
+        /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
+        private PrintResponseBag PrintLegacyLabelsForAttendanceId( int attendanceId )
+        {
+            var attendance = new AttendanceService( RockContext ).Get( attendanceId );
+            var attendanceIds = new List<int> { attendance.Id };
+            var possibleLabels = ZebraPrint.GetLabelTypesForPerson( attendance.PersonAlias.PersonId, attendanceIds );
+            var fileGuids = possibleLabels.Select( pl => pl.FileGuid ).ToList();
+
+            var (errorMessages, legacyClientLabels) = ZebraPrint.ReprintZebraLabels( fileGuids, attendance.PersonAlias.PersonId, attendanceIds, null );
+
+            var legacyClientLabelBags = legacyClientLabels
+                .Select( label => new LegacyClientLabelBag
+                {
+                    LabelFile = RequestContext.RootUrlPath + label.LabelFile,
+                    LabelKey = label.LabelKey,
+                    MergeFields = label.MergeFields,
+                    PrinterAddress = label.PrinterAddress
+                } )
+                .ToList();
+
+            return new PrintResponseBag
+            {
+                ErrorMessages = errorMessages,
+                LegacyLabels = legacyClientLabelBags
+            };
+        }
+
+        /// <summary>
+        /// Prints the labels for the specified attendance identifier.
+        /// </summary>
+        /// <param name="director">The instance handling the check-in process.</param>
+        /// <param name="kiosk">The kiosk that we will be printing labels for.</param>
+        /// <param name="printer">The printer that will be used as an override for where to print if not <c>null</c>.</param>
+        /// <param name="attendanceId">The attendance identifier to print labels for.</param>
+        /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
+        private async Task<PrintResponseBag> PrintLabelsForAttendanceId( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, int attendanceId )
+        {
+            // Use the new label format for re-printing.
+            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceId }, kiosk, false );
+
+            var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
+                .Select( l => l.Error )
+                .ToList();
+
+            if ( !labels.Any() )
+            {
+                return null;
+            }
+
+            labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
+
+            if ( printer != null )
+            {
+                foreach ( var label in labels )
+                {
+                    label.PrintTo = printer;
+                }
+            }
+
+            // Print the labels with a 5 second timeout.
+            var cts = new CancellationTokenSource( 5_000 );
+            var printProvider = new LabelPrintProvider();
+            var clientLabelBags = labels.Where( l => l.PrintFrom == PrintFrom.Client )
+                .Select( l => new ClientLabelBag
+                {
+                    PrinterAddress = l.PrintTo.IPAddress,
+                    Data = Convert.ToBase64String( l.Data )
+                } )
+                .ToList();
+
+            try
+            {
+                var serverLabels = labels.Where( l => l.PrintFrom == PrintFrom.Server );
+                var printerErrors = await printProvider.PrintLabelsAsync( serverLabels, cts.Token );
+
+                errorMessages.AddRange( printerErrors );
+            }
+            catch ( TaskCanceledException ) when ( cts.IsCancellationRequested )
+            {
+                errorMessages.Add( "Timeout waiting for labels to print." );
+            }
+
+            return new PrintResponseBag
+            {
+                ErrorMessages = errorMessages,
+                Labels = clientLabelBags
+            };
+        }
+
+        /// <summary>
+        /// Prints the labels for the specified attendance identifiers. This will
+        /// determine whether or not to print legacy or next-gen labels.
+        /// </summary>
+        /// <param name="director">The instance handling the check-in process.</param>
+        /// <param name="kiosk">The kiosk that we will be printing labels for.</param>
+        /// <param name="printer">The printer that will be used as an override for where to print if not <c>null</c>.</param>
+        /// <param name="attendanceIds">The attendance identifiers to print labels for.</param>
+        /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
+        private async Task<PrintResponseBag> PrintLabelsForAttendanceIds( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, List<int> attendanceIds )
+        {
+            var response = new PrintResponseBag
+            {
+                ErrorMessages = new List<string>(),
+                Labels = new List<ClientLabelBag>(),
+                LegacyLabels = new List<LegacyClientLabelBag>()
+            };
+
+            // If any attendance records for these sessions have legacy labels
+            // then use those for printing instead of the new label format.
+            var legacy = RockContext.Set<AttendanceData>().Any( a => attendanceIds.Contains( a.Id ) );
+            var hasLabels = false;
+
+            foreach ( var attendanceId in attendanceIds )
+            {
+                var attendanceResponse = legacy
+                    ? PrintLegacyLabelsForAttendanceId( attendanceId )
+                    : await PrintLabelsForAttendanceId( director, kiosk, printer, attendanceId );
+
+                if ( attendanceResponse != null )
+                {
+                    response.ErrorMessages.AddRange( attendanceResponse.ErrorMessages );
+
+                    if ( legacy )
+                    {
+                        response.LegacyLabels.AddRange( attendanceResponse.LegacyLabels );
+                    }
+                    else
+                    {
+                        response.Labels.AddRange( attendanceResponse.Labels );
+                    }
+
+                    hasLabels = true;
+                }
+            }
+
+            if ( !hasLabels )
+            {
+                return null;
+            }
+
+            return response;
+        }
+
         #endregion
 
         #region Block Actions
@@ -657,6 +838,53 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             }
 
             return ActionOk( GetPromotionItems( kiosk.GetCampusId() ) );
+        }
+
+        /// <summary>
+        /// Request to print labels for a mobile check-in where they have
+        /// been giving a QR code for scanning at the kiosk.
+        /// </summary>
+        /// <param name="scannedCode">The scanned code from the barcode reader.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
+        /// <param name="attendanceId">The encrypted identifier of the attendance to print labels for.</param>
+        /// <returns>A 200-OK response that indicates if any errors occurred during printing.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> PrintPreCheckInLabels( string kioskId, string scannedCode )
+        {
+            var director = new CheckInDirector( RockContext );
+
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
+            var sessionGuids = GetPreCheckInSessionGuids( scannedCode );
+            var attendanceIds = new AttendanceService( RockContext ).Queryable()
+                .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
+                .Select( a => a.Id )
+                .ToList();
+
+            if ( !attendanceIds.Any() )
+            {
+                return ActionBadRequest( "No check-in sessions were found." );
+            }
+
+            var response = await PrintLabelsForAttendanceIds( director, kiosk, null, attendanceIds );
+
+            if ( response == null )
+            {
+                return ActionOk( new PrintResponseBag
+                {
+                    ErrorMessages = new List<string>
+                    {
+                        "No labels to print. You're all set."
+                    }
+                } );
+            }
+
+            return ActionOk( response );
         }
 
         #endregion
@@ -833,80 +1061,20 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Invalid attendance." );
             }
 
-            // If the attendance record has legacy labels then use those for
-            // re-printing instead of the new label format.
-            if ( RockContext.Set<AttendanceData>().Any( a => a.Id == attendanceIdNumber.Value ) )
+            var response = await PrintLabelsForAttendanceIds( director, kiosk, printer, new List<int> { attendanceIdNumber.Value } );
+
+            if ( response == null )
             {
-                var attendance = new AttendanceService( RockContext ).Get( attendanceIdNumber.Value );
-                var attendanceIds = new List<int> { attendance.Id };
-                var possibleLabels = ZebraPrint.GetLabelTypesForPerson( attendance.PersonAlias.PersonId, attendanceIds );
-                var fileGuids = possibleLabels.Select( pl => pl.FileGuid ).ToList();
-
-                var (legacyMessages, legacyClientLabels) = ZebraPrint.ReprintZebraLabels( fileGuids, attendance.PersonAlias.PersonId, attendanceIds, null );
-
-                var legacyClientLabelBags = legacyClientLabels
-                    .Select( label => new LegacyClientLabelBag
-                    {
-                        LabelFile = RequestContext.RootUrlPath + label.LabelFile,
-                        LabelKey = label.LabelKey,
-                        MergeFields = label.MergeFields,
-                        PrinterAddress = label.PrinterAddress
-                    } )
-                    .ToList();
-
-                return ActionOk( new
+                return ActionOk( new PrintResponseBag
                 {
-                    ErrorMessages = legacyMessages,
-                    LegacyLabels = legacyClientLabelBags
+                    ErrorMessages = new List<string>
+                    {
+                        "No labels found to print."
+                    }
                 } );
             }
 
-            // Use the new label format for re-printing.
-            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceIdNumber.Value }, kiosk, false );
-
-            var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
-                .Select( l => l.Error )
-                .ToList();
-
-            if ( !labels.Any() )
-            {
-                errorMessages.Add( "No labels to print." );
-            }
-
-            labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
-            foreach ( var label in labels )
-            {
-                label.PrintTo = printer;
-            }
-
-            // Print the labels with a 5 second timeout.
-            var cts = new CancellationTokenSource( 5_000 );
-            var printProvider = new LabelPrintProvider();
-            var clientLabelBags = labels.Where( l => l.PrintFrom == PrintFrom.Client )
-                .Select( l => new ClientLabelBag
-                {
-                    PrinterAddress = l.PrintTo.IPAddress,
-                    Data = Convert.ToBase64String( l.Data )
-                } )
-                .ToList();
-
-            try
-            {
-                var serverLabels = labels.Where( l => l.PrintFrom == PrintFrom.Server );
-                var printerErrors = await printProvider.PrintLabelsAsync( serverLabels, cts.Token );
-
-                errorMessages.AddRange( printerErrors );
-            }
-            catch ( TaskCanceledException ) when ( cts.IsCancellationRequested )
-            {
-                errorMessages.Add( "Timeout waiting for labels to print." );
-            }
-
-            return ActionOk( new
-            {
-                ErrorMessages = errorMessages,
-                Labels = clientLabelBags
-            } );
+            return ActionOk( response );
         }
 
         /// <summary>

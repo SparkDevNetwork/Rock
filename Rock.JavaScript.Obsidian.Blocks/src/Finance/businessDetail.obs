@@ -22,7 +22,6 @@
         </template>
 
         <template v-if="panelMode === DetailPanelMode.View">
-            {{ customActionClass }}
             <ViewPanel :modelValue="businessDetailViewBag" :options="options" />
         </template>
 

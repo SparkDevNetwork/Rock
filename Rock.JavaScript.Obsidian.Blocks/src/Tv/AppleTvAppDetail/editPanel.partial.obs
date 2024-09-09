@@ -23,11 +23,11 @@
                           label="Enable Page Views"
                           help="Determines if interaction records should be written for page views" />
 
-                <NumberBox v-if="enablePageViews"
-                           v-model="pageViewRetentionPeriod"
-                           :minimumValue="0"
-                           label="Page View Retention Period"
-                           help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                <TextBox v-if="enablePageViews"
+                         v-model="pageViewRetentionPeriod"
+                         :rules="validateIntegerValue"
+                         label="Page View Retention Period"
+                         help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
 
                 <div class="row">
                     <div class="col-md-6 col-sm-6">
@@ -60,7 +60,6 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 
     const props = defineProps({
@@ -91,7 +90,7 @@
     const loginPage = propertyRef(props.modelValue.loginPage ?? {}, "LoginPageId");
     const applicationStyles = ref(props.modelValue.applicationStyles ?? "");
     const applicationJavascript = ref(props.modelValue.applicationJavascript ?? "");
-    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? null);
+    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? "");
     const apiKey = ref(props.modelValue.apiKey ?? "");
     const isApplicationJsVisible = ref(props.modelValue.showApplicationJavascript);
 
@@ -101,15 +100,28 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    // #endregion
-
     // #region Functions
 
-    // #endregion
+    function validateIntegerValue(value: unknown): string | boolean {
 
-    // #region Event Handlers
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+            else if (num < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
 
     // #endregion
 
@@ -124,7 +136,7 @@
         updateRefValue(loginPage, props.modelValue.loginPage ?? {});
         updateRefValue(applicationStyles, props.modelValue.applicationStyles ?? "");
         updateRefValue(applicationJavascript, props.modelValue.applicationJavascript ?? "");
-        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? null);
+        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? "");
         updateRefValue(apiKey, props.modelValue.apiKey ?? "");
     });
 

@@ -714,7 +714,7 @@ namespace Rock.CheckIn.v2
                 results.Add( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() );
             }
 
-            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ).ToList() )
+            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ) )
             {
                 results.Add( role.Guid, true );
             }

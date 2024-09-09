@@ -475,10 +475,7 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.Attendance
                     .GroupMembers
-                    .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, printRequest.RockContext )
-                        ?.Roles
-                        .FirstOrDefault( r => r.Id == gm.GroupRoleId )
-                        ?.Name )
+                    .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, printRequest.RockContext )?.Name )
                     .Where( n => n != null )
                     .FirstOrDefault()
                     ?? string.Empty
