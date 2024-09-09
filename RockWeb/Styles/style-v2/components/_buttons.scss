@@ -241,12 +241,12 @@
   &:focus,
   &.focus {
       color:            var(--color-interface-softest);
-      background-color: var(--color-primary) !important;
+      background-color: var(--color-primary);
       border-color:     var(--color-primary);
   }
   &:hover {
-      color:            var(--color-primary);
-      background-color: var(--color-interface-softest);
+      color:            var(--color-interface-softest);
+      background-color: var(--color-primary);
       border-color:     var(--color-primary);
 
   }
@@ -266,6 +266,7 @@
       border-color:     var(--color-primary);
       }
   }
+
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
@@ -274,7 +275,7 @@
     &.focus {
       background-color: var(--color-primary);
       border-color:     var(--color-primary);
-      }
+    }
   }
 
   .badge {
@@ -299,7 +300,7 @@
       background-color: var(--color-interface-softest);
       border-color:     var(--color-success-strong);
   }
-  &:active,
+  &:active, 
   &.active,
   .open > .dropdown-toggle & {
       color:            var(--color-interface-softest);

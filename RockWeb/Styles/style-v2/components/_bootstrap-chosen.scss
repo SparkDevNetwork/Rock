@@ -69,7 +69,7 @@
 
       &.group-result {
         display: list-item;
-        font-weight: 700;
+        font-weight: var(--font-weight-bold);
         color: #999;
         cursor: default;
       }
@@ -105,7 +105,7 @@
 
     .no-results {
       display: list-item;
-      padding: 8px;
+      padding: var(--spacing-small);
       color: var(--color-interface-soft)-lighter;
     }
   }
@@ -114,7 +114,7 @@
     position: absolute;
     z-index: 1;
     width: 321px;
-    margin: 0 4px;
+    margin: 0 var(--spacing-tiny);
     text-align: center;
     background: #fff;
 
@@ -191,7 +191,7 @@
       display: block;
       width: 36px;
       height: 38px;
-      padding-left: 8px;
+      padding-left: var(--spacing-small);
 
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
       background-repeat: no-repeat;
@@ -300,7 +300,7 @@
 
     .search-choice {
       position: relative;
-      padding: 4px 24px 4px 4px;
+      padding: var(--spacing-tiny) var(--spacing-large) var(--spacing-tiny) var(--spacing-tiny);
       margin: 6px 0 0 8px;
       font-size: var(--font-size-xsmall);
       line-height: 1;

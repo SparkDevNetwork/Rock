@@ -323,7 +323,7 @@
 
     .btn-primary,
     .btn-success {
-      margin: 4px 0 4px 8px;
+      margin: var(--spacing-tiny) 0 var(--spacing-tiny) var(--spacing-small);
     }
   }
 

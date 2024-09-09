@@ -157,7 +157,7 @@
   }
   .ant-select-multiple.ant-select-show-arrow .ant-select-selector,
   .ant-select-multiple.ant-select-allow-clear .ant-select-selector {
-    padding-right: 24px;
+    padding-right: var(--spacing-medium);
   }
   .ant-select-multiple .ant-select-selection-item {
     position: relative;
@@ -175,9 +175,9 @@
     cursor: default;
     transition: font-size 0.3s, line-height 0.3s, height 0.3s;
     user-select: none;
-    margin-inline-end: 4px;
-    padding-inline-start: 8px;
-    padding-inline-end: 4px;
+    margin-inline-end: var(--spacing-tiny);
+    padding-inline-start: var(--spacing-small);
+    padding-inline-end: var(--spacing-tiny);
   }
   .ant-select-disabled.ant-select-multiple .ant-select-selection-item {
     color: #bfbfbf;
@@ -186,7 +186,7 @@
   }
   .ant-select-multiple .ant-select-selection-item-content {
     display: inline-block;
-    margin-right: 4px;
+    margin-right: var(--spacing-tiny);
     overflow: hidden;
     white-space: pre;
     text-overflow: ellipsis;
@@ -488,7 +488,7 @@
     left: -9999px;
     z-index: 1050;
     box-sizing: border-box;
-    padding: 4px 0;
+    padding: var(--spacing-tiny) 0;
     overflow: hidden;
     font-size: 14px;
     font-variant: initial;
@@ -562,7 +562,7 @@
   }
   .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
     color: rgba(0, 0, 0, 0.85);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     background-color: #e6f7ff;
   }
   .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
@@ -576,7 +576,7 @@
     background-color: #f5f5f5;
   }
   .ant-select-item-option-grouped {
-    padding-left: 24px;
+    padding-left: var(--spacing-medium);
   }
   .ant-select-lg {
     font-size: 16px;
@@ -601,20 +601,20 @@
     direction: rtl;
   }
   .ant-select-dropdown-rtl .ant-select-item-option-grouped {
-    padding-right: 24px;
+    padding-right: var(--spacing-large);
     padding-left: 12px;
   }
   .ant-select-rtl.ant-select-multiple.ant-select-show-arrow .ant-select-selector,
   .ant-select-rtl.ant-select-multiple.ant-select-allow-clear .ant-select-selector {
-    padding-right: 4px;
-    padding-left: 24px;
+    padding-right: var(--spacing-tiny);
+    padding-left: var(--spacing-large);
   }
   .ant-select-rtl.ant-select-multiple .ant-select-selection-item {
     text-align: right;
   }
   .ant-select-rtl.ant-select-multiple .ant-select-selection-item-content {
     margin-right: 0;
-    margin-left: 4px;
+    margin-left: var(--spacing-tiny);
     text-align: right;
   }
   .ant-select-rtl.ant-select-multiple .ant-select-selection-search-mirror {

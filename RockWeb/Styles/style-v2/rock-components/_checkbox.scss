@@ -110,7 +110,7 @@
 .radio-inline,
 .checkbox-inline {
   label {
-    font-weight:    400;
+    font-weight:    var(--font-weight-regular);
   }
 }
 
@@ -155,7 +155,7 @@
 
 .radio-inline,
 .checkbox-inline {
-  padding-right: 16px;
+  padding-right: var(--spacing-medium);
   padding-left: 30px;
   margin-left: 0;
   label {

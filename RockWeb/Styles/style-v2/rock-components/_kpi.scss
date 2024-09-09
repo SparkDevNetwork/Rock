@@ -161,7 +161,7 @@
 .stat-value {
   display:                  inline-block;
   font-size:                26px;
-  font-weight:              700;
+  font-weight:              var(--font-weight-bold);
   line-height:              1;
 }
 
@@ -185,7 +185,7 @@
 .kpi-secondary-label {
   display:                  block;
   font-size:                .53846em;
-  line-height:              1.1;
+  line-height:              var(--line-height-tight);
   color:                    var(--color-interface-strong);
 }
 
@@ -262,7 +262,7 @@
 .kpi-lg-label {
   display:                  block;
   font-size:                .53846em; 
-  line-height:              1.1;   
+  line-height:              var(--line-height-tight);   
   color:                    var(--color-interface-strong); 
   padding:                  var(--spacing-tiny) 0;
   font-size:                17px;

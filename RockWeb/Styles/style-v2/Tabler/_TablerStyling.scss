@@ -1,0 +1,11 @@
+
+// Working
+@import './fixed-width';
+@import './list';
+@import './sizes';
+@import './stacked';
+
+// Got it working by adding display: inline-block; to `.ti{ }` class 
+// located in the `tabler-icons.css`
+@import './rotated-flipped';
+@import './animation';

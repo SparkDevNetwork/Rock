@@ -126,7 +126,7 @@
 
 .vs__dropdown-toggle {
   display:              flex;
-  padding:              0 0 4px;
+  padding:              0 0 var(--spacing-tiny);
   white-space:          normal;
   background:           none;
   border:               var(--vs-border-width) var(--vs-border-style) var(--vs-border-color);
@@ -258,7 +258,7 @@
 .vs__deselect {
   display:                inline-flex;
   padding:                0;
-  margin-left:            4px;
+  margin-left:            var(--spacing-tiny);
   text-shadow:            var(--vs-controls--deselect-text-shadow);
   cursor:                 pointer;
   background:             none;

@@ -101,7 +101,7 @@
     display: inline-block;
     margin: 0 12px 12px;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   .schedules {
@@ -124,7 +124,7 @@
     margin-bottom: 12px;
 
     .location {
-      margin-bottom: 16px;
+      margin-bottom: var(--spacing-medium);
     }
 
     .card-body {
@@ -142,7 +142,7 @@
     .list-group-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--spacing-small);
       padding: 8px 0 8px 10px;
       background-color: #fcfbfc;
 
@@ -169,7 +169,7 @@
         display: flex;
         flex: 1;
         align-items: center;
-        gap: 8px;
+        gap: var(--spacing-small);
       }
 
       .resource-role {
@@ -243,7 +243,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px;
-    margin-bottom: 24px;
+    margin-bottom: var(--spacing-large);
     border: 1px solid #eee;
     border-radius: 4px;
 
@@ -311,7 +311,7 @@
   }
 
   .tooltip-section + .tooltip-section {
-    margin-top: 8px;
+    margin-top: var(--spacing-small);
   }
 }
 

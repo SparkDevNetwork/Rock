@@ -1,0 +1,18 @@
+/* Support in a list */
+.fa-ul {
+    list-style-type: none;
+    margin-left: calc(2em * 5/4);
+    padding-left: 16px;
+}
+
+.fa-ul > li {
+    position: relative;
+}
+  
+.fa-li {
+    left: calc(2em * -1);
+    position: absolute;
+    text-align: center;
+    width: 2em;
+    line-height: inherit;
+}

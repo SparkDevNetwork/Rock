@@ -45,8 +45,8 @@
   float: left;
   width: 15px;
   height: 100px;
-  margin-bottom: 4px;
-  margin-left: 4px;
+  margin-bottom:  var(--spacing-tiny);
+  margin-left:    var(--spacing-tiny);
   cursor: row-resize;
   i {
     position: absolute;
@@ -83,7 +83,7 @@
   left: 0;
   z-index: 2500;
   min-width: 130px;
-  padding: 4px;
+  padding: var(--spacing-tiny);
   margin-top: 1px;
 
   *zoom: 1;
@@ -203,7 +203,7 @@
   height: auto;
 
   .colorpicker-saturation {
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-tiny);
   }
   .colorpicker-color {
     width: 100px;
@@ -213,7 +213,7 @@
     float: left;
     width: 100px;
     height: 15px;
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-tiny)px;
     margin-left: 0;
     cursor: col-resize;
   }

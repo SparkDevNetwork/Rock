@@ -132,7 +132,7 @@
 .progress-tracker-subtitle {
   margin: 0;
   font-size: .75rem;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   line-height: 1rem;
   color: var(--color-interface-medium);
 }
@@ -160,7 +160,7 @@
 
 .remaining-time-countdown {
   margin: 0;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   line-height: 1;
   color: var(--color-primary);
 }

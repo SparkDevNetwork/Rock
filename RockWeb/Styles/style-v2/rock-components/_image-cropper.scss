@@ -40,7 +40,7 @@
 
     a {
       display: inline-block;
-      padding: var(--spacing-small);
+      padding: 6px; // Need to hard code for Rock:imageEditor to fit right 
       color: var(--color-interface-stronger);
       text-decoration: none;
       cursor: pointer;

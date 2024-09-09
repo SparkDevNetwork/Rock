@@ -55,7 +55,7 @@ input[type="search"] {
 // Position radios and checkboxes better
 input[type="radio"],
 input[type="checkbox"] {
-  margin: 4px 0 0;
+  margin: var(--spacing-tiny) 0 0;
   margin-top: 1px \9; // IE8-9
   line-height: normal;
 
@@ -312,6 +312,20 @@ output {
     margin-left: 0;
   }
 }
+
+// Moved from _checkin-core.less 
+.form-group.required {
+  .control-label::after {
+    margin-left: var(--spacing-tiny);
+    font-family: 'FontAwesome';
+    font-size: 6px;
+    font-weight: var(--font-weight-black);
+    color: var(--color-danger-strong);
+    vertical-align: super;
+    content: '\f111';
+  }
+}
+// ===============
 // ===================== END FORM CONTROL =====================
 
 
@@ -502,7 +516,7 @@ a.warning {
 }
 
 .help-message {
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
 }
 // ===================== END FORM GROUP, HELP BLOCK, FORM-INLINE =====================
 
@@ -527,7 +541,7 @@ a.warning {
     min-height:     var(--spacing-large); // Ensure the input doesn't jump when there is no text
     padding-left:   20px;
     margin-bottom:  0;
-    font-weight:    400;
+    font-weight:    var(--font-weight-regular);
     cursor:         pointer;
   }
 }
@@ -537,7 +551,7 @@ a.warning {
 .checkbox input[type="checkbox"],
 .checkbox-inline input[type="checkbox"] {
   position: absolute;
-  margin-top: 4px \9;
+  margin-top: var(--spacing-tiny) \9;
   margin-left: -20px;
 }
 
@@ -552,7 +566,7 @@ a.warning {
   display: inline-block;
   padding-left: 20px;
   margin-bottom: 0;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   vertical-align: middle;
   cursor: pointer;
 

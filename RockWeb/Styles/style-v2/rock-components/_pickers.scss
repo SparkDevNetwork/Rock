@@ -124,9 +124,9 @@
   }
 
   .scroll-container-native {
-    width: calc(100% + 16px);
-    padding: 8px;
-    margin: -8px;
+    width:    calc(100% + 16px);
+    padding:  var(--spacing-small);
+    margin:   calc(var(--spacing-small) * -1);
     overflow-y: auto;
   }
 
@@ -140,11 +140,11 @@
   }
 
   dl {
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-tiny);
   }
 
   hr {
-    margin: 8px calc(var(--spacing-small) * -1) 4px;
+    margin: var(--spacing-small) calc(var(--spacing-small) * -1) var(--spacing-tiny);
   }
 
   h4 {
@@ -173,8 +173,8 @@
   }
 
   .treeview .search-item {
-    margin-bottom: 16px;
-    margin-left: 4px;
+    margin-bottom:  var(--spacing-medium);
+    margin-left:    var(--spacing-tiny);
   }
 
   .picker-actions {
@@ -186,7 +186,7 @@
     background-color: var(--color-interface-softest);
     border-top: 1px solid var(--color-interface-softer);
     border-radius: 0 0 var(--rounded-small) var(--rounded-small);
-    gap: 0 4px;
+    gap: 0 var(--spacing-tiny);
 
     .pull-right {
       margin-left: auto;
@@ -222,7 +222,7 @@
 
   .personpicker-search-panel {
     .input-group {
-      margin: 0 0 4px;
+      margin: 0 0 var(--spacing-tiny);
     }
 
     .input-group-addon {
@@ -236,16 +236,16 @@
   }
 
   .personpicker-item {
-    display: grid;
+    display:        grid;
     grid-template-columns: 1fr;
-    gap: 8px 16px;
-    background: var(--color-interface-softest);
-    border: 1px solid var(--color-interface-soft);
-    padding: var(--spacing-small);
-    margin-bottom: var(--spacing-small);
-    cursor: pointer;
-    border-radius: var(--rounded-small);
-    align-items: center;
+    gap:            var(--spacing-small) var(--spacing-medium);
+    background:     var(--color-interface-softest);
+    border:         1px solid var(--color-interface-soft);
+    padding:        var(--spacing-small);
+    margin-bottom:  var(--spacing-small);
+    cursor:         pointer;
+    border-radius:  var(--rounded-small);
+    align-items:    center;
 
     &:focus-visible {
       outline: var(--color-primary) auto 1px;
@@ -281,7 +281,7 @@
       .item-meta {
         display: grid;
         grid-template-columns: 1fr max-content;
-        gap: 24px;
+        gap: var(--spacing-medium);
       }
     }
   }
@@ -303,7 +303,7 @@
         .taglist {
           display: flex;
           float: right;
-          margin-left: 4px;
+          margin-left: 4var(--spacing-tiny)px;
         }
       }
 
@@ -319,11 +319,11 @@
     .personpicker-item {
       grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
       grid-template-rows: 1fr;
-      gap: 0 16px;
+      gap: 0 var(--spacing-medium);
 
       .item-meta {
         display: grid;
-        gap: 16px;
+        gap: var(--spacing-medium);
         grid-template-columns: minmax(0, 4fr) minmax(min-content, 2fr) minmax(min-content, 100px);
         height: 100%;
         align-items: center;
@@ -364,7 +364,7 @@
       float: left;
       width: 70px;
       height: 70px;
-      margin-right: 8px;
+      margin-right: var(--spacing-small);
       background-position: 50%;
       background-size: cover;
       border: 1px solid var(--color-interface-softer);

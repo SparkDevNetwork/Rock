@@ -58,7 +58,7 @@ body.rock-modal {
     }
 
     .label {
-      margin-top: 8px;
+      margin-top: var(--spacing-small);
     }
 
     small {
@@ -75,7 +75,7 @@ body.rock-modal {
   }
 
   .modal-body {
-    padding: 24px;
+    padding: var(--spacing-medium);
     color: var(--color-interface-strongest);
     text-align: left;
     background-color: var(--color-interface-softest);
@@ -187,7 +187,7 @@ dl:not(.dl-horizontal) {
   }
 
   .modal-content.rock-modal .modal-body {
-    padding: 12px 24px;
+    padding: 12px var(--spacing-medium);
   }
 
   .modal-content.rock-modal .modal-header .close {
@@ -210,6 +210,6 @@ dl:not(.dl-horizontal) {
 .static-control .control-label,
 dl:not(.dl-horizontal) dt{
   font-size:    var(--font-size-small);
-  font-weight:  400;
+  font-weight:  var(--font-weight-regular);
   color:        var(--color-interface-medium);
 }

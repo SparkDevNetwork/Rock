@@ -22,7 +22,6 @@
 @import 'css-variable';                     // Fully Format.
 
 /* ===================== LEGACY  =================== */
-@import 'legacy/carousel';                  // Fully Format. **It is not working**. There are Some hard coded value. 
 @import 'legacy/jumbotron';                 // Fully Format. When color-mix() use, go in the file there's TODO comments at where it is need to be use.
 @import 'legacy/media';                     // Fully Format. 
 @import 'legacy/grid-layoutLegacy'; 
@@ -119,6 +118,7 @@
 /* ===================== BLOCK =================== */
 @import 'blocks/blocks-core';                       // All classes are in use.
 @import 'blocks/blocks-groups';
+@import 'blocks/blocks-reporting';
 
 
 /* ===================== UTILITIES =================== */
@@ -133,5 +133,8 @@
 
 
 /* ======================= ANIMATION ======================*/
-@import 'components/component-animations';  //Fully Format
+@import 'components/component-animations';  //Fully Format.
+
+/* ======================= ICON STYLING ======================*/
+@import './Tabler/TablerStyling'
 

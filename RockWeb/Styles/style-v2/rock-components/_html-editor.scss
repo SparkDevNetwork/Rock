@@ -26,7 +26,7 @@
   }
 
   > .modal-footer {
-    padding: 8px 24px;
+    padding: var(--spacing-small) var(--spacing-medium);
     margin-right: -15px;
     margin-left: -15px;
     color: var(--color-primary);      // TODO darken by 20% when available.
@@ -45,7 +45,7 @@
   }
 
   > .modal-footer {
-    padding: 8px 24px;
+    padding: var(--spacing-small) var(--spacing-medium);
     margin-right: -15px;
     margin-left: -15px;
     color: var(--color-primary);      // TODO darken by 20% when available.
@@ -83,13 +83,13 @@
 
 .picker-folders {
   max-width: 320px;
-  padding-right: 24px;
+  padding-right: var(--spacing-medium);
   @media (max-width: $screen-xsmall) {
     -ms-flex: 0 0 100%;
     flex: 0 0 100%;
     max-width: 100%;
     padding-right: 0;
-    padding-bottom: 24px;
+    padding-bottom: var(--spacing-medium);
   }
 
   .actions {

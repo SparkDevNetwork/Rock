@@ -65,7 +65,7 @@
     opacity: 1;
 
     &.following {
-      font-weight: 900;
+      font-weight: var(--font-weight-black);
       color: var(--color-primary);
       background: transparent;
     }

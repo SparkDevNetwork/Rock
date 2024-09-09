@@ -101,10 +101,6 @@ $datepicker-selected-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
 $datepicker-active-text-shadow:     0 -1px 0 rgba(0,0,0,.25);
 $datepicker-disabled-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
 
-
-// Upload Controls
-$input-focus-box-shadow: 0 0 0 3px var(--color-info-soft);
-
 // Brand Color
 $brand-facebook: #3B5998;
 $brand-twitter: #1da1f2;
@@ -114,3 +110,4 @@ $card-height: "";
 $card-color: "";
 $card-cap-color: "";
 
+$line-height-computed: calc(var(--font-size-regular) * var(--line-height-normal));

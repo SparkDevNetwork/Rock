@@ -36,8 +36,8 @@
 .imageupload-group {
 
   &:focus-within {
-    border-color:   var(--color-info-strong);
-    box-shadow:     $input-focus-box-shadow;
+    border-color:   var(--color-primary);
+    box-shadow:     var( --input-focus-box-shadow);
   }
 
   .imageupload-thumbnail {
@@ -171,8 +171,8 @@
 // ======================== FILE UPLOAD STYLE ========================
 .fileupload-group {
   &:focus-within {
-    border-color:   var(--color-info-strong);
-    box-shadow:     $input-focus-box-shadow;
+    border-color:   var(--color-primary);
+    box-shadow:     var(--input-focus-box-shadow);
   }
 
   .fileupload-remove {
@@ -329,7 +329,7 @@
   border-width:   2px;
 
   &:focus-within {
-    border:       2px solid var(--color-info-strong);
+    border:       2px solid var(--color-primary);
   }
 
   .fileupload-thumbnail {

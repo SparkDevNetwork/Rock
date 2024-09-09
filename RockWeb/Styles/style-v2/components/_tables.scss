@@ -755,7 +755,7 @@ tr.row-highlight {
   .btn-filter-toggle {
     top: 1px;
     left: 18px;
-    padding: 4px;
+    padding: var(--spacing-tiny);
     margin: 0;
 
     &.is-open {
@@ -852,7 +852,7 @@ td.grid-col-actions {
   }
 
   .btn-grid-custom-action {
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-small);
   }
 }
 

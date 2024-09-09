@@ -35,7 +35,7 @@
     cursor:       pointer;
 
     &.custom-control-label-bold {
-      font-weight: 600;
+      font-weight: var(--font-weight-semibold);
     }
 
     &::before {
@@ -69,7 +69,7 @@
 
   .custom-control-input {
     &:focus ~ .custom-control-label::before {
-      box-shadow:         0 0 0 1px var(--color-interface-softest), 0 0 0 3px fade(var(--color-primary), 20%);
+      box-shadow:         0 0 0 1px var(--color-interface-softest), 0 0 0 3px var(--color-primary-box-shadow);
     }
 
     &:disabled ~ .custom-control-label::before {
