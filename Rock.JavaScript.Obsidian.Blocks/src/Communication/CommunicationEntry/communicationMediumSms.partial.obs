@@ -99,7 +99,8 @@
                 </div>
 
                 <div class="col-sm-6" v-if="isFullMode">
-                    <FileUploader :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
+                    <FileUploader :modelValue="attachment"
+                                  :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
                                   :disabled="disabled"
                                   label="Attachment"
                                   @error="onAttachmentError"
@@ -248,7 +249,7 @@
     const internalCommunicationListGroupGuid = useVModelPassthrough(props, "communicationListGroupGuid", emit);
     const disabledMessage = ref<string | null | undefined>();
     const testResultElement = ref<HTMLElement | undefined>();
-    const fromNumberGuidOrEmptyString = ref<string>("");
+    const fromNumberGuidOrEmptyString = ref<string>(config.communication?.smsFromSystemPhoneNumberGuid ?? "");
     const mediumOptions = ref<CommunicationEntrySmsMediumOptionsBag | null>(isSmsMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
     const errorMessage = ref<string | null | undefined>();
     const message = ref<string>(config.communication?.smsMessage ?? "");
@@ -256,7 +257,7 @@
     const submitFormTrigger = ref<boolean>(false);
     const actionToExecuteOnSubmit = ref<() => PromiseLike<void>>();
     const attachmentErrorMessage = ref<string | null | undefined>();
-    const attachments = ref<ListItemBag[]>(config.communication?.emailAttachmentBinaryFiles ?? []);
+    const attachment = ref<ListItemBag | null | undefined>(config.communication?.smsAttachmentBinaryFiles?.[0]);
     const minimumRecipientCount = ref<number>(0);
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
     const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? emptyGuid);
@@ -314,12 +315,12 @@
     }
 
     function onAttachmentAdded(file: ListItemBag | undefined): void {
+        // SMS only supports one attachment currently.
         if (file) {
-            const allAttachments = [...attachments.value];
-
-            allAttachments.push(file);
-
-            attachments.value = allAttachments;
+            attachment.value = file;
+        }
+        else {
+            attachment.value = null;
         }
     }
 
@@ -481,7 +482,7 @@
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
-                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
                 status: CommunicationStatus.Transient,
@@ -515,7 +516,7 @@
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
-                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
                 status: CommunicationStatus.Transient,
@@ -550,7 +551,7 @@
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
-                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
                 status: CommunicationStatus.Transient,
