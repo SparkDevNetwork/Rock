@@ -861,16 +861,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             }
 
             var sessionGuids = GetPreCheckInSessionGuids( scannedCode );
-
-            if ( !sessionGuids.Any() )
-            {
-                return ActionBadRequest( "No check-in sessions were found." );
-            }
-
             var attendanceIds = new AttendanceService( RockContext ).Queryable()
                 .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
                 .Select( a => a.Id )
                 .ToList();
+
+            if ( !attendanceIds.Any() )
+            {
+                return ActionBadRequest( "No check-in sessions were found." );
+            }
 
             var response = await PrintLabelsForAttendanceIds( director, kiosk, null, attendanceIds );
 
