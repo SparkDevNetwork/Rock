@@ -48,6 +48,8 @@
     </Compile>
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="AI\NameRemoval.cs" />
+    <Compile Include="AI\TextEnhancement.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />

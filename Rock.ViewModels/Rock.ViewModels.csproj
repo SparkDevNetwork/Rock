@@ -744,6 +744,7 @@
     <Compile Include="Controls\DatePartsPickerValueBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetListOfAllFoldersOptionsBag.cs" />

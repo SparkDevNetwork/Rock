@@ -12,9 +12,11 @@
                     <h1 class="panel-title"><i class="fa fa-praying-hands"></i>
                         <asp:Literal ID="lActionTitle" runat="server" /></h1>
 
-                    <div class="panel-labels">
+                    <div class="panel-labels" id="pnlHighlightLabels" runat="server">
+                        <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" Visible="false" />
                         <Rock:HighlightLabel ID="hlCategory" Text="Category..." LabelType="Type" runat="server" />
-                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
+                        <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Type" />
+                        <Rock:HighlightLabel ID="hlSentiment" runat="server" LabelType="Info" />
                     </div>
                 </div>
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -39,8 +41,7 @@
                                 </div>
 
                                 <div class="col-md-3">
-                                    <Rock:RockCheckBox ID="cbIsActive" Label="Active" Text="Yes" runat="server" />
-                                    <Rock:HighlightLabel ID="hlblFlaggedMessage" IconCssClass="fa fa-flag" LabelType="warning" runat="server" Visible="false" ToolTip="re-approve the request to clear the flags" />
+                                    <Rock:RockCheckBox ID="cbIsActive" Label="Active" runat="server" />
                                     <Rock:RockControlWrapper ID="rcwOptions" runat="server" Label="Options">
                                         <Rock:RockCheckBox ID="cbIsPublic" Text="Public" runat="server" />
                                         <Rock:RockCheckBox ID="cbIsUrgent" Text="Urgent" runat="server" />
@@ -60,8 +61,8 @@
                                                 </div>
                                             </asp:Panel>
                                         </div>
+                                        <Rock:HighlightLabel ID="hlblFlaggedMessage" IconCssClass="fa fa-flag" LabelType="warning" runat="server" Visible="false" ToolTip="Re-approve the request to clear the flags." />
                                     </div>
-
                                 </div>
 
                             </div>
@@ -69,7 +70,8 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:CategoryPicker ID="catpCategory" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest" />
-                                    <Rock:DataTextBox ID="dtbText" runat="server" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" Label="Request" CssClass="field span12" TextMode="MultiLine" Rows="4" />
+                                    <Rock:DataTextBox ID="dtbText" runat="server" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" Label="Request" CssClass="field span12" TextMode="MultiLine" Rows="4" />                                    
+                                    <Rock:RockLiteral Label="Original Request" ID="lOriginalRequest" runat="server" Visible="false" CssClass="text-muted"></Rock:RockLiteral>
                                     <Rock:DataTextBox ID="dtbAnswer" runat="server" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Answer" Label="Answer" CssClass="field span12" TextMode="MultiLine" Rows="4" />
                                 </div>
                             </div>
@@ -89,6 +91,12 @@
                             <asp:LinkButton ID="lbCancel" runat="server" data-shortcut-key="c" Text="Cancel" ToolTip="Alt+c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                         </div>
 
+                        <Rock:ModalDialog ID="mdAIAutomationsAlertModal" runat="server" Title="Pending AI Automations" SaveButtonText="Ok" OnSaveClick="mdAIAutomationsAlertModal_SaveClick" Visible="false">
+                            <Content>
+                                <Rock:NotificationBox ID="nbAIAlertMessage" runat="server" NotificationBoxType="Info" Title="Pending AI Automations"
+                                    Text="There are AI automations configured for this Prayer Request Category - it may take a minute for the automations to complete."></Rock:NotificationBox>
+                            </Content>
+                        </Rock:ModalDialog>
                     </div>
 
                     <!-- Read only -->

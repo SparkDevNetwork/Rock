@@ -687,6 +687,9 @@
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
+    <Compile Include="AI\Automations\AIAutomation.cs" />
+    <Compile Include="AI\Automations\PrayerRequestAnalyzerResponse.cs" />
+    <Compile Include="AI\Automations\PrayerRequestFormatterResponse.cs" />
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequestMessage.cs" />
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequest.cs" />
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponse.cs" />
@@ -730,6 +733,7 @@
     <Compile Include="Attribute\ReminderTypesFieldAttribute.cs" />
     <Compile Include="Attribute\SecondaryAuthsFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
+    <Compile Include="Attribute\OpenAIModelPickerFieldAttribute.cs" />
     <Compile Include="Attribute\SignatureDocumentTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
@@ -1218,6 +1222,7 @@
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Field\Types\OpenAIModelPickerFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemEnumPickerFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemPickerFieldType.cs" />
@@ -1232,6 +1237,7 @@
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
+    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.SaveHook.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
@@ -2569,6 +2575,7 @@
     <Compile Include="Web\UI\Controls\LocationList.cs" />
     <Compile Include="Web\UI\Controls\PDFViewer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AccountTreeViewItem.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AIProviderPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EthnicityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialStatementTemplatePicker.cs" />
