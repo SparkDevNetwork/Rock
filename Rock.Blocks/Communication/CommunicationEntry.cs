@@ -1855,6 +1855,7 @@ namespace Rock.Blocks.Communication
             var originalFromEmail = communicationBag.FromAddress;
             var originalFromName = communicationBag.FromName;
             var originalReplyToEmail = communicationBag.ReplyAddress;
+            var originalSubject = communicationBag.Subject;
 
             var adapter = new CommunicationDetailsAdapter( communicationBag, rockContext );
 
@@ -1887,6 +1888,13 @@ namespace Rock.Blocks.Communication
             if ( communicationBag.ReplyAddress.IsNullOrWhiteSpace() )
             {
                 communicationBag.ReplyAddress = originalReplyToEmail;
+            }
+
+            // If the original subject had a value, then use it;
+            // otherwise, use the template's subject.
+            if ( originalSubject.IsNotNullOrWhiteSpace() )
+            {
+                communicationBag.Subject = originalSubject;
             }
         }
 
