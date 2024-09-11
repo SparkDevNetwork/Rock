@@ -21,13 +21,25 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Data;
-using Rock.Enums.Lms;
 using Rock.Utility;
 
 namespace Rock.Model
 {
     public partial class LearningClassService
     {
+
+        /// <summary>
+        /// Determines if the <see cref="LearningClass"/> should allow updates to the <see cref="LearningGradingSystem"/>.
+        /// </summary>
+        /// <param name="learningClassId">The identifier of the learning class to check.</param>
+        /// <returns><c>true</c> if updates should be allowed;otherwise <c>false</c>.</returns>
+        public bool CanUpdateGradingSystem( int learningClassId )
+        {
+            return !Queryable()
+                .Where( c => c.Id == learningClassId )
+                .Any( c => c.LearningParticipants.Any() );
+        }
+
         /// <summary>
         /// Creates a new <see cref="LearningClass" /> with Attributes by copying values from the specified learning class.
         /// </summary>

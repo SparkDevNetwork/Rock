@@ -68,10 +68,17 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addHtmlValue("", `<h4>Course</h4>${props.modelValue.courseName}` ?? "");
+        const courseName = props.modelValue.courseName ?? "";
+        if (courseName.length > 0) {
+            valueBuilder.addTextValue("Course", courseName);
+        }
 
         if (props.options.programConfigurationMode === ConfigurationMode.AcademicCalendar) {
-            valueBuilder.addHtmlValue("", `<h4>Semester</h4>${props.modelValue.semester?.text ?? ""}`);
+            const semesterText = props.modelValue.semester?.text ?? "";
+
+            if (semesterText.length > 0) {
+                valueBuilder.addTextValue("Semester", semesterText);
+            }
         }
 
         const facilitatorsText = props.modelValue.facilitators?.map(f => {
@@ -79,7 +86,7 @@
         }).join("") ?? "";
 
         if (facilitatorsText.length > 0) {
-            valueBuilder.addHtmlValue("", `<h4>Facilitators</h4><ul>${facilitatorsText}</ul>`);
+            valueBuilder.addHtmlValue("Facilitators", `<ul>${facilitatorsText}</ul>`);
         }
         return valueBuilder.build();
     });
@@ -92,7 +99,10 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addHtmlValue("", `<h4>Course Code</h4>${props.modelValue.courseCode ?? ""}`);
+        const courseCode = props.modelValue.courseCode ?? "";
+        if (courseCode.length > 0) {
+            valueBuilder.addTextValue("Course Code", courseCode);
+        }
 
         const schedule = props.modelValue.schedule?.text ?? "";
         let fieldText = props.modelValue.location?.text  ?? "";
@@ -100,9 +110,14 @@
             fieldText += (fieldText.length > 0 ? " - " : "") + schedule;
         }
 
-        valueBuilder.addHtmlValue("",  `<h4>Location / Schedule</h4>${fieldText ?? "N/A"}`);
+        if (fieldText.length > 0){
+            valueBuilder.addTextValue("Location / Schedule",  fieldText);
+        }
 
-        valueBuilder.addHtmlValue("", `<h4>Grading System</h4>${props.modelValue.gradingSystem?.text ?? ""}`);
+        const gradeText = props.modelValue.gradingSystem?.text ?? "";
+        if (gradeText.length > 0){
+            valueBuilder.addTextValue("Grading System", gradeText);
+        }
 
         return valueBuilder.build();
     });

@@ -163,7 +163,7 @@ namespace Rock.Blocks.Lms
 		
 			{% if program.ImageFileGuid and program.ImageFileGuid != '' %}
 			<div class=""program-image program-item-header"" >
-				<img style=""border-radius: 12px 12px 0 0;"" src=""/GetImage.ashx?guid={{program.ImageFileGuid}}&maxwidth=300&maxheight=150&mode=crop"" />
+				<img style=""border-radius: 12px 12px 0 0;"" src=""/GetImage.ashx?guid={{program.ImageFileGuid}}&width=300&maxheight=150&mode=crop"" />
 			</div>
 			{% endif %}
 			
@@ -224,21 +224,7 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningProgramListBlockBox box )
         {
-            var programs = GetPrograms();
-
-            var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningProgramId", "((Key))" );
-
-            foreach ( var program in programs )
-            {
-                program.CoursesLink = courseDetailUrlTemplate.Replace( "((Key))", program.Entity.IdKey );
-            }
-
-            var mergeFields = this.RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Programs", programs );
-            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
-
-            var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
-            box.ProgramsHtml = template.ResolveMergeFields( mergeFields );
+            box.ProgramsHtml = GetInitialHtmlContent();
         }
 
         /// <summary>

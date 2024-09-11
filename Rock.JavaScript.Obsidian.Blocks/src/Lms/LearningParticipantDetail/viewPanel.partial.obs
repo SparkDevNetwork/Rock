@@ -29,9 +29,7 @@
                         title="Type"
                         visiblePriority="xs">
                     <template #format="{ row }">
-                        <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .33) c h);'">
-                            <i :class="row.componentIconCssClass" :style="'color: ' + row.componentHighlightColor"></i>{{ row.componentName }}
-                        </span>
+                        <span v-html="getComponentHtml(row)"></span>
                     </template>
                 </Column>
 
@@ -74,6 +72,7 @@
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -108,7 +107,7 @@
 
         const gradePercentText = props.modelValue.currentGradePercent ? `(${props.modelValue.currentGradePercent}%)` : "";
         const gradeText = props.modelValue.currentGradeText ? `${props.modelValue.currentGradeText} ${gradePercentText}` : gradePercentText;
-        valueBuilder.addHtmlValue("", `<h4>Current Grade</h4>${gradeText}`);
+        valueBuilder.addTextValue("Current Grade", gradeText);
 
         return valueBuilder.build();
     });
@@ -122,7 +121,7 @@
         }
 
         if (props.modelValue.absences != null) {
-            valueBuilder.addHtmlValue("", `<h4>Absences</h4><div class='label label-${props.modelValue.absencesLabelStyle}'>${props.modelValue.absences}</div>`);
+            valueBuilder.addHtmlValue("Absences", `<div class='label label-${props.modelValue.absencesLabelStyle}'>${props.modelValue.absences}</div>`);
         }
 
         return valueBuilder.build();
@@ -131,6 +130,17 @@
     // #endregion
 
     // #region Functions
+
+    function getComponentHtml(row: Record<string, unknown>): string {
+        const baseColor = row.componentHighlightColor as string;
+        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const iconCssClass = row.componentIconCssClass as string;
+
+        return `
+            <span class="label label-default component-label" style="background-color: ${pair.backgroundColor.toRgba()}">
+                <i class="${iconCssClass}" style="color: ${baseColor}"></i>${row.componentName}
+            </span>`;
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

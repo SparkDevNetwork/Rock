@@ -19,7 +19,7 @@
                 :filterValue="getRowScaleFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div class="d-flex flex-column text-muted">
+                <div class="d-flex flex-column">
                     <div class="text-semibold">{{ row.name }}</div>
 
                     <div>{{ row.description }}</div>
@@ -27,9 +27,10 @@
             </template>
         </Column>
 
-        <NumberColumn name="threshold"
+        <NumberColumn name="thresholdPercentage"
                       title="Threshold %"
-                      field="threshold"
+                      field="thresholdPercentage"
+                      class="text-right"
                       :filter="numberValueFilter"
                       width="15%"
                       visiblePriority="xs" />

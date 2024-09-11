@@ -38,9 +38,7 @@
                 :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .60) c h);'">
-                    <span :style="'color: ' + row.componentHighlightColor"><i :class="row.componentIconCssClass"></i> &nbsp;{{ row.componentName }}</span>
-                </span>
+                <span v-html="getComponentHtml(row)"></span>
             </template>
         </Column>
 
@@ -97,6 +95,7 @@
     import Grid, { Column, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -143,18 +142,15 @@
 
     // #region Functions
 
-    /**
-     * Called when a row has been selected by the individual.
-     *
-     * @param key The key of the row that was selected.
-     */
-    function onSelectItem(key: string): void {
-        emit("rowClick", key);
-    }
+    function getComponentHtml(row: Record<string, unknown>): string {
+        const baseColor = row.componentHighlightColor as string;
+        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const iconCssClass = row.componentIconCssClass as string;
 
-
-    function onAddItemClicked(): void {
-        emit("addClick");
+        return `
+            <span class="label label-default component-label" style="background-color: ${pair.backgroundColor.toRgba()}">
+                <i class="${iconCssClass}" style="color: ${baseColor}"></i>${row.componentName}
+            </span>`;
     }
 
     function getCompletionsHtml(row: Record<string, unknown>): string {
@@ -191,7 +187,7 @@
     /**
      * Called when the grid is requesting the row data be loaded.
      */
-    async function loadGridData(): Promise<GridDataBag> {
+     async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>(props.getDataActionName);
 
         if (result.isSuccess && result.data) {
@@ -206,6 +202,19 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+     function onSelectItem(key: string): void {
+        emit("rowClick", key);
+    }
+
+    function onAddItemClicked(): void {
+        emit("addClick");
+    }
 
     // #endregion
 

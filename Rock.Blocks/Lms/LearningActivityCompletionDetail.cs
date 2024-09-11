@@ -239,8 +239,8 @@ namespace Rock.Blocks.Lms
                 CompletedDate = entity.CompletedDateTime,
                 DueDate = entity.DueDate,
                 FacilitatorComment = entity.FacilitatorComment,
-                GradeText = entity.GradeText( scales ),
-                IsGradePassing = entity.Grade().IsPassing,
+                GradeText = entity.GetGradeText( scales ),
+                IsGradePassing = entity.GetGrade().IsPassing,
 
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
                 IsStudentCompleted = entity.IsStudentCompleted,
@@ -409,37 +409,33 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            // Note that we need to use our own RockContext here since the RockEntityDetailBlockType base will not have initialized it yet.
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityCompletionId ) ?? "";
+            var entityDetail =
+                    entityKey.IsNullOrWhiteSpace() ?
+                    null :
+                    new Service<LearningActivityCompletion>( RockContext )
+                        .GetSelect( entityKey, p => new { p.Student.Person.NickName, p.Student.Person.LastName, p.Student.Person.SuffixValueId } );
+
+            // This page doesn't support adding records so if there's no valid key then we should return early.
+            if ( entityDetail == null )
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityCompletionId ) ?? "";
-                var entityDetail =
-                        entityKey.IsNullOrWhiteSpace() ?
-                        null :
-                        new Service<LearningActivityCompletion>( rockContext )
-                            .GetSelect( entityKey, p => new { p.Student.Person.NickName, p.Student.Person.LastName, p.Student.Person.SuffixValueId } );
-
-                // This page doesn't support adding records so if there's no valid key then we should return early.
-                if ( entityDetail == null )
-                {
-                    return new BreadCrumbResult
-                    {
-                        BreadCrumbs = new List<IBreadCrumb>()
-                    };
-                }
-
-                var entityName = Rock.Model.Person.FormatFullName( entityDetail.NickName, entityDetail.LastName, entityDetail.SuffixValueId );
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName, breadCrumbPageRef );
-
                 return new BreadCrumbResult
                 {
-                    BreadCrumbs = new List<IBreadCrumb>
-                    {
-                        breadCrumb
-                    }
+                    BreadCrumbs = new List<IBreadCrumb>()
                 };
             }
+
+            var entityName = Rock.Model.Person.FormatFullName( entityDetail.NickName, entityDetail.LastName, entityDetail.SuffixValueId );
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( entityName, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

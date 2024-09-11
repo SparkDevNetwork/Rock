@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="programDetailTabs">
+    <TabbedContent :tabs="programDetailTabs" v-model:selectedTab="selectedTab">
         <template #tabpane="{ item }">
             <div v-if="item === 'Overview'">
                 <fieldset>
@@ -21,6 +21,7 @@
                                              v-model="configurationMode"
                                              label="Configuration Mode"
                                              horizontal
+                                             rules="required"
                                              :items="configurationModes" />
 
                             <CategoryPicker
@@ -51,14 +52,14 @@
                         <div class="col-md-6">
                             <div class="col-md-6">
                                 <CheckBox
-                                      v-model="isActive"
-                                      label="Active" />
+                                          v-model="isActive"
+                                          label="Active" />
                             </div>
 
                             <div class="col-md-6">
                                 <CheckBox
-                                      v-model="isPublic"
-                                      label="Public" />
+                                          v-model="isPublic"
+                                          label="Public" />
 
                             </div>
                             <ColorPicker
@@ -68,6 +69,7 @@
 
                             <TextBox
                                      v-model="iconCssClass"
+                                     class="input-width-xl"
                                      label="Icon CSS Class" />
 
                             <ImageUploader v-model="imageBinaryFile"
@@ -118,7 +120,6 @@
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
 
@@ -155,7 +156,7 @@
     const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? {}, "CompletionWorkflowType");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
-    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString(), "ConfigurationMode");
+    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString() ?? undefined, "ConfigurationMode");
     const highlightColor = propertyRef(props.modelValue.bag?.highlightColor ?? "", "HighlightColor");
     const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
     const isCompletionStatusTracked = propertyRef(props.modelValue.bag?.isCompletionStatusTracked ?? false, "TrackProgramStatus");
@@ -214,7 +215,7 @@
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(publicName, props.modelValue.bag?.name ?? "");
         updateRefValue(summary, props.modelValue.bag?.summary ?? "");
-        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode);
+        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? undefined);
         updateRefValue(systemCommunicationValue, props.modelValue.bag?.systemCommunication?.value ?? "");
         updateRefValue(category, props.modelValue.bag?.category ?? null);
         updateRefValue(highlightColor, props.modelValue.bag?.highlightColor ?? "");
@@ -238,7 +239,9 @@
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "publicName", publicName.value);
         setPropertiesBoxValue(newValue, "summary", summary.value);
-        setPropertiesBoxValue(newValue, "configurationMode", parseInt(configurationMode.value ?? defaultConfigurationMode) as ConfigurationMode);
+        if (configurationMode.value) {
+            setPropertiesBoxValue(newValue, "configurationMode", parseInt(configurationMode.value ?? defaultConfigurationMode) as ConfigurationMode);
+        }
         setPropertiesBoxValue(newValue, "category", category.value);
         setPropertiesBoxValue(newValue, "isCompletionStatusTracked", isCompletionStatusTracked.value);
         setPropertiesBoxValue(newValue, "systemCommunication", { value: systemCommunicationValue.value });
@@ -257,4 +260,12 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
+
+    const queryString = new URLSearchParams(window.location.search.toLowerCase());
+
+    const selectedTab = ref(
+            queryString.has("tab") && queryString.get("tab")?.toLowerCase() === "description" ?
+            "Description" :
+            "Overview"
+    );
 </script>

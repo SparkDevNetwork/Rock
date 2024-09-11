@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <!--
     This template can be used as a starting point for new Learning Activity Components.
+    When creating the new component - the extension should be changed from .partial.obs to .obs.
     See the various TODO comments throughout.
     In addition to this a .cs class inheriting from the LearningActivityComponent
     is expected to have been compiled and available as a .dll in the RockWeb\bin directory.
@@ -35,29 +36,28 @@
 </template>
 
 <script setup lang="ts">
-    import { toRef, toValue, watch, } from "vue";
+    import { ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    // TODO: Replace below imports with those specific to the new you're creating component.
     import { CheckOffActivityCompletion, CheckOffActivityConfiguration, CheckOffActivityDefaults } from "./checkOffLearningActivity.partial";
-
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
-
+    const activityBag = ref(props.activityBag);
+    const completionBag = ref(props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = ref(props.screenToShow ?? ComponentScreen.Summary);
 
     // TODO: Replace usages with logic for showing/hiding Summary messages.
     const showSuccess = false;
-    const showWarning = !showSuccess;
+    const showWarning = false;
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
