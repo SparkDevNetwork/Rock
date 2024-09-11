@@ -126,12 +126,15 @@ namespace RockWeb.Blocks.AI
                 provider.IsActive = cbIsActive.Checked;
                 provider.Description = tbDescription.Text;
                 provider.ProviderComponentEntityTypeId = cpProviderType.SelectedEntityTypeId;
-                 
+                
                 rockContext.SaveChanges();
 
                 provider.LoadAttributes( rockContext );
                 Rock.Attribute.Helper.GetEditValues( phAttributes, provider );
                 provider.SaveAttributeValues( rockContext );
+
+                // Mark the entity as modified so the cache can be updated.
+                Rock.Web.Cache.Entities.AIProviderCache.UpdateCachedEntity( provider.Id, System.Data.Entity.EntityState.Modified );
             }
 
             NavigateToParentPage();

@@ -233,10 +233,7 @@ namespace Rock.Jobs
                 }
 
                 // get all notes that haven't processed notifications yet
-                var notesToNotifyQuery = noteService.Queryable().Where( a =>
-                    a.NotificationsSent == false
-                    && a.NoteType.AllowsWatching == true
-                    && a.EditedDateTime > _cutoffNoteEditDateTime );
+                var notesToNotifyQuery = noteService.Queryable().HaveUnsentWatchNotifications( _cutoffNoteEditDateTime );
 
                 if ( !notesToNotifyQuery.Any() )
                 {
@@ -259,7 +256,6 @@ namespace Rock.Jobs
                 // Send NoteWatch notifications
                 if ( personNotificationDigestList.Any() )
                 {
-
                     foreach ( var personNotificationDigest in personNotificationDigestList )
                     {
                         var recipients = new List<RockEmailMessageRecipient>();

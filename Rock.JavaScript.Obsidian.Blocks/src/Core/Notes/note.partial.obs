@@ -33,8 +33,8 @@
                             <template v-else>
                                 {{ note.caption }}
                             </template>
+                            <span v-if="approvalTypeLabel" :class="'pull-right mr-1 label label-' + approvalTypeLabel">{{NoteApprovalStatusDescription[note.approvalStatus ?? 0]}}</span>
                         </span>
-
                         <span class="note-details">
                             <span v-if="!noteOptions.isLightMode" class="tag-flair">
                                 <i v-if="note.isWatching" class="fa fa-eye mr-1 note-watching-icon" title="You are watching this note."></i>
@@ -57,6 +57,7 @@
                                     {{ noteEditedDateTimeText }}
                                 </time>
                             </a>
+
                         </span>
                         <div class="note-details text-muted">{{ note.isPinned ? "Pinned to Top" : "" }}</div>
                     </div>
@@ -184,6 +185,7 @@
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
+    import { NoteApprovalStatus, NoteApprovalStatusDescription } from "@Obsidian/Enums/Core/noteApprovalStatus";
     import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
     import { EditNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/editNoteRequestBag";
     import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
@@ -222,6 +224,16 @@
     const isEditingNote = ref(false);
     const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned : false });
     const isSavingNote = ref(false);
+    const approvalTypeLabel = computed(() => {
+        if (props.note.approvalStatus === NoteApprovalStatus.Denied) {
+            return "danger";
+        }
+        else if (props.note.approvalStatus === NoteApprovalStatus.PendingApproval) {
+            return "warning";
+        }
+
+        return "";
+    });
 
     const emitter = useEmitter();
     const subscriberKey = emitter.subscribe();
