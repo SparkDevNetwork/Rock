@@ -699,6 +699,8 @@
     <Compile Include="CheckIn\AttendanceSessionRequestBag.cs" />
     <Compile Include="CheckIn\CheckInResultBag.cs" />
     <Compile Include="CheckIn\CheckoutResultBag.cs" />
+    <Compile Include="CheckIn\CloudPrintProxyConnectionStatusBag.cs" />
+    <Compile Include="CheckIn\CloudPrintProxyStatusBag.cs" />
     <Compile Include="CheckIn\ConfigurationAreaBag.cs" />
     <Compile Include="CheckIn\AreaOpportunityBag.cs" />
     <Compile Include="CheckIn\AttendanceBag.cs" />

@@ -26,7 +26,7 @@ namespace Rock.Bus.Message
     /// connections print the specified labels.
     /// </summary>
     [RockInternal( "1.16.7", true )]
-    public class CloudPrintLabelMessage : ICommandMessage<CloudPrintQueue>
+    public class CloudPrintLabelMessage : ICommandMessage<CloudPrintCommandQueue>
     {
         /// <inheritdoc/>
         public string SenderNodeName { get; set; }
@@ -73,7 +73,9 @@ namespace Rock.Bus.Message
                 Data = data
             };
 
-            return await RockMessageBus.RequestAsync<CloudPrintQueue, CloudPrintLabelMessage, Response>( message, cancellationToken );
+            var queueName = $"rock-cloud-print-command-queue-{proxyDeviceId}";
+
+            return await RockMessageBus.RequestAsync<CloudPrintCommandQueue, CloudPrintLabelMessage, Response>( message, queueName, cancellationToken );
         }
 
         /// <summary>

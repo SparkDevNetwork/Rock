@@ -546,13 +546,12 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="deviceId">The identifier of the proxy Device in Rock as either a Guid or an IdKey.</param>
         /// <param name="name">The name of the proxy for UI presentation.</param>
-        /// <param name="priority">The priority for this proxy when choosing between multiple proxies.</param>
         /// <returns>The result of the operation.</returns>
         [HttpGet]
         [Route( "CloudPrint/{deviceId}" )]
         [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
-        public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null, [FromQuery] int priority = 1 )
+        public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )
         {
             if ( !System.Web.HttpContext.Current.IsWebSocketRequest )
             {
@@ -577,7 +576,8 @@ namespace Rock.Rest.v2
 
             System.Web.HttpContext.Current.AcceptWebSocketRequest( ctx =>
             {
-                var proxy = new CloudPrintSocket( ctx.WebSocket, device.Id, name ?? device.Name, priority );
+                var address = RockRequestContext.ClientInformation.IpAddress;
+                var proxy = new CloudPrintSocket( ctx.WebSocket, device.Id, name ?? device.Name, address );
 
                 return proxy.RunAsync( CancellationToken.None );
             } );
