@@ -50,7 +50,8 @@ namespace Rock.CheckIn.v2
         private static readonly List<Type> _defaultLocationFilterTypes = new List<Type>
         {
             typeof( LocationClosedOpportunityFilter ),
-            typeof( ThresholdOpportunityFilter )
+            typeof( ThresholdOpportunityFilter ),
+            typeof( LocationOverflowOpportunityFilter )
         };
 
         /// <summary>
@@ -117,7 +118,12 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any locations that have no group referencing them.
-            var allReferencedLocationIds = new HashSet<string>( person.Opportunities.Groups.SelectMany( g => g.LocationIds ) );
+            var allReferencedLocationIds = new HashSet<string>(
+                person.Opportunities
+                    .Groups
+                    .SelectMany( g => g.LocationIds )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocationIds ) )
+            );
             person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
 
             // Run location filters.
