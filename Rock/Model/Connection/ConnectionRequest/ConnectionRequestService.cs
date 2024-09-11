@@ -78,6 +78,28 @@ namespace Rock.Model
                 qry = qry.Where( r => options.ConnectionStates.Contains( r.ConnectionState ) );
             }
 
+            if ( options.CampusGuid != null )
+            {
+                var campusId = CampusCache.GetId( options.CampusGuid.Value );
+                if ( campusId != null )
+                {
+                    qry = qry.Where( r => r.CampusId == campusId );
+                }
+            }
+
+            // Filter past due: Allow other states to go through, but "future follow-up" must be due today or already past due
+            if ( options.IsFutureFollowUpPastDueOnly )
+            {
+                var midnight = RockDateTime.Today.AddDays( 1 );
+
+                qry = qry.Where( cr =>
+                    cr.ConnectionState != ConnectionState.FutureFollowUp ||
+                    (
+                        cr.FollowupDate.HasValue &&
+                        cr.FollowupDate.Value < midnight
+                    ) );
+            }
+
             return qry;
         }
 
