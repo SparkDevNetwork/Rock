@@ -11,6 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PersistedDataset"
                  entityTypeName="PersistedDataset"
+                 :isFullScreenVisible="false"
                  :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
