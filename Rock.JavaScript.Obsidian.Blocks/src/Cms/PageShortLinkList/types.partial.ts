@@ -18,13 +18,3 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export type GridSettingsOptions = {
-    token?: string | null;
-    site?: string | null;
-};
-
-export const enum PreferenceKey {
-    FilterToken = "filter-token",
-    FilterSite = "filter-site"
-}
