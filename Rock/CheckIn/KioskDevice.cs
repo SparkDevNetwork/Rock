@@ -391,6 +391,7 @@ namespace Rock.CheckIn
 
             var groupLocationList = new GroupLocationService( rockContext )
                 .GetActiveByLocations( allLocations )
+                .Where( gl => !gl.IsOverflowLocation )
                 .Include( x => x.Location )
                 .Include( x => x.Group )
                 .OrderBy( l => l.Order ).AsNoTracking()
