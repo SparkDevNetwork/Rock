@@ -14,31 +14,33 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 
-using Rock.Attribute;
-
-namespace Rock.Bus.Queue
+namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
-    /// A Rock Message Bus Queue for Cloud Print commands.
+    /// The status of a single proxy as defined in the server database.
     /// </summary>
-    [RockInternal( "1.16.7", true )]
-    public sealed class CloudPrintQueue : SendCommandQueue
+    public class CloudPrintProxyStatusBag
     {
         /// <summary>
-        /// Gets the queue name. Each instance of Rock shares this name for this queue.
+        /// The encrypted identifier of this proxy.
         /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public override string Name => "rock-cloud-print-queue";
+        public string Id { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="CloudPrintQueue"/>.
+        /// The name of the proxy device in the database.
         /// </summary>
-        public CloudPrintQueue()
-        {
-            TimeToLiveSeconds = 10;
-        }
+        public string Name { get; set; }
+
+        /// <summary>
+        /// The name of the server node sending this status update.
+        /// </summary>
+        public string ServerNode { get; set; }
+
+        /// <summary>
+        /// A list of current connections that the server has for this proxy.
+        /// </summary>
+        public List<CloudPrintProxyConnectionStatusBag> Connections { get; set; }
     }
 }

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using MassTransit;
@@ -163,7 +164,7 @@ namespace Rock.Bus.Consumer
 
             foreach ( var type in types )
             {
-                if ( IsRockConsumer( type ) )
+                if ( IsRockConsumer( type ) && type.GetCustomAttribute<DynamicConsumerAttribute>() == null )
                 {
                     consumerTypes.TryAdd( type.FullName, type );
                 }

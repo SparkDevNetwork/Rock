@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Threading;
@@ -40,6 +41,11 @@ namespace Rock.Bus
     /// </summary>
     public static class RockMessageBus
     {
+        /// <summary>
+        /// The maximum number of seconds to wait for the bus to start.
+        /// </summary>
+        private const int maxStartupWaitTimeSeconds = 45;
+
         /// <summary>
         /// The stat observer
         /// </summary>
@@ -66,6 +72,17 @@ namespace Rock.Bus
         /// The bus
         /// </summary>
         private static IBusControl _bus = null;
+
+        /// <summary>
+        /// The collection of dynamic consumer registrations. The key is the
+        /// queue name.
+        /// </summary>
+        private static readonly Dictionary<string, DynamicQueueHandle> _dynamicConsumers = new Dictionary<string, DynamicQueueHandle>();
+
+        /// <summary>
+        /// Lock object for dynamically changing queue consumer registration.
+        /// </summary>
+        private static readonly SemaphoreSlim _dynamicConsumersLock = new SemaphoreSlim( 1 );
 
         /// <summary>
         /// The transport component
@@ -336,9 +353,10 @@ namespace Rock.Bus
         /// <typeparam name="TMessage">The type of message to be published.</typeparam>
         /// <typeparam name="TResponse">The expected response type.</typeparam>
         /// <param name="message">The message to publish.</param>
+        /// <param name="queueName">Sends the request to a specific named queue.</param>
         /// <param name="cancellationToken">A token that can be set to a cancelled state in order to abort waiting for a response.</param>
         /// <returns>A task that completes with the response received from a node.</returns>
-        internal static Task<TResponse> RequestAsync<TQueue, TMessage, TResponse>( TMessage message, CancellationToken cancellationToken = default )
+        internal static Task<TResponse> RequestAsync<TQueue, TMessage, TResponse>( TMessage message, string queueName = null, CancellationToken cancellationToken = default )
             where TQueue : ISendCommandQueue, new()
             where TMessage : class, ICommandMessage<TQueue>
             where TResponse: class, new()
@@ -377,16 +395,141 @@ namespace Rock.Bus
                     throw ex;
                 }
 
-                var response = await _bus.Request<TMessage, TResponse>( message, cancellationToken, callback: context =>
+                if ( queueName.IsNullOrWhiteSpace() )
                 {
-                    context.TimeToLive = RockQueue.GetTimeToLive<TQueue>();
-                } );
+                    var response = await _bus.Request<TMessage, TResponse>( message, cancellationToken, callback: context =>
+                    {
+                        context.TimeToLive = RockQueue.GetTimeToLive<TQueue>();
+                    } );
 
-                return response.Message;
+                    return response.Message;
+                }
+                else
+                {
+                    var address = _transportComponent.GetDestinationAddressForQueue( _bus, queueName );
+                    var requestHandle = ClientFactoryExtensions.CreateRequestClient<TMessage>( _bus, address )
+                        .Create( message, cancellationToken );
+
+                    requestHandle.UseExecute( context =>
+                    {
+                        context.TimeToLive = RockQueue.GetTimeToLive<TQueue>();
+                    } );
+
+                    var response = await requestHandle.GetResponse<TResponse>().ConfigureAwait( false );
+
+                    return response.Message;
+                }
             }, cancellationToken );
         }
 
-        private const int maxStartupWaitTimeSeconds = 45;
+        /// <summary>
+        /// <para>
+        /// Adds a new consumer to the dynamic queue name. If the bus is not
+        /// already listening to that queue name then it will begin listening
+        /// to the queue and pass relavent messages to the consumer.
+        /// </para>
+        /// <para>
+        /// This must only be used queue names that are reserved for dynamic
+        /// consumers. An exception will be thrown if a queue name used by a
+        /// normal consumer is passed.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TConsumer">The consumer type that will handle messages for the queue.</typeparam>
+        /// <param name="queueName">The name of the queue.</param>
+        /// <returns>A task that represents the operation.</returns>
+        internal static async Task AddDynamicConsumerAsync<TConsumer>( string queueName )
+            where TConsumer : class, IConsumer, new()
+        {
+            await _dynamicConsumersLock.WaitAsync();
+
+            try
+            {
+                // Try to get the existing dynamic queue or create a new one.
+                if ( !_dynamicConsumers.TryGetValue( queueName, out var item ) )
+                {
+                    item = new DynamicQueueHandle();
+                    _dynamicConsumers.Add( queueName, item );
+                }
+
+                item.Consumers.Add( typeof( TConsumer ) );
+
+                // If the queue is running then we need to stop it before we
+                // can reconfigure.
+                if ( item.Handle != null )
+                {
+                    await item.Handle.StopAsync();
+                    item.Handle = null;
+                }
+
+                // (Re-)Start the queue.
+                item.Handle = _bus.ConnectReceiveEndpoint( queueName, e =>
+                {
+                    foreach ( var type in item.Consumers )
+                    {
+                        e.Consumer( type, t => Activator.CreateInstance( t ) );
+                    }
+                } );
+            }
+            finally
+            {
+                _dynamicConsumersLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Removes a consumer from a dynamic queue name.
+        /// </summary>
+        /// <typeparam name="TConsumer">The consumer type that will no longer handle messages for the queue.</typeparam>
+        /// <param name="queueName">The name of the queue.</param>
+        /// <returns>A task that represents the operation.</returns>
+        internal static async Task RemoveDynamicConsumerAsync<TConsumer>( string queueName )
+            where TConsumer : class, IConsumer, new()
+        {
+            await _dynamicConsumersLock.WaitAsync();
+
+            try
+            {
+                // If we haven't set this queue up, then abort.
+                if ( !_dynamicConsumers.TryGetValue( queueName, out var item ) )
+                {
+                    return;
+                }
+
+                // If this consumer has not been registered for this queue then abort.
+                if ( !item.Consumers.Remove( typeof( TConsumer ) ) )
+                {
+                    return;
+                }
+
+                // If the queue is running then we need to stop it before we
+                // can reconfigure.
+                if ( item.Handle != null )
+                {
+                    await item.Handle.StopAsync();
+                    item.Handle = null;
+                }
+
+                // If no consumers left, then remove the entire dynamic queue.
+                if ( !item.Consumers.Any() )
+                {
+                    _dynamicConsumers.Remove( queueName );
+                    return;
+                }
+
+                // (Re-)Start the queue.
+                item.Handle = _bus.ConnectReceiveEndpoint( queueName, e =>
+                {
+                    foreach ( var type in item.Consumers )
+                    {
+                        e.Consumer( type, t => Activator.CreateInstance( t ) );
+                    }
+                } );
+            }
+            finally
+            {
+                _dynamicConsumersLock.Release();
+            }
+        }
 
         /// <summary>
         /// Configures and starts the bus.
@@ -472,5 +615,26 @@ namespace Rock.Bus
         {
             return Task.Delay( 0 );
         }
+
+        #region Support Classes
+
+        /// <summary>
+        /// Tracks consumer registrations for a given dynamic queue.
+        /// </summary>
+        private class DynamicQueueHandle
+        {
+            /// <summary>
+            /// A handle to the endpoint that can be used to stop it so we can
+            /// reconfigure it.
+            /// </summary>
+            public HostReceiveEndpointHandle Handle { get; set; }
+
+            /// <summary>
+            /// The list of consumers attached to this queue.
+            /// </summary>
+            public List<Type> Consumers { get; } = new List<Type>();
+        }
+
+        #endregion
     }
 }
