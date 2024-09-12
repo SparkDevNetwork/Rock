@@ -293,8 +293,8 @@ export function textFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const haystackValue = haystack?.toLowerCase() ?? "";
-    const needleValue = needle["value"].toLowerCase();
+    const haystackValue = haystack?.toLowerCase()?.trim() ?? "";
+    const needleValue = needle["value"].toLowerCase()?.trim();
 
     if (needle["method"] === TextFilterMethod.Equals) {
         return haystackValue === needleValue;
