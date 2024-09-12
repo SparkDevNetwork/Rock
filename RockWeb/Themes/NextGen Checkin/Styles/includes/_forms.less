@@ -1,0 +1,183 @@
+input[type=text] {
+  -webkit-appearance: none;
+}
+
+.form-control {
+  color: var(--input-color);
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+
+  &:focus {
+    border-color: @input-border-focus;
+    border-color: var(--input-border-focus);
+  }
+}
+
+input.namesearch,
+input.checkin-phone-entry {
+  max-width: 100%;
+}
+
+label {
+  font-weight: 600;
+}
+
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
+  &:focus {
+    outline: none;
+    box-shadow: @input-focus-box-shadow;
+  }
+}
+
+.btn:active,
+.btn.active,
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: none;
+}
+
+// Button Overrides
+
+.btn-default {
+  color: @btn-default-color;
+  color: var(--btn-default-color);
+  background: @btn-default-bg;
+  background: var(--btn-default-bg);
+  border-color: @btn-default-border;
+  border-color: var(--btn-default-border);
+  border-width: 3px;
+  border-radius: 100px;
+  outline: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  transition: background-color .15s ease-in-out, color .15s ease-in-out;
+
+  &:hover {
+    color: @btn-default-color;
+    color: var(--btn-default-color);
+    background-color: @btn-default-bg !important;
+    background-color: var(--btn-default-bg) !important;
+    border-color: @btn-default-active-bg;
+    border-color: var(--btn-default-active-bg);
+  }
+
+  &:active,
+  &.active,
+  &:active:hover,
+  &.active:hover,
+  &:active:focus {
+    color: @btn-default-active-color;
+    color: var(--btn-default-active-color);
+    background-color: @btn-default-active-bg !important;
+    background-color: var(--btn-default-active-bg) !important;
+    background-image: none;
+    border-color: @btn-default-active-bg;
+    border-color: var(--btn-default-active-bg);
+  }
+}
+
+
+@btn-primary-active-bg: darken(desaturate(spin(@btn-primary-bg, 3.8272), 17.7417), 15.8824);
+
+.btn-primary {
+  border-width: 3px;
+  border-radius: 100px;
+  -webkit-transition: var(--btn-transition);
+  transition: var(--btn-transition);
+
+  &:hover {
+    background: @btn-primary-active-bg;
+  }
+
+  &:active,
+  &:focus,
+  .focus,
+  .active {
+    color: #fff;
+    background: @btn-primary-active-bg;
+    outline: none;
+    box-shadow: inset 0 0 0 2px #fff;
+  }
+}
+
+
+.btn-checkin-select {
+  padding: 6px 4px;
+  font-size: 18px;
+  color: @btn-default-color !important;
+  color: var(--btn-checkinselect-color) !important;
+  background-color: @btn-default-bg;
+  background-color: var(--btn-checkinselect-bg);
+  border: 3px solid @btn-default-border;
+
+  @media (min-width: @screen-xs-min) {
+    padding: 8px 4px;
+    font-size: 26px;
+  }
+
+  &:hover,
+  &:active {
+    color: @btn-default-color;
+    background-color: @btn-default-bg;
+    background-color: var(--btn-checkinselect-bg);
+    border-color: @btn-default-border;
+  }
+
+  &.active,
+  &:active:hover,
+  &.active:hover {
+    & when not (@enable-highlight) {
+      color: @btn-select-active-color !important;
+      background-color: @btn-select-active-bg !important;
+      border-color: @btn-select-active-bg !important;
+      box-shadow: none;
+    }
+
+    & when (@enable-highlight) {
+      background: @btn-default-bg;
+      background-color: var(--btn-checkinselect-bg);
+      border-color: @brand-primary;
+      box-shadow: 0 0 0 3px @brand-primary !important;
+    }
+  }
+
+  // Used for loading state
+  &.disabled  {
+    &,
+    &:hover,
+    &:focus,
+    &.focus {
+      padding: 16px 0;
+      background-color: @btn-default-bg;
+      background-color: var(--btn-checkinselect-disabled-bg);
+      border-color: @btn-default-border;
+      box-shadow: 0 0 0 2px @btn-default-border !important;
+
+      @media (min-width: @screen-xs-min) {
+        padding: 20px 0;
+      }
+    }
+  }
+
+  .checkbox-container {
+    display: none;
+  }
+
+  // Person Names
+  .checkin-sub-title {
+    display: block;
+    margin: 0;
+    font-size: .75em;
+    font-weight: 400;
+    color: @text-muted;
+  }
+}
