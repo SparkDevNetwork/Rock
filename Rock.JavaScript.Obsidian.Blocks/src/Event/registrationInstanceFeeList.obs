@@ -65,12 +65,14 @@
         <CurrencyColumn name="cost"
                         title="Cost"
                         field="cost"
+                        :quickFilterValue="getCostQuickFilterValue"
                         :filter="numberValueFilter"
                         visiblePriority="md" />
 
         <CurrencyColumn name="feeTotal"
                         title="Fee Total"
                         field="feeTotal"
+                        :quickFilterValue="getFeesQuickFilterValue"
                         :filter="numberValueFilter"
                         visiblePriority="xs" />
     </Grid>
@@ -89,17 +91,17 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { NumberColumn, numberValueFilter, dateValueFilter, textValueFilter, pickExistingValueFilter, DateColumn, TextColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstanceFeeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceFeeList/registrationInstanceFeeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { reactive, ref, watch } from "vue";
+    import { reactive, ref } from "vue";
+    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstanceFeeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
@@ -124,6 +126,38 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search
+     * @param row the targeted row
+     */
+    function getCostQuickFilterValue(row: Record<string, unknown>): string {
+        return getCurrencyAsDecimal(row.cost as string);
+    }
+
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search
+     * @param row the targeted row.
+     */
+    function getFeesQuickFilterValue(row: Record<string, unknown>): string {
+        return getCurrencyAsDecimal(row.feeTotal as string);
+    }
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search since raw value might
+     * not include decimal places with will be added by the Currency Column when formatting as currency.
+     * @param value the amount as string
+     */
+    function getCurrencyAsDecimal(value: string | null): string {
+        let numberValue = toNumberOrNull(value);
+
+        if (numberValue) {
+            return asFormattedString(numberValue, 2);
+        }
+
+        return "";
     }
 
     // #endregion
