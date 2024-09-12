@@ -15,10 +15,12 @@
 // </copyright>
 //
 
+import { CancellationTokenSource, ICancellationToken } from "./cancellation";
+
 /**
  * Compares two values for equality by performing deep nested comparisons
  * if the values are objects or arrays.
- * 
+ *
  * @param a The first value to compare.
  * @param b The second value to compare.
  * @param strict True if strict comparision is required (meaning 1 would not equal "1").
@@ -108,7 +110,7 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
  * Debounces the function so it will only be called once during the specified
  * delay period. The returned function should be called to trigger the original
  * function that is to be debounced.
- * 
+ *
  * @param fn The function to be called once per delay period.
  * @param delay The period in milliseconds. If the returned function is called
  * more than once during this period then fn will only be executed once for
@@ -141,6 +143,81 @@ export function debounce(fn: (() => void), delay: number = 250, eager: boolean =
         timeout = setTimeout(() => {
             timeout = null;
             fn();
+        }, delay);
+    };
+}
+
+/**
+ * Debounces the function so it will only be called once during the specified
+ * delay period. The returned function should be called to trigger the original
+ * function that is to be debounced.
+ *
+ * **Note:** Due to the asynchronous nature of JavaScript and how promises work,
+ * `fn` may be invoked multiple times before previous invocations have completed.
+ * To ensure that only the latest invocation proceeds and to prevent stale data,
+ * you should check `cancellationToken.isCancellationRequested` at appropriate
+ * points within your `fn` implementation—ideally after you `await` data from the
+ * server. If cancellation is requested, `fn` should promptly abort execution.
+ *
+ * @param fn The function to be called once per delay period.
+ * @param delay The period in milliseconds. If the returned function is called
+ * more than once during this period then fn will only be executed once for
+ * the period. If not specified then it defaults to 250ms.
+ * @param eager If true then the fn function will be called immediately and
+ * then any subsequent calls will be debounced.
+ *
+ * @returns A function to be called when fn should be executed.
+ */
+export function debounceAsync(
+    fn: ((cancellationToken: ICancellationToken) => Promise<void>),
+    delay: number = 250,
+    eager: boolean = false
+): (() => Promise<void>) {
+    let timeout: NodeJS.Timeout | null = null;
+    let source: CancellationTokenSource | null = null;
+    let isEagerExecutionInProgress = false;
+
+    return async (): Promise<void> => {
+        // Always cancel any ongoing execution of fn.
+        source?.cancel();
+
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        else if (eager && !isEagerExecutionInProgress) {
+            // Execute immediately on the first call.
+            isEagerExecutionInProgress = true;
+            source = new CancellationTokenSource();
+
+            // Set the timeout before awaiting fn.
+            timeout = setTimeout(() => {
+                timeout = null;
+                isEagerExecutionInProgress = false;
+            }, delay);
+
+            try {
+                await fn(source.token);
+            }
+            catch (e) {
+                console.error(e ?? "Unknown error while debouncing async function call.");
+            }
+
+            return;
+        }
+
+        // Schedule the function to run after the delay.
+        source = new CancellationTokenSource();
+        const cts = source;
+        timeout = setTimeout(async () => {
+            try {
+                await fn(cts.token);
+            }
+            catch (e) {
+                console.error(e ?? "Unknown error while debouncing async function call.");
+            }
+
+            timeout = null;
+            isEagerExecutionInProgress = false;
         }, delay);
     };
 }
