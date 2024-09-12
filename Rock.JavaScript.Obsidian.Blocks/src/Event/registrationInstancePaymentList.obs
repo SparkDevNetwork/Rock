@@ -29,6 +29,7 @@
                         title="Amount"
                         field="totalAmount"
                         itemClass="grid-item-pull-left"
+                        :quickFilterValue="getTotalAmountQuickFilterValue"
                         :filter="numberValueFilter"
                         visiblePriority="xs" />
 
@@ -116,6 +117,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./RegistrationInstancePaymentList/types.partial";
     import { reactive, ref } from "vue";
+    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstancePaymentListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -178,6 +180,29 @@
         }
 
         return filterValue;
+    }
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search
+     * @param row the targeted row.
+     */
+    function getTotalAmountQuickFilterValue(row: Record<string, unknown>): string {
+        return getCurrencyAsDecimal(row.feeTotal as string);
+    }
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search since raw value might
+     * not include decimal places with will be added by the Currency Column when formatting as currency.
+     * @param value the amount as string
+     */
+    function getCurrencyAsDecimal(value: string | null): string {
+        let numberValue = toNumberOrNull(value);
+
+        if (numberValue) {
+            return asFormattedString(numberValue, 2);
+        }
+
+        return "";
     }
 
     // #endregion
