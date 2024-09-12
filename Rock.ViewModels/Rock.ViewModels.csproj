@@ -51,6 +51,14 @@
     <Compile Include="Blocks\Administration\PageProperties\CopyPageRequestBag.cs" />
     <Compile Include="Blocks\Administration\PageProperties\DeletePageRequestBag.cs" />
     <Compile Include="Blocks\Administration\PageProperties\PagePropertiesValidationResponseBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\ExperimentalSettingsConfigurationBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\FamilyRulesSettingsConfigurationBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\GeneralConfigurationBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\SaveConfigurationResponseBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\SystemConfigurationInitializationBox.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\WebConfigConfigurationBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\ObservabilityConfigurationBag.cs" />
+    <Compile Include="Blocks\Administration\SystemConfiguration\UiSettingsConfigurationBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
