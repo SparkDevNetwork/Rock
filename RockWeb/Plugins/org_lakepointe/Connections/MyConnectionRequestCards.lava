@@ -1,0 +1,97 @@
+<div class="panel panel-block">
+    <div class="panel-heading">
+        <h4 class="panel-title">My Connection Requests</h4>
+    </div>
+    <div>
+        {% assign midnightToday = 'Now' | Date:'M/d/yyyy' | DateAdd:1,'d' %}
+        {% if ConnectionRequests.size > 0 %}
+            {% for connectionRequest in ConnectionRequests %}
+                {% assign lastActivity = LastActivityLookup[connectionRequest.Id] %}
+                {% assign isCritical = false %}
+                {% if connectionRequest.ConnectionStatus.IsCritical and connectionRequest.ConnectionState == 0 %}
+                    {% assign isCritical = true %}
+                    {% assign daysTillDue = null %}
+                {% elseif connectionRequest.ConnectionStatus.IsCritical and connectionRequest.ConnectionState == 2 %}
+                    {% assign daysTillDue = midnightToday | DateDiff:connectionRequest.FollowupDate, 'd' %}
+                    {% if daysTillDue < 0 %}
+                        {% assign isCritical = true %}
+                    {% endif %}
+                {% endif %}
+
+                {% if lastActivity.CreatedDateTime %}
+                    {% assign idleDays = lastActivity.CreatedDateTime | DateDiff:'Now', 'd' %}
+                {% else %}
+                    {% assign idleDays = connectionRequest.CreatedDateTime | DateDiff:'Now', 'd' %}
+                {% endif %}
+
+                {% assign daysUntilRequestIdle = 14 %}
+                {% if connectionRequest.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle %}
+                    {% assign daysUntilRequestIdle = connectionRequest.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle %}
+                {% endif %}
+
+                <div class="card connection-request-card">
+                    {% if LinkedPages.DetailPage %}
+                        <a href="{{ LinkedPages.DetailPage }}?ConnectionRequestId={{ connectionRequest.Id }}&ConnectionOpportunityId={{ connectionRequest.ConnectionOpportunityId }}">
+                    {% endif %}
+                        <div class="card-body">
+                            <h4 class="card-title">{{ connectionRequest.PersonAlias.Person.FullName }}</h4>
+                            <h5 class="card-subtitle mb-2 text-muted"><i class="{{ connectionRequest.ConnectionOpportunity.IconCssClass }}"></i> {{ connectionRequest.ConnectionOpportunity.Name }}</h5>
+
+                            {% if lastActivity %}
+                                <p class="card-text">
+                                    <strong>Last Activity:</strong> {{ lastActivity.ConnectionActivityType.Name }} (<span class="small">{{ lastActivity.CreatedDateTime | HumanizeDateTime }}</span>)
+                                </p>
+                                <p class="card-text">
+                                    {{ lastActivity.Note }}
+                                </p>
+                            {% else %}
+                                <p class="card-text">
+                                    <strong>Last Activity:</strong> <em>none</em>
+                                </p>
+                            {% endif %}
+
+                            {% if isCritical %}
+                                <div class="label label-warning">{{ connectionRequest.ConnectionStatus.Name }}</div>
+                            {% else %}
+                                <div class="label label-info">{{ connectionRequest.ConnectionStatus.Name }}</div>
+                            {% endif %}
+
+                            <div class="status-badges">
+                                {% if isCritical %}
+                                    <span class="badge badge-critical" data-toggle="tooltip" data-placement="top" title="Has a critical status">
+                                        Critical
+                                    </span>
+                                {% endif %}
+
+                                {% if idleDays > daysUntilRequestIdle %}
+                                    <span class="badge badge-danger" data-toggle="tooltip" data-placement="top" title="No activity in {{ daysUntilRequestIdle }} days">
+                                        Idle
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% if LinkedPages.DetailPage %}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="panel-body">
+                <div class="alert alert-info">There are no connection requests assigned to you.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+<style>
+    .connection-request-card .card-body {
+        margin-top: 0.75rem;
+    }
+    .connection-request-card a {
+        color: unset;
+    }
+    .connection-request-card .label {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+</style>
