@@ -119,6 +119,9 @@
 @import 'blocks/blocks-core';                       // All classes are in use.
 @import 'blocks/blocks-groups';
 @import 'blocks/blocks-reporting';
+@import 'blocks/skeleton';
+@import 'blocks/page-specific';
+@import 'blocks/skeleton';
 
 
 /* ===================== UTILITIES =================== */
@@ -135,6 +138,7 @@
 /* ======================= ANIMATION ======================*/
 @import 'components/component-animations';  //Fully Format.
 
-/* ======================= ICON STYLING ======================*/
-@import './Tabler/TablerStyling'
+/* ======================= ICON  ======================*/
+@import './icons/core-icon';
+@import './font-styling/font-styling-core'
 

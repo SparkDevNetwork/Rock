@@ -173,7 +173,7 @@ ul.rocktree-children {
     }
 
     &:hover {
-      color: var(--color-interface-softest);
+      color: var(--color-interface-stronger);
     }
 
     &::before {
@@ -188,15 +188,15 @@ ul.rocktree-children {
     }
 
     &:hover::before {
-      background: var(--color-interface-medium);
+      background: var(--color-interface-soft);
     }
   }
 
   .selected {
-    color:          var(--color-interface-softest);
+    color:          var(--color-interface-stronger);
 
     &::before {
-      background:   var(--color-interface-medium) !important;
+      background:   var(--color-interface-soft) !important;
     }
   }
 

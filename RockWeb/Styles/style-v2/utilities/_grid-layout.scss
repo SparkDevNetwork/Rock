@@ -47,17 +47,17 @@ box-sizing: inherit;
     margin-left: auto;
 }
 
-.row,
-.form-row {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-  // Commented out to fix the wrapping of the kpi in the `Learning Program Detail` Block.
-  // -ms-flex-wrap:  wrap;
-  // flex-wrap:      wrap;
-    margin-right: -15px;
-    margin-left: -15px;
-}
+// .row,
+// .form-row {
+//     display: -webkit-box;
+//     display: -ms-flexbox;
+//     display: flex;
+//   // Commented out to fix the wrapping of the kpi in the `Learning Program Detail` Block.
+//   // -ms-flex-wrap:  wrap;
+//   // flex-wrap:      wrap;
+//     margin-right: -15px;
+//     margin-left: -15px;
+// }
 
 .no-gutters {
 margin-right: 0;

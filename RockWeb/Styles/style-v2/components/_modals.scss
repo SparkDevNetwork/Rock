@@ -53,13 +53,13 @@ body.modal-open,
 
 
 // TODO if the modal position is off try this:
-// .modal {
-// 	outline:    none;
-// 	position:   absolute;
-// 	margin-top: 0;
-// 	top:        50%;
-// 	overflow:   visible; 
-// }
+.modal {
+	outline:    none;
+	position:   absolute;
+	margin-top: 0;
+	top:        50%;
+	overflow:   visible; 
+}
 
 .modal-dialog {
   position: relative;
@@ -87,6 +87,24 @@ body.modal-open,
 .modal-open {
   overflow:                     hidden;
   -webkit-overflow-scrolling:   auto;
+}
+
+.modal-header {
+  padding: var(--spacing-medium);
+  border-bottom: 1px solid var(--color-interface-soft);
+  &:before,
+  &:after {
+    display: table; 
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+.modal-title {
+  margin:       0;
+  line-height:  var(--line-height-normal);
 }
 
 .modal-body {
@@ -360,11 +378,6 @@ body.rock-modal {
         float: left;
       }
     }
-  }
-
-  .modal-title {
-    margin:       0;
-    line-height:  var(--line-height-normal);
   }
 
   .modal-body {

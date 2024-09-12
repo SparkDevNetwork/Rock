@@ -21,20 +21,19 @@
     padding: 5px 15px;
     margin: 0 -15px 15px;
     margin-top: 0;
-    color: var(--color-interface-stronger);
-    background-color: var(--color-interface-strongest);
+    color: var(--color-interface-softest);
+    background-color: var(--color-primary);
   }
 
   > .modal-footer {
-    padding: var(--spacing-small) var(--spacing-medium);
+    padding: var(--spacing-small) var(--spacing-large);
     margin-right: -15px;
     margin-left: -15px;
-    color: var(--color-primary);      // TODO darken by 20% when available.
-    background-color: var(--color-primary);      // TODO lighten by 20% when available.
+    color: var(--color-interface-softest);
+    background-color: var(--color-interface-softer);
   }
 }
 
-// Nothing is using this class
 .htmleditor-assetmanager .is-postback {
   > .modal-header {
     padding: 5px 15px;

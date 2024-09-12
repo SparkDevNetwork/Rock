@@ -1,11 +1,15 @@
 
+// This file is being imported by core.scss
+
 // Working
 @import './fixed-width';
 @import './list';
 @import './sizes';
 @import './stacked';
+@import './screen-reader';
+@import './border-pulled';
 
 // Got it working by adding display: inline-block; to `.ti{ }` class 
-// located in the `tabler-icons.css`
+// located in the `_core-icon.css`
 @import './rotated-flipped';
 @import './animation';

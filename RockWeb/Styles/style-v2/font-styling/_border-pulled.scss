@@ -1,0 +1,18 @@
+.fa-border {
+    border-radius: .1em;
+    border: solid .08em var(--color-interface-strong);
+    padding: .2em .25em .15em;
+  }
+  
+.fa-pull-left { float: left; }
+.fa-pull-right { float: right; }
+
+.ti, .fa, .fas, .far, .fal, .fab {
+    &.fa-pull-left {
+        margin-right: .3em; 
+    }
+    &.fa-pull-right {
+        margin-left: .3em; 
+    }
+}
+  

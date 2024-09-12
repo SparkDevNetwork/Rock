@@ -244,7 +244,7 @@
     justify-content: space-between;
     padding: 14px;
     margin-bottom: var(--spacing-large);
-    border: 1px solid #eee;
+    border: 1px solid var(--color-interface-soft);
     border-radius: 4px;
 
     &::before {
@@ -282,7 +282,7 @@
     margin-right: 12px;
     font-size: 16px;
     color: var(--color-interface-medium);
-    background: #fff;
+    background: var(--color-interface-softest);
     border: 1px solid #c7c7c7;
     border-radius: 50%;
 

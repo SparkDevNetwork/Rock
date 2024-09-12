@@ -1,0 +1,87 @@
+/*
+    Used to manage styles for specific blocks.
+
+    1. Error Page
+    2. Blank Page
+    3. Exception Page
+*/
+
+
+// 1. Error Page
+// -------------------------
+
+.error-wrap {
+  max-width: 450px;
+  margin: 0 auto;
+  text-align: center;
+
+  h1 {
+    font-size: 45px;
+  }
+
+  .error-icon {
+    margin: calc($grid-gutter-width * .5);
+    font-size: 256px;
+    line-height: 256px;
+    opacity: .7;
+
+    &.info {
+      color: var(--color-info-strong);
+    }
+
+    &.warning {
+      color: var(--color-warning-soft);
+    }
+
+    &.danger {
+      color: var(--color-danger-strong);
+    }
+  }
+}
+
+.error-details {
+  pre {
+    color: var(--color-danger-strong);
+    background-color: transparent;
+    border: 0;
+  }
+}
+
+// 2. Blank Page
+// -------------------------
+
+.rock-blank {
+  background-color: var(--color-interface-softest);
+
+  main.container {
+    padding: 12px;
+    margin: 0;
+  }
+}
+
+// 3. Exception Page
+// -------------------------
+.exception-table {
+  word-break: break-all;
+  word-wrap: break-word;
+
+  td {
+    min-width: 200px;
+    vertical-align: text-top;
+  }
+}
+
+.exceptionDetail-stackTrace-hide {
+  display: none;
+}
+
+.exceptionDetail-stackTrace-show {
+  display: table-row;
+
+  pre {
+    padding: 0;
+    color: inherit;
+    background-color: transparent;
+    border-color: transparent;
+  }
+}
