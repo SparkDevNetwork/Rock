@@ -21,20 +21,20 @@
 // </copyright>
 //
 
-/** The box that contains all the initialization information for the dynamic data block. */
-export type DynamicDataInitializationBox = {
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** Gets or sets whether the results should be displayed using a lava template. */
-    isLavaTemplateDisplayMode: boolean;
+/** The settings options and other supporting values for the custom settings panel for the page parameter filter block. */
+export type PageParameterFilterCustomSettingsOptionsBag = {
+    /** Gets or sets the filter button size items. */
+    filterButtonSizeItems?: ListItemBag[] | null;
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /** Gets or sets the filter selection action items. */
+    filterSelectionActionItems?: ListItemBag[] | null;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    /** Gets or sets the filters grid definition. */
+    filtersGridDefinition?: GridDefinitionBag | null;
+
+    /** Gets or sets the filters reserved key names. */
+    filtersReservedKeyNames?: string[] | null;
 };

@@ -21,20 +21,16 @@
 // </copyright>
 //
 
-/** The box that contains all the initialization information for the dynamic data block. */
-export type DynamicDataInitializationBox = {
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-    /** Gets or sets whether the results should be displayed using a lava template. */
-    isLavaTemplateDisplayMode: boolean;
+/** A bag that contains information about updated filters for the page parameter filter block. */
+export type GetUpdatedFiltersResponseBag = {
+    /** Gets or sets the filter page parameters. */
+    filterPageParameters?: Record<string, string> | null;
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /** Gets or sets the public filters available for selection. */
+    publicFilters?: Record<string, PublicAttributeBag> | null;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    /** Gets or sets the public filter values. */
+    publicFilterValues?: Record<string, string> | null;
 };

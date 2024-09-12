@@ -67,9 +67,9 @@ namespace Rock.ViewModels.Utility
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the attribute is publically visible.
+        /// Gets or sets a value indicating whether the attribute is publicly visible.
         /// </summary>
-        /// <value><c>true</c> if the attribute is publically visible; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if the attribute is publicly visible; otherwise, <c>false</c>.</value>
         public bool IsPublic { get; set; }
 
         /// <summary>

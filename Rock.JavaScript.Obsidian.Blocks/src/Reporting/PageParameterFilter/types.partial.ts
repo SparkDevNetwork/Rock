@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,16 +15,18 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Reporting.DynamicData
-{
-    /// <summary>
-    /// The box that contains all the initialization information for the dynamic data block.
-    /// </summary>
-    public class DynamicDataInitializationBox : BlockBox
-    {
-        /// <summary>
-        /// Gets or sets whether the results should be displayed using a lava template.
-        /// </summary>
-        public bool IsLavaTemplateDisplayMode { get; set; }
-    }
+/**
+ * Keys for navigation URLs.
+ */
+export const enum NavigationUrlKey {
+    RedirectPage = "RedirectPage"
+}
+
+/**
+ * The available filter seletion actions.
+ */
+export const enum FilterSelectionAction {
+    DoNothing = "0",
+    UpdateFilters = "1",
+    ApplyFilters = "2"
 }
