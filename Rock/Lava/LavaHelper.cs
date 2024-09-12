@@ -26,6 +26,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -97,6 +98,15 @@ namespace Rock.Lava
             if ( options == null )
             {
                 options = new CommonMergeFieldsOptions();
+            }
+
+            if ( rockPage == null )
+            {
+                var rockRequestContext = RockRequestContextAccessor.Current;
+                if ( rockRequestContext != null )
+                {
+                    return rockRequestContext.GetCommonMergeFields( currentPerson, options );
+                }
             }
 
             if ( currentPerson == null )

@@ -106,7 +106,7 @@ namespace Rock.Blocks.Reporting
         Key = AttributeKey.ResultsDisplayMode,
         Description = "Determines how the results should be displayed.",
         Category = "CustomSetting",
-        ListSource = "Grid^grid,Lava Template^lavaTemplate",
+        ListSource = "grid^Grid,lavaTemplate^Lava Template",
         DefaultValue = "Grid",
         IsRequired = true )]
 
