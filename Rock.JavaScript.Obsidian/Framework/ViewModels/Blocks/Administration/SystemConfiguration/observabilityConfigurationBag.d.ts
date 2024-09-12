@@ -21,11 +21,31 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance Fee List block. */
-export type RegistrationInstanceFeeListOptionsBag = {
-    /** Gets or sets the file name of the export file. */
-    exportFileName?: string | null;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** Gets or sets the title of the export file. */
-    exportTitleName?: string | null;
+/** Contains the observability configuration details. */
+export type ObservabilityConfigurationBag = {
+    /** Gets or sets a value indicating whether [enable observability]. */
+    enableObservability: boolean;
+
+    /** Gets or sets the endpoint. */
+    endpoint?: string | null;
+
+    /** Gets or sets the endpoint headers. */
+    endpointHeaders?: ListItemBag[] | null;
+
+    /** Gets or sets the endpoint protocol. */
+    endpointProtocol?: string | null;
+
+    /** Gets or sets a value indicating whether [include query statements]. */
+    includeQueryStatements: boolean;
+
+    /** Gets or sets the maximum length of the attribute. */
+    maximumAttributeLength?: number | null;
+
+    /** Gets or sets the span count limit. */
+    spanCountLimit?: number | null;
+
+    /** Gets or sets the targeted queries. */
+    targetedQueries?: string[] | null;
 };

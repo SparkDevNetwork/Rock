@@ -21,11 +21,20 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance Fee List block. */
-export type RegistrationInstanceFeeListOptionsBag = {
-    /** Gets or sets the file name of the export file. */
-    exportFileName?: string | null;
+/** Contains the Ui Settings configuration details. */
+export type UiSettingsConfigurationBag = {
+    /** Gets or sets the captcha secret key. */
+    captchaSecretKey?: string | null;
 
-    /** Gets or sets the title of the export file. */
-    exportTitleName?: string | null;
+    /** Gets or sets the captcha site key. */
+    captchaSiteKey?: string | null;
+
+    /** Gets or sets the ethnicity label. */
+    ethnicityLabel?: string | null;
+
+    /** Gets or sets the race label. */
+    raceLabel?: string | null;
+
+    /** Gets or sets the SMS opt in message. */
+    smsOptInMessage?: string | null;
 };

@@ -21,11 +21,29 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance Fee List block. */
-export type RegistrationInstanceFeeListOptionsBag = {
-    /** Gets or sets the file name of the export file. */
-    exportFileName?: string | null;
+/** Contains the web configuration details. */
+export type WebConfigConfigurationBag = {
+    /** Gets or sets the azure signal r access key. */
+    azureSignalRAccessKey?: string | null;
 
-    /** Gets or sets the title of the export file. */
-    exportTitleName?: string | null;
+    /** Gets or sets the azure signal r endpoint. */
+    azureSignalREndpoint?: string | null;
+
+    /** Gets or sets the enable database performance counters. */
+    enableDatabasePerformanceCounters: boolean;
+
+    /** Gets or sets a value indicating whether [enable run jobs in IIS context]. */
+    enableRunJobsInIISContext: boolean;
+
+    /** Gets or sets the length of the login cookie persistence. */
+    loginCookiePersistenceLength?: number | null;
+
+    /** Gets or sets the maximum size of the upload file. */
+    maxUploadFileSize?: number | null;
+
+    /** Gets or sets the name of the observability service. */
+    observabilityServiceName?: string | null;
+
+    /** Gets or sets the time zone. */
+    timeZone?: string | null;
 };

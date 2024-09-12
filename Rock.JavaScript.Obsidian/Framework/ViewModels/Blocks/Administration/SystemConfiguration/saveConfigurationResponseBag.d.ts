@@ -21,11 +21,14 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance Fee List block. */
-export type RegistrationInstanceFeeListOptionsBag = {
-    /** Gets or sets the file name of the export file. */
-    exportFileName?: string | null;
+/** Response returned after saving a system configuration */
+export type SaveConfigurationResponseBag = {
+    /** Gets or sets the type of the alert. */
+    alertType?: string | null;
 
-    /** Gets or sets the title of the export file. */
-    exportTitleName?: string | null;
+    /** Gets or sets the error message. */
+    errorMessage?: string | null;
+
+    /** Gets or sets the success message. */
+    successMessage?: string | null;
 };

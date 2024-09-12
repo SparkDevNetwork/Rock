@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 
 using Microsoft.Extensions.Configuration;
@@ -30,6 +32,7 @@ using OpenTelemetry.Trace;
 
 using Rock.Bus;
 using Rock.SystemKey;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Observability
 {
@@ -140,6 +143,14 @@ namespace Rock.Observability
             ConfigureLogExporter();
 
             return _currentTracerProvider;
+        }
+
+        /// <summary>
+        /// Configures the observability TraceProvider.
+        /// </summary>
+        internal static void ReconfigureObservability()
+        {
+            ConfigureObservability();
         }
 
         /// <summary>
@@ -342,6 +353,15 @@ namespace Rock.Observability
             activity.AddTag( "service.version", _rockVersion.Value );
 
             return activity;
+        }
+
+        /// <summary>
+        /// Converts the open telemetry exporter protocols to a <see cref="ListItemBag"/> list.
+        /// </summary>
+        /// <returns></returns>
+        public static List<ListItemBag> GetOpenTelemetryExporterProtocolsAsListItemBag()
+        {
+            return typeof( OpenTelemetry.Exporter.OtlpExportProtocol ).ToEnumListItemBag();
         }
 
         /// <summary>

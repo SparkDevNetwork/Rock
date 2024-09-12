@@ -21,11 +21,23 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance Fee List block. */
-export type RegistrationInstanceFeeListOptionsBag = {
-    /** Gets or sets the file name of the export file. */
-    exportFileName?: string | null;
+/** Contains the details required for general system configuration. */
+export type GeneralConfigurationBag = {
+    /** Gets or sets a value indicating whether [enable keep alive]. */
+    enableKeepAlive: boolean;
 
-    /** Gets or sets the title of the export file. */
-    exportTitleName?: string | null;
+    /** Gets or sets a value indicating whether [include business in person picker]. */
+    includeBusinessInPersonPicker: boolean;
+
+    /** Gets or sets a value indicating whether this instance is multiple time zone support enabled. */
+    isMultipleTimeZoneSupportEnabled: boolean;
+
+    /** Gets or sets the PDF external render endpoint. */
+    pdfExternalRenderEndpoint?: string | null;
+
+    /** Gets or sets the personalization cookie cache length minutes. */
+    personalizationCookieCacheLengthMinutes?: number | null;
+
+    /** Gets or sets the visitor cookie persistence length days. */
+    visitorCookiePersistenceLengthDays?: number | null;
 };

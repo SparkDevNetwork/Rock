@@ -21,11 +21,11 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance Fee List block. */
-export type RegistrationInstanceFeeListOptionsBag = {
-    /** Gets or sets the file name of the export file. */
-    exportFileName?: string | null;
+/** Contains the experimental settings configuration details. */
+export type ExperimentalSettingsConfigurationBag = {
+    /** Gets or sets the duration of the security grant token. */
+    securityGrantTokenDuration?: number | null;
 
-    /** Gets or sets the title of the export file. */
-    exportTitleName?: string | null;
+    /** Gets or sets the starting day of week. */
+    startingDayOfWeek?: string | null;
 };

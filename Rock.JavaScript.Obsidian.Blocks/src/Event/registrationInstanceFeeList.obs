@@ -4,13 +4,12 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Fee"
+          title="Fees"
           :entityTypeGuid="EntityType.RegistrationRegistrantFee"
           stickyHeader
           liveUpdates
-          gridSettings
-          :exportTitle="config.options?.exportTitleName ?? ''"
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="isGridSettingsVisible = true">
+          :showLaunchWorkflow="false"
+          :exportTitle="config.options?.exportTitleName ?? ''">
 
         <TextColumn name="registrationId"
                     title="Registration Id"
@@ -22,19 +21,20 @@
         <DateColumn name="registrationDate"
                     title="Registration Date"
                     field="registrationDate"
+                    itemClass="grid-item-pull-left"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="registeredBy"
                     title="Registered By"
                     field="registeredBy"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="registrant"
                     title="Registrant"
                     field="registrant"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="registrantId"
@@ -53,7 +53,7 @@
         <TextColumn name="feeItemName"
                     title="Option"
                     field="feeItemName"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <NumberColumn name="quantity"
@@ -74,23 +74,28 @@
                         :filter="numberValueFilter"
                         visiblePriority="xs" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :feeNameItems="config.options?.feeNameItems ?? []"
-                       :feeOptionsItems="config.options?.feeOptionsItems ?? []"/>
 </template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+
+.grid-item-pull-right {
+    flex-direction: column;
+    align-items: start;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, textValueFilter, DateColumn, TextColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, textValueFilter, pickExistingValueFilter, DateColumn, TextColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstanceFeeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceFeeList/registrationInstanceFeeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PreferenceKey, GridSettingsOptions } from "./RegistrationInstanceFeeList/types.partial";
-    import GridSettingsModal from "./RegistrationInstanceFeeList/gridSettingsModal.partial.obs";
-    import { computed, reactive, ref, watch } from "vue";
+    import { reactive, ref, watch } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstanceFeeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -101,25 +106,8 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
-        feeOptions: JSON.parse(preferences.getValue(PreferenceKey.FilterFeeOptions) || "[]"),
-        feeName: preferences.getValue(PreferenceKey.FilterFeeName),
-    });
-
     // #endregion
 
-    //#region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.dateRange
-            || !!gridSettings.value.feeName
-            || gridSettings.value.feeOptions.length > 0;
-    });
-
-    //#endregion
 
     // #region Functions
 
@@ -139,16 +127,6 @@
     }
 
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
-        preferences.setValue(PreferenceKey.FilterFeeName, gridSettings.value.feeName ?? "");
-        preferences.setValue(PreferenceKey.FilterFeeOptions, JSON.stringify(gridSettings.value.feeOptions));
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

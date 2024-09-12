@@ -15,30 +15,27 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceFeeList
+namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
 {
     /// <summary>
-    /// The additional configuration options for the Registration Instance Fee List block.
+    /// Contains the experimental settings configuration details.
     /// </summary>
-    public class RegistrationInstanceFeeListOptionsBag
+    public class ExperimentalSettingsConfigurationBag
     {
         /// <summary>
-        /// Gets or sets the title of the export file.
+        /// Gets or sets the starting day of week.
         /// </summary>
         /// <value>
-        /// The name of the export title.
+        /// The starting day of week.
         /// </value>
-        public string ExportTitleName { get; set; }
+        public string StartingDayOfWeek { get; set; }
 
         /// <summary>
-        /// Gets or sets the file name of the export file.
+        /// Gets or sets the duration of the security grant token.
         /// </summary>
         /// <value>
-        /// The name of the export file.
+        /// The duration of the security grant token.
         /// </value>
-        public string ExportFileName { get; set; }
+        public int? SecurityGrantTokenDuration { get; set; }
     }
 }

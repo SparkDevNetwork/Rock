@@ -9,10 +9,8 @@
           :entityTypeGuid="EntityType.FinancialTransaction"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @selectItem="onSelectItem"
-          @gridSettingsClick="isGridSettingsVisible = true">
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
 
         <TextColumn name="person"
                     title="Person"
@@ -24,7 +22,7 @@
                         title="Date / Time"
                         field="transactionDateTime"
                         :filter="dateValueFilter"
-                        itemClass="grid-item-pull-left"
+                        itemClass="grid-item-pull-right"
                         visiblePriority="md" />
 
         <CurrencyColumn name="totalAmount"
@@ -56,6 +54,7 @@
                 title="Registrar"
                 field="registrars"
                 :filter="pickExistingValueFilter"
+                :quickFilterValue="getRegistrantsFilterValue"
                 :filterValue="getRegistrarsFilterValue"
                 visiblePriority="md">
 
@@ -76,6 +75,7 @@
                 title="Registrant(s)"
                 field="registrants"
                 :filter="pickExistingValueFilter"
+                :quickFilterValue="getRegistrantsFilterValue"
                 :filterValue="getRegistrantsFilterValue"
                 visiblePriority="xs">
 
@@ -93,9 +93,6 @@
         </Column>
 
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <style>
@@ -103,44 +100,32 @@
     flex-direction: column;
     align-items: end;
 }
+
+.grid-item-pull-right {
+    flex-direction: column;
+    align-items: start;
+}
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { TextColumn, textValueFilter, dateValueFilter, pickExistingValueFilter, numberValueFilter, Column, DateTimeColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstancePaymentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstancePaymentList/registrationInstancePaymentListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./RegistrationInstancePaymentList/types.partial";
-    import GridSettingsModal from "./RegistrationInstancePaymentList/gridSettingsModal.partial.obs";
-    import { computed, reactive, ref, watch } from "vue";
+    import { NavigationUrlKey } from "./RegistrationInstancePaymentList/types.partial";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstancePaymentListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        dateRange: preferences.getValue(makeKeyUniqueToRegistrationTemplate(PreferenceKey.FilterDateRange))
-    });
-
     // #endregion
-
-    //#region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.dateRange;
-    });
-
-    //#endregion
 
     // #region Functions
 
@@ -210,28 +195,7 @@
         }
     }
 
-    /**
-     * Makes the key unique to the registration template.
-     * @param key The preference key
-     */
-    function makeKeyUniqueToRegistrationTemplate(key: string): string {
-
-        if (config.options?.registrationTemplateIdKey) {
-            return `${config.options?.registrationTemplateIdKey}-${key}`;
-        }
-
-        return key;
-    }
-
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(makeKeyUniqueToRegistrationTemplate(PreferenceKey.FilterDateRange), gridSettings.value.dateRange ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

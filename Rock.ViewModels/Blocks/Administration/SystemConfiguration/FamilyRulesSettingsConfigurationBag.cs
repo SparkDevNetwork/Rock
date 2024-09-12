@@ -15,30 +15,21 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-using Rock.ViewModels.Utility;
+using System;
 
-namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceFeeList
+namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
 {
     /// <summary>
-    /// The additional configuration options for the Registration Instance Fee List block.
+    /// Contains the Family rules settings configuration details.
     /// </summary>
-    public class RegistrationInstanceFeeListOptionsBag
+    public class FamilyRulesSettingsConfigurationBag
     {
         /// <summary>
-        /// Gets or sets the title of the export file.
+        /// Gets or sets a value indicating whether [enable bible strict spouse].
         /// </summary>
         /// <value>
-        /// The name of the export title.
+        ///   <c>true</c> if [enable bible strict spouse]; otherwise, <c>false</c>.
         /// </value>
-        public string ExportTitleName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the file name of the export file.
-        /// </summary>
-        /// <value>
-        /// The name of the export file.
-        /// </value>
-        public string ExportFileName { get; set; }
+        public bool EnableBibleStrictSpouse { get; set; }
     }
 }
