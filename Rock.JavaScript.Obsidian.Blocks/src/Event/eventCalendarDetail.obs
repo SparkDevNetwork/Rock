@@ -17,6 +17,7 @@
                  :isEditVisible="canAdministrate"
                  :isFollowVisible="false"
                  :isSecurityHidden="!canAdministrate"
+                 :isFullScreenVisible="false"
                  :headerActions="headerActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
