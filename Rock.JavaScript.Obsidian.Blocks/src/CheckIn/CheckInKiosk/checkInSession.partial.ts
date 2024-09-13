@@ -102,6 +102,9 @@ export class CheckInSession {
     /** The currently selected attendee identifier. */
     public readonly currentAttendeeId?: string | null;
 
+    /** The timestamp from {@link Date.now} when the attendee was selected. */
+    public readonly currentAttendeeSelectedTimestamp?: number;
+
     /** The available opportunities for the currently selected attendee. */
     public readonly attendeeOpportunities?: OpportunityCollectionBag;
 
@@ -218,6 +221,7 @@ export class CheckInSession {
             this.currentlyCheckedIn = clone(configurationOrSession.currentlyCheckedIn);
             this.selectedAttendeeIds = clone(configurationOrSession.selectedAttendeeIds);
             this.currentAttendeeId = configurationOrSession.currentAttendeeId;
+            this.currentAttendeeSelectedTimestamp = configurationOrSession.currentAttendeeSelectedTimestamp,
             this.attendeeOpportunities = clone(configurationOrSession.attendeeOpportunities);
             this.selectedAbilityLevel = clone(configurationOrSession.selectedAbilityLevel);
             this.selectedArea = clone(configurationOrSession.selectedArea);
@@ -631,6 +635,7 @@ export class CheckInSession {
         if (!attendeeId) {
             return new CheckInSession(this, {
                 currentAttendeeId: undefined,
+                currentAttendeeSelectedTimestamp: undefined,
                 attendeeOpportunities: undefined
             });
         }
@@ -657,6 +662,7 @@ export class CheckInSession {
 
             return new CheckInSession(this, {
                 currentAttendeeId: attendeeId,
+                currentAttendeeSelectedTimestamp: Date.now(),
                 attendeeOpportunities: response.data.opportunities,
                 selectedAbilityLevel: undefined,
                 selectedArea: undefined,
@@ -668,6 +674,7 @@ export class CheckInSession {
 
         const newPropertyValues: Mutable<CheckInSessionProperties> = {
             currentAttendeeId: attendeeId,
+            currentAttendeeSelectedTimestamp: Date.now(),
             attendeeOpportunities: response.data.opportunities,
             selectedAbilityLevel: undefined,
             selectedArea: undefined,

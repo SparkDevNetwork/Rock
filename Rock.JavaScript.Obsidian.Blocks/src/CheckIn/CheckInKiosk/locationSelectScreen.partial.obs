@@ -13,7 +13,7 @@
                     <span class="title">{{ location.name }}</span>
                     <span v-if="showLocationCount"
                           class="subtitle">
-                        Count: {{ location.currentCount }}
+                        Count: {{ getLocationCount(location) }}
                     </span>
                 </RockButton>
             </div>
@@ -25,16 +25,15 @@
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { computed, onBeforeUnmount, PropType, ref } from "vue";
-    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
     import { alert, UnexpectedErrorMessage } from "./utils.partial";
-    import { KioskButton } from "./types.partial";
+    import { KioskButton, KioskConfiguration, LocationCountAdjustment } from "./types.partial";
     import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
 
     const props = defineProps({
         configuration: {
-            type: Object as PropType<KioskConfigurationBag>,
+            type: Object as PropType<KioskConfiguration>,
             required: true
         },
 
@@ -85,6 +84,44 @@
         const actions: KioskButton[] = [];
 
         emit("updateActions", actions);
+    }
+
+    /**
+     * Gets the current number of attendees in the location. This uses the data
+     * from the server when we started the session as well as any data from
+     * RealTime messages.
+     *
+     * @param location The location whose count is to be retrieved.
+     *
+     * @returns The current number of attendees in the location.
+     */
+    function getLocationCount(location: LocationOpportunityBag): number {
+        let count = location.currentCount;
+
+        for (const adj of getLocationAdjustments(location)) {
+            count += adj.count;
+        }
+
+        return count;
+    }
+
+    /**
+     * Gets the location count adjustements that are valid for the location.
+     *
+     * @param location The location whose adjustements are to be retrieved.
+     *
+     * @returns An array of {@link LocationCountAdjustement} objects.
+     */
+    function getLocationAdjustments(location: LocationOpportunityBag): LocationCountAdjustment[] {
+        // Always snag this so we trigger updates from reactivity.
+        const adjustments = props.configuration.locationCountAdjustments;
+        const timestamp = props.session.currentAttendeeSelectedTimestamp;
+
+        if (!timestamp) {
+            return [];
+        }
+
+        return adjustments.filter(a => a.locationId === location.id && a.timestamp > timestamp);
     }
 
     /**

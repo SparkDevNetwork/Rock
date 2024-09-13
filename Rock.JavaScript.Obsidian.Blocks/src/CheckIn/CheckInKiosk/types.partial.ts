@@ -30,7 +30,6 @@ import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registration
 import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
 import { Guid } from "@Obsidian/Types";
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
 
 // #region Temporary Types
 
@@ -320,6 +319,21 @@ export type AttendanceCountGroup = {
     children: AttendanceCountGroup[];
 };
 
+/**
+ * Contains count adjustments for locations. These are tracking during a
+ * check-in session only.
+ */
+export type LocationCountAdjustment = {
+    /** The timestamp that this adjustment was received. */
+    timestamp: number;
+
+    /** The encrypted identifier of the location. */
+    locationId: string;
+
+    /** The adjustment value, may be negative. */
+    count: number;
+};
+
 export type KioskConfiguration = KioskConfigurationBag & {
     /** This maps location Guid values to IdKey values. */
     locationIdMap: Record<string, string>;
@@ -327,7 +341,10 @@ export type KioskConfiguration = KioskConfigurationBag & {
     /** This maps group Guid values to IdKey values. */
     groupIdMap: Record<string, string>;
 
-    on(event: "attendanceUpdated", callback: (attendance: AttendanceUpdatedMessageBag) => void): void
-    on(event: "attendanceDeleted", callback: (attendanceGuid: Guid, attendance?: AttendanceUpdatedMessageBag | null) => void): void;
-    off(event: "attendanceUpdated" | "attendanceDeleted", callback: unknown): void;
+    /**
+     * This contains any location count adjustments that will be used during
+     * the check-in process. It is reset whenever we navigate away from the
+     * welcome screen.
+     */
+    locationCountAdjustments: LocationCountAdjustment[];
 };

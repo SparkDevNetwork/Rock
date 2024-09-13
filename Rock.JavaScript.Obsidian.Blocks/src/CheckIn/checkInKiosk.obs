@@ -178,8 +178,7 @@
     const configuration = ref<KioskConfiguration>({
         locationIdMap: {},
         groupIdMap: {},
-        on: watchConfigurationEvent,
-        off: unwatchConfigurationEvent
+        locationCountAdjustments: []
     });
     const currentScreen = ref<Screen | SupervisorScreen | RegistrationScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
@@ -190,7 +189,6 @@
     let idleTimer: number | undefined;
     let realTimeTopic: ITopic | undefined;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
-    const configurationEvents: Record<string, unknown[]> = {};
 
     const supervisorData = ref<SupervisorScreenData>({ pinCode: "" });
     const supervisorScreens = ref<{ screen: SupervisorScreen, component: VueComponent }[]>([
@@ -290,8 +288,7 @@
                     ...result.data,
                     locationIdMap: configuration.value.locationIdMap,
                     groupIdMap: configuration.value.groupIdMap,
-                    on: watchConfigurationEvent,
-                    off: watchConfigurationEvent
+                    locationCountAdjustments: configuration.value.locationCountAdjustments
                 };
                 navigateToScreen(Screen.Welcome);
             }
@@ -301,55 +298,6 @@
         }
         catch {
             redirectToSetupPage();
-        }
-    }
-
-    /**
-     * Adds a new callback to the named configuration event.
-     *
-     * @param event The name of the event.
-     * @param callback The callback function to be called.
-     */
-    function watchConfigurationEvent(event: string, callback: unknown): void {
-        if (!configurationEvents[event]) {
-            configurationEvents[event] = [];
-        }
-
-        configurationEvents[event].push(callback);
-    }
-
-    /**
-     * Removes a callback from the named configuration event.
-     *
-     * @param event The name of the event.
-     * @param callback The callback function to no longer be called.
-     */
-    function unwatchConfigurationEvent(event: string, callback: unknown): void {
-        if (configurationEvents[event]) {
-            const index = configurationEvents[event].indexOf(callback);
-
-            if (index >= 0) {
-                configurationEvents[event].splice(index, 1);
-            }
-        }
-    }
-
-    /**
-     * Emits the named configuration event.
-     *
-     * @param event The name of the event.
-     * @param args The arguments to pass to the callbacks.
-     */
-    function emitConfigurationEvent(event: string, ...args: unknown[]): void {
-        const callbacks = configurationEvents[event];
-
-        if (!callbacks) {
-            return;
-        }
-
-        for (const callback of callbacks) {
-            const fn = callback as (...args: unknown[]) => void;
-            fn(...args);
         }
     }
 
@@ -383,6 +331,10 @@
 
             currentSession.value = createNewSession();
             previousScreens.value = [];
+
+            // Reset the location count adjustments every time we navigate
+            // to the welcome screen.
+            configuration.value.locationCountAdjustments = [];
 
             // If we lost real-time connection, force a reconnect.
             if (realTimeTopic?.isDisconnected) {
@@ -506,18 +458,25 @@
      * @param attendance The details about the attendance record.
      */
     function onAttendanceUpdated(attendance: AttendanceUpdatedMessageBag): void {
-        emitConfigurationEvent("attendanceUpdated", attendance);
+        const locationId = configuration.value.locationIdMap[attendance.locationGuid ?? ""];
+        const groupId = configuration.value.groupIdMap[attendance.groupGuid ?? ""];
 
-        if (supervisorData.value?.counts && attendance.isNew) {
-            // Add the attendance to the supervisor data.
-            const locationId = configuration.value.locationIdMap[attendance.locationGuid ?? ""];
-            const groupId = configuration.value.groupIdMap[attendance.groupGuid ?? ""];
-            if (locationId && groupId) {
+        if (attendance.isNew && locationId) {
+            if (supervisorData.value?.counts && groupId) {
+                // Add the attendance to the supervisor data.
                 supervisorData.value.counts.attendance?.push({
                     id: attendance.attendanceIdKey,
                     locationId: locationId,
                     groupId: groupId,
                     status: attendance.checkInStatus
+                });
+            }
+
+            if (currentScreen.value !== Screen.Welcome) {
+                configuration.value.locationCountAdjustments.push({
+                    timestamp: Date.now(),
+                    locationId: locationId,
+                    count: 1
                 });
             }
         }
@@ -531,6 +490,8 @@
      * @param attendance The details about the attendance record.
      */
     function onAttendanceDeleted(_attendanceGuid: Guid, attendance?: AttendanceUpdatedMessageBag | null): void {
+        const locationId = configuration.value.locationIdMap[attendance?.locationGuid ?? ""];
+
         if (supervisorData.value?.counts?.attendance) {
             // Remove the attendance record from the supervisor data.
             const index = supervisorData.value.counts.attendance.findIndex(a => a.id === attendance?.attendanceIdKey);
@@ -538,6 +499,14 @@
             if (index >= 0) {
                 supervisorData.value.counts.attendance.splice(index, 1);
             }
+        }
+
+        if (locationId) {
+            configuration.value.locationCountAdjustments.push({
+                timestamp: Date.now(),
+                locationId: locationId,
+                count: -1
+            });
         }
     }
 
