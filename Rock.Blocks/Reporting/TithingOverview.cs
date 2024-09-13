@@ -176,7 +176,8 @@ namespace Rock.Blocks.Reporting
                 Datasets = GetTimeSeriesDataset( rockContext ),
                 ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line,
                 TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day,
-                AreaFillOpacity = 0
+                AreaFillOpacity = 0,
+                DateFormatString = "o"
             };
 
             return chartFactory;
@@ -425,7 +426,7 @@ namespace Rock.Blocks.Reporting
                 .Select( c => c.Id )
                 .ToList();
 
-            _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || filteredCampusIds.Contains( m.CampusId.Value ) ).ToList();
+            _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => m.CampusId.HasValue && filteredCampusIds.Contains( m.CampusId.Value ) ).ToList();
 
             return _tithingOverviewMetricValues;
         }

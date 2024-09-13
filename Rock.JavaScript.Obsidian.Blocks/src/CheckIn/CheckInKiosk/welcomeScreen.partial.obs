@@ -57,18 +57,20 @@
     import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { PrintResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/printResponseBag";
     import { PromotionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/promotionBag";
     import { KioskStatusBag } from "@Obsidian/ViewModels/CheckIn/kioskStatusBag";
     import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
     import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { doesThemeSupportCamera, isIpadAppWithCamera, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
+    import { isIpadAppWithCamera, printLabels, printLegacyLabels, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
     import { IRockCheckInNative, KioskButton } from "./types.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { alert, showDialog } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
 
     const props = defineProps({
         configuration: {
@@ -178,13 +180,6 @@
      * @param code The barcode that was scanned.
      */
     async function performScannedCodeSearch(code: string): Promise<void> {
-        if (code.startsWith("PCL+")) {
-            // If using the HTML5 Camera, ignore PCL (Pre-Checkin Labels) QR
-            // Codes. The iPad app will print labels for PCL's itself, but
-            // HTML5 camera mode won't.
-            return;
-        }
-
         if (isProcessingScannedCode) {
             return;
         }
@@ -192,6 +187,10 @@
         isProcessingScannedCode = true;
 
         try {
+            if (code.startsWith("PCL+")) {
+                return await printPreCheckInLabels(code);
+            }
+
             let newSession = props.session.withConfiguration(props.configuration);
 
             newSession = await newSession.withFamilySearch(code, FamilySearchMode.ScannedId);
@@ -210,6 +209,54 @@
         }
         finally {
             isProcessingScannedCode = false;
+        }
+    }
+
+    /**
+     * Prints labels associated with the pre check-in QR code.
+     *
+     * @param code The scanned PCL+ code.
+     */
+    async function printPreCheckInLabels(code: string): Promise<void> {
+        const data = {
+            scannedCode: code,
+            kioskId: props.configuration.kiosk?.id
+        };
+        const response = await invokeBlockAction<PrintResponseBag>("PrintPreCheckInLabels", data);
+
+        if (response.isSuccess && response.data) {
+            const errors: string[] = [];
+
+            // Print any client side labels we were provided.
+            if (response.data?.legacyLabels) {
+                errors.push(...await printLegacyLabels(response.data.legacyLabels));
+            }
+
+            if (response.data?.labels) {
+                errors.push(...await printLabels(response.data.labels));
+            }
+
+            // Append any server side errors last, since the server will
+            // include a non-error message by default.
+            if (response.data?.errorMessages && response.data.errorMessages.length > 0) {
+                errors.push(...response.data.errorMessages);
+            }
+
+            // Keep the message up for at most 5 seconds.
+            const cts = new CancellationTokenSource();
+            setTimeout(() => cts.cancel(), 5000);
+
+            await showDialog({
+                message: errors.length > 0 ? errors[0] : "You're all set.",
+                buttons: [
+                    {
+                        key: "ok",
+                        label: "OK",
+                        className: "btn btn-primary"
+                    }
+                ],
+                cancellationToken: cts.token
+            });
         }
     }
 
@@ -474,8 +521,7 @@
         }
 
         const deviceId = cameraDeviceId.value;
-        const isCameraEnabled = doesThemeSupportCamera()
-            && props.configuration.kiosk?.isCameraEnabled
+        const isCameraEnabled = props.configuration.kiosk?.isCameraEnabled
             && barcodeButtonElement.value
             && deviceId;
 
@@ -508,7 +554,7 @@
             // Block configuration check for AlwaysOn or Passive.
             native.StartCamera?.(false);
         }
-        else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
+        else if (props.configuration.kiosk?.isCameraEnabled) {
             cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
         }
 

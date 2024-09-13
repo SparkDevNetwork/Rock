@@ -21,10 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** The additional configuration options for the Group Archived List block. */
 export type GroupArchivedListOptionsBag = {
-    /** Gets or sets the group type guids for the group type filter. */
-    groupTypeGuids?: Guid[] | null;
 };

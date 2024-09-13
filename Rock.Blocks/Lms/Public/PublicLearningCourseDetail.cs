@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -278,6 +279,12 @@ namespace Rock.Blocks.Lms
             return box;
         }
 
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
+        {
+            return GetHtmlContent( true );
+        }
+
         /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
@@ -286,45 +293,26 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseDetailBlockBox box )
         {
-            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
-            var currentPerson = GetCurrentPerson();
-            var rockContext = new RockContext();
-            var course = new LearningCourseService( rockContext ).GetPublicCourseDetails( courseId, currentPerson.Id );
-
-            course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
-
-            var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
-                IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
-                course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
-                ["LearningClassId"] = enrolledClassIdKey
-            };
-
-            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
-            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
-
-            var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
-            mergeFields.Add( "Course", course );
-            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
-
-            var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
-            box.CourseHtml = template.ResolveMergeFields( mergeFields );
+            box.CourseHtml = GetHtmlContent(false);
         }
 
         /// <summary>
-        /// Provide html to the block for it's initial rendering.
+        /// Gets the html content for the block.
         /// </summary>
-        /// <returns>The HTML content to initially render.</returns>
-        protected override string GetInitialHtmlContent()
+        /// <param name="includeNextSessionFiltering">Optional filter to restrict courses to those within the block setting's "Next Session Date Range".</param>
+        /// <returns>The resolved lava template.</returns>
+        private string GetHtmlContent( bool includeNextSessionFiltering = false )
         {
             var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             var currentPerson = GetCurrentPerson();
-            var rockContext = new RockContext();
-            var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
-            var course = new LearningCourseService( rockContext ).GetPublicCourseDetails( courseId, currentPerson.Id, semesterDates.Start, semesterDates.End );
+            var learningCourseService = new LearningCourseService( new RockContext() );
+            var semesterDateRange = includeNextSessionFiltering ?
+                RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now ) :
+                null;
+
+            var course = includeNextSessionFiltering ?
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson.Id, semesterDateRange.Start, semesterDateRange.End ) :
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson.Id );
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
@@ -348,6 +336,11 @@ namespace Rock.Blocks.Lms
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
         }
+
+        /// <summary>
+        /// Whether the ShowCompletionStatus block setting us configured to "Show".
+        /// </summary>
+        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
         private bool ShowCompletionStatus()
         {
             return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";

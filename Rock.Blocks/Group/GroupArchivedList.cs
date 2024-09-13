@@ -61,36 +61,7 @@ namespace Rock.Blocks.Group
             public const string DetailPage = "DetailPage";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterGroupType = "Group Type";
-            public const string FilterGroupName = "Group Name";
-        }
-
         #endregion Keys
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the group type of the groups to be included in the results.
-        /// </summary>
-        /// <value>
-        /// The type of the filter group.
-        /// </value>
-        protected Guid? FilterGroupType => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterGroupType )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        /// <summary>
-        /// Gets the name of the groups to be included in the results.
-        /// </summary>
-        /// <value>
-        /// The name of the filter group.
-        /// </value>
-        protected string FilterGroupName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterGroupName );
-
-        #endregion
 
         #region Methods
 
@@ -118,13 +89,6 @@ namespace Rock.Blocks.Group
         {
             var options = new GroupArchivedListOptionsBag();
 
-            options.GroupTypeGuids = new GroupTypeService( new RockContext() ).AsNoFilter()
-                .Where( a => a.Groups.Any( x => x.IsArchived ) )
-                .OrderBy( a => a.Name )
-                .AsNoTracking()
-                .Select( g => g.Guid )
-                .ToList();
-
             return options;
         }
 
@@ -145,16 +109,6 @@ namespace Rock.Blocks.Group
         {
             var queryable = new GroupService( rockContext ).GetArchived()
                 .Include( a => a.ArchivedByPersonAlias );
-
-            if ( FilterGroupType.HasValue )
-            {
-                queryable = queryable.Where( a => a.GroupType.Guid == FilterGroupType.Value );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( FilterGroupName ) )
-            {
-                queryable = queryable.Where( a => a.Name.Contains( FilterGroupName ) );
-            }
 
             return queryable;
         }

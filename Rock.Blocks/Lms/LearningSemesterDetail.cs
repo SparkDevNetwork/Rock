@@ -282,22 +282,19 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningSemesterId ) ?? "";
+
+            var entityName = entityKey.Length > 0 ? new Service<LearningSemester>( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Semester";
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "New Semester", breadCrumbPageRef );
+
+            return new BreadCrumbResult
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningSemesterId ) ?? "";
-
-                var entityName = entityKey.Length > 0 ? new Service<LearningSemester>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Semester";
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Semester", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
+                BreadCrumbs = new List<IBreadCrumb>
                     {
                         breadCrumb
                     }
-                };
-            }
+            };
         }
 
         #endregion

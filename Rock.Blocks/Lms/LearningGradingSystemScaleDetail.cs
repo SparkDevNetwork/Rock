@@ -276,7 +276,7 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningGradingSystemScale();
+                entity = new LearningGradingSystemScale { LearningGradingSystemId = RequestContext.PageParameterAsId( PageParameterKey.LearningGradingSystemId ) };
                 entityService.Add( entity );
             }
 

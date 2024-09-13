@@ -26,6 +26,13 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type NoteTypeBag = {
+
+    /** Gets or sets the criteria for AI to automatically approve notes.   */
+    aiApprovalGuidelines?: string | null;
+
+    /** Gets or sets the AI provider to use for AI approvals. */
+    aiProvider?: ListItemBag | null;
+
     /** Gets or sets a value indicating whether attachments are allowed for this note type. */
     allowsAttachments: boolean;
 
@@ -50,6 +57,9 @@ export type NoteTypeBag = {
     /** Gets or sets the color of each note. */
     color?: string | null;
 
+    /** Gets or sets a value indicating whether [enabled AI approvals]. */
+    enabledAIApprovals: boolean;
+
     /** Gets or sets the Rock.Model.EntityType of the entities that Notes of this NoteType  */
     entityType?: ListItemBag | null;
 
@@ -73,6 +83,9 @@ export type NoteTypeBag = {
 
     /** Gets or sets the Name of the NoteType. This property is required. */
     name?: string | null;
+
+    /** Gets or sets a value indicating whether [requires approvals]. */
+    requiresApprovals: boolean;
 
     /** Gets or sets a value indicating whether to show the entity type picker to allow user selection. */
     showEntityTypePicker: boolean;

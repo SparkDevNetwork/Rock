@@ -80,6 +80,20 @@ namespace Rock.Blocks.Group.Scheduling
         Order = 4,
         IsRequired = false )]
 
+    [BooleanField( "Hide Clone Schedules",
+        Key = AttributeKey.HideCloneSchedules,
+        Description = @"When enabled, will hide the ""Clone Schedules"" button and disable this functionality.",
+        DefaultBooleanValue = false,
+        Order = 5,
+        IsRequired = false )]
+
+    [BooleanField( "Hide Auto Schedule",
+        Key = AttributeKey.HideAutoSchedule,
+        Description = @"When enabled, will hide the ""Auto Schedule"" button and disable this functionality.",
+        DefaultBooleanValue = false,
+        Order = 6,
+        IsRequired = false )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "7ADCE833-A785-4A54-9805-7335809C5367" )]
@@ -95,6 +109,8 @@ namespace Rock.Blocks.Group.Scheduling
             public const string EnableDataViewIndividualSelection = "EnableDataViewIndividualSelection";
             public const string RosterPage = "RosterPage";
             public const string DisallowGroupSelectionIfSpecified = "DisallowGroupSelectionIfSpecified";
+            public const string HideCloneSchedules = "HideCloneSchedules";
+            public const string HideAutoSchedule = "HideAutoSchedule";
         }
 
         private static class NavigationUrlKey
@@ -201,6 +217,10 @@ namespace Rock.Blocks.Group.Scheduling
             }
         }
 
+        private bool IsCloneSchedulesEnabled => !GetAttributeValue( AttributeKey.HideCloneSchedules ).AsBoolean();
+
+        private bool IsAutoScheduleEnabled => !GetAttributeValue( AttributeKey.HideAutoSchedule ).AsBoolean();
+
         #endregion
 
         #region Methods
@@ -240,6 +260,8 @@ namespace Rock.Blocks.Group.Scheduling
                 NavigationUrls = GetNavigationUrls( filters )
             };
             box.DisallowGroupSelection = disallowGroupSelection;
+            box.IsCloneSchedulesEnabled = this.IsCloneSchedulesEnabled;
+            box.IsAutoScheduleEnabled = this.IsAutoScheduleEnabled;
             box.SecurityGrantToken = GetSecurityGrantToken();
         }
 
@@ -2181,6 +2203,11 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetCloneSettings( GroupSchedulerFiltersBag bag )
         {
+            if ( !this.IsCloneSchedulesEnabled )
+            {
+                return ActionForbidden( "You are not authorized to clone schedules." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var cloneSettings = GetDefaultOrPersonPreferenceCloneSettings( rockContext, ValidateClientFilters( rockContext, bag ) );
@@ -2197,6 +2224,11 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult CloneSchedules( GroupSchedulerCloneSettingsBag bag )
         {
+            if ( !this.IsCloneSchedulesEnabled )
+            {
+                return ActionForbidden( "You are not authorized to clone schedules." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var response = CloneSchedules( rockContext, bag ?? new GroupSchedulerCloneSettingsBag() );
@@ -2213,6 +2245,11 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult AutoSchedule( GroupSchedulerFiltersBag bag )
         {
+            if ( !this.IsAutoScheduleEnabled )
+            {
+                return ActionForbidden( "You are not authorized to perform auto scheduling." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var appliedFilters = AutoSchedule( rockContext, ValidateClientFilters( rockContext, bag ) );

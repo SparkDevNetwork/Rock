@@ -27,6 +27,8 @@ export const FieldType = {
     AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
     /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
+    /** AI Provider field type */
+    AIProvider: "2BAA190B-3EF7-47CE-AF70-C7613ED344AB",
     /** AI provider picker field type. */
     AiProviderPicker: "2BAA190B-3EF7-47CE-AF70-C7613ED344AB",
     /** Assessment field type */

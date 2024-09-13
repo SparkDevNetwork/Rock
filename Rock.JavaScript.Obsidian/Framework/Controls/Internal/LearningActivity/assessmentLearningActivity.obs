@@ -261,7 +261,7 @@ div.summary-sub-title {
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, toRef, toValue, watch, } from "vue";
+    import { computed, ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -299,9 +299,9 @@ div.summary-sub-title {
     const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow);
+    const activityBag = ref(props.activityBag);
+    const completionBag = ref(props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = ref(props.screenToShow);
 
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);

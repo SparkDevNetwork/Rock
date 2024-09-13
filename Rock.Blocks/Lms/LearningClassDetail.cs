@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -149,7 +150,7 @@ namespace Rock.Blocks.Lms
             {
                 var programService = new LearningProgramService( RockContext );
                 options.ProgramConfigurationMode = programService.GetConfigurationMode( programId );
-                options.Semesters = programService.Semesters( programId ).ToListItemBagList();
+                options.Semesters = programService.GetSemesters( programId ).ToListItemBagList();
             }
 
             options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable().Where( g => g.IsActive ).ToListItemBagList();
@@ -229,7 +230,7 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var locationItem = entity.GroupLocations?.FirstOrDefault();
+            var locationItem = entity.GroupLocations.Select( gl => gl.Location )?.FirstOrDefault();
 
             return new LearningClassBag
             {
@@ -237,7 +238,7 @@ namespace Rock.Blocks.Lms
                 Campus = entity.Campus?.ToListItemBag() ?? new ListItemBag(),
                 TakesAttendance = entity.GroupType?.TakesAttendance ?? false,
                 Description = entity.Description,
-                Location = locationItem?.ToListItemBag( locationItem.Location.Name ) ?? new ListItemBag(),
+                Location = locationItem?.ToListItemBag() ?? new ListItemBag(),
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
                 CourseCode = entity.LearningCourse?.CourseCode,
@@ -315,27 +316,29 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
 
-            var deleteLocatonError = string.Empty;
-
             box.IfValidProperty( nameof( box.Bag.Location ),
                 () =>
                 {
                     var locationId = box.Bag.Location.GetEntityId<Location>( RockContext ).ToIntSafe();
-                    var currentLocation = entity.GroupLocations.FirstOrDefault();
+                    var currentLocation = new GroupService( RockContext ).GetSelect( entity.Id, g => g.GroupLocations.FirstOrDefault() );
+
                     if ( currentLocation?.LocationId.ToIntSafe() != locationId )
                     {
                         var groupLocationService = new GroupLocationService( RockContext );
+                        var deleteLocationError = string.Empty;
 
                         // Remove the current location if it doesn't match.
                         if ( currentLocation != null )
                         {
-                            groupLocationService.CanDelete( currentLocation, out deleteLocatonError );
-
-                            groupLocationService.Delete( currentLocation );
+                            if ( groupLocationService.CanDelete( currentLocation, out deleteLocationError ) )
+                            {
+                                groupLocationService.Delete( currentLocation );
+                            }
                         }
 
-                        // If there's a new location add it.
-                        if ( locationId > 0 )
+                        // If we didn't run into errors deleting the old location (if any)
+                        // and there's a new location and then add the new one.
+                        if ( locationId > 0 && deleteLocationError.IsNullOrWhiteSpace() )
                         {
                             entity.GroupLocations.Add( new GroupLocation
                             {
@@ -346,12 +349,6 @@ namespace Rock.Blocks.Lms
                     }
                 } );
 
-            // If there was an error deleting the location then return false to notify the caller of the error.
-            if ( deleteLocatonError.Length > 0 )
-            {
-                return false;
-            }
-
             box.IfValidProperty( nameof( box.Bag.IsActive ),
                 () => entity.IsActive = box.Bag.IsActive );
 
@@ -360,7 +357,7 @@ namespace Rock.Blocks.Lms
 
             // Only allow the UI to set the grading system if it's not yet set.
             // Because existing ActivityCompletions may be set using it.
-            if ( entity.LearningGradingSystemId == 0 )
+            if ( entity.LearningGradingSystemId == 0 || new LearningClassService( RockContext ).CanUpdateGradingSystem( entity.Id ) )
             {
                 box.IfValidProperty( nameof( box.Bag.GradingSystem ),
                 () => entity.LearningGradingSystemId = box.Bag.GradingSystem.GetEntityId<LearningGradingSystem>( RockContext ).Value );
@@ -493,22 +490,32 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var programId = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassId ) ?? "";
+
+            var entityName = entityKey.Length > 0 ? new Service<LearningClass>( RockContext ).GetSelect( entityKey, p => p.Name ) : null;
+
+            if ( entityName.IsNullOrWhiteSpace() )
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassId ) ?? "";
-
-                var entityName = entityKey.Length > 0 ? new Service<LearningClass>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Class";
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Class", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
-                    {
-                        breadCrumb
-                    }
-                };
+                return null;
             }
+
+            var isOnDemandProgram = ConfigurationMode.OnDemandLearning == new LearningProgramService( RockContext ).GetSelect( programId, p => p.ConfigurationMode );
+            if ( isOnDemandProgram )
+            {
+                return null;
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( entityName, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

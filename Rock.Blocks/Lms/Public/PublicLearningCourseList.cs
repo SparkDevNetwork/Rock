@@ -37,9 +37,6 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Enrollment Page",
-        Description = "The page that will enroll the student in the course.",
-        Key = AttributeKey.CourseEnrollmentPage )]
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
@@ -54,7 +51,7 @@ namespace Rock.Blocks.Lms
     [LinkedPage( "Detail Page",
         Description = "Page to link to when the individual would like more details.",
         Key = AttributeKey.DetailPage,
-        Order = 2)]
+        Order = 2 )]
 
     [CustomDropdownListField(
         "Show Completion Status",
@@ -66,10 +63,15 @@ namespace Rock.Blocks.Lms
         Order = 3 )]
 
     [SlidingDateRangeField( "Next Session Date Range",
-        Description = "Filter to limit the display of upcming sessions.",
+        Description = "Filter to limit the display of upcoming sessions.",
         Order = 4,
         IsRequired = false,
         Key = AttributeKey.NextSessionDateRange )]
+
+    [LinkedPage( "Enrollment Page",
+        Description = "The page that will enroll the student in the course.",
+        Key = AttributeKey.CourseEnrollmentPage,
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4356febe-5efd-421a-bfc4-05942b6bd910" )]
     [Rock.SystemGuid.BlockTypeGuid( "5d6ba94f-342a-4ec1-b024-fc5046ffe14d" )]
@@ -238,40 +240,7 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseListBlockBox box )
         {
-            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var rockContext = new RockContext();
-            var program = new LearningProgramService( rockContext )
-                .Queryable()
-                .Include( p => p.ImageBinaryFile )
-                .FirstOrDefault( p => p.Id == programId );
-
-            var courses = GetCourses( programId, rockContext );
-
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                ["LearningCourseId"] = "((Key))"
-            };
-
-            var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams );
-            var courseEnrollmentUrlTemplate = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
-
-            foreach ( var course in courses )
-            {
-                // If there are unmet requirements include the link for enrollment to that course.
-                var prerequisiteCourseIdKey = course.UnmetPrerequisites?.FirstOrDefault()?.IdKey ?? string.Empty;
-                course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
-                course.PrerequisiteEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", prerequisiteCourseIdKey );
-                course.CourseEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
-            }
-
-            var mergeFields = this.RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Program", program );
-            mergeFields.Add( "Courses", courses );
-            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
-
-            var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
-            box.CoursesHtml = template.ResolveMergeFields( mergeFields );
+            box.CoursesHtml = GetInitialHtmlContent();
         }
 
         /// <summary>

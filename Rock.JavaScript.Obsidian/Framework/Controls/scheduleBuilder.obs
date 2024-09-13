@@ -17,7 +17,7 @@
                         label="Start Date / Time"
                         help="Select the Date and Time to base the schedule on. Make sure to set this if you want the schedule to work. Set to blank if you want to leave this unscheduled." />
 
-        <RockFormField v-if="!hideDuration" :modelValue="duration" label="Duration" name="duration">
+        <RockFormField v-if="!hideDuration" :modelValue="durationInSeconds" label="Duration" name="duration">
             <template #default>
                 <div class="form-control-group">
                     <NumberBox v-model="durationInHours" inputGroupClasses="input-width-md">
@@ -256,9 +256,7 @@
     import RockFormField from "./rockFormField.obs";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import type { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
-    import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { Event, Calendar, RecurrenceRule } from "@Obsidian/Utility/internetCalendar";
-    import { containsRequiredRule } from "@Obsidian/ValidationRules";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { updateRefValue, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -304,7 +302,7 @@
     const scheduleSummary = ref("");
     const isModalVisible = ref(false);
     const startDateTime = ref<string | null>(null);
-    const duration = ref<number | null>(null);
+    const durationInSeconds = ref<number | null>(null);
     const scheduleType = ref<"oneTime" | "recurring">("oneTime");
     const occurrencePattern = ref<"specificDates" | "daily" | "weekly" | "monthly">("specificDates");
 
@@ -379,32 +377,27 @@
 
     // #region Computed Values
 
-    const requiredRules = computed((): ValidationRule[] => {
-        return ["required"];
-    });
-
     const durationInHours = computed({
         get(): number | null {
-            return (duration.value === null || duration.value <= 1) ? 0 : Math.floor(duration.value / 60);
+            return (durationInSeconds.value === null || durationInSeconds.value <= 1) ? 0 : Math.floor(durationInSeconds.value / 3600);
         },
 
-
         set(value: number | null) {
-            const newDuration = ((value ?? 0) * 60) + (durationInMinutes.value ?? 0);
+            const newDurationInSeconds = ((value ?? 0) * 3600) + ((durationInMinutes.value ?? 0) * 60);
 
-            duration.value = newDuration >= 0 ? newDuration : 0;
+            durationInSeconds.value = newDurationInSeconds >= 0 ? newDurationInSeconds : 0;
         }
     });
 
     const durationInMinutes = computed({
         get(): number | null {
-            return (duration.value === null || duration.value <= 1) ? 0 : duration.value % 60;
+            return (durationInSeconds.value === null || durationInSeconds.value <= 1) ? 0 : (durationInSeconds.value / 60) % 60;
         },
 
         set(value: number | null) {
-            const newDuration = ((durationInHours.value ?? 0) * 60) + (value ?? 0);
+            const newDurationInSeconds = ((durationInHours.value ?? 0) * 3600) + ((value ?? 0) * 60);
 
-            duration.value = newDuration >= 0 ? newDuration : 0;
+            durationInSeconds.value = newDurationInSeconds >= 0 ? newDurationInSeconds : 0;
         }
     });
 
@@ -484,7 +477,7 @@
 
         scheduleSummary.value = event?.toFriendlyText() ?? "No Schedule";
         startDateTime.value = event?.startDateTime?.toISOString() ?? null;
-        duration.value = getEventDuration(event);
+        durationInSeconds.value = getEventDuration(event);
         scheduleType.value = rrule ? "recurring" : "oneTime";
         occurrencePattern.value = getEventOccurrencePattern(event);
 
@@ -578,8 +571,20 @@
     function getCalendarString(): string {
         const event = new Event();
 
-        event.startDateTime = RockDateTime.parseISO(startDateTime.value ?? "") ?? RockDateTime.now();
-        event.endDateTime = event.startDateTime?.addMinutes(duration.value ?? 1);
+        let start = RockDateTime.parseISO(startDateTime.value ?? "");
+        if (!start && specificDates.value.length) {
+            // If they set some specific dates but no start date, assume the min
+            // specific date is the start date.
+            start = specificDates.value[0];
+        }
+
+        if (!start) {
+            // If we still don't have a start date, default to now.
+            start = RockDateTime.now();
+        }
+
+        event.startDateTime = start;
+        event.endDateTime = event.startDateTime?.addSeconds(durationInSeconds.value || 1);
 
         if (scheduleType.value === "recurring") {
             if (occurrencePattern.value === "specificDates") {
@@ -706,13 +711,13 @@
             return null;
         }
 
-        const totalDurationInMinutes = (event.endDateTime.toMilliseconds() - event.startDateTime.toMilliseconds()) / 1000 / 60;
+        const totalDurationInSeconds = (event.endDateTime.toMilliseconds() - event.startDateTime.toMilliseconds()) / 1000;
 
-        if (totalDurationInMinutes <= 0) {
+        if (totalDurationInSeconds <= 0) {
             return null;
         }
 
-        return Math.floor(totalDurationInMinutes);
+        return Math.floor(totalDurationInSeconds);
     }
 
     function getEventOccurrencePattern(event: Event | null): "specificDates" | "daily" | "weekly" | "monthly" {

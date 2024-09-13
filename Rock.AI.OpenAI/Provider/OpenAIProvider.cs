@@ -52,7 +52,7 @@ namespace Rock.AI.OpenAI.Provider
         Description = "The OpenAI organization id (e.g. org-FJsnwh1iFFq6xxxxxxxxxxxx).",
         IsRequired = true,
         Order = 1 )]
-    [TextField( "Default Model",
+    [OpenAIModelPickerField( "Default Model",
         Description = "The default AI model to use if none is specified.",
         IsRequired = true,
         Key = AttributeKey.DefaultModel,
@@ -92,7 +92,7 @@ namespace Rock.AI.OpenAI.Provider
         public override async Task<ChatCompletionsResponse> GetChatCompletions( AIProvider provider, ChatCompletionsRequest request )
         {
             var openAIApi = GetOpenAIApi( provider );
-            
+
             if ( request.Model.IsNullOrWhiteSpace() )
             {
                 request.Model = GetAttributeValue( provider, AttributeKey.DefaultModel );

@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.AI
         #region Internal Methods
 
         /// <summary>
-        /// Binds the Gateway list grid.
+        /// Binds the Provider list grid.
         /// </summary>
         private void BindGrid()
         {
@@ -212,7 +212,6 @@ namespace RockWeb.Blocks.AI
                 }
 
                 var components = qry.ToList();
-                //nbInactiveWarning.Visible = gateways.Where( g => g.IsActive == false ).Any();
 
                 rGridList.DataSource = components;
                 rGridList.DataBind();

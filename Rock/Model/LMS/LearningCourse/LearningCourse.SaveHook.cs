@@ -46,7 +46,7 @@ namespace Rock.Model
 
                     if ( configurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning && !Entity.LearningClasses.Any() )
                     {
-                        var defaultSemesterId = programService.DefaultSemester( Entity.LearningProgramId )?.Id;
+                        var defaultSemesterId = programService.GetDefaultSemester( Entity.LearningProgramId )?.Id;
                         var passFailGradingSystemId = 1;
                         var lmsClassGroupTypeId = new GroupTypeService( RockContext ).GetId( SystemGuid.GroupType.GROUPTYPE_LMS_CLASS.AsGuid() ).ToIntSafe();
 

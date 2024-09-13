@@ -28,10 +28,9 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Group
     /// Test DataFilter: Group/Related Data View/Location Data View.
     /// </summary>
     [TestClass]
+    [TestCategory( "Reporting.DataFilters" )]
     public class LocationDataViewDataFilterTests : DataFilterTestBase
     {
-        private const string _TestCategory = "Rock.Crm.Groups.Reporting.LocationDataView.Tests";
-
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
@@ -48,8 +47,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Group
         /// Verify that the settings can be correctly serialized to a string and deserialized from the same string.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Groups )]
         public void GroupFilters_RelatedDataViewLocation_CanSerializeSettings()
         {
             var settingsSource = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
@@ -67,8 +64,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Group
         /// Verify that filtering by a Location Data View correctly returns Groups having a Location referenced in that Data View.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Groups )]
         public void GroupFilters_RelatedDataViewLocation_ShouldReturnGroupsWithAtLeastOneRelatedLocation()
         {
             var settings = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
@@ -91,8 +86,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Group
         /// Verify that filtering by a Step Data View does not return a Group who does not have a matching Step.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
-        [TestProperty( "Feature", TestFeatures.Groups )]
         public void GroupFilters_RelatedDataViewLocation_ShouldNotReturnGroupWithNoRelatedLocations()
         {
             var settings = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();

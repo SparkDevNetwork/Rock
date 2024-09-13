@@ -129,8 +129,6 @@ namespace Rock.Model
         /// The approval status.
         /// </value>
         [DataMember]
-        [Obsolete( "This property is no longer used and will be removed in the future." )]
-        [RockObsolete( "1.16" )]
         public NoteApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary>
@@ -152,8 +150,6 @@ namespace Rock.Model
         /// The approved date.
         /// </value>
         [DataMember]
-        [Obsolete( "This property is no longer used and will be removed in the future." )]
-        [RockObsolete( "1.16" )]
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary>

@@ -4,48 +4,48 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
-        <Panel type="block" :title="panelName" :headerSecondaryActions="headerSecondaryActions">
+    <Panel type="block" :title="panelName" :headerSecondaryActions="headerSecondaryActions">
 
-            <template #headerActions>
-                <span class="action clickable text-info" v-if="appleTvPageEditBag.idKey" title="Copy Page Guid to Clipboard" @click="onExportClick">
-                    <i class="fa fa-clipboard"></i>
-                </span>
-            </template>
+        <template #headerActions>
+            <span class="action clickable text-info" v-if="appleTvPageEditBag.idKey" title="Copy Page Guid to Clipboard" @click="onExportClick">
+                <i class="fa fa-clipboard"></i>
+            </span>
+        </template>
 
-            <template #default>
+        <template #default>
+            <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
                            v-model="appleTvPageEditBag"
                            :options="options"
                            @propertyChanged="onPropertyChanged" />
+            </RockForm>
 
-                <Modal v-model="showAuditDetailsModal" title="Audit Details">
-                    <AuditDetail :entityTypeGuid="EntityType.Page" :entityKey="entityKey" />
-                </Modal>
-            </template>
+            <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                <AuditDetail :entityTypeGuid="EntityType.Page" :entityKey="entityKey" />
+            </Modal>
+        </template>
 
-            <template #footerActions>
-                <div v-if="panelMode !== DetailPanelMode.View">
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onSaveForm">
-                        Save
-                    </RockButton>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onSaveAndContinueEditingForm">
-                        Save Continue Editing
-                    </RockButton>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onCancelEdit">
-                        Cancel
-                    </RockButton>
-                </div>
-            </template>
+        <template #footerActions>
+            <div v-if="panelMode !== DetailPanelMode.View">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onSaveForm">
+                    Save
+                </RockButton>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onSaveAndContinueEditingForm">
+                    Save Continue Editing
+                </RockButton>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancelEdit">
+                    Cancel
+                </RockButton>
+            </div>
+        </template>
 
-        </Panel>
-    </RockForm>
+    </Panel>
 </template>
 
 <script setup lang="ts">
@@ -84,6 +84,7 @@
     const redirectAfterSave = ref(true);
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
+    const panelName = appleTvPageEditBag.value?.name ?? "New Page";
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
 
@@ -103,13 +104,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return appleTvPageEditBag.value?.name ?? "New Page";
-    });
 
     /**
      * The identifier key value for this entity.

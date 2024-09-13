@@ -10,7 +10,8 @@
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+import { Guid } from "@Obsidian/Types";
     import { isValidGuid, emptyGuid } from "@Obsidian/Utility/guid";
     import { PropType, computed, ref } from "vue";
 
@@ -81,7 +82,7 @@
 
     const imgSrc = computed(() =>
         guidIsValid.value === true ?
-            `/GetImage.ashx?guid=${imageFileGuid.value}&maxwidth=${container.value?.clientWidth}` :
+            `/GetImage.ashx?guid=${imageFileGuid.value}&width=${container.value?.clientWidth}` :
             "/Assets/Images/no-picture.svg"
     );
 
@@ -103,9 +104,13 @@
 
         // If the autoLightenStackColor is true lighten based on the highlight color;
         // otherwise return undefined for no attribute.
-        return props.autoLightenStackColor ?
-            `color: oklch(from ${highlightColor.value} calc(l + .33) c h);` :
-            undefined;
+        if (props.autoLightenStackColor) {
+            const pair = RockColor.calculateColorPair(new RockColor(highlightColor.value));
+            return `color: ${pair.backgroundColor.toRgba()}`;
+        }
+        else {
+            return undefined;
+        }
     });
 
     // #endregion

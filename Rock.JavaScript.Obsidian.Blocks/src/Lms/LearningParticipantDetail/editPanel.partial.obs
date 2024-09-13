@@ -3,7 +3,7 @@
     <fieldset>
         <PersonPicker
                       formControlClasses="input-width-md margin-l-sm"
-                      v-model="personSelection"
+                      v-model="personAlias"
                       :excludeDeceased="true"
                       :enableSelfSelection="true"
                       label="Participant"
@@ -52,10 +52,7 @@
 
     // #region Values
 
-    const personSelection = ref<ListItemBag | undefined>(props.modelValue.bag?.personAlias ?? undefined);
-    const personAlias = propertyRef<ListItemBag>(
-        props.modelValue.bag?.personAlias ?? { value: "", text: "" }, "PersonAlias"
-    );
+    const personAlias = propertyRef<ListItemBag>(props.modelValue.bag?.personAlias ?? {}, "PersonAlias");
     const participantRole = propertyRef(props.modelValue.bag?.participantRole ?? {}, "ParticipantRole");
     const isFacilitator = ref(props.modelValue.bag?.isFacilitator ?? false);
 
@@ -77,12 +74,12 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(personAlias, props.modelValue.bag?.personAlias?.value ?? {});
+        updateRefValue(personAlias, props.modelValue.bag?.personAlias ?? {});
         updateRefValue(roleValue, props.modelValue.bag?.participantRole?.value ?? "");
     });
 
     // Watch for changes to our monitored values and emit a modelValue change event when necessary.
-    watch([personSelection, roleValue], () => {
+    watch([personAlias, roleValue], () => {
         const newValue: ValidPropertiesBox<LearningParticipantBag> = {
             bag: { ...props.modelValue.bag } as LearningParticipantBag
         };

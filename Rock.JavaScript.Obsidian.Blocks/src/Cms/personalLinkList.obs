@@ -91,7 +91,7 @@
     // #region Computed
 
     const gridTitle = computed((): string => {
-        return isPersonalLinkSectionShared ? `Links for ${personalLinkSectionName.value}` : `Personal Links for ${personalLinkSectionName.value}`;
+        return isPersonalLinkSectionShared.value ? `Links for ${personalLinkSectionName.value}` : `Personal Links for ${personalLinkSectionName.value}`;
     });
 
     // #endregion

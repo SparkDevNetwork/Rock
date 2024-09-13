@@ -37,10 +37,10 @@ namespace Rock.Model
         ///     Assumes the scales are ordered by ThresholdPercentage descending so the first match can be taken.
         /// </param>
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
-        public string GradeText( IEnumerable<LearningGradingSystemScale> scales = null )
+        public string GetGradeText( IEnumerable<LearningGradingSystemScale> scales = null )
         {
             var percent = GradePercent;
-            var grade = Grade( scales );
+            var grade = GetGrade( scales );
 
             return grade?.Name.Length > 0 ? $"{grade?.Name} ({percent}%)" : $"{percent}%";
         }
@@ -54,7 +54,7 @@ namespace Rock.Model
         ///     If none are provided the navigation property is used to get them.
         /// </param>
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
-        public LearningGradingSystemScale Grade( IEnumerable<LearningGradingSystemScale> scales = null )
+        public LearningGradingSystemScale GetGrade( IEnumerable<LearningGradingSystemScale> scales = null )
         {
             if ( scales == null )
             {

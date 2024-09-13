@@ -54,6 +54,9 @@
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CsvHelper">
+      <HintPath>..\RockWeb\Bin\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="Docker.DotNet, Version=3.125.0.0, Culture=neutral, PublicKeyToken=e628c633e2cf4146, processorArchitecture=MSIL">
       <HintPath>..\packages\Docker.DotNet.3.125.15\lib\netstandard2.0\Docker.DotNet.dll</HintPath>
     </Reference>
@@ -85,8 +88,8 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
@@ -224,6 +227,7 @@
     <Compile Include="Issues\Issue1808.cs" />
     <Compile Include="Issues\Issues_v16.cs" />
     <Compile Include="Issues\Issues_v15.cs" />
+    <Compile Include="Modules\Core\OpenAI\AICompletionsUtility.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
     <Compile Include="Modules\CheckIn\v2\FamilyRegistrationTests.cs" />
     <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
@@ -428,6 +432,10 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.AI.OpenAI\Rock.AI.OpenAI.csproj">
+      <Project>{bab8bf5e-6457-4668-adf1-b917100ba7cd}</Project>
+      <Name>Rock.AI.OpenAI</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>

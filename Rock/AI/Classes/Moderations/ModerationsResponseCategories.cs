@@ -15,16 +15,35 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
+using Rock.Enums.AI;
 
 namespace Rock.AI.Classes.Moderations
 {
     /// <summary>
-    /// The class for holding the response from a completion.
+    /// The class for holding the response from a moderations completion.
     /// </summary>
     public class ModerationsResponseCategories
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModerationsResponseCategories"/> class.
+        /// </summary>
+        public ModerationsResponseCategories() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModerationsResponseCategories"/> class
+        /// with the flags set based on the provided <paramref name="moderationFlags"/>.
+        /// </summary>
+        /// <param name="moderationFlags"></param>
+        public ModerationsResponseCategories( ModerationFlags moderationFlags )
+        {
+            IsHate = moderationFlags == ModerationFlags.Hate;
+            IsThreat = moderationFlags == ModerationFlags.Threat;
+            IsSelfHarm = moderationFlags == ModerationFlags.SelfHarm;
+            IsSexual = moderationFlags == ModerationFlags.Sexual;
+            IsViolent = moderationFlags == ModerationFlags.Violent;
+            IsSexualMinor = moderationFlags == ModerationFlags.SexualMinor;
+        }
+
         /// <summary>
         /// Is the text hateful.
         /// </summary>
@@ -88,40 +107,40 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Returns the moderation score.
         /// </summary>
-        public Enums.AI.ModerationFlags ModerationFlags
+        public ModerationFlags ModerationFlags
         {
             get
             {
-                var categories = Enums.AI.ModerationFlags.None;
+                var categories = ModerationFlags.None;
 
                 if ( IsHate )
                 {
-                    categories |= Enums.AI.ModerationFlags.Hate;
+                    categories |= ModerationFlags.Hate;
                 }
 
                 if ( IsThreat )
                 {
-                    categories |= Enums.AI.ModerationFlags.Threat;
+                    categories |= ModerationFlags.Threat;
                 }
 
                 if ( IsSelfHarm )
                 {
-                    categories |= Enums.AI.ModerationFlags.SelfHarm;
+                    categories |= ModerationFlags.SelfHarm;
                 }
 
                 if ( IsSexual )
                 {
-                    categories |= Enums.AI.ModerationFlags.Sexual;
+                    categories |= ModerationFlags.Sexual;
                 }
 
                 if ( IsViolent )
                 {
-                    categories |= Enums.AI.ModerationFlags.Violent;
+                    categories |= ModerationFlags.Violent;
                 }
 
                 if ( IsSexualMinor )
                 {
-                    categories |= Enums.AI.ModerationFlags.SexualMinor;
+                    categories |= ModerationFlags.SexualMinor;
                 }
 
                 return categories;

@@ -121,7 +121,7 @@
 </style>
 
 <script setup lang="ts">
-    import { ref, toRef, toValue, watch, } from "vue";
+    import { ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -146,9 +146,9 @@
     const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = ref(props.activityBag);
+    const completionBag = ref(props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = ref(props.screenToShow ?? ComponentScreen.Summary);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {

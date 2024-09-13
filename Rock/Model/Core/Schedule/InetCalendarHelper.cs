@@ -23,6 +23,7 @@ using System.Runtime.Caching;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
 
 namespace Rock.Model
 {
@@ -51,8 +52,8 @@ namespace Rock.Model
             var calendarList = CalendarCollection.Load( stringReader );
             CalendarEvent calendarEvent = null;
 
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
+            // iCal is stored as a list of calendars, each with a list of events.
+            // Since Rock's schedule entity represents a single event, we just need one calendar and one event.
             if ( calendarList.Count() > 0 )
             {
                 var calendar = calendarList[0] as Calendar;
@@ -63,6 +64,45 @@ namespace Rock.Model
             }
 
             return calendarEvent;
+        }
+
+        /// <summary>
+        /// Serialize a CalendarEvent object to a string.
+        /// </summary>
+        /// <param name="iCalEvent"></param>
+        /// <returns></returns>
+        public static string SerializeToCalendarString( CalendarEvent iCalEvent )
+        {
+            if ( iCalEvent == null )
+            {
+                return string.Empty;
+            }
+
+            var iCalCalendar = new Calendar();
+            iCalCalendar.Events.Add( iCalEvent );
+
+            var serializer = new CalendarSerializer();
+
+            var iCalString = serializer.SerializeToString( iCalCalendar );
+            return iCalString;
+        }
+
+        /// <summary>
+        /// Serialize a Calendar object to a string.
+        /// </summary>
+        /// <param name="iCalCalendar"></param>
+        /// <returns></returns>
+        public static string SerializeToCalendarString( Calendar iCalCalendar )
+        {
+            if ( iCalCalendar == null )
+            {
+                return string.Empty;
+            }
+
+            var serializer = new CalendarSerializer( iCalCalendar );
+
+            var iCalString = serializer.SerializeToString();
+            return iCalString;
         }
 
         /// <summary>
@@ -159,10 +199,10 @@ namespace Rock.Model
         {
             var occurrenceLookupKey = $"{startDateTime.ToShortDateTimeString()}__{endDateTime?.ToShortDateTimeString()}__ExcludeStartDate__{iCalendarContent.Trim()}".XxHash();
 
-            var cachedOccurences = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
-            if ( cachedOccurences != null )
+            var cachedOccurrences = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
+            if ( cachedOccurrences != null )
             {
-                return cachedOccurences;
+                return cachedOccurrences;
             }
 
             var iCalEvent = CreateCalendarEvent( iCalendarContent );
@@ -184,7 +224,7 @@ namespace Rock.Model
 
                 https://github.com/rianjs/ical.net/issues/431
 
-                Furthermore, the iCal.NET library is no longer maintainted, so it's clear we cannot count on this
+                Furthermore, the iCal.NET library is no longer maintained, so it's clear we cannot count on this
                 issue being fixed on their end any time soon.
 
                 Workaround #1:

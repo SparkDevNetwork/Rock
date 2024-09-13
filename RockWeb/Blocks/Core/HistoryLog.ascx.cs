@@ -589,74 +589,69 @@ namespace RockWeb.Blocks.Core
                 }
 
                 // Materialize the result.
-                // Include a query hint to remove memory grant requests.
-                // Statistics are often not available for this query and the memory grants are consistently excessive.
-                using ( new QueryHintScope( rockContext, "MAX_GRANT_PERCENT = 0.1" ) )
+                var historySummaryList = historyActionGroupQuery.Select( x => new
                 {
-                    var historySummaryList = historyActionGroupQuery.Select( x => new
+                    x.CreatedDateTime,
+                    x.EntityTypeId,
+                    x.EntityId,
+                    x.CategoryId,
+                    x.CategoryName,
+                    x.RelatedEntityTypeId,
+                    x.RelatedEntityId,
+                    x.CreatedByPersonId,
+                    HistoryEntryValues = x.HistoryEntries.Select( h => new
                     {
-                        x.CreatedDateTime,
-                        x.EntityTypeId,
-                        x.EntityId,
-                        x.CategoryId,
-                        x.CategoryName,
-                        x.RelatedEntityTypeId,
-                        x.RelatedEntityId,
-                        x.CreatedByPersonId,
-                        HistoryEntryValues = x.HistoryEntries.Select( h => new
-                        {
-                            h.Id,
-                            h.Verb,
-                            h.ChangeType,
-                            h.IsSensitive,
-                            h.NewValue,
-                            h.ValueName,
-                            h.OldValue,
-                            h.RelatedData,
-                            h.EntityTypeId,
-                            h.Caption
-                        } ),
-                        x.CreatedByPersonNickName,
-                        x.CreatedByPersonLastName,
-                        x.CreatedByPersonSuffixValueId,
-                    } )
-                        .ToList()
-                        .Select( x => new HistoryLogListItemInfo
-                        {
-                            CreatedDateTime = x.CreatedDateTime,
-                            EntityTypeId = x.EntityTypeId,
-                            EntityId = x.EntityId,
-                            CategoryId = x.CategoryId,
-                            CategoryName = x.CategoryName,
-                            RelatedEntityTypeId = x.RelatedEntityTypeId,
-                            RelatedEntityId = x.RelatedEntityId,
-                            CreatedByPersonId = x.CreatedByPersonId,
+                        h.Id,
+                        h.Verb,
+                        h.ChangeType,
+                        h.IsSensitive,
+                        h.NewValue,
+                        h.ValueName,
+                        h.OldValue,
+                        h.RelatedData,
+                        h.EntityTypeId,
+                        h.Caption
+                    } ),
+                    x.CreatedByPersonNickName,
+                    x.CreatedByPersonLastName,
+                    x.CreatedByPersonSuffixValueId,
+                } )
+                    .ToList()
+                    .Select( x => new HistoryLogListItemInfo
+                    {
+                        CreatedDateTime = x.CreatedDateTime,
+                        EntityTypeId = x.EntityTypeId,
+                        EntityId = x.EntityId,
+                        CategoryId = x.CategoryId,
+                        CategoryName = x.CategoryName,
+                        RelatedEntityTypeId = x.RelatedEntityTypeId,
+                        RelatedEntityId = x.RelatedEntityId,
+                        CreatedByPersonId = x.CreatedByPersonId,
 
-                            HistoryList = x.HistoryEntryValues.OrderBy( h => h.Id ).Select( h => new History
-                            {
-                                Verb = h.Verb,
-                                ChangeType = h.ChangeType,
-                                IsSensitive = h.IsSensitive,
-                                NewValue = h.NewValue,
-                                ValueName = h.ValueName,
-                                OldValue = h.OldValue,
-                                RelatedData = h.RelatedData,
-                                EntityTypeId = h.EntityTypeId
-                            } )
-                            .Select( h => h.SummaryHtml )
-                            .ToList(),
-
-                            CreatedByPersonName = Person.FormatFullName( x.CreatedByPersonNickName, x.CreatedByPersonLastName, x.CreatedByPersonSuffixValueId ),
-                        
-                            Verb = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Verb,
-                            Caption = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption,
-                            FormattedCaption = HistoryLogListItemInfo.GetFormattedCaption( x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption, x.CategoryId, x.EntityId, x.RelatedEntityTypeId, x.RelatedEntityId ),
-                            ValueName = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.ValueName
+                        HistoryList = x.HistoryEntryValues.OrderBy( h => h.Id ).Select( h => new History
+                        {
+                            Verb = h.Verb,
+                            ChangeType = h.ChangeType,
+                            IsSensitive = h.IsSensitive,
+                            NewValue = h.NewValue,
+                            ValueName = h.ValueName,
+                            OldValue = h.OldValue,
+                            RelatedData = h.RelatedData,
+                            EntityTypeId = h.EntityTypeId
                         } )
-                    .ToList();
+                        .Select( h => h.SummaryHtml )
+                        .ToList(),
 
-                    return historySummaryList;
-                }
+                        CreatedByPersonName = Person.FormatFullName( x.CreatedByPersonNickName, x.CreatedByPersonLastName, x.CreatedByPersonSuffixValueId ),
+                        
+                        Verb = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Verb,
+                        Caption = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption,
+                        FormattedCaption = HistoryLogListItemInfo.GetFormattedCaption( x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Caption, x.CategoryId, x.EntityId, x.RelatedEntityTypeId, x.RelatedEntityId ),
+                        ValueName = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.ValueName
+                    } )
+                .ToList();
+
+                return historySummaryList;
             }
 
             private IQueryable<History> GetFilteredHistoryQuery( RockContext rockContext )

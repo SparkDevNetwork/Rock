@@ -55,7 +55,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="learningProgramId">The </param>
         /// <returns></returns>
-        public IQueryable<LearningSemester> Semesters( int learningProgramId )
+        public IQueryable<LearningSemester> GetSemesters( int learningProgramId )
         {
             return Queryable()
                 .Where( p => p.Id == learningProgramId )
@@ -66,15 +66,27 @@ namespace Rock.Model
         /// <summary>
         /// Gets the default <see cref="LearningSemester"/> for the specified Learning Program.
         /// </summary>
-        /// <param name="learningProgramId">The </param>
+        /// <param name="learningProgramId">The identifier of the <see cref="LearningProgram"/> to get the default semester for.</param>
         /// <returns></returns>
-        public LearningSemester DefaultSemester( int learningProgramId )
+        public LearningSemester GetDefaultSemester( int learningProgramId )
         {
-            return Queryable()
+            return learningProgramId > 0 ? Queryable()
                 .Where( p => p.Id == learningProgramId )
                 .Include( p => p.LearningSemesters )
                 .Select( p => p.LearningSemesters.FirstOrDefault() )
-                .FirstOrDefault();
+                .FirstOrDefault() :
+                default;
+        }
+
+        /// <summary>
+        /// Gets the default <see cref="LearningSemester"/> for the specified Learning Program.
+        /// </summary>
+        /// <param name="learningProgramIdKey">The id key of the <see cref="LearningProgram"/> to get the default semester for.</param>
+        /// <returns></returns>
+        public LearningSemester GetDefaultSemester( string learningProgramIdKey )
+        {
+            var learningProgramId = IdHasher.Instance.GetId( learningProgramIdKey );
+            return learningProgramId.HasValue ? GetDefaultSemester( learningProgramId.Value ) : default;
         }
 
         /// <summary>
