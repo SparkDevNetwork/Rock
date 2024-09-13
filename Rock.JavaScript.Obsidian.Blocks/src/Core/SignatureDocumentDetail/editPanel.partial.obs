@@ -1,0 +1,137 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <RadioButtonList v-model="status"
+                                 :items="items"
+                                 :horizontal="true"
+                                 label="Status" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <FileUploader v-model="binaryFile"
+                              label="Document" />
+            </div>
+            <div class="col-md-6">
+                <PersonPicker v-model="appliesToPersonAlias"
+                              label="Applies To"
+                              help="The person that this document applies to."
+                              rules="required" />
+
+                <PersonPicker v-model="assignedToPersonAlias"
+                              label="Assigned To"
+                              help="The person that this document was assigned to for getting a signature."
+                              rules="required" />
+
+                <PersonPicker v-model="signedByPersonAlias"
+                              label="Signed By"
+                              help="The person that signed this." />
+            </div>
+        </div>
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, computed, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { SignatureDocumentBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentBag";
+    import { SignatureDocumentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentDetailOptionsBag";
+    import { SignatureDocumentStatus, SignatureDocumentStatusDescription } from "@Obsidian/Enums/Core/signatureDocumentStatus";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<SignatureDocumentBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<SignatureDocumentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<SignatureDocumentBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const status = propertyRef(props.modelValue.bag?.status.toString() ?? "", "Status");
+    const binaryFile = propertyRef(props.modelValue.bag?.binaryFile ?? {}, "BinaryFile");
+    const appliesToPersonAlias = propertyRef(props.modelValue.bag?.appliesToPersonAlias ?? {}, "AppliesToPersonAlias");
+    const assignedToPersonAlias = propertyRef(props.modelValue.bag?.assignedToPersonAlias ?? {}, "AssignedToPersonAlias");
+    const signedByPersonAlias = propertyRef(props.modelValue.bag?.signedByPersonAlias ?? {}, "SignedByPersonAlias");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, status, binaryFile, appliesToPersonAlias, assignedToPersonAlias, signedByPersonAlias];
+
+    // #endregion
+
+    // #region Computed Values
+    const items = computed<ListItemBag[]>(() => {
+        const items: ListItemBag[] = [];
+
+        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.None], value: SignatureDocumentStatus.None.toString() });
+        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Sent], value: SignatureDocumentStatus.Sent.toString() });
+        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Signed], value: SignatureDocumentStatus.Signed.toString() });
+        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Cancelled], value: SignatureDocumentStatus.Cancelled.toString() });
+        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Expired], value: SignatureDocumentStatus.Expired.toString() });
+
+        return items;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<SignatureDocumentBag> = {
+            bag: { ...props.modelValue.bag } as SignatureDocumentBag
+        };
+        
+            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+            setPropertiesBoxValue(newValue, "name", name.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -150,7 +150,6 @@
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Core\SignatureDocumentDetail.cs" />
     <Compile Include="Core\SignatureDocumentList.cs" />
-    <Compile Include="Crm\PersonDuplicateList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />

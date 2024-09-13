@@ -194,7 +194,6 @@
     <Compile Include="Blocks\Core\SignatureDocumentDetail\SignatureDocumentBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentDetail\SignatureDocumentDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentList\SignatureDocumentListOptionsBag.cs" />
-    <Compile Include="Blocks\Crm\PersonDuplicateList\PersonDuplicateListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelList\CheckInLabelListOptionsBag.cs" />

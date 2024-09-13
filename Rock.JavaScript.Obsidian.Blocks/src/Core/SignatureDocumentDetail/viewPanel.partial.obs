@@ -1,0 +1,183 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Default"
+                            class="btn btn-default btn-xs"
+                            @click="onResend"
+                            :isLoading="isResendLoading">Resend</RockButton>
+
+                <NotificationBox v-if="resendMessage" :alertType="resendMessageType">{{ resendMessage }}</NotificationBox>
+
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+        <div class="pdfobject-container" v-if="documentUrl">
+            <embed :src="documentUrl" class="pdfobject" type="application/pdf" title="Embedded PDF" style="overflow: auto; width: 100%; height: 900px;" />
+        </div>
+    
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { SignatureDocumentBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentBag";
+    import { SignatureDocumentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentDetailOptionsBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+
+    const props = defineProps({
+    modelValue: {
+    type: Object as PropType<SignatureDocumentBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<SignatureDocumentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+    const isResendLoading = ref(false);
+    const resendMessage = ref("");
+    const resendMessageType = ref("");
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+        
+        if(props.modelValue.appliesToPersonAlias?.text) {
+            valueBuilder.addTextValue("Applies To", props.modelValue.appliesToPersonAlias.text);
+        }
+        
+        if (props.modelValue.signedByPersonAlias?.text) {
+            valueBuilder.addTextValue("Signed By", props.modelValue.signedByPersonAlias.text);
+        }
+
+        if(props.modelValue.signedByEmail) {
+            valueBuilder.addTextValue("Completion Email", props.modelValue.signedByEmail);
+            if(props.modelValue.completionEmailSentDateTime) {
+                valueBuilder.addTextValue("", props.modelValue.completionEmailSentDateTime);
+            }
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if(props.modelValue.signedDateTime) {
+            const date = RockDateTime.parseISO(props.modelValue.signedDateTime);
+            let signedOnInformation = "";
+            if (date) {
+                signedOnInformation = date.toString();
+            }
+
+            if (props.modelValue.signedClientUserAgent) {
+                signedOnInformation += "<br/>" + props.modelValue.signedClientUserAgent;
+            }
+
+            if(props.modelValue.signedClientIp) {
+                signedOnInformation += "<br/>" + props.modelValue.signedClientIp;
+            }
+
+            valueBuilder.addHtmlValue("Signed On", signedOnInformation);
+        }
+
+        return valueBuilder.build();
+    });
+
+    const documentUrl = computed((): string => {
+        let url = "";
+        if(props.modelValue?.binaryFile?.value) {
+            url = `/GetFile.ashx?guid=${props.modelValue.binaryFile.value}#view=FitH&amp;pagemode=none`
+        }
+        return url
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+    /**
+     * Event handler for the Resend button being clicked. 
+     */
+    async function onResend(): Promise<void> {
+        isResendLoading.value = true;
+        try {
+            const result = await invokeBlockAction<{ key: string }>("ResendCompletionEmail", {
+                key: props.modelValue?.idKey
+            });
+            console.log(result);
+
+            if (result.isSuccess) {
+                resendMessage.value = "Signature completion email was successfully sent";
+                resendMessageType.value = "success";
+            }
+            else {
+                resendMessage.value = "Error sending signature completion email. ";
+                resendMessage.value += result.errorMessage ?? "Unknown error while trying to resend confirmation.";
+                resendMessageType.value = "danger";
+            }
+        }
+        finally {
+            isResendLoading.value = false;
+        }
+    }
+    // #endregion
+</script>
