@@ -13,20 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.RealTime.Topics
+using Rock.CheckIn.v2;
+using Rock.Data;
+
+namespace Rock.Model
 {
-    /// <summary>
-    /// Describes the messages that can be received from clients for the cloud
-    /// print service as well as helpful methods to facilitate communication.
-    /// </summary>
-    [RealTimeTopic]
-    internal sealed class CloudPrintTopic : Topic<ICloudPrint>
+    public partial class ScheduleCategoryExclusion
     {
-        /// <summary>
-        /// The channel used for proxy status messages.
-        /// </summary>
-        public static readonly string ProxyStatusChannel = "proxy-status";
+        internal class SaveHook : EntitySaveHook<ScheduleCategoryExclusion>
+        {
+            /// <inheritdoc/>
+            protected override void PostSave()
+            {
+                CheckInDirector.SendRefreshKioskConfiguration();
+
+                base.PostSave();
+            }
+        }
     }
 }

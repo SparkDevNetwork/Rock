@@ -1388,6 +1388,7 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\Device\Device.SaveHook.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
@@ -1402,6 +1403,7 @@
     <Compile Include="Model\Core\PersonPreference\PersonPreference.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreference.SaveHook.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreferenceService.cs" />
+    <Compile Include="Model\Core\ScheduleCategoryExclusion\ScheduleCategoryExclusion.SaveHook.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
     <Compile Include="Model\Event\CheckInLabel\CheckInLabel.cs" />
@@ -1583,9 +1585,11 @@
     <Compile Include="RealTime\IContextInternal.cs" />
     <Compile Include="RealTime\ITopicExtensions.cs" />
     <Compile Include="RealTime\RealTimeException.cs" />
+    <Compile Include="RealTime\Topics\CheckInTopic.cs" />
     <Compile Include="RealTime\Topics\CloudPrintTopic.cs" />
     <Compile Include="RealTime\Topics\EntityUpdatedTopic.cs" />
     <Compile Include="RealTime\Topics\ConversationParticipantTopic.cs" />
+    <Compile Include="RealTime\Topics\ICheckIn.cs" />
     <Compile Include="RealTime\Topics\ICloudPrint.cs" />
     <Compile Include="RealTime\Topics\IEntityUpdated.cs" />
     <Compile Include="RealTime\Topics\IConversationParticipant.cs" />

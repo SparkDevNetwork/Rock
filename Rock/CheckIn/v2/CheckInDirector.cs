@@ -19,10 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
@@ -633,6 +636,27 @@ namespace Rock.CheckIn.v2
                 errorMessage = string.Empty;
                 return true;
             }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Sends a <see cref="ICheckIn.RefreshKioskConfiguration"/> message
+        /// to the RealTime engine to let kiosks know that their configuration
+        /// may have changed.
+        /// </para>
+        /// <para>
+        /// The RealTime message will be sent in the background. This method
+        /// will return before it has been sent or even queued up.
+        /// </para>
+        /// </summary>
+        public static void SendRefreshKioskConfiguration()
+        {
+            Task.Run( () =>
+            {
+                var topicClients = RealTimeHelper.GetTopicContext<ICheckIn>().Clients;
+
+                return topicClients.All.RefreshKioskConfiguration();
+            } );
         }
 
         #endregion

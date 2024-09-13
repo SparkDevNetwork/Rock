@@ -18,15 +18,11 @@
 namespace Rock.RealTime.Topics
 {
     /// <summary>
-    /// Describes the messages that can be received from clients for the cloud
-    /// print service as well as helpful methods to facilitate communication.
+    /// Describes the messages that can be received from clients for check-in
+    /// as well as helpful methods to facilitate communication.
     /// </summary>
     [RealTimeTopic]
-    internal sealed class CloudPrintTopic : Topic<ICloudPrint>
+    internal sealed class CheckInTopic : Topic<ICheckIn>
     {
-        /// <summary>
-        /// The channel used for proxy status messages.
-        /// </summary>
-        public static readonly string ProxyStatusChannel = "proxy-status";
     }
 }

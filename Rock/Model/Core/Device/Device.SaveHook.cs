@@ -14,29 +14,29 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 using Rock.CheckIn.v2;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class Schedule
+    public partial class Device
     {
-        internal class SaveHook : EntitySaveHook<Schedule>
+        internal class SaveHook : EntitySaveHook<Device>
         {
-            /// <inheritdoc/>
-            protected override void PreSave()
+            private static readonly Lazy<int> KioskDeviceTypeValueId = new Lazy<int>( () =>
             {
-                this.Entity.EnsureEffectiveStartEndDates();
-
-                base.PreSave();
-            }
+                return DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK )?.Id ?? 0;
+            } );
 
             /// <inheritdoc/>
             protected override void PostSave()
             {
                 if ( PreSaveState == EntityContextState.Modified || PreSaveState == EntityContextState.Deleted )
                 {
-                    if ( Entity.Name.IsNotNullOrWhiteSpace() )
+                    if ( Entity.DeviceTypeValueId == KioskDeviceTypeValueId.Value )
                     {
                         CheckInDirector.SendRefreshKioskConfiguration();
                     }
