@@ -21,22 +21,13 @@
 // </copyright>
 //
 
-import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
+import { IdMapBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/idMapBag";
 
-/**
- * A minimal representation of a single attendance record used to track
- * counts.
- */
-export type ActiveAttendanceBag = {
-    /** The encrypted identifier of the group used for check-in. */
-    groupId?: string | null;
+/** The response data returned by the SubscribeToRealTime block action. */
+export type SubscribeToRealTimeResponseBag = {
+    /** A map of group identifiers for translating real-time messages. */
+    groupMap?: IdMapBag[] | null;
 
-    /** The encrypted identifier of the attendance record. */
-    id?: string | null;
-
-    /** The encrypted identifier of the location used for check-in. */
-    locationId?: string | null;
-
-    /** The status of the attendance record. */
-    status: CheckInStatus;
+    /** A map of location identifiers for translating real-time messages. */
+    locationMap?: IdMapBag[] | null;
 };
