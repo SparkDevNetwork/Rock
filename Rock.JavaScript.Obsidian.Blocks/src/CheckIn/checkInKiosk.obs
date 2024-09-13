@@ -151,9 +151,9 @@
     import SupervisorScheduleLocationsScreen from "./CheckInKiosk/supervisorScheduleLocationsScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
-    import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+    import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { getTopic } from "@Obsidian/Utility/realTime";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
     import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen, RegistrationScreen, RegistrationScreenData, KioskConfiguration } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
@@ -187,7 +187,8 @@
     let currentAttendeeId: string | undefined | null;
     let lastActivity: number = Date.now();
     let idleTimer: number | undefined;
-    let realTimeTopic: ITopic | undefined;
+    let isRealTimeDisconnected = false;
+    let isKioskRefreshNeeded = false;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
 
     const supervisorData = ref<SupervisorScreenData>({ pinCode: "" });
@@ -290,6 +291,7 @@
                     groupIdMap: configuration.value.groupIdMap,
                     locationCountAdjustments: configuration.value.locationCountAdjustments
                 };
+
                 navigateToScreen(Screen.Welcome);
             }
             else {
@@ -323,24 +325,13 @@
         currentScreenActions.value = [];
         currentScreen.value = screen;
 
-        // Delete any pending attendance records created, this should be moved
-        // to the session object.
         if (screen === Screen.Welcome) {
-            // This is async, but we don't need to wait for it to complete.
+            // Delete any pending attendance records created. This is async, but we
+            // don't need to wait for it to complete.
             currentSession.value.cancelSession();
 
             currentSession.value = createNewSession();
             previousScreens.value = [];
-
-            // Reset the location count adjustments every time we navigate
-            // to the welcome screen.
-            configuration.value.locationCountAdjustments = [];
-
-            // If we lost real-time connection, force a reconnect.
-            if (realTimeTopic?.isDisconnected) {
-                const url = window.location.href;
-                window.location.href = url;
-            }
         }
     }
 
@@ -349,16 +340,19 @@
      * proxy connection status messages.
      */
     async function setupRealTime(): Promise<void> {
-        realTimeTopic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
+        const entityUpdatedTopic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
+        const checkInTopic = await getTopic("Rock.RealTime.Topics.CheckInTopic");
 
         const request = {
-            connectionId: realTimeTopic.connectionId,
+            connectionId: entityUpdatedTopic.connectionId,
             kioskId: configuration.value.kiosk?.id,
             areaIds: configuration.value.areas?.map(a => a.id)
         };
 
-        realTimeTopic.on("attendanceUpdated", onAttendanceUpdated);
-        realTimeTopic.on("attendanceDeleted", onAttendanceDeleted);
+        entityUpdatedTopic.on("attendanceUpdated", onAttendanceUpdated);
+        entityUpdatedTopic.on("attendanceDeleted", onAttendanceDeleted);
+        entityUpdatedTopic.onDisconnected(() => isRealTimeDisconnected = true);
+        checkInTopic.on("refreshKioskConfiguration", onRefreshKioskConfiguration);
 
         const result = await invokeBlockAction<SubscribeToRealTimeResponseBag>("SubscribeToRealTime", request);
 
@@ -434,7 +428,12 @@
      */
     function onIdleTimerCheck(): void {
         if (currentScreen.value === Screen.Welcome) {
-            if (realTimeTopic?.isDisconnected) {
+            if (isRealTimeDisconnected) {
+                if (idleTimer !== undefined) {
+                    window.clearInterval(idleTimer);
+                    idleTimer = undefined;
+                }
+
                 // Redirect back to ourselves to try and reconnect.
                 const url = window.location.href;
                 window.location.href = url;
@@ -507,6 +506,22 @@
                 locationId: locationId,
                 count: -1
             });
+        }
+    }
+
+    /**
+     * Called when we receive a RealTime message that the kiosk configuration
+     * may have changed.
+     */
+    function onRefreshKioskConfiguration(): void {
+        if (currentScreen.value === Screen.Welcome) {
+            isKioskRefreshNeeded = false;
+
+            currentScreen.value = Screen.None;
+            readConfigurationFromLocalStorage();
+        }
+        else {
+            isKioskRefreshNeeded = true;
         }
     }
 
@@ -599,6 +614,30 @@
     // Read our check-in configuration and then start up.
     readConfigurationFromLocalStorage();
     setupRealTime();
+
+    watch(currentScreen, () => {
+        if (currentScreen.value !== Screen.Welcome) {
+            return;
+        }
+
+        // Reset the location count adjustments every time we navigate
+        // to the welcome screen.
+        configuration.value.locationCountAdjustments = [];
+
+        if (isRealTimeDisconnected) {
+            // If we lost real-time connection, force a reconnect.
+            if (idleTimer !== undefined) {
+                window.clearInterval(idleTimer);
+                idleTimer = undefined;
+            }
+
+            const url = window.location.href;
+            window.location.href = url;
+        }
+        else if (isKioskRefreshNeeded) {
+            onRefreshKioskConfiguration();
+        }
+    });
 
     onMounted(() => {
         activityEvents.forEach(ev => {

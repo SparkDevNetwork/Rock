@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -68,6 +69,31 @@ namespace Rock.Model
                 }
 
                 base.PreSave();
+            }
+
+            /// <inheritdoc/>
+            protected override void PostSave()
+            {
+                if ( PreSaveState == EntityContextState.Modified )
+                {
+                    // If a campus is modified, then it can only effect kiosk
+                    // configuration if the LocationId or TimeZoneId are modified.
+                    var oldLocationId = OriginalValues[nameof( Entity.LocationId )] as int?;
+                    var oldTimeZoneId = OriginalValues[nameof( Entity.TimeZoneId )] as string;
+
+                    if ( oldLocationId != Entity.LocationId || oldTimeZoneId != Entity.TimeZoneId )
+                    {
+                        CheckInDirector.SendRefreshKioskConfiguration();
+                    }
+                }
+                else if ( PreSaveState == EntityContextState.Added || PreSaveState == EntityContextState.Deleted )
+                {
+                    // If a campus is added or deleted then it could effect
+                    // kiosk configuration no matter what the values were/are.
+                    CheckInDirector.SendRefreshKioskConfiguration();
+                }
+
+                base.PostSave();
             }
         }
     }

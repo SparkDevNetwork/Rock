@@ -15,18 +15,21 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 namespace Rock.RealTime.Topics
 {
     /// <summary>
-    /// Describes the messages that can be received from clients for the cloud
-    /// print service as well as helpful methods to facilitate communication.
+    /// Topic interface describing the messages that can be sent to clients on
+    /// <see cref="CloudPrintTopic"/>.
     /// </summary>
-    [RealTimeTopic]
-    internal sealed class CloudPrintTopic : Topic<ICloudPrint>
+    internal interface ICheckIn
     {
         /// <summary>
-        /// The channel used for proxy status messages.
+        /// Informs all kiosks that they should refresh their configuration
+        /// because it might have changed.
         /// </summary>
-        public static readonly string ProxyStatusChannel = "proxy-status";
+        /// <returns>A <see cref="Task"/> that represents when the message has been queued up.</returns>
+        Task RefreshKioskConfiguration();
     }
 }
