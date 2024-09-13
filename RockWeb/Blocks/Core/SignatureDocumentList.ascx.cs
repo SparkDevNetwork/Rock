@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Core
         /// Binds the signature documents grid.
         /// </summary>
         /// <param name="documentTypeId">The SignatureDocumentTemplateId page parameter.</param>
-        protected void BindGrid( int? documentTypeId )
+        protected void BindGrid( int? documentTypeId = null )
         {
             var rockContext = new RockContext();
             var qry = new SignatureDocumentService( rockContext )
@@ -206,6 +206,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                documentTypeId = documentTypeId ?? PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
