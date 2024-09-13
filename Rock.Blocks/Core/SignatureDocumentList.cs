@@ -77,7 +77,7 @@ namespace Rock.Blocks.Core
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = false;
-            box.IsDeleteEnabled = false;
+            box.IsDeleteEnabled = GetIsDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -130,14 +130,14 @@ namespace Rock.Blocks.Core
             return options;
         }
 
-        ///// <summary>
-        ///// Determines if the delete button should be enabled in the grid.
-        ///// <summary>
-        ///// <returns>A boolean value that indicates if the delete button should be enabled.</returns>
-        //private bool GetIsDeleteEnabled()
-        //{
-        //    return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-        //}
+        /// <summary>
+        /// Determines if the delete button should be enabled in the grid.
+        /// <summary>
+        /// <returns>A boolean value that indicates if the delete button should be enabled.</returns>
+        private bool GetIsDeleteEnabled()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
 
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.

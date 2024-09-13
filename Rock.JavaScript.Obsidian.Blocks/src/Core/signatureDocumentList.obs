@@ -82,7 +82,7 @@
             </template>
         </Column>
 
-        <!-- <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" /> -->
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
 
