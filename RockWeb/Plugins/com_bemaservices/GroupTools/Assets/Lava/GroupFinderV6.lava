@@ -565,6 +565,14 @@
               mapElement.style.display = 'none';
             {% endif %}
           });
+
+          if (response.data == null || response.data.length <= 0) {
+            document.getElementById('map_wrapper').style.display = 'none';
+          }
+          else {
+            document.getElementById('map_wrapper').style.display = '';
+          }
+
           if (this.bottomVisible()) {
             if (this.groupCount > this.groups.length) {
               this.addGroups();
