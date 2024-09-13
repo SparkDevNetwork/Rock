@@ -201,8 +201,8 @@ export class RockDateTime {
      *
      * @returns A new RockDateTime instance or null if the date was not valid.
      */
-    public static parseISO(dateString: string): RockDateTime | null {
-        const dateTime = DateTime.fromISO(dateString, { setZone: true });
+    public static parseISO(dateString: string, setZone: boolean = true): RockDateTime | null {
+        const dateTime = DateTime.fromISO(dateString, { setZone });
 
         if (!dateTime.isValid) {
             return null;
