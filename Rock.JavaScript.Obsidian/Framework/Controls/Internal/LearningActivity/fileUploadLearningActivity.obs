@@ -172,7 +172,7 @@
     const dueDate =
         (completionBag.value.dueDate ?? "").length === 0 ?
             null :
-            RockDateTime.parseHTTP(completionBag.value.dueDate ?? "");
+            RockDateTime.parseISO(completionBag.value.dueDate ?? "");
 
     const dueDateHasPassed = ref(dueDate != null && dueDate < RockDateTime.now());
     const isFacilitatorCompleted = ref(completionBag.value.isFacilitatorCompleted);

@@ -40,18 +40,8 @@ namespace Rock.Model
             var course = Queryable()
                 .Include( a => a.LearningProgram )
                 .Include( a => a.LearningClasses )
-                .Include( a => a.LearningCourseRequirements )
+                .Include( a => a.LearningCourseRequirements.Select( cr => cr.RequiredLearningCourse ) )
                 .FirstOrDefault( a => a.Id == courseId );
-
-            if ( course.LearningCourseRequirements.Any() )
-            {
-                var requiredCourseIds = course.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId );
-                var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
-
-                course.LearningCourseRequirements.ForEach( cr =>
-                    cr.RequiredLearningCourse =
-                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
-            }
 
             return course;
         }
@@ -247,19 +237,6 @@ namespace Rock.Model
 
             return courses.ToList();
         }
-
-        ///// <summary>
-        ///// Gets the first 
-        ///// </summary>
-        ///// <param name="courseId"></param>
-        ///// <returns></returns>
-        //public LearningClass GetFirstActiveClass( int courseId )
-        //{
-        //    return Queryable()
-        //        .Where( c => c.Id == courseId)
-        //        .Select( c => c.LearningClasses.FirstOrDefault( cl => cl.IsActive ) )
-        //        .FirstOrDefault();
-        //}
 
         #region Nested Classes
 

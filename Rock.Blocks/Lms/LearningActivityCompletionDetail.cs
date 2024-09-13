@@ -46,7 +46,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning activity completion." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -241,7 +241,6 @@ namespace Rock.Blocks.Lms
                 FacilitatorComment = entity.FacilitatorComment,
                 GradeText = entity.GetGradeText( scales ),
                 IsGradePassing = entity.GetGrade().IsPassing,
-
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = entity.PointsEarned,
@@ -473,8 +472,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LearningActivityCompletionBag> box )
         {
-            var entityService = new LearningActivityCompletionService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;

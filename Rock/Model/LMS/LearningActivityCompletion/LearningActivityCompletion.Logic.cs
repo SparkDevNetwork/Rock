@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +25,9 @@ namespace Rock.Model
     {
         /// <summary>
         /// Gets the grade as a percentage for the student <see cref="LearningActivityCompletion">Activity</see>.
+        /// If no points are configured or <see cref="LearningActivity" /> is null then 100 is returned.
         /// </summary>
-        public decimal GradePercent => LearningActivity?.Points > 0 ? Math.Round( ( decimal ) PointsEarned / ( decimal ) LearningActivity.Points * 100, 3 ) : 0;
+        public decimal GradePercent => LearningActivity?.Points > 0 ? Math.Round( ( decimal ) PointsEarned / ( decimal ) LearningActivity.Points * 100, 3 ) : 100;
 
         /// <summary>
         /// Gets the grade text for the activity.
@@ -61,7 +61,7 @@ namespace Rock.Model
                 scales = Student?.LearningClass?.LearningGradingSystem?.LearningGradingSystemScales.OrderByDescending( s => s.ThresholdPercentage );
             }
 
-            if (scales == null)
+            if ( scales == null )
             {
                 return null;
             }

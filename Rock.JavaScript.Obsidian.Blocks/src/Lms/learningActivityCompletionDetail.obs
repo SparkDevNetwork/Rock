@@ -43,6 +43,7 @@
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityCompletionBag, LearningActivityCompletionDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -106,7 +107,9 @@
         const percentEarned = pointsPossible > 0 ? pointsEarned / pointsPossible * 100 : 0;
         const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
         const hasGradeScale = grade != null;
-        const isGradePassing = hasGradeScale ? grade.isPassing : false;
+
+        // If there's a grade scale then use the grade otherwise assume it's incomplete.
+        const isGradePassing = hasGradeScale ? grade.isPassing : true;
 
         const gradeText = hasGradeScale ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`;
 
@@ -117,14 +120,26 @@
             });
         }
 
-        if (!learningActivityCompletionViewBag.value?.wasCompletedOnTime) {
+        // Get the dueDate - falling back to the activity's calculated dueDate if the student has no explicit value.
+        const dueDate = RockDateTime.parseISO(
+            learningActivityCompletionViewBag.value?.dueDate ??
+            learningActivityCompletionViewBag.value?.activityBag?.dueDateCalculated ??
+            ""
+        );
+
+        const isLate = dueDate != null && dueDate >= RockDateTime.now();
+        const isStudentCompleted = learningActivityCompletionViewBag.value?.isStudentCompleted === true;
+        const wasCompletedLate = isStudentCompleted && learningActivityCompletionViewBag.value?.wasCompletedOnTime === false;
+        if ((isLate && !isStudentCompleted) || wasCompletedLate) {
             labels.push({
                 title: "Late",
                 type: "warning"
             });
         }
 
-        if (!learningActivityCompletionViewBag.value?.isFacilitatorCompleted) {
+        const points = learningActivityCompletionViewBag.value?.activityBag?.points ?? 0;
+        const isFacilitatorCompleted = learningActivityCompletionViewBag.value?.isFacilitatorCompleted === true;
+        if (points > 0 && !isFacilitatorCompleted && isStudentCompleted) {
             labels.push({
                 title: "Requires Scoring",
                 type: "warning"

@@ -107,10 +107,6 @@
 
     // #region Values
 
-    const tabs = ref(["Overview", "Description", "Completions", "Semesters"]);
-
-    const selectedTabIndex = ref(0);
-
     const blockError = ref("");
     const errorMessage = ref("");
     const showDetailsModal = ref(false);
@@ -129,11 +125,19 @@
     const showKpis = ref(learningProgramViewBag.value?.showKpis);
 
     const programName = ref(learningProgramViewBag.value?.publicName ?? "");
-    const isAcademicConfigurationMode = learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar;
+    const isAcademicConfigurationMode = ref(learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar);
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
         entity: learningProgramEditBag
     });
+
+    const tabs = computed(() =>
+        isAcademicConfigurationMode ?
+        ["Overview", "Description", "Completions", "Semesters"] :
+        ["Overview", "Description"]
+    );
+
+    const selectedTabIndex = ref(0);
 
     // #endregion
 
@@ -229,25 +233,13 @@
             });
         }
 
-        footerActionsPanelActions.push({
-            title: "Completions",
-            type: "default",
-            handler: () => {
-                onSelectTab(tabs.value.findIndex(t => t === "Completions"));
-
-                // Because we're showing other content and
-                // we don't want secondary blocks to be visible
-                // we need to alert them via the browser bus.
-                browserBus.publish(BlockMessages.BeginEdit);
-            }
-        });
-
-        if (learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar) {
+        // Completions and Semesters are only applicable to Academic Calendar mode programs.
+        if (isAcademicConfigurationMode.value === true) {
             footerActionsPanelActions.push({
-                title: "Semesters",
+                title: "Completions",
                 type: "default",
                 handler: () => {
-                    onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
+                    onSelectTab(tabs.value.findIndex(t => t === "Completions"));
 
                     // Because we're showing other content and
                     // we don't want secondary blocks to be visible
@@ -255,6 +247,19 @@
                     browserBus.publish(BlockMessages.BeginEdit);
                 }
             });
+
+            footerActionsPanelActions.push({
+                    title: "Semesters",
+                    type: "default",
+                    handler: () => {
+                        onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
+
+                        // Because we're showing other content and
+                        // we don't want secondary blocks to be visible
+                        // we need to alert them via the browser bus.
+                        browserBus.publish(BlockMessages.BeginEdit);
+                    }
+                });
         }
 
         return footerActionsPanelActions;

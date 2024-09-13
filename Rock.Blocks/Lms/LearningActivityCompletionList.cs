@@ -26,7 +26,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList;
 using Rock.ViewModels.Utility;
@@ -42,7 +41,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays a list of learning activity completions." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning activity completion details.",
@@ -150,7 +149,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningActivityCompletion> GetListQueryable( RockContext rockContext )
         {
-            var activityId = IdHasher.Instance.GetId( PageParameter( PageParameterKey.LearningActivityId ) );
+            var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
 
             return base.GetListQueryable( rockContext )
                 .Include( a => a.Student )

@@ -221,7 +221,6 @@ namespace Rock.Blocks.Lms
             var studentActivities = new List<LearningActivityCompletionBag>();
 
             var rockContext = new RockContext();
-            rockContext.SqlLogging( true );
 
             var bags = new LearningParticipantService( rockContext )
                 .GetParticipantBags( classId, false, currentPerson.Id );
@@ -353,7 +352,6 @@ namespace Rock.Blocks.Lms
                 previousActivityCompletion = activityCompletion;
             }
 
-            rockContext.SqlLogging( false );
             return studentActivities;
         }
 
