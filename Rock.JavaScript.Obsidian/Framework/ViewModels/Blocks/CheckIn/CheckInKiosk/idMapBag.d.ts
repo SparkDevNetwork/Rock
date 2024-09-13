@@ -21,22 +21,19 @@
 // </copyright>
 //
 
-import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
+import { Guid } from "@Obsidian/Types";
 
-/**
- * A minimal representation of a single attendance record used to track
- * counts.
- */
-export type ActiveAttendanceBag = {
-    /** The encrypted identifier of the group used for check-in. */
-    groupId?: string | null;
+/** Identifies a mapping between identifiers for an object. */
+export type IdMapBag = {
+    /**
+     * The unique identifier the represents the same item as the
+     * encrypted identifier.
+     */
+    guid: Guid;
 
-    /** The encrypted identifier of the attendance record. */
-    id?: string | null;
-
-    /** The encrypted identifier of the location used for check-in. */
-    locationId?: string | null;
-
-    /** The status of the attendance record. */
-    status: CheckInStatus;
+    /**
+     * The encrypted identifier that represents the same item as the
+     * unique identifier.
+     */
+    idKey?: string | null;
 };

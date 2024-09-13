@@ -14,34 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Enums.Event;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
 {
     /// <summary>
-    /// A minimal representation of a single attendance record used to track
-    /// counts.
+    /// The response data returned by the SubscribeToRealTime block action.
     /// </summary>
-    public class ActiveAttendanceBag
+    public class SubscribeToRealTimeResponseBag
     {
         /// <summary>
-        /// The encrypted identifier of the attendance record.
+        /// A map of location identifiers for translating real-time messages.
         /// </summary>
-        public string Id { get; set; }
+        public List<IdMapBag> LocationMap { get; set; }
 
         /// <summary>
-        /// The encrypted identifier of the group used for check-in.
+        /// A map of group identifiers for translating real-time messages.
         /// </summary>
-        public string GroupId { get; set; }
-
-        /// <summary>
-        /// The encrypted identifier of the location used for check-in.
-        /// </summary>
-        public string LocationId { get; set; }
-
-        /// <summary>
-        /// The status of the attendance record.
-        /// </summary>
-        public CheckInStatus Status { get; set; }
+        public List<IdMapBag> GroupMap { get; set; }
     }
 }

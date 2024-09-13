@@ -68,6 +68,7 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\EditFamilyResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetCurrentAttendanceResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetScheduledLocationsResponseBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\IdMapBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\LocationStatusItemBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\PrintResponseBag.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SaveFamilyOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SaveFamilyResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ScheduledLocationBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\SubscribeToRealTimeResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\WebKioskBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\DataSourceBag.cs" />

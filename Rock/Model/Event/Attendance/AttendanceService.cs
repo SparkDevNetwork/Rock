@@ -36,6 +36,8 @@ using Rock.RealTime.Topics;
 using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 
+using Z.EntityFramework.Plus;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -3304,55 +3306,38 @@ namespace Rock.Model
         /// Sends the attendance updated real time notifications for the specified
         /// attendance records.
         /// </summary>
-        /// <param name="attendanceGuids">The attendance unique identifiers.</param>
-        /// <param name="items">The additional data that describes each attendance record when it was enqueued.</param>
+        /// <param name="items">The data that describes each attendance record when it was enqueued.</param>
         /// <returns>A task that represents this operation.</returns>
-        internal static async Task SendAttendanceUpdatedRealTimeNotificationsAsync( IEnumerable<Guid> attendanceGuids, IList<(Guid Guid, bool IsDeleted, bool? DidAttend, DateTime? PresentDateTime, DateTime? EndDateTime, CheckInStatus CheckInStatus)> items )
+        internal static async Task SendAttendanceUpdatedRealTimeNotificationsAsync( IList<AttendanceUpdatedState> items )
         {
-            var guids = attendanceGuids.ToList();
+            if ( !items.Any() )
+            {
+                return;
+            }
 
             using ( var rockContext = new RockContext() )
             {
-                var attendanceService = new AttendanceService( rockContext );
-
-                while ( guids.Any() )
+                try
                 {
-                    // Work with at most 1,000 records at a time since it
-                    // translates to an IN query which doesn't perform well
-                    // on large sets.
-                    var guidsToProcess = guids.Take( 1_000 ).ToList();
-                    guids = guids.Skip( 1_000 ).ToList();
-
-                    try
-                    {
-                        var qry = attendanceService
-                            .Queryable()
-                            .AsNoTracking()
-                            .Where( a => attendanceGuids.Contains( a.Guid ) );
-
-                        await SendAttendanceUpdatedRealTimeNotificationsAsync( qry, items );
-                    }
-                    catch ( Exception ex )
-                    {
-                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
-                    }
+                    await SendAttendanceUpdatedRealTimeNotificationsAsync( rockContext, items );
+                }
+                catch ( Exception ex )
+                {
+                    Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
                 }
             }
         }
 
         /// <summary>
         /// Send attendance updated real time notifications for the Attendance
-        /// records returned by the query.
+        /// records.
         /// </summary>
-        /// <param name="qry">The query that provides the attendance records.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <param name="items">The additional data that describes each attendance record when it was enqueued.</param>
         /// <returns>A task that represents this operation.</returns>
-        private static async Task SendAttendanceUpdatedRealTimeNotificationsAsync( IQueryable<Attendance> qry, IList<(Guid Guid, bool IsDeleted, bool? DidAttend, DateTime? PresentDateTime, DateTime? EndDateTime, CheckInStatus CheckInStatus)> items )
+        private static async Task SendAttendanceUpdatedRealTimeNotificationsAsync( RockContext rockContext, IList<AttendanceUpdatedState> items )
         {
-            var filteredQry = qry
-                .Where( a => a.PersonAliasId.HasValue );
-
-            var bags = GetAttendanceUpdatedMessageBags( filteredQry, items );
+            var bags = GetAttendanceUpdatedMessageBags( rockContext, items );
 
             if ( !bags.Any() )
             {
@@ -3386,55 +3371,132 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the attendance updated message bags from the query using the
-        /// most optimal pattern.
+        /// Sends the attendance deleted real time notifications for the specified
+        /// attendance records.
         /// </summary>
-        /// <param name="qry">The query that provides the attendance records.</param>
+        /// <param name="items">The data that describes each attendance record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendAttendanceDeletedRealTimeNotificationsAsync( IList<AttendanceUpdatedState> items )
+        {
+            if ( !items.Any() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    await SendAttendanceDeletedRealTimeNotificationsAsync( rockContext, items );
+                }
+                catch ( Exception ex )
+                {
+                    Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send attendance deleted real time notifications for the Attendance
+        /// records.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each attendance record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendAttendanceDeletedRealTimeNotificationsAsync( RockContext rockContext, IList<AttendanceUpdatedState> items )
+        {
+            var bags = GetAttendanceUpdatedMessageBags( rockContext, items );
+            var topicClients = RealTimeHelper.GetTopicContext<IEntityUpdated>().Clients;
+            var channel = EntityUpdatedTopic.GetAttendanceDeletedChannel();
+
+            foreach ( var item in items )
+            {
+                try
+                {
+                    var bag = bags.FirstOrDefault( b => b.AttendanceGuid == item.Guid );
+
+                    await topicClients.Channel( channel ).AttendanceDeleted( item.Guid, bag );
+                }
+                catch ( Exception ex )
+                {
+                    Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the attendance updated message bag for the attendance record.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <param name="items">The additional data that describes each attendance record when it was enqueued.</param>
         /// <returns>A list of <see cref="AttendanceUpdatedMessageBag"/> objects that represent the attendance records.</returns>
-        private static List<AttendanceUpdatedMessageBag> GetAttendanceUpdatedMessageBags( IQueryable<Attendance> qry, IList<(Guid Guid, bool IsDeleted, bool? DidAttend, DateTime? PresentDateTime, DateTime? EndDateTime, CheckInStatus CheckInStatus)> items )
+        private static List<AttendanceUpdatedMessageBag> GetAttendanceUpdatedMessageBags( RockContext rockContext, IList<AttendanceUpdatedState> items )
         {
             var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
 
-            var records = qry
-                .Select( a => new
+            var personAliasIds = items.Select( i => i.PersonAliasId ).ToList();
+            var futurePersonAliases = new PersonAliasService( rockContext )
+                .Queryable()
+                .Where( pa => personAliasIds.Contains( pa.Id ) )
+                .Select( pa => new
                 {
-                    a.Guid,
-                    OccurrenceGuid = a.Occurrence.Guid,
-                    GroupGuid = ( Guid? ) a.Occurrence.Group.Guid,
-                    GroupTypeGuid = ( Guid? ) a.Occurrence.Group.GroupType.Guid,
-                    LocationGuid = ( Guid? ) a.Occurrence.Location.Guid,
-                    a.CheckInStatus,
-                    a.DidAttend,
-                    a.EndDateTime,
-                    a.PresentDateTime,
-                    a.RSVP,
-                    a.PersonAlias.Person
+                    pa.Id,
+                    pa.Person
                 } )
-                .ToList();
+                .Future();
+
+            var occurrenceIds = items.Select( i => i.OccurrenceId ).ToList();
+            var futureOccurrences = new AttendanceOccurrenceService( rockContext )
+                .Queryable()
+                .Where( ao => occurrenceIds.Contains( ao.Id ) )
+                .Select( ao => new
+                {
+                    ao.Id,
+                    ao.Guid,
+                    ao.GroupId,
+                    ao.LocationId
+                } )
+                .Future();
+
+            var personAliases = futurePersonAliases.ToList();
+            var occurrences = futureOccurrences.ToList();
 
             return items
                 .Select( item =>
                 {
-                    var record = records.FirstOrDefault( r => r.Guid == item.Guid );
+                    var occurrence = occurrences.FirstOrDefault( o => o.Id == item.OccurrenceId );
+                    var person = personAliases.FirstOrDefault( pa => pa.Id == item.PersonAliasId )?.Person;
 
-                    if ( record == null )
+                    if ( occurrence == null || person == null )
                     {
                         return null;
                     }
 
+                    // Get the group, group type, location and person.
+                    var group = occurrence.GroupId.HasValue
+                        ? GroupCache.Get( occurrence.GroupId.Value, rockContext )
+                        : null;
+                    var groupType = group != null
+                        ? GroupTypeCache.Get( group.GroupTypeId, rockContext )
+                        : null;
+                    var location = occurrence.LocationId.HasValue
+                        ? NamedLocationCache.Get( occurrence.LocationId.Value, rockContext )
+                        : null;
+
                     var bag = new AttendanceUpdatedMessageBag
                     {
-                        AttendanceGuid = record.Guid,
-                        PersonGuid = record.Person.Guid,
-                        OccurrenceGuid = record.OccurrenceGuid,
-                        GroupGuid = record.GroupGuid,
-                        GroupTypeGuid = record.GroupTypeGuid,
-                        LocationGuid = record.LocationGuid,
+                        AttendanceGuid = item.Guid,
+                        AttendanceIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),
+                        IsNew = item.State == EntityContextState.Added,
+                        OccurrenceGuid = occurrence.Guid,
+                        GroupGuid = group?.Guid,
+                        GroupTypeGuid = groupType?.Guid,
+                        LocationGuid = location?.Guid,
                         CheckInStatus = item.CheckInStatus,
-                        RSVP = record.RSVP,
-                        PersonFullName = record.Person.FullName,
-                        PersonPhotoUrl = $"{publicApplicationRoot}{record.Person.PhotoUrl.TrimStart( '~', '/' )}"
+                        RSVP = item.RSVP,
+                        PersonGuid = person.Guid,
+                        PersonFullName = person.FullName,
+                        PersonPhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
                     };
 
                     if ( item.DidAttend == true )
@@ -3455,7 +3517,69 @@ namespace Rock.Model
 
                     return bag;
                 } )
+                .Where( bag => bag != null )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Tracks state for <see cref="Transactions.SendAttendanceRealTimeNotificationsTransaction"/>
+        /// so it can send the data as it existed at the time of the save.
+        /// </summary>
+        internal class AttendanceUpdatedState
+        {
+            /// <inheritdoc cref="IEntity.Id"/>
+            public int Id { get; }
+
+            /// <inheritdoc cref="IEntity.Guid"/>
+            public Guid Guid { get; }
+
+            public EntityContextState State { get; }
+
+            /// <inheritdoc cref="Attendance.DidAttend"/>
+            public bool? DidAttend { get; }
+
+            /// <inheritdoc cref="Attendance.PresentDateTime"/>
+            public DateTime? PresentDateTime { get; }
+
+            /// <inheritdoc cref="Attendance.EndDateTime"/>
+            public DateTime? EndDateTime { get; }
+
+            /// <inheritdoc cref="Attendance.CheckInStatus"/>
+            public CheckInStatus CheckInStatus { get; }
+
+            /// <inheritdoc cref="Attendance.OccurrenceId"/>
+            public int OccurrenceId { get; }
+
+            /// <inheritdoc cref="Attendance.RSVP"/>
+            public RSVP RSVP { get; }
+
+            /// <inheritdoc cref="Attendance.PersonAliasId"/>
+            public int PersonAliasId { get; }
+
+            /// <summary>
+            /// Creates a new instance of <see cref="AttendanceUpdatedState"/>.
+            /// </summary>
+            /// <param name="attendance">The attendance record whose state will be tracked.</param>
+            /// <param name="personAliasId">The person alias identifier for this attendance record.</param>
+            /// <param name="state">The state of the entity in Entity Framework.</param>
+            public AttendanceUpdatedState( Attendance attendance, int personAliasId, EntityContextState state )
+            {
+                if ( attendance == null )
+                {
+                    throw new ArgumentNullException( nameof( attendance ) );
+                }
+
+                Id = attendance.Id;
+                Guid = attendance.Guid;
+                State = state;
+                DidAttend = attendance.DidAttend;
+                PresentDateTime = attendance.PresentDateTime;
+                EndDateTime = attendance.EndDateTime;
+                CheckInStatus = attendance.CheckInStatus;
+                OccurrenceId = attendance.OccurrenceId;
+                RSVP = attendance.RSVP;
+                PersonAliasId = personAliasId;
+            }
         }
 
         #endregion

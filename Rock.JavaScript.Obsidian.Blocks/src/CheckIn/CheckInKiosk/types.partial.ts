@@ -30,6 +30,7 @@ import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registration
 import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
 import { Guid } from "@Obsidian/Types";
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
 
 // #region Temporary Types
 
@@ -317,4 +318,16 @@ export type AttendanceCountGroup = {
     count: number;
 
     children: AttendanceCountGroup[];
+};
+
+export type KioskConfiguration = KioskConfigurationBag & {
+    /** This maps location Guid values to IdKey values. */
+    locationIdMap: Record<string, string>;
+
+    /** This maps group Guid values to IdKey values. */
+    groupIdMap: Record<string, string>;
+
+    on(event: "attendanceUpdated", callback: (attendance: AttendanceUpdatedMessageBag) => void): void
+    on(event: "attendanceDeleted", callback: (attendanceGuid: Guid, attendance?: AttendanceUpdatedMessageBag | null) => void): void;
+    off(event: "attendanceUpdated" | "attendanceDeleted", callback: unknown): void;
 };

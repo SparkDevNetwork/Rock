@@ -10,7 +10,11 @@
                             class="location-button"
                             :disabled="isProcessing"
                             @click="onLocationClick(location)">
-                    {{ location.name }}
+                    <span class="title">{{ location.name }}</span>
+                    <span v-if="showLocationCount"
+                          class="subtitle">
+                        Count: {{ location.currentCount }}
+                    </span>
                 </RockButton>
             </div>
         </MainPanel>
@@ -64,6 +68,10 @@
 
     const locations = computed((): LocationOpportunityBag[] => {
         return props.session.getAvailableLocations();
+    });
+
+    const showLocationCount = computed((): boolean => {
+        return props.configuration.template?.isLocationCountDisplayed === true;
     });
 
     // #endregion

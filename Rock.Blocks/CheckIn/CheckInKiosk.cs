@@ -30,6 +30,8 @@ using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
 using Rock.Model;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
@@ -116,6 +118,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
         #region Constructors
 
+        /// <summary>
+        /// Creates a new instance of <see cref="CheckInKiosk"/>.
+        /// </summary>
         public CheckInKiosk()
         {
             GroupTypeRoleAdultId = new Lazy<int>( () => GroupTypeCache
@@ -389,7 +394,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Select( a => new ActiveAttendanceBag
                 {
                     Id = a.AttendanceId,
-                    AreaId = a.GroupTypeId,
                     GroupId = a.GroupId,
                     LocationId = a.LocationId,
                     Status = a.Status
@@ -522,49 +526,14 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .ToList();
         }
 
-        private ListItemBag GetGradeBag( int? gradeOffset )
-        {
-            if ( !gradeOffset.HasValue || gradeOffset < 0 )
-            {
-                return null;
-            }
-
-            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid(), RockContext );
-            var grade = schoolGrades.DefinedValues
-                .OrderBy( a => a.Value.AsInteger() )
-                .Where( a => a.Value.AsInteger() >= gradeOffset.Value )
-                .FirstOrDefault();
-
-            if ( grade == null )
-            {
-                return null;
-            }
-
-            return new ListItemBag
-            {
-                Value = grade.Value.ToString(),
-                Text = grade.Description
-            };
-        }
-
-        private PhoneNumberBoxWithSmsControlBag GetPhoneNumberBag( Person person )
-        {
-            var phoneNumber = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-
-            if ( phoneNumber == null )
-            {
-                return null;
-            }
-
-            return new PhoneNumberBoxWithSmsControlBag
-            {
-                CountryCode = phoneNumber.CountryCode,
-                Number = phoneNumber.Number,
-                IsMessagingEnabled = phoneNumber.IsMessagingEnabled
-            };
-        }
-
-        private void PopulatePersonAttributeBags( EditFamilyResponseBag responseBag, TemplateConfigurationData template, Model.Group group )
+        /// <summary>
+        /// Populates the person attribute definitions in <paramref name="responseBag"/>
+        /// with the configured values.
+        /// </summary>
+        /// <param name="responseBag">The bag whose attributes should be populated.</param>
+        /// <param name="template">The configuration template to use for which attributes to populate.</param>
+        /// <param name="familyGroup">The group representing the primary family.</param>
+        private void PopulatePersonAttributeBags( EditFamilyResponseBag responseBag, TemplateConfigurationData template, Model.Group familyGroup )
         {
             var tempPerson = new Person();
             var adultAttributeGuids = template.RequiredAttributeGuidsForAdults
@@ -590,7 +559,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 false,
                 a => childAttributeGuids.Contains( a.Guid ) );
 
-            responseBag.FamilyAttributes = group.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+            responseBag.FamilyAttributes = familyGroup.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
 
             foreach ( var attribute in responseBag.AdultAttributes.Values )
             {
@@ -885,6 +854,76 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             }
 
             return ActionOk( response );
+        }
+
+        /// <summary>
+        /// Subscribes to all real time topic channels that are needed for the
+        /// kiosk to track any changes.
+        /// </summary>
+        /// <param name="connectionId">The real-time connection identifier for the client.</param>
+        /// <param name="kioskId">The encrypted kiosk identifier.</param>
+        /// <param name="areaIds">The encrypted area identifiers the kiosk is configured to use.</param>
+        /// <returns>An object that contains additional data required to monitor real-time messages.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> SubscribeToRealTime( string connectionId, string kioskId, List<string> areaIds )
+        {
+            var hasher = IdHasher.Instance;
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk not found." );
+            }
+
+            // Translate all the area IdKey values to Id numbers.
+            var areaIdNumbers = areaIds.Select( id => IdHasher.Instance.GetId( id ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            // Get a map of all group IdKey => Guid values for groups that this
+            // kiosk may see.
+            var groupMap = new GroupService( RockContext )
+                .Queryable()
+                .Where( g => areaIdNumbers.Contains( g.GroupTypeId ) )
+                .Select( g => new
+                {
+                    g.Id,
+                    g.Guid
+                } )
+                .ToList()
+                .Select( g => new IdMapBag
+                {
+                    IdKey = hasher.GetHash( g.Id ),
+                    Guid = g.Guid
+                } )
+                .ToList();
+
+            var locationMap = kiosk.GetAllLocations()
+                .Select( l => new IdMapBag
+                {
+                    IdKey = hasher.GetHash( l.Id ),
+                    Guid = l.Guid
+                } )
+                .ToList();
+
+            // Subscribe the client connection to all the required channels.
+            var topicChannels = RealTimeHelper.GetTopicContext<IEntityUpdated>().Channels;
+
+            foreach ( var location in locationMap )
+            {
+                var channel = EntityUpdatedTopic.GetAttendanceChannelForLocation( location.Guid );
+
+                await topicChannels.AddToChannelAsync( connectionId, channel );
+            }
+
+            await topicChannels.AddToChannelAsync( connectionId, EntityUpdatedTopic.GetAttendanceDeletedChannel() );
+
+            return ActionOk( new SubscribeToRealTimeResponseBag
+            {
+                LocationMap = locationMap,
+                GroupMap = groupMap
+            } );
         }
 
         #endregion

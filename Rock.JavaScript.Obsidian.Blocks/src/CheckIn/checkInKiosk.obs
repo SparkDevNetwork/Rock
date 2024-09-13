@@ -123,10 +123,7 @@
             </ContentTransition>
         </section>
 
-        <PageFooter :title="footerStatusText"
-                    :hideConfigure="isConfigureHidden"
-                    :actions="currentScreenActions"
-                    @configure="onConfigureClick" />
+        <PageFooter :title="footerStatusText" :hideConfigure="isConfigureHidden" :actions="currentScreenActions" @configure="onConfigureClick" />
     </div>
 </template>
 
@@ -156,13 +153,17 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
-    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen, RegistrationScreen, RegistrationScreenData } from "./CheckInKiosk/types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen, RegistrationScreen, RegistrationScreenData, KioskConfiguration } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
+    import { SubscribeToRealTimeResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/subscribeToRealTimeResponseBag";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
+    import { Guid } from "@Obsidian/Types";
 
     const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -174,7 +175,12 @@
 
     // #region Values
 
-    const configuration = ref<KioskConfigurationBag>({});
+    const configuration = ref<KioskConfiguration>({
+        locationIdMap: {},
+        groupIdMap: {},
+        on: watchConfigurationEvent,
+        off: unwatchConfigurationEvent
+    });
     const currentScreen = ref<Screen | SupervisorScreen | RegistrationScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
     const currentSession = shallowRef<CheckInSession>(createNewSession());
@@ -182,7 +188,9 @@
     let currentAttendeeId: string | undefined | null;
     let lastActivity: number = Date.now();
     let idleTimer: number | undefined;
+    let realTimeTopic: ITopic | undefined;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
+    const configurationEvents: Record<string, unknown[]> = {};
 
     const supervisorData = ref<SupervisorScreenData>({ pinCode: "" });
     const supervisorScreens = ref<{ screen: SupervisorScreen, component: VueComponent }[]>([
@@ -278,7 +286,13 @@
             const result = await invokeBlockAction<KioskConfigurationBag>("GetKioskConfiguration", data);
 
             if (result.isSuccess && result.data) {
-                configuration.value = result.data;
+                configuration.value = {
+                    ...result.data,
+                    locationIdMap: configuration.value.locationIdMap,
+                    groupIdMap: configuration.value.groupIdMap,
+                    on: watchConfigurationEvent,
+                    off: watchConfigurationEvent
+                };
                 navigateToScreen(Screen.Welcome);
             }
             else {
@@ -287,6 +301,55 @@
         }
         catch {
             redirectToSetupPage();
+        }
+    }
+
+    /**
+     * Adds a new callback to the named configuration event.
+     *
+     * @param event The name of the event.
+     * @param callback The callback function to be called.
+     */
+    function watchConfigurationEvent(event: string, callback: unknown): void {
+        if (!configurationEvents[event]) {
+            configurationEvents[event] = [];
+        }
+
+        configurationEvents[event].push(callback);
+    }
+
+    /**
+     * Removes a callback from the named configuration event.
+     *
+     * @param event The name of the event.
+     * @param callback The callback function to no longer be called.
+     */
+    function unwatchConfigurationEvent(event: string, callback: unknown): void {
+        if (configurationEvents[event]) {
+            const index = configurationEvents[event].indexOf(callback);
+
+            if (index >= 0) {
+                configurationEvents[event].splice(index, 1);
+            }
+        }
+    }
+
+    /**
+     * Emits the named configuration event.
+     *
+     * @param event The name of the event.
+     * @param args The arguments to pass to the callbacks.
+     */
+    function emitConfigurationEvent(event: string, ...args: unknown[]): void {
+        const callbacks = configurationEvents[event];
+
+        if (!callbacks) {
+            return;
+        }
+
+        for (const callback of callbacks) {
+            const fn = callback as (...args: unknown[]) => void;
+            fn(...args);
         }
     }
 
@@ -320,8 +383,54 @@
 
             currentSession.value = createNewSession();
             previousScreens.value = [];
+
+            // If we lost real-time connection, force a reconnect.
+            if (realTimeTopic?.isDisconnected) {
+                const url = window.location.href;
+                window.location.href = url;
+            }
         }
     }
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function setupRealTime(): Promise<void> {
+        realTimeTopic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
+
+        const request = {
+            connectionId: realTimeTopic.connectionId,
+            kioskId: configuration.value.kiosk?.id,
+            areaIds: configuration.value.areas?.map(a => a.id)
+        };
+
+        realTimeTopic.on("attendanceUpdated", onAttendanceUpdated);
+        realTimeTopic.on("attendanceDeleted", onAttendanceDeleted);
+
+        const result = await invokeBlockAction<SubscribeToRealTimeResponseBag>("SubscribeToRealTime", request);
+
+        if (result.isSuccess) {
+            if (result.data?.locationMap) {
+                for (const loc of result.data.locationMap) {
+                    if (loc.guid && loc.idKey) {
+                        configuration.value.locationIdMap[loc.guid] = loc.idKey;
+                    }
+                }
+            }
+            if (result.data?.groupMap) {
+                for (const loc of result.data.groupMap) {
+                    if (loc.guid && loc.idKey) {
+                        configuration.value.groupIdMap[loc.guid] = loc.idKey;
+                    }
+                }
+            }
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
 
     function onUpdateActions(actions: KioskButton[], source: Screen | SupervisorScreen | RegistrationScreen): void {
         if (currentScreen.value === source) {
@@ -349,7 +458,6 @@
     }
 
     function onBack(): void {
-        console.log(previousScreens.value);
         currentSession.value = previousScreens.value[previousScreens.value.length - 1];
 
         var newPreviousScreens: CheckInSession[] = [...previousScreens.value];
@@ -373,12 +481,63 @@
      * back to the welcome screen.
      */
     function onIdleTimerCheck(): void {
-        if (currentScreen.value === Screen.Welcome || currentScreen.value >= SupervisorScreen.Login) {
+        if (currentScreen.value === Screen.Welcome) {
+            if (realTimeTopic?.isDisconnected) {
+                // Redirect back to ourselves to try and reconnect.
+                const url = window.location.href;
+                window.location.href = url;
+            }
+
+            return;
+        }
+        if (currentScreen.value >= SupervisorScreen.Login) {
             return;
         }
 
         if (Date.now() - lastActivity > 20000) {
             navigateToScreen(Screen.Welcome);
+        }
+    }
+
+    /**
+     * Called when we receive a RealTime message that an attendance record
+     * has been created or updated.
+     *
+     * @param attendance The details about the attendance record.
+     */
+    function onAttendanceUpdated(attendance: AttendanceUpdatedMessageBag): void {
+        emitConfigurationEvent("attendanceUpdated", attendance);
+
+        if (supervisorData.value?.counts && attendance.isNew) {
+            // Add the attendance to the supervisor data.
+            const locationId = configuration.value.locationIdMap[attendance.locationGuid ?? ""];
+            const groupId = configuration.value.groupIdMap[attendance.groupGuid ?? ""];
+            if (locationId && groupId) {
+                supervisorData.value.counts.attendance?.push({
+                    id: attendance.attendanceIdKey,
+                    locationId: locationId,
+                    groupId: groupId,
+                    status: attendance.checkInStatus
+                });
+            }
+        }
+    }
+
+    /**
+     * Called when we receive a RealTime message that an attendance record has
+     * been deleted from the system.
+     *
+     * @param attendanceGuid The unique identifier of the attendance record.
+     * @param attendance The details about the attendance record.
+     */
+    function onAttendanceDeleted(_attendanceGuid: Guid, attendance?: AttendanceUpdatedMessageBag | null): void {
+        if (supervisorData.value?.counts?.attendance) {
+            // Remove the attendance record from the supervisor data.
+            const index = supervisorData.value.counts.attendance.findIndex(a => a.id === attendance?.attendanceIdKey);
+
+            if (index >= 0) {
+                supervisorData.value.counts.attendance.splice(index, 1);
+            }
         }
     }
 
@@ -470,6 +629,7 @@
 
     // Read our check-in configuration and then start up.
     readConfigurationFromLocalStorage();
+    setupRealTime();
 
     onMounted(() => {
         activityEvents.forEach(ev => {

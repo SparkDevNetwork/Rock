@@ -14,34 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Enums.Event;
+using System;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
 {
     /// <summary>
-    /// A minimal representation of a single attendance record used to track
-    /// counts.
+    /// Identifies a mapping between identifiers for an object.
     /// </summary>
-    public class ActiveAttendanceBag
+    public class IdMapBag
     {
         /// <summary>
-        /// The encrypted identifier of the attendance record.
+        /// The encrypted identifier that represents the same item as the
+        /// unique identifier.
         /// </summary>
-        public string Id { get; set; }
+        public string IdKey { get; set; }
 
         /// <summary>
-        /// The encrypted identifier of the group used for check-in.
+        /// The unique identifier the represents the same item as the
+        /// encrypted identifier.
         /// </summary>
-        public string GroupId { get; set; }
-
-        /// <summary>
-        /// The encrypted identifier of the location used for check-in.
-        /// </summary>
-        public string LocationId { get; set; }
-
-        /// <summary>
-        /// The status of the attendance record.
-        /// </summary>
-        public CheckInStatus Status { get; set; }
+        public Guid Guid { get; set; }
     }
 }
