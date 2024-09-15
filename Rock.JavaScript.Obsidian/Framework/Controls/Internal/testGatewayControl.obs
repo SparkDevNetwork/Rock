@@ -1,7 +1,13 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div style="max-width: 600px; margin-left: auto; margin-right: auto;">
-        <TextBox label="Credit Card" v-model="cardNumber" />
+        <TextBox label="Credit Card" v-model="cardNumber" :maxLength="16">
+            <template #inputGroupPrepend>
+                <div class="input-group-addon">
+                    <i class="fa fa-credit-card"></i>
+                </div>
+            </template>
+        </TextBox>
     </div>
 </template>
 

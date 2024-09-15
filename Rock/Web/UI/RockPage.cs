@@ -35,6 +35,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -1240,6 +1241,12 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    // The Short Link Modal in the System Dialogs need the page to have obsidian.
+                    if ( canAdministratePage )
+                    {
+                        _pageNeedsObsidian = true;
+                    }
                     canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                     // If the current person isn't allowed to edit or administrate the page, check to see if they are being impersonated by someone who
@@ -1702,6 +1709,26 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
                             aShortLink.Controls.Add( iShortLink );
                             iShortLink.Attributes.Add( "class", "fa fa-link" );
+
+                            // Obsidian ShortLink Properties - TO BE UNCOMMENTED IN v17
+/*
+                            var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
+    }});
+}});";
+                            HtmlGenericControl aObsidianShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aObsidianShortLink );
+                            aObsidianShortLink.ID = "aObsidianShortLink";
+                            aObsidianShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aObsidianShortLink.Attributes.Add( "class", "btn properties" );
+                            aObsidianShortLink.Attributes.Add( "href", "#" );
+                            aObsidianShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
+                            aObsidianShortLink.Attributes.Add( "Title", "Add Obsidian Short Link" );
+                            HtmlGenericControl iObsidianShortLink = new HtmlGenericControl( "i" );
+                            aObsidianShortLink.Controls.Add( iObsidianShortLink );
+                            iObsidianShortLink.Attributes.Add( "class", "fa fa-link" );
+*/
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -2555,10 +2582,21 @@ Sys.Application.add_load(function () {
             // If we have identified a logged-in user, record the page interaction immediately and return.
             if ( CurrentPerson != null )
             {
+                var interactionInfo = new InteractionTransactionInfo
+                {
+                    InteractionTimeToServe = _tsDuration.TotalSeconds,
+                    InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
+                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms()
+                };
+
+                // If we have a UTM cookie, add the information to the interaction.
+                var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( this.Request );
+                UtmHelper.AddUtmInfoToInteractionTransactionInfo( interactionInfo, utmInfo );
+
                 var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                     this.Site,
                     _pageCache,
-                    new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
+                    interactionInfo );
 
                 pageViewTransaction.Enqueue();
 
@@ -2894,9 +2932,10 @@ Sys.Application.add_load(function () {
         {
             Literal favIcon = new Literal();
             favIcon.Mode = LiteralMode.PassThrough;
-            var url = ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" );
+            var baseUrl = FileUrlHelper.GetImageUrl( binaryFileId );
+            var url = ResolveRockUrl( $"{baseUrl}&width={size}&height={size}&mode=crop&format=png" );
             favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
-
+             
             AddHtmlLink( favIcon );
         }
 

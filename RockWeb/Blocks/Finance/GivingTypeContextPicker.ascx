@@ -18,10 +18,8 @@
             </li>
         </ul>
 
-        <div class="row">
-            <div class="col-md-4">
-                <Rock:RockDropDownList runat="server" ID="ddlGivingTypes" Visible="false" OnSelectedIndexChanged="ddlGivingTypes_SelectedIndexChanged" AutoPostBack="true" />
-            </div>
+        <div class="nav navbar-nav contextsetter givingtype-context-setter">
+            <Rock:RockDropDownList runat="server" ID="ddlGivingTypes" Visible="false" OnSelectedIndexChanged="ddlGivingTypes_SelectedIndexChanged" AutoPostBack="true" />
         </div>
 
     </ContentTemplate>

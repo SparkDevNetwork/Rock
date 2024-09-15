@@ -47,6 +47,13 @@ export type FieldFilterRuleBag = {
     guid: Guid;
 
     /**
+     * The property path from the main object being filtered to the object
+     * that contains the property or attribute. This may be null or
+     * an empty string, which means the main object is used.
+     */
+    path?: string | null;
+
+    /**
      * The property unique name to use as the left-hand side value if
      * Rock.ViewModels.Reporting.FieldFilterRuleBag.SourceType specifies a Property.
      */

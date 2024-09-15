@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-panel">
+        <AttendeeBanner v-if="person"
+                        :person="person" />
+
+        <div v-if="title || subtitle" class="panel-header">
+            <h1 v-if="!person" class="title">{{ title }}</h1>
+            <h2 v-else class="title">{{ title }}</h2>
+
+            <div class="subtitle">{{ subtitle }}</div>
+        </div>
+        <div v-else class="panel-header" v-html="parsedHeader"></div>
+
+        <div class="body">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AttendeeBanner from "./attendeeBanner.partial.obs";
+    import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+    import { PropType, computed } from "vue";
+    import { markdown } from "./utils.partial";
+
+    const props = defineProps({
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        subtitle: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        template: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        person: {
+            type: Object as PropType<PersonBag | null>,
+            required: false
+        }
+    });
+
+    const parsedHeader = computed((): string => {
+        return markdown(props.template);
+    });
+</script>

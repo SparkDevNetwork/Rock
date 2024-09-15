@@ -480,9 +480,16 @@ $('.template-form > .panel-body').on('validation-error', function() {
             Literal literal = sender as Literal;
             RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
 
-            if ( field != null && literal != null && field.FieldSource != RegistrationFieldSource.PersonField )
+            if ( field != null && literal != null )
             {
-                literal.Text = field.Attribute == null ? "<span class=\"label label-danger\">Invalid Attribute</span>" : field.Attribute.Name;
+                if ( field.FieldSource != RegistrationFieldSource.PersonField )
+                {
+                    literal.Text = field.Attribute == null ? "<span class=\"label label-danger\">Invalid Attribute</span>" : field.Attribute.Name;
+                }
+                else
+                {
+                    literal.Text = field.PersonFieldType.ConvertToString();
+                }
             }
         }
 

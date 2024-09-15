@@ -88,6 +88,23 @@ namespace Rock.Lava
             return valueIfInvalid;
         }
 
+        /// <summary>
+        /// Try to convert an input object to a boolean value, or throw an exception if unsuccessful.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="returnDefaultIfNullOrEmpty"></param>
+        /// <returns></returns>
+        public static bool ConvertToBooleanOrThrow( this object input, bool returnDefaultIfNullOrEmpty = true )
+        {
+            var value = ConvertToBooleanOrDefault( input, returnDefaultIfNullOrEmpty ? false : ( bool? ) null, null );
+            if ( value == null )
+            {
+                throw new Exception( $"Invalid boolean value. [Value={input}]" );
+            }
+
+            return value.Value;
+        }
+
         #region Integers
 
         /// <summary>

@@ -21,6 +21,8 @@ using System.Text;
 using System.Web;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using Rock.Data;
+using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -173,14 +175,12 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( string initials, int? photoId, int? age, Gender gender, int? recordTypeValueId, AgeClassification? ageClassification, int? size = null )
         {
-            string virtualPath = string.Empty;
+            var virtualPath = string.Empty;
 
             // If there are no initials provided we'll change the style of the avatar to be an icon
             var stylingOverride = string.Empty;
-            if ( initials.IsNullOrWhiteSpace() )
-            {
-                stylingOverride = "&Style=icon";
-            }
+
+            SecuritySettingsService securitySettingsService = new SecuritySettingsService();
 
             // Determine if we need to provide a size
             var sizeParamter = string.Empty;
@@ -190,7 +190,22 @@ namespace Rock.Model
                 sizeParamter = $"&Size={size}";
             }
 
-            virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            if ( initials.IsNullOrWhiteSpace() )
+            {
+                stylingOverride = "&Style=icon";
+            }
+
+            var disablePredictableIds = securitySettingsService.SecuritySettings.DisablePredictableIds;
+
+            if ( disablePredictableIds && photoId.HasValue )
+            {
+                var photoIdHash = IdHasher.Instance.GetHash( photoId.Value );
+                virtualPath = $"~/GetAvatar.ashx?fileIdKey={photoIdHash}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            }
+            else
+            {
+                virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            }
 
             if ( System.Web.HttpContext.Current == null )
             {
@@ -291,7 +306,7 @@ namespace Rock.Model
         {
             var photoUrl = new StringBuilder();
 
-            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+            string baseUrl = Rock.Configuration.RockApp.Current.HostingSettings.VirtualRootPath;
             string altText = personPhotoImageTagArgs.AltText;
             string className = personPhotoImageTagArgs.ClassName;
             int? photoId = personPhotoImageTagArgs.PhotoId;
@@ -311,7 +326,7 @@ namespace Rock.Model
 
             if ( photoId.HasValue )
             {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", photoId );
+                photoUrl.Append( FileUrlHelper.GetImageUrl( photoId.Value ) );
                 if ( maxWidth.HasValue )
                 {
                     photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
@@ -326,12 +341,12 @@ namespace Rock.Model
             {
                 if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    photoUrl.Append( "Assets/Images/business-no-photo.svg?" );
+                    photoUrl.Append( baseUrl + "Assets/Images/business-no-photo.svg?" );
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    photoUrl.Append( GetPhotoPath( gender, false ) );
+                    photoUrl.Append( baseUrl + GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -347,12 +362,12 @@ namespace Rock.Model
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        photoUrl.Append( GetPhotoPath( gender, false ) );
+                        photoUrl.Append( baseUrl + GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        photoUrl.Append( GetPhotoPath( gender, true ) );
+                        photoUrl.Append( baseUrl + GetPhotoPath( gender, true ) );
                     }
                 }
             }

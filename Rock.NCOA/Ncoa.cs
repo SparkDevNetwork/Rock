@@ -195,7 +195,7 @@ namespace Rock.NCOA
         /// Resume a pending export: Checks if the export is complete. If the export is complete, then download the export, process the addresses and sent a notification.
         /// </summary>
         /// <param name="sparkDataConfig">The spark data configuration.</param>
-        public (int recordsUpdated, string errorMessage) PendingExport( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords, SparkDataConfig sparkDataConfig = null )
+        public (string successMessage, string errorMessage) PendingExport( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords, SparkDataConfig sparkDataConfig = null )
         {
             if ( sparkDataConfig == null )
             {
@@ -207,21 +207,29 @@ namespace Rock.NCOA
                 var ncoaHistoryList = ncoaReturnRecords.Select( r => r.ToNcoaHistory() ).ToList();
                 FilterDuplicateLocations( ncoaHistoryList );
 
-                // Making sure that the database is empty to avoid adding duplicate data.
-                using (var rockContext = new RockContext())
-                {
-                    var ncoaHistoryService = new NcoaHistoryService(rockContext);
-                    ncoaHistoryService.DeleteRange(ncoaHistoryService.Queryable());
-                    rockContext.SaveChanges();
- 
-                    if (ncoaReturnRecords != null && ncoaReturnRecords.Count != 0)
-                    {
-                        ncoaHistoryService.AddRange(ncoaHistoryList);
-                        rockContext.SaveChanges();
-                    }
-                }
+                ncoaHistoryList.ForEach( r => {
+                    r.OriginalStreet1 = NormalizeInput( r.OriginalStreet1 );
+                    r.OriginalStreet2 = NormalizeInput( r.OriginalStreet2 );
+                    r.OriginalCity = NormalizeInput( r.OriginalCity );
+                    r.OriginalState = NormalizeInput( r.OriginalState );
+                    r.OriginalPostalCode = NormalizeInput( r.OriginalPostalCode );
+                } );
 
-                var (recordsUpdated, errorMessage) = ProcessNcoaResults( inactiveReason, markInvalidAsPrevious, mark48MonthAsPrevious, minMoveDistance, ncoaReturnRecords );
+                // Making sure that the database is empty to avoid adding duplicate data.
+                using ( var rockContext = new RockContext() )
+                {
+                    var ncoaHistoryService = new NcoaHistoryService( rockContext );
+                    ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
+                    rockContext.SaveChanges();
+
+                    if ( ncoaReturnRecords != null && ncoaReturnRecords.Count != 0 )
+                    {
+                        ncoaHistoryService.AddRange( ncoaHistoryList );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                var (successMessage, errorMessage) = ProcessNcoaResults( inactiveReason, markInvalidAsPrevious, mark48MonthAsPrevious, minMoveDistance, ncoaReturnRecords );
 
                 sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
                 sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
@@ -230,14 +238,24 @@ namespace Rock.NCOA
 
                 if ( !string.IsNullOrEmpty( errorMessage ) )
                 {
-                    return (0, errorMessage);
+                    return ("", errorMessage);
                 }
-                return (recordsUpdated, "");
+                return (successMessage, "");
             }
             catch ( Exception ex )
             {
                 throw new NoRetryAggregateException( "Failed to process NCOA export.", ex );
             }
+        }
+
+        /// <summary>
+        /// Checks for the case where the Ncoa import file contains data formatted as "null".
+        /// </summary>
+        /// <param name="input">The imported column from Ncoa being checked</param>
+        /// <returns></returns>
+        private string NormalizeInput( string input )
+        {
+            return input == "null" ? string.Empty : input;
         }
 
         /// <summary>
@@ -317,40 +335,43 @@ namespace Rock.NCOA
         /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="ncoaReturnRecords">The NCOA return records.</param>
-        public (int recordsUpdated, string errorMessage) ProcessNcoaResults( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords )
+        public (string successMessage, string errorMessage) ProcessNcoaResults( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords )
         {
             // Get the ID's for the "Home" and "Previous" family group location types
             int? homeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
             int? previousValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() )?.Id;
             var campusGeoPoints = GetCampusGeoPoints();
 
-            var (invalidAddressRecordsUpdated, invalidAddressErrorMessage) = ProcessNcoaResultsInvalidAddress( markInvalidAsPrevious, previousValueId);
-            var (marked48MonthMoveRecordsUpdated, marked48MonthMoveErrorMessage) = ProcessNcoaResults48MonthMove( mark48MonthAsPrevious, previousValueId);
-            var (familyMoveRecordsUpdated, familyMoveErrorMessage) = ProcessNcoaResultsFamilyMove( inactiveReason, minMoveDistance, homeValueId, previousValueId, ncoaReturnRecords, campusGeoPoints);
-            var (individualMoveRecordsUpdated, individualMoveErrorMessage) = ProcessNcoaResultsIndividualMove( inactiveReason, minMoveDistance, homeValueId, previousValueId, ncoaReturnRecords, campusGeoPoints);
-
-            var totalUpdatedRecords = invalidAddressRecordsUpdated + marked48MonthMoveRecordsUpdated + familyMoveRecordsUpdated + individualMoveRecordsUpdated;
+            var invalidAddressErrorMessage = ProcessNcoaResultsInvalidAddress( markInvalidAsPrevious, previousValueId );
+            var marked48MonthMoveErrorMessage = ProcessNcoaResults48MonthMove( mark48MonthAsPrevious, previousValueId );
+            var familyMoveErrorMessage = ProcessNcoaResultsFamilyMove( inactiveReason, minMoveDistance, homeValueId, previousValueId, ncoaReturnRecords, campusGeoPoints );
+            var individualMoveErrorMessage = ProcessNcoaResultsIndividualMove( inactiveReason, minMoveDistance, homeValueId, previousValueId, ncoaReturnRecords, campusGeoPoints );
 
             if ( !string.IsNullOrEmpty( invalidAddressErrorMessage ) )
             {
-                return (0, invalidAddressErrorMessage);
+                return ("", invalidAddressErrorMessage);
             }
 
             if ( !string.IsNullOrEmpty( marked48MonthMoveErrorMessage ) )
             {
-                return (0, marked48MonthMoveErrorMessage);
+                return ("", marked48MonthMoveErrorMessage);
             }
 
             if ( !string.IsNullOrEmpty( familyMoveErrorMessage ) )
             {
-                return (0, familyMoveErrorMessage);
+                return ("", familyMoveErrorMessage);
             }
 
             if ( !string.IsNullOrEmpty( individualMoveErrorMessage ) )
             {
-                return (0, individualMoveErrorMessage);
+                return ("", individualMoveErrorMessage);
             }
-            return (totalUpdatedRecords, "");
+            using ( var rockContext = new RockContext() )
+            {
+                NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
+                var successMessage = $"NCOA request processed, {ncoaHistoryService.Count()} {( ncoaHistoryService.Count() == 1 ? "address" : "addresses" )} processed, {ncoaHistoryService.MovedCount()} {( ncoaHistoryService.MovedCount() > 1 ? "were" : "was" )} marked as 'moved'";
+                return (successMessage, "");
+            }
         }
 
         /// <summary>
@@ -388,7 +409,7 @@ namespace Rock.NCOA
         /// </summary>
         /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
-        private (int invalidAddressRecordsUpdated, string invalidAddressErrorMessage) ProcessNcoaResultsInvalidAddress( bool markInvalidAsPrevious, int? previousValueId )
+        private string ProcessNcoaResultsInvalidAddress( bool markInvalidAsPrevious, int? previousValueId )
         {
             List<int> ncoaIds = null;
             using ( var rockContext = new RockContext() )
@@ -449,20 +470,19 @@ namespace Rock.NCOA
 
                         try
                         {
-                            
-                            return ( rockContext.SaveChanges(), "" ) ;
-                            
+                            rockContext.SaveChanges();
+
                         }
                         catch ( Exception ex )
                         {
                             string errorMessage = string.Format( "NCOA Failed to set an address as invalid. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId );
                             ExceptionLogService.LogException( new AggregateException( errorMessage, ex ) );
-                            return ( 0, errorMessage );
+                            return errorMessage;
                         }
                     }
                 }
             }
-            return (0, "");
+            return "";
         }
 
         /// <summary>
@@ -504,7 +524,7 @@ namespace Rock.NCOA
         /// </summary>
         /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
-        private (int marked48MonthMoveRecordsUpdated, string marked48MonthMoveErrorMessage) ProcessNcoaResults48MonthMove( bool mark48MonthAsPrevious, int? previousValueId )
+        private string ProcessNcoaResults48MonthMove( bool mark48MonthAsPrevious, int? previousValueId )
         {
             List<int> ncoaIds = null;
             // Process the '48 Month Move' NCOA Types
@@ -567,18 +587,18 @@ namespace Rock.NCOA
 
                         try
                         {
-                            return (rockContext.SaveChanges(), "");
+                            rockContext.SaveChanges();
                         }
                         catch ( Exception ex )
                         {
                             var marked48MonthMoveErrorMessage = string.Format( "NCOA Failed to apply 48 months family move. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId );
                             ExceptionLogService.LogException( new AggregateException( marked48MonthMoveErrorMessage, ex ) );
-                            return (0, marked48MonthMoveErrorMessage);
+                            return marked48MonthMoveErrorMessage;
                         }
                     }
                 }
             }
-            return (0, "");
+            return "";
         }
 
         /// <summary>
@@ -593,7 +613,7 @@ namespace Rock.NCOA
         /// <param name="previousValueId">The previous value identifier.</param>
         /// <param name="ncoaReturnRecords">The NCOA return records.</param>
         /// <param name="campusGeoPoints">The campus Geo points.</param>
-        private (int familyMoveRecordsUpdated, string familyMoveErrorMessage) ProcessNcoaResultsFamilyMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
+        private string ProcessNcoaResultsFamilyMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (The 'Family' move types will be processed first)
@@ -684,18 +704,18 @@ namespace Rock.NCOA
 
                         try
                         {
-                            return (rockContext.SaveChanges(), "");
+                            rockContext.SaveChanges();
                         }
                         catch ( Exception ex )
                         {
                             var familyMoveErrorMessage = string.Format( "NCOA Failed to apply family move. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId );
                             ExceptionLogService.LogException( new AggregateException( familyMoveErrorMessage, ex ) );
-                            return (0, familyMoveErrorMessage);
+                            return familyMoveErrorMessage;
                         }
                     }
                 }
             }
-            return (0, "");
+            return "";
         }
 
         /// <summary>
@@ -883,7 +903,7 @@ namespace Rock.NCOA
         /// <param name="previousValueId">The previous value identifier.</param>
         /// <param name="ncoaReturnRecords">The NCOA return records.</param>
         /// <param name="campusGeoPoints">The campus Geo points.</param>
-        private (int individualMoveRecordsUpdated, string individualMoveErrorMessage) ProcessNcoaResultsIndividualMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints)
+        private string ProcessNcoaResultsIndividualMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (For the remaining Individual move types that weren't updated with the family move)
@@ -988,19 +1008,19 @@ namespace Rock.NCOA
 
                         try
                         {
-                            return (rockContext.SaveChanges(), "");
+                            rockContext.SaveChanges();
                         }
                         catch ( Exception ex )
                         {
                             var personAlias = personAliasService.Get( ncoaHistory.PersonAliasId );
                             var individualMoveErrorMessage = string.Format( "NCOA Failed to apply individual move. NcoaHistoryId:'{0}' PersonId: '{1}'", ncoaHistory.Id, personId );
                             ExceptionLogService.LogException( new AggregateException( individualMoveErrorMessage, ex ) );
-                            return (0, individualMoveErrorMessage);
+                            return individualMoveErrorMessage;
                         }
                     }
                 }
             }
-            return (0, "");
+            return "";
         }
 
         #endregion

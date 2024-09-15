@@ -1,0 +1,106 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="ability-level-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :person="session.getCurrentAttendee()?.person">
+            <div class="button-list">
+                <RockButton v-for="abilityLevel in abilityLevels"
+                            btnType="primary"
+                            class="ability-level-button"
+                            @click="onAbilityLevelClick(abilityLevel)">
+                    <span class="title">{{ abilityLevel.name }}</span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/abilityLevelOpportunityBag";
+    import { KioskButton } from "./types.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const title = ref("Ability Level");
+    let isSelectingValue = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const subtitle = computed((): string => {
+        return `Select the ability level for ${props.session.getCurrentAttendee()?.person?.nickName} from the list below`;
+    });
+
+    const abilityLevels = computed((): AbilityLevelOpportunityBag[] => {
+        return props.session.getAvailableAbilityLevels();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Handles the click event for an ability level button.
+     *
+     * @param abilityLevel The ability level that was selected.
+     */
+    async function onAbilityLevelClick(abilityLevel: AbilityLevelOpportunityBag): Promise<void> {
+        // Prevent tapping two different buttons.
+        if (isSelectingValue || !abilityLevel.id) {
+            return;
+        }
+
+        try {
+            isSelectingValue = true;
+
+            const newSession = props.session.withSelectedAbilityLevel(abilityLevel.id);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isSelectingValue = false;
+        }
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

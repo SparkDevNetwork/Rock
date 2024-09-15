@@ -1,0 +1,171 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="screenElement" class="search-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+
+            <TextBox v-model="searchTerm"
+                     class="search-term"
+                     @keypress.enter="onSearchClick" />
+
+            <NumberPad v-if="hasNumberPad"
+                       v-model="searchTerm"
+                       documentListener
+                       @submit="onSearchClick" />
+
+            <RockButton ref="searchButtonElement"
+                        class="search-button"
+                        btnType="primary"
+                        :disabled="isSearchDisabled"
+                        @click="onSearchClick">
+                Search
+            </RockButton>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import NumberPad from "./numberPad.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+    }>();
+
+    // #region Values
+
+    const screenElement = ref<HTMLElement>();
+
+    const title = ref("");
+    const subtitle = ref("");
+    const searchTerm = ref("");
+    const isSearching = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Determines if we have a number pad on this screen. */
+    const hasNumberPad = computed((): boolean => {
+        return props.configuration.template?.familySearchType !== FamilySearchMode.Name;
+    });
+
+    /** Determines if the search button is currently disabled. */
+    const isSearchDisabled = computed((): boolean => {
+        const template = props.configuration.template;
+
+        if (!template || searchTerm.value.length === 0 || isSearching.value) {
+            return true;
+        }
+
+        // Check if the search term has any alpha characters.
+        const isAlpha = /[^0-9()+ -]/.test(searchTerm.value);
+        const numberOnly = searchTerm.value.replace(/[^0-9]/g, "");
+
+        // If we are searching for phone number only and they entered any
+        // non-numeric characters then disable.
+        if (template.familySearchType === FamilySearchMode.PhoneNumber && isAlpha) {
+            return true;
+        }
+
+        // If we do not have any alpha characters then validate the phone
+        // number length requirements.
+        if (!isAlpha) {
+            if (template.minimumPhoneNumberLength && numberOnly.length < template.minimumPhoneNumberLength) {
+                return true;
+            }
+
+            if (template.maximumPhoneNumberLength && numberOnly.length > template.maximumPhoneNumberLength) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Updates the text values displayed on the screen.
+     */
+    function updateText(): void {
+        if (props.configuration.template?.familySearchType === FamilySearchMode.Name) {
+            title.value = "Search By Name";
+            subtitle.value = "Please enter part of a name.";
+        }
+        else if (props.configuration.template?.familySearchType === FamilySearchMode.NameAndPhone) {
+            title.value = "Search By Phone Or Name";
+            subtitle.value = `Enter at least ${props.configuration.template.minimumPhoneNumberLength} digits of a phone number or part of a name.`;
+        }
+        else {
+            title.value = "Search By Phone";
+            subtitle.value = `Please enter at least ${props.configuration.template?.minimumPhoneNumberLength} digits of your phone number to search.`;
+        }
+    }
+
+    /**
+     * Handles the click even for the search button. This starts a search for
+     * the term by calling the API endpoint.
+     */
+    async function onSearchClick(): Promise<void> {
+        isSearching.value = true;
+
+        let searchValue = searchTerm.value;
+        const isAlpha = /[^0-9()+ -]/.test(searchValue);
+
+        // If this looks like a phone number then strip out the extra characters.
+        if (!isAlpha) {
+            searchValue = searchValue.replace(/[^0-9]/g, "");
+        }
+
+        try {
+            const newSession = await props.session.withFamilySearch(searchValue, props.configuration.template?.familySearchType ?? FamilySearchMode.NameAndPhone);
+
+            if (!newSession.families || newSession.families.length === 0) {
+                await alert("There were not any families that match the search criteria.");
+                return;
+            }
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+
+        isSearching.value = false;
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        if (props.configuration.template?.familySearchType === FamilySearchMode.Name) {
+            (screenElement.value?.querySelector("input.search-term") as HTMLElement)?.focus();
+        }
+    });
+
+    watch(() => props.configuration, updateText);
+
+    updateText();
+</script>

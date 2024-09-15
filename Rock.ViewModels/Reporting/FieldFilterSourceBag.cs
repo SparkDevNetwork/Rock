@@ -50,6 +50,13 @@ namespace Rock.ViewModels.Reporting
         public string Category { get; set; }
 
         /// <summary>
+        /// The property path from the main object being filtered to the object
+        /// that contains the property or attribute. This may be <c>null</c> or
+        /// an empty string, which means the main object is used.
+        /// </summary>
+        public string Path { get; set; }
+
+        /// <summary>
         /// Gets or sets the attribute if the source type is Attribute.
         /// </summary>
         /// <value>The attribute if the source type is Attribute.</value>
@@ -59,6 +66,6 @@ namespace Rock.ViewModels.Reporting
         /// Gets or sets the property if the source type is Property.
         /// </summary>
         /// <value>The property if the source type is Property.</value>
-        public FieldFilterPropertyBag Property { get; set; }
+        public FieldFilterPublicPropertyBag Property { get; set; }
     }
 }

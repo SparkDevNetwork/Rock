@@ -14,6 +14,8 @@ using Rock.Communication;
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.Communications;
+using Rock.Tests.Integration.Modules.Communications.Transport;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
@@ -21,6 +23,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Modules.Communications
 {
     [TestClass]
+    [TestCategory( TestFeatures.Communications )]
     public class EmailTransportComponentTests : DatabaseTestsBase
     {
         private static readonly byte[] _testTextFileBytes = File.ReadAllBytes( @"TestData\TextDoc.txt" );

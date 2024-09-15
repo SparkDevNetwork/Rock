@@ -1204,7 +1204,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                                if ( filterValues.Any() && filterValues.Last().IsNotNullOrWhiteSpace() )
                                 {
                                     isFilterModeApplied = true;
                                     groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );

@@ -43,6 +43,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the amount due today. */
     amountDueToday?: number | null;
 
+    /** Gets or sets a value indicating whether current family members are shown. */
+    areCurrentFamilyMembersShown: boolean;
+
     /** Gets or sets the campuses available for the user to select. */
     campuses?: ListItemBag[] | null;
 
@@ -58,6 +61,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the current person family unique identifier. */
     currentPersonFamilyGuid?: Guid | null;
 
+    /** Gets or sets the discount code term. */
+    discountCodeTerm?: string | null;
+
     /** Gets or sets a value indicating whether the save account option should be available. */
     enableSaveAccount: boolean;
 
@@ -67,8 +73,14 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the family members. */
     familyMembers?: RegistrationEntryFamilyMemberBag[] | null;
 
+    /** Gets or sets the term for specifying which household or family a person is a member of. */
+    familyTerm?: string | null;
+
     /** Gets or sets the fees. */
     fees?: RegistrationEntryFeeBag[] | null;
+
+    /** Gets or sets the fee term. */
+    feeTerm?: string | null;
 
     /** Gets or sets a value indicating whether [force email update]. */
     forceEmailUpdate: boolean;
@@ -135,6 +147,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets the collection of payment plan frequencies from which a registrant can select. */
     paymentPlanFrequencies?: ListItemBag[] | null;
+
+    /** Gets or sets the plural discount code term. */
+    pluralDiscountCodeTerm?: string | null;
 
     /** Gets or sets the plural fee term. */
     pluralFeeTerm?: string | null;

@@ -1,0 +1,165 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+            <div class="button-list">
+                <RockButton v-for="attendance in attendances"
+                            btnType="primary"
+                            class="attendee-button"
+                            @click="onAttendanceClick(attendance)">
+                    <span class="selection">
+                        <i v-if="isAttendanceSelected(attendance)" class="fa fa-check-square"></i>
+                        <i v-else class="fa fa-square-o"></i>
+                    </span>
+
+                    <span class="avatar" :style="getStyleForAttendance(attendance)"></span>
+
+                    <span class="title">
+                        <span class="name">{{ attendance.person?.fullName }}</span>
+
+                        <span class="opportunity">
+                            <span class="group label label-info">{{ attendance.group?.name }}</span>
+                            <span class="location label label-info">{{ attendance.location?.name }}</span>
+                            <span class="schedule label label-info">{{ attendance.schedule?.name }}</span>
+                        </span>
+                    </span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, CSSProperties, PropType, ref, watch } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
+    import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const selections = ref<string[]>(props.session.currentlyCheckedIn?.map(a => a.id as string) ?? []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.getCurrentFamily()?.name ?? "Checkout";
+    });
+
+    const subtitle = computed((): string => {
+        return `Select the people you would like to checkout`;
+    });
+
+    const attendances = computed((): AttendanceBag[] => {
+        return props.session.currentlyCheckedIn ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            type: "primary",
+            title: "Next",
+            key: "next",
+            class: "next-button",
+            disabled: selections.value.length === 0,
+            handler: onNextClick
+        });
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Determines if the attendee is currently selected.
+     *
+     * @param attendee The attendee.
+     *
+     * @returns true if the attendee is currently selected.
+     */
+    function isAttendanceSelected(attendance: AttendanceBag): boolean {
+        return selections.value.some(s => s === attendance.id);
+    }
+
+    /**
+     * Gets the custom style information for the attendance that should be
+     * applied to the button.
+     *
+     * @param attendee The attendee.
+     *
+     * @returns A collection of CSS property values.
+     */
+     function getStyleForAttendance(attendance: AttendanceBag): CSSProperties {
+        const properties: CSSProperties = {
+            backgroundImage: `url("${attendance.person?.photoUrl}")`
+        };
+
+        return properties;
+    }
+
+    /**
+     * Toggles the selection of an attendance record.
+     *
+     * @param family The family that was selected.
+     */
+     async function onAttendanceClick(attendance: AttendanceBag): Promise<void> {
+        if (isAttendanceSelected(attendance)) {
+            selections.value = selections.value.filter(s => s !== attendance.id);
+        }
+        else if (attendance.id) {
+            selections.value = [attendance.id, ...selections.value];
+        }
+    }
+
+    /**
+     * Validate selections and move to the next screen.
+     */
+    async function onNextClick(): Promise<void> {
+        try {
+            let newSession = await props.session.withCheckoutAttendances(selections.value);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+    }
+
+    // #endregion
+
+    watch([selections], () => {
+        updateActions();
+    });
+
+    updateActions();
+</script>

@@ -1,0 +1,227 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="location-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :person="session.getCurrentAttendee()?.person">
+            <div class="button-list">
+                <RockButton v-for="opportunity in opportunities"
+                            btnType="primary"
+                            class="location-button"
+                            :disabled="isConflictingOpportunitySelected(opportunity)"
+                            @click="onOpportunityClick(opportunity)">
+                    <span class="selection">
+                        <i v-if="isOpportunitySelected(opportunity)" class="fa fa-check-square"></i>
+                        <i v-else class="fa fa-square-o"></i>
+                    </span>
+
+                    <span class="title">
+                        {{ opportunity.text }}
+                    </span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { KioskButton } from "./types.partial";
+    import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const selectedOpportunities = ref(props.session.currentAttendeeId ? props.session.getAttendeeSelections(props.session.currentAttendeeId) : []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.selectedGroup?.name ?? "Location";
+    });
+
+    const subtitle = computed((): string => {
+        return `Select the location you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
+    });
+
+    /**
+     * The collection of all opportunity combinations that are available to the
+     * current attendee. Every valid combination is provided.
+     */
+    const opportunities = computed((): (OpportunitySelectionBag & { text: string })[] => {
+        const items: (OpportunitySelectionBag & { text: string })[] = [];
+
+        if (!props.session.attendeeOpportunities?.areas) {
+            return items;
+        }
+
+        if (!props.session.attendeeOpportunities?.groups) {
+            return items;
+        }
+
+        if (!props.session.attendeeOpportunities?.locations) {
+            return items;
+        }
+
+        if (!props.session.attendeeOpportunities?.schedules) {
+            return items;
+        }
+
+        for (const schedule of props.session.attendeeOpportunities.schedules) {
+            for (const area of props.session.attendeeOpportunities.areas) {
+                for (const group of props.session.attendeeOpportunities.groups) {
+                    if (group.areaId !== area.id || !group.locationIds) {
+                        continue;
+                    }
+
+                    for (const location of props.session.attendeeOpportunities.locations) {
+                        if (!group.locationIds.some(l => l === location.id)) {
+                            continue;
+                        }
+
+                        if (!location.scheduleIds) {
+                            continue;
+                        }
+
+                        if (!location.scheduleIds.some(s => s === schedule.id)) {
+                            continue;
+                        }
+
+                        items.push({
+                            area: area,
+                            group: group,
+                            location: location,
+                            schedule: schedule,
+                            text: `${schedule.name} | ${area.name} | ${group.name} | ${location.name}`
+                        });
+                    }
+                }
+            }
+        }
+
+        return items;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            title: "Next",
+            key: "next",
+            type: "primary",
+            class: "next-button",
+            disabled: false,
+            handler: onNextClick
+        });
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Compares two opportunity selections and checks if they are equal or not.
+     * Ability level is not considered.
+     *
+     * @param a The first opportunity selection.
+     * @param b The second opportunity selection.
+     *
+     * @returns true if the two opportunity selections are the same.
+     */
+    function isOpportunityEqual(a: OpportunitySelectionBag, b: OpportunitySelectionBag): boolean {
+        return a.area?.id === b.area?.id
+            && a.group?.id === b.group?.id
+            && a.location?.id === b.location?.id
+            && a.schedule?.id === b.schedule?.id;
+    }
+
+    /**
+     * Checks if the opportunity selection has been selected by the individual.
+     *
+     * @param opportunity The opportunity selection.
+     *
+     * @returns true if the opportunity selection is currently selected.
+     */
+    function isOpportunitySelected(opportunity: OpportunitySelectionBag): boolean {
+        return selectedOpportunities.value
+            .some(o => isOpportunityEqual(opportunity, o));
+    }
+
+    /**
+     * Checks if there is another opportunity selection in the same schedule
+     * slot as this one.
+     *
+     * @param opportunity The opportunity selection.
+     *
+     * @returns true if the opportunity selection has a conflicting opportunity selection already selected.
+     */
+    function isConflictingOpportunitySelected(opportunity: OpportunitySelectionBag): boolean {
+        return selectedOpportunities.value
+            .some(o => o.schedule?.id === opportunity.schedule?.id
+                && !isOpportunityEqual(o, opportunity));
+    }
+
+    /**
+     * Handles the click event for an opportunity button.
+     *
+     * @param opportunity The opportunity that was selected.
+     */
+    async function onOpportunityClick(opportunity: OpportunitySelectionBag): Promise<void> {
+        if (isOpportunitySelected(opportunity)) {
+            selectedOpportunities.value = selectedOpportunities.value
+                .filter(o => !isOpportunityEqual(o, opportunity));
+        }
+        else if (!isConflictingOpportunitySelected(opportunity)) {
+            selectedOpportunities.value = [...selectedOpportunities.value, opportunity];
+        }
+    }
+
+    /**
+     * Handles the click even for the Next button.
+     */
+    async function onNextClick(): Promise<void> {
+        try {
+            let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value);
+
+            newSession = await newSession.withAttendee(null);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

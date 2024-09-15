@@ -105,7 +105,7 @@
                         };
 
                         if (!parentId) {
-                            req.expandToValues = selectedIds;
+                            req.expandToValues = (selectedIds || []).filter(a => a !== "0");
                         }
                         else {
                             req.parentValue = parentId;

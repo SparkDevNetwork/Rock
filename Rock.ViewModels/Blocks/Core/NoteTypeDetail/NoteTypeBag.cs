@@ -84,7 +84,7 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         /// <summary>
         /// Gets or sets the maximum reply depth.
         /// </summary>
-        public int? MaxReplyDepth { get; set; }
+        public string MaxReplyDepth { get; set; }
 
         /// <summary>
         /// Gets or sets the Name of the NoteType. This property is required.

@@ -213,7 +213,8 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<PersonSignal> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            var personInView = this.RequestContext.GetContextEntity<Person>();
+            return base.GetListQueryable( rockContext ).Where( s => s.PersonId == personInView.Id );
         }
 
         /// <inheritdoc/>

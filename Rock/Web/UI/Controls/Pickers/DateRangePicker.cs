@@ -258,8 +258,8 @@ namespace Rock.Web.UI.Controls
         private void RegisterJavaScript()
         {
             // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
-            var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
-            dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
+            var dateFormat = System.Threading.Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern;
+            dateFormat = dateFormat.Replace( "M", "m" ).Replace( "mmm", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker

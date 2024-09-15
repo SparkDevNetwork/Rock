@@ -1,0 +1,545 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="welcome-screen" :class="welcomeScreenClasses">
+        <div class="promotions">
+            <ImageRotator :promotions="promotions" />
+        </div>
+
+        <RockButton v-if="isKioskOpen" btnType="primary"
+                    class="start-button"
+                    @click="onStartClick">
+            Start
+        </RockButton>
+
+        <RockButton v-if="isKioskOpen"
+                    ref="barcodeButtonElement"
+                    id="barcode-button"
+                    btnType="default"
+                    class="scan-barcode-button">
+            <span class="title">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <mask id="mask0_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+                        <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
+                    </mask>
+                    <g mask="url(#mask0_10_348)">
+                        <path d="M91.875 4.6875H115.312V28.125" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                        <path d="M4.6875 28.125V4.6875H28.125" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                        <path d="M28.125 115.312H4.68751V91.875" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                        <path d="M115.312 91.875V115.312H91.875" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                    </g>
+                    <path d="M50.625 50.625H22.5V22.5H50.625V50.625Z" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <path d="M97.5 50.625H69.375V22.5H97.5V50.625Z" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <path d="M50.625 97.5H22.5V69.375H50.625V97.5Z" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <mask id="mask1_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+                        <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
+                    </mask>
+                    <g mask="url(#mask1_10_348)">
+                        <path d="M92.8125 69.375H102.187" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    </g>
+                    <path d="M83.4375 78.75H92.8125" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <mask id="mask2_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+                        <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
+                    </mask>
+                    <g mask="url(#mask2_10_348)">
+                        <path d="M92.8125 88.125H102.187" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    </g>
+                    <path d="M92.8125 97.5H69.375V69.375H83.4375" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                </svg>
+            </span>
+            <span class="subtitle">Scan Barcode</span>
+        </RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import ImageRotator from "./imageRotator.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { PromotionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/promotionBag";
+    import { KioskStatusBag } from "@Obsidian/ViewModels/CheckIn/kioskStatusBag";
+    import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
+    import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { doesThemeSupportCamera, isIpadAppWithCamera, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
+    import { IRockCheckInNative, KioskButton } from "./types.partial";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "start", session: CheckInSession): void;
+        (event: "updateActions", value: KioskButton[]): void;
+    }>();
+
+    const kioskState = useKioskState();
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    // #region Values
+
+    let documentKeyboardBuffer: string = "";
+    let lastDocumentKeyPressTimestamp: number = 0;
+    let isProcessingScannedCode: boolean = false;
+
+    /** Timer to update the countdown. */
+    let kioskNotOpenYetTimer: number | undefined;
+
+    /** Timer to auto close the kiosk. */
+    let kioskOpenTimer: number | undefined;
+
+    /** Timer to periodically update the kiosk status. */
+    let updateKioskStatusTimer: number | undefined;
+    let isUpdatingKioskStatus = false;
+    let isKioskStatusUpdatePending = false;
+
+    let codeScanner: Html5Qrcode | undefined = undefined;
+
+    const promotions = ref<PromotionBag[]>([]);
+    const kioskStatus = ref<KioskStatusBag>();
+
+    const barcodeButtonElement = ref<HTMLElement>();
+    const cameraDeviceId = ref<string>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The kiosk is currently active and open. */
+    const isKioskOpen = computed((): boolean => {
+        return kioskStatus.value?.isCheckInActive === true;
+    });
+
+    /** The kiosk is not currently active and has no open locations. */
+    const isKioskClosed = computed((): boolean => {
+        return !kioskStatus.value?.isCheckInActive
+            && !kioskStatus.value?.hasOpenLocations;
+    });
+
+    /** The kiosk is not currently active but will open later today. */
+    const isKioskNotOpenYet = computed((): boolean => {
+        return !kioskStatus.value?.isCheckInActive
+            && !!kioskStatus.value?.nextStartDateTime;
+    });
+
+    /** The kiosk is not currently active and will not open later today. */
+    const isKioskNotOpen = computed((): boolean => {
+        return !kioskStatus.value?.isCheckInActive
+            && !kioskStatus.value?.nextStartDateTime;
+    });
+
+    /** The additional CSS classes to apply to the main div. */
+    const welcomeScreenClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (promotions.value.length === 0) {
+            classes.push("no-promotions");
+        }
+
+        if (isKioskOpen.value) {
+            classes.push("kiosk-open");
+        }
+        else if (isKioskClosed.value) {
+            classes.push("kiosk-closed");
+        }
+        else if (isKioskNotOpenYet.value) {
+            classes.push("kiosk-not-open-yet");
+        }
+        else {
+            classes.push("kiosk-not-open");
+        }
+
+        return classes;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Performs a search for the barcode scanned by a scanner or camera.
+     *
+     * @param code The barcode that was scanned.
+     */
+    async function performScannedCodeSearch(code: string): Promise<void> {
+        if (code.startsWith("PCL+")) {
+            // If using the HTML5 Camera, ignore PCL (Pre-Checkin Labels) QR
+            // Codes. The iPad app will print labels for PCL's itself, but
+            // HTML5 camera mode won't.
+            return;
+        }
+
+        if (isProcessingScannedCode) {
+            return;
+        }
+
+        isProcessingScannedCode = true;
+
+        try {
+            let newSession = props.session.withConfiguration(props.configuration);
+
+            newSession = await newSession.withFamilySearch(code, FamilySearchMode.ScannedId);
+
+            if (!newSession.families || newSession.families.length === 0 || !newSession.families[0].id) {
+                await alert("Sorry, there were not any families found with the selected identifier.");
+                return;
+            }
+
+            newSession = await newSession.withFamily(newSession.families[0].id);
+
+            emit("start", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isProcessingScannedCode = false;
+        }
+    }
+
+    /**
+     * Update the list of promotions by querying the server for the list of
+     * promotions that should be displayed.
+     */
+    async function updatePromotionList(): Promise<void> {
+        const result = await invokeBlockAction<PromotionBag[]>("GetPromotionList", {
+            templateId: props.configuration.template?.id,
+            kioskId: props.configuration.kiosk?.id
+        });
+
+        if (result.isSuccess && result.data) {
+            promotions.value = result.data;
+            kioskState["welcome-screen-promotions"] = result.data;
+        }
+    }
+
+    /**
+     * Update the kiosk status by requesting the latest information from the
+     * server. This method ensures it is only executed one at a time and will
+     * automatically re-check if it was called more than once.
+     */
+    async function updateKioskStatus(): Promise<void> {
+        if (!props.configuration.kiosk) {
+            return;
+        }
+
+        if (isUpdatingKioskStatus) {
+            isKioskStatusUpdatePending = true;
+            return;
+        }
+
+        isUpdatingKioskStatus = true;
+
+        const request: KioskStatusOptionsBag = {
+            kioskId: props.configuration.kiosk.id,
+            areaIds: props.configuration.areas?.map(a => a.id ?? "") ?? []
+        };
+
+        const result = await http.post<KioskStatusResponseBag>("/api/v2/checkin/KioskStatus", undefined, request);
+
+        if (result.isSuccess && result.data?.status) {
+            kioskStatus.value = result.data.status;
+            updateActions();
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error trying to update kiosk status.");
+        }
+
+        isUpdatingKioskStatus = false;
+
+        // If another request to update the status came in while we were waiting
+        // for the server then queue it up.
+        if (isKioskStatusUpdatePending) {
+            isKioskStatusUpdatePending = false;
+            nextTick(() => updateKioskStatus());
+        }
+        else {
+            if (updateKioskStatusTimer !== undefined) {
+                window.clearTimeout(updateKioskStatusTimer);
+            }
+
+            // Update the status once per minute. This can probably be changed
+            // to once every 10 minutes once we have RealTime hooked up.
+            updateKioskStatusTimer = window.setTimeout(() => {
+                updateKioskStatusTimer = undefined;
+                updateKioskStatus();
+            }, 60000);
+        }
+    }
+
+    /**
+     * Updates the countdown while waiting for the kiosk to open. This checks
+     * if we are now open and if so requests the latest status from the server.
+     */
+    function updateCountdown(): void {
+        if (kioskStatus.value?.nextStartDateTime) {
+            const nextStart = RockDateTime.parseISO(kioskStatus.value.nextStartDateTime)?.localDateTime;
+            const now = RockDateTime.now();
+
+            if (nextStart && nextStart.toMilliseconds() <= now.toMilliseconds()) {
+                updateKioskStatus();
+
+                if (kioskNotOpenYetTimer !== undefined) {
+                    window.clearInterval(kioskNotOpenYetTimer);
+                    kioskNotOpenYetTimer = undefined;
+                }
+            }
+        }
+
+        updateActions();
+    }
+
+    /**
+     * Updates all the actions for this screen based on current values.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        if (isKioskClosed.value) {
+            actions.push({
+                type: "danger",
+                title: "Kiosk Closed",
+                key: "kiosk-closed",
+                class: "kiosk-closed-button",
+                disabled: false
+            });
+        }
+        else if (isKioskNotOpen.value) {
+            actions.push({
+                type: "danger",
+                title: "Kiosk Closed for Today",
+                key: "kiosk-closed-for-today",
+                class: "kiosk-closed-for-today-button",
+                disabled: false
+            });
+        }
+        else if (isKioskNotOpenYet.value) {
+            let seconds = 0;
+
+            if (kioskStatus.value?.nextStartDateTime) {
+                const nextStart = RockDateTime.parseISO(kioskStatus.value.nextStartDateTime)?.localDateTime;
+                const now = RockDateTime.now();
+
+                if (nextStart) {
+                    seconds = Math.floor((nextStart.toMilliseconds() - now.toMilliseconds()) / 1000);
+                }
+            }
+
+            actions.push({
+                type: "info",
+                title: `Kiosk Will Open in ${secondsToCountdown(seconds)}`,
+                key: "kiosk-will-open",
+                class: "kiosk-will-open-button",
+                disabled: false
+            });
+        }
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Checks if the kiosk should close based on the nextStopDateTime value
+     * and if so requests a kiosk update.
+     */
+    function checkIfKioskShouldClose(): void {
+        if (!kioskStatus.value?.nextStopDateTime) {
+            return;
+        }
+
+        const nextStop = RockDateTime.parseISO(kioskStatus.value.nextStopDateTime)?.localDateTime;
+        const now = RockDateTime.now();
+
+        if (!nextStop || now.toMilliseconds() < nextStop.toMilliseconds()) {
+            return;
+        }
+
+        updateKioskStatus();
+    }
+
+    /**
+     * Clears all timers. This should be called before the component is removed.
+     */
+    function clearAllTimers(): void {
+        if (kioskNotOpenYetTimer !== undefined) {
+            window.clearInterval(kioskNotOpenYetTimer);
+            kioskNotOpenYetTimer = undefined;
+        }
+
+        if (kioskOpenTimer !== undefined) {
+            window.clearInterval(kioskOpenTimer);
+            kioskOpenTimer = undefined;
+        }
+
+        if (updateKioskStatusTimer) {
+            window.clearTimeout(updateKioskStatusTimer);
+            updateKioskStatusTimer = undefined;
+        }
+    }
+
+    /**
+     * Event handler for when the Start button is clicked.
+     */
+    async function onStartClick(): Promise<void> {
+        emit("start", await props.session.withNextScreen());
+    }
+
+    /**
+     * Handles the keypress event for the entire document.
+     *
+     * @param event The object that describes the event.
+     */
+    function onDocumentKeyPress(event: KeyboardEvent): void {
+        event.preventDefault();
+
+        // If the kiosk is not active then we don't need to scan.
+        // if (false) {
+        //     return;
+        // }
+
+        const timestamp = new Date().getTime();
+
+        // If it has been more than 500ms since the last keypress then assume
+        // a partial read happened and reset the buffer.
+        if (timestamp - lastDocumentKeyPressTimestamp > 500) {
+            documentKeyboardBuffer = "";
+        }
+
+        lastDocumentKeyPressTimestamp = timestamp;
+
+        if (event.key === "Enter") {
+            if (documentKeyboardBuffer !== "") {
+                performScannedCodeSearch(documentKeyboardBuffer);
+                documentKeyboardBuffer = "";
+            }
+        }
+        else {
+            documentKeyboardBuffer += event.key;
+        }
+    }
+
+    // #endregion
+
+    // If the kiosk is not open yet then start a timer to update the countdown.
+    // Otherwise cancel the timer.
+    watch(isKioskNotOpenYet, () => {
+        if (isKioskNotOpenYet.value && kioskNotOpenYetTimer === undefined) {
+            kioskNotOpenYetTimer = window.setInterval(() => updateCountdown(), 1000);
+        }
+        else if (!isKioskNotOpenYet.value && kioskNotOpenYetTimer !== undefined) {
+            window.clearInterval(kioskNotOpenYetTimer);
+            kioskNotOpenYetTimer = undefined;
+        }
+    });
+
+    // If the kiosk is open then start a timer to check if we should close.
+    // Otherwise cancel the timer.
+    watch(isKioskOpen, () => {
+        if (isKioskOpen.value && kioskOpenTimer === undefined) {
+            kioskOpenTimer = window.setInterval(() => checkIfKioskShouldClose(), 1000);
+        }
+        else if (!isKioskOpen.value && kioskOpenTimer !== undefined) {
+            window.clearInterval(kioskOpenTimer);
+            kioskOpenTimer = undefined;
+        }
+    });
+
+    // If HTML5 camera scanning is enabled then show it, otherwise turn off
+    // the camera.
+    watch([barcodeButtonElement, cameraDeviceId], () => {
+        // Handled already.
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk)) {
+            return;
+        }
+
+        const deviceId = cameraDeviceId.value;
+        const isCameraEnabled = doesThemeSupportCamera()
+            && props.configuration.kiosk?.isCameraEnabled
+            && barcodeButtonElement.value
+            && deviceId;
+
+        if (isCameraEnabled && !codeScanner) {
+            codeScanner = new Html5Qrcode("barcode-button");
+
+            codeScanner.start(deviceId, {
+                fps: 10,
+                qrbox: {
+                    width: 250,
+                    height: 250
+                }
+            }, (decodedText) => {
+                performScannedCodeSearch(decodedText);
+            }, (_errorMessage) => {
+                // Ignore it, probably a partial read.
+            });
+        }
+        else if (!isCameraEnabled && codeScanner) {
+            codeScanner.stop();
+            codeScanner = undefined;
+        }
+    });
+
+    // Perform any initialization when this component is added to the DOM.
+    onMounted(async () => {
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
+            // Block configuration check for AlwaysOn or Passive.
+            native.StartCamera?.(false);
+        }
+        else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
+            cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
+        }
+
+        // If we have a native check-in app then initialize it.
+        if (native && props.configuration.kiosk && native.SetKioskId) {
+            native.SetKioskId(props.configuration.kiosk.idNumber);
+        }
+
+        // Install the native check-in app function for code scanning.
+        window["PerformScannedCodeSearch"] = performScannedCodeSearch;
+
+        // Install the keypress handler for a physical barcode scanner.
+        document.addEventListener("keypress", onDocumentKeyPress);
+
+        updatePromotionList();
+    });
+
+    // Perform any cleanup when this component is about to be removed from
+    // the DOM.
+    onBeforeUnmount(() => {
+        // Remove the native check-in app function for code scanning.
+        window["PerformScannedCodeSearch"] = undefined;
+
+        // Remove the physical barcode scanner keypress handler.
+        document.removeEventListener("keypress", onDocumentKeyPress);
+
+        // Shut down the HTML5 scanner if it is up.
+        if (codeScanner) {
+            codeScanner.stop();
+            codeScanner = undefined;
+        }
+
+        clearAllTimers();
+    });
+
+    if (kioskState["welcome-screen-promotions"]) {
+        promotions.value = kioskState["welcome-screen-promotions"] as PromotionBag[];
+    }
+
+    updateKioskStatus();
+</script>

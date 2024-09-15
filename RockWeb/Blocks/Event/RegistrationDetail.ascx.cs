@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of a given registration." )]
+    [SecurityAction( SecurityActionKey.EditPaymentPlan, "The roles and/or users that can edit the payment plan for the selected persons." )]
 
     [LinkedPage( "Registrant Page", "The page for viewing details about a registrant", true, "", "", 0 )]
     [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
@@ -64,6 +65,18 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion ViewState Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Security Actions
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditPaymentPlan = "EditPaymentPlan";
+        }
+
+        #endregion Security Actions
 
         #region Fields
 
@@ -87,6 +100,8 @@ namespace RockWeb.Blocks.Event
         private Registration _registration = null;
 
         private Control _hostedPaymentInfoControl;
+
+        bool _canEditPaymentPlan = true;
 
         #endregion Fields
 
@@ -300,6 +315,8 @@ namespace RockWeb.Blocks.Event
             gPayments.DataKeyNames = new string[] { "Id" };
             gPayments.Actions.ShowAdd = false;
             gPayments.GridRebind += gPayments_GridRebind;
+
+            _canEditPaymentPlan = IsUserAuthorized( SecurityActionKey.EditPaymentPlan );
 
             var qryParam = new Dictionary<string, string>();
             qryParam.Add( "TransactionId", "PLACEHOLDER" );
@@ -2256,9 +2273,13 @@ namespace RockWeb.Blocks.Event
             {
                 if ( registrant.Cost > 0 )
                 {
-                    var costSummary = new RegistrationCostSummaryInfo();
-                    costSummary.Type = RegistrationCostSummaryType.Cost;
-                    costSummary.Description = registrant.PersonName;
+                    var costSummary = new RegistrationCostSummaryInfo
+                    {
+                        Type = RegistrationCostSummaryType.Cost,
+                        Description = registrant.PersonName,
+                        RegistrationRegistrantGuid = registrant.Guid
+                    };
+
                     if ( registrant.OnWaitList )
                     {
                         costSummary.Description += " (Waiting List)";
@@ -2310,10 +2331,13 @@ namespace RockWeb.Blocks.Event
 
                             string desc = string.Format( "{0} ({1:N0} @ {2})", feeName, feeInfo.Quantity, cost.FormatAsCurrency() );
 
-                            var costSummary = new RegistrationCostSummaryInfo();
-                            costSummary.Type = RegistrationCostSummaryType.Fee;
-                            costSummary.Description = desc;
-                            costSummary.Cost = feeInfo.Quantity * cost;
+                            var costSummary = new RegistrationCostSummaryInfo
+                            {
+                                Type = RegistrationCostSummaryType.Fee,
+                                Description = desc,
+                                RegistrationRegistrantGuid = registrant.Guid,
+                                Cost = feeInfo.Quantity * cost
+                            };
 
                             if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                             {
@@ -2348,7 +2372,10 @@ namespace RockWeb.Blocks.Event
                     Type = RegistrationCostSummaryType.Discount,
                     Description = "Discount",
                     Cost = totalDiscount,
-                    DiscountedCost = totalDiscount
+                    DiscountedCost = totalDiscount,
+
+                    // The total discount isn't associated with a particular registrant, so set the registrant guid to null.
+                    RegistrationRegistrantGuid = null
                 } );
             }
 
@@ -2361,6 +2388,9 @@ namespace RockWeb.Blocks.Event
                 Description = "Total",
                 Cost = costs.Sum( c => c.Cost ),
                 DiscountedCost = registration.DiscountedCost,
+
+                // The total isn't associated with a particular registrant, so set the registrant guid to null.
+                RegistrationRegistrantGuid = null
             } );
 
             rptFeeSummary.DataSource = costs;
@@ -2429,6 +2459,8 @@ namespace RockWeb.Blocks.Event
 
             lFrequencyPaymentAmount.Label = lFrequencyPaymentAmount.Label = $"{registration.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue} Payment Amount";
             lFrequencyPaymentAmount.Text = $"{registration.PaymentPlanFinancialScheduledTransaction.TotalAmount.FormatAsCurrency()} × {registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments}";
+            spanChangeButtonWrapper.Visible = _canEditPaymentPlan;
+            lbDeletePaymentPlan.Visible = _canEditPaymentPlan;
 
             var paymentPlanFinancialScheduledTransactionId = registration.PaymentPlanFinancialScheduledTransactionId.Value;
             var lastTransactionDate = new FinancialTransactionService( new RockContext() )
@@ -2762,7 +2794,7 @@ namespace RockWeb.Blocks.Event
                     links = string.Format(
                         @"<a href='{0}' target='_blank' rel='noopener noreferrer'>Signed on {1}</a>
                         <small>Signed by {2}</small>",
-                        ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
+                        FileUrlHelper.GetFileUrl( registrant.SignatureDocumentId.Value ),
                         registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),
                         registrant.SignatureDocumentSignedName );
 
@@ -3450,21 +3482,32 @@ namespace RockWeb.Blocks.Event
 
         protected void lbChangePaymentPlan_Click( object sender, EventArgs e )
         {
-            lUpdatePaymentPlanMessage.Text = $"<p>The amount remaining for this registration is { this.Registration.BalanceDue.FormatAsCurrency() }.</p>";
+            if ( _canEditPaymentPlan )
+            {
+                lUpdatePaymentPlanMessage.Text = $"<p>The amount remaining for this registration is { this.Registration.BalanceDue.FormatAsCurrency() }.</p>";
 
-            var paymentPlanConfiguration = GetPaymentPlanConfigurationForRegistration();
-            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+                var paymentPlanConfiguration = GetPaymentPlanConfigurationForRegistration();
+                SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
 
-            mdUpdatePaymentPlan.Show();
+                mdUpdatePaymentPlan.Show();
+            }
         }
 
         protected void lbDeletePaymentPlan_Click( object sender, EventArgs e )
         {
-            mdDeletePaymentPlan.Show();
+            if ( _canEditPaymentPlan )
+            {
+                mdDeletePaymentPlan.Show();
+            }
         }
 
         protected void mdDeletePaymentPlan_SaveClick( object sender, EventArgs e )
         {
+            if ( !_canEditPaymentPlan )
+            {
+                return;
+            }
+
             nbPaneAccountError.Visible = false;
             nbPaneAccountWarning.Visible = false;
 
@@ -3497,6 +3540,11 @@ namespace RockWeb.Blocks.Event
 
         protected void mdUpdatePaymentPlan_SaveClick( object sender, EventArgs e )
         {
+            if ( !_canEditPaymentPlan )
+            {
+                return;
+            }
+
             nbUpdatePaymentPlanError.Visible = false;
             nbUpdatePaymentPlanWarning.Visible = false;
 
@@ -3554,606 +3602,6 @@ namespace RockWeb.Blocks.Event
         {
             var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
             SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
-        }
-
-        #endregion
-
-        #region Payment Plan Helper Classes
-
-        /// <summary>
-        /// Options for building a payment plan configuration.
-        /// </summary>
-        private class PaymentPlanConfigurationOptions
-        {
-            /// <summary>
-            /// Gets or sets the currency precision for the amounts in the plan.
-            /// </summary>
-            /// <remarks>
-            /// The number of decimals to the right of the decimal point. For USD and many other currencies, this would be 2; e.g., $2.77 has a precision of 2.
-            /// </remarks>
-            public int CurrencyPrecision { get; set; }
-            
-            /// <summary>
-            /// Gets or sets the desired, allowed payment frequencies.
-            /// </summary>
-            public List<DefinedValueCache> DesiredAllowedPaymentFrequencies { get; set; }
-
-            /// <summary>
-            /// Gets or sets the desired number of payments for the payment plan.
-            /// </summary>
-            /// <remarks>
-            /// See <see cref="IsNumberOfPaymentsLimited"/> for details on how this value may be different in the resulting payment plan.
-            /// </remarks>
-            public int DesiredNumberOfPayments { get; set; }
-
-            /// <summary>
-            /// Gets or sets the desired payment frequency; e.g., monthly, weekly, etc.
-            /// </summary>
-            /// <value>
-            /// Should be one of the <see cref="DesiredAllowedPaymentFrequencies"/>; otherwise, the resulting <see cref="PaymentPlanConfiguration.PaymentFrequencyConfiguration"/> will be <see langword="null"/>.
-            /// </value>
-            public DefinedValueCache DesiredPaymentFrequency { get; set; }
-            
-            /// <summary>
-            /// Gest or sets the desired date when the payment plan payments should start.
-            /// </summary>
-            public DateTime DesiredStartDate { get; set; }
-        
-            /// <summary>
-            /// Gets or sets the date when the payment plan payments should end.
-            /// </summary>
-            public DateTime EndDate { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether to limit the number of payments from the <see cref="MinNumberOfPayments"/> to the max allowed for the selected <see cref="DesiredPaymentFrequency"/>.
-            /// </summary>
-            /// <value>
-            /// If set to <see langword="true"/> and the resulting number of payments would exceed the payment plan end date, the value would instead be capped at the max number of payments.
-            /// <para>If set to <see langword="false"/>, the number of payments will not be capped and could exceed the payment plan end date.</para>
-            /// </value>
-            public bool IsNumberOfPaymentsLimited { get; set; }
-
-            /// <summary>
-            /// Gets or sets the minimum number of payments allowed for selection.
-            /// </summary>
-            public int MinNumberOfPayments { get; set; }
-
-            /// <summary>
-            /// Gets or sets the amount that can be configured for a payment plan.
-            /// </summary>
-            /// <remarks>
-            ///     Since the amount may not be evenly divided, the resulting <see cref="PaymentPlanConfiguration.PlannedAmount"/> may be less than this number.
-            ///     <para>
-            ///         The remainder can be found by <c>PaymentPlanConfigurationOptions.AmountForPaymentPlan - PaymentPlanConfiguration.PlannedAmount</c>.
-            ///     </para>
-            /// </remarks>
-            public decimal AmountForPaymentPlan { get; set; }
-        }
-
-        /// <summary>
-        /// Payment frequency configuration.
-        /// </summary>
-        private class PaymentFrequencyConfiguration
-        {
-            /// <summary>
-            /// Gets or sets the payment frequency.
-            /// </summary>
-            public DefinedValueCache PaymentFrequency { get; set; }
-
-            /// <summary>
-            /// Gets or sets the max number of payments for the payment frequency.
-            /// </summary>
-            public int MaxNumberOfPayments { get; set; }
-        }
-
-        /// <summary>
-        /// Payment plan configuration.
-        /// </summary>
-        private class PaymentPlanConfiguration
-        {
-            /// <summary>
-            /// Gets or sets the amount per payment.
-            /// </summary>
-            public decimal AmountPerPayment { get; set; }
-
-            /// <summary>
-            /// Gets or sets the payment frequency.
-            /// </summary>
-            public PaymentFrequencyConfiguration PaymentFrequencyConfiguration { get; set; }
-
-            /// <summary>
-            /// Gets or sets the allowed payment frequency configurations.
-            /// </summary>
-            public List<PaymentFrequencyConfiguration> AllowedPaymentFrequencyConfigurations { get; set; }
-
-            /// <summary>
-            /// Gets or sets the minimum number of payments allowed for selection.
-            /// </summary>
-            public int MinNumberOfPayments { get; set; }
-
-            /// <summary>
-            /// Gets or sets the number of payments.
-            /// </summary>
-            public int NumberOfPayments { get; set; }
-
-            /// <summary>
-            /// Gets the planned amount covered by this payment plan configuration.
-            /// </summary>
-            public decimal PlannedAmount => AmountPerPayment * NumberOfPayments;
-
-            /// <summary>
-            /// Gets or sets the start date.
-            /// </summary>
-            public DateTime StartDate { get; set; }
-
-            /// <summary>
-            /// Copies payment plan information to a financial scheduled transaction.
-            /// </summary>
-            /// <param name="financialScheduledTransaction">The target financial scheduled transaction to which payment details will be copied.</param>
-            public void CopyPaymentPlanDetailsTo( FinancialScheduledTransaction financialScheduledTransaction )
-            {
-                financialScheduledTransaction.StartDate = StartDate;
-                financialScheduledTransaction.TransactionFrequencyValueId = PaymentFrequencyConfiguration.PaymentFrequency.Id;
-                financialScheduledTransaction.NumberOfPayments = NumberOfPayments;
-            }
-            
-            /// <summary>
-            /// Copies payment plan information to a financial scheduled transaction detail.
-            /// </summary>
-            /// <param name="financialScheduledTransactionDetail">The target financial scheduled transaction detail to which payment details will be copied.</param>
-            public void CopyPaymentPlanDetailsTo( FinancialScheduledTransactionDetail financialScheduledTransactionDetail )
-            {
-                financialScheduledTransactionDetail.Amount = AmountPerPayment;
-            }
-            
-            /// <summary>
-            /// Copies payment plan information to a payment info.
-            /// </summary>
-            /// <param name="financialScheduledTransaction">The target payment info to which payment details will be copied.</param>
-            public void CopyPaymentPlanDetailsTo( PaymentInfo paymentInfo )
-            {
-                paymentInfo.Amount = AmountPerPayment;
-            }
-
-            /// <summary>
-            /// Checks if this payment plan configuration is valid for updating an existing payment plan.
-            /// </summary>
-            /// <param name="validationError">Will contain a message for the first error encountered during validation, if any.</param>
-            /// <returns><see langword="true"/> if the payment plan configuration can be used to update an existing payment plan; otherwise, <see langword="false"/>.</returns>
-            public bool IsValidForUpdatingExistingPaymentPlan(  out string validationError )
-            {
-                if ( this.StartDate <= RockDateTime.Today )
-                {
-                    validationError = "Start date must be a future date";
-                    return false;
-                }
-
-                if ( this.PaymentFrequencyConfiguration == null )
-                {
-                    validationError = "Payment frequency is required";
-                    return false;
-                }
-
-                if ( this.NumberOfPayments < this.MinNumberOfPayments )
-                {
-                    validationError = $"Number of payments must be at least {this.MinNumberOfPayments}";
-                    return false;
-                }
-
-                if ( this.AmountPerPayment <= 0 )
-                {
-                    validationError = "Amount per payment must be a positive value";
-                    return false;
-                }
-
-                validationError = null;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Client service with methods for configuring payment plans.
-        /// </summary>
-        private class PaymentPlanConfigurationService
-        {
-            private static readonly Dictionary<Guid, IFrequencyHelper> FrequencyHelpers = new Dictionary<Guid, IFrequencyHelper>
-            {
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY.AsGuid()] = new BiweeklyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid()] = new TwiceMonthlyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY.AsGuid()] = new MonthlyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid()] = new OneTimeFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY.AsGuid()] = new QuarterlyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY.AsGuid()] = new TwiceMonthlyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY.AsGuid()] = new TwiceYearlyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY.AsGuid()] = new WeeklyFrequencyHelper(),
-                [Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY.AsGuid()] = new YearlyFrequencyHelper(),
-            };
-
-            /// <summary>
-            /// Gets a frequency helper instance.
-            /// </summary>
-            /// <param name="frequencyDefinedValueGuid">The unique identifier of the frequency helper.</param>
-            /// <returns>A frequency helper instance or <see langword="null"/> if not found.</returns>
-            private static IFrequencyHelper GetFrequencyHelper( Guid frequencyDefinedValueGuid )
-            {
-                return FrequencyHelpers.TryGetValue( frequencyDefinedValueGuid, out var frequencyHelper ) ? frequencyHelper : null;
-            }
-
-            /// <summary>
-            /// Gets a payment plan configuration.
-            /// </summary>
-            /// <param name="options">The options for the payment plan configuration.</param>
-            /// <returns>A payment plan configuration.</returns>
-            public PaymentPlanConfiguration Get( PaymentPlanConfigurationOptions options )
-            {
-                var paymentPlanConfiguration = new PaymentPlanConfiguration
-                {
-                    MinNumberOfPayments = options.MinNumberOfPayments,
-                };
-
-                // Get the planned amount in minor units (cents for USD).
-                var minorUnitsFactor = Convert.ToInt32( Math.Pow( 10, options.CurrencyPrecision ) );
-                var plannedAmountMinorUnits = Convert.ToInt32( options.AmountForPaymentPlan * minorUnitsFactor );
-
-                paymentPlanConfiguration.StartDate = GetStartDate( options.DesiredStartDate );
-
-                paymentPlanConfiguration.AllowedPaymentFrequencyConfigurations = GetAllowedPaymentFrequencyConfigurations(
-                    options.DesiredAllowedPaymentFrequencies,
-                    paymentPlanConfiguration.StartDate,
-                    options.EndDate,
-                    paymentPlanConfiguration.MinNumberOfPayments,
-                    plannedAmountMinorUnits );
-
-                paymentPlanConfiguration.PaymentFrequencyConfiguration = GetPaymentFrequencyConfiguration(
-                    paymentPlanConfiguration.AllowedPaymentFrequencyConfigurations,
-                    options.DesiredPaymentFrequency );
-
-                paymentPlanConfiguration.NumberOfPayments = GetNumberOfPayments(
-                    options.DesiredNumberOfPayments,
-                    options.IsNumberOfPaymentsLimited,
-                    paymentPlanConfiguration.MinNumberOfPayments,
-                    paymentPlanConfiguration.PaymentFrequencyConfiguration?.MaxNumberOfPayments );
-
-                paymentPlanConfiguration.AmountPerPayment = GetAmountPerPayment(
-                    plannedAmountMinorUnits,
-                    minorUnitsFactor,
-                    paymentPlanConfiguration.NumberOfPayments,
-                    paymentPlanConfiguration.MinNumberOfPayments );
-
-                return paymentPlanConfiguration;
-            }
-
-            private static decimal GetAmountPerPayment( int plannedAmountMinorUnits, int minorUnitsFactor, int numberOfPayments, int minNumberOfPayments  )
-            {
-                if ( plannedAmountMinorUnits <= 0 || numberOfPayments <= 0 || numberOfPayments < minNumberOfPayments )
-                {
-                    return 0m;
-                }
-                else
-                {
-                    return Math.Floor( ( decimal ) plannedAmountMinorUnits / numberOfPayments ) / minorUnitsFactor;
-                }
-            }
-
-            /// <summary>
-            /// Gets the number of payments for a payment plan configuration.
-            /// </summary>
-            /// <param name="desiredNumberOfPayments">The desired number of payments.</param>
-            /// <param name="isNumberOfPaymentsLimited">Determines whether the number of payments should be limited by the minimum and maximum values.</param>
-            /// <param name="minNumberOfPayments">The minimum number of payments permitted.</param>
-            /// <param name="maxNumberOfPayments">The maximum number of payments permitted.</param>
-            /// <returns></returns>
-            private static int GetNumberOfPayments( int desiredNumberOfPayments, bool isNumberOfPaymentsLimited, int minNumberOfPayments, int? maxNumberOfPayments )
-            {
-                if ( isNumberOfPaymentsLimited )
-                {
-                    // Ensure the desired number of payments doesn't exceed the maximum allowed for the selected frequency.
-                    // If no payment frequency is provided, then the number is capped at 0.
-                    return Math.Min( Math.Max( desiredNumberOfPayments, minNumberOfPayments ), maxNumberOfPayments ?? 0 );
-                }
-                else
-                {
-                    return desiredNumberOfPayments;
-                }
-            }
-
-            /// <summary>
-            /// Gets allowed payment frequency configurations for a payment plan configuration.
-            /// </summary>
-            /// <param name="prospectiveAllowedPaymentFrequencies">The prospective, allowed payment frequencies from which the returned list is derived after applying rules.</param>
-            /// <param name="startDate">The start date for the payment plan.</param>
-            /// <param name="endDate">The end date for the payment plan.</param>
-            /// <param name="minNumberOfPayments">The minimum number of payments permitted.</param>
-            /// <param name="plannedAmountMinorUnits">The planned amount in minor units (cents for USD).</param>
-            /// <returns>Allowed payment frequency configurations.</returns>
-            private static List<PaymentFrequencyConfiguration> GetAllowedPaymentFrequencyConfigurations( IEnumerable<DefinedValueCache> prospectiveAllowedPaymentFrequencies, DateTime startDate, DateTime endDate, int minNumberOfPayments, int plannedAmountMinorUnits )
-            {
-                var allowedPaymentFrequencyConfigurations = new List<PaymentFrequencyConfiguration>();
-
-                foreach ( var prospectiveAllowedPaymentFrequency in prospectiveAllowedPaymentFrequencies )
-                {
-                    // A prospective, allowed payment frequency is only truly allowed
-                    // if the number of payments for the frequency (between start and end dates)
-                    // meets the minimum number of payments requirement.
-
-                    var frequencyHelper = GetFrequencyHelper( prospectiveAllowedPaymentFrequency.Guid );
-
-                    if ( frequencyHelper == null )
-                    {
-                        // An unknown payment frequency was attempted so skip over it.
-                        continue;
-                    }
-
-                    var maxNumberOfPayments = frequencyHelper.GetMaxNumberOfPayments( startDate, endDate, plannedAmountMinorUnits );
-
-                    if ( maxNumberOfPayments >= minNumberOfPayments )
-                    {
-                        allowedPaymentFrequencyConfigurations.Add( new PaymentFrequencyConfiguration
-                        {
-                            MaxNumberOfPayments = maxNumberOfPayments,
-                            PaymentFrequency = prospectiveAllowedPaymentFrequency,
-                        } );
-                    }
-                }
-
-                return allowedPaymentFrequencyConfigurations;
-            }
-
-            /// <summary>
-            /// Gets a valid payment frequency configuration for a payment plan configuration.
-            /// </summary>
-            /// <param name="allowedPaymentFrequencyConfigurations">The allowed payment plan frequency configurations.</param>
-            /// <param name="desiredPaymentFrequency">The desired payment frequency.</param>
-            /// <returns>A valid payment frequency configuration or <see langword="null"/> if the desired frequency is not allowed.</returns>
-            private static PaymentFrequencyConfiguration GetPaymentFrequencyConfiguration( IEnumerable<PaymentFrequencyConfiguration> allowedPaymentFrequencyConfigurations, DefinedValueCache desiredPaymentFrequency )
-            {
-                return allowedPaymentFrequencyConfigurations.FirstOrDefault( p => p.PaymentFrequency?.Guid == desiredPaymentFrequency?.Guid );
-            }
-
-            /// <summary>
-            /// Gets a valid start date for a payment plan configuration.
-            /// </summary>
-            /// <param name="desiredStartDate">The desired start date.</param>
-            /// <returns>A valid start date.</returns>
-            private static DateTime GetStartDate( DateTime desiredStartDate )
-            {
-                var tomorrow = RockDateTime.Today.AddDays( 1 );
-                return desiredStartDate.Date < tomorrow ? tomorrow : desiredStartDate.Date;
-            }
-
-            #region Helper Class Helper Classes
-
-            private interface IFrequencyHelper
-            {
-                int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax );
-            }
-
-            private class BiweeklyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    var numberOfTransactions = 0;
-                    var date = firstDate;
-
-                    while (date <= secondDate && (!inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value)) {
-                        numberOfTransactions++;
-                        date = date.AddDays(14);
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            private class TwiceMonthlyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    // For twice monthly frequency, this will check how many 1st and 15th days are between the two dates.
-
-                    // Add a day to the second date so this function only has to check
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    var date = firstDate;
-
-                    if ( date.Day > 15 )
-                    {
-                        // Set the date to the 1st of the next month.
-                        date = date.AddDays( 1 - date.Day ).AddMonths( 1 );
-                    }
-                    else if ( date.Day < 15 && date.Day > 1 )
-                    {
-                        // Set the date to the 15th of the current month.
-                        date = date.AddDays( 15 - date.Day );
-                    }
-
-                    var numberOfTransactions = 0;
-
-                    while (date <= secondDate
-                        && ( !inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value ) )
-                    {
-                        if (date.Day == 1 || date.Day == 15)
-                        {
-                            numberOfTransactions++;
-                        }
-
-                        if ( date.Day < 15 )
-                        {
-                            // Set the date to the 15th of the current month.
-                            date = date.AddDays( 15 - date.Day );
-                        }
-                        else if ( date.Day == 15 ) // We could use an `else` here but this is more readable.
-                        {
-                            // Set the date to the 1st of the next month.
-                            date = date.AddDays( -14 ).AddMonths( 1 );
-                        }
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            private class MonthlyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    // If the first date is the last day of the month
-                    // then this function will increment by 1 months and
-                    // automatically choose the last day of the month.
-                    Func<DateTime, DateTime> getNextDate;
-                    if ( firstDate == firstDate.EndOfMonth().Date )
-                    {
-                        getNextDate = ( DateTime d ) => d.AddMonths( 1 ).EndOfMonth().Date;
-                    }
-                    else
-                    {
-                        getNextDate = ( DateTime d ) => d.AddMonths( 1 );
-                    }
-
-                    var date = firstDate;
-                    var numberOfTransactions = 0;
-
-                    while ( date <= secondDate
-                        && ( !inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value ) ) {
-                        numberOfTransactions++;
-                        date = getNextDate( date );
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            private class OneTimeFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    if ( firstDate <= secondDate && ( !inclusiveMax.HasValue || inclusiveMax.Value > 0 ) )
-                    {
-                        return 1;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-            }
-
-            private class QuarterlyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    // If the first date is the last day of the month
-                    // then this function will increment by 3 months and
-                    // automatically choose the last day of the month.
-                    Func<DateTime, DateTime> getNextDate;
-                    if ( firstDate == firstDate.EndOfMonth().Date )
-                    {
-                        getNextDate = ( DateTime d ) => d.AddMonths( 3 ).EndOfMonth().Date;
-                    }
-                    else
-                    {
-                        getNextDate = ( DateTime d ) => d.AddMonths( 3 );
-                    }
-
-                    var date = firstDate;
-                    var numberOfTransactions = 0;
-
-                    while ( date <= secondDate
-                        && ( !inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value ) ) {
-                        numberOfTransactions++;
-                        date = getNextDate( date );
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            private class TwiceYearlyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    // If the first date is the last day of the month
-                    // then this function will increment by 6 months and
-                    // automatically choose the last day of the month.
-                    Func<DateTime, DateTime> getNextDate;
-                    if ( firstDate == firstDate.EndOfMonth().Date )
-                    {
-                        getNextDate = ( DateTime d ) => d.AddMonths( 6 ).EndOfMonth().Date;
-                    }
-                    else
-                    {
-                        getNextDate = ( DateTime d ) => d.AddMonths( 6 );
-                    }
-
-                    var date = firstDate;
-                    var numberOfTransactions = 0;
-
-                    while ( date <= secondDate
-                        && ( !inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value ) ) {
-                        numberOfTransactions++;
-                        date = getNextDate( date );
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            private class WeeklyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    var date = firstDate;
-                    var numberOfTransactions = 0;
-
-                    while ( date <= secondDate
-                        && ( !inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value ) ) {
-                        numberOfTransactions++;
-                        date = date.AddDays( 7 );
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            private class YearlyFrequencyHelper : IFrequencyHelper
-            {
-                public int GetMaxNumberOfPayments( DateTime firstDate, DateTime secondDate, long? inclusiveMax )
-                {
-                    firstDate = firstDate.Date;
-                    secondDate = secondDate.Date;
-
-                    var date = firstDate;
-                    var numberOfTransactions = 0;
-
-                    while ( date <= secondDate
-                        && ( !inclusiveMax.HasValue || numberOfTransactions < inclusiveMax.Value ) ) {
-                        numberOfTransactions++;
-                        date = date.AddYears( 1 );
-                    }
-
-                    return numberOfTransactions;
-                }
-            }
-
-            #endregion
         }
 
         #endregion

@@ -66,9 +66,10 @@
 
                 <TransitionVerticalCollapse>
                     <div v-if="allowsReplies">
-                        <NumberBox label="Max Reply Depth"
-                                   class="input-width-sm"
-                                   v-model="maxReplyDepth" />
+                        <TextBox label="Max Reply Depth"
+                                 class="input-width-sm"
+                                 :rules="validateMaxReplyDepth"
+                                 v-model="maxReplyDepth" />
                     </div>
                 </TransitionVerticalCollapse>
 
@@ -111,7 +112,6 @@
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
@@ -151,7 +151,7 @@
     const allowsWatching = propertyRef(props.modelValue.allowsWatching, "AllowsWatching");
     const autoWatchAuthors = propertyRef(props.modelValue.autoWatchAuthors, "AutoWatchAuthors");
     const allowsReplies = propertyRef(props.modelValue.allowsReplies, "AllowsReplies");
-    const maxReplyDepth = propertyRef(props.modelValue.maxReplyDepth, "MaxReplyDepth");
+    const maxReplyDepth = propertyRef(props.modelValue.maxReplyDepth ?? "", "MaxReplyDepth");
     const allowsAttachments = propertyRef(props.modelValue.allowsAttachments, "AllowsAttachments");
     const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
     const formatType = propertyRef(props.modelValue.formatType.toString(), "FormatType");
@@ -179,13 +179,24 @@
         return showContentFormatDropdown.value && (formatType.value === NoteFormatType.Structured.toString() || formatType.value === NoteFormatType.Unknown.toString());
     });
 
-    // #endregion
+    function validateMaxReplyDepth(value: unknown): string | boolean {
 
-    // #region Functions
+        const stringValue = value as string;
 
-    // #endregion
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+        }
 
-    // #region Event Handlers
+        return true;
+    }
+
+    function isValidNumber(value: string): boolean {
+        if(!value) return false;
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
 
     // #endregion
 
@@ -199,7 +210,7 @@
         updateRefValue(color, props.modelValue.color ?? "");
         updateRefValue(userSelectable, props.modelValue.userSelectable);
         updateRefValue(allowsWatching, props.modelValue.allowsWatching);
-        updateRefValue(maxReplyDepth, props.modelValue.maxReplyDepth);
+        updateRefValue(maxReplyDepth, props.modelValue.maxReplyDepth ?? "");
         updateRefValue(allowsAttachments, props.modelValue.allowsAttachments);
         updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
         updateRefValue(formatType, props.modelValue.formatType.toString());

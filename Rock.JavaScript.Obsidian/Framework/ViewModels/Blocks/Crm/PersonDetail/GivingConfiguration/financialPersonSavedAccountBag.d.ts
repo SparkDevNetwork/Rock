@@ -38,6 +38,9 @@ export type FinancialPersonSavedAccountBag = {
     /** Gets or sets the isDefault status of the financial person saved account. */
     isDefault: boolean;
 
+    /** Gets or sets the is expired status of the financial person saved account. */
+    isExpired: boolean;
+
     /** Gets or sets the last error code of the financial person saved account. */
     lastErrorCode?: string | null;
 

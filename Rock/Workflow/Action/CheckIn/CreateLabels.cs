@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,8 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+
+using CheckInLabel = Rock.CheckIn.CheckInLabel;
 
 namespace Rock.Workflow.Action.CheckIn
 {

@@ -223,6 +223,12 @@ export const DefinedType = {
     ThemePurpose: "99FF0317-9B21-4E56-9F83-EA89A3C8C789",
     /** Campus Topic Type */
     TopicType: "41141100-8fc6-44bb-aa36-9778eeda7f62",
+    /** List of different campaigns that may generate website traffic. */
+    UtmCampaign: "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F",
+    /** List of different marketing or advertising mediums that may initiate website traffic. */
+    UtmMedium: "31693856-8553-4321-A302-B84CF1D22BAB",
+    /** List of different sources from which website traffic may originate. */
+    UtmSource: "3CFE43A9-5D0C-4BE4-B1EC-AFA06BBB7C32",
     /** Used to manage the lava code that can be launched via webhook. */
     WebhookToLava: "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D",
     /** Used to manage the workflows that can be launched via webhook. */

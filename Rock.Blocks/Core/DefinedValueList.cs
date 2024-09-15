@@ -190,7 +190,7 @@ namespace Rock.Blocks.Core
                 }
                 else
                 {
-                    _definedType = definedTypeService.GetInclude( PageParameter( PageParameterKey.DefinedTypeId ).AsInteger(), dt => dt.Category );
+                    _definedType = definedTypeService.GetInclude( PageParameter( PageParameterKey.DefinedTypeId ), dt => dt.Category );
                 }
             }
 

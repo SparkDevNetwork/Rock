@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -214,7 +215,7 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                string getFileUrl = string.Format( "{0}?Guid={1}&attachment=true", ResolveRockUrl( "~/GetFile.ashx" ), outputBinaryFileDoc.Guid );
+                string getFileUrl = FileUrlHelper.GetFileUrl( outputBinaryFileDoc.Guid ) + "&attachment=true";
                 Response.Redirect( getFileUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }

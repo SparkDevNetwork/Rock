@@ -13,6 +13,21 @@ const configs = [
         minify: true,
         lib: true,
         copy: path.join(obsidianPath, "Libs")
+    }).map(cfg => {
+        if (cfg.input.endsWith("html5-qrcode.ts")) {
+            // Silence warnings complaining about previous bundler.
+            cfg.onwarn = (warning, warn) => {
+                if (warning.code === "THIS_IS_UNDEFINED" || warning.code === "SOURCEMAP_ERROR") {
+                    return;
+                }
+                warn(warning);
+            };
+
+            return cfg;
+        }
+        else {
+            return cfg;
+        }
     }),
 
     defineFileConfig(path.join(srcPath, "Utility"), path.join(outPath, "Utility.js"), {

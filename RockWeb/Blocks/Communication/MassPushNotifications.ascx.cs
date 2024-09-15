@@ -27,6 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -510,7 +511,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( communicationTemplate.ImageFileId.HasValue )
                 {
-                    var imageUrl = string.Format( "~/GetImage.ashx?id={0}", communicationTemplate.ImageFileId );
+                    var imageUrl = FileUrlHelper.GetImageUrl( communicationTemplate.ImageFileId.Value );
                     lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", this.ResolveRockUrl( imageUrl ) );
                 }
                 else

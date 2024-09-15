@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// LearningClassAnnouncements REST API
     /// </summary>
-    [RestControllerGuid( "2E5F8578-DCA4-4964-AC9B-CA8DF30F6440" )]
+    [RestControllerGuid( "65258D44-067D-4284-93D5-DA3B318EB2CE" )]
     public partial class LearningClassAnnouncementsController : Rock.Rest.ApiController<Rock.Model.LearningClassAnnouncement>
     {
         /// <summary>

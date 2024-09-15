@@ -8,6 +8,7 @@ using Rock.Utility.Settings.SparkData;
 using Rock.ViewModels.Blocks.Communication.NcoaProcess;
 using Rock.Web.Cache;
 using Rock.NCOA;
+using System.Linq;
 
 namespace Rock.Blocks.Communication
 {
@@ -35,7 +36,7 @@ namespace Rock.Blocks.Communication
                 var dataViewService = new DataViewService( rockContext );
                 var definedValueService = new DefinedValueService( rockContext );
 
-                if ( sparkDataConfig.NcoaSettings.PersonDataViewId.HasValue)
+                if ( sparkDataConfig.NcoaSettings.PersonDataViewId.HasValue )
                 {
                     bag.PersonDataView = dataViewService.Get( sparkDataConfig.NcoaSettings.PersonDataViewId.Value ).ToListItemBag();
                 }
@@ -66,7 +67,7 @@ namespace Rock.Blocks.Communication
             var ncoaService = new Ncoa();
             var bag = new NcoaProcessBag();
 
-            Dictionary<int, NcoaProcessPersonAddressBag> addresses = ncoaService.GetAddresses( dataViewValue );
+            var addresses = ncoaService.GetAddresses( dataViewValue ).Values.ToList();
 
             if ( addresses.Count < 100 )
             {
@@ -88,12 +89,12 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult ProcessNcoaImportFile( NcoaProcessBag bag)
+        public BlockActionResult ProcessNcoaImportFile( NcoaProcessBag bag )
         {
             var ncoaService = new Ncoa();
             using ( var rockContext = new RockContext() )
             {
-                if (bag.NcoaFileUploadReference.Value != null)
+                if ( bag.NcoaFileUploadReference.Value != null )
                 {
                     var inactiveReason = DefinedValueCache.Get( bag.InactiveReason.Value.AsGuid() );
                     var binaryFileService = new BinaryFileService( rockContext );
@@ -101,11 +102,11 @@ namespace Rock.Blocks.Communication
                     var stringContnet = binaryFile.ContentsToString();
 
                     ncoaService.NcoaRecordBuilder( stringContnet, out List<NcoaReturnRecord> ncoaReturnRecords );
-                    var (recordsUpdated, errorMessage) = ncoaService.PendingExport( inactiveReason, bag.MarkInvalidAsPrevious, bag.Mark48MonthAsPrevious, bag.MinMoveDistance, ncoaReturnRecords);
+                    var (successMessage, errorMessage) = ncoaService.PendingExport( inactiveReason, bag.MarkInvalidAsPrevious, bag.Mark48MonthAsPrevious, bag.MinMoveDistance, ncoaReturnRecords );
 
-                    if (!string.IsNullOrEmpty( errorMessage ) )
+                    if ( !string.IsNullOrEmpty( errorMessage ) )
                     {
-                        return ActionBadRequest(errorMessage );
+                        return ActionBadRequest( errorMessage );
                     }
 
                     sparkDataConfig = Ncoa.GetSettings();
@@ -116,9 +117,9 @@ namespace Rock.Blocks.Communication
                     sparkDataConfig.NcoaSettings.InactiveRecordReasonId = inactiveReason.Id;
                     Ncoa.SaveSettings( sparkDataConfig );
 
-                    bag.SuccessMessage = string.Format("{0} records updated.", recordsUpdated);
+                    bag.SuccessMessage = successMessage;
 
-                    return ActionOk(bag);
+                    return ActionOk( bag );
                 }
                 return ActionBadRequest( "An error occurred while accessing your uploaded file." );
             }

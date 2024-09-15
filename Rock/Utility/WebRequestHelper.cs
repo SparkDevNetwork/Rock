@@ -15,12 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Web;
-
 using Rock.Model;
-using Rock.Utility.Settings;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -298,6 +298,14 @@ namespace Rock.Utility
         /// <param name="expirationDate">The expiration date.</param>
         public static void AddOrUpdateCookie( HttpContext context, string name, string value, DateTime? expirationDate )
         {
+            var httpContextBase = new HttpContextWrapper( context );
+
+            AddOrUpdateCookie( httpContextBase, name, value, expirationDate );
+        }
+
+        /// <inheritdoc cref="AddOrUpdateCookie(HttpContext, string, string, DateTime?)"/>
+        public static void AddOrUpdateCookie( HttpContextBase context, string name, string value, DateTime? expirationDate )
+        {
             var cookie = new HttpCookie( name )
             {
                 Expires = expirationDate ?? RockDateTime.SystemDateTime.AddYears( 1 ),
@@ -316,6 +324,14 @@ namespace Rock.Utility
         /// <param name="context">The Http Context.</param>
         /// <param name="cookie">The cookie.</param>
         public static void AddOrUpdateCookie( HttpContext context, HttpCookie cookie )
+        {
+            var httpContextBase = new HttpContextWrapper( context );
+
+            AddOrUpdateCookie( httpContextBase, cookie );
+        }
+
+        /// <inheritdoc cref="AddOrUpdateCookie(HttpContext, HttpCookie)"/>
+        public static void AddOrUpdateCookie( HttpContextBase context, HttpCookie cookie )
         {
             if ( context == null )
             {
@@ -375,5 +391,30 @@ namespace Rock.Utility
 
             return persistedCookieExpiration;
         }
+
+        /// <summary>
+        /// Set the culture of the current thread using information from the current HttpRequest.
+        /// </summary>
+        /// <param name="request"></param>
+        public static void SetThreadCultureFromRequest( HttpRequest request )
+        {
+            // If the request does not specify a preferred language, exit.
+            if ( request?.UserLanguages == null || !request.UserLanguages.Any() )
+            {
+                return;
+            }
+
+            var cultureName = request.UserLanguages.First();
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = new CultureInfo( cultureName );
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo( cultureName );
+            }
+            catch
+            {
+                // If the culture can't be created, ignore it.
+            }
+        }
+
     }
 }

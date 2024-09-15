@@ -422,8 +422,10 @@ namespace Rock.Blocks.Cms
         /// <returns>A list of named schedules.</returns>
         private List<ListItemBag> LoadNamedSchedules()
         {
+            var persistedDatasetScheduleCategoryGuid = Rock.SystemGuid.Category.SCHEDULE_PERSISTED_DATASETS.AsGuid();
+
             return NamedScheduleCache.All()
-                .Where( a => a.IsActive && !string.IsNullOrWhiteSpace( a.Name ) )
+                .Where( a => a.IsActive && !string.IsNullOrWhiteSpace( a.Name ) && a.CategoryId == CategoryCache.Get( persistedDatasetScheduleCategoryGuid ).Id )
                 .Select( a => new ListItemBag { Value = a.Id.ToString(), Text = a.Name } )
                 .ToList();
         }

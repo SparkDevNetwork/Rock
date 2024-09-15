@@ -1,0 +1,1215 @@
+<template>
+    <div ref="worksurfaceContainerElement"
+         class="worksurface-container">
+        <div ref="fontLoaderElement"
+             class="font-loader"></div>
+        <div ref="containerElement"
+             class="worksurface">
+        </div>
+
+        <div ref="menuElement"
+             class="context-menu text-sm">
+            <div ref="menuFieldActionElement"
+                 class="menu-group">
+            </div>
+            <div ref="menuFieldSelectElement"
+                 class="menu-group">
+                <button class="header">Select Field</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+</style>
+
+<style scoped>
+.worksurface-container {
+    position: relative;
+    margin: 12px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.font-loader {
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.worksurface {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--theme-white);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.context-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--theme-white);
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.context-menu .menu-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.context-menu .menu-group {
+    border-top: 1px solid var(--theme-light);
+}
+
+/* Remove the top border from the first menu group. */
+.context-menu .menu-group:first-child {
+    border-top: 0;
+}
+
+/* These need to be deep because we are dynamically adding them. */
+.context-menu :deep(hr) {
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid var(--theme-light);
+}
+
+/* These need to be deep because we are dynamically adding them. */
+.context-menu :deep(button) {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 4px 12px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.context-menu :deep(button:hover) {
+    background-color: var(--theme-lightest);
+}
+
+.context-menu :deep(button.disabled),
+.context-menu :deep(button.header) {
+    background-color: transparent;
+    cursor: default;
+    pointer-events: none;
+}
+
+.context-menu :deep(button.disabled) {
+    color: var(--theme-medium);
+}
+
+.context-menu :deep(button.header) {
+    font-weight: bold;
+}
+</style>
+
+<script setup lang="ts">
+    import { LabelFieldType, LabelFieldTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+    import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
+    import Konva from "@Obsidian/Libs/konva";
+    import { Guid } from "@Obsidian/Types";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+    import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+    import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
+    import { KonvaEventObject } from "konva/lib/Node";
+    import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { createShapeForFieldType, LineTransformer, updateShapeFromField } from "./shapes.partial";
+    import { TransformHelper } from "./transformHelper.partial";
+    import { DesignedLabel, DragData } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { createDefaultField, Surface, pixelsPerInch } from "./utils.partial";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        },
+
+        showGrid: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        snapToGrid: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    defineExpose({
+        savePreview
+    });
+
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
+
+    const worksurfaceContainerElement = ref<HTMLDivElement | undefined>();
+    const containerElement = ref<HTMLDivElement | undefined>();
+    const fontLoaderElement = ref<HTMLDivElement | undefined>();
+    const menuElement = ref<HTMLDivElement | undefined>();
+    const menuFieldActionElement = ref<HTMLDivElement | undefined>();
+    const menuFieldSelectElement = ref<HTMLDivElement | undefined>();
+    let stage: Konva.Stage | undefined;
+    let transformHelper: TransformHelper | undefined;
+    let lineTransformer: LineTransformer | undefined;
+    const backgroundLayer = new Konva.Layer();
+    const backgroundRectangle = new Konva.Rect({ fill: "white" });
+    const nodeLayer = new Konva.Layer();
+    const gridLayer = new Konva.Layer();
+    const resizeObserver = window.ResizeObserver ? new ResizeObserver(onContainerResize) : undefined;
+    const surface = new Surface();
+
+    /**
+     * Draws the grid lines onto the grid layer. This will clear the layer
+     * if no grid lines should be displayed.
+     */
+    function drawGridLines(): void {
+        gridLayer.destroyChildren();
+
+        if (!stage || !props.showGrid) {
+            return;
+        }
+
+        const width = stage.width();
+        const height = stage.height();
+        const gridStepSize = 1.0 / surface.gridSnapFraction;
+
+        for (let step = gridStepSize; step < props.labelManager.current.value.labelData.width; step += gridStepSize) {
+            gridLayer.add(new Konva.Line({
+                x: surface.getPixelForOffset(step),
+                points: [0, 0, 0, height],
+                stroke: "rgba(128, 128, 128, 0.1)",
+                strokeWidth: 1
+            }));
+        }
+
+        for (let step = gridStepSize; step < props.labelManager.current.value.labelData.height; step += gridStepSize) {
+            gridLayer.add(new Konva.Line({
+                y: surface.getPixelForOffset(step),
+                points: [0, 0, width, 0],
+                stroke: "rgba(128, 128, 128, 0.1)",
+                strokeWidth: 1
+            }));
+        }
+
+        gridLayer.draw();
+    }
+
+    /**
+     * Restricts drag operations on a node to ensure that it stays on the label
+     * surface. This must be its own function because the node gets passed not
+     * as a parameter but as the `this` context.
+     *
+     * @param this The node object that is being dragged.
+     * @param pos The requested position for the node.
+     *
+     * @returns The final position for the node.
+     */
+    function dragBoundFunc(this: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
+        return surface.getNodeBoundedPosition(this, pos);
+    }
+
+    /**
+     * Creates or updates all nodes in Konva to match our current list of fields.
+     */
+    function createOrUpdateNodes(): void {
+        if (!nodeLayer) {
+            return;
+        }
+
+        // Add or update any nodes for fields that we have.
+        let zIndex = 0;
+        for (const field of props.labelManager.current.value.labelData.fields) {
+            const node = nodeLayer.children.find(n => n.id() === field.guid);
+            let shape = (node instanceof Konva.Shape || node instanceof Konva.Group) ? node : undefined;
+
+            // If we didn't find a node or couldn't update it then try to
+            // create a new node.
+            if (!shape) {
+                shape = createShapeForFieldType(field.fieldType);
+
+                // Shouldn't happen, but skip the node.
+                if (!shape) {
+                    console.error(`Could not create node for field type ${field.fieldType}.`);
+                    continue;
+                }
+
+                const origCreateDragElement = shape._createDragElement;
+                shape._createDragElement = (evt: KonvaEventObject<Event>) => {
+                    var selectedNodes = transformHelper?.transformer.nodes() ?? [];
+
+                    // If nothing selected or this shape is selected then
+                    // just continue.
+                    if (selectedNodes.length === 0 || selectedNodes[0]._id == shape?._id) {
+                        return origCreateDragElement.apply(shape, [evt]);
+                    }
+
+                    // There is a selection and it isn't this shape. If the
+                    // selected shape is not a possible drag target, then we
+                    // can continue the drag.
+                    const dragNodes = stage?.getAllIntersections(stage.getPointerPosition()) ?? [];
+                    const selectedDragNode = dragNodes.find(n =>
+                        n._id === selectedNodes[0]._id
+                        || selectedNodes[0].isAncestorOf(n));
+
+                    if (selectedDragNode) {
+                        selectedNodes[0]._createDragElement(evt);
+                    }
+                    else {
+                        origCreateDragElement.apply(shape, [evt]);
+                    }
+                };
+
+                shape.setAttrs({
+                    id: field.guid,
+                    draggable: true,
+                    dragBoundFunc
+                });
+
+                nodeLayer.add(shape);
+            }
+
+            shape.setZIndex(zIndex);
+            zIndex++;
+
+            updateShapeFromField(shape, field, surface, blockConfig.icons ?? []);
+        }
+
+        // Remove any nodes that no longer exist as fields.
+        const fieldGuids = props.labelManager.current.value.labelData.fields.map(f => f.guid);
+        for (let childIndex = 0; childIndex < nodeLayer.children.length; childIndex++) {
+            const child = nodeLayer.children[childIndex];
+
+            if (!fieldGuids.some(g => areEqual(g, child.id()))) {
+                child.destroy();
+            }
+        }
+
+        // Update selection.
+        const node = nodeLayer.children.find(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
+
+        if (node) {
+            selectNode(node, props.labelManager.selectedField.value);
+        }
+        else {
+            deselectAllNodes();
+        }
+    }
+
+    /**
+     * Waits up to the specified timeout for the custom fonts to be loaded by
+     * the browser. This also initiates the loading of the fonts.
+     *
+     * @param timeout The timeout in milliseconds after which we will complete.
+     */
+    async function waitForFonts(timeout: number): Promise<void> {
+        if (!document.fonts || !fontLoaderElement.value) {
+            return;
+        }
+
+        const timeoutAt = Date.now() + timeout;
+        const requiredFonts = ["Roboto", "Roboto Condensed"];
+        const fonts = await new Promise<FontFaceSet>(r => document.fonts.ready.then(r));
+
+        // Create div elements for each font we require. This will force the
+        // browser to start loading the font from the CSS reference.
+        for (const fontName of requiredFonts) {
+            const d = document.createElement("div");
+            d.style.fontFamily = fontName;
+            d.innerText = "text";
+            fontLoaderElement.value.append(d);
+        }
+
+        // Wait for the fonts to become ready.
+        while (Date.now() < timeoutAt) {
+            const readyFonts = [...fonts]
+                .filter(f => f.status === "loaded")
+                .map(f => f.family.replace(/["']/g, ""));
+            const readyRequiredFonts = requiredFonts.filter(req => readyFonts.includes(req));
+
+            if (readyRequiredFonts.length === requiredFonts.length) {
+                break;
+            }
+
+            // Pause for 50ms and check again.
+            await new Promise<void>(r => setTimeout(r, 50));
+        }
+
+        fontLoaderElement.value.innerHTML = "";
+    }
+
+    /**
+     * Configures a stage to receive drops from the menu control gallary.
+     *
+     * @param stage The stage to be configured.
+     */
+    function configureStageDrop(stage: Konva.Stage): void {
+        var containerElement = stage.container();
+
+        containerElement.addEventListener("dragover", function (e) {
+            // This is required otherwise the tell the browser we will accept
+            // the drop.
+            e.preventDefault();
+
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = "copy";
+            }
+        });
+
+        containerElement.addEventListener("drop", function (e) {
+            e.preventDefault();
+
+            // Set the pointer positions from the mouse event.
+            stage.setPointersPositions(e);
+
+            const pos = stage.getPointerPosition();
+            let dragData: DragData | undefined;
+
+            try {
+                if (e.dataTransfer) {
+                    dragData = JSON.parse(e.dataTransfer.getData("element-type"));
+                }
+            }
+            catch {
+                dragData = undefined;
+            }
+
+            if (!dragData || !pos) {
+                return;
+            }
+
+            const field = createDefaultField(dragData?.type ?? 0, dragData?.subtype ?? 0);
+
+            field.left = surface.getOffsetForPixel(pos.x) - (field.width / 2);
+            field.top = surface.getOffsetForPixel(pos.y) - (field.height / 2);
+
+            // Add the new field to the label.
+            props.labelManager.mutate(label => {
+                label.labelData.fields.push(field);
+            });
+
+            props.labelManager.selectField(field.guid);
+        });
+    }
+
+    /**
+     * Creates a preview image of the canvas that will then be saved into
+     * the database label. This provides a quick way to see what the label
+     * will look like without having to print or go into the designer.
+     */
+    async function savePreview(): Promise<Blob | undefined> {
+        if (!stage) {
+            return undefined;
+        }
+
+        lineTransformer?.visible(false);
+        transformHelper?.transformer.visible(false);
+
+        for (const field of props.labelManager.current.value.labelData.fields) {
+            if (field.isIncludedOnPreview) {
+                continue;
+            }
+
+            findNodeForField(field)?.visible(false);
+        }
+
+        try {
+            const preview = await stage.toBlob({
+                pixelRatio: 2
+            });
+
+            if (preview instanceof Blob) {
+                return preview;
+            }
+        }
+        finally {
+            lineTransformer?.visible(true);
+            transformHelper?.transformer.visible(true);
+
+            for (const field of props.labelManager.current.value.labelData.fields) {
+                if (field.isIncludedOnPreview) {
+                    continue;
+                }
+
+                findNodeForField(field)?.visible(true);
+            }
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Selects the node so it can be manipulated by the user. If the node is not
+     * a field node, then this will walk up the ancestor tree until it finds the
+     * field node.
+     *
+     * @param node The node to be selected on the canvas.
+     * @param field If specified, then the field will also be selected in the label manager.
+     */
+    function selectNode(node: Konva.Node, field: LabelFieldBag | undefined): void {
+        // If we selected something without an id, it might be nested in
+        // a group. Walk up the tree until we find an id.
+        while (node && !node.id()) {
+            if (!node.parent) {
+                return;
+            }
+
+            node = node.parent;
+        }
+
+        if (node instanceof Konva.Line) {
+            lineTransformer?.node(node);
+            transformHelper?.transformer.nodes([]);
+        }
+        else {
+            transformHelper?.transformer.rotateEnabled(field?.fieldType === LabelFieldType.Text);
+            transformHelper?.transformer.nodes([node]);
+            lineTransformer?.node(undefined);
+        }
+
+        if (field && props.labelManager.selectedField.value?.guid !== field.guid) {
+            props.labelManager.selectField(field.guid);
+        }
+    }
+
+    /**
+     * Deselects all nodes and also removes the selection in the label manager.
+     */
+    function deselectAllNodes(): void {
+        transformHelper?.transformer.nodes([]);
+        lineTransformer?.node(undefined);
+        props.labelManager.selectField(undefined);
+    }
+
+    /**
+     * Get the node objects that are currently selected. This checks all ways
+     * a node can be visually selected. If nothing is selected an empty array
+     * will be returned.
+     *
+     * @returns An array of node objects that are selected.
+     */
+    function getSelectedNodes(): Konva.Node[] {
+        const nodes: Konva.Node[] = [];
+
+        if (lineTransformer) {
+            const line = lineTransformer.getSelectedNode();
+
+            if (line) {
+                nodes.push(line);
+            }
+        }
+
+        if (transformHelper) {
+            const transformerNodes = transformHelper.transformer.nodes();
+
+            nodes.push(...transformerNodes);
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Returns the field identifier (guid) for the node. If this node is a
+     * child node then its ancestors will be searched to find the field node.
+     *
+     * @param node The node whose field identifier is to be determined.
+     *
+     * @returns The field identifier or `undefined` if it could not be determined.
+     */
+    function getNodeFieldId(node: Konva.Node): Guid | undefined {
+        let target: Konva.Node | null = node;
+
+        // If we selected something without an id, it might be nested in
+        // a group. Walk up the tree until we find an id.
+        while (target && !target.id()) {
+            target = target.parent;
+        }
+
+        return target?.id();
+    }
+
+    /**
+     * Finds the field for the specified node.
+     *
+     * @param node The node whose field is to be determined.
+     * @param label The label to search, if not specified then the main label is used.
+     *
+     * @returns The label field or `undefined` if it could not be determined.
+     */
+    function findFieldForNode(node: Konva.Node, label?: DesignedLabel): LabelFieldBag | undefined {
+        label = label || props.labelManager.current.value.labelData;
+
+        if (!label.fields) {
+            return undefined;
+        }
+
+        const fieldId = getNodeFieldId(node);
+
+        return label.fields.find(f => f.guid === fieldId);
+    }
+
+    /**
+     * Finds all the fields for the array of nodes. If no fields could be
+     * found then an empty array is returned.
+     *
+     * @param nodes The nodes whose fields are to be determined.
+     *
+     * @returns An array of field bags.
+     */
+    function findFieldsForNodes(nodes: Konva.Node[]): LabelFieldBag[] {
+        if (!props.labelManager.current.value.labelData.fields) {
+            return [];
+        }
+
+        const fieldIds = nodes.map(n => getNodeFieldId(n));
+
+        return props.labelManager.current.value.labelData.fields
+            .filter(f => fieldIds.includes(f.guid));
+    }
+
+    /**
+     * Finds the canvas node for the specified field.
+     *
+     * @param field The field whose node is to be found.
+     *
+     * @returns The node or `undefined` if it could not be found.
+     */
+    function findNodeForField(field: LabelFieldBag): Konva.Node | undefined {
+        return stage?.findOne((n: Konva.Node) => n.id() === field.guid);
+    }
+
+    /**
+     * Hides the field select menu in the context menu.
+     */
+    function hideFieldSelectMenu(): void {
+        if (menuFieldSelectElement.value) {
+            menuFieldSelectElement.value.style.display = "none";
+        }
+    }
+
+    /**
+     * Shows the field select menu for the specified set of nodes.
+     *
+     * @param fields The fields that will be displayed for choosing from.
+     */
+    function showFieldSelectMenu(fields: LabelFieldBag[]): void {
+        if (!menuFieldSelectElement.value) {
+            return;
+        }
+
+        // Remove all the old menu items.
+        while (menuFieldSelectElement.value.childNodes.length > 1) {
+            menuFieldSelectElement.value.removeChild(menuFieldSelectElement.value.childNodes[1]);
+        }
+
+        for (const field of fields) {
+            menuFieldSelectElement.value.appendChild(createContextMenuButton(
+                getFieldTitle(field),
+                () => {
+                    const node = findNodeForField(field);
+                    if (node) {
+                        selectNode(node, field);
+                    }
+                }
+            ));
+        }
+
+        menuFieldSelectElement.value.style.display = "";
+    }
+
+    /**
+     * Shows the action menu of the context menu for the specified field.
+     *
+     * @param field The field whose actions are to be displayed.
+     */
+    function showFieldActionMenu(field: LabelFieldBag): void {
+        if (!menuFieldActionElement.value) {
+            return;
+        }
+
+        menuFieldActionElement.value.innerHTML = "";
+
+        const titleButton = document.createElement("button");
+        titleButton.innerText = getFieldTitle(field);
+        titleButton.classList.add("header");
+        menuFieldActionElement.value.appendChild(titleButton);
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Bring to Front",
+            () => bringToFront(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Bring Forward",
+            () => bringForward(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Send Backward",
+            () => sendBackward(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Send to Back",
+            () => sendToBack(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(document.createElement("hr"));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Delete",
+            () => deleteField(field)
+        ));
+
+        menuFieldActionElement.value.style.display = "";
+    }
+
+    /**
+     * Creates a new button element configured for use on the context menu.
+     *
+     * @param title The title of the button.
+     * @param cb The function to call when it is clicked.
+     *
+     * @returns A new button element.
+     */
+    function createContextMenuButton(title: string, cb: () => void): HTMLButtonElement {
+        const button = document.createElement("button");
+
+        button.innerText = title;
+        button.addEventListener("click", e => {
+            e.preventDefault();
+            cb();
+        });
+
+        return button;
+    }
+
+    /**
+     * Gets the title of the field to display in the UI. This is meant to help
+     * identifier the specific field to the user when looking at a list of
+     * multiple fields.
+     *
+     * @param field The field whose title is to be retrieved.
+     *
+     * @returns A string that represents the field.
+     */
+    function getFieldTitle(field: LabelFieldBag): string {
+        if (field.fieldType === LabelFieldType.Text) {
+            const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
+
+            if (field.fieldSubType === TextFieldSubType.Custom) {
+                return asBoolean(fieldConfig.isDynamicText)
+                    ? fieldConfig.placeholderText ?? ""
+                    : fieldConfig.staticText ?? "";
+            }
+            else {
+                return fieldConfig.placeholderText ?? "";
+            }
+        }
+        else {
+            return LabelFieldTypeDescription[field.fieldType];
+        }
+    }
+
+    /**
+     * Deletes a field from the label.
+     *
+     * @param field The field to be deleted.
+     */
+    function deleteField(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            const fieldIndex = label.labelData.fields.findIndex(f => f.guid === field.guid);
+
+            if (fieldIndex >= 0) {
+                label.labelData.fields.splice(fieldIndex, 1);
+            }
+        });
+    }
+
+    /**
+     * Moves the field forward one z-index.
+     *
+     * @param field The field to be updated.
+     */
+    function bringForward(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
+
+            if (index < label.labelData.fields.length - 1) {
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(index + 1, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Moves the field backward one z-index.
+     *
+     * @param field The field to be updated.
+     */
+    function sendBackward(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
+
+            if (index > 0) {
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(index - 1, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Moves the field to z-index 0.
+     *
+     * @param field The field to be updated.
+     */
+    function sendToBack(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
+
+            if (index > 0) {
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(0, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Moves the field to the last z-index.
+     *
+     * @param field The field to be updated.
+     */
+    function bringToFront(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
+
+            if (index < label.labelData.fields.length - 1) {
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(label.labelData.fields.length, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Fits the canvas stage into the container by scaling it up or down while
+     * maintaining the aspect ratio.
+     */
+    function fitStageIntoContainer(): void {
+        if (!worksurfaceContainerElement.value || !stage) {
+            return;
+        }
+
+        const sceneWidth = props.labelManager.current.value.labelData.width * pixelsPerInch;
+        const sceneHeight = props.labelManager.current.value.labelData.height * pixelsPerInch;
+
+        // Minus 48 for padding.
+        const containerWidth = worksurfaceContainerElement.value.offsetWidth - 48;
+        const containerHeight = worksurfaceContainerElement.value.offsetHeight - 48;
+
+        const scaleWidth = containerWidth / sceneWidth;
+        const scaleHeight = containerHeight / sceneHeight;
+
+        let scale = Math.min(scaleWidth, scaleHeight);
+
+        // Round the scale down to increments of 0.25.
+        scale = Math.round(scale * 100);
+        scale -= scale % 25;
+        scale = scale / 100;
+
+        stage.width(sceneWidth * scale);
+        stage.height(sceneHeight * scale);
+        backgroundRectangle.width(stage.width());
+        backgroundRectangle.height(stage.height());
+
+        surface.scale = scale;
+    }
+
+    /**
+     * Determines if the keyboard event represents a request to undo an action.
+     *
+     * @param e The keyboard event.
+     */
+    function isUndoKey(e: KeyboardEvent): boolean {
+        // On windows we use CTRL+Z
+        if (e.key === "z" && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            return true;
+        }
+
+        // On mac we use CMD+Z
+        if (e.key === "z" && e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines if the keyboard event represents a request to redo an action.
+     *
+     * @param e The keyboard event.
+     */
+    function isRedoKey(e: KeyboardEvent): boolean {
+        // On windows we use CTRL+Y
+        if (e.key === "y" && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            return true;
+        }
+
+        // On mac we use CMD+SHIFT+Z
+        if (e.key === "z" && e.metaKey && e.shiftKey && !e.ctrlKey && !e.altKey) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for when a node on the stage is clicked or tapped.
+     * Translates the event data into selection information.
+     *
+     * @param e The object describing the event.
+     */
+    function onStageNodeSelected(e: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>): void {
+        // Do nothing on non-left click.
+        if (e.evt instanceof MouseEvent && e.evt.button !== 0) {
+            return;
+        }
+
+        // If they clicked on the background, deselect everything.
+        if (!e.target || e.target === stage || e.target === backgroundRectangle) {
+            deselectAllNodes();
+
+            return;
+        }
+
+        const field = findFieldForNode(e.target);
+
+        if (!field) {
+            console.error(`Could not find field '${e.target.id()}'.`, e.target);
+
+            deselectAllNodes();
+
+            return;
+        }
+
+        // Select the node, only single selection supported.
+        selectNode(e.target, field);
+    }
+
+    /**
+     * Handles the context menu event for the stage. We use this to override
+     * the standard browser context menu with one that allows for custom actions
+     * to be performed in the editor.
+     *
+     * @param e The event that was triggered.
+     */
+    function onContextMenu(e: KonvaEventObject<MouseEvent>): void {
+        // Prevent the browser from showing the standard menu.
+        e.evt.preventDefault();
+
+        // They hit the stage or not ready yet, nothing to show.
+        if (e.target === stage || !stage || !menuElement.value || !containerElement.value) {
+            if (menuElement.value) {
+                menuElement.value.style.display = "none";
+            }
+
+            return;
+        }
+
+        const fullContainerWidth = worksurfaceContainerElement.value?.offsetWidth ?? 10000;
+        const fullContainerHeight = worksurfaceContainerElement.value?.offsetHeight ?? 10000;
+        const offsetX = containerElement.value.offsetLeft;
+        const offsetY = containerElement.value.offsetTop;
+        const pointer = stage.getPointerPosition() ?? { x: 0, y: 0 };
+
+        menuElement.value.style.display = "initial";
+        menuElement.value.style.left = `${offsetX + pointer.x + 4}px`;
+        menuElement.value.style.top = `${offsetY + pointer.y + 4}px`;
+
+        const nodes = stage.getAllIntersections(stage.getPointerPosition());
+        const selectedNodes = getSelectedNodes();
+
+        // If a single node is already selected and is one of the nodes that was
+        // right-clicked on, then we want to show the action menu for the
+        // selected node, and then show the field select menu.
+        if (selectedNodes.length === 1) {
+            if (nodes.find(n => n._id === selectedNodes[0]._id)) {
+                const field = findFieldForNode(selectedNodes[0]);
+
+                if (field) {
+                    showFieldActionMenu(field);
+                }
+
+                if (nodes.length > 1) {
+                    showFieldSelectMenu(findFieldsForNodes(nodes));
+                }
+                else {
+                    hideFieldSelectMenu();
+                }
+
+                return;
+            }
+        }
+
+        // Auto-select the top-most node/field.
+        const field = findFieldForNode(nodes[nodes.length - 1]);
+
+        if (field) {
+            selectNode(nodes[nodes.length - 1], field);
+            showFieldActionMenu(field);
+        }
+
+        if (nodes.length == 1) {
+            hideFieldSelectMenu();
+        }
+        else {
+            showFieldSelectMenu(findFieldsForNodes(nodes));
+        }
+
+        // If it is too wide, flip it to the left of the mouse.
+        if (menuElement.value.offsetLeft + menuElement.value.offsetWidth > fullContainerWidth) {
+            menuElement.value.style.left = `${offsetX + pointer.x - menuElement.value.offsetWidth}px`;
+        }
+
+        // If it is too tall, flip it above the mouse.
+        if (menuElement.value.offsetTop + menuElement.value.offsetHeight > fullContainerHeight) {
+            menuElement.value.style.top = `${offsetY + pointer.y - menuElement.value.offsetHeight}px`;
+        }
+    }
+
+    /**
+     * Handler for when a click event is encountered anywhere in the window.
+     */
+    function onWindowClick(): void {
+        // Hide the context menu.
+        if (menuElement.value) {
+            menuElement.value.style.display = "none";
+        }
+    }
+
+    /**
+     * Event handler for when a key is pressed down.
+     *
+     * @param e The event that triggered this action.
+     */
+    function onWindowKeyDown(e: KeyboardEvent): void {
+        if (e.target !== document.body) {
+            return;
+        }
+
+        if (e.key === "Delete") {
+            if (props.labelManager.selectedField.value) {
+                deleteField(props.labelManager.selectedField.value);
+            }
+
+            return;
+        }
+
+        if (isUndoKey(e)) {
+            return props.labelManager.undo();
+        }
+        else if (isRedoKey(e)) {
+            return props.labelManager.redo();
+        }
+
+        const validMovementKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+
+        if (!stage || !validMovementKeys.includes(e.key)) {
+            return;
+        }
+
+        props.labelManager.mutateSelectedField(field => {
+            let pixelPos: Konva.Vector2d = {
+                x: surface.getPixelForOffset(field.left),
+                y: surface.getPixelForOffset(field.top)
+            };
+            const pixelSize: Konva.Vector2d = {
+                x: surface.getPixelForOffset(field.width),
+                y: surface.getPixelForOffset(field.height)
+            };
+
+            if (e.key === "ArrowLeft") {
+                pixelPos.x -= 1;
+            }
+            else if (e.key === "ArrowRight") {
+                pixelPos.x += 1;
+            }
+            else if (e.key === "ArrowUp") {
+                pixelPos.y -= 1;
+            }
+            else if (e.key === "ArrowDown") {
+                pixelPos.y += 1;
+            }
+
+            pixelPos = surface.getBoundedPosition(pixelPos, pixelSize, true);
+
+            field.left = surface.getOffsetForPixel(pixelPos.x);
+            field.top = surface.getOffsetForPixel(pixelPos.y);
+        });
+    }
+
+    /**
+     * Event handler for the end of a drag operation to move a node around.
+     *
+     * @param e The object that describes the event.
+     */
+    function onNodeDragEnd(e: KonvaEventObject<DragEvent>): void {
+        props.labelManager.mutate(label => {
+            const field = findFieldForNode(e.target, label.labelData);
+
+            if (!field) {
+                return;
+            }
+
+            field.left = surface.getOffsetForPixel(e.target.x());
+            field.top = surface.getOffsetForPixel(e.target.y());
+        });
+    }
+
+    /**
+     * Event handler for the end of a transform operation to resize a node.
+     *
+     * @param e The object that describes the event.
+     */
+    function onNodeTransformEnd(e: KonvaEventObject<unknown>): void {
+        props.labelManager.mutate(label => {
+            const field = findFieldForNode(e.target, label.labelData);
+
+            if (!field) {
+                return;
+            }
+
+            field.left = surface.getOffsetForPixel(e.target.x());
+            field.top = surface.getOffsetForPixel(e.target.y());
+            field.width = surface.getOffsetForPixel(e.target.width());
+            field.height = surface.getOffsetForPixel(e.target.height());
+        });
+    }
+
+    /**
+     * Event handler for the end of a transform operation to modify a line's
+     * anchor positions.
+     *
+     * @param line The line that was modified.
+     */
+    function onLineTransformEnd(line: Konva.Line): void {
+        props.labelManager.mutate(label => {
+            const field = findFieldForNode(line, label.labelData);
+
+            if (!field) {
+                return;
+            }
+
+            field.left = surface.getOffsetForPixel(line.x());
+            field.top = surface.getOffsetForPixel(line.y());
+            field.width = surface.getOffsetForPixel(line.points()[2]);
+            field.height = surface.getOffsetForPixel(line.points()[3]);
+        });
+    }
+
+    /**
+     * Called when the container is resized. This alerts us that we can resize
+     * the Konva surface and scale it to fit the available space.
+     */
+    function onContainerResize(): void {
+        fitStageIntoContainer();
+        drawGridLines();
+        createOrUpdateNodes();
+    }
+
+    onMounted(async () => {
+        window.addEventListener("click", onWindowClick);
+
+        if (!containerElement.value) {
+            return;
+        }
+
+        if (worksurfaceContainerElement.value && resizeObserver) {
+            resizeObserver.observe(worksurfaceContainerElement.value);
+        }
+
+        window.addEventListener("keydown", onWindowKeyDown);
+
+        // Wait up to 2.5 seconds for fonts to load.
+        await waitForFonts(2500);
+
+        stage = new Konva.Stage({
+            container: containerElement.value,
+            width: props.labelManager.current.value.labelData.width * pixelsPerInch,
+            height: props.labelManager.current.value.labelData.height * pixelsPerInch
+        });
+        surface.stage = stage;
+
+        stage.add(backgroundLayer);
+        stage.add(nodeLayer);
+        stage.add(gridLayer);
+
+        backgroundLayer.add(backgroundRectangle);
+
+        const transformerLayer = new Konva.Layer();
+        stage.add(transformerLayer);
+
+        transformHelper = new TransformHelper(stage, surface);
+        lineTransformer = new LineTransformer(surface, onLineTransformEnd);
+        transformerLayer.add(transformHelper.transformer);
+        transformerLayer.add(lineTransformer);
+
+        stage.on("click", onStageNodeSelected);
+        stage.on("tap", onStageNodeSelected);
+        stage.on("dragend", onNodeDragEnd);
+        stage.on("contextmenu", onContextMenu);
+        transformHelper.transformer.on("transformend", onNodeTransformEnd);
+
+        fitStageIntoContainer();
+
+        configureStageDrop(stage);
+        createOrUpdateNodes();
+
+        drawGridLines();
+        stage.draw();
+    });
+
+    onBeforeUnmount(() => {
+        stage?.destroy();
+        stage = undefined;
+
+        transformHelper?.destroy();
+        transformHelper = undefined;
+
+        window.removeEventListener("keydown", onWindowKeyDown);
+        window.removeEventListener("click", onWindowClick);
+
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+        }
+    });
+
+    // If anything about the label changes then we need to redraw everything.
+    // This accounts for if something about the label size changes or any
+    // fields get modified.
+    watch(props.labelManager.current, () => {
+        fitStageIntoContainer();
+        drawGridLines();
+        createOrUpdateNodes();
+    });
+
+    // If they have requested to show or hide the grid then we need to update
+    // the layer that contains the grid lines.
+    watch(() => props.showGrid, () => {
+        drawGridLines();
+    });
+
+    // If they want to snap to grid then configure the surface for snapping.
+    watch(() => [props.showGrid, props.snapToGrid], () => {
+        surface.snapToGrid = props.showGrid && props.snapToGrid;
+    });
+</script>

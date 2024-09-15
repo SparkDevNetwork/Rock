@@ -60,16 +60,27 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Bus\QueueList.cs" />
+    <Compile Include="CheckIn\CheckInKiosk.cs" />
+    <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
+    <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\ShortLink.cs" />
+    <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
     <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
+    <Compile Include="Engagement\CampaignList.cs" />
+    <Compile Include="Security\UserLoginList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
@@ -96,6 +107,7 @@
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
+	<Compile Include="Event\EventItemOccurrenceList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -110,7 +122,7 @@
     <Compile Include="Reporting\DynamicData.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />
-    <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />
+    <Compile Include="Finance\VolunteerGenerosityAnalysis.cs" />
     <Compile Include="RockEntityDetailBlockType.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />

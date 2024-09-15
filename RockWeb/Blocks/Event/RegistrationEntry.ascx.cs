@@ -956,7 +956,7 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
+            int? registrationInstanceId = GetRegistrationInstanceIdFromURL( false );
 
             string pageTitle;
             if ( registrationInstanceId.HasValue )
@@ -977,8 +977,9 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Gets the registration instance identifier from URL.
         /// </summary>
+        /// <param name="applyDateFilter">if set to [true] only a matching registration that has not yet started or ended is returned.</param>
         /// <returns></returns>
-        private int? GetRegistrationInstanceIdFromURL()
+        private int? GetRegistrationInstanceIdFromURL( bool applyDateFilter = true )
         {
             string registrationSlug = PageParameter( SLUG_PARAM_NAME );
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
@@ -987,17 +988,23 @@ namespace RockWeb.Blocks.Event
             if ( registrationInstanceId == null && registrationSlug.IsNotNullOrWhiteSpace() )
             {
                 var dateTime = RockDateTime.Now;
-                registrationInstanceId = new EventItemOccurrenceGroupMapService( new RockContext() )
+                var query = new EventItemOccurrenceGroupMapService(new RockContext())
                     .Queryable()
                     .AsNoTracking()
-                    .Where( l => l.UrlSlug == registrationSlug )
-                    .Where( l => l.RegistrationInstance != null )
-                    .Where( l => l.RegistrationInstance.IsActive )
-                    .Where( l => l.RegistrationInstance.RegistrationTemplate != null )
-                    .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
-                    .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
-                    .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .Select( a => a.RegistrationInstanceId ).FirstOrDefault();
+                    .Where(l => l.UrlSlug == registrationSlug)
+                    .Where(l => l.RegistrationInstance != null)
+                    .Where(l => l.RegistrationInstance.IsActive)
+                    .Where(l => l.RegistrationInstance.RegistrationTemplate != null)
+                    .Where(l => l.RegistrationInstance.RegistrationTemplate.IsActive);
+
+                if ( applyDateFilter )
+                {
+                    query = query
+                        .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
+                        .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) );
+                }
+
+                registrationInstanceId = query.Select( a => a.RegistrationInstanceId ).FirstOrDefault();
             }
             else if ( registrationId.HasValue )
             {
@@ -5947,7 +5954,8 @@ namespace RockWeb.Blocks.Event
                     var costSummary = new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Cost,
-                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ), registrant.GetLastName( RegistrationTemplate ) )
+                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ), registrant.GetLastName( RegistrationTemplate ) ),
+                        RegistrationRegistrantGuid = registrant.Guid
                     };
 
                     // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
@@ -6021,6 +6029,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     Type = RegistrationCostSummaryType.Fee,
                                     Description = desc,
+                                    RegistrationRegistrantGuid = registrant.Guid,
                                     Cost = feeInfo.Quantity * cost,
 
                                     // Default the DiscountedCost to be the same as the Cost
@@ -6092,6 +6101,9 @@ namespace RockWeb.Blocks.Event
                         Description = "Total",
                         Cost = costs.Sum( c => c.Cost ),
                         DiscountedCost = RegistrationState.DiscountedCost,
+
+                        // The total isn't associated with a particular registrant, so set the registrant guid to null.
+                        RegistrationRegistrantGuid = null
                     } );
 
                     rptFeeSummary.DataSource = costs;

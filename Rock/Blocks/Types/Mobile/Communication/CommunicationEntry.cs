@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Communication
@@ -340,7 +341,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Email = a.Email,
                     PersonGuid = a.PersonGuid,
                     EntitySetItemGuid = a.EntitySetItemGuid,
-                    PhotoUrl = a.PhotoId != null ? MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={a.PhotoId}&maxwidth=256&maxheight=256" ) : string.Empty,
+                    PhotoUrl = a.PhotoId != null ? FileUrlHelper.GetImageUrl( a.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) : string.Empty,
                     SmsNumber = a.PhoneNumbers.GetFirstSmsNumber(),
                 } ).ToList();
 

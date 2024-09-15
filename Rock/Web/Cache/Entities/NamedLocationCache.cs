@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {

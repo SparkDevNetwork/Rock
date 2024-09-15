@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -273,7 +273,8 @@ namespace RockWeb.Blocks.Cms
                 KnownIndividualsCount =
                      personAliasPersonalizationsSegmentsQry
                          .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count(),
-                Guid = a.Guid
+                Guid = a.Guid,
+                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds
             } );
 
             // sort the query based on the column that was selected to be sorted
@@ -302,6 +303,7 @@ namespace RockWeb.Blocks.Cms
             public int AnonymousIndividualsCount { get; set; }
             public int KnownIndividualsCount { get; set; }
             public Guid Guid { get; set; }
+            public double? TimeToUpdateDurationMilliseconds { get; set; }
         }
     }
 }

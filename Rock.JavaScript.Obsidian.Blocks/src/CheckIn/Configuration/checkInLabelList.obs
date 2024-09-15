@@ -1,0 +1,166 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Check In Label"
+          :entityTypeGuid="EntityType.CheckInLabel"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          tooltipField="description"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
+
+        <LabelColumn name="labelType"
+                     title="Label Type"
+                     field="labelType"
+                     :textSource="LabelTypeDescription"
+                     visiblePriority="md" />
+
+        <TextColumn name="labelSize"
+                    title="Label Size"
+                    field="labelSize"
+                    visiblePriority="sm" />
+
+        <BooleanColumn name="isActive"
+                       title="Is Active"
+                       field="isActive"
+                       visiblePriority="sm" />
+
+        <Column name="previewImage"
+                title="Preview"
+                visiblePriority="lg"
+                excludeFromExport>
+            <template #format="{ row, grid }">
+                <img v-if="row.previewImage"
+                     class="preview-image"
+                     :src="getPreviewImage(row, grid)" />
+            </template>
+        </Column>
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<style scoped>
+.preview-image {
+    max-width: 100%;
+    max-height: 80px;
+    border-radius: 4px;
+    border: 1px solid var(--theme-light);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, .1);
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, Column, HighlightDetailColumn, LabelColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CheckInLabelListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelList/checkInLabelListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./CheckInLabelList/types.partial";
+    import { LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
+    import { reactive, ref } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const config = useConfigurationValues<ListBlockBox<CheckInLabelListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function getPreviewImage(row: Record<string, unknown>, grid: IGridState): string {
+        return grid.rowCache.getOrAdd(row, "preview-image", () => {
+            if (typeof row.previewImage !== "string") {
+                return "";
+            }
+
+            return `data:image/png;base64,${row.previewImage}`;
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete check in label.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

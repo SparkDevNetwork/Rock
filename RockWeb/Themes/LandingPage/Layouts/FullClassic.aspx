@@ -10,7 +10,7 @@
     <Rock:Lava ID="HeaderImage" runat="server">
         {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
         {%- if headerImageId != '' -%}
-        <div class="hero has-overlay classic-hero py-sm-5" style="background-image:url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500');">
+        <div class="hero has-overlay classic-hero py-sm-5" style="background-image:url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500');">
         {%- else -%}
         <div class="hero has-overlay classic-hero py-sm-5" style="background-image:url('https://source.unsplash.com/mvxrY7z7gtM/2500x1800');">
         {%- endif -%}
@@ -40,7 +40,7 @@
     <Rock:Lava ID="SecondaryImage" runat="server">
         {%- assign secondaryImageId = CurrentPage | Attribute:'SecondaryImage','Id' -%}
         {%- if secondaryImageId != '' -%}
-        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ secondaryImageId }}&maxWidth=2500') center center; background-size: cover;">
+        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ secondaryImageId | ImageUrl: '', 'rootUrl' }}&maxWidth=2500') center center; background-size: cover;">
         {%- else -%}
         <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('https://images.unsplash.com/photo-1520512533001-af75c194690b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d23a0082e9aa3caa886db02d419bdd3d&auto=format&fit=crop&w=2500&q=80&auto=enhance') center center; background-size: cover;">
         {%- endif -%}

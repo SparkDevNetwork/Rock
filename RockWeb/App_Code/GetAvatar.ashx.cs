@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Drawing.Avatar;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -42,6 +43,7 @@ namespace RockWeb
         // Delegate setup variables
         private AsyncProcessorDelegate _Delegate;
         protected delegate void AsyncProcessorDelegate( HttpContext context );
+        private SecuritySettingsService _securitySettingsService = new SecuritySettingsService();
 
         /// <summary>
         /// Called to initialize an asynchronous call to the HTTP handler. 
@@ -244,6 +246,25 @@ namespace RockWeb
             // Calculate the physical path to store the cached files to
             settings.CachePath = request.MapPath( $"~/App_Data/Avatar/Cache/" );
 
+            // Use IdHash instead of predictable IDs if the setting is enabled
+            var disablePredictableIds = _securitySettingsService.SecuritySettings.DisablePredictableIds;
+
+            if ( disablePredictableIds )
+            {
+                if ( request.QueryString["fileIdKey"] != null )
+                {
+                    var photoIdKey = request.QueryString["fileIdKey"];
+                    settings.PhotoId = IdHasher.Instance.GetId( photoIdKey );
+                }
+            }
+            else
+            {
+                if ( request.QueryString["PhotoId"] != null )
+                {
+                    settings.PhotoId = request.QueryString["PhotoId"].AsIntegerOrNull();
+                }
+            }
+
             // Colors
             var backgroundColor = string.Empty;
             var foregroundColor = string.Empty;
@@ -322,12 +343,6 @@ namespace RockWeb
             if ( request.QueryString["Text"] != null )
             {
                 settings.Text = request.QueryString["Text"];
-            }
-
-            // Photo Id
-            if ( request.QueryString["PhotoId"] != null )
-            {
-                settings.PhotoId = request.QueryString["PhotoId"].AsIntegerOrNull();
             }
 
             // Record Type Guid

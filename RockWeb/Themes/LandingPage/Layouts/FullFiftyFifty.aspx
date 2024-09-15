@@ -17,11 +17,12 @@
             <Rock:Lava ID="HeaderImage" runat="server">
                 {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
                 {%- if headerImageId != '' -%}
-                    <div class="col-lg-6 col-md-12" style="background: url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500') center center no-repeat; background-size: cover; min-height: 100vh;"></div>
+                <div class="col-lg-6 col-md-12" style="background: url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500') center center no-repeat; background-size: cover; min-height: 100vh;"></div>
                 {%- else -%}
-                    <div class="col-lg-6 col-md-12"></div>
+                <div class="col-lg-6 col-md-12"></div>
                 {%- endif -%}
             </Rock:Lava>
+
         </div>
     </div>
 
@@ -49,7 +50,7 @@
     <Rock:Lava ID="SecondaryImage" runat="server">
         {%- assign secondaryImageId = CurrentPage | Attribute:'SecondaryImage','Id' -%}
         {%- if secondaryImageId != '' -%}
-        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ secondaryImageId }}&maxWidth=2500') center center; background-size: cover;">
+        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ secondaryImageId | ImageUrl: '', 'rootUrl' }}&maxWidth=2500')  center center; background-size: cover;">
         {%- else -%}
         <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('https://images.unsplash.com/photo-1520512533001-af75c194690b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d23a0082e9aa3caa886db02d419bdd3d&auto=format&fit=crop&w=2500&q=80&auto=enhance') center center; background-size: cover;">
         {%- endif -%}

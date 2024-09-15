@@ -33,6 +33,8 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using CheckInLabel = Rock.CheckIn.CheckInLabel;
+
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>

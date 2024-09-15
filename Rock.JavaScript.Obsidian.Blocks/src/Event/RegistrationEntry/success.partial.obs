@@ -6,6 +6,7 @@
                                   :gatewayGuid="gatewayGuid"
                                   :transactionCode="transactionCode"
                                   :gatewayPersonIdentifier="gatewayPersonIdentifier"
+                                  saveAccountCheckBoxLabel="Save account information for future payments"
                                   class="well">
             <template #header>
                 <h3>Make Payments Even Easier</h3>

@@ -57,13 +57,23 @@ namespace Rock.Obsidian.UI
                     return null;
                 }
 
+                string connectionStatus = null;
+                if ( person.ConnectionStatusValueId.HasValue )
+                {
+                    var connectionStatusValue = DefinedValueCache.Get(person.ConnectionStatusValueId.Value );
+                    if (connectionStatusValue != null )
+                    {
+                        connectionStatus = connectionStatusValue.Value;
+                    }
+                }
+
                 return new PersonFieldBag
                 {
                     IdKey = person.IdKey,
                     NickName = person.NickName,
                     LastName = person.LastName,
                     PhotoUrl = person.PhotoUrl,
-                    ConnectionStatus = person.ConnectionStatusValue?.Value
+                    ConnectionStatus = connectionStatus
 
                 };
             } );

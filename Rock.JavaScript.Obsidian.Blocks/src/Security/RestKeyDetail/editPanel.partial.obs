@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
     import { PropType, watch } from "vue";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -47,10 +47,11 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { RestKeyBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyBag";
     import { RestKeyDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<RestKeyBag>,
+            type: Object as PropType<ValidPropertiesBox<RestKeyBag>>,
             required: true
         },
 
@@ -61,16 +62,16 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: RestKeyBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<RestKeyBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const apiKey = propertyRef(props.modelValue.apiKey ?? "", "ApiKey");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
+    const apiKey = propertyRef(props.modelValue?.bag?.apiKey ?? "", "ApiKey");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? true, "IsActive");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -84,32 +85,25 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
-
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? true);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(apiKey, props.modelValue.apiKey ?? "");
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? true);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(apiKey, props.modelValue?.bag?.apiKey ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([...propRefs], () => {
-        const newValue: RestKeyBag = {
-            ...props.modelValue,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            apiKey: apiKey.value
+        const newValue: ValidPropertiesBox<RestKeyBag> = {
+            bag: { ...props.modelValue.bag } as RestKeyBag,
         };
+
+        setPropertiesBoxValue(newValue, "description", description.value),
+        setPropertiesBoxValue(newValue, "isActive", isActive.value),
+        setPropertiesBoxValue(newValue, "name", name.value),
+        setPropertiesBoxValue(newValue, "apiKey", apiKey.value),
 
         emit("update:modelValue", newValue);
     });

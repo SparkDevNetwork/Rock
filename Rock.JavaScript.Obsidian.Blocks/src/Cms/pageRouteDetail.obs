@@ -10,7 +10,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PageRoute"
                  entityTypeName="PageRoute"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isDeleteable"
                  :isEditVisible="isEditable"
@@ -105,6 +105,10 @@
 
     const options = computed((): PageRouteDetailOptionsBag => {
         return config.options ?? {};
+    });
+
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value !== DetailPanelMode.Edit;
     });
 
     // #endregion
@@ -214,12 +218,7 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
-                pageRouteViewBag.value = result.data;
-
-                return true;
-            }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
+            if (result.statusCode === 200 && typeof result.data === "string") {
                 return result.data;
             }
         }

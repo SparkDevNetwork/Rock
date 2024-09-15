@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.RestKeyDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Security
@@ -34,7 +35,6 @@ namespace Rock.Blocks.Security
     /// Displays the details of a particular user login.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
-
     [DisplayName( "Rest Key Detail" )]
     [Category( "Security" )]
     [Description( "Displays the details of a particular user login." )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Security
 
     [Rock.SystemGuid.EntityTypeGuid( "aed330ca-40a4-407a-b2dc-a0c1310fdc39" )]
     [Rock.SystemGuid.BlockTypeGuid( "28A34F1C-80F4-496F-A598-180974ADEE61" )]
-    public class RestKeyDetail : RockDetailBlockType
+    public class RestKeyDetail : RockEntityDetailBlockType<UserLogin, RestKeyBag>
     {
         #region Keys
 
@@ -68,17 +68,14 @@ namespace Rock.Blocks.Security
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag>();
+            var box = new DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -86,9 +83,8 @@ namespace Rock.Blocks.Security
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private RestKeyDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private RestKeyDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new RestKeyDetailOptionsBag();
 
@@ -100,14 +96,13 @@ namespace Rock.Blocks.Security
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="userLogin">The UserLogin to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the UserLogin is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateUserLogin( UserLogin userLogin, RockContext rockContext, out string errorMessage )
+        private bool ValidateUserLogin( UserLogin userLogin, out string errorMessage )
         {
             errorMessage = null;
 
-            var userLoginInDb = new UserLoginService(rockContext).Queryable().Where( a => a.ApiKey == userLogin.ApiKey ).FirstOrDefault();
+            var userLoginInDb = new UserLoginService( RockContext ).Queryable().Where( a => a.ApiKey == userLogin.ApiKey ).FirstOrDefault();
             if ( userLoginInDb != null && userLoginInDb.PersonId != userLogin.PersonId )
             {
                 // this key already exists in the database. Show the error and get out of here.
@@ -123,10 +118,9 @@ namespace Rock.Blocks.Security
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -142,8 +136,7 @@ namespace Rock.Blocks.Security
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForView( entity );
                 }
                 else
                 {
@@ -155,25 +148,25 @@ namespace Rock.Blocks.Security
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( UserLogin.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
-        /// <param name="rockContext">The rock Context.</param>
         /// <returns>A <see cref="RestKeyBag"/> that represents the entity.</returns>
-        private RestKeyBag GetCommonEntityBag( UserLogin entity, RockContext rockContext )
+        private RestKeyBag GetCommonEntityBag( UserLogin entity )
         {
-            if ( entity == null || rockContext == null )
+            if ( entity == null )
             {
                 return null;
             }
@@ -193,7 +186,7 @@ namespace Rock.Blocks.Security
             {
                 restKeyBag.Name = entity.Person.LastName;
                 restKeyBag.IsActive = entity.Person.RecordStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                var noteService = new NoteService( rockContext );
+                var noteService = new NoteService( RockContext );
                 // the description gets saved as a system note for the person
                 var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
                 var description = noteService.Queryable().Where( a => a.EntityId == entity.Person.Id && a.NoteTypeId == noteType.Id ).FirstOrDefault();
@@ -201,80 +194,58 @@ namespace Rock.Blocks.Security
                 {
                     restKeyBag.Description = description.Text;
                 }
-
             }
 
             return restKeyBag;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <param name="rockContext">The rock Context.</param>
-        /// <returns>A <see cref="RestKeyBag"/> that represents the entity.</returns>
-        private RestKeyBag GetEntityBagForView( UserLogin entity, RockContext rockContext )
-        {
-            if ( entity == null || rockContext == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity, rockContext );
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext">The rock Context.</param>
-        /// <returns>A <see cref="RestKeyBag"/> that represents the entity.</returns>
-        private RestKeyBag GetEntityBagForEdit( UserLogin entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override RestKeyBag GetEntityBagForView( UserLogin entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity, rockContext );
+            var bag = GetCommonEntityBag( entity );
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( UserLogin entity, DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override RestKeyBag GetEntityBagForEdit( UserLogin entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            return bag;
+        }
+
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( UserLogin entity, ValidPropertiesBox<RestKeyBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.ApiKey ),
-                () => entity.ApiKey = box.Entity.ApiKey );
+            box.IfValidProperty( nameof( box.Bag.ApiKey ),
+                () => entity.ApiKey = box.Bag.ApiKey );
 
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.EntityType ),
+                () => entity.EntityTypeId = box.Bag.EntityType.GetEntityId<EntityType>( RockContext ) );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="UserLogin"/> to be viewed or edited on the page.</returns>
-        private UserLogin GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override UserLogin GetInitialEntity()
         {
-            var person = GetInitialEntity<Person, PersonService>( rockContext, PageParameterKey.RestUserId );
+            var person = GetInitialEntity<Person, PersonService>( RockContext, PageParameterKey.RestUserId );
             if ( person != null)
             {
                 if ( person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id && person.Users.Any( a => a.ApiKey.IsNotNullOrWhiteSpace() ) )
@@ -291,7 +262,7 @@ namespace Rock.Blocks.Security
                 }
             }
 
-            return null;            
+            return null;
         }
 
         /// <summary>
@@ -307,39 +278,9 @@ namespace Rock.Blocks.Security
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out UserLogin entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( UserLogin entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out UserLogin entity, out BlockActionResult error )
-        {
-            var entityService = new UserLoginService( rockContext );
+            var entityService = new UserLoginService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -371,6 +312,15 @@ namespace Rock.Blocks.Security
             return true;
         }
 
+        /// <summary>
+        /// Gets the valid, editable properties.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetValidProperties()
+        {
+            return typeof( RestKeyBag ).GetProperties().Select( p => p.Name ).ToList();
+        }
+
         #endregion
 
         #region Block Actions
@@ -384,20 +334,18 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var box = new DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            var box = new ValidPropertiesBox<RestKeyBag>
+            {
+                Bag = GetEntityBagForEdit( entity ),
+                ValidProperties = GetValidProperties()
+            };
+
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -406,111 +354,112 @@ namespace Rock.Blocks.Security
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<RestKeyBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateUserLogin( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                var entityService = new UserLoginService( rockContext );
-                var restUser = new Person();
-                rockContext.WrapTransaction( () =>
-                {
-                    var personService = new PersonService( rockContext );
-                    
-                    if ( entity.PersonId.HasValue && entity.PersonId.Value != 0 )
-                    {
-                        restUser = personService.Get( entity.PersonId.Value );
-                    }
-                    else
-                    {
-                        personService.Add( restUser );
-                        rockContext.SaveChanges();
-                    }
-
-                    // the rest user name gets saved as the last name on a person
-                    box.IfValidProperty( nameof( box.Entity.Name ),
-                        () => restUser.LastName = box.Entity.Name );
-
-                    box.IfValidProperty( nameof( box.Entity.IsActive ),
-                        () => restUser.RecordStatusValueId = DefinedValueCache.Get( box.Entity.IsActive ? Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() : Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id );
-
-                    restUser.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
-                    if ( restUser.IsValid )
-                    {
-                        rockContext.SaveChanges();
-                    }
-
-                    // the description gets saved as a system note for the person
-                    var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
-                    if ( noteType != null )
-                    {
-                        var noteService = new NoteService( rockContext );
-                        var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
-                        if ( note == null )
-                        {
-                            note = new Note();
-                            noteService.Add( note );
-                        }
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = restUser.Id;
-                        note.Text = box.Entity.Description;
-                    }
-
-                    rockContext.SaveChanges();
-
-                    // the key gets saved in the api key field of a user login (which you have to create if needed)
-                    var entityType = new EntityTypeService( rockContext )
-                        .Get( "Rock.Security.Authentication.Database" );
-                    var userLogin = entityService.GetByPersonId( restUser.Id ).FirstOrDefault();
-                    if ( userLogin == null )
-                    {
-                        userLogin = new UserLogin();
-                        entityService.Add( userLogin );
-                    }
-
-                    if ( string.IsNullOrWhiteSpace( userLogin.UserName ) )
-                    {
-                        userLogin.UserName = Guid.NewGuid().ToString();
-                    }
-
-                    userLogin.IsConfirmed = true;
-                    userLogin.ApiKey = entity.ApiKey;
-                    userLogin.PersonId = restUser.Id;
-                    userLogin.EntityTypeId = entityType.Id;
-                    rockContext.SaveChanges();
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.RestUserId] = restUser.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-
-                return ActionOk( GetEntityBagForView( entity, rockContext ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateUserLogin( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            var entityService = new UserLoginService( RockContext );
+            var restUser = new Person();
+            RockContext.WrapTransaction( () =>
+            {
+                var personService = new PersonService( RockContext );
+
+                if ( entity.PersonId.HasValue && entity.PersonId.Value != 0 )
+                {
+                    restUser = personService.Get( entity.PersonId.Value );
+                }
+                else
+                {
+                    personService.Add( restUser );
+                    RockContext.SaveChanges();
+                }
+
+                // the rest user name gets saved as the last name on a person
+                box.IfValidProperty( nameof( box.Bag.Name ),
+                    () => restUser.LastName = box.Bag.Name );
+
+                box.IfValidProperty( nameof( box.Bag.IsActive ),
+                    () => restUser.RecordStatusValueId = DefinedValueCache.Get( box.Bag.IsActive ? Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() : Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id );
+
+                restUser.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
+                if ( restUser.IsValid )
+                {
+                    RockContext.SaveChanges();
+                }
+
+                // the description gets saved as a system note for the person
+                var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                if ( noteType != null )
+                {
+                    var noteService = new NoteService( RockContext );
+                    var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
+                    if ( note == null )
+                    {
+                        note = new Note();
+                        noteService.Add( note );
+                    }
+                    note.NoteTypeId = noteType.Id;
+                    note.EntityId = restUser.Id;
+                    note.Text = box.Bag.Description;
+                }
+
+                RockContext.SaveChanges();
+
+                // the key gets saved in the api key field of a user login (which you have to create if needed)
+                var entityType = new EntityTypeService( RockContext )
+                    .Get( "Rock.Security.Authentication.Database" );
+                var userLogin = entityService.GetByPersonId( restUser.Id ).FirstOrDefault();
+                if ( userLogin == null )
+                {
+                    userLogin = new UserLogin();
+                    entityService.Add( userLogin );
+                }
+
+                if ( string.IsNullOrWhiteSpace( userLogin.UserName ) )
+                {
+                    userLogin.UserName = Guid.NewGuid().ToString();
+                }
+
+                userLogin.IsConfirmed = true;
+                userLogin.ApiKey = entity.ApiKey;
+                userLogin.PersonId = restUser.Id;
+                userLogin.EntityTypeId = entityType.Id;
+                RockContext.SaveChanges();
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.RestUserId] = restUser.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+
+            return ActionOk( new ValidPropertiesBox<RestKeyBag>
+            {
+                Bag = GetEntityBagForView( entity ),
+                ValidProperties = GetValidProperties()
+            } );
         }
 
         /// <summary>
@@ -521,41 +470,26 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new UserLoginService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new UserLoginService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag> box )
-        {
-            return ActionBadRequest( "Attributes are not supported by this block." );
-        }
-
-        /// <summary>
-        /// Rreturn a random alpha numeric key while making sure the generated key doesn't match the filter
+        /// Return a random alpha numeric key while making sure the generated key doesn't match the filter
         /// </summary>
         /// <returns>A box that contains the entity and attribute information.</returns>
         [BlockAction]

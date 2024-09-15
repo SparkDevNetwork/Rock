@@ -42,6 +42,7 @@
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\layoutList.obs" />
     <Content Include="src\Cms\libraryViewer.obs" />
     <Content Include="src\Cms\LibraryViewer\itemBadgeList.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemDownloadsLabel.partial.obs" />
@@ -65,6 +66,7 @@
     <Content Include="src\Core\definedValueList.obs" />
     <Content Include="src\Core\personSignalList.obs" />
     <Content Include="src\Finance\financialPledgeList.obs" />
+    <Content Include="src\Security\userLoginList.obs" />
     <Content Include="src\Security\restKeyList.obs" />
     <Content Include="src\Crm\personMergeRequestList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
@@ -122,6 +124,7 @@
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\eventItemOccurrenceList.obs" />
     <Content Include="src\Event\registrationInstanceLinkageList.obs" />
     <Content Include="src\Event\registrationEntry.obs" />
     <Content Include="src\Event\RegistrationEntry\costSummary.partial.obs" />
@@ -313,6 +316,7 @@
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
     <Folder Include="src\Cms\LayoutDetail\" />
+    <Folder Include="src\Cms\LayoutList\" />
     <Folder Include="src\Cms\LibraryViewer\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
@@ -339,6 +343,7 @@
     <Folder Include="src\Core\DefinedValueList\" />
     <Folder Include="src\Core\PersonSignalList\" />
     <Folder Include="src\Finance\FinancialPledgeList\" />
+    <Folder Include="src\Security\UserLoginList\" />
     <Folder Include="src\Security\RestKeyList\" />
     <Folder Include="src\Crm\PersonMergeRequestList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
@@ -370,6 +375,7 @@
     <Folder Include="src\Event\AttendanceList\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
+    <Folder Include="src\Event\EventItemOccurrenceList\" />
     <Folder Include="src\Event\RegistrationInstanceLinkageList\" />
     <Folder Include="src\Event\RegistrationInstanceFeeList\" />
     <Folder Include="src\Finance\BenevolenceRequestList\" />
@@ -456,6 +462,7 @@
     <TypeScriptCompile Include="src\Cms\LayoutDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\LayoutList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LibraryViewer\utils.partial.ts" />
     <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
@@ -507,6 +514,7 @@
     <TypeScriptCompile Include="src\Core\DefinedValueList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\PersonSignalList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\UserLoginList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\RestKeyList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonMergeRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
@@ -548,6 +556,7 @@
     <TypeScriptCompile Include="src\Event\AttendanceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\EventItemOccurrenceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceLinkageList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceFeeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BenevolenceRequestList\types.partial.ts" />

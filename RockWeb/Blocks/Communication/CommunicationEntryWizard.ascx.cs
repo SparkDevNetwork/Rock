@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Communication
         {
             get
             {
-                return (ViewState[nameof(RecipientCount)] as int?) ?? 0;
+                return ( ViewState[nameof( RecipientCount )] as int? ) ?? 0;
             }
             set
             {
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Communication
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
@@ -446,7 +446,7 @@ function onTaskCompleted( resultData )
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            
+
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
@@ -1439,7 +1439,7 @@ function onTaskCompleted( resultData )
             lIndividualRecipientListCount.Text = string.Format( "Recipients: {0}", listCount );
 
             pnlIndividualRecipientListCount.Visible = listCount > 0;
-            
+
             // Keep track of the recipient count.
             this.RecipientCount = listCount;
         }
@@ -1821,8 +1821,8 @@ function onTaskCompleted( resultData )
 
                 if ( communicationTemplate.ImageFileId.HasValue )
                 {
-                    var imageUrl = string.Format( "~/GetImage.ashx?id={0}", communicationTemplate.ImageFileId );
-                    lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", this.ResolveRockUrl( imageUrl ) );
+                    var imageUrl = FileUrlHelper.GetImageUrl( communicationTemplate.ImageFileId );
+                    lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", imageUrl );
                 }
                 else
                 {
@@ -2571,7 +2571,7 @@ function onTaskCompleted( resultData )
 
             foreach ( var binaryFileAttachment in binaryFileAttachments )
             {
-                var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
+                var attachmentUrl = FileUrlHelper.GetFileUrl( binaryFileAttachment.Key );
                 var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfEmailAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
                 sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
@@ -2735,15 +2735,20 @@ function onTaskCompleted( resultData )
                     }
 
                     string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-                    imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    var options = new GetImageUrlOptions
+                    {
+                        PublicAppRoot = publicAppRoot
+                    };
+                    imgSMSImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
                     divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
-                    imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    imgConfirmationSmsImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
                     imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
+
                 }
                 else
                 {
@@ -2761,12 +2766,16 @@ function onTaskCompleted( resultData )
                     }
 
                     string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+                    var options = new GetImageUrlOptions
+                    {
+                        PublicAppRoot = publicAppRoot
+                    };
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
 
-                    imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    imgConfirmationSmsImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
                     imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );

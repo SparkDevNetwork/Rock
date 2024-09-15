@@ -69,7 +69,7 @@ export type NoteTypeBag = {
     isSystem: boolean;
 
     /** Gets or sets the maximum reply depth. */
-    maxReplyDepth?: number | null;
+    maxReplyDepth?: string | null;
 
     /** Gets or sets the Name of the NoteType. This property is required. */
     name?: string | null;

@@ -26,6 +26,11 @@ namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
     public class PageShortLinkBag : EntityBagBase
     {
         /// <summary>
+        /// Get the Default Domain URL of the site to be passed to the front end.
+        /// </summary>
+        public string DefaultDomainURL { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.Site that is associated with this PageShortLink.
         /// </summary>
         public ListItemBag Site { get; set; }
@@ -45,5 +50,30 @@ namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
         /// </summary>
         /// <value>The link to be copied.</value>
         public string CopyLink { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValue of the UTM Source to be passed to the remote device.
+        /// </summary>
+        public ListItemBag UtmSourceValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValue of the UTM Medium to be passed to the remote device.
+        /// </summary>
+        public ListItemBag UtmMediumValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValue of the UTM Campaign to be passed to the remote device.
+        /// </summary>
+        public ListItemBag UtmCampaignValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Utm Term to be passed to the remote device.
+        /// </summary>
+        public string UtmTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Utm Content to be passed to the remote device.
+        /// </summary>
+        public string UtmContent { get; set; }
     }
 }

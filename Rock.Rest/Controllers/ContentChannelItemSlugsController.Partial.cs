@@ -89,7 +89,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentChannelSlug/{contentChannelId}/{slug}/{contentChannelItemSlugId?}" )]
-        [Rock.SystemGuid.RestActionGuid( "98C1DB14-6693-4AE5-91BF-E2580BA44451" )]
+        [Rock.SystemGuid.RestActionGuid( "BD61FABC-679A-490D-B4DC-A81F9C876CCF" )]
         public string GetUniqueContentSlugForContentChannel( int contentChannelId, string slug, int? contentChannelItemSlugId = null )
         {
             string uniqueSlug = string.Empty;

@@ -7,6 +7,8 @@
         <asp:HiddenField ID="hfSelectedCommunicationTemplateId" runat="server" />
         <asp:HiddenField ID="hfEmailEditorHtml" runat="server" />
         <asp:HiddenField ID="hfEmailEditorHtml_dvrm" runat="server" Value="True" />
+        <asp:HiddenField ID="hfDisablePredictableIds" runat="server" Value="" />
+
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 

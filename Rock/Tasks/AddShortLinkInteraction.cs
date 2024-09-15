@@ -16,7 +16,7 @@
 //
 using System;
 using System.Linq;
-
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -111,7 +111,15 @@ namespace Rock.Tasks
                     var clientBrowser = client.UA.ToString();
 
                     var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", message.Url, personAliasId, message.DateViewed, clientBrowser, clientOs, clientType, userAgent, message.IPAddress, message.SessionId?.AsGuidOrNull() );
-                    interaction.Source = message.UtmSource;
+
+                    UtmHelper.GetUtmDefinedValueOrTextFromInputValue( message.UtmSource,
+                        SystemGuid.DefinedType.UTM_SOURCE,
+                        out int? sourceValueId,
+                        out string sourceText );
+
+                    interaction.Source = sourceText;
+                    interaction.SourceValueId = sourceValueId;
+
                     rockContext.SaveChanges();
                 }
             }

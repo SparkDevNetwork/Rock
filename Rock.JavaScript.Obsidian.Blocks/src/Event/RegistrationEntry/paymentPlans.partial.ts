@@ -165,7 +165,7 @@ export function useConfigurePaymentPlanFeature() {
         const paymentPlanConfig = getPaymentPlanConfiguration({
             amountToPayToday: finalConfig.amountToPayToday,
             balanceDue: finalConfig.balanceDue,
-            desiredAllowedPaymentPlanFrequencies: finalConfig.paymentPlanFrequencies,
+            desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
             desiredNumberOfPayments: finalConfig.numberOfPayments,
             desiredPaymentPlanFrequency: finalConfig.paymentPlanFrequency,
             desiredStartDate: finalConfig.startDate ?? RockDateTime.now().date,
@@ -204,7 +204,7 @@ export function useConfigurePaymentPlanFeature() {
         wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
             amountToPayToday: wipConfig.amountToPayToday,
             balanceDue: wipConfig.balanceDue,
-            desiredAllowedPaymentPlanFrequencies: wipConfig.paymentPlanFrequencies,
+            desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
             desiredNumberOfPayments: wipConfig.numberOfPayments,
             desiredPaymentPlanFrequency: wipConfig.paymentPlanFrequency,
             desiredStartDate: wipConfig.startDate ?? RockDateTime.now().date,
@@ -246,7 +246,6 @@ export function useConfigurePaymentPlanFeature() {
             transactionFrequencyGuid
                 ? paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, transactionFrequencyGuid)) ?? noopTransactionFrequency
                 : noopPaymentPlanFrequency;
-
 
         wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
             amountToPayToday:

@@ -28,6 +28,7 @@ namespace Rock.Blocks.Event
                     Description = cost.Description,
                     DiscountedCost = cost.DiscountedCost,
                     MinimumPaymentAmount = cost.MinPayment,
+                    RegistrationRegistrantGuid = cost.RegistrationRegistrantGuid,
                     Type = cost.Type,
                 };
         }

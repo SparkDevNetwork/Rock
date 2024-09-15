@@ -70,7 +70,7 @@
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
     import { useStore } from "@Obsidian/PageState";
     import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { List } from "@Obsidian/Utility/linq";
     import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
@@ -599,5 +599,7 @@
             store.redirectToLogin();
         }
     });
+
+    onConfigurationValuesChanged(useReloadBlock());
 
 </script>
