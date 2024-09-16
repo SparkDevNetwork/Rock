@@ -48,9 +48,9 @@
     const emits = defineEmits({ ...learningActivityEmits });
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = ref(props.activityBag);
-    const completionBag = ref(props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = ref(props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -59,7 +59,8 @@
         defaultAssigneeDescription,
         instructions,
         rubric,
-        panelTitle
+        panelTitle,
+        pointsPossibleAtCompletion
     } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
         activityBag,
         completionBag,
@@ -83,7 +84,22 @@
 
             emits("update:activityBag", updatedActivityBag);
     });
-    watch([instructions, rubric], () => {
+
+    watch([activityBag.value.points], () => {
         debouncedActivityBagEmits();
+    }, { deep: true });
+      /** Watch for modified component completion. */
+      const debouncedCompletionBagEmits = debounce(() => {
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
+
+        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+            pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
+        }) ?? "{}";
+        emits("update:completionBag", updatedCompletionBag);
+    });
+    watch([/* TODO: Add my specific completion ref values to watch here */], () => {
+        debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

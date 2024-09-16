@@ -54,7 +54,7 @@ namespace Rock.Blocks.Lms
     #region Block Attributes
 
     [LinkedPage( "Facilitator Portal Page",
-        Description = "The page that will be navigated to when clicking facilitator portal link.",
+        Description = "The page that will be navigated to when clicking the facilitator portal link.",
         Key = AttributeKey.FacilitatorPortalPage,
         Order = 1 )]
 
@@ -174,6 +174,18 @@ namespace Rock.Blocks.Lms
 
         #endregion Keys
 
+        #region Properties
+
+        /// <summary>
+        /// Determines whether the ShowGrades attribute is configured to show grades.
+        /// </summary>
+        /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
+        bool AreGradesShown => GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
+        string HeaderTemplate => GetAttributeValue( AttributeKey.HeaderTemplate ) ?? AttributeDefault.HeaderTemplate;
+        int NumberOfNotificationsToShow => GetAttributeValue( AttributeKey.NumberOfNotificationsToShow ).AsInteger();
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -205,8 +217,7 @@ namespace Rock.Blocks.Lms
             mergeFields.Add( "ContentPages", box.ContentPages );
             mergeFields.Add( "Facilitators", box.Facilitators );
 
-            var template = GetAttributeValue( AttributeKey.HeaderTemplate ) ?? string.Empty;
-            box.HeaderHtml = template.ResolveMergeFields( mergeFields );
+            box.HeaderHtml = HeaderTemplate.ResolveMergeFields( mergeFields );
             return box.HeaderHtml;
         }
 
@@ -385,8 +396,8 @@ namespace Rock.Blocks.Lms
                     CourseName = course.PublicName,
                     CourseSummary = course.Summary,
                     ProgramConfigurationMode = course.LearningProgram.ConfigurationMode,
-                    NumberOfNotificationsToShow = GetAttributeValue( AttributeKey.NumberOfNotificationsToShow ).ToIntSafe(),
-                    ShowGrades = AreGradesShown()
+                    NumberOfNotificationsToShow = NumberOfNotificationsToShow,
+                    ShowGrades = AreGradesShown
                 };
 
             if ( box.CourseName.IsNullOrWhiteSpace() )
@@ -550,12 +561,6 @@ namespace Rock.Blocks.Lms
             box.Notifications.AddRange( activityNotifications.OrderBy( a => a.NotificationDateTime ).ToList() );
         }
 
-        /// <summary>
-        /// Determines whether the ShowGrades attribute is configured to show grades.
-        /// </summary>
-        /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
-        bool AreGradesShown() => GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
-
         #endregion
 
         #region Block Actions
@@ -594,25 +599,27 @@ namespace Rock.Blocks.Lms
                     var components = LearningActivityContainer.Instance.Components;
                     var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
 
-                    activity.ActivityComponentCompletionJson = activityCompletionBag.ActivityComponentCompletionJson;
+                    activity.ActivityComponentCompletionJson = activityComponent.GetCompletionJsonToPersist(
+                        activityCompletionBag.ActivityComponentCompletionJson,
+                        activity.LearningActivity.ActivityComponentSettingsJson );
+
                     activity.PointsEarned = activityComponent.CalculatePointsEarned(
                         activity.LearningActivity.ActivityComponentSettingsJson,
                         activityCompletionBag.ActivityComponentCompletionJson,
                         activity.LearningActivity.Points
                     );
                 }
-
-                if ( activity.LearningActivity.AssignTo == AssignTo.Facilitator )
+                
+                if ( !activity.CompletedByPersonAliasId.HasValue )
                 {
-                    var currentPerson = GetCurrentPerson();
-                    activity.CompletedByPersonAliasId = currentPerson.PrimaryAliasId;
+                    var currentPerson = GetCurrentPerson().PrimaryAliasId;
                 }
 
                 if ( !activity.CompletedDateTime.HasValue )
                 {
                     var now = RockDateTime.Now;
                     activity.CompletedDateTime = now;
-                    activity.WasCompletedOnTime = activity.DueDate >= now;
+                    activity.WasCompletedOnTime = activity.DueDate.HasValue && activity.DueDate >= now;
                 }
 
                 rockContext.SaveChanges();
@@ -623,6 +630,11 @@ namespace Rock.Blocks.Lms
 
                 // Return the raw component settings so a grade can be computed (if applicable).
                 activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
+
+                // Include the updated activity completion in the response.
+                // if the activity checks the completion JSON for historical configuration
+                // we'll want to ensure it's provided now.
+                activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
 
                 return ActionOk( activityCompletionBag );
             }

@@ -323,6 +323,9 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.PointsEarned ),
                 () => entity.PointsEarned = box.Bag.PointsEarned );
 
+            box.IfValidProperty( nameof( box.Bag.WasCompletedOnTime ),
+                () => entity.WasCompletedOnTime = box.Bag.WasCompletedOnTime );
+
             return true;
         }
 

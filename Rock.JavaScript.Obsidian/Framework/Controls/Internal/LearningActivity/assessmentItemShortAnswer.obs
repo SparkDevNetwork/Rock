@@ -173,7 +173,11 @@
     const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount);
     const response = ref(internalModelValue.value.response ?? "");
     const pointsEarned = ref(internalModelValue.value.pointsEarned ?? 0);
-    const pointsPossible = computed(() => props.totalActivityPoints * questionWeight.value / 100);
+
+    // If the completion record contains pointsPossible values then use those;
+    // otherwise calculate based on current total activity points and question weight.
+    // This logic is to maintain the state of the response based on configuration at a point-in-time.
+    const pointsPossible = computed(() => internalModelValue.value.pointsPossible ?? (props.totalActivityPoints * questionWeight.value / 100));
 
     const configurationWeightHelpText = `
         Enter the percentage weight for this question.
@@ -187,6 +191,7 @@
             helpText: toValue(helpText),
             maxCharacterCount: toValue(maxCharacterCount),
             pointsEarned: toValue(pointsEarned),
+            pointsPossible: toValue(pointsPossible),
             question: toValue(question),
             questionWeight: toValue(questionWeight),
             response: response.value,

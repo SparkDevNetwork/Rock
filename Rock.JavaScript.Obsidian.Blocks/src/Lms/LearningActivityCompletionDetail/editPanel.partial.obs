@@ -49,6 +49,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { deepEqual } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         modelValue: {
@@ -75,6 +76,7 @@
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
     const dueDate = ref(completionBag.value.dueDate);
+    const completedDate = ref(completionBag.value.completedDate);
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
@@ -84,6 +86,7 @@
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
+    const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -93,6 +96,7 @@
         , isFacilitatorCompleted
         , facilitatorComment
         , pointsEarned
+        , wasCompletedOnTime
     ];
 
     // #endregion
@@ -125,6 +129,17 @@
 
     // #endregion
 
+    // If the due date changes re-evaluate whether the assignment was late.
+    watch(dueDate, () => {
+        const dueAsRockDate = RockDateTime.parseISO(dueDate.value ?? "");
+        const completedAsRockDate = RockDateTime.parseISO(completedDate.value ?? "");
+
+        if (dueAsRockDate && completedAsRockDate) {
+            console.warn(dueAsRockDate.isLaterThan(completedAsRockDate));
+            wasCompletedOnTime.value = dueAsRockDate.isLaterThan(completedAsRockDate);
+        }
+    });
+
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(completionJson, props.modelValue.bag?.activityComponentCompletionJson ?? "");
@@ -132,6 +147,7 @@
         updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
         updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
         updateRefValue(dueDate, props.modelValue.bag?.dueDate);
+        updateRefValue(wasCompletedOnTime, props.modelValue.bag?.wasCompletedOnTime ?? true);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -146,6 +162,7 @@
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
         setPropertiesBoxValue(newValue, "dueDate", dueDate.value);
+        setPropertiesBoxValue(newValue, "wasCompletedOnTime", wasCompletedOnTime.value);
 
         emit("update:modelValue", newValue);
     });
