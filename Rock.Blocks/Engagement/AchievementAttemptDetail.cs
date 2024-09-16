@@ -226,8 +226,8 @@ namespace Rock.Blocks.Engagement
             var bag = new AchievementAttemptBag
             {
                 IdKey = entity.IdKey,
-                AchievementAttemptEndDateTime = entity.AchievementAttemptEndDateTime,
-                AchievementAttemptStartDateTime = entity.Id == 0 ? RockDateTime.Now : entity.AchievementAttemptStartDateTime,
+                AchievementAttemptEndDateTime = entity.AchievementAttemptEndDateTime.HasValue ? entity.AchievementAttemptEndDateTime.Value.ToRockDateTimeOffset() : ( DateTimeOffset? ) null,
+                AchievementAttemptStartDateTime = entity.Id == 0 ? RockDateTime.Now : entity.AchievementAttemptStartDateTime.ToRockDateTimeOffset(),
                 AchievementType = GetAchievementTypeCache().ToListItemBag(),
                 IsClosed = entity.IsClosed,
                 IsSuccessful = entity.IsSuccessful,
@@ -303,7 +303,7 @@ namespace Rock.Blocks.Engagement
             }
 
             box.IfValidProperty( nameof( box.Entity.AchievementAttemptStartDateTime ),
-                () => entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime );
+                () => entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime.DateTime );
 
             box.IfValidProperty( nameof( box.Entity.AchievementType ),
                 () => entity.AchievementTypeId = box.Entity.AchievementType.GetEntityId<AchievementType>( rockContext ).Value );
@@ -644,8 +644,8 @@ namespace Rock.Blocks.Engagement
                 }
 
                 entity.IsClosed = ( box.Entity.AchievementAttemptEndDateTime.HasValue && box.Entity.AchievementAttemptEndDateTime.Value < RockDateTime.Today ) || ( isSuccess && !achievementType.AllowOverAchievement );
-                entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime;
-                entity.AchievementAttemptEndDateTime = box.Entity.AchievementAttemptEndDateTime;
+                entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime.DateTime;
+                entity.AchievementAttemptEndDateTime = box.Entity.AchievementAttemptEndDateTime?.DateTime;
                 entity.Progress = progress;
                 entity.IsSuccessful = isSuccess;
 
