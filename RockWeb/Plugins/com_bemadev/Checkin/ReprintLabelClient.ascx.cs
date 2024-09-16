@@ -35,6 +35,8 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Utility;
 
+using CheckInLabel = Rock.CheckIn.CheckInLabel;
+
 namespace RockWeb.Plugins.com_bemaservices.CheckIn
 {
     [DisplayName( "Reprint Label Client" )]

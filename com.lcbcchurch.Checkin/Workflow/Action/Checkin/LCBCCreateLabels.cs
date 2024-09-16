@@ -29,6 +29,8 @@ using Rock.Web.Cache;
 using Rock.Workflow;
 using Rock.Workflow.Action.CheckIn;
 
+using CheckInLabel = Rock.CheckIn.CheckInLabel;
+
 namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
 {
     /// <summary>
