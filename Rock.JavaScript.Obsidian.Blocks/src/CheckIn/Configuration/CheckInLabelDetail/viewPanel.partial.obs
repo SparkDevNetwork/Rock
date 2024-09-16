@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this check in label is used by Rock, editing is not enabled.
+        </NotificationBox>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6 col-lg-8">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <img v-if="previewImageSource"
+                     class="img-responsive preview-image"
+                     :src="previewImageSource" />
+
+                <div class="mt-3 text-right">
+                    <RockButton @click="onDesignerClick">
+                        <i class="fa fa-palette"></i> Label Designer
+                    </RockButton>
+                </div>
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<style scoped>
+.preview-image {
+    border-radius: 12px;
+    border: 1px solid var(--theme-light);
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { CheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelBag";
+    import { CheckInLabelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelDetailOptionsBag";
+    import { LabelType, LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
+    import { getFilterGroupTitleHtml, getFilterRuleDescription } from "@Obsidian/Core/Reporting/fieldFilter";
+    import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<CheckInLabelBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<CheckInLabelDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const config = useConfigurationValues<DetailBlockBox<CheckInLabelBag, CheckInLabelDetailOptionsBag>>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (LabelTypeDescription[props.modelValue.labelType]) {
+            valueBuilder.addTextValue("Label Type",
+                LabelTypeDescription[props.modelValue.labelType]);
+        }
+
+        if (props.modelValue.labelSize) {
+            valueBuilder.addTextValue("Label Size", props.modelValue.labelSize);
+        }
+
+        if (printCriteria.value) {
+            valueBuilder.addHtmlValue("Conditional Print Criteria", printCriteria.value);
+        }
+
+        return valueBuilder.build();
+    });
+
+    const previewImageSource = computed((): string => {
+        if (!props.modelValue?.previewImage) {
+            return "";
+        }
+
+        return `data:image/png;base64,${props.modelValue.previewImage}`;
+    });
+
+    const printCriteria = computed((): string | undefined => {
+        if (!props.modelValue?.conditionalPrintCriteria?.rules || !props.modelValue.conditionalPrintCriteria.rules.length) {
+            return undefined;
+        }
+
+        let filterSources: FieldFilterSourceBag[];
+
+        if (props.modelValue.labelType === LabelType.Family) {
+            filterSources = props.options.familyLabelFilterSources ?? [];
+        }
+        else if (props.modelValue.labelType === LabelType.Person) {
+            filterSources = props.options.personLabelFilterSources ?? [];
+        }
+        else if (props.modelValue.labelType === LabelType.Attendance) {
+            filterSources = props.options.attendanceLabelFilterSources ?? [];
+        }
+        else if (props.modelValue.labelType === LabelType.Checkout) {
+            filterSources = props.options.checkoutLabelFilterSources ?? [];
+        }
+        else {
+            return undefined;
+        }
+
+        let html = getFilterGroupTitleHtml(props.modelValue.conditionalPrintCriteria);
+
+        html += "<ul>";
+
+        for (const rule of props.modelValue.conditionalPrintCriteria.rules) {
+            html += "<li>" + escapeHtml(getFilterRuleDescription(rule, filterSources)) + "</li>";
+        }
+
+        html += "</ul>";
+
+        return html;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onDesignerClick(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DesignerPage] && props.modelValue?.idKey) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DesignerPage].replace("((Key))", props.modelValue.idKey);
+        }
+    }
+
+            // #endregion
+</script>

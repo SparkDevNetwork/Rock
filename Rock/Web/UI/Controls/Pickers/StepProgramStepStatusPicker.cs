@@ -376,10 +376,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
+            writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( "class", "form-control-group " + this.FormGroupCssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             _sppStepProgramPicker.Visible = !DefaultStepProgramId.HasValue;
             _sspStepStatusPicker.Visible = StepProgramId.HasValue;
             _sppStepProgramPicker.RenderControl( writer );
             _sspStepStatusPicker.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
     }
 }

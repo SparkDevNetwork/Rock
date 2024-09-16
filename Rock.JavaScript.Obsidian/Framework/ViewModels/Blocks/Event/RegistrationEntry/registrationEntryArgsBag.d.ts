@@ -24,10 +24,14 @@
 import { Guid } from "@Obsidian/Types";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
+import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 
 /** RegistrationEntryBlockArgs */
 export type RegistrationEntryArgsBag = {
-    /** Gets or sets the amount to pay now. */
+    /**
+     * Gets or sets the amount to pay now.
+     * This is a separate amount from recurring payments configured in the {@link RegistrationEntryArgsBag.paymentPlan}.
+     */
     amountToPayNow: number;
 
     /** Gets or sets the discount code. */
@@ -38,6 +42,9 @@ export type RegistrationEntryArgsBag = {
 
     /** Gets or sets the gateway token. */
     gatewayToken?: string | null;
+
+    /** Gets or sets the payment plan. */
+    paymentPlan?: RegistrationEntryCreatePaymentPlanRequestBag | null;
 
     /** Gets or sets the registrants. */
     registrants?: RegistrantBag[] | null;

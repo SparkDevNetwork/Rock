@@ -70,8 +70,9 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getFilterGroupTitleHtml } from "@Obsidian/Core/Reporting/fieldFilter";
     import { SectionAsideSettings } from "./types.partial";
-    import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils.partial";
+    import { useFormSources, getFilterRuleDescription, timeoutAsync } from "./utils.partial";
     import { FormError } from "@Obsidian/Utility/form";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
@@ -146,7 +147,7 @@
     /** Contains the "Show/Hide any/all" title of the field visibility rule. */
     const conditionalTitle = computed((): string => {
         return visibilityRule.value
-            ? getFilterGroupTitle(visibilityRule.value)
+            ? getFilterGroupTitleHtml(visibilityRule.value)
             : "";
     });
 

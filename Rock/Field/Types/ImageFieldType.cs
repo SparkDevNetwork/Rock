@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -115,7 +116,6 @@ namespace Rock.Field.Types
         /// <returns>A string that contains the HTML used to render the image.</returns>
         private static string GetImageHtml( Guid imageGuid, int? width, Dictionary<string, string> privateConfigurationValues )
         {
-            var imagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
             var queryParms = string.Empty;
 
             // Determine image size parameters if they aren't already forced.
@@ -138,7 +138,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            var imageUrl = $"{imagePath}?guid={imageGuid}";
+            var imageUrl = FileUrlHelper.GetImageUrl( imageGuid );
             var imageTagTemplate = privateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ).ToStringOrDefault( DefaultImageTagTemplate );
             var formatAsLink = privateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ).AsBoolean();
             var mergeFields = new Dictionary<string, object>()
@@ -153,6 +153,7 @@ namespace Rock.Field.Types
                 ? $"<a href='{imageUrl}'>{imageTag}</a>"
                 : imageTag;
         }
+
 
         #endregion
 

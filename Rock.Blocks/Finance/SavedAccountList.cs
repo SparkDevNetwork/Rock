@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.SavedAccountList;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Finance
 {
@@ -43,6 +44,7 @@ namespace Rock.Blocks.Finance
     [Rock.SystemGuid.EntityTypeGuid( "ad9c4aac-54bb-498d-9bd3-47d8f21b9549" )]
     [Rock.SystemGuid.BlockTypeGuid( "e20b2fe2-2708-4e9a-b9fb-b370e8b0e702" )]
     [CustomizedGrid]
+    [ContextAware( typeof( Person ) )]
     public class SavedAccountList : RockEntityListBlockType<FinancialPersonSavedAccount>
     {
         #region Methods
@@ -77,9 +79,11 @@ namespace Rock.Blocks.Finance
         protected override IQueryable<FinancialPersonSavedAccount> GetListQueryable( RockContext rockContext )
         {
             var currentPerson = GetCurrentPerson();
+            var contextEntity = GetContextEntity() as Person;
+            var personId = contextEntity?.Id ?? currentPerson?.Id;
             IEnumerable<FinancialPersonSavedAccount> savedAccounts = new List<FinancialPersonSavedAccount>();
 
-            if ( currentPerson != null )
+            if ( personId.HasValue )
             {
                 var entityService = new FinancialPersonSavedAccountService( rockContext );
                 savedAccounts = entityService.Queryable()
@@ -88,7 +92,7 @@ namespace Rock.Blocks.Finance
                     .Where( a =>
                             a.FinancialPaymentDetail != null &&
                             a.PersonAlias != null &&
-                            a.PersonAlias.PersonId == currentPerson.Id );
+                            a.PersonAlias.PersonId == personId.Value );
             }
 
             return savedAccounts.AsQueryable();
@@ -132,7 +136,7 @@ namespace Rock.Blocks.Finance
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${FinancialPersonSavedAccount.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

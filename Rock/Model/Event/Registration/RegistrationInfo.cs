@@ -234,7 +234,7 @@ namespace Rock.Model
                 if ( Registrants != null && Registrants.Count > i )
                 {
                     var registrant = Registrants[i];
-                    familyRegistrants.AddOrIgnore( registrant.FamilyGuid, new List<RegistrantInfo>() );
+                    familyRegistrants.TryAdd( registrant.FamilyGuid, new List<RegistrantInfo>() );
                     familyRegistrants[registrant.FamilyGuid].Add( registrant );
                 }
                 else
@@ -252,7 +252,7 @@ namespace Rock.Model
                 {
                     string firstName = registrant.GetFirstName( template );
                     string lastName = registrant.GetLastName( template );
-                    lastNames.AddOrIgnore( lastName, new List<string>() );
+                    lastNames.TryAdd( lastName, new List<string>() );
                     lastNames[lastName].Add( firstName );
                 }
 

@@ -1,0 +1,314 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <template v-else class="dynamic-data">
+
+        <div v-if="isLavaTemplateDisplayMode"
+             ref="lavaTemplateResultsElement"
+             class="dynamic-data-lava-template-resuts"></div>
+
+        <div v-else-if="gridDefinition" class="grid">
+            <Grid :data="gridDataSource"
+                  :definition="gridDefinition"
+                  :title="gridTitle"
+                  :isTitleHidden="isGridTitleHidden"
+                  :keyField="keyField"
+                  :personKeyField="personKeyField"
+                  :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
+                  :liveUpdates="true"
+                  :stickyHeader="stickyHeader"
+                  :entityTypeGuid="entityTypeGuid"
+                  :mergeTemplateAsPerson="mergeTemplateAsPerson"
+                  :showBulkUpdate="showBulkUpdate"
+                  :showPersonMerge="showPersonMerge"
+                  :showLaunchWorkflow="showLaunchWorkflow"
+                  :showCommunicate="showCommunicate"
+                  :showMergeTemplate="showMergeTemplate"
+                  :showExport="showExport"
+                  :communicationMergeFields="communicationMergeFields"
+                  :isFooterHidden="disablePaging"
+                  @selectItem="onSelectItem">
+
+                <template #gridHeaderPrepend v-if="gridHeaderHtml">
+                    <div ref="gridHeaderElement" class="dynamic-data-grid-header"></div>
+                </template>
+
+                <SelectColumn v-if="showCheckboxSelectionColumn" />
+
+                <DynamicColumns :dynamicFields="dynamicFields"
+                                :columnComponents="columnComponents"
+                                :defaultColumnComponent="TextColumn" />
+
+                <template #gridFooterAppend v-if="gridFooterHtml">
+                    <div ref="gridFooterElement" class="dynamic-data-grid-footer"></div>
+                </template>
+
+            </Grid>
+        </div>
+
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, reactive, ref } from "vue";
+    import { NavigationUrlKey } from "./DynamicData/types.partial";
+    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { getRowKey } from "@Obsidian/Core/Controls/grid";
+    import { setInnerHTML } from "@Obsidian/Core/Utilities/domUtils";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { ColumnFilter, FilterValueFunction } from "@Obsidian/Types/Controls/grid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
+    import { addQuickReturn } from "@Obsidian/Utility/page";
+    import { DynamicDataInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/dynamicDataInitializationBox";
+    import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+
+    const config = useConfigurationValues<DynamicDataInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const columnComponents = {
+        "boolean": BooleanColumn,
+        "currency": CurrencyColumn,
+        "date": DateColumn,
+        "dateTime": DateTimeColumn,
+        "number": NumberColumn,
+        "person": PersonColumn,
+        "text": TextColumn
+    };
+
+    // #region Values
+
+    const errorMessage = ref(config.errorMessage);
+
+    const isLavaTemplateDisplayMode = ref(config.isLavaTemplateDisplayMode);
+    const lavaTemplateResults = ref(config.lavaTemplateResults);
+    const gridResults = ref(config.gridResults);
+
+    const lavaTemplateResultsElement = ref<HTMLElement | null>(null);
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const gridHeaderElement = ref<HTMLElement | null>(null);
+    const gridFooterElement = ref<HTMLElement | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const lavaTemplateResultsHtml = computed((): string | undefined | null => {
+        return lavaTemplateResults.value?.resultsHtml;
+    });
+
+    const gridDefinition = computed((): GridDefinitionBag | null | undefined => {
+        return gridResults.value?.gridDefinition;
+    });
+
+    const gridTitle = computed((): string | undefined => {
+        return gridResults.value?.title ?? undefined;
+    });
+
+    const isGridTitleHidden = computed((): boolean => {
+        return !gridTitle.value;
+    });
+
+    const keyField = computed((): string | undefined => {
+        return gridResults.value?.keyField ?? undefined;
+    });
+
+    const personKeyField = computed((): string | undefined => {
+        return gridResults.value?.personKeyField ?? undefined;
+    });
+
+    const communicationRecipientPersonKeyFields = computed((): string[] | undefined => {
+        return gridResults.value?.communicationRecipientFields ?? undefined;
+    });
+
+    const stickyHeader = computed((): boolean | undefined => {
+        return gridResults.value?.enableStickyHeader ?? undefined;
+    });
+
+    const entityTypeGuid = computed((): Guid | undefined => {
+        return gridResults.value?.isPersonReport
+            ? EntityType.Person
+            : undefined;
+    });
+
+    const mergeTemplateAsPerson = computed((): boolean | undefined => {
+        return gridResults.value?.isPersonReport ?? undefined;
+    });
+
+    const showBulkUpdate = computed((): boolean | undefined => {
+        return gridResults.value?.enableBulkUpdate ?? undefined;
+    });
+
+    const showPersonMerge = computed((): boolean | undefined => {
+        return gridResults.value?.enablePersonMerge ?? undefined;
+    });
+
+    const showLaunchWorkflow = computed((): boolean | undefined => {
+        return gridResults.value?.enableLaunchWorkflow ?? undefined;
+    });
+
+    const showCommunicate = computed((): boolean | undefined => {
+        return gridResults.value?.enableCommunications ?? undefined;
+    });
+
+    const showMergeTemplate = computed((): boolean | undefined => {
+        return gridResults.value?.enableMergeTemplate ?? undefined;
+    });
+
+    const showExport = computed((): boolean | undefined => {
+        return gridResults.value?.enableExport ?? undefined;
+    });
+
+    const communicationMergeFields = computed((): string[] | undefined => {
+        return gridResults.value?.communicationMergeFields ?? undefined;
+    });
+
+    const disablePaging = computed((): boolean => {
+        return gridResults.value?.disablePaging ?? false;
+    });
+
+    const showCheckboxSelectionColumn = computed((): boolean => {
+        return gridResults.value?.showCheckboxSelectionColumn ?? false;
+    });
+
+    const dynamicFields = computed((): (DynamicFieldDefinitionBag & { filter?: ColumnFilter, filterValue?: FilterValueFunction | string })[] => {
+        return gridDefinition.value?.dynamicFields
+            ?.filter((field: DynamicFieldDefinitionBag) => !!(field.columnType))
+            ?.map((field: DynamicFieldDefinitionBag) => {
+                const filter = defaultColumnFilters[field.columnType ?? ""]
+                    ?? pickExistingValueFilter;
+
+                let filterValue: string | undefined = undefined;
+                if (field.columnType === "person") {
+                    if (field.fieldProperties?.["showLastNameFirst"] === true) {
+                        filterValue = `{{ row.${field.name}.lastName }}, {{ row.${field.name}.nickName }}`;
+                    }
+                    else {
+                        filterValue = `{{ row.${field.name}.nickName }} {{ row.${field.name}.lastName }}`;
+                    }
+                }
+
+                return {
+                    ...field,
+                    filter: field.enableFiltering ? filter : undefined,
+                    filterValue
+                };
+            }) ?? [];
+    });
+
+    const gridHeaderHtml = computed((): string | null | undefined => {
+        return gridResults.value?.gridHeaderHtml;
+    });
+
+    const gridFooterHtml = computed((): string | null | undefined => {
+        return gridResults.value?.gridFooterHtml;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridRowData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param rowKey The key of the row that was selected.
+     */
+    function onSelectItem(rowKey: string): void {
+        let rowSelectionUrl = config.navigationUrls?.[NavigationUrlKey.RowSelection];
+        if (!rowSelectionUrl) {
+            return;
+        }
+
+        if (rowSelectionUrl.startsWith("~")) {
+            rowSelectionUrl = `${window.location.origin}${rowSelectionUrl.substring(1)}`;
+        }
+
+        const columnKeys = rowSelectionUrl.match(/\(\([\w\s]+\)\)/g);
+        if (!(columnKeys?.length)) {
+            // No values to replace; simply redirect.
+            window.location.href = rowSelectionUrl;
+            return;
+        }
+
+        if (!keyField.value || !rowKey) {
+            // If a key field wasn't defined, we don't know how to find the row;
+            // unable to redirect.
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => getRowKey(r, keyField.value) === rowKey);
+        if (row) {
+            columnKeys.forEach(columnKey => {
+                // Replace each column key with the column value.
+                var columnName = columnKey.replace(/\(|\)/g, "");
+                var columnValue = String(getValueFromPath(row, columnName));
+                if (!columnValue) {
+                    // No column value found; unable to redirect.
+                    return;
+                }
+
+                rowSelectionUrl = rowSelectionUrl?.replace(columnKey, columnValue);
+            });
+
+            window.location.href = rowSelectionUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    onMounted(() => {
+        if (lavaTemplateResultsElement.value && lavaTemplateResultsHtml.value) {
+            setInnerHTML(lavaTemplateResultsElement.value, lavaTemplateResultsHtml.value);
+        }
+
+        if (gridHeaderElement.value && gridHeaderHtml.value) {
+            setInnerHTML(gridHeaderElement.value, gridHeaderHtml.value);
+        }
+
+        if (gridFooterElement.value && gridFooterHtml.value) {
+            setInnerHTML(gridFooterElement.value, gridFooterHtml.value);
+        }
+    });
+
+    if (!isLavaTemplateDisplayMode.value) {
+        gridDataSource.value = loadGridData();
+    }
+
+    // Add a quick return link if a title is provided in the response.
+    if (config.quickReturnPageTitle) {
+        addQuickReturn(config.quickReturnPageTitle, "Dynamic Data", 80);
+    }
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

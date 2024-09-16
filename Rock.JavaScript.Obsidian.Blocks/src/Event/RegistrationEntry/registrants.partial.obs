@@ -2,10 +2,10 @@
 <template>
     <div class="registrationentry-registrant">
         <NotificationBox v-if="hasWaitlist && !isOnWaitlist" alertType="success">
-            This {{ registrantTerm }} will be fully registered.
+            This {{ registrantTermLowerCase }} will be fully registered.
         </NotificationBox>
         <NotificationBox v-else-if="isOnWaitlist" alertType="warning">
-            This {{ registrantTerm }} will be on the waiting list.
+            This {{ registrantTermLowerCase }} will be on the waiting list.
         </NotificationBox>
         <template v-for="(r, i) in registrants" :key="r.guid">
             <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />
@@ -131,9 +131,9 @@
         return currentRegistrant.isOnWaitList;
     });
 
-    /** What are the registrants called? */
-    const registrantTerm = computed<string>(() => {
-        return (registrationEntryState.viewModel.registrantTerm || "registrant").toLowerCase();
+    /** The registrant term (singular) (lower case). */
+    const registrantTermLowerCase = computed<string>(() => {
+        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
     });
 
     const registrants = computed<RegistrantBag[]>(() => {

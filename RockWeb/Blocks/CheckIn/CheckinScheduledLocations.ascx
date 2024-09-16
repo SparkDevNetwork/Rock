@@ -49,8 +49,8 @@
         </div>
 
         <div class="controls checkin-actions scheduled-locations-actions">
-            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-checkin-select btn-large" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-default btn-checkin-select btn-large" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-checkin-select btn-large" OnClick="btnSave_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-default btn-checkin-select btn-large" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </ContentTemplate>

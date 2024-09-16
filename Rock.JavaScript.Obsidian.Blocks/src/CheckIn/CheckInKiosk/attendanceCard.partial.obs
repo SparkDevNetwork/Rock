@@ -1,0 +1,106 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="attendance-card">
+        <div class="header">
+            <div class="avatar" :style="avatarStyle"></div>
+
+            <div class="title">{{ attendance.person.fullName }}</div>
+        </div>
+
+        <div class="attendance-list">
+            <label>Checked Into</label>
+
+            <div v-for="item in attendance.attendances"
+                 class="attendance-detail">
+                <div class="title">{{ item.location?.name }}</div>
+                <div class="subtitle">{{ item.schedule?.name }}</div>
+            </div>
+        </div>
+
+        <div v-if="attendance.inProgressAchievements"
+             class="achievement-list">
+            <label>Current Achievement Status</label>
+
+            <div v-for="achievement in attendance.inProgressAchievements"
+                 class="achievement">
+                <div class="header">
+                    <div class="title">{{ achievement.name }}</div>
+                    <div class="subtitle">{{ getProgressText(achievement) }}</div>
+                </div>
+                <div v-if="achievement.targetCount"
+                     class="completion-progress">
+                    <i v-for="item in getAchievementItems(achievement)"
+                       :class="item"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
+    import { computed, CSSProperties, PropType } from "vue";
+    import { AggregateAttendance } from "./types.partial";
+
+    const props = defineProps({
+        attendance: {
+            type: Object as PropType<AggregateAttendance>,
+            required: true
+        }
+    });
+
+    const avatarStyle = computed((): CSSProperties => {
+        const properties: CSSProperties = {
+            backgroundImage: `url("${props.attendance.person.photoUrl}")`
+        };
+
+        return properties;
+    });
+
+    function isProgressOkay(actualProgress: number, expectedProgress: number): boolean {
+        // Add a tiny bit to account for rounding errors since we are dealing
+        // with floating point accuracy.
+        if ((actualProgress + 0.001) >= expectedProgress) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function getAchievementItems(achievement: AchievementBag): string[] {
+        if (!achievement.targetCount) {
+            return [];
+        }
+
+        const items: string[] = [];
+        const halfItemProgress = 1 / achievement.targetCount / 2;
+
+        for (let i = 0; i < achievement.targetCount; i++) {
+            const expectedItemProgress = (i + 1) / achievement.targetCount;
+            const expectedHalfItemProgress = (i / achievement.targetCount) + halfItemProgress;
+
+            if (isProgressOkay(achievement.progress, expectedItemProgress)) {
+                items.push("fa fa-star completion-item-full");
+            }
+            else if (isProgressOkay(achievement.progress, expectedHalfItemProgress)) {
+                items.push("fa fa-star-half-alt completion-item-half");
+            }
+            else {
+                items.push("fa fa-star-o completion-item-empty");
+            }
+        }
+
+        return items;
+    }
+
+    function getProgressText(achievement: AchievementBag): string {
+        if (achievement.targetCount) {
+            const completedCount = Math.floor(achievement.targetCount * achievement.progress);
+
+            return `${completedCount} of ${achievement.targetCount}`;
+        }
+
+        return `${Math.floor(achievement.progress * 100)}%`;
+    }
+</script>

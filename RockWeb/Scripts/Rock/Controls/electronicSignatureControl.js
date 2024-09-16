@@ -129,7 +129,7 @@
                     }
                 }
                 else {
-                    if ($signatureTyped.val() == '') {
+                    if ($signatureTyped.val().trim() == '') {
                         isValid = false;
                     }
                 }

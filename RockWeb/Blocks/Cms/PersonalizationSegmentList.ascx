@@ -26,6 +26,7 @@
                             <Rock:RockBoundField DataField="FilterDataViewName" HeaderText="Data View" SortExpression="FilterDataViewName" />
                             <Rock:RockBoundField DataField="KnownIndividualsCount" HeaderText="Known Individuals" SortExpression="KnownIndividualsCount" />
                             <Rock:RockBoundField DataField="AnonymousIndividualsCount" HeaderText="Anonymous Individuals" SortExpression="AnonymousIndividualsCount" />
+                            <Rock:RockBoundField DataField="TimeToUpdateDurationMilliseconds" HeaderText="Time To Update (ms)" SortExpression="TimeToUpdateDurationMilliseconds" DataFormatString="{0:#,##0.0}" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <asp:TemplateField HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand">
                                 <ItemTemplate>

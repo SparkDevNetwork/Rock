@@ -57,7 +57,7 @@ namespace Rock.Lava.Fluid
             }
             if ( other.Type == FluidValues.Number )
             {
-                return other.ToIntSafe().Equals( Convert.ToInt32( _enum ) );
+                return other.ToNumberValue().ToIntSafe().Equals( Convert.ToInt32( _enum ) );
             }
             if ( other is LavaEnumValue ev )
             {

@@ -30,6 +30,7 @@ using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -901,7 +902,8 @@ namespace RockWeb.Blocks.Communication
                     foreach ( var binaryFileGuid in communicationRecipientResponse.GetBinaryFileGuids( rockContext ) )
                     {
                         // Show the image thumbnail by appending the html to lSMSMessage.Text
-                        string imageElement = $"<a href='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}' target='_blank' rel='noopener noreferrer'><img src='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}&width=200' class='img-responsive sms-image'></a>";
+                        string imageUrl = FileUrlHelper.GetImageUrl( binaryFileGuid, new GetImageUrlOptions{ Width = 200 } );
+                        string imageElement = $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}' class='img-responsive sms-image'></a>";
 
                         // If there is a text portion or previous image then drop down a line before appending the image element
                         lSMSAttachments.Text += imageElement;

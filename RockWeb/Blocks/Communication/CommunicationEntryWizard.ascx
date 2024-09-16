@@ -7,6 +7,8 @@
         <asp:HiddenField ID="hfSelectedCommunicationTemplateId" runat="server" />
         <asp:HiddenField ID="hfEmailEditorHtml" runat="server" />
         <asp:HiddenField ID="hfEmailEditorHtml_dvrm" runat="server" Value="True" />
+        <asp:HiddenField ID="hfDisablePredictableIds" runat="server" Value="" />
+
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
@@ -125,8 +127,9 @@
                         <asp:LinkButton
                             ID="btnRecipientSelectionNext"
                             runat="server"
-                            AccessKey="n"
+                            data-shortcut-key="arrowright"
                             Text="Next"
+                            ToolTip="Alt+🡆"
                             DataLoadingText="Next"
                             CssClass="btn btn-primary pull-right js-wizard-navigation"
                             ValidationGroup="vgRecipientSelection"
@@ -234,8 +237,9 @@
                     <div class="actions panel-actions-bordered">
                         <asp:LinkButton ID="btnRecipientListNext"
                             runat="server"
-                            AccessKey="n"
+                            data-shortcut-key="arrowright"
                             Text="Next"
+                            ToolTip="Alt+🡆"
                             DataLoadingText="Next"
                             CssClass="btn btn-primary pull-right js-wizard-navigation"
                             ValidationGroup="vsIndividualRecipientList"
@@ -307,8 +311,8 @@
                     </div>
 
                     <div class="actions mt-3">
-                        <asp:LinkButton ID="btnCommunicationDeliveryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnCommunicationDeliveryPrevious_Click" />
-                        <asp:LinkButton ID="btnCommunicationDeliveryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgCommunicationDelivery" CausesValidation="true" OnClick="btnCommunicationDeliveryNext_Click" />
+                        <asp:LinkButton ID="btnCommunicationDeliveryPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnCommunicationDeliveryPrevious_Click" />
+                        <asp:LinkButton ID="btnCommunicationDeliveryNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgCommunicationDelivery" CausesValidation="true" OnClick="btnCommunicationDeliveryNext_Click" />
                     </div>
 
                 </asp:Panel>
@@ -362,8 +366,8 @@
                     </div>
 
                     <div class="actions mt-3">
-                        <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click" />
-                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
+                        <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click" />
+                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1210,8 +1214,8 @@
                         </div>
 
                     <div class="actions clearfix mt-0">
-                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
+                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
 
                 </asp:Panel>
@@ -1304,8 +1308,8 @@
                     </div>
 
                     <div class="actions clearfix mt-3">
-                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1359,8 +1363,8 @@
                         </div>
                     </div>
                     <div class="actions clearfix mt-auto">
-                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1374,8 +1378,8 @@
                         </div>
                     </div>
                     <div class="actions clearfix mt-auto">
-                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnPushEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorNext_Click" />
+                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnPushEditorNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1499,7 +1503,7 @@
                         </div>
                     </div>
                     <div class="actions clearfix mt-3">
-                            <asp:LinkButton ID="btnConfirmationPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default mb-2 mb-sm-0 " CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
+                            <asp:LinkButton ID="btnConfirmationPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default mb-2 mb-sm-0 " CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
                             <div class="pull-right">
                                 <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default mb-2 mb-sm-0" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
                                 <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary mb-2 mb-sm-0" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />

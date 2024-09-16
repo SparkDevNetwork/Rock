@@ -6,10 +6,15 @@
                 {{ name }} Step Program
             </h3>
             <div class="row">
-                <div class="col-md-6 description">
-                    {{ description }}
+                <div class="col-md-6">
+                    <div class="description">{{ description }}</div>
                 </div>
-                <div class="col-md-offset-3 col-md-3">
+                <div class="col-xs-12 col-sm-6 col-md-6 d-flex align-items-start justify-content-end">
+                    <SlidingDateRangePicker v-model="filterDate"
+                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                            class="pull-right"
+                                            previewLocation="None" />
                     <RockButton :btnSize="BtnSize.Default"
                                 :btnType="BtnType.Default"
                                 class="btn btn-default btn-square pull-right"
@@ -18,18 +23,15 @@
                                 :isLoading="isRefreshLoading">
                         <i class="fa fa-refresh"></i>
                     </RockButton>
-                    <SlidingDateRangePicker v-model="filterDate"
-                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
-                                            :enabledTimeUnits="[TimeUnit.Hour, TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
-                                            class="pull-right"
-                                            previewLocation="None" />
                 </div>
             </div>
             <div v-html="kpi"></div>
             <div>
                 <NotificationBox v-if="notificationMessage && showChart" alertType="info">{{ notificationMessage }}</NotificationBox>
-                <div v-if="showChart && !notificationMessage" style="height: 350px;" class="col-md-12">
-                    <Chart type="line" :data="chartData" :options="options" />
+                <div :style="chartStyle()" class="col-md-12">
+                    <div class="chart-container" style="height: 100%;">
+                        <canvas ref="canvasElement"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -40,15 +42,14 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { onMounted, PropType, ref, shallowRef, StyleValue } from "vue";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import Chart from "@Obsidian/Controls/chart.obs";
-    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { Chart, ChartData, ChartOptions, ChartTypeRegistry, ChartConfiguration, } from "@Obsidian/Libs/chart";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramBag";
@@ -73,12 +74,14 @@
     const name = ref(props.modelValue?.name ?? "");
     const description = ref(props.modelValue?.description ?? "");
     //const chartData = ref(props.modelValue?.chartData ?? "{}");
-    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
+    const chartData = ref<ChartData<keyof ChartTypeRegistry, number[]>>(JSON.parse(props.modelValue?.chartData || "{}"));
     const kpi = ref(props.modelValue?.kpi ?? "");
     const showChart = ref(props.modelValue?.showChart);
-    const notificationMessage = ref("");
+    const notificationMessage = ref(props.modelValue?.chartData ? "" : "There are no completed Steps matching the current filter.");
     const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
     const isRefreshLoading = ref(false);
+    const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
+    let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
     const options = ref<ChartOptions>({
         responsive: true,
         maintainAspectRatio: false,
@@ -122,7 +125,34 @@
 
     // #endregion
 
-    // #region Event Handlers
+    // #region Functions
+
+    /**
+    * Gets the configuration data that will be used to draw the chart.
+    *
+    * @returns The chart configuration data that can be passed to Chart.JS.
+    */
+    function getChartConfig(): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
+
+        const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {
+            type: "line",
+            data: chartData.value,
+            options: options.value
+        };
+
+        return config;
+    }
+
+    function chartStyle(): StyleValue {
+        if (showChart.value && !notificationMessage.value) {
+            return "height: 350px; display: block;";
+        }
+        else {
+            return "height: 350px; display: none;";
+        }
+    }
+
+    // #endregion
 
     // #region Event Handlers
     /**
@@ -130,6 +160,10 @@
      * data from the server using the specified filter date.
      */
     async function onRefresh(): Promise<void> {
+
+        if (!canvasElement.value) {
+            return;
+        }
 
         isRefreshLoading.value = true;
         notificationMessage.value = "";
@@ -144,19 +178,35 @@
             kpi.value = result.data.kpi ?? "";
 
             if (result.data.chartData) {
-                chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
+                chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData<keyof ChartTypeRegistry, number[]>;
                 showChart.value = result.data.showChart;
             }
             else {
-                notificationMessage.value = "There are no Steps matching the current filter.";
+                notificationMessage.value = "There are no completed Steps matching the current filter.";
                 showChart.value = result.data.showChart;
             }
+
+            if (!chart) {
+                chart = new Chart(canvasElement.value, getChartConfig());
+            }
+            else {
+                chart.data = chartData.value;
+                chart.update();
+            }
+
         }
         else {
-            chartData.value = {} as ChartData;
             notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
         }
     }
+
+    onMounted(() => {
+        if (!canvasElement.value) {
+            return;
+        }
+
+        chart = new Chart(canvasElement.value, getChartConfig());
+    });
 
     // #endregion
 </script>

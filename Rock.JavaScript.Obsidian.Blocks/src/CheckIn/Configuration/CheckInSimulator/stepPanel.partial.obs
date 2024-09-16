@@ -1,0 +1,78 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="title">
+        <template #headerActions>
+            <div class="d-flex gap action">
+                <StepStatus :step="step" />
+            </div>
+        </template>
+
+        <slot />
+
+        <div class="actions">
+            <SplitButton btnType="primary"
+                         :items="stepActions"
+                         autoDisable
+                         @click="executeAction" />
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import StepStatus from "./stepStatus.partial.obs";
+    import SplitButton from "./splitButton.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { bencharkThisStepAction, benchmarkToHereAction, executeThisStepAction, executeToHereAction, type CheckInStep } from "./utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        step: {
+            type: Object as PropType<CheckInStep>,
+            required: true
+        },
+
+        isBenchmarkReady: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:attendeeNumber", value: number): void,
+        (event: "executeAction", action: string): void
+    }>();
+
+    /**
+     * Gets the actions available to a step. This uses the parameters and other
+     * data to determine which actions can be used.
+     *
+     * @param isDataReady True if enough data is ready to execute just this step.
+     */
+    const stepActions = computed((): ListItemBag[] => {
+        const actions: ListItemBag[] = [executeToHereAction];
+
+        if (props.isBenchmarkReady) {
+            actions.push(benchmarkToHereAction);
+        }
+
+        if (props.step.isReady()) {
+            actions.push(executeThisStepAction);
+
+            if (props.isBenchmarkReady) {
+                actions.push(bencharkThisStepAction);
+            }
+        }
+
+        return actions;
+    });
+
+    function executeAction(action: string): void {
+        emit("executeAction", action);
+    }
+</script>

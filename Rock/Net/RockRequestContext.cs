@@ -23,6 +23,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -41,12 +42,14 @@ namespace Rock.Net
         #region Fields
 
         /// <summary>
-        /// The cache object for the site this request is related to.
+        /// The cache object for the site this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         private SiteCache _siteCache;
 
         /// <summary>
-        /// The cache object for the page this request is related to.
+        /// The cache object for the page this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         private PageCache _pageCache;
 
@@ -54,12 +57,12 @@ namespace Rock.Net
         /// The person preference collections. This is used as a cache so that
         /// we return the same instance for the entire request.
         /// </summary>
-        private ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
+        private readonly ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
 
         /// <summary>
         /// Whether this object represents a legacy, `System.Web` request.
         /// </summary>
-        private bool _isLegacyRequest;
+        private readonly bool _isLegacyRequest;
 
         #endregion
 
@@ -163,6 +166,26 @@ namespace Rock.Net
         internal NameValueCollection QueryString { get; private set; }
 
         /// <summary>
+        /// Gets the HTTP method from the request.
+        /// </summary>
+        /// <value>
+        /// This will always be uppercase, such as <c>"GET"</c>. The value can also be <see langword="null"/>, so perform checks accordingly.
+        /// </value>
+        internal string HttpMethod { get; private set; }
+
+        /// <summary>
+        /// Gets the form from the request.
+        /// </summary>
+        /// <remarks>
+        ///     Please do not make this <see langword="public"/> without discussion.
+        ///     <para>
+        ///         There are lots of loose ends to figure out before we do, such as,
+        ///         contexts where form data in contexts where it can only be retrieved asynchronously.
+        ///     </para>
+        /// </remarks>
+        internal NameValueCollection Form { get; private set; }
+
+        /// <summary>
         /// Gets or sets the headers.
         /// </summary>
         /// <value>
@@ -195,7 +218,8 @@ namespace Rock.Net
         public bool IsCaptchaValid { get; internal set; }
 
         /// <summary>
-        /// Gets the cache object for the page this request is related to.
+        /// Gets the cache object for the page this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         internal PageCache Page => _pageCache;
 
@@ -214,6 +238,8 @@ namespace Rock.Net
             Cookies = new Dictionary<string, string>();
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             RootUrlPath = string.Empty;
+            HttpMethod = null;
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -232,6 +258,9 @@ namespace Rock.Net
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
+
+            HttpMethod = request.HttpMethod;
+            Form = new NameValueCollection( request.Form );
 
             ClientInformation = new ClientInformation( request );
 
@@ -283,6 +312,22 @@ namespace Rock.Net
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
+            
+            HttpMethod = request.Method?.ToUpper();
+
+            /*
+                6/7/2024 - JMH
+
+                Do not set the Form data for Rock real-time and Rest API requests.
+
+                These types of requests either do not use form content
+                (application/x-www-form-urlencoded or multipart/form-data)
+                or we have not had to pass form data along in the RockRequestContext.
+                Setting it at this point would require asynchronous reads of the request content.
+                Since further architectural discussions are required around this,
+                we have opted to set Form data to an empty collection for now.
+              */
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
 
             ClientInformation = new ClientInformation( request );
 
@@ -886,42 +931,20 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Resolves the rock URL.
+        /// Resolves the rock URL to the absolute path it refers to on this site.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a theme URL like, "/Themes/{CurrentSiteTheme}/{input}".</para>
-        ///     <para>An input starting with "~/" will return the input without the leading "~".</para>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
         /// </remarks>
-        /// <param name="input">The input with prefix <c>"~~/"</c> or <c>"~/"</c>.</param>
+        /// <param name="input">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <returns>The resolved URL.</returns>
-        [RockInternal( "1.15" )]
         public string ResolveRockUrl( string input )
         {
-            if ( input.IsNullOrWhiteSpace() )
-            {
-                return input;
-            }
-
-            if ( input.StartsWith( "~~/" ) )
-            {
-                var themeRoot = $"/Themes/{_pageCache.SiteTheme}/";
-                return themeRoot + ( input.Length > 3 ? input.Substring( 3 ) : string.Empty );
-            }
-
-            if ( input.StartsWith( "~" ) && input.Length > 1 )
-            {
-                return input.Substring( 1 );
-            }
-
-            // The input format is unrecognized so return it.
-            return input;
+            return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );
         }
 
         #endregion

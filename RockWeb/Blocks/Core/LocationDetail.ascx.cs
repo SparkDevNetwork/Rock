@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -86,8 +87,11 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            var locationId = PageParameter( "LocationId" ).AsInteger();
+            var location = NamedLocationCache.Get( locationId );
+            var locationName = location != null ? location.Name : string.Empty;
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" location');", locationName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Location ) ).Id;
 
             ddlPrinter.Items.Clear();
@@ -559,7 +563,7 @@ namespace RockWeb.Blocks.Core
             string imgTag = GetImageTag( location.ImageId, 150, 150 );
             if ( location.ImageId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", location.ImageId.Value ) );
+                string imageUrl = FileUrlHelper.GetImageUrl( location.ImageId.Value );
                 lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
             }
             else

@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -416,7 +417,7 @@ namespace RockWeb.Blocks.Groups
                 var personList = new PersonService( rockContext ).GetByIds( personIdList );
                 foreach ( var person in personList.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
                 {
-                    mergeObjectsDictionary.AddOrIgnore( person.Id, person );
+                    mergeObjectsDictionary.TryAdd( person.Id, person );
                 }
             }
 
@@ -465,8 +466,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var baseUrl = ResolveRockUrl( "~/GetFile.ashx" );
-            var getFileUrl = $"{baseUrl}?Guid={outputBinaryFileDoc.Guid}&attachment=true";
+            var getFileUrl = FileUrlHelper.GetFileUrl( outputBinaryFileDoc.Guid ) + "&attachment=true";
             Response.Redirect( getFileUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }
@@ -809,7 +809,7 @@ namespace RockWeb.Blocks.Groups
                     .SelectMany( l => l.Schedules )
                     .OrderBy( s => s.Name )
                     .ToList()
-                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+                    .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
             }
 
             if ( schedules.Any() )

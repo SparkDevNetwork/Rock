@@ -1,0 +1,407 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalIsShown"
+           :isSaveButtonDisabled="!wipPaymentPlanConfiguration?.endDate"
+           :saveText="wipPaymentPlanConfiguration?.endDate ? 'Select' : ''"
+           title="Configure Payment Plan"
+           @save="onConfigurePaymentPlan"
+           @closeModal="onCancel">
+        <template v-if="wipPaymentPlanConfiguration && wipPaymentPlanConfiguration.endDate.isLaterThan(RockDateTime.now())">
+            <StaticFormControl :modelValue="`The total amount of ${wipPaymentPlanConfiguration.balanceDue} is payable by ${wipPaymentPlanConfiguration.endDate.toASPString('MMMM dd, yyyy')}.`" />
+
+            <div class="row">
+                <div class="col">
+                    <DropDownList :modelValue="paymentFrequencyGuidOrEmptyString"
+                                  @update:modelValue="onUpdatePaymentFrequencyGuid"
+                                  :items="paymentPlanFrequencyItems"
+                                  label="Select Your Desired Payment Frequency"
+                                  rules="required" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <DatePicker :modelValue="startDateIsoString"
+                                @update:modelValue="onUpdateStartDateIsoString"
+                                label="Start Date"
+                                :disallowPastDateSelection="true"
+                                :rules="validateStartDate" />
+                </div>
+            </div>
+
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
+                <div class="col-sm-6">
+                    <CurrencyBox :modelValue="amountToPayTodayPlusAdjustmentCurrency?.number ?? 0"
+                                 @update:modelValue="onUpdateAmountToPayToday"
+                                 label="Amount To Pay Today"
+                                 :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]"
+                                 @blur="onBlurAmountToPayToday">
+
+                        <template #append>
+                            <small>A minimum of {{ wipPaymentPlanConfiguration?.minAmountToPayToday }} is due today.</small>
+                        </template>
+                    </CurrencyBox>
+                </div>
+
+                <div class="col-sm-6">
+                    <DropDownList :modelValue="numberOfPayments + ''"
+                                  @update:modelValue="onUpdateNumberOfPaymentsStringOrEmpty"
+                                  :items="numberOfPaymentsItems"
+                                  label="Number of Payments"
+                                  rules="required"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
+                <div class="col">
+                    <RockLabel label="Plan Summary">Plan Summary</RockLabel>
+                </div>
+            </div>
+
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
+                <div class="col-sm-6">
+                    <div>Amount Due Today</div>
+                    <div>
+                        {{ wipPaymentPlanConfiguration.amountToPayTodayPlusAdjustment }}
+                        <template v-if="amountToPayTodaySuffix"><small>&nbsp;({{ amountToPayTodaySuffix }})</small></template>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" v-if="wipPaymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
+                    <div>{{ wipPaymentPlanConfiguration.paymentPlanFrequency.listItemBag.text }} Payment Amount</div>
+                    <div>{{ paymentAmountMessage }}</div>
+                </div>
+            </div>
+        </template>
+        <template v-else>
+            A payment deadline date is required to create a payment plan.
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch, nextTick } from "vue";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PaymentPlanConfiguration, PaymentPlanFrequency } from "./types.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { Guid } from "@Obsidian/Types";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const {
+        paymentPlanFrequencies,
+        wipPaymentPlanConfiguration,
+        configure,
+        initializeWorkInProgress,
+        reconfigureWorkInProgress } = useConfigurePaymentPlanFeature();
+
+    //#region Values
+
+    // Initialize refs with empty values,
+    // then call a separate initialize function for code clarity.
+    const paymentPlanFrequency = ref<PaymentPlanFrequency>();
+    const startDateIsoString = ref<string | null>(null);
+    const paymentFrequencyGuidOrEmptyString = ref<string>("");
+    const amountToPayToday = ref<number>(0);
+    const amountToPayTodayAdjustmentCurrency = ref<RockCurrency | null | undefined>();
+    const amountToPayTodayPlusAdjustmentCurrency = ref<RockCurrency | null | undefined>();
+    const numberOfPayments = ref<number>(0);
+    const areAmountFieldsShown = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Computed Values
+
+    /**
+     * The allowed payment plan frequencies.
+     */
+    const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => {
+        return wipPaymentPlanConfiguration.value?.paymentPlanFrequencies.map(frequency => frequency.listItemBag) ?? [];
+    });
+
+    const paymentAmountMessage = computed<string>(() => {
+        if (!wipPaymentPlanConfiguration.value) {
+            return "Number of Payments is required";
+        }
+        else {
+            return `${wipPaymentPlanConfiguration.value.amountPerPayment} × ${wipPaymentPlanConfiguration.value.numberOfPayments}`;
+        }
+    });
+
+    const internalIsShown = useVModelPassthrough(props, "modelValue", emit);
+
+    const amountToPayTodaySuffix = computed<string>(() => {
+        if (!wipPaymentPlanConfiguration.value) {
+            return "";
+        }
+        else if (wipPaymentPlanConfiguration.value.balanceDue.isEqualTo(amountToPayToday.value ?? 0)) {
+            return `pay in full`;
+        }
+        else if (!wipPaymentPlanConfiguration.value.amountToPayTodayAdjustment.isZero) {
+            return `added ${wipPaymentPlanConfiguration.value.amountToPayTodayAdjustment} to evenly distribute the remaining payments`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    const numberOfPaymentsItems = computed<ListItemBag[]>(() => {
+        function createRange(inclusiveStart: number, inclusiveEnd: number): number[] {
+            const range: number[] = [];
+
+            for (let i = inclusiveStart; i <= inclusiveEnd; i++) {
+                range.push(i);
+            }
+
+            return range;
+        }
+
+        if (!wipPaymentPlanConfiguration.value) {
+            return [];
+        }
+        else {
+            return createRange(2, wipPaymentPlanConfiguration.value.paymentPlanFrequency.maxNumberOfPayments)
+                .map(n => ({
+                    text: n.toString(),
+                    value: n.toString()
+                }));
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    const validateStartDate: ValidationRuleFunction = (value: unknown, _params: unknown[] | undefined): ValidationResult => {
+        if (!value || typeof value !== "string" || !paymentPlanFrequencies.value.length) {
+            return true;
+        }
+
+        let date = RockDateTime.parseISO(value);
+
+        if (!date) {
+            return true;
+        }
+
+        /**
+         * Checks if a start date is valid for any of the payment plan frequencies.
+         */
+        function isDateValid(startDate: RockDateTime): boolean {
+            for (const paymentPlanFrequency of paymentPlanFrequencies.value) {
+                const transDate1 = paymentPlanFrequency.getValidTransactionDate(startDate);
+                if (transDate1) {
+                    if (paymentPlanFrequency.getNextTransactionDate(transDate1)) {
+                        // Two transactions can occur for the given start date with this frequency.
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        const earliestDate = wipPaymentPlanConfiguration.value?.startDate ?? RockDateTime.now();
+
+        // Check if the start date is valid for any of the payment plan frequencies.
+        if (isDateValid(date)) {
+            return true;
+        }
+        else {
+            date = date.addDays(-1);
+
+            while (!date.isEarlierThan(earliestDate)) {
+                if (isDateValid(date)) {
+                    return `must be no later than ${date.toLocaleString({ year: "numeric", month: "numeric", day: "numeric" })}`;
+                }
+                else {
+                    date = date.addDays(-1);
+                }
+            }
+        }
+
+        // This shouldn't happen but return a generic error just in case.
+        return `is invalid`;
+    };
+
+    function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (wipPaymentPlanConfiguration.value?.minAmountToPayToday?.isGreaterThan(amountToPayToday.value ?? 0)) {
+            return "must be greater than or equal to the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (wipPaymentPlanConfiguration.value?.balanceDue.isLessThan(amountToPayToday.value ?? 0)) {
+            return "must be less than or equal to the total amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    function updateModal(config: PaymentPlanConfiguration): void {
+        paymentPlanFrequency.value = config.paymentPlanFrequency;
+        startDateIsoString.value = config.startDate?.toISOString() ?? "";
+        numberOfPayments.value = config.numberOfPayments;
+        amountToPayToday.value = config.amountToPayToday.number;
+        paymentFrequencyGuidOrEmptyString.value = config.paymentPlanFrequency.transactionFrequency.definedValueGuid;
+
+        // Amount To Pay Today fields need to be zeroed out
+        // and updated on the next tick for them to be properly update.
+        amountToPayTodayAdjustmentCurrency.value = null;
+        amountToPayTodayPlusAdjustmentCurrency.value = null;
+        nextTick(() => {
+            amountToPayTodayAdjustmentCurrency.value = config.amountToPayTodayAdjustment;
+            amountToPayTodayPlusAdjustmentCurrency.value = config.amountToPayToday.add(config.amountToPayTodayAdjustment);
+        });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onUpdateNumberOfPaymentsStringOrEmpty(value: string | string[]): void {
+        let numbOfPayments: number;
+        if (Array.isArray(value)) {
+            numbOfPayments = toNumber(value[0] ?? "");
+        }
+        else {
+            numbOfPayments = toNumber(value);
+        }
+
+        // Update the ref, then recalculate the payment plan configuration
+        // on the next tick (otherwise the UI won't know the ref changed).
+        numberOfPayments.value = numbOfPayments;
+
+        nextTick(() => {
+            reconfigureWorkInProgress({
+                desiredNumberOfPayments: numbOfPayments
+            });
+        });
+    }
+
+    function onUpdateAmountToPayToday(value: number | null): void {
+        // Only update the ref here. DO NOT recalculate on update;
+        // otherwise, the value will get overwritten on each character entered.
+        // Instead, calculate on blur.
+        amountToPayToday.value = value ?? 0;
+    }
+
+    function onBlurAmountToPayToday(): void {
+        if (wipPaymentPlanConfiguration.value) {
+            reconfigureWorkInProgress({
+                amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo),
+            });
+        }
+    }
+
+    function onUpdateStartDateIsoString(value: string | null): void {
+        const today = RockDateTime.now().date;
+        const desiredStartDateOverride =
+            value
+                ? RockDateTime.parseISO(value) ?? today
+                : today;
+
+        // Update the ref, then recalculate the payment plan configuration
+        // on the next tick (otherwise the UI won't know the ref changed).
+        startDateIsoString.value = desiredStartDateOverride.toISOString();
+
+        nextTick(() => {
+            reconfigureWorkInProgress({
+                desiredStartDate: desiredStartDateOverride
+            });
+        });
+    }
+
+    function onUpdatePaymentFrequencyGuid(guid: Guid | Guid[]): void {
+        if (Array.isArray(guid)) {
+            throw "Multiple payment frequencies are not supported";
+        }
+
+        // Update the ref, then recalculate the payment plan configuration
+        // on the next tick (otherwise the UI won't know the ref changed).
+        paymentFrequencyGuidOrEmptyString.value = guid;
+
+        nextTick(() => {
+            reconfigureWorkInProgress({
+                desiredPaymentPlanFrequency: paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, guid))
+            });
+        });
+    }
+
+    function onConfigurePaymentPlan(): void {
+        if (wipPaymentPlanConfiguration.value) {
+            // Recalc the amount to pay today one last time before setting the payment plan values.
+            reconfigureWorkInProgress({
+                // The amount to pay today should manually be passed in here
+                // to handle the case where an individual pressed [Enter] while
+                // in the amount to pay today field (onBlur is not triggered).
+                amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo)
+            });
+
+            configure(wipPaymentPlanConfiguration.value);
+
+            internalIsShown.value = false;
+        }
+    }
+
+    function onCancel(): void {
+        // Clear the "work in progress" plan before closing.
+        wipPaymentPlanConfiguration.value = null;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(wipPaymentPlanConfiguration, (config) => {
+        if (config) {
+            updateModal(config);
+
+            // Show the amount fields once a payment frequency has been selected.
+            if (config.paymentPlanFrequency.transactionFrequency.definedValueGuid) {
+                areAmountFieldsShown.value = true;
+            }
+        }
+    }, {
+        immediate: true
+    });
+
+    watch(() => props.modelValue, (isShown) => {
+        if (isShown && !wipPaymentPlanConfiguration.value) {
+            initializeWorkInProgress();
+        }
+        else if (!isShown) {
+            // Hide the amount fields once the modal is closed.
+            areAmountFieldsShown.value = false;
+        }
+    }, {
+        immediate: true
+    });
+
+    //#endregion
+</script>

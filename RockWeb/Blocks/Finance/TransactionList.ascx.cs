@@ -846,7 +846,11 @@ namespace RockWeb.Blocks.Finance
                     int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.Id].FirstOrDefault();
                     if ( firstImageId != null )
                     {
-                        string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImageId, _imageHeight );
+                        var options = new GetImageUrlOptions
+                        {
+                            Height = _imageHeight
+                        };
+                        string imageSrc = FileUrlHelper.GetImageUrl( firstImageId.Value, options );
                         lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
                     }
                 }
@@ -1587,7 +1591,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
                 }
-               
+
                 if ( hideTransactionsInPendingBatches )
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );

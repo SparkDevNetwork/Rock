@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="schedule-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :person="currentPerson">
+            <div class="button-list">
+                <RockButton v-for="schedule in schedules"
+                            btnType="primary"
+                            class="schedule-button"
+                            :class="{ checked: isSelected(schedule) }"
+                            @click="onScheduleClick(schedule)">
+                    <span class="selection">
+                        <i v-if="isSelected(schedule)" class="fa fa-check-square"></i>
+                        <i v-else class="fa fa-square-o"></i>
+                    </span>
+
+                    <span class="title">{{ schedule.name }}</span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { isAnyIdInList, UnexpectedErrorMessage } from "./utils.partial";
+    import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
+    import { Guid } from "@Obsidian/Types";
+    import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+    import { KioskButton } from "./types.partial";
+    import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const selections = ref<Guid[]>(getDefaultSelections(props.session.selectedSchedules));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        if (props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            return "Select Times";
+        }
+        else {
+            return props.session.selectedLocation?.name ?? "Schedule";
+        }
+    });
+
+    const subtitle = computed((): string => {
+        if (props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            return `Select your preferred check-in times`;
+        }
+        else {
+            return `Select the times you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
+        }
+    });
+
+    const currentPerson = computed((): PersonBag | undefined | null => {
+        if (props.session.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            return null;
+        }
+
+        return props.session.getCurrentAttendee()?.person;
+    });
+
+    const schedules = computed((): ScheduleOpportunityBag[] => {
+        return props.session.getAvailableSchedules();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getDefaultSelections(schedule: CheckInItemBag | CheckInItemBag[] | undefined | null): string[] {
+        if (!schedule) {
+            return [];
+        }
+        else if (Array.isArray(schedule)) {
+            return schedule.map(s => s.id as string);
+        }
+        else {
+            return [schedule.id as string];
+        }
+    }
+
+    function isSelected(schedule: CheckInItemBag): boolean {
+        return selections.value.some(s => s === schedule.id);
+    }
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            type: "primary",
+            title: "Next",
+            key: "next",
+            disabled: selections.value.length === 0,
+            handler: onNextClick
+        });
+
+        emit("updateActions", actions);
+    }
+
+    function onScheduleClick(schedule: CheckInItemBag): void {
+        if (isAnyIdInList(schedule.id, selections.value)) {
+            selections.value = selections.value.filter(s => s !== schedule.id);
+        }
+        else if (schedule.id) {
+            selections.value = [schedule.id, ...selections.value];
+        }
+    }
+
+    /**
+     * Handles the click event for an next button.
+     */
+    async function onNextClick(): Promise<void> {
+        try {
+            const newSession = props.session.withSelectedSchedules(selections.value);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+    }
+
+    // #endregion
+
+    watch(selections, () => updateActions());
+
+    updateActions();
+</script>

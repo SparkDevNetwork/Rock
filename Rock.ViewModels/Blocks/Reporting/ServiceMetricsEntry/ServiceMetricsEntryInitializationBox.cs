@@ -65,5 +65,13 @@ namespace Rock.ViewModels.Blocks.Reporting.ServiceMetricsEntry
         /// The weeks back.
         /// </value>
         public int WeeksBack { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of active campuses.
+        /// </summary>
+        /// <value>
+        /// The active campuses count.
+        /// </value>
+        public int ActiveCampusesCount { get; set; }
     }
 }

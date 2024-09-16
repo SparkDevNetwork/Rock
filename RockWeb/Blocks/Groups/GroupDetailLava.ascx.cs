@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 6 )]
 
-    [BooleanField("Hide the 'Public' Group checkbox",
+    [BooleanField( "Hide the 'Public' Group checkbox",
         Key = AttributeKey.HidePublicGroupCheckbox,
         Description = "Set this to true to hide the checkbox for 'Public' for the group.",
         DefaultBooleanValue = true,
@@ -176,9 +176,22 @@ namespace RockWeb.Blocks.Groups
         Order = 18 )]
 
     [BooleanField( "Enable Communication Preference",
+        Key = AttributeKey.EnableCommunicationPreference,
         Description = "Determines if the currently logged in individual should be allowed to set their communication preference for the group.",
         DefaultBooleanValue = false,
         Order = 19 )]
+
+    [BooleanField( "Show 'Email Group Leaders' Button",
+        Key = AttributeKey.ShowEmailGroupLeadersButton,
+        Description = "Determines if the 'Email Group Leaders' button should be displayed.",
+        DefaultBooleanValue = false,
+        Order = 20 )]
+
+    [BooleanField( "Show 'Email Roster Parents' Button",
+        Key = AttributeKey.ShowEmailRosterParentsButton,
+        Description = "Determines if the 'Email Roster Parents' button should be displayed.",
+        DefaultBooleanValue = false,
+        Order = 21 )]
 
     #endregion Block Attributes
 
@@ -216,6 +229,20 @@ namespace RockWeb.Blocks.Groups
             public const string EditGroupMemberPreHTML = "EditGroupMemberPre-HTML";
             public const string EditGroupMemberPostHTML = "EditGroupMemberPost-HTML";
             public const string EnableCommunicationPreference = "EnableCommunicationPreference";
+            public const string ShowEmailRosterParentsButton = "ShowEmailRosterParentsButton";
+            public const string ShowEmailGroupLeadersButton = "ShowEmailGroupLeadersButton";
+        }
+
+        private static class ButtonActionKey
+        {
+            public const string EditGroup = "EditGroup";
+            public const string AddGroupMember = "AddGroupMember";
+            public const string EditGroupMember = "EditGroupMember";
+            public const string DeleteGroupMember = "DeleteGroupMember";
+            public const string SendCommunication = "SendCommunication";
+            public const string SendAlternateCommunication = "SendAlternateCommunication";
+            public const string EmailGroupLeaders = "EmailGroupLeaders";
+            public const string EmailRosterParents = "EmailRosterParents";
         }
 
         #endregion Attribute Keys
@@ -428,6 +455,7 @@ namespace RockWeb.Blocks.Groups
         {
             RouteAction();
             BlockSetup();
+            DisplayViewGroup();
         }
 
         /// <summary>
@@ -532,7 +560,8 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                rockContext.WrapTransaction( () => {
+                rockContext.WrapTransaction( () =>
+                {
 
                     rockContext.SaveChanges();
 
@@ -824,7 +853,7 @@ namespace RockWeb.Blocks.Groups
 
                     switch ( action )
                     {
-                        case "EditGroup":
+                        case ButtonActionKey.EditGroup:
                             pnlGroupEdit.Visible = true;
                             pnlGroupView.Visible = false;
                             pnlEditGroupMember.Visible = false;
@@ -832,17 +861,17 @@ namespace RockWeb.Blocks.Groups
                             sm.AddHistoryPoint( "Action", "EditGroup" );
                             break;
 
-                        case "AddGroupMember":
+                        case ButtonActionKey.AddGroupMember:
                             AddGroupMember();
                             break;
 
-                        case "EditGroupMember":
+                        case ButtonActionKey.EditGroupMember:
                             groupMemberId = int.Parse( parameters );
                             DisplayEditGroupMember( groupMemberId );
                             sm.AddHistoryPoint( "Action", "EditMember" );
                             break;
 
-                        case "DeleteGroupMember":
+                        case ButtonActionKey.DeleteGroupMember:
                             if ( GetAttributeValue( AttributeKey.AllowGroupMemberDelete ).AsBoolean() )
                             {
                                 groupMemberId = int.Parse( parameters );
@@ -851,12 +880,20 @@ namespace RockWeb.Blocks.Groups
                             }
                             break;
 
-                        case "SendCommunication":
-                            SendCommunication();
+                        case ButtonActionKey.SendCommunication:
+                            SendCommunication( ButtonActionKey.SendCommunication );
                             break;
 
-                        case "SendAlternateCommunication":
+                        case ButtonActionKey.SendAlternateCommunication:
                             SendAlternateCommunication();
+                            break;
+
+                        case ButtonActionKey.EmailGroupLeaders:
+                            SendCommunication( ButtonActionKey.EmailGroupLeaders );
+                            break;
+
+                        case ButtonActionKey.EmailRosterParents:
+                            SendCommunication( ButtonActionKey.EmailRosterParents );
                             break;
                     }
                 }
@@ -951,6 +988,11 @@ namespace RockWeb.Blocks.Groups
                 currentPageProperties.Add( "Id", RockPage.PageId );
                 currentPageProperties.Add( "Path", Request.Path );
                 mergeFields.Add( "CurrentPage", currentPageProperties );
+
+                Dictionary<string, object> buttonVisibility = new Dictionary<string, object>();
+                buttonVisibility.Add( AttributeKey.ShowEmailGroupLeadersButton, GetAttributeValue( AttributeKey.ShowEmailGroupLeadersButton ) );
+                buttonVisibility.Add( AttributeKey.ShowEmailRosterParentsButton, GetAttributeValue( AttributeKey.ShowEmailRosterParentsButton ) );
+                mergeFields.Add( "ButtonVisibility", buttonVisibility );
 
                 string template = GetAttributeValue( AttributeKey.LavaTemplate );
 
@@ -1367,7 +1409,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Sends the communication.
         /// </summary>
-        private void SendCommunication()
+        private void SendCommunication( string action )
         {
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
@@ -1382,26 +1424,29 @@ namespace RockWeb.Blocks.Groups
 
                 service.Add( communication );
 
-                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
-                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
-                                    .ToList()
-                                    .Select( m => m.Person.PrimaryAliasId )
-                                    .ToList();
+                var personAliasIds = GetCommunicationRecipients( rockContext, action );
 
-                // Get the primary aliases
-                foreach ( int personAlias in personAliasIds )
+                if ( personAliasIds.Count > 0 )
                 {
-                    var recipient = new Rock.Model.CommunicationRecipient();
-                    recipient.PersonAliasId = personAlias;
-                    communication.Recipients.Add( recipient );
+                    // Get the primary aliases
+                    foreach ( var personAlias in personAliasIds )
+                    {
+                        var recipient = new Rock.Model.CommunicationRecipient();
+                        recipient.PersonAliasId = personAlias;
+                        communication.Recipients.Add( recipient );
+                    }
+
+                    rockContext.SaveChanges();
+
+                    Dictionary<string, string> queryParameters = new Dictionary<string, string>();
+                    queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
+
+                    NavigateToLinkedPage( AttributeKey.CommunicationPage, queryParameters );
                 }
-
-                rockContext.SaveChanges();
-
-                Dictionary<string, string> queryParameters = new Dictionary<string, string>();
-                queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
-
-                NavigateToLinkedPage( AttributeKey.CommunicationPage, queryParameters );
+                else
+                {
+                    maRecipientsAlert.Show( "There are no available recipients for this communication.", ModalAlertType.Information );
+                }
             }
         }
 
@@ -1444,6 +1489,56 @@ namespace RockWeb.Blocks.Groups
 
                 NavigateToLinkedPage( AttributeKey.AlternateCommunicationPage, queryParameters );
             }
+        }
+
+        /// <summary>
+        /// Gets the communication recipients based in the current action.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        private List<int?> GetCommunicationRecipients( RockContext rockContext, string action )
+        {
+            var personAliasIds = new List<int?>();
+
+            switch ( action )
+            {
+                case ButtonActionKey.SendCommunication:
+                    personAliasIds = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                        .ToList()
+                        .Select( m => m.Person.PrimaryAliasId )
+                        .ToList();
+                break;
+
+                case ButtonActionKey.EmailRosterParents:
+                    var groupMemberPersonIds = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                        .Select( gm => gm.PersonId )
+                        .ToList();
+
+                    int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+                    int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+
+                    personAliasIds = new PersonService( rockContext ).Queryable()
+                        .Where( p => p.Members.Where( a => ( a.GroupRoleId == adultRoleId ) && !a.IsArchived )
+                            .Any( a => a.Group.Members
+                            .Any( c => ( c.GroupRoleId == childRoleId ) && groupMemberPersonIds.Contains( c.PersonId ) ) ) )
+                        .Select( m => m.PrimaryAliasId )
+                        .ToList();
+                break;
+
+                case ButtonActionKey.EmailGroupLeaders:
+                    personAliasIds = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m => m.GroupId == _groupId
+                            && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                            && m.GroupRole.IsLeader )
+                        .Select( m => m.Person.PrimaryAliasId )
+                        .ToList();
+                break;
+            }
+
+            return personAliasIds;
         }
 
         #endregion

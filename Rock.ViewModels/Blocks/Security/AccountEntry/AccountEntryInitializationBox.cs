@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Security.AccountEntry
@@ -164,5 +165,21 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         ///   <c>true</c> if Captcha is disabled; otherwise, <c>false</c>.
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// Campus status defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public List<Guid> CampusStatusFilter { get; set; }
+
+        /// <summary>
+        /// Campus type defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus type filter.
+        /// </value>
+        public List<Guid> CampusTypeFilter { get; set; }
     }
 }

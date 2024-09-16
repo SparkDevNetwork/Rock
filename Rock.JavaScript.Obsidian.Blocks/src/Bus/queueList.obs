@@ -1,0 +1,115 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Queue"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem"
+          :showLaunchWorkflow="false">
+
+        <TextColumn name="queueName"
+                    title="Name"
+                    field="queueName"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="20%" />
+
+        <TextColumn name="queueType"
+                    title="Type"
+                    field="queueType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="timeToLiveSeconds"
+                    title="TTL (Seconds)"
+                    field="timeToLiveSeconds"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="ratePerMinute"
+                    title="Consumed Last Minute"
+                    field="ratePerMinute"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <Column name="ratePerHour"
+                    title="Consumed Last Hour"
+                    field="ratePerHour"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <Column name="ratePerDay"
+                    title="Consumed Last Day"
+                    field="ratePerDay"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs" />
+
+        <!-- Will only appear in the Excel/CSV Export -->
+
+        <Column name="idKey"
+                    title="Queue Type Name"
+                    field="idKey"
+                    :hideOnScreen="true"
+                    visiblePriority="xs" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { TextColumn, textValueFilter, numberValueFilter, Column, NumberColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { QueueListOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueList/queueListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref } from "vue";
+    import { NavigationUrlKey } from "./QueueList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<QueueListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

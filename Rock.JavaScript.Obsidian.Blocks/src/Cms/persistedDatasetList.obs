@@ -1,0 +1,218 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Persisted Dataset"
+          :entityTypeGuid="EntityType.PersistedDataset"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <TextColumn name="accessKey"
+                    title="Access Key"
+                    field="accessKey"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <TextColumn name="timeToBuildMS"
+                    title="Time To Build (ms)"
+                    field="timeToBuildMS"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <NumberColumn name="resultSize"
+                      title="Result Size (KB)"
+                      field="resultSize"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="2%" />
+
+        <DateTimeColumn name="lastRefreshDateTime"
+                        title="Last Refresh Date"
+                        field="lastRefreshDateTime"
+                        visiblePriority="xs"
+                        width="10%" />
+
+        <ButtonColumn name="refresh"
+                      title="Refresh"
+                      iconClass="fa fa-sync-alt"
+                      :excludeFromExport="true"
+                      @click="onRefreshClick" />
+
+        <ButtonColumn name="preview"
+                      title="Preview"
+                      iconClass="fa fa-search"
+                      :excludeFromExport="true"
+                      @click="onPreviewClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <!-- The following columns will only appear in the Excel/CSV Export -->
+
+        <Column name="id"
+                    title="Id"
+                    field="id"
+                    :hideOnScreen="true" />
+
+        <BooleanColumn name="allowManualRefresh"
+                      title="Allow Manual Refresh"
+                      field="allowManualRefresh"
+                      :hideOnScreen="true" />
+
+    </Grid>
+
+    <GridPreviewModal :modelValue="previewModalData" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { Column, NumberColumn, BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PersistedDatasetListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetList/persistedDatasetListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./PersistedDatasetList/types.partial";
+    import { reactive, ref } from "vue";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import GridPreviewModal from "./PersistedDatasetList/gridPreviewModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<PersistedDatasetListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const previewModalData = ref<Record<string, any> | null>(null);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete persisted dataset.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the Refresh button has been clicked by the individual.
+    * @param key The key of the row that was selected.
+    */
+    async function onRefreshClick(key: string): Promise<void> {
+        const result = await invokeBlockAction("RefreshDataset", { datasetId: key });
+        if (!result.isSuccess) {
+            previewModalData.value = {
+                jsonData: null,
+                previewMessage: `Error: ${result.errorMessage}` || "Unknown error occurred while refreshing dataset.",
+                previewMessageType: "danger",
+                isDataTruncated: false
+            };
+        }
+        else {
+            // Refresh the grid data after successful refresh
+            gridDataSource.value = loadGridData();
+        }
+    }
+
+    /**
+     * Called when the Preview button has been clicked by the individual.
+     * @param key The key of the row that was selected.
+     */
+    async function onPreviewClick(key: string): Promise<void> {
+        const result = await invokeBlockAction("PreviewDataset", { datasetId: key });
+
+        if (result.isSuccess && result.data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const responseData = result.data as Record<string, any>;
+            previewModalData.value = {
+                jsonData: responseData.previewData,
+                previewMessage: `Time to build Dataset: ${responseData.timeToBuildMS?.toFixed(0)}ms`,
+                previewMessageType: "success",
+                isDataTruncated: responseData.isDataTruncated
+            };
+        }
+        else {
+            previewModalData.value = {
+                jsonData: null,
+                previewMessage: result.errorMessage || "Unknown error occurred while previewing dataset.",
+                previewMessageType: "danger",
+                isDataTruncated: false
+            };
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

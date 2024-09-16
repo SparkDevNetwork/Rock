@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="family-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+            <div class="button-list">
+                <RockButton v-for="family in props.session.families"
+                            btnType="primary"
+                            class="family-button"
+                            @click="onFamilyClick(family)">
+                    <span class="title">{{ family.name }}</span>
+                    <span class="subtitle">{{ getFamilyMemberNames(family) }}</span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
+    import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
+    import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const title = ref("Family Selection");
+    const subtitle = ref("Select your family from the list below");
+    let isSelectingFamily = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        if (props.configuration.kiosk?.isRegistrationModeEnabled) {
+            actions.push({
+                type: "default",
+                title: "Add Family",
+                key: "add-family",
+                class: "add-family-button",
+                disabled: false
+            });
+        }
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Gets the family member names in a friendly format like "Ted, Cindy, Noah & Alex".
+     *
+     * @param family The family whose member names are retrieved.
+     *
+     * @returns A string that represents the family members.
+     */
+    function getFamilyMemberNames(family: FamilyBag): string {
+        if (!family.members) {
+            return "";
+        }
+
+        const names = family.members
+            .filter(m => !!m.person?.nickName)
+            .map(m => m.person?.nickName as string);
+
+        return asCommaAnd(names, "&");
+    }
+
+    /**
+     * Handles the click event for a family button.
+     *
+     * @param family The family that was selected.
+     */
+    async function onFamilyClick(family: FamilyBag): Promise<void> {
+        // Prevent tapping two different family buttons.
+        if (isSelectingFamily || !family.id) {
+            return;
+        }
+
+        try {
+            isSelectingFamily = true;
+
+            const newSession = await props.session.withFamily(family.id);
+
+            if (!newSession.attendees || newSession.attendees.length === 0) {
+                await alert("There were not any family members in this family.");
+                return;
+            }
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isSelectingFamily = false;
+        }
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

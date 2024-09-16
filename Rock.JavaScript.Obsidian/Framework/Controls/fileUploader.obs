@@ -157,6 +157,11 @@
      * Event handler for when the remove file button is clicked.
      */
     const onRemoveFileClick = (): void => {
+        // Required in order to clear and upload the same file again
+        if (fileInputElement.value) {
+            fileInputElement.value.value = "";
+        }
+
         fileGuid.value = null;
         fileName.value = "";
     };

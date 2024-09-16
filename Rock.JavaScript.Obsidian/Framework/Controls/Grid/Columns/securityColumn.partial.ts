@@ -49,6 +49,11 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "security"
+        },
+
         /**
          * The row item title to use when opening the security dialog. If a
          * plain string is provided it is the field name that contains the

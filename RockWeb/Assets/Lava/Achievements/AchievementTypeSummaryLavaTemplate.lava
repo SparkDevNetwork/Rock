@@ -1,7 +1,7 @@
 {% if JustCompleted == true  %}
     {% if AchievementType.ImageBinaryFileId %}
         <div class="left-icon">
-            <img src="/GetImage.ashx?id={{AchievementType.ImageBinaryFileId}}&width=40" />
+            <img src="{{ AchievementType.ImageBinaryFileId | ImageUrl: '', 'rootUrl' }}&width=40" />
         </div>
     {% endif %}
 
@@ -23,7 +23,7 @@
         <div class="d-flex align-items-center">
             {% if AchievementType.ImageBinaryFileId %}
                 <div class="left-icon">
-                    <img src="/GetImage.ashx?id={{AchievementType.ImageBinaryFileId}}&width=40" />
+                    <img src="{{ AchievementType.ImageBinaryFileId | ImageUrl: '', 'rootUrl' }}&width=40" />
                 </div>
             {% endif %}
 

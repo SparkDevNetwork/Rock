@@ -937,11 +937,9 @@ namespace Rock.Web.UI
         {
             var photoUrl = new StringBuilder();
 
-            photoUrl.Append( System.Web.VirtualPathUtility.ToAbsolute( "~/" ) );
-
             if ( imageId.HasValue )
             {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", imageId );
+                photoUrl.Append( FileUrlHelper.GetImageUrl( imageId.Value ) );
 
                 if ( maxWidth.HasValue )
                 {
@@ -982,7 +980,7 @@ namespace Rock.Web.UI
                     return string.Format( "<img class='img-thumbnail' src='{0}'{1}/>", photoUrl.ToString(), styleString );
                 }
                 else
-                {
+                { 
                     return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
                 }
             }
@@ -1281,7 +1279,7 @@ namespace Rock.Web.UI
 
             foreach ( var key in preferences.GetKeys() )
             {
-                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+                prefs.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return prefs;

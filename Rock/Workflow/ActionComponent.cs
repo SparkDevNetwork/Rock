@@ -193,6 +193,22 @@ namespace Rock.Workflow
         }
 
         /// <summary>
+        /// Gets the attribute value.
+        /// If the Attribute value is a Guid that matches the identifier of an Attribute of the parent Activity or Workflow,
+        /// the value of that referenced Attribute is returned instead.
+        /// </summary>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="key">The attribute key.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This method is intended to clarify code that would otherwise use the GetAttributeValue with the checkWorkflowAttributeValue flag.
+        /// </remarks>
+        protected string GetAttributeValueFromWorkflowTextOrAttribute( WorkflowAction action, string key )
+        {
+            return GetAttributeValue( action, key, checkWorkflowAttributeValue:true );
+        }
+
+        /// <summary>
         /// Gets the action attribute value.
         /// </summary>
         /// <param name="action">The action.</param>

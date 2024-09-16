@@ -167,6 +167,7 @@
         Rock.controls.emailEditor.$currentImageComponent.find('img').attr('src', undefined)
 
         Rock.controls.emailEditor.$currentImageComponent.attr('data-image-id', data ? data.response().result.Id : null);
+        Rock.controls.emailEditor.$currentImageComponent.attr('data-image-guid', data ? data.response().result.Guid : null);
         Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename', data ? data.response().result.FileName : null);
 
         Rock.controls.emailEditor.imageComponentHelper.setImageSrc();
@@ -205,15 +206,14 @@
       },
       setImageSrc: function () {
         var binaryFileId = Rock.controls.emailEditor.$currentImageComponent.attr('data-image-id');
+        var binaryFileGuid = Rock.controls.emailEditor.$currentImageComponent.attr('data-image-guid');
         var imageUrl;
         if (!binaryFileId) {
           imageUrl = $($('.js-emaileditor-iframe').contents().find('#editor-toolbar').find('.component-image').attr('data-content')).prop('src');
         } else {
-          imageUrl = Rock.settings.get('baseUrl')
-                  + 'GetImage.ashx?'
-                  + 'isBinaryFile=T'
-                  + '&id=' + binaryFileId
-                  + '&fileName=' + Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename');
+          imageUrl = Rock.settings.get('baseUrl') + 'GetImage.ashx?isBinaryFile=T';
+          imageUrl += '&guid=' + binaryFileGuid;
+          imageUrl += '&fileName=' + Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename');
         }
 
         var imageWidth = parseInt($('#component-image-imagewidth').val()) || '';

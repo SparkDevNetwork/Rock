@@ -266,7 +266,7 @@ namespace Rock.Blocks.Reporting
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${MergeTemplate.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {MergeTemplate.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

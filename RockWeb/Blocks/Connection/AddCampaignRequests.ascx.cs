@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Connection
             foreach ( var campaignConnectionItem in campaignConnectionItems )
             {
                 int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
-                campaignConnectionItemsPendingCount.AddOrIgnore( campaignConnectionItem, pendingCount );
+                campaignConnectionItemsPendingCount.TryAdd( campaignConnectionItem, pendingCount );
                 var listItem = new ListItem();
                 listItem.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
                 listItem.Value = campaignConnectionItem.Guid.ToString();

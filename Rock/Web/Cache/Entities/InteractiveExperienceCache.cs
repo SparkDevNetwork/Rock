@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Event.InteractiveExperiences;
 
 namespace Rock.Web.Cache
@@ -234,7 +235,7 @@ namespace Rock.Web.Cache
                 Title = WelcomeTitle,
                 Message = WelcomeMessage,
                 HeaderImage = WelcomeHeaderImageBinaryFileId.HasValue
-                    ? $"/GetImage.ashx?Id={WelcomeHeaderImageBinaryFileId.Value}"
+                    ? FileUrlHelper.GetImageUrl( WelcomeHeaderImageBinaryFileId.Value )
                     : null
             };
         }
@@ -250,7 +251,7 @@ namespace Rock.Web.Cache
                 Title = NoActionTitle,
                 Message = NoActionMessage,
                 HeaderImage = NoActionHeaderImageBinaryFileId.HasValue
-                    ? $"/GetImage.ashx?Id={NoActionHeaderImageBinaryFileId.Value}"
+                    ? FileUrlHelper.GetImageUrl( NoActionHeaderImageBinaryFileId.Value )
                     : null
             };
         }
@@ -265,7 +266,7 @@ namespace Rock.Web.Cache
             {
                 BackgroundColor = ActionBackgroundColor,
                 BackgroundImage = ActionBackgroundImageBinaryFileId.HasValue
-                    ? $"/GetImage.ashx?Id={ActionBackgroundImageBinaryFileId.Value}"
+                    ? FileUrlHelper.GetImageUrl( ActionBackgroundImageBinaryFileId.Value )
                     : null,
                 CustomCss = ActionCustomCss,
                 PrimaryButtonColor = ActionPrimaryButtonColor,
@@ -287,7 +288,7 @@ namespace Rock.Web.Cache
                 AccentColor = AudienceAccentColor,
                 BackgroundColor = AudienceBackgroundColor,
                 BackgroundImage = AudienceBackgroundImageBinaryFileId.HasValue
-                    ? $"/GetImage.ashx?Id={AudienceBackgroundImageBinaryFileId.Value}"
+                    ? FileUrlHelper.GetImageUrl( AudienceBackgroundImageBinaryFileId.Value )
                     : null,
                 CustomCss = AudienceCustomCss,
                 PrimaryColor = AudiencePrimaryColor,

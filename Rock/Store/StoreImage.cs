@@ -16,6 +16,7 @@
 //
 using System;
 using System.Configuration;
+using Rock.Utility;
 
 namespace Rock.Store
 {
@@ -50,7 +51,7 @@ namespace Rock.Store
             get
             {
                 string storeServer = ConfigurationManager.AppSettings["RockStoreUrl"];
-                return string.Format("{0}GetImage.ashx?guid={1}", storeServer, this.Guid);
+                return FileUrlHelper.GetImageUrl( this.Guid, new GetImageUrlOptions { PublicAppRoot = storeServer } );
             }
         }
     }

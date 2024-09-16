@@ -28,6 +28,8 @@ using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 
+using CheckInLabel = Rock.CheckIn.CheckInLabel;
+
 namespace Rock.Utility
 {
     /// <summary>

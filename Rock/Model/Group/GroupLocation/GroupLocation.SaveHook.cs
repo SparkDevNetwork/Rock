@@ -15,7 +15,9 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -39,6 +41,8 @@ namespace Rock.Model
                 var rockContext = ( RockContext ) this.RockContext;
                 GroupHistoryChanges = new History.HistoryChangeList();
 
+                var relatedLocationIds = new List<int>();
+
                 switch ( State )
                 {
                     case EntityContextState.Added:
@@ -48,6 +52,8 @@ namespace Rock.Model
                             History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", ( int? ) null, Entity.Location, Entity.LocationId, rockContext );
                             History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mailing", false, Entity.IsMailingLocation );
                             History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Map Location", false, Entity.IsMappedLocation );
+
+                            relatedLocationIds.Add( Entity.LocationId );
 
                             break;
                         }
@@ -70,6 +76,14 @@ namespace Rock.Model
                             History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", OriginalValues[nameof( GroupLocation.IsMailingLocation )].ToStringSafe().AsBoolean(), Entity.IsMailingLocation );
                             History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", OriginalValues[nameof( GroupLocation.IsMappedLocation )].ToStringSafe().AsBoolean(), Entity.IsMappedLocation );
 
+                            var originalLocationId = ( int ) OriginalValues[nameof( GroupLocation.LocationId )];
+                            if ( Entity.LocationId != originalLocationId )
+                            {
+                                relatedLocationIds.Add( Entity.LocationId );
+                                relatedLocationIds.Add( originalLocationId );
+                            }
+
+
                             break;
                         }
 
@@ -77,10 +91,26 @@ namespace Rock.Model
                         {
                             string locationType = History.GetDefinedValueValue( null, OriginalValues[nameof( GroupLocation.GroupLocationTypeValueId )].ToStringSafe().AsIntegerOrNull() );
                             locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
-                            Location loc = null;
-                            History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", OriginalValues[nameof( GroupLocation.LocationId )].ToStringSafe().AsIntegerOrNull(), loc, ( int? ) null, rockContext );
+                            History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", OriginalValues[nameof( GroupLocation.LocationId )].ToStringSafe().AsIntegerOrNull(), ( Location ) null, ( int? ) null, rockContext );
+
+                            relatedLocationIds.Add( Entity.LocationId );
+
                             break;
                         }
+                }
+
+                // If any location identifiers were related to this GroupLocation
+                // then clear the "ByLocationId" lookup cache after this
+                // operation has been commited to the database.
+                if ( relatedLocationIds.Any() )
+                {
+                    RockContext.ExecuteAfterCommit( () =>
+                    {
+                        foreach ( var locationId in relatedLocationIds )
+                        {
+                            GroupLocationCache.ClearByLocationId( locationId );
+                        }
+                    } );
                 }
 
                 base.PreSave();

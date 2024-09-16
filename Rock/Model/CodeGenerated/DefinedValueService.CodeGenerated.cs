@@ -262,11 +262,19 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Metric>( Context ).Queryable().Any( a => a.MeasurementClassificationValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.SourceValueTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
             }
+
+            // ignoring PeerNetwork,RelationshipTypeValueId
 
             if ( new Service<Person>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
             {

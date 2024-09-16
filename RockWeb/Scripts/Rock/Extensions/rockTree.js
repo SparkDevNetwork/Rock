@@ -285,6 +285,9 @@
                                         dfd.notify();
                                     });
                                 }
+                                else if (self.options.universalItemPicker && toExpandParentItems.length > 0 && currentNode.children) {
+                                    self.events.trigger('nodes:dataBound', [currentNode]);
+                                }
                             }
                         }
 

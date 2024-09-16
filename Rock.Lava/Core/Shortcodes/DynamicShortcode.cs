@@ -259,19 +259,9 @@ namespace Rock.Lava
                 shortcodeCommands = context.GetEnabledCommands();
             }
 
-            var shortcodeTemplateMarkup = string.Empty;
-
-            // Run Lava on the block markup, unless the shortcode has disabled it.
-            if ( internalMergeFields.Contains( "disablelavamerge" ) && internalMergeFields["disablelavamerge"].ToString().AsBoolean() == true )
-            {
-                shortcodeTemplateMarkup = _blockMarkup.ToString();
-            }
-            else
-            {
-                var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
-                var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
-                shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
-            }
+            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
+            var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
+            var shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
 
             // Extract child elements from the shortcode template content.
             // One or more child elements can be added to a shortcode block using the syntax "[[ <childElementName> <paramName1>:value1 <paramName2>:value2 ... ]] ... [[ end<childElementName> ]]",

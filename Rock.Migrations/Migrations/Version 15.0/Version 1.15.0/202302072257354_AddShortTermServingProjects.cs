@@ -145,8 +145,10 @@ namespace Rock.Migrations
         {
             // [Page]: Engagement > Sign-Up
             RockMigrationHelper.AddPage( true, "48242949-944A-4651-B6CC-60194EDE08A0", "0CB60906-6B74-44FD-AB25-026050EF70EB", "Sign-Up", "", "1941542C-21F2-4341-BDE1-996AA1E0C0A2", "", "2A0C135A-8421-4125-A484-83C8B4FB3D34" );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "1941542C-21F2-4341-BDE1-996AA1E0C0A2", "people/signup", "75332FE3-DB1B-4B83-9287-5EDDD09A1A4E" );
             RockMigrationHelper.AddPageRoute( "1941542C-21F2-4341-BDE1-996AA1E0C0A2", "people/sign-up", "A9EEE819-13CA-425C-9118-65B421BC9FEB" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sign-Up Overview for [Page]: Engagement > Sign-Up
             RockMigrationHelper.AddBlock( true, "1941542C-21F2-4341-BDE1-996AA1E0C0A2".AsGuidOrNull(), null, null, "B539F3B5-01D3-4325-B32A-85AFE2A9D18B".AsGuidOrNull(), "Sign-Up Overview", "Main", "", "", 0, "4ECCC106-5374-4E33-A8AA-3ADE977FB1A4" );
             // [Attribute Value]: Project Detail Page for [Block]: Sign-Up Overview for [Page]: Engagement > Sign-Up
@@ -176,7 +178,9 @@ namespace Rock.Migrations
 
             // [Page]: Sign-Up > Sign-Up Detail
             RockMigrationHelper.AddPage( true, "1941542C-21F2-4341-BDE1-996AA1E0C0A2", "0CB60906-6B74-44FD-AB25-026050EF70EB", "Sign-Up Detail", "", "34212F8E-5F14-4D92-8B19-46748EBA2727", "", null );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "34212F8E-5F14-4D92-8B19-46748EBA2727", "people/signup/{GroupId}", "D6AEFD09-630E-40D7-AA56-77CC904C6595" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sign-Up Detail for [Page]: Sign-Up > Sign-Up Detail
             RockMigrationHelper.AddBlock( true, "34212F8E-5F14-4D92-8B19-46748EBA2727".AsGuidOrNull(), null, null, "69F5C6BD-7A22-42FE-8285-7C8E586E746A".AsGuidOrNull(), "Sign-Up Detail", "Main", "", "", 0, "735C2380-5E10-4EDF-91ED-4EDF9BD5C507" );
             // [Attribute Value]: Sign-Up Opportunity Attendee List Page for [Block]: Sign-Up Detail for [Page]: Sign-Up > Sign-Up Detail
@@ -204,7 +208,9 @@ namespace Rock.Migrations
 
             // [Page]: Sign-Up Detail > Sign-Up Opportunity Attendee List
             RockMigrationHelper.AddPage( true, "34212F8E-5F14-4D92-8B19-46748EBA2727", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Sign-Up Opportunity Attendee List", "", "AAF11844-EC6C-498B-A9D8-387390206570", "", null );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "AAF11844-EC6C-498B-A9D8-387390206570", "people/signup/{GroupId}/location/{LocationId}/schedule/{ScheduleId}", "DB9C7E0D-5EC7-4CC2-BA9E-DD398D4B9714" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sign-Up Opportunity Attendee List for [Page]: Sign-Up Detail > Sign-Up Opportunity Attendee List
             RockMigrationHelper.AddBlock( true, "AAF11844-EC6C-498B-A9D8-387390206570".AsGuidOrNull(), null, null, "EE652767-5070-4EAB-8BB7-BB254DD01B46".AsGuidOrNull(), "Sign-Up Opportunity Attendee List", "Main", "", "", 0, "54FC3FA7-2D25-4694-8DD4-647222582CEB" );
             // [Attribute Value]: Group Member Detail Page for [Block]: Sign-Up Opportunity Attendee List for [Page]: Sign-Up Detail > Sign-Up Opportunity Attendee List
@@ -214,7 +220,9 @@ namespace Rock.Migrations
 
             // [Page]: Sign-Up Opportunity Attendee List > Group Member Detail
             RockMigrationHelper.AddPage( true, "AAF11844-EC6C-498B-A9D8-387390206570", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Group Member Detail", "", "05B79031-183F-4A64-A689-56B5C8E7519F", "", null );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "05B79031-183F-4A64-A689-56B5C8E7519F", "people/signup/{GroupId}/location/{LocationId}/schedule/{ScheduleId}/member/{GroupMemberId}", "40566DCD-AC73-4C61-95B3-8F9B2E06528C" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Group Member Detail for [Page]: Sign-Up Opportunity Attendee List > Group Member Detail
             RockMigrationHelper.AddBlock( true, "05B79031-183F-4A64-A689-56B5C8E7519F".AsGuidOrNull(), null, null, "AAE2E5C3-9279-4AB0-9682-F4D19519D678".AsGuidOrNull(), "Group Member Detail", "Main", "", "", 0, "C4D268FC-17B8-4E55-B3A2-7C55F79015BD" );
             // [Attribute Value]: Allow Selecting 'From' for [Block]: Group Member Detail for [Page]: Sign-Up Opportunity Attendee List > Group Member Detail
@@ -379,8 +387,10 @@ namespace Rock.Migrations
         {
             // [Page]: Connect > Sign-Up Finder
             RockMigrationHelper.AddPage( true, "7625A63E-6650-4886-B605-53C2234FA5E1", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Sign-Up Finder", "", "2DC1906D-C9D5-411D-B961-A2295C9450A4", "", "3B31B9A2-DE35-4407-8E7D-3633F93906CD" );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "2DC1906D-C9D5-411D-B961-A2295C9450A4", "signup", "37B68603-6D07-4C37-A89A-253DB72DBBE3" );
             RockMigrationHelper.AddPageRoute( "2DC1906D-C9D5-411D-B961-A2295C9450A4", "sign-up", "6D5797CC-7179-41DC-BF49-8BE5DEB6B40D" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sign-Up Finder for [Page]: Connect > Sign-Up Finder
             RockMigrationHelper.AddBlock( true, "2DC1906D-C9D5-411D-B961-A2295C9450A4".AsGuidOrNull(), null, null, "74A20402-00DF-4A87-98D1-B5A8920F1D32".AsGuidOrNull(), "Sign-Up Finder", "Main", "", "", 0, "B9ADC017-782B-4100-AA07-DD1D703EE971" );
             // [Attribute Value]: Project Detail Page for [Block]: Sign-Up Finder for [Page]: Connect > Sign-Up Finder
@@ -404,7 +414,9 @@ namespace Rock.Migrations
 
             // [Page]: Sign-Up Finder > Sign-Up Detail
             RockMigrationHelper.AddPage( true, "2DC1906D-C9D5-411D-B961-A2295C9450A4", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Sign-Up Detail", "", "7F22B3B0-64F8-47DB-A6C0-5A1CE5F68BEF", "", null );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "7F22B3B0-64F8-47DB-A6C0-5A1CE5F68BEF", "signup/detail/{ProjectId}/location/{LocationId}/schedule/{ScheduleId}", "7E53FB15-B4C1-4339-AFAB-48B403EDE875" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sub Nav (Page Menu) for [Page]: Sign-Up Finder > Sign-Up Detail
             RockMigrationHelper.AddBlock( true, "7F22B3B0-64F8-47DB-A6C0-5A1CE5F68BEF".AsGuidOrNull(), null, null, "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuidOrNull(), "Sub Nav", "Sidebar1", "", "", 0, "8803EA4E-ADA5-4163-B1C7-78600E046F40" );
             // [Attribute Value]: Include Current Parameters for [Block]: Sub Nav (Page Menu) for [Page]: Sign-Up Finder > Sign-Up Detail
@@ -422,7 +434,9 @@ namespace Rock.Migrations
 
             // [Page]: Sign-Up Finder > Sign-Up Register
             RockMigrationHelper.AddPage( true, "2DC1906D-C9D5-411D-B961-A2295C9450A4", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Sign-Up Register", "", "BBB8A41D-E65F-4AFF-8987-BFF3458A46C1", "", "7F22B3B0-64F8-47DB-A6C0-5A1CE5F68BEF" );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "BBB8A41D-E65F-4AFF-8987-BFF3458A46C1", "signup/register/{ProjectId}/location/{LocationId}/schedule/{ScheduleId}", "E6685354-09C3-479F-8B6A-C6BD0A18A675" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sign-Up Register for [Page]: Sign-Up Finder > Sign-Up Register
             RockMigrationHelper.AddBlock( true, "BBB8A41D-E65F-4AFF-8987-BFF3458A46C1".AsGuidOrNull(), null, null, "161587D9-7B74-4D61-BF8E-3CDB38F16A12".AsGuidOrNull(), "Sign-Up Register", "Main", "", "", 0, "9D0AF2E9-7BE2-4320-A81C-CF22D0E94BD4" );
             // [Block]: Sub Nav (Page Menu) for [Page]: Sign-Up Finder > Sign-Up Register
@@ -442,7 +456,9 @@ namespace Rock.Migrations
 
             // [Page]: Group Attendance > Sign-Up Attendance Detail
             RockMigrationHelper.AddPage( true, "00D2DCE6-D9C0-47A0-BAE1-4591779AE2E1", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Sign-Up Attendance Detail", "", "73FC6F39-6194-483A-BF0D-7FDD1DD91C91", "", "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7" );
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "73FC6F39-6194-483A-BF0D-7FDD1DD91C91", "signup/attendance/{ProjectId}/location/{LocationId}/schedule/{ScheduleId}", "33DE9AF2-456C-413D-8559-A58DEA78D62A" );
+#pragma warning restore CS0618 // Type or member is obsolete
             // [Block]: Sign-Up Attendance Detail for [Page]: Group Attendance > Sign-Up Attendance Detail
             RockMigrationHelper.AddBlock( true, "73FC6F39-6194-483A-BF0D-7FDD1DD91C91".AsGuidOrNull(), null, null, "96D160D9-5668-46EF-9941-702BD3A577DB".AsGuidOrNull(), "Sign-Up Attendance Detail", "Main", "", "", 0, "5ED5DD3E-7280-4617-8BB1-0A6CF2DFED6D" );
         }

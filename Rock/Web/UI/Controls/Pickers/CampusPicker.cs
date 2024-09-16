@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack && Items.Count == 0 )
             {
                 LoadItems( null );
             }

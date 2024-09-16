@@ -448,7 +448,7 @@ namespace RockWeb.Blocks.Checkin
                     locationPath = locationNames.AsDelimited( " > " );
                 }
 
-                _locationPaths.AddOrIgnore( location.Id, locationPath );
+                _locationPaths.TryAdd( location.Id, locationPath );
             }
 
             gHistory.EntityTypeId = EntityTypeCache.Get<Attendance>().Id;

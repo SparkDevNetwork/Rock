@@ -5,9 +5,9 @@
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
-                        <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
+                        <RadioButtonList :label="`${firstName || registrantTermTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                     </div>
-                    <div v-if="familyMemberOptions.length" class="row">
+                    <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
                             <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" label="Family Member to Register" />
                         </div>
@@ -16,14 +16,21 @@
 
                 <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
                     <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
-                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField && currentRegistrant.fieldValues" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
-                        <RegistrantAttributeField v-else-if="(field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute) && currentRegistrant.fieldValues" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
+                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField && currentRegistrant.fieldValues"
+                                               :field="field"
+                                               :fieldValues="currentRegistrant.fieldValues"
+                                               :disabled="isFieldDisabled(field)" />
+                        <RegistrantAttributeField v-else-if="(field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute) && currentRegistrant.fieldValues"
+                                                  :field="field"
+                                                  :fieldValues="currentRegistrant.fieldValues"
+                                                  :formFields="currentFormFields"
+                                                  :disabled="isFieldDisabled(field)" />
                         <NotificationBox alertType="danger" v-else>Could not resolve field source {{ field.fieldSource }}</NotificationBox>
                     </template>
                 </ItemsWithPreAndPostHtml>
 
                 <div v-if="!isWaitList && isLastForm && viewModel.fees?.length && viewModel.fees.some(f => !!f.items?.length)" class="well registration-additional-options">
-                    <h4>{{ pluralFeeTerm }}</h4>
+                    <h4>{{ feesTermTitleCase }}</h4>
                     <template v-for="fee in viewModel.fees" :key="fee.guid">
                         <FeeField v-if="currentRegistrant.feeItemQuantities" :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                     </template>
@@ -31,13 +38,13 @@
             </template>
 
             <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
-                <h2 class="signature-header">Please Sign the {{ signatureDocumentTerm }} for {{ firstName }}</h2>
+                <h2 class="signature-header">Please Sign the {{ signatureDocumentTermTitleCase }} for {{ firstName }}</h2>
                 <div class="signaturedocument-container">
                     <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
                 </div>
 
                 <div class="well">
-                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTerm" />
+                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTermTitleCase" />
                 </div>
             </div>
 
@@ -61,7 +68,7 @@
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
-    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
+    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, OriginalFormFieldValues, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
     import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
@@ -78,7 +85,7 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
-    import StringFilter from "@Obsidian/Utility/stringUtils";
+    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
     import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
     import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
@@ -89,6 +96,10 @@
     import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
     import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
     import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
+    import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
     const props = defineProps({
         currentRegistrant: {
@@ -135,6 +146,8 @@
         groupMemberAttribute: RegistrationFieldSource.GroupMemberAttribute,
         registrantAttribute: RegistrationFieldSource.RegistrantAttribute
     } as const;
+
+    const originalFormFieldValues = use(OriginalFormFieldValues);
 
     // #region Values
 
@@ -269,8 +282,9 @@
         return store.state.currentPerson;
     });
 
-    const pluralFeeTerm = computed<string>(() => {
-        return StringFilter.toTitleCase(viewModel.value.pluralFeeTerm || "fees");
+    /** The fees term (plural) (title case). */
+    const feesTermTitleCase = computed<string>(() => {
+        return toTitleCase(viewModel.value.pluralFeeTerm ?? null) || "Fees";
     });
 
     /** The radio options that are displayed to allow the user to pick another person that this
@@ -319,6 +333,35 @@
         return options;
     });
 
+    const isFamilyMembersDropDownVisible = computed<boolean>(() => {
+        // Should it ever be shown?
+        if (viewModel.value.registrantsSameFamily === RegistrantsSameFamily.No) {
+            return false;
+        }
+
+        // Don't show if show family members option in the template is false.
+        if (!viewModel.value.areCurrentFamilyMembersShown) {
+            return false;
+        }
+
+        // Don't show if this is an existing (saved) registration.
+        if (registrationEntryState.viewModel.isExistingRegistration) {
+            return false;
+        }
+
+        // Are there family members to choose from?
+        if (!familyMemberOptions.value.length) {
+            return false;
+        }
+
+        // Don't show if no same family selection is made.
+        if (viewModel.value.registrantsSameFamily === RegistrantsSameFamily.Ask && !props.currentRegistrant.familyGuid) {
+            return false;
+        }
+
+        return true;
+    });
+
     /** The people that can be picked from because they are members of the same family. */
     const familyMemberOptions = computed<ListItemBag[]>(() => {
 
@@ -334,8 +377,9 @@
             })) ?? [];
     });
 
-    const uppercaseRegistrantTerm = computed<string>(() => {
-        return StringFilter.toTitleCase(viewModel.value.registrantTerm ?? "");
+    /** The registrant term (singular) (title case). */
+    const registrantTermTitleCase = computed<string>(() => {
+        return toTitleCase(viewModel.value.registrantTerm ?? null) || "Registrant";
     });
 
     const firstName = computed<string>(() => {
@@ -352,13 +396,90 @@
         return viewModel.value.familyMembers?.filter(fm => fm.guid)?.find(fm => areEqual(fm.guid, personGuid)) || null;
     });
 
-    const signatureDocumentTerm = computed<string>(() => {
-        return StringFilter.toTitleCase(viewModel.value.signatureDocumentTerm || "Release");
+    /** The signature document term (singular) (title case). */
+    const signatureDocumentTermTitleCase = computed<string>(() => {
+        return toTitleCase(viewModel.value.signatureDocumentTerm ?? null) || "Release";
     });
 
     // #endregion
 
     // #region Functions
+
+    function isFieldDisabled(field: RegistrationEntryFormFieldBag): boolean {
+        if (!props.currentRegistrant.personGuid) {
+            return false;
+        }
+
+        function isValueIn<TEnum>(value: TEnum, ...collection: TEnum[]): boolean {
+            return collection.some(v => v === value);
+        }
+
+        // Disable the field if it is for a known person
+        // and the field is not editable (hard-coded as first and last name currently).
+        if (field.fieldSource === RegistrationFieldSource.PersonField
+            && isValueIn(field.personFieldType, RegistrationPersonFieldType.FirstName, RegistrationPersonFieldType.LastName)) {
+            return true;
+        }
+
+        function hasExistingFieldValue(personGuid: Guid, fieldGuid: Guid): boolean {
+            // At this point originalFormFieldValues should contain the
+            // original form field values when a person is selected
+            // (or when the registrant form loads if no selection available).
+
+            const originalFieldValue = originalFormFieldValues.value[personGuid]?.[fieldGuid];
+
+            if (isValueIn(field.personFieldType, RegistrationPersonFieldType.Birthdate, RegistrationPersonFieldType.AnniversaryDate)) {
+                if (!originalFieldValue || (typeof originalFieldValue === "object" && !originalFieldValue["day"] && !originalFieldValue["month"] && !originalFieldValue["year"])) {
+                    // Date is not set.
+                    return false;
+                }
+                else {
+                    // Disable if the date is set.
+                    return true;
+                }
+            }
+            else if (isValueIn(field.personFieldType, RegistrationPersonFieldType.Gender)) {
+                if ((typeof originalFieldValue === "string"
+                    || typeof originalFieldValue === "number")
+                    && isValueIn(toNumber(originalFieldValue), Gender.Male, Gender.Female)) {
+                    // Disable if the gender value is set.
+                    return true;
+                }
+                else if (typeof originalFieldValue === "string"
+                    && isValueIn(originalFieldValue, GenderDescription[Gender.Male], GenderDescription[Gender.Female])) {
+                    // Disable if the gender value is set.
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else if (field.personFieldType === RegistrationPersonFieldType.Address) {
+                const valueAsAddress = JSON.parse(JSON.stringify(originalFieldValue)) as AddressControlBag;
+                if (valueAsAddress?.city
+                    || valueAsAddress?.country
+                    || valueAsAddress?.locality
+                    || valueAsAddress?.postalCode
+                    || valueAsAddress?.state
+                    || valueAsAddress?.street1
+                    || valueAsAddress?.street2) {
+                    // Disable if any of the address fields have a value.
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            return originalFieldValue !== "" && originalFieldValue !== undefined && originalFieldValue !== null;
+        }
+
+        // Disable the field if it is for a known person
+        // and the field has the setting "Lock if values exist"
+        // and a field value exists.
+        return !!field.isLockedIfValuesExist
+            && hasExistingFieldValue(props.currentRegistrant.personGuid, field.guid);
+    }
 
     function isRuleMet(rule: RegistrationEntryVisibilityBag, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryFormFieldBag[]): boolean {
         const value = !rule.comparedToRegistrationTemplateFormFieldGuid ? "" : fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
@@ -527,53 +648,86 @@
         }
     }
 
-    /** Copy the values that are to have current values used */
-    function copyValuesFromFamilyMember(): void {
-        if (!familyMember.value || registrationEntryState.navBack || registrationEntryState.viewModel.isExistingRegistration) {
-            // Nothing to copy
+    function setRegistrantFieldValues(fieldValues: Record<Guid, unknown>): void {
+        props.currentRegistrant.fieldValues = fieldValues;
+
+        // If this is the first time registrant field values are set
+        // for the selected person, also update the person's initial values
+        // so the "Lock existing values" feature can use them for comparison.
+        if (props.currentRegistrant.personGuid) {
+            if (!originalFormFieldValues.value[props.currentRegistrant.personGuid]) {
+                originalFormFieldValues.value = {
+                    ...originalFormFieldValues.value,
+                    [props.currentRegistrant.personGuid]: {
+                        ...fieldValues
+                    }
+                };
+            }
+        }
+    }
+
+    /**
+     *
+     * Copies form field values from the selected family member to the current registrant.
+     *
+     * @param clearRegistrantFieldWhenFamilyMemberFieldEmpty When `true`, clears a registrant form field if the selected family member does not have a value for that field; otherwise, leaves the registrant form field alone if `false`.
+     */
+    function copyValuesFromFamilyMember(clearRegistrantFieldWhenFamilyMemberFieldEmpty: boolean): void {
+        if (!familyMember.value || registrationEntryState.viewModel.isExistingRegistration) {
+            // Don't copy values if a family member is not selected or if this is an existing registration.
             return;
         }
 
         // If the family member selection is made then set all form fields where use existing value is enabled
-        if (!props.currentRegistrant.fieldValues) {
-            props.currentRegistrant.fieldValues = {};
-        }
+        const newFieldValues: Record<Guid, unknown> = {
+            ...(props.currentRegistrant.fieldValues ?? {})
+        };
 
-        for (const form of viewModel.value.registrantForms ?? []) {
-            for (const field of form.fields ?? []) {
-                if (!field.guid) {
+        if (familyMember.value.fieldValues && viewModel.value.registrantForms) {
+            for (const form of viewModel.value.registrantForms) {
+                if (!form.fields) {
+                    // The form doesn't have fields so skip to the next form.
                     continue;
                 }
 
-                // Do not set common fields if they are of type
-                // Registrant Attribute since there is no value to set.
-                // Fixes issue #5610.
-                if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
-                    continue;
-                }
-
-                if (!familyMember.value.fieldValues) {
-                    continue;
-                }
-
-                if (field.guid in familyMember.value.fieldValues) {
-                    const familyMemberValue = familyMember.value.fieldValues[field.guid];
-
-                    if (!familyMemberValue) {
-                        delete props.currentRegistrant.fieldValues[field.guid];
+                for (const field of form.fields) {
+                    if (!field.guid) {
+                        // The field is missing a unique identifier so skip to the next form field.
+                        continue;
                     }
-                    else if (typeof familyMemberValue === "object") {
-                        props.currentRegistrant.fieldValues[field.guid] = { ...familyMemberValue };
+
+                    // Do not set common fields if they are of type
+                    // Registrant Attribute since there is no value to set.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
+
+                    if (field.guid in familyMember.value.fieldValues) {
+                        const familyMemberValue = familyMember.value.fieldValues[field.guid];
+
+                        if (!familyMemberValue) {
+                            if (clearRegistrantFieldWhenFamilyMemberFieldEmpty) {
+                                newFieldValues[field.guid] = undefined;
+                            }
+                        }
+                        else if (typeof familyMemberValue === "object") {
+                            newFieldValues[field.guid] = { ...familyMemberValue };
+                        }
+                        else {
+                            newFieldValues[field.guid] = familyMemberValue;
+                        }
                     }
                     else {
-                        props.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
+                        // Current registrant doesn't have a record of this field value yet,
+                        // so add a blank field value.
+                        newFieldValues[field.guid] = undefined;
                     }
-                }
-                else {
-                    delete props.currentRegistrant.fieldValues[field.guid];
                 }
             }
         }
+
+        setRegistrantFieldValues(newFieldValues);
     }
 
     async function getFieldValues(): Promise<void> {
@@ -590,31 +744,35 @@
         const result = await invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", request);
 
         if (result.isSuccess && result.data && viewModel.value.registrantForms) {
-            if (!props.currentRegistrant.fieldValues) {
-                props.currentRegistrant.fieldValues = {};
-            }
+            const newFieldValues: Record<Guid, unknown> = {
+                // Create a shallow copy of the current field values first.
+                // Field values may be overwritten below.
+                ...(props.currentRegistrant.fieldValues ?? {})
+            };
 
             for (const form of viewModel.value.registrantForms) {
                 if (form.fields) {
                     for (const field of form.fields) {
-                        // Check if we gota value for the attribute
+                        // Check if we got a value for the attribute
                         if (field.guid && field.guid in result.data) {
                             const formFieldValue = result.data[field.guid];
-                            const currentFormFieldValue = props.currentRegistrant.fieldValues[field.guid];
+                            const currentFormFieldValue = props.currentRegistrant.fieldValues?.[field.guid];
 
                             if (currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
                                 if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
                                     // Is this even possible? It was already determined that currentFormFieldValue is undefined | null | "".
-                                    props.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                    newFieldValues[field.guid] = { ...formFieldValue };
                                 }
                                 else {
-                                    props.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                    newFieldValues[field.guid] = formFieldValue;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            setRegistrantFieldValues(newFieldValues);
         }
     }
 
@@ -656,10 +814,14 @@
 
     // #region Watchers
 
-    watch(familyMember, () => {
+    watch(familyMember, (newValue, oldValue) => {
         if (!familyMember.value) {
             // If the family member selection is cleared then clear all form fields
-            if (viewModel.value.registrantForms && props.currentRegistrant.fieldValues) {
+            if (viewModel.value.registrantForms) {
+                const newFieldValues: Record<string, unknown> = {
+                    ...(props.currentRegistrant.fieldValues ?? {})
+                };
+
                 for (const form of viewModel.value.registrantForms) {
                     if (form.fields) {
                         for (const field of form.fields) {
@@ -668,18 +830,26 @@
                             // selecting a family member either.
                             // Fixes issue #5610.
                             if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
-                                continue;
+                                newFieldValues[field.guid] = props.currentRegistrant.fieldValues?.[field.guid];
                             }
-
-                            delete props.currentRegistrant.fieldValues[field.guid];
+                            else {
+                                // Keep the field value property for the current registrant,
+                                // but set it to undefined instead of removing the property completely.
+                                newFieldValues[field.guid] = undefined;
+                            }
                         }
                     }
                 }
+
+                setRegistrantFieldValues(newFieldValues);
             }
         }
         else {
+            // Only clear when the family member is changed.
+            const clearRegistrantFieldWhenFamilyFieldEmpty = newValue !== oldValue;
+
             // If the family member selection is made then set all form fields where use existing value is enabled
-            copyValuesFromFamilyMember();
+            copyValuesFromFamilyMember(clearRegistrantFieldWhenFamilyFieldEmpty);
         }
     });
 
@@ -691,5 +861,5 @@
 
     // Last-minute setup.
     getFieldValues();
-    copyValuesFromFamilyMember();
+    copyValuesFromFamilyMember(false);
 </script>

@@ -209,8 +209,8 @@ namespace Rock.Web.UI.Controls
             postBackScript = postBackScript.Replace( '\'', '"' );
 
             // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
-            var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
-            var jsDateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
+            var dateFormat = System.Threading.Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern;
+            var jsDateFormat = dateFormat.Replace( "M", "m" ).Replace("mmm", "m").Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             jsDateFormat = jsDateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
             // StartDate and EndDate are optional, and must match the format of the dateFormat (which is the format of the input)

@@ -35,6 +35,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -44,14 +45,9 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Utility.Settings;
-using Rock.ViewModels;
 using Rock.ViewModels.Crm;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
-using static Rock.Security.Authorization;
 
 using Page = System.Web.UI.Page;
 
@@ -715,6 +711,51 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Occurs when [page initialized]. This event is for registering any custom event shortkeys for the page.
+        /// </summary>
+        protected virtual void RegisterShortcutKeys()
+        {
+            // Register the shortcut keys with debouncing
+            string script = @"
+                (function() {
+                    var lastDispatchTime = 0;
+                    var lastDispatchedElement = null;
+                    var debounceDelay = 500;
+
+                    document.addEventListener('keydown', function (event) {
+                        if (event.altKey) {
+                            var shortcutKey = event.key.toLowerCase();
+
+                            // Check if a shortcut key is registered for the pressed key
+                            var element = document.querySelector('[data-shortcut-key=""' + shortcutKey + '""]');
+
+                    
+                            if (element) {
+                                var currentTime = performance.now();
+
+                                if (lastDispatchedElement === element && (currentTime - lastDispatchTime) < debounceDelay) {
+                                    return;
+                                }
+
+                                lastDispatchTime = currentTime;
+                                lastDispatchedElement = element;
+
+                                if (shortcutKey === 'arrowright' || shortcutKey === 'arrowleft') {
+                                    event.preventDefault();
+                                }
+
+                                event.preventDefault();
+                                element.click();
+                            }
+                        }
+                    });
+                })();
+            ";
+
+            ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "ShortcutKeys", script, true );
+        }
+
         #endregion
 
         #region Overridden Methods
@@ -794,6 +835,9 @@ namespace Rock.Web.UI
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
+
+            // Register shortcut keys
+            RegisterShortcutKeys();
 
 #pragma warning disable 618
             ConvertLegacyContextCookiesToJSON();
@@ -1081,7 +1125,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    cookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -1197,6 +1241,12 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    // The Short Link Modal in the System Dialogs need the page to have obsidian.
+                    if ( canAdministratePage )
+                    {
+                        _pageNeedsObsidian = true;
+                    }
                     canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                     // If the current person isn't allowed to edit or administrate the page, check to see if they are being impersonated by someone who
@@ -1457,11 +1507,14 @@ Rock.settings.initialize({{
                                 currentPersonJson = new CurrentPersonBag
                                 {
                                     IdKey = CurrentPerson.IdKey,
+                                    Guid = CurrentPerson.Guid,
+                                    PrimaryAliasIdKey = CurrentPerson.PrimaryAlias.IdKey,
+                                    PrimaryAliasGuid = CurrentPerson.PrimaryAlias.Guid,
                                     FirstName = CurrentPerson.FirstName,
                                     NickName = CurrentPerson.NickName,
                                     LastName = CurrentPerson.LastName,
                                     FullName = CurrentPerson.FullName,
-                                    Email = CurrentPerson.Email
+                                    Email = CurrentPerson.Email,
                                 }.ToCamelCaseJson( false, false );
                             }
                             else if ( CurrentPerson != null )
@@ -1656,6 +1709,26 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
                             aShortLink.Controls.Add( iShortLink );
                             iShortLink.Attributes.Add( "class", "fa fa-link" );
+
+                            // Obsidian ShortLink Properties - TO BE UNCOMMENTED IN v17
+/*
+                            var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
+    }});
+}});";
+                            HtmlGenericControl aObsidianShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aObsidianShortLink );
+                            aObsidianShortLink.ID = "aObsidianShortLink";
+                            aObsidianShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aObsidianShortLink.Attributes.Add( "class", "btn properties" );
+                            aObsidianShortLink.Attributes.Add( "href", "#" );
+                            aObsidianShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
+                            aObsidianShortLink.Attributes.Add( "Title", "Add Obsidian Short Link" );
+                            HtmlGenericControl iObsidianShortLink = new HtmlGenericControl( "i" );
+                            aObsidianShortLink.Controls.Add( iObsidianShortLink );
+                            iObsidianShortLink.Attributes.Add( "class", "fa fa-link" );
+*/
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -2509,10 +2582,21 @@ Sys.Application.add_load(function () {
             // If we have identified a logged-in user, record the page interaction immediately and return.
             if ( CurrentPerson != null )
             {
+                var interactionInfo = new InteractionTransactionInfo
+                {
+                    InteractionTimeToServe = _tsDuration.TotalSeconds,
+                    InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
+                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms()
+                };
+
+                // If we have a UTM cookie, add the information to the interaction.
+                var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( this.Request );
+                UtmHelper.AddUtmInfoToInteractionTransactionInfo( interactionInfo, utmInfo );
+
                 var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                     this.Site,
                     _pageCache,
-                    new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
+                    interactionInfo );
 
                 pageViewTransaction.Enqueue();
 
@@ -2547,7 +2631,7 @@ Sys.Application.add_load(function () {
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
                 UserAgent = Request.UserAgent.SanitizeHtml(),
-                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
+                UserHostAddress = GetClientIpAddress().SanitizeHtml(),
                 UserIdKey = CurrentPersonAlias?.IdKey
             };
 
@@ -2558,7 +2642,9 @@ Sys.Application.add_load(function () {
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
-        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+        const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+
+        return !match ? '' : match.pop();
     };
     var interactionArgs = <jsonData>;
     if (!interactionArgs.<userIdProperty>) {
@@ -2846,9 +2932,10 @@ Sys.Application.add_load(function () {
         {
             Literal favIcon = new Literal();
             favIcon.Mode = LiteralMode.PassThrough;
-            var url = ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" );
+            var baseUrl = FileUrlHelper.GetImageUrl( binaryFileId );
+            var url = ResolveRockUrl( $"{baseUrl}&width={size}&height={size}&mode=crop&format=png" );
             favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
-
+             
             AddHtmlLink( favIcon );
         }
 
@@ -3542,7 +3629,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    wiFiCookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }
@@ -3989,7 +4076,7 @@ Sys.Application.add_load(function () {
                         and ignore the value stored in the QueryString list (the value is the same). In any case if there is contention between a
                         Route Key and QueryString Key the Route will take precedence.
                     */
-                    parameters.AddOrIgnore( param, Request.QueryString[param] );
+                    parameters.TryAdd( param, Request.QueryString[param] );
                 }
             }
 
@@ -4711,7 +4798,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys().Where( k => k.StartsWith( keyPrefix ) ) )
             {
-                selectedValues.AddOrIgnore( key, preferences.GetValue( key ) );
+                selectedValues.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return selectedValues;
@@ -4776,7 +4863,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys() )
             {
-                userPreferences.AddOrIgnore( key, preferences.GetValue( key ) );
+                userPreferences.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return userPreferences;

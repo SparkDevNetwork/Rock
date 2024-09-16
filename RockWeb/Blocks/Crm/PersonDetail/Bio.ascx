@@ -48,7 +48,7 @@
                         <span>Actions</span>
                     </div>
                     <div id="divEditButton" runat="server" class="action-container">
-                        <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" ToolTip="Alt+I" CssClass="btn btn-default btn-go btn-square stretched-link" OnClick="lbEditPerson_Click" aria-label="Edit Person"><i class="fa fa-pencil"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" data-shortcut-key="e" ToolTip="Alt+I" CssClass="btn btn-default btn-go btn-square stretched-link" OnClick="lbEditPerson_Click" aria-label="Edit Person"><i class="fa fa-pencil"></i></asp:LinkButton>
                         <span>Edit</span>
                     </div>
                 </div>

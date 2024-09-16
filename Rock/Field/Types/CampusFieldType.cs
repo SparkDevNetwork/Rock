@@ -50,6 +50,7 @@ namespace Rock.Field.Types
         private const string FORCE_VISIBLE_KEY = "forceVisible";
         private const string SELECTABLE_CAMPUSES_KEY = "SelectableCampusIds";
         private const string VALUES_PUBLIC_KEY = "values";
+        private const string VALUES_INACTIVE_KEY = "valuesInactive";
         private const string SELECTABLE_CAMPUSES_PUBLIC_KEY = "selectableCampuses";
         private const string CAMPUSES_PROPERTY_KEY = "campuses";
         private const string CAMPUS_TYPES_PROPERTY_KEY = "campusTypes";
@@ -127,13 +128,20 @@ namespace Rock.Field.Types
                     Text = kvp.Value
                 } );
 
+            var inactiveListItems = GetInactiveListSource( privateConfigurationValues )
+                .Select( kvp => new ListItemBag
+                {
+                    Value = kvp.Key,
+                    Text = kvp.Value
+                } );
+
             if ( usage == ConfigurationValueUsage.View )
             {
                 publicValues = publicValues.Where( v => v.Value.AsGuid() == privateValue.AsGuid() );
             }
 
             publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues.ToCamelCaseJson( false, true );
-
+            publicConfigurationValues[VALUES_INACTIVE_KEY] = inactiveListItems.ToCamelCaseJson( false, true );
             if ( usage == ConfigurationValueUsage.View )
             {
                 publicConfigurationValues.Remove( INCLUDE_INACTIVE_KEY );
@@ -204,6 +212,38 @@ namespace Rock.Field.Types
 
             var campusList = allCampuses
                 .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
+                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
+                .ToList();
+
+            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+        }
+
+        /// <summary>
+        /// Gets the inactive list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private Dictionary<string, string> GetInactiveListSource( Dictionary<string, string> configurationValues )
+        {
+            var allCampuses = CampusCache.All();
+
+            if ( configurationValues == null )
+            {
+                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            }
+
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
+            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_CAMPUSES_KEY].SplitDelimitedValues( false ).AsIntegerList()
+                : null;
+
+            var campusList = allCampuses
+                .Where( c => !includeInactive && c.IsActive.HasValue && !c.IsActive.Value
                     && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
                     && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
                     && selectableCampuses.ContainsOrEmpty( c.Id ) )

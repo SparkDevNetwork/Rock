@@ -17,6 +17,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 
+using Rock.Achievement;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,5 +70,25 @@ namespace Rock.Model
         }
 
         #endregion Overrides
+
+        #region Methods
+
+        /// <summary>
+        /// Updates the <see cref="TargetCount"/> property for this instance
+        /// by asking the component.
+        /// </summary>
+        /// <param name="rockContext">The rock context to use for database access.</param>
+        internal void UpdateTargetCount( RockContext rockContext )
+        {
+            var componentEntityType = EntityTypeCache.Get( ComponentEntityTypeId, rockContext );
+            var component = componentEntityType != null ? AchievementContainer.GetComponent( componentEntityType.Name ) : null;
+
+            if ( component != null )
+            {
+                TargetCount = component.GetTargetCount( this );
+            }
+        }
+
+        #endregion
     }
 }

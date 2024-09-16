@@ -63,7 +63,7 @@ namespace Rock.Blocks.Event
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect'). If the Registration Template has a connection status set, then this setting will be overridden by that value.",
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
@@ -168,6 +168,7 @@ namespace Rock.Blocks.Event
             public const string Slug = "Slug";
             public const string GroupId = "GroupId";
             public const string StartAtBeginning = "StartAtBeginning";
+            public const string EventOccurrenceId = "EventOccurrenceId";
         }
 
         /// <summary>
@@ -185,6 +186,16 @@ namespace Rock.Blocks.Event
         /// </summary>
         public Dictionary<int, Dictionary<int, string>> MissingFieldsByFormId { get; set; }
 
+        /// <summary>
+        /// Gets the registration identifier page parameter.
+        /// </summary>
+        public int? RegistrationIdPageParameter => PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+
+        /// <summary>
+        /// Gets the event occurrence identifier page parameter.
+        /// </summary>
+        public int? EventOccurrenceIdPageParameter => PageParameter( PageParameterKey.EventOccurrenceId ).AsIntegerOrNull();
+
         #endregion Properties
 
         #region Obsidian Block Type Overrides
@@ -199,10 +210,11 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                var viewModel = GetViewModel( rockContext );
-                var instanceName = viewModel.InstanceName;
+                var box = GetInitializationBox( rockContext );
+                var instanceName = box.InstanceName;
 
-                if ( instanceName.IsNullOrWhiteSpace() && viewModel.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true )
+                if ( instanceName.IsNullOrWhiteSpace() && ( box.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true
+                    || box.RegistrationInstanceNotFoundMessage?.Contains(" does not open ") == true ) )
                 {
                     // The view model did not have a name filled in even though
                     // we found the registration instance. Get the instance name
@@ -218,7 +230,7 @@ namespace Rock.Blocks.Event
                     ResponseContext.SetBrowserTitle( instanceName );
                 }
 
-                return viewModel;
+                return box;
             }
         }
 
@@ -283,14 +295,16 @@ namespace Rock.Blocks.Event
                 }
                 else if ( registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() )
                 {
-                    // At this point use the code saved in the registration if it exists without checking in case the code is no longer valid (e.g. expired)
+                    // At this point use the code saved in the registration if it exists without checking in case the code is no longer valid (e.g. expired);
+                    // however, try to get the max registrants if the discount is valid.
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
                     return ActionOk( new
                     {
                         DiscountCode = registration.DiscountCode,
                         RegistrationUsagesRemaining = ( int? ) null,
                         DiscountAmount = registration.DiscountAmount,
                         DiscountPercentage = registration.DiscountPercentage,
-                        DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
+                        DiscountMaxRegistrants = discount?.RegistrationTemplateDiscount.MaxRegistrants
                     } );
                 }
 
@@ -342,7 +356,7 @@ namespace Rock.Blocks.Event
 
                 if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
                 {
-                    var groupId = GetRegistrationGroupId( rockContext );
+                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId );
                     if ( groupId.HasValue )
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
@@ -427,9 +441,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                var registrationInstanceService = new RegistrationInstanceService( rockContext );
-                var costs = registrationInstanceService
-                    .GetRegistrationCostSummaryInfo( context, args.AsArgsOrNull() )
+                var costs = GetRegistrationCosts( rockContext, context, args )
                     .AsRegistrationCostSummaryBagListOrNull();
 
                 return ActionOk( costs );
@@ -473,6 +485,13 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
+                FixRegistrationArguments( args );
+
+                if ( args.PaymentPlan != null && !IsPaymentPlanValid( args.PaymentPlan, out var paymentPlanInvalidErrorMessage ) )
+                {
+                    return ActionBadRequest( paymentPlanInvalidErrorMessage );
+                }
+
                 var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -612,7 +631,7 @@ namespace Rock.Blocks.Event
 
                 // Process the GroupMember so we have data for the Lava merge.
                 GroupMember groupMember = null;
-                var groupId = GetRegistrationGroupId( rockContext );
+                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
                 if ( groupId.HasValue )
                 {
@@ -755,12 +774,12 @@ namespace Rock.Blocks.Event
                         if ( fieldViewModel.FieldSource == RegistrationFieldSource.PersonAttribute )
                         {
                             var personAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, person, field );
-                            fieldValues.AddOrIgnore( fieldViewModel.Guid, personAttributeValue );
+                            fieldValues.TryAdd( fieldViewModel.Guid, personAttributeValue );
                         }
                         else if ( fieldViewModel.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                         {
                             var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
-                            fieldValues.AddOrIgnore( fieldViewModel.Guid, registrantAttributeValue );
+                            fieldValues.TryAdd( fieldViewModel.Guid, registrantAttributeValue );
                         }
                     }
                 }
@@ -769,9 +788,178 @@ namespace Rock.Blocks.Event
             return ActionOk( fieldValues );
         }
 
+        /// <summary>
+        /// Deletes the payment plan for the current registration.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult DeletePaymentPlan()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, out var getContextErrorMessage );
+
+                if ( context is null )
+                {
+                    return ActionBadRequest( getContextErrorMessage.ToStringOrDefault( "An unknown error occurred while deleting the payment plan" ) );
+                }
+                else
+                {
+                    var session = GetRegistrationEntryBlockSession( rockContext, context );
+
+                    if ( session is null )
+                    {
+                        return ActionBadRequest( "The registration session has expired" );
+                    }
+                    else if ( session.ActivePaymentPlan == null )
+                    {
+                        return ActionOk( "This registration has no payment plan or it has already been deleted" );
+                    }
+                    else
+                    {
+                        /* 
+                           2024-5-7 JMH (copied from mdDeleteTransaction_SaveClick() in ScheduledTransactionListLiquid.ascx.cs)
+              
+                           2021-08-27 MDP
+               
+                           We really don't want to actually delete a FinancialScheduledTransaction.
+                           Just inactivate it, even if there aren't FinancialTransactions associated with it.
+                           It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
+                           If that happens, Rock won't be able to match a record for that downloaded transaction!
+                           We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
+                           so we'll need the ScheduledTransaction to do that.
+
+                           So, don't delete ScheduledTransactions.
+                        */
+
+                        // context.Registration is null here. Get the registration from the service.
+                        IQueryable<Registration> registrationQuery = null;
+
+                        if ( session.RegistrationGuid.HasValue )
+                        {
+                            registrationQuery = new RegistrationService( rockContext )
+                                .Queryable()
+                                .Where( r => r.Guid == session.RegistrationGuid.Value );
+                        }
+                        else if ( this.RegistrationIdPageParameter.HasValue )
+                        {
+                            registrationQuery = new RegistrationService( rockContext )
+                                .Queryable()
+                                .Where( r => r.Id == this.RegistrationIdPageParameter.Value );
+                        }
+                        else
+                        {
+                            registrationQuery = Enumerable.Empty<Registration>().AsQueryable();
+                        }
+
+                        var registrationData = registrationQuery
+                            .Select( r => new
+                            {
+                                r.PaymentPlanFinancialScheduledTransactionId
+                            })
+                            .FirstOrDefault();
+
+                        if ( registrationData == null )
+                        {
+                            // This should not happen.
+                            return ActionInternalServerError( "The registration could not be found" );
+                        }
+                        else
+                        {
+                            var financialScheduledTransactionId = registrationData.PaymentPlanFinancialScheduledTransactionId;
+
+                            if ( !financialScheduledTransactionId.HasValue )
+                            {
+                                return ActionOk( "This registration has no payment plan or it has already been deleted" );
+                            }
+                            else
+                            {
+                                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                                var financialScheduledTransaction = financialScheduledTransactionService.Get( registrationData.PaymentPlanFinancialScheduledTransactionId.Value );
+
+                                if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out var cancelErrorMessage ) )
+                                {
+                                    return ActionInternalServerError( $"An error occurred while canceling your scheduled transaction on the financial gateway. Message: {cancelErrorMessage}" );
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        if ( !financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out var getStatusErrorMessage ) )
+                                        {
+                                            return ActionInternalServerError( $"The scheduled transaction was canceled on the financial gateway but was not marked inactive in Rock. Message: {getStatusErrorMessage}" );
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Ignore
+                                    }
+
+                                    rockContext.SaveChanges();
+                                    return ActionOk( "The payment plan was deleted successfully" );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion Block Actions
 
         #region Methods
+
+        /// <summary>
+        /// Fixes registration arguments, such as, approximated decimal values sent by a browser.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void FixRegistrationArguments( RegistrationEntryArgsBag args )
+        {
+            // A browser may send approximated values;
+            // e.g., 0.020000000000000004 (instead of 0.02) or 0.0699999999999932 (instead of 0.07).
+            // Round currency amounts using the organization's currency settings.
+            var currencyInfo = new RockCurrencyCodeInfo();
+
+            args.AmountToPayNow = decimal.Round( args.AmountToPayNow, currencyInfo.DecimalPlaces );
+
+            if ( args.PaymentPlan != null )
+            {
+                args.PaymentPlan.AmountPerPayment = decimal.Round( args.PaymentPlan.AmountPerPayment, currencyInfo.DecimalPlaces );
+            }
+        }
+
+        /// <summary>
+        /// Determines if a payment plan is valid.
+        /// </summary>
+        /// <param name="paymentPlan">The payment plan to validate.</param>
+        /// <param name="errorMessage">The error message if validation fails.</param>
+        /// <returns><see langword="true"/> if the payment plan is valid; otherwise, <see langword="false"/> (<paramref name="errorMessage"/> will contain the validation error message).</returns>
+        private bool IsPaymentPlanValid( RegistrationEntryCreatePaymentPlanRequestBag paymentPlan, out string errorMessage )
+        {
+            if ( paymentPlan.TransactionFrequencyGuid == SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
+            {
+                bool IsAllowedStartDate( DateTime startDate )
+                {
+                    if ( startDate.Day == 1 || startDate.Day == 15 )
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                if ( !IsAllowedStartDate( paymentPlan.StartDate.Date ) )
+                {
+                    errorMessage = $"The payment plan start date {paymentPlan.StartDate:d} is invalid";
+                    return false;
+                }
+            }
+
+            errorMessage = null;
+            return true;
+        }
 
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
@@ -987,7 +1175,12 @@ namespace Rock.Blocks.Event
             }
 
             // Load some attribute values about family roles and statuses
-            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+
+            // Get the connection status from the registration settings first.
+            // If there is no connection status defined there, then attempt to get
+            // it from this block's settings.
+            var dvcConnectionStatusId = context.RegistrationSettings.ConnectionStatusValueId
+                ?? DefinedValueCache.GetId( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
             var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             var adultRoleId = familyGroupType.Roles
@@ -1022,13 +1215,8 @@ namespace Rock.Blocks.Event
                     Email = context.Registration.ConfirmationEmail,
                     EmailPreference = EmailPreference.EmailAllowed,
                     RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
-                    ConnectionStatusValueId = dvcConnectionStatus?.Id
+                    ConnectionStatusValueId = dvcConnectionStatusId
                 };
-
-                if ( dvcConnectionStatus != null )
-                {
-                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                }
 
                 if ( dvcRecordStatus != null )
                 {
@@ -1078,7 +1266,7 @@ namespace Rock.Blocks.Event
             campusId = campusId ?? registrarFamily.CampusId;
 
             // Set the family guid for any other registrants that were selected to be in the same family
-            multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
+            multipleFamilyGroupIds.TryAdd( registrarFamily.Guid, registrarFamily.Id );
 
             if ( !singleFamilyId.HasValue )
             {
@@ -1086,7 +1274,7 @@ namespace Rock.Blocks.Event
             }
 
             // If the Registration Instance linkage specified a group, load it now
-            var groupId = GetRegistrationGroupId( rockContext );
+            var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
             Rock.Model.Group group = null;
 
@@ -1153,12 +1341,21 @@ namespace Rock.Blocks.Event
                 // based on an over-confident PersonService.FindPerson(...) match result.
                 context.PersonIdsRegisteredWithinThisSession.Clear();
 
+                /*
+                    7/5/2024 - JMH
+
+                    If max capacity is reached during registration, one or more registrants
+                    may be put on the waitlist automatically.
+                    Rock will automatically reduce the payment amount
+                    for any **automatically** wait-listed registrants.
+                 */
+                var forceWaitlistedRegistrantGuids = new List<Guid>();
+
                 foreach ( var registrantInfo in args.Registrants )
                 {
-                    // Force the waitlist if there are no spots remaining, and this is an existing registration or if the registrant is already on the waitlist.
-                    // Rock should not force the waitlist when existing registrants are making payments
-                    // Rock should force the waitlist if there are no spots remaining and a registrant is being added
                     var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
+                    context.SpotsRemaining -= 1;
+
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     MissingFieldsByFormId = new Dictionary<int, Dictionary<int, string>>();
@@ -1176,6 +1373,12 @@ namespace Rock.Blocks.Event
                         isCreatedAsRegistrant,
                         isNewRegistration,
                         postSaveActions );
+
+                    if ( forceWaitlist )
+                    {
+                        // Do this after upserting so the updated Guid can be used.
+                        forceWaitlistedRegistrantGuids.Add( registrantInfo.Guid );
+                    }
 
                     index++;
 
@@ -1213,18 +1416,86 @@ namespace Rock.Blocks.Event
 
                 rockContext.SaveChanges();
 
-                var transactionGuid = args.AmountToPayNow > 0 ?
-                    ProcessPayment( rockContext, context, args, out errorMessage ) :
-                    null;
+                var registrationCosts = GetRegistrationCosts( rockContext, context, args );
+                var paymentReductionAmount = GetPaymentReductionAmountForForceWaitListedRegistrants( forceWaitlistedRegistrantGuids, registrationCosts );
+                var minimumPaymentAmount = GetMinimumPaymentAmountForNonForceWaitListedRegistrants( rockContext, context, forceWaitlistedRegistrantGuids, registrationCosts );
+                ReduceRegistrationPaymentAmount( context.RegistrationSettings, args, paymentReductionAmount, minimumPaymentAmount );
 
-                if ( !errorMessage.IsNullOrWhiteSpace() )
-                {
-                    throw new Exception( errorMessage );
-                }
+                var isPaymentNeededNow = args.AmountToPayNow > 0;
+                var isPaymentPlanNeeded = args.PaymentPlan != null;
 
-                if ( args.AmountToPayNow > 0 && !transactionGuid.HasValue )
+                if ( isPaymentNeededNow || isPaymentPlanNeeded )
                 {
-                    throw new Exception( "There was a problem with the payment" );
+                    // Get basic payment processing data.
+                    var financialGateway = new FinancialGatewayService( rockContext ).Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
+                    var gateway = financialGateway?.GetGatewayComponent();
+                    var financialAccount = new FinancialAccountService( rockContext ).Get( context.RegistrationSettings.FinancialAccountId ?? 0 );
+                    if ( financialAccount == null )
+                    {
+                        errorMessage = "There was a problem with the financial account configuration for this registration instance";
+                        return null;
+                    }
+
+                    // Keep track of the customer token so the customer account is only created once.
+                    ReferencePaymentInfo oneTimePaymentInfo = null;
+                    if ( isPaymentNeededNow )
+                    {
+                        oneTimePaymentInfo = GetPaymentInfo( rockContext, context, args, gateway, out errorMessage );
+                        if ( errorMessage.IsNotNullOrWhiteSpace() )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+
+                        // Process the payment in the gateway.
+                        var financialTransaction = ProcessGatewayPayment( rockContext, context, args, financialGateway, gateway, oneTimePaymentInfo, out errorMessage );
+
+                        if ( !errorMessage.IsNullOrWhiteSpace() )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+                        else if ( financialTransaction == null )
+                        {
+                            throw new Exception( "There was a problem with the payment" );
+                        }
+                        else
+                        {
+                            // The payment was processed successfully, so save the transaction in Rock.
+                            SaveTransaction( gateway, context, financialTransaction, oneTimePaymentInfo, rockContext );
+                        }
+                    }
+
+                    if ( isPaymentPlanNeeded )
+                    {
+                        var paymentInfo = GetPaymentPlanPaymentInfo( rockContext, context, args, gateway, oneTimePaymentInfo, out errorMessage );
+                        if ( errorMessage.IsNotNullOrWhiteSpace() )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+
+                        // Create a schedule for the recurring payment plan transactions.
+                        var paymentSchedule = new PaymentSchedule
+                        {
+                            PersonId = context.Registration.PersonId ?? 0,
+                            NumberOfPayments = args.PaymentPlan.NumberOfPayments,
+                            TransactionFrequencyValue = DefinedValueCache.Get( args.PaymentPlan.TransactionFrequencyGuid ),
+                            StartDate = args.PaymentPlan.StartDate.Date,
+                            // EndDate is not used for gateways that use payment plans created using number.
+                        };
+
+                        var scheduledTransaction = ProcessGatewayPaymentPlan( context, args, financialGateway, gateway, paymentSchedule, paymentInfo, out errorMessage );
+
+                        if ( errorMessage.IsNotNullOrWhiteSpace() )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+
+                        if ( scheduledTransaction == null )
+                        {
+                            throw new Exception( "There was a problem scheduling the payment" );
+                        }
+
+                        PrepareAndSavePaymentPlanScheduledTransaction( rockContext, context, financialGateway, gateway, paymentSchedule, paymentInfo, scheduledTransaction );
+                    }
                 }
             }
             catch ( Exception )
@@ -1272,6 +1543,155 @@ namespace Rock.Blocks.Event
             }
 
             return context.Registration;
+        }
+
+        /// <summary>
+        /// Gets the reduction amount for force wait-listed registrants.
+        /// </summary>
+        /// <param name="forceWaitListedRegistrantGuids">The registrants who were forcefully placed on the waitlist.</param>
+        /// <param name="costs">The registration costs.</param>
+        /// <returns>The amount that shouldn't be charged for any registrants who are forcefully placed on the waitlist.</returns>
+        private static decimal GetPaymentReductionAmountForForceWaitListedRegistrants( IEnumerable<Guid> forceWaitListedRegistrantGuids, IEnumerable<RegistrationCostSummaryInfo> costs )
+        {
+            return costs
+                .Where(
+                    cost => cost.RegistrationRegistrantGuid.HasValue
+                    && forceWaitListedRegistrantGuids.Contains( cost.RegistrationRegistrantGuid.Value )
+                )
+                .Sum( cost => cost.DiscountedCost );
+        }
+
+        /// <summary>
+        /// Gets the registration costs.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="registrationContext">The registration context.</param>
+        /// <param name="registrationArgs">The registration arguments.</param>
+        /// <returns>The registration costs.</returns>
+        private static List<RegistrationCostSummaryInfo> GetRegistrationCosts( RockContext rockContext, RegistrationContext registrationContext, RegistrationEntryArgsBag registrationArgs )
+        {
+            return new RegistrationInstanceService( rockContext )
+                .GetRegistrationCostSummaryInfo( registrationContext, registrationArgs.AsArgsOrNull() );
+        }
+
+        /// <summary>
+        /// Reduces the registration payment amount.
+        /// </summary>
+        /// <param name="registrationSettings">The registration settings.</param>
+        /// <param name="registrationArgs">The registration arguments.</param>
+        /// <param name="paymentReductionAmount">The payment reduction amount.</param>
+        /// <param name="minimumPaymentAmount">The minimum payment amount.</param>
+        private static void ReduceRegistrationPaymentAmount( RegistrationSettings registrationSettings, RegistrationEntryArgsBag registrationArgs, decimal paymentReductionAmount, decimal minimumPaymentAmount )
+        {
+            if ( paymentReductionAmount <= 0m || registrationSettings == null || registrationArgs == null )
+            {
+                return;
+            }
+
+            // Payment Plan
+            if ( registrationArgs.PaymentPlan != null )
+            {
+                var paymentPlanAmount = registrationArgs.PaymentPlan.NumberOfPayments * registrationArgs.PaymentPlan.AmountPerPayment;
+
+                if ( paymentPlanAmount > paymentReductionAmount )
+                {
+                    // Calculate a new payment plan with the new, reduced amount.
+                    var newPaymentPlanAmount = paymentPlanAmount - paymentReductionAmount;
+                    var paymentPlanConfigurationService = new PaymentPlanConfigurationService();
+                    var options = new PaymentPlanConfigurationOptions
+                    {
+                        AmountForPaymentPlan = newPaymentPlanAmount,
+                        CurrencyPrecision = new RockCurrencyCodeInfo().DecimalPlaces,
+                        DesiredAllowedPaymentFrequencies = registrationSettings.PaymentPlanFrequencyValueIds?.Select( id => DefinedValueCache.Get( id ) ).ToList(),
+                        DesiredNumberOfPayments = registrationArgs.PaymentPlan.NumberOfPayments,
+                        DesiredPaymentFrequency = DefinedValueCache.Get( registrationArgs.PaymentPlan.TransactionFrequencyGuid ),
+                        DesiredStartDate = registrationArgs.PaymentPlan.StartDate.Date,
+                        EndDate = registrationSettings.PaymentDeadlineDate?.Date ?? RockDateTime.Today.AddYears( 1 ),
+                        IsNumberOfPaymentsLimited = true,
+                        MinNumberOfPayments = 2
+                    };
+                    var paymentPlanConfig = paymentPlanConfigurationService.Get( options );
+
+                    // Overwrite the payment plan.
+                    registrationArgs.PaymentPlan = new RegistrationEntryCreatePaymentPlanRequestBag
+                    {
+                        AmountPerPayment = paymentPlanConfig.AmountPerPayment,
+                        NumberOfPayments = paymentPlanConfig.NumberOfPayments,
+                        StartDate = paymentPlanConfig.StartDate,
+                        TransactionFrequencyGuid = paymentPlanConfig.PaymentFrequencyConfiguration.PaymentFrequency.Guid,
+                        TransactionFrequencyText = paymentPlanConfig.PaymentFrequencyConfiguration.PaymentFrequency.ToString(),
+                    };
+
+                    // Add remainder to the amount to pay today.
+                    var remainderAmountNotCoveredByPlan = newPaymentPlanAmount - paymentPlanConfig.PlannedAmount;
+                    registrationArgs.AmountToPayNow += remainderAmountNotCoveredByPlan;
+
+                    // The entire reduction amount was used to reduce the payment plan amount.
+                    paymentReductionAmount = 0m;
+                }
+                else
+                {
+                    // The reduction amount covers the entire payment plan
+                    // and will cover some or all of the one-time payment amount.
+                    // Remove the payment plan from the registration and process.
+                    registrationArgs.PaymentPlan = null;
+                    paymentReductionAmount -= paymentPlanAmount;
+                }
+            }
+            
+            // Amount To Pay Now
+            if ( paymentReductionAmount > 0m
+                 && registrationArgs.AmountToPayNow > 0m
+                 && registrationArgs.AmountToPayNow > minimumPaymentAmount )
+            {
+                var newAmountToPayNow = registrationArgs.AmountToPayNow - paymentReductionAmount;
+
+                if ( newAmountToPayNow < minimumPaymentAmount )
+                {
+                    // The amount to pay now cannot be less than
+                    // the minimum required amount.
+                    registrationArgs.AmountToPayNow = minimumPaymentAmount;
+
+                    // Although there may be an reduction amount left over,
+                    // the registrar is required to pay the minimum amount.
+                    paymentReductionAmount = minimumPaymentAmount - newAmountToPayNow;
+                }
+                else
+                {
+                    registrationArgs.AmountToPayNow = newAmountToPayNow;
+                    paymentReductionAmount = 0m;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the minimum amount due today.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="registrationContext">The registration context.</param>
+        /// <param name="forceWaitListedRegistrantGuids">The registrants who were forcefully placed on the waitlist.</param>
+        /// <param name="registrationCosts">The registration costs.</param>
+        /// <returns>The minimum amount due today.</returns>
+        private static decimal GetMinimumPaymentAmountForNonForceWaitListedRegistrants( RockContext rockContext, RegistrationContext registrationContext, List<Guid> forceWaitlistedRegistrantGuids, IEnumerable<RegistrationCostSummaryInfo> registrationCosts )
+        {
+            var amountPaid = new RegistrationService( rockContext ).GetTotalPayments( registrationContext.Registration.Id );
+
+            if ( amountPaid > 0 )
+            {
+                // No minimum if any payments have already been made.
+                // This assumes that a minimum payment was received in a prior payment.
+                return 0m;
+            }
+            else
+            {
+                // Otherwise, return the sum of all minimum payment (or discounted payment, if less) amounts for all costs.
+                return registrationCosts
+                    .Where(
+                        cost => cost.RegistrationRegistrantGuid.HasValue
+                        && forceWaitlistedRegistrantGuids.Contains( cost.RegistrationRegistrantGuid.Value )
+                    )
+                    .Sum( c => Math.Min( c.MinPayment, c.DiscountedCost ) );
+            }
         }
 
         /// <summary>
@@ -1336,30 +1756,50 @@ namespace Rock.Blocks.Event
         /// Gets the registration group identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
-        private int? GetRegistrationGroupId( RockContext rockContext )
+        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId )
         {
             var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             var registrationSlug = PageParameter( PageParameterKey.Slug );
+            var eventOccurrenceId = this.EventOccurrenceIdPageParameter;
 
-            if ( !groupId.HasValue && !registrationSlug.IsNullOrWhiteSpace() )
+            if ( !groupId.HasValue )
             {
-                var dateTime = RockDateTime.Now;
-                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( l =>
-                        l.UrlSlug == registrationSlug &&
-                        l.RegistrationInstance != null &&
-                        l.RegistrationInstance.IsActive &&
-                        l.RegistrationInstance.RegistrationTemplate != null &&
-                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
-                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .FirstOrDefault();
-
-                if ( linkage != null )
+                if ( !registrationSlug.IsNullOrWhiteSpace() )
                 {
-                    groupId = linkage.GroupId;
+                    var dateTime = RockDateTime.Now;
+                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == registrationSlug &&
+                            l.RegistrationInstance != null &&
+                            l.RegistrationInstance.IsActive &&
+                            l.RegistrationInstance.RegistrationTemplate != null &&
+                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                            ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                            ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                        .FirstOrDefault();
+
+                    if ( linkage != null )
+                    {
+                        groupId = linkage.GroupId;
+                    }
+                }
+                else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
+                {
+                    var linkageGroupId = new EventItemOccurrenceService( rockContext )
+                        .Queryable()
+                        .Where( o => o.Id == eventOccurrenceId.Value )
+                        .SelectMany( o => o.Linkages )
+                        .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
+                        .Select( l => l.GroupId )
+                        .FirstOrDefault();
+
+                    if ( linkageGroupId.HasValue )
+                    {
+                        groupId = linkageGroupId.Value;
+                    }
                 }
             }
 
@@ -1498,7 +1938,8 @@ namespace Rock.Blocks.Event
             {
                 var fields = form.Fields.Where( f =>
                 {
-                    if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    // ShowCurrentValue means "Default to the person's current value for this field"
+                    if ( ( f.ShowCurrentValue || f.IsLockedIfValuesExist ) && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     {
                         return true;
                     }
@@ -1513,7 +1954,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue || f.IsLockedIfValuesExist ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
@@ -1560,9 +2001,38 @@ namespace Rock.Blocks.Event
 
                 case RegistrationFieldSource.RegistrantAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
+
+                case RegistrationFieldSource.GroupMemberAttribute:
+                    return GetGroupMemberCurrentAttributeValue( rockContext, person, field, registrationContext );
             }
 
             return null;
+        }
+
+        private object GetGroupMemberCurrentAttributeValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
+        {
+            if ( person == null )
+            {
+                return null;
+            }
+
+            var groupId = GetRegistrationGroupId( rockContext, registrationContext?.RegistrationSettings?.RegistrationInstanceId );
+
+            if ( !groupId.HasValue )
+            {
+                return null;
+            }
+
+            var groupMember = new GroupMemberService( rockContext )
+                .GetByGroupIdAndPersonId( groupId.Value, person.Id )
+                .FirstOrDefault();
+
+            if ( groupMember == null )
+            {
+                return null;
+            }
+
+            return GetEntityCurrentClientAttributeValue( rockContext, groupMember, field );
         }
 
         /// <summary>
@@ -1753,7 +2223,7 @@ namespace Rock.Blocks.Event
                 if ( family != null )
                 {
                     familyId = family.Id;
-                    multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
+                    multipleFamilyGroupIds.TryAdd( familyGuid, family.Id );
                     if ( !singleFamilyId.HasValue )
                     {
                         singleFamilyId = family.Id;
@@ -1787,7 +2257,7 @@ namespace Rock.Blocks.Event
                         familyId = familyGroup.Id;
 
                         // Store the family id for next person
-                        multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
+                        multipleFamilyGroupIds.TryAdd( familyGuid, familyGroup.Id );
                         if ( !singleFamilyId.HasValue )
                         {
                             singleFamilyId = familyGroup.Id;
@@ -2073,6 +2543,34 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            /*
+                 4/26/2024 - JMH
+                
+                 If a person match was not made for the registrant at this point,
+                 and if the registrar is not the authenticated person,
+                 then try to find a match from the authenticated person's family.
+
+                 Duplicate prevention may be enhanced in the future to include suffix
+                 or other identifying information.
+            */
+            var currentPerson = GetCurrentPerson();
+            if ( person == null && currentPerson != null && registrar?.PrimaryAliasId != currentPerson.PrimaryAliasId )
+            {
+                var familyMembers = currentPerson.GetFamilyMembers( true, rockContext )
+                    .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
+                    .Select( m => m.Person )
+                    .ToList();
+
+                if ( familyMembers.Count() == 1 )
+                {
+                    person = familyMembers.First();
+                    if ( !string.IsNullOrWhiteSpace( email ) )
+                    {
+                        person.Email = email;
+                    }
+                }
+            }
+
             if ( person == null )
             {
                 /**
@@ -2093,7 +2591,11 @@ namespace Rock.Blocks.Event
                 }
                 else
                 {
-                    var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                    // Get the connection status from the registration settings first.
+                    // If there is no connection status defined there, then attempt to get
+                    // it from this block's settings.
+                    var dvcConnectionStatusId = context.RegistrationSettings.ConnectionStatusValueId
+                        ?? DefinedValueCache.GetId( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
                     var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
 
                     // If a match was not found, create a new person
@@ -2105,9 +2607,9 @@ namespace Rock.Blocks.Event
                     person.EmailPreference = EmailPreference.EmailAllowed;
                     person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
-                    if ( dvcConnectionStatus != null )
+                    if ( dvcConnectionStatusId.HasValue )
                     {
-                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                        person.ConnectionStatusValueId = dvcConnectionStatusId.Value;
                     }
 
                     if ( dvcRecordStatus != null )
@@ -2240,7 +2742,9 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.ConnectionStatus:
                             {
                                 var newConnectionStatusValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
-                                var newConnectionStatusValueId = newConnectionStatusValueGuid.HasValue ? DefinedValueCache.Get( newConnectionStatusValueGuid.Value )?.Id : null;
+                                var newConnectionStatusValueId = newConnectionStatusValueGuid.HasValue
+                                    ? DefinedValueCache.Get( newConnectionStatusValueGuid.Value )?.Id
+                                    : null;
                                 var oldConnectionStatusValueId = person.ConnectionStatusValueId;
                                 person.ConnectionStatusValueId = newConnectionStatusValueId;
                                 History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( oldConnectionStatusValueId ), DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
@@ -2365,7 +2869,7 @@ namespace Rock.Blocks.Event
         /// <param name="index">The index.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
-        /// <param name="isWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
+        /// <param name="forceWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
         /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="isNewRegistration"><c>true</c> if the registration is new; otherwise <c>false</c>.</param>
         /// <param name="postSaveActions">Additional post save actions that can be appended to.</param>
@@ -2378,13 +2882,13 @@ namespace Rock.Blocks.Event
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
-            bool isWaitlist,
+            bool forceWaitlist,
             bool isCreatedAsRegistrant,
             bool isNewRegistration,
             List<Action> postSaveActions )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
-            isWaitlist |= ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
+            var isWaitlist = forceWaitlist || ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
 
             var personService = new PersonService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -2431,11 +2935,19 @@ namespace Rock.Blocks.Event
 
             if ( registrant == null )
             {
-                registrant = new RegistrationRegistrant();
-                registrant.Guid = registrantInfo.Guid;
+                registrant = new RegistrationRegistrant
+                {
+                    Guid = registrantInfo.Guid,
+                    RegistrationId = context.Registration.Id,
+                    Cost = context.RegistrationSettings.PerRegistrantCost
+                };
                 registrantService.Add( registrant );
-                registrant.RegistrationId = context.Registration.Id;
-                registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
+            }
+
+            if ( forceWaitlist )
+            {
+                // Clear the cost if the registrant is forced to be wait-listed.
+                registrant.Cost = 0;
             }
 
             registrant.OnWaitList = isWaitlist;
@@ -2729,7 +3241,7 @@ namespace Rock.Blocks.Event
         /// Gets the view model.
         /// </summary>
         /// <returns></returns>
-        private RegistrationEntryInitializationBox GetViewModel( RockContext rockContext )
+        private RegistrationEntryInitializationBox GetInitializationBox( RockContext rockContext )
         {
             // Get the registration context (template, instance, actual registration (if existing))
             var context = GetContext( rockContext, out var errorMessage );
@@ -2793,10 +3305,9 @@ namespace Rock.Blocks.Event
 
                 var financialGatewayService = new FinancialGatewayService( rockContext );
                 var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
-                var paymentGateway = paymentFinancialGateway?.GetGatewayComponent() as IPaymentTokenGateway;
-
-                string paymentToken = null;
-                var wasRedirectedFromPayment = paymentGateway?.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken ) ?? false;
+                var gateway = paymentFinancialGateway?.GetGatewayComponent();
+                var paymentToken = string.Empty;
+                var wasRedirectedFromPayment = gateway is IPaymentTokenGateway paymentGateway && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken );
 
                 if ( wasRedirectedFromPayment )
                 {
@@ -2811,16 +3322,26 @@ namespace Rock.Blocks.Event
                     else
                     {
                         // Existing registration, but they are making another payment.
-                        var transactionGuid = ProcessPayment( rockContext, context, args, out errorMessage );
+                        var paymentInfo = GetPaymentInfo( rockContext, context, args, gateway, out errorMessage );
+                        if ( errorMessage.IsNotNullOrWhiteSpace() )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+
+                        var transaction = ProcessGatewayPayment( rockContext, context, args, paymentFinancialGateway, gateway, paymentInfo, out errorMessage );
 
                         if ( !errorMessage.IsNullOrWhiteSpace() )
                         {
                             throw new Exception( errorMessage );
                         }
-
-                        if ( !transactionGuid.HasValue )
+                        else if ( transaction == null )
                         {
                             throw new Exception( "There was a problem with the payment" );
+                        }
+                        else
+                        {
+                            // The payment was processed successfully, so save the transaction in Rock.
+                            SaveTransaction( gateway, context, transaction, paymentInfo, rockContext );
                         }
                     }
 
@@ -2866,6 +3387,10 @@ namespace Rock.Blocks.Event
             var registrantTerm = context.RegistrationSettings.RegistrantTerm;
             registrantTerm = registrantTerm.ToLower();
             var pluralRegistrantTerm = registrantTerm.Pluralize();
+
+            // Get the discount code term
+            var discountCodeTerm = context.RegistrationSettings.DiscountCodeTerm.ToLower();
+            var pluralDiscountCodeTerm = discountCodeTerm.Pluralize();
 
             // Get the fees
             var feeModels = context.RegistrationSettings.Fees?.Where( f => f.IsActive ).OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
@@ -2927,6 +3452,7 @@ namespace Rock.Blocks.Event
                     field.PreHtml = fieldModel.PreText;
                     field.PostHtml = fieldModel.PostText;
                     field.ShowOnWaitList = fieldModel.ShowOnWaitlist;
+                    field.IsLockedIfValuesExist = fieldModel.IsLockedIfValuesExist;
 
                     field.VisibilityRules = fieldModel.FieldVisibilityRules
                         .RuleList
@@ -3143,8 +3669,13 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var isPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed;
+
+            var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
+                AreCurrentFamilyMembersShown = context.RegistrationSettings.AreCurrentFamilyMembersShown,
+                FamilyTerm = GetAttributeValue( AttributeKey.FamilyTerm ),
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
                 RegistrationAttributeTitleStart = registrationAttributeTitleStart,
@@ -3152,8 +3683,11 @@ namespace Rock.Blocks.Event
                 InstructionsHtml = instructions,
                 RegistrantTerm = registrantTerm,
                 PluralRegistrantTerm = pluralRegistrantTerm,
+                FeeTerm = feeTerm,
                 PluralFeeTerm = pluralFeeTerm,
                 RegistrationTerm = registrationTerm,
+                DiscountCodeTerm = discountCodeTerm,
+                PluralDiscountCodeTerm = pluralDiscountCodeTerm,
                 RegistrantForms = formViewModels,
                 Fees = fees,
                 HideProgressBar = !GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean(),
@@ -3236,7 +3770,21 @@ namespace Rock.Blocks.Event
                     .ToList(),
 
                 EnableSaveAccount = enableSavedAccount,
-                SavedAccounts = savedAccounts
+                SavedAccounts = savedAccounts,
+
+                // Payment plan
+                IsPaymentPlanAllowed = isPaymentPlanAllowed,
+                PaymentDeadlineDate = isPaymentPlanAllowed ? context.RegistrationSettings.PaymentDeadlineDate : null,
+                PaymentPlanFrequencies = isPaymentPlanAllowed ? GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ) : null,
+                IsPaymentPlanConfigured = context.Registration?.IsPaymentPlanActive ?? false,
+
+                // Currency Code
+                CurrencyInfo = new CurrencyInfoBag
+                {
+                    DecimalPlaces = currencyInfo.DecimalPlaces,
+                    Symbol = currencyInfo.Symbol,
+                    SymbolLocation = currencyInfo.SymbolLocation,
+                },
             };
 
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired )
@@ -3253,6 +3801,30 @@ namespace Rock.Blocks.Event
             }
 
             return viewModel;
+        }
+
+        /// <summary>
+        /// Gets the payment plan frequency list item bags.
+        /// </summary>
+        /// <param name="paymentPlanFrequencyValueIds">The payment plan frequency value ids.</param>
+        /// <returns></returns>
+        private List<ListItemBag> GetPaymentPlanFrequencyListItemBags( List<int> paymentPlanFrequencyValueIds, RockContext rockContext )
+        {
+            var frequencies = new Dictionary<int, ListItemBag>();
+
+            foreach ( var paymentPlanFrequencyId in paymentPlanFrequencyValueIds )
+            {
+                if ( !frequencies.ContainsKey( paymentPlanFrequencyId ) )
+                {
+                    var frequency = DefinedValueCache.Get( paymentPlanFrequencyId, rockContext );
+                    if ( frequency != null )
+                    {
+                        frequencies.Add( paymentPlanFrequencyId, frequency.ToListItemBag() );
+                    }
+                }
+            }
+
+            return frequencies.Values.ToList();
         }
 
         /// <summary>
@@ -3330,44 +3902,25 @@ namespace Rock.Blocks.Event
             return registrationAttributes;
         }
 
-        /// <summary>
-        /// Processes the payment.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="context">The context.</param>
-        /// <param name="args">The arguments.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        private Guid? ProcessPayment(
+        private ReferencePaymentInfo GetPaymentInfo(
             RockContext rockContext,
             RegistrationContext context,
             RegistrationEntryArgsBag args,
+            GatewayComponent gateway,
             out string errorMessage )
         {
             errorMessage = string.Empty;
-            var financialGatewayService = new FinancialGatewayService( rockContext );
-            var financialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
-            var gateway = financialGateway?.GetGatewayComponent();
-            var redirectGateway = gateway as IRedirectionGatewayComponent;
 
-            if ( gateway == null )
-            {
-                errorMessage = "There was a problem creating the payment gateway information";
-                return null;
-            }
-
-            var financialAccountService = new FinancialAccountService( rockContext );
-            var financialAccount = financialAccountService.Get( context.RegistrationSettings.FinancialAccountId ?? 0 );
-
+            var financialAccount = new FinancialAccountService( rockContext ).Get( context.RegistrationSettings.FinancialAccountId ?? 0 );
             if ( financialAccount == null )
             {
                 errorMessage = "There was a problem with the financial account configuration for this registration instance";
                 return null;
             }
 
-            var comment = redirectGateway == null ?
-                $"{context.RegistrationSettings.Name} ({financialAccount.GlCode})" :
-                context.RegistrationSettings.Name;
+            var comment = gateway is IRedirectionGatewayComponent
+                ? context.RegistrationSettings.Name
+                : $"{context.RegistrationSettings.Name} ({financialAccount.GlCode})";
 
             ReferencePaymentInfo paymentInfo;
 
@@ -3407,6 +3960,104 @@ namespace Rock.Blocks.Event
             paymentInfo.LastName = args.Registrar.LastName;
             paymentInfo.Comment1 = comment;
             paymentInfo.TransactionTypeValueId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) ).Id;
+
+            return paymentInfo;
+        }
+
+        private ReferencePaymentInfo GetPaymentPlanPaymentInfo(
+            RockContext rockContext,
+            RegistrationContext context,
+            RegistrationEntryArgsBag args,
+            GatewayComponent gateway,
+            ReferencePaymentInfo previousPaymentInfo,
+            out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var financialAccount = new FinancialAccountService( rockContext ).Get( context.RegistrationSettings.FinancialAccountId ?? 0 );
+            if ( financialAccount == null )
+            {
+                errorMessage = "There was a problem with the financial account configuration for this registration instance";
+                return null;
+            }
+
+            var comment = gateway is IRedirectionGatewayComponent
+                ? context.RegistrationSettings.Name
+                : $"{context.RegistrationSettings.Name} ({financialAccount.GlCode})";
+
+            ReferencePaymentInfo paymentInfo;
+
+            // Get the payment info from either the saved account or the gateway
+            // token when using a new payment method.
+            if ( args.SavedAccountGuid.HasValue && RequestContext.CurrentPerson != null )
+            {
+                var savedAccount = new FinancialPersonSavedAccountService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Guid == args.SavedAccountGuid.Value
+                        && a.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
+                if ( savedAccount != null )
+                {
+                    paymentInfo = savedAccount.GetReferencePayment();
+                }
+                else
+                {
+                    errorMessage = "There was a problem retrieving the saved account";
+                    return null;
+                }
+            }
+            else
+            {
+                paymentInfo = new ReferencePaymentInfo
+                {
+                    ReferenceNumber = args.GatewayToken,
+                };
+            }
+
+            // Update payment into with details about this payment.
+            paymentInfo.Amount = args.PaymentPlan.AmountPerPayment;
+            paymentInfo.Email = args.Registrar.Email;
+            paymentInfo.FirstName = args.Registrar.NickName;
+            paymentInfo.LastName = args.Registrar.LastName;
+            paymentInfo.Comment1 = comment;
+            paymentInfo.TransactionTypeValueId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) ).Id;
+
+            // Copy information from a previous payment.
+            if ( previousPaymentInfo != null )
+            {
+                paymentInfo.GatewayPersonIdentifier = previousPaymentInfo.GatewayPersonIdentifier;
+                paymentInfo.AdditionalParameters = new Dictionary<string, string>( previousPaymentInfo.AdditionalParameters );
+            }
+
+            return paymentInfo;
+        }
+
+        /// <summary>
+        /// Processes the payment.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="args">The arguments.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private FinancialTransaction ProcessGatewayPayment(
+            RockContext rockContext,
+            RegistrationContext context,
+            RegistrationEntryArgsBag args,
+            FinancialGateway financialGateway,
+            GatewayComponent gateway,
+            ReferencePaymentInfo paymentInfo,
+            out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( gateway == null )
+            {
+                errorMessage = "There was a problem creating the payment gateway information";
+                return null;
+            }
 
             FinancialTransaction transaction;
 
@@ -3456,30 +4107,80 @@ namespace Rock.Blocks.Event
                 transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
             }
 
-            return SaveTransaction( financialGateway, gateway, context, transaction, paymentInfo, rockContext, paymentInfo.Amount, paymentInfo.GatewayPersonIdentifier );
+            return transaction;
+        }
+
+        private FinancialScheduledTransaction ProcessGatewayPaymentPlan(
+            RegistrationContext context,
+            RegistrationEntryArgsBag args,
+            FinancialGateway financialGateway,
+            GatewayComponent gateway,
+            PaymentSchedule paymentSchedule,
+            ReferencePaymentInfo paymentInfo,
+            out string errorMessage )
+        {
+            if ( args.PaymentPlan == null )
+            {
+                errorMessage = "There was a problem creating the payment plan";
+                return null;
+            }
+
+            if ( !( gateway is IScheduledNumberOfPaymentsGateway ) )
+            {
+                errorMessage = "Payment plans are not supported";
+                return null;
+            }
+
+            if ( context.Registration?.IsPaymentPlanActive == true )
+            {
+                errorMessage = "A payment plan is already configured";
+                return null;
+            }
+
+            if ( gateway is IObsidianHostedGatewayComponent obsidianGateway && paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+            {
+                var customerToken = obsidianGateway.CreateCustomerAccount( financialGateway, paymentInfo, out errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                paymentInfo.GatewayPersonIdentifier = customerToken;
+            }
+
+            // Schedule the recurring payment in the financial gateway.
+            // The scheduled transaction returned is partially filled out with info needed in Rock,
+            // but Rock still needs to fill out the transaction details before saving.
+            var scheduledTransaction = gateway.AddScheduledPayment( financialGateway, paymentSchedule, paymentInfo, out errorMessage );
+
+            if ( scheduledTransaction == null )
+            {
+                errorMessage = "There was a problem scheduling the payment";
+                return null;
+            }
+
+            // Associate the payment plan scheduled transaction with the registration.
+            context.Registration.PaymentPlanFinancialScheduledTransaction = scheduledTransaction;
+
+            return scheduledTransaction;
         }
 
         /// <summary>
         /// Saves the transaction.
         /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="gateway">The gateway.</param>
         /// <param name="context">The context.</param>
         /// <param name="transaction">The transaction.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="amount">The amount.</param>
-        /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
         private Guid? SaveTransaction(
-            FinancialGateway financialGateway,
             GatewayComponent gateway,
             RegistrationContext context,
             FinancialTransaction transaction,
             PaymentInfo paymentInfo,
-            RockContext rockContext,
-            decimal amount,
-            string gatewayPersonIdentifier )
+            RockContext rockContext )
         {
             if ( transaction is null )
             {
@@ -3539,7 +4240,7 @@ namespace Rock.Blocks.Event
                 transaction.TransactionDetails.Add( transactionDetail );
             }
 
-            transactionDetail.Amount = amount;
+            transactionDetail.Amount = paymentInfo.Amount;
             transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
@@ -3603,8 +4304,76 @@ namespace Rock.Blocks.Event
                     currentPerson?.PrimaryAliasId ) );
 
             context.TransactionCode = transaction.TransactionCode;
-            context.GatewayPersonIdentifier = gatewayPersonIdentifier;
+            context.GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
             return transaction.Guid;
+        }
+
+        /// <summary>
+        /// This method was copied from UtilityPaymentEntry.SaveScheduledTransaction and repurposed for saving a scheduled recurring
+        /// transaction for event registration when the registrar opts for a payment plan.
+        /// </summary>
+        /// <param name="financialGatewayId"></param>
+        /// <param name="gateway"></param>
+        /// <param name="context"></param>
+        /// <param name="paymentInfo"></param>
+        /// <param name="paymentSchedule"></param>
+        /// <param name="scheduledTransaction"></param>
+        /// <param name="rockContext"></param>
+        private void PrepareAndSavePaymentPlanScheduledTransaction(
+            RockContext rockContext,
+            RegistrationContext context,
+            FinancialGateway financialGateway,
+            GatewayComponent gateway,
+            PaymentSchedule paymentSchedule,
+            ReferencePaymentInfo paymentInfo,
+            FinancialScheduledTransaction scheduledTransaction )
+        {
+            // Set basic information needed by Rock.
+            scheduledTransaction.NumberOfPayments = paymentSchedule.NumberOfPayments;
+            scheduledTransaction.AuthorizedPersonAliasId = context.Registration.PersonAliasId.Value;
+            scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+            scheduledTransaction.TransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+            var sourceGuid = GetAttributeValue( AttributeKey.Source ).AsGuidOrNull();
+            if ( sourceGuid.HasValue )
+            {
+                scheduledTransaction.SourceTypeValueId = DefinedValueCache.GetId( sourceGuid.Value );
+            }
+
+            // Set the schedule information.
+            scheduledTransaction.TransactionFrequencyValueId = paymentSchedule.TransactionFrequencyValue.Id;
+            scheduledTransaction.StartDate = paymentSchedule.StartDate;
+            
+            // Set the payment information.
+            scheduledTransaction.Summary = paymentInfo.Comment1;
+            if ( scheduledTransaction.FinancialPaymentDetail == null )
+            {
+                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+            scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
+            
+            // Use the details from the gateway if it added one;
+            // otherwise, create the details here.
+            var transactionDetail = scheduledTransaction.ScheduledTransactionDetails.FirstOrDefault();
+            if ( transactionDetail == null )
+            {
+                transactionDetail = new FinancialScheduledTransactionDetail();
+                scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
+            }
+
+            // Add the individual payment details. For the payment plan, it will be a single value for the total amount of the plan.
+            transactionDetail.Amount = paymentInfo.Amount;
+            transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
+            transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
+            transactionDetail.EntityId = context.Registration.Id;
+
+            // Save the scheduled transaction to the DB.
+            var transactionService = new FinancialScheduledTransactionService( rockContext );
+            transactionService.Add( scheduledTransaction );
+
+            rockContext.SaveChanges();
+
+            // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
+            //Task.Run( () => Rock.Bus.Message.ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, Rock.Bus.Message.ScheduledGiftEventTypes.ScheduledGiftCreated ) );
         }
 
         /// <summary>
@@ -3631,7 +4400,11 @@ namespace Rock.Blocks.Event
             {
                 var rockContext = new RockContext();
                 var registration = new RegistrationService( rockContext )
-                    .Queryable( "RegistrationInstance.RegistrationTemplate" )
+                    .Queryable()
+                    .Include( r => r.RegistrationInstance.RegistrationTemplate )
+                    .Include( r => r.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue )
+                    // Needed to get the TotalAmount run-time value.
+                    .Include( r => r.PaymentPlanFinancialScheduledTransaction.ScheduledTransactionDetails )
                     .FirstOrDefault( r => r.Id == registrationId );
 
                 if ( registration != null &&
@@ -3639,7 +4412,6 @@ namespace Rock.Blocks.Event
                     registration.RegistrationInstance.RegistrationTemplate != null )
                 {
                     var template = registration.RegistrationInstance.RegistrationTemplate;
-
                     var mergeFields = new Dictionary<string, object>
                     {
                         { "CurrentPerson", currentPerson },
@@ -3781,24 +4553,17 @@ namespace Rock.Blocks.Event
             }
 
             // Try a session. This is typically from a redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter( pageReference );
-
-            if ( registrationSessionGuid.HasValue )
-            {
-                var registrationSessionService = new RegistrationSessionService( rockContext );
-                var registrationSession = registrationSessionService.Queryable()
-                    .AsNoTracking()
-                    .Where( rs => rs.Guid == registrationSessionGuid.Value )
-                    .Select( rs => new
-                    {
-                        rs.RegistrationInstanceId
-                    } )
-                    .FirstOrDefault();
-
-                if ( registrationSession != null )
+            var registrationSession = GetRegistrationSessionQuery( rockContext, pageReference )
+                .AsNoTracking()
+                .Select( rs => new
                 {
-                    return registrationSession.RegistrationInstanceId;
-                }
+                    rs.RegistrationInstanceId
+                } )
+                .FirstOrDefault();
+
+            if ( registrationSession != null )
+            {
+                return registrationSession.RegistrationInstanceId;
             }
 
             // Try a url slug
@@ -3857,22 +4622,17 @@ namespace Rock.Blocks.Event
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
             var registrationSessionGuid = GetRegistrationSessionPageParameter( null );
 
-            if ( registrationSessionGuid.HasValue )
-            {
-                var registrationSessionService = new RegistrationSessionService( rockContext );
-                var registrationSession = registrationSessionService.Queryable()
-                    .AsNoTracking()
-                    .Where( rs => rs.Guid == registrationSessionGuid.Value )
-                    .Select( rs => new
-                    {
-                        rs.RegistrationData
-                    } )
-                    .FirstOrDefault();
-
-                if ( registrationSession != null )
+            var registrationSession = GetRegistrationSessionQuery( rockContext )
+                .AsNoTracking()
+                .Select( rs => new
                 {
-                    return registrationSession.RegistrationData.FromJsonOrNull<RegistrationEntrySessionBag>();
-                }
+                    rs.RegistrationData
+                } )
+                .FirstOrDefault();
+
+            if ( registrationSession != null )
+            {
+                return registrationSession.RegistrationData.FromJsonOrNull<RegistrationEntrySessionBag>();
             }
 
             // Try to restore the session from an existing registration
@@ -3893,16 +4653,23 @@ namespace Rock.Blocks.Event
 
             // Query for a registration that matches the ID and is owned or was created by the current person
             var registrationService = new RegistrationService( rockContext );
-            var registration = registrationService
-                .Queryable( "Registrants.PersonAlias.Person, Registrants.Fees" )
+            var registrationPaymentPlanPair = registrationService
+                .Queryable()
                 .Include( r => r.Registrants )
+                .Include( r => r.Registrants.Select( registrants => registrants.PersonAlias.Person ) )
+                .Include( r => r.Registrants.Select( registrants => registrants.Fees ) )
                 .AsNoTracking()
-                .FirstOrDefault( r =>
+                .Where( r =>
                     r.Id == registrationId.Value && (
                         ( r.PersonAliasId.HasValue && authorizedAliasIds.Contains( r.PersonAliasId.Value ) ) ||
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
-                    r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId );
+                    r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId )
+                .SelectPaymentPlanPairs()
+                .FirstOrDefault();
+
+            var registration = registrationPaymentPlanPair?.Registration;
+            var activePaymentPlan = registrationPaymentPlanPair?.PaymentPlan?.IsActive == true ? registrationPaymentPlanPair.PaymentPlan : null;
 
             if ( registration is null )
             {
@@ -3910,6 +4677,7 @@ namespace Rock.Blocks.Event
             }
 
             var alreadyPaid = registrationService.GetTotalPayments( registration.Id );
+
             var balanceDue = registration.DiscountedCost - alreadyPaid;
 
             if ( balanceDue < 0 )
@@ -3927,9 +4695,10 @@ namespace Rock.Blocks.Event
                 DiscountPercentage = registration.DiscountPercentage,
                 FieldValues = new Dictionary<Guid, object>(),
                 GatewayToken = string.Empty,
-                Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag>(),
+                Registrants = new List<RegistrantBag>(),
                 Registrar = new RegistrarBag(),
                 RegistrationGuid = registration.Guid,
+                ActivePaymentPlan = activePaymentPlan?.AsRegistrationPaymentPlanBag(),
                 PreviouslyPaid = alreadyPaid,
                 Slug = PageParameter( PageParameterKey.Slug ),
                 GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
@@ -4119,19 +4888,39 @@ namespace Rock.Blocks.Event
             // to get it from the session if we have one.
             if ( !registrationId.HasValue )
             {
-                var sessionGuid = GetRegistrationSessionPageParameter( null );
-
-                if ( sessionGuid.HasValue )
-                {
-                    var session = new RegistrationSessionService( rockContext ).Get( sessionGuid.Value );
-
-                    registrationId = session?.RegistrationId;
-                }
+                registrationId = GetRegistrationSessionQuery( rockContext )
+                    .Select( s => s.RegistrationId )
+                    .FirstOrDefault();
             }
 
             return registrationService.GetRegistrationContext( registrationInstanceId, registrationId, out errorMessage );
         }
 
+        /// <summary>
+        /// Gets the query that returns the <see cref="RegistrationSession"/> associated with the session page parameter.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="pageReference">The optional page reference used to get the session page parameter. If <see langword="null"/>, the session page parameter is retrieved from the current page.</param>
+        /// <returns>The query that returns the <see cref="RegistrationSession"/> associated with the session page parameter.</returns>
+        private IQueryable<RegistrationSession> GetRegistrationSessionQuery( RockContext rockContext, PageReference pageReference = null )
+        {
+            var sessionGuid = GetRegistrationSessionPageParameter( pageReference );
+
+            if ( sessionGuid.HasValue )
+            {
+                return new RegistrationSessionService( rockContext )
+                    .Queryable()
+                    .Where( s => s.Guid == sessionGuid.Value )
+                    .Take( 1 );
+            }
+            else
+            {
+                return Enumerable
+                    .Empty<RegistrationSession>()
+                    .AsQueryable();
+            }
+        }
+             
         /// <summary>
         /// Sends notifications after the registration is saved
         /// </summary>

@@ -848,7 +848,7 @@ namespace Rock.CheckIn
                         pageReference.Parameters = new Dictionary<string, string>();
                     }
 
-                    pageReference.Parameters.AddOrIgnore( PageParameterKey.IsActive, "True" );
+                    pageReference.Parameters.TryAdd( PageParameterKey.IsActive, "True" );
                 }
 
                 return pageReference.BuildUrl();

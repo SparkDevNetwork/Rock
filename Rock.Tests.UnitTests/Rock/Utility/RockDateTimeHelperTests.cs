@@ -18,7 +18,8 @@ using System;
 using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using Rock.Model;
+using Rock.Plugin.HotFixes;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Rock.Utility
@@ -160,5 +161,42 @@ namespace Rock.Tests.UnitTests.Rock.Utility
             Assert.That.AreEqual( expectedStart, range.Start );
             Assert.That.AreEqual( expectedEnd, range.End );
         }
+
+        [TestMethod]
+        [DataRow( 00, 2000 )]
+        [DataRow( 28, 2028 )]
+        [DataRow( 30, 2030 )]
+        [DataRow( 59, 2059 )]
+        [DataRow( 60, 1960 )]
+        [DataRow( 1752, 1752 )]
+        [DataRow( 10000, 10000 )]
+        public void ValidatePossibleCreditCardTwoDigitYears( int givenTwoDigitYear, int? expectedYear )
+        {
+            var actualYear = RockDateTime.ToFourDigitYearForCreditCardExpiration( givenTwoDigitYear );
+            Assert.That.AreEqual( expectedYear, actualYear );
+        }
+
+        [TestMethod]
+        public void EnsureNegativeTwoDigitYearThrowsArgumentOutOfRangeException()
+        {
+            Assert.That.ThrowsException<ArgumentOutOfRangeException>( () => RockDateTime.ToFourDigitYearForCreditCardExpiration( -10 ) );
+        }
+
+        [TestMethod]
+        [DataRow( 28, 2028 )]
+        [DataRow( 30, 2030 )]
+        [DataRow( 00, 2000 )]
+        [DataRow( 59, 2059 )]
+        [DataRow( 60, 1960 )]
+        [DataRow( 1752, null )]
+        [DataRow( 10000, null )]
+        public void ValidatePossibleSQLCreditCardExpirationDateSavedValues( int givenDigitYear, int? expectedYear )
+        {
+            var paymentDetail = new FinancialPaymentDetail();
+            var actualYear = paymentDetail.ToFourDigitYear( givenDigitYear );
+            Assert.That.AreEqual( expectedYear, actualYear );
+        }
+
+
     }
 }

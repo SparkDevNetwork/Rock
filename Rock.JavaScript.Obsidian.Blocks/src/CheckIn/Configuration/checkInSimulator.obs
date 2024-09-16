@@ -1,0 +1,581 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Check-in Simulator"
+           type="block"
+           hasFullscreen>
+
+        <ConfigurationPanel :blockConfig="config"
+                            v-model:config="configuration" />
+
+        <StepPanel title="Family Search"
+                   :step="familySearchStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, familySearchStep)">
+            <FamilySearchPanel v-model:searchTerm="familySearchTerm"
+                               v-model:searchType="familySearchType"
+                               :families="familySearchData" />
+        </StepPanel>
+
+        <StepPanel title="Select Family"
+                   :step="selectFamilyStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, selectFamilyStep)">
+            <SelectFamilyPanel v-model:familyNumber="selectFamilyNumber"
+                               :family="selectFamilyData" />
+        </StepPanel>
+
+        <StepPanel title="Select Attendee"
+                   :step="selectAttendeeStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, selectAttendeeStep)">
+            <SelectAttendeePanel v-model:attendeeNumber="selectAttendeeNumber"
+                                 :attendee="selectAttendeeData" />
+        </StepPanel>
+
+        <StepPanel title="Save Attendance"
+                   :step="saveAttendanceStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, saveAttendanceStep)">
+            <SaveAttendancePanel v-model:abilityLevelNumber="saveAttendanceAbilityLevelNumber"
+                                 v-model:areaNumber="saveAttendanceAreaNumber"
+                                 v-model:groupNumber="saveAttendanceGroupNumber"
+                                 v-model:locationNumber="saveAttendanceLocationNumber"
+                                 v-model:scheduleNumber="saveAttendanceScheduleNumber"
+                                 v-model:isPending="saveAttendanceIsPending"
+                                 :result="saveAttendanceData" />
+        </StepPanel>
+
+        <StepPanel title="Confirm Attendance"
+                   :step="confirmAttendanceStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, confirmAttendanceStep)">
+            <ConfirmAttendancePanel :result="confirmAttendanceData" />
+        </StepPanel>
+    </Panel>
+</template>
+
+<style scoped></style>
+
+<script setup lang="ts">
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
+    import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
+    import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
+    import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
+    import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
+    import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesOptionsBag";
+    import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
+    import { SaveAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceOptionsBag";
+    import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceResponseBag";
+    import { ConfirmAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceOptionsBag";
+    import { ConfirmAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceResponseBag";
+    import { CheckInSimulatorOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInSimulator/checkInSimulatorOptionsBag";
+    import { computed, ref, watch } from "vue";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { CheckInStep, Configuration, SimulatorNoteKey, bencharkThisStepAction, benchmarkToHereAction, executeStepAction } from "./CheckInSimulator/utils.partial";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { Guid } from "@Obsidian/Types";
+    import ConfigurationPanel from "./CheckInSimulator/configurationPanel.partial.obs";
+    import StepPanel from "./CheckInSimulator/stepPanel.partial.obs";
+    import SelectAttendeePanel from "./CheckInSimulator/selectAttendeePanel.partial.obs";
+    import FamilySearchPanel from "./CheckInSimulator/familySearchPanel.partial.obs";
+    import SelectFamilyPanel from "./CheckInSimulator/selectFamilyPanel.partial.obs";
+    import SaveAttendancePanel from "./CheckInSimulator/saveAttendancePanel.partial.obs";
+    import ConfirmAttendancePanel from "./CheckInSimulator/confirmAttendancePanel.partial.obs";
+    import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
+    import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+
+    const config = useConfigurationValues<CheckInSimulatorOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    // #region Values
+
+    const configuration = ref<Configuration>({});
+    let sessionGuid: Guid = newGuid();
+    let isAttendanceClean: boolean = false;
+    let benchmarkNoteKey: Guid | null = null;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * All selected area unique identifiers.
+     */
+    const areaIds = computed((): string[] => {
+        return [
+            ...configuration.value.primaryAreaIds ?? [],
+            ...configuration.value.secondaryAreaIds ?? []
+        ];
+    });
+
+    /**
+     * Determines if we have all the basic configuration data required for
+     * any step to function.
+     */
+    const isConfigurationReady = computed((): boolean => {
+        return !!configuration.value.templateId && !!configuration.value.kioskId;
+    });
+
+    /**
+     * Determines if we have enough information in the configuration to
+     * run benchmark tests.
+     */
+    const isBenchmarkReady = computed((): boolean => {
+        return (configuration.value.benchmarkIterations ?? 0) > 0
+            || (configuration.value.benchmarkDuration ?? 0) > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Saves the state of the UI to the URL.
+     */
+    function saveState(): void {
+        const url = new URL(location.href);
+
+        if (familySearchTerm.value) {
+            url.searchParams.set("fsTerm", familySearchTerm.value);
+        }
+        else {
+            url.searchParams.delete("fsTerm");
+        }
+
+        if (familySearchType.value && familySearchType.value !== FamilySearchMode.PhoneNumber.toString()) {
+            url.searchParams.set("fsType", familySearchType.value);
+        }
+        else {
+            url.searchParams.delete("fsType");
+        }
+
+        if (selectFamilyNumber.value !== 1) {
+            url.searchParams.set("sfNumber", selectFamilyNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("sfNumber");
+        }
+
+        if (selectAttendeeNumber.value !== 1) {
+            url.searchParams.set("saNumber", selectAttendeeNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saNumber");
+        }
+
+        if (!saveAttendanceIsPending.value) {
+            url.searchParams.set("saPending", "false");
+        }
+        else {
+            url.searchParams.delete("saPending");
+        }
+
+        if (saveAttendanceAbilityLevelNumber.value !== 0) {
+            url.searchParams.set("saAbilityLevel", saveAttendanceAbilityLevelNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saAbilityLevel");
+        }
+
+        if (saveAttendanceAreaNumber.value !== 1) {
+            url.searchParams.set("saArea", saveAttendanceAreaNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saArea");
+        }
+
+        if (saveAttendanceGroupNumber.value !== 1) {
+            url.searchParams.set("saGroup", saveAttendanceGroupNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saGroup");
+        }
+
+        if (saveAttendanceLocationNumber.value !== 1) {
+            url.searchParams.set("saLocation", saveAttendanceLocationNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saLocation");
+        }
+
+        if (saveAttendanceScheduleNumber.value !== 1) {
+            url.searchParams.set("saSchedule", saveAttendanceScheduleNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saSchedule");
+        }
+
+        if (window.location.href != url.href) {
+            history.replaceState(undefined, "", url);
+        }
+    }
+
+    /**
+     * Restores the UI state from the URL.
+     */
+    function restoreState(): void {
+        const originalUrl = new URL(location.href);
+
+        familySearchTerm.value = originalUrl.searchParams.get("fsTerm") ?? "";
+        familySearchType.value = originalUrl.searchParams.get("fsType") ?? "";
+        selectFamilyNumber.value = toNumberOrNull(originalUrl.searchParams.get("sfNumber")) ?? 1;
+        selectAttendeeNumber.value = toNumberOrNull(originalUrl.searchParams.get("saNumber")) ?? 1;
+        saveAttendanceIsPending.value = asBooleanOrNull(originalUrl.searchParams.get("saPending")) ?? true;
+        saveAttendanceAbilityLevelNumber.value = toNumberOrNull(originalUrl.searchParams.get("saAbilityLevel")) ?? 0;
+        saveAttendanceAreaNumber.value = toNumberOrNull(originalUrl.searchParams.get("saArea")) ?? 1;
+        saveAttendanceGroupNumber.value = toNumberOrNull(originalUrl.searchParams.get("saGroup")) ?? 1;
+        saveAttendanceLocationNumber.value = toNumberOrNull(originalUrl.searchParams.get("saLocation")) ?? 1;
+        saveAttendanceScheduleNumber.value = toNumberOrNull(originalUrl.searchParams.get("saSchedule")) ?? 1;
+    }
+
+    /**
+     * Executes the specified action on the step.
+     *
+     * @param action The name of the action from the split button.
+     * @param step The step to execute the action on.
+     */
+    async function executeAction(action: string, step: CheckInStep): Promise<void> {
+        const shouldDeleteAttendance = (action === benchmarkToHereAction.value || action === bencharkThisStepAction.value)
+            && (step === saveAttendanceStep || step === confirmAttendanceStep);
+
+        if (shouldDeleteAttendance) {
+            // If we are starting a new benchmark execution then generate
+            benchmarkNoteKey = newGuid();
+        }
+        else {
+            benchmarkNoteKey = null;
+        }
+
+        await executeStepAction(action,
+            step,
+            configuration.value.benchmarkIterations,
+            configuration.value.benchmarkDuration);
+
+        if (shouldDeleteAttendance && benchmarkNoteKey) {
+            // Delete just the stuff we created.
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
+
+            benchmarkNoteKey = null;
+        }
+    }
+
+    /**
+     * Deletes todays simulated attendance data for a benchmark run.
+     */
+    async function deleteBenchmarkAttendance(batch: Guid): Promise<void> {
+        if (isAttendanceClean && batch !== null) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("DeleteSimulatedAttendance", {
+            batch
+        });
+
+        if (result.isSuccess && result.data) {
+            isAttendanceClean = true;
+        }
+        else {
+            throw new Error(result.errorMessage || "Unknown error trying to delete attendance.");
+        }
+    }
+
+    // #endregion
+
+    // #region Family Search
+
+    const familySearchTerm = ref("");
+    const familySearchType = ref("");
+    const familySearchStep = new CheckInStep(executeFamilySearchStep, undefined,
+        () => isConfigurationReady.value && !!familySearchTerm.value);
+    const familySearchData = ref<FamilyBag[]>();
+
+    /**
+     * Executes the family search process.
+     */
+    async function executeFamilySearchStep(): Promise<void> {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
+            throw new Error("Invalid configuration data.");
+        }
+
+        const request: SearchForFamiliesOptionsBag = {
+            configurationTemplateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
+            prioritizeKioskCampus: false,
+            searchTerm: familySearchTerm.value,
+            searchType: <FamilySearchMode>toNumber(familySearchType.value)
+        };
+
+        const response = await http.post<SearchForFamiliesResponseBag>("/api/v2/checkin/SearchForFamilies", undefined, request);
+
+        if (response.isSuccess && response.data?.families) {
+            familySearchData.value = response.data.families;
+        }
+        else {
+            familySearchData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // #region Select Family
+
+    const selectFamilyStep = new CheckInStep(executeSelectFamilyStep, familySearchStep,
+        () => !!familySearchData.value);
+    const selectFamilyNumber = ref(1);
+    const selectFamilyData = ref<FamilyMembersResponseBag>();
+
+    /**
+     * Executes the select family process.
+     */
+    async function executeSelectFamilyStep(): Promise<void> {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
+            throw new Error("Invalid configuration data.");
+        }
+
+        if (!familySearchData.value || selectFamilyNumber.value > familySearchData.value.length) {
+            throw new Error("Invalid family selected.");
+        }
+
+        if (benchmarkNoteKey !== null) {
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
+        }
+
+        const request: FamilyMembersOptionsBag = {
+            configurationTemplateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
+            areaIds: areaIds.value,
+            familyId: familySearchData.value[selectFamilyNumber.value - 1].id
+        };
+
+        const response = await http.post<FamilyMembersResponseBag>("/api/v2/checkin/FamilyMembers", undefined, request);
+
+        if (response.isSuccess && response.data) {
+            if (!selectFamilyData.value || selectFamilyData.value.familyId !== response.data.familyId) {
+                sessionGuid = newGuid();
+            }
+
+            selectFamilyData.value = response.data;
+        }
+        else {
+            selectFamilyData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // #region Select Attendee
+
+    const selectAttendeeStep = new CheckInStep(executeSelectAttendeeStep, selectFamilyStep,
+        () => !!selectFamilyData.value);
+    const selectAttendeeNumber = ref(1);
+    const selectAttendeeData = ref<AttendeeOpportunitiesResponseBag>();
+
+    /**
+     * Executes the select attendee process.
+     */
+    async function executeSelectAttendeeStep(): Promise<void> {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
+            throw new Error("Invalid configuration data.");
+        }
+
+        if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
+            throw new Error("Invalid attendee selected.");
+        }
+
+        if (benchmarkNoteKey !== null) {
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
+        }
+
+        const request: AttendeeOpportunitiesOptionsBag = {
+            configurationTemplateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
+            areaIds: areaIds.value,
+            familyId: selectFamilyData.value.familyId,
+            personId: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.id ?? ""
+        };
+
+        const response = await http.post<AttendeeOpportunitiesResponseBag>("/api/v2/checkin/AttendeeOpportunities", undefined, request);
+
+        if (response.isSuccess && response.data) {
+            selectAttendeeData.value = response.data;
+        }
+        else {
+            selectFamilyData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // #region Save Attendance
+
+    const saveAttendanceStep = new CheckInStep(executeSaveAttendanceStep, selectAttendeeStep,
+        () => !!selectAttendeeData.value);
+    const saveAttendanceAbilityLevelNumber = ref(0);
+    const saveAttendanceAreaNumber = ref(1);
+    const saveAttendanceGroupNumber = ref(1);
+    const saveAttendanceLocationNumber = ref(1);
+    const saveAttendanceScheduleNumber = ref(1);
+    const saveAttendanceIsPending = ref(true);
+    const saveAttendanceData = ref<CheckInResultBag>();
+
+    /**
+     * Executes the save attendance process.
+     */
+    async function executeSaveAttendanceStep(): Promise<void> {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
+            throw new Error("Invalid configuration data.");
+        }
+
+        if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
+            throw new Error("Invalid attendee selected.");
+        }
+
+        if (benchmarkNoteKey !== null) {
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
+        }
+
+        if (!selectAttendeeData.value?.opportunities
+            || !selectAttendeeData.value.opportunities.abilityLevels
+            || !selectAttendeeData.value.opportunities.areas
+            || !selectAttendeeData.value.opportunities.groups
+            || !selectAttendeeData.value.opportunities.locations
+            || !selectAttendeeData.value.opportunities.schedules) {
+            throw new Error("Invalid attendee opportunities.");
+        }
+
+        if (saveAttendanceAbilityLevelNumber.value > selectAttendeeData.value.opportunities.abilityLevels.length) {
+            throw new Error("Invalid ability level selected.");
+        }
+
+        if (saveAttendanceAreaNumber.value > selectAttendeeData.value.opportunities.areas.length) {
+            throw new Error("Invalid area selected.");
+        }
+
+        if (saveAttendanceGroupNumber.value > selectAttendeeData.value.opportunities.groups.length) {
+            throw new Error("Invalid group selected.");
+        }
+
+        if (saveAttendanceLocationNumber.value > selectAttendeeData.value.opportunities.locations.length) {
+            throw new Error("Invalid location selected.");
+        }
+
+        if (saveAttendanceScheduleNumber.value > selectAttendeeData.value.opportunities.schedules.length) {
+            throw new Error("Invalid schedule selected.");
+        }
+
+        const selection: OpportunitySelectionBag = {
+            area: {
+                id: selectAttendeeData.value.opportunities.areas[saveAttendanceAreaNumber.value - 1].id
+            },
+            group: {
+                id: selectAttendeeData.value.opportunities.groups[saveAttendanceGroupNumber.value - 1].id
+            },
+            location: {
+                id: selectAttendeeData.value.opportunities.locations[saveAttendanceLocationNumber.value - 1].id
+            },
+            schedule: {
+                id: selectAttendeeData.value.opportunities.schedules[saveAttendanceScheduleNumber.value - 1].id
+            }
+        };
+
+        if (saveAttendanceAbilityLevelNumber.value > 0) {
+            selection.abilityLevel = {
+                id: selectAttendeeData.value.opportunities.abilityLevels[saveAttendanceAbilityLevelNumber.value - 1].id
+            };
+        }
+
+        const request: SaveAttendanceOptionsBag = {
+            templateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
+            session: {
+                guid: sessionGuid,
+                familyId: selectFamilyData.value.familyId,
+                isPending: saveAttendanceIsPending.value,
+                searchMode: <FamilySearchMode>toNumber(familySearchType.value),
+                searchTerm: familySearchTerm.value
+            },
+            requests: [
+                {
+                    personId: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.id ?? "",
+                    selection,
+                    note: benchmarkNoteKey !== null
+                        ? `${SimulatorNoteKey} ${benchmarkNoteKey}`
+                        : SimulatorNoteKey
+                }
+            ]
+        };
+
+        const response = await http.post<SaveAttendanceResponseBag>("/api/v2/checkin/SaveAttendance", undefined, request);
+
+        if (response.isSuccess && response.data) {
+            saveAttendanceData.value = response.data;
+            isAttendanceClean = false;
+        }
+        else {
+            saveAttendanceData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // #region Confirm Attendance
+
+    const confirmAttendanceStep = new CheckInStep(executeConfirmAttendanceStep, saveAttendanceStep);
+    const confirmAttendanceData = ref<CheckInResultBag>();
+
+    /**
+     * Executes the save attendance process.
+     */
+    async function executeConfirmAttendanceStep(): Promise<void> {
+        if (!configuration.value.templateId) {
+            throw new Error("Invalid configuration data.");
+        }
+
+        const request: ConfirmAttendanceOptionsBag = {
+            templateId: configuration.value.templateId,
+            sessionGuid: sessionGuid
+        };
+
+        const response = await http.post<ConfirmAttendanceResponseBag>("/api/v2/checkin/ConfirmAttendance", undefined, request);
+
+        if (response.isSuccess && response.data) {
+            confirmAttendanceData.value = response.data;
+        }
+        else {
+            confirmAttendanceData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // Watch for changes to values that require a URL update.
+    const urlUpdateWatchees = [
+        familySearchTerm,
+        familySearchType,
+        selectFamilyNumber,
+        selectAttendeeNumber,
+        saveAttendanceAbilityLevelNumber,
+        saveAttendanceAreaNumber,
+        saveAttendanceGroupNumber,
+        saveAttendanceLocationNumber,
+        saveAttendanceScheduleNumber,
+        saveAttendanceIsPending
+    ];
+
+    watch(urlUpdateWatchees, () => {
+        saveState();
+    });
+
+    restoreState();
+</script>

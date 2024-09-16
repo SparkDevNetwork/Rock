@@ -48,8 +48,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveLegacyProviderDocument" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveLegacyProviderDocument_Click" />
-                        <asp:LinkButton ID="btnCancelLegacyProviderDocument" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelLegacyProviderDocument_Click" />
+                        <asp:LinkButton ID="btnSaveLegacyProviderDocument" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveLegacyProviderDocument_Click" />
+                        <asp:LinkButton ID="btnCancelLegacyProviderDocument" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelLegacyProviderDocument_Click" />
                         <asp:LinkButton ID="btnSendLegacyProviderDocument" runat="server" Text="Send" CssClass="btn btn-default btn-sm pull-right" CausesValidation="false" OnClick="btnSendLegacyProviderDocument_Click" Visible="false" />
                     </div>
 
@@ -81,7 +81,7 @@
                     <Rock:PDFViewer ID="pdfSignatureDocument" runat="server" ViewerHeight="900px" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEditLegacyProviderDocument" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEditLegacyProviderDocument_Click" />
+                        <asp:LinkButton ID="btnEditLegacyProviderDocument" runat="server" data-shortcut-key="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEditLegacyProviderDocument_Click" />
                     </div>
 
                 </fieldset>

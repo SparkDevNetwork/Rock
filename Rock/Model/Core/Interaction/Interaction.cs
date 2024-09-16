@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -266,6 +265,36 @@ namespace Rock.Model
         [DataMember]
         public double? InteractionTimeToServe { get; set; }
 
+        /// <summary>
+        /// Gets or sets the UTM Source identifier.
+        /// These values are associated with the Defined Type "UTM Source".
+        /// </summary>
+        /// <value>
+        /// The UTM Source Defined Value Id.
+        /// </value>
+        [DataMember]
+        public int? SourceValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the UTM Medium identifier.
+        /// These values are associated with the Defined Type "UTM Medium".
+        /// </summary>
+        /// <value>
+        /// The UTM Medium Defined Value Id.
+        /// </value>
+        [DataMember]
+        public int? MediumValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the UTM Campaign identifier.
+        /// These values are associated with the Defined Type "UTM Campaign".
+        /// </summary>
+        /// <value>
+        /// The UTM Campaign Defined Value Id.
+        /// </value>
+        [DataMember]
+        public int? CampaignValueId { get; set; }
+
         #endregion
 
         #region Campaign Meta fields
@@ -382,57 +411,6 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual PersonalDevice PersonalDevice { get; set; }
-
-        /// <summary>
-        /// Sets the utm fields from URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        public void SetUTMFieldsFromURL( string url )
-        {
-            if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
-            {
-                try
-                {
-                    NameValueCollection urlParams;
-
-                    if ( Uri.TryCreate( url, UriKind.Absolute, out var uri ) )
-                    {
-                        urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
-                    }
-                    else if ( url.IndexOf( "?" ) >= 0 )
-                    {
-                        // If it's not a full URI but has a "?" character then
-                        // assume it's a special format from an external application
-                        // and just take everything after the "?".
-                        urlParams = System.Web.HttpUtility.ParseQueryString( url.Substring( url.IndexOf( "?" ) + 1 ) );
-                    }
-                    else
-                    {
-                        // Assume it's just a plain query string already.
-                        urlParams = System.Web.HttpUtility.ParseQueryString( url );
-                    }
-
-                    this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
-                    this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
-                    this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
-                    this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
-                    this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( new Exception( $"Error parsing '{url}' to UTM fields.", ex ), null );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the interaction data (for example, the URL of the request), and obfuscates sensitive data that might be in the interactionData
-        /// </summary>
-        /// <param name="interactionData">The interaction data.</param>
-        public void SetInteractionData( string interactionData )
-        {
-            this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
-        }
 
         /// <summary>
         /// Gets or sets the interaction source date.

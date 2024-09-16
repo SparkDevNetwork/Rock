@@ -35,7 +35,8 @@
             <TextBox v-model="body"
                      label="Email Body"
                      textMode="multiline"
-                     rules="required" />
+                     rules="required"
+                     allowHtml />
 
             <InlineCheckbox v-model="appendOrgHeaderAndFooter"
                             label="Append Organization Header and Footer" />

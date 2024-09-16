@@ -388,6 +388,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
+            writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( "class", "form-control-group " + this.FormGroupCssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             if ( !GroupTypeId.HasValue )
             {
                 _ddlGroupType.RenderControl( writer );
@@ -399,6 +404,8 @@ namespace Rock.Web.UI.Controls
             }
 
             _ddlGroupRole.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
 
         /// <summary>

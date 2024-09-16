@@ -219,9 +219,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
+            writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
+          
             _ddlLocations.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );
@@ -240,7 +241,7 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             Controls.Clear();
-
+         
             _ddlLocations = new RockDropDownList
             {
                 ID = $"{this.ClientID}{nameof( _ddlLocations )}",

@@ -19,12 +19,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Rock.Apps.CheckScannerUtility.Models;
 using Rock.Client;
 using Rock.Net;
+using Rock;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -33,13 +35,14 @@ namespace Rock.Apps.CheckScannerUtility
     /// </summary>
     public partial class BatchItemDetailPage : System.Windows.Controls.Page
     {
+        private bool _disablePredictableIds;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchItemDetailPage"/> class.
         /// </summary>
         public BatchItemDetailPage()
         {
             InitializeComponent();
-
         }
 
         /// <summary>
@@ -76,8 +79,9 @@ namespace Rock.Apps.CheckScannerUtility
             RockRestClient client = new RockRestClient( config.RockBaseUrl );
             client.Login( config.Username, config.Password );
 
+            _disablePredictableIds = GetDisablePredictableIdsSetting( client );
 
-            if (config.CaptureAmountOnScan )
+            if ( config.CaptureAmountOnScan )
             {
                 spAccounts.Visibility = Visibility.Visible;
                 Grid.SetColumn( spCheckImage, 1 );
@@ -96,7 +100,9 @@ namespace Rock.Apps.CheckScannerUtility
             if ( images.Count > 0 )
             {
                 imgScannedItemNone.Visibility = Visibility.Collapsed;
-                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[0].BinaryFileId );
+                var idOrGuid = GetIdOrGuid( client, images[0].BinaryFileId );
+                var imageUrl = $"{config.RockBaseUrl.EnsureTrailingForwardslash()}GetImage.ashx?{( _disablePredictableIds ? "guid" : "id" )}={idOrGuid}";
+
                 var imageBytes = client.DownloadData( imageUrl );
 
                 BitmapImage bitmapImage = new BitmapImage();
@@ -115,7 +121,9 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( images.Count > 1 )
             {
-                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[1].BinaryFileId );
+                var idOrGuid = GetIdOrGuid( client, images[1].BinaryFileId );
+                var imageUrl = $"{config.RockBaseUrl.EnsureTrailingForwardslash()}GetImage.ashx?{( _disablePredictableIds ? "guid" : "id" )}={idOrGuid}";
+
                 var imageBytes = client.DownloadData( imageUrl );
 
                 BitmapImage bitmapImage = new BitmapImage();
@@ -201,6 +209,51 @@ namespace Rock.Apps.CheckScannerUtility
             this.lblTotals.Content = sum.ToString( "C" );
         }
 
+        private bool GetDisablePredictableIdsSetting( RockRestClient client )
+        {
+            try
+            {
+                var filters = new List<string>
+                {
+                    "EntityTypeId eq null",
+                    "EntityTypeQualifierColumn eq 'SystemSetting'",
+                    "EntityTypeQualifierValue eq ''",
+                    "Key eq 'core_RockSecuritySettings'"
+                };
+
+                var filterString = string.Join( " and ", filters );
+
+                var securitySettings = client.GetData<List<Rock.Client.Attribute>>( $"api/Attributes?$filter={filterString}" );
+                var setting = securitySettings.FirstOrDefault();
+                if ( setting != null )
+                {
+                    string defaultValue = setting?.DefaultValue;
+                    if ( !string.IsNullOrEmpty( defaultValue ) )
+                    {
+                        var regex = new System.Text.RegularExpressions.Regex( "\"DisablePredictableIds\"\\s*:\\s*true", System.Text.RegularExpressions.RegexOptions.IgnoreCase );
+
+                        _disablePredictableIds = regex.IsMatch( defaultValue );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // Log the exception
+                App.LogException( ex );
+            }
+            return _disablePredictableIds;
+        }
+
+        private string GetIdOrGuid( RockRestClient client, int binaryFileId )
+        {
+            if ( _disablePredictableIds )
+            {
+                var binaryFile = client.GetData<BinaryFile>( $"api/BinaryFiles/{binaryFileId}" );
+                return binaryFile?.Guid.ToString();
+            }
+            return binaryFileId.ToString();
+        }
+
         /// <summary>
         /// Handles the LostKeyboardFocus event of the TbAccountDetailAmount control.
         /// </summary>
@@ -238,7 +291,7 @@ namespace Rock.Apps.CheckScannerUtility
             var displayFinancialTransactionDetail = displayFinancialTransactionDetails.FirstOrDefault( a => a.Guid == editingDisplayFinancialTransaction.Guid );
             var otherDetailTotalAmounts = displayFinancialTransactionDetails.Where( a => a.Guid != editingDisplayFinancialTransaction.Guid && a.Amount.HasValue ).Sum( a => a.Amount.Value );
             var editingAmount = tbAccountDetailAmount.Text.AsDecimalOrNull();
-            var totalDetailAmounts = otherDetailTotalAmounts + (editingAmount ?? 0.00M);
+            var totalDetailAmounts = otherDetailTotalAmounts + ( editingAmount ?? 0.00M );
 
             lblTotals.Content = totalDetailAmounts.ToString( "C" );
         }
@@ -276,10 +329,10 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( databaseFinancialTransactionDetail?.Amount != displayFinancialTransactionDetail.Amount )
                 {
-                    
+
                     databaseFinancialTransactionDetail.Amount = displayFinancialTransactionDetail.Amount ?? 0.00M;
 
-                    if ( databaseFinancialTransactionDetail.Id == 0  )
+                    if ( databaseFinancialTransactionDetail.Id == 0 )
                     {
                         if ( databaseFinancialTransactionDetail.Amount != 0.00M )
                         {

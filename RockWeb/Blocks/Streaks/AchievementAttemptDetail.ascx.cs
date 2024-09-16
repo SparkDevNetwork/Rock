@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void InitializeActionButtons()
         {
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'Are you sure?');", AchievementAttempt.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", AchievementAttempt.FriendlyTypeName );
         }
 
         /// <summary>

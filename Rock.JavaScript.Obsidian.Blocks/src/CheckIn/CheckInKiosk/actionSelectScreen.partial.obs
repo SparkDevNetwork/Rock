@@ -1,0 +1,128 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+            <div class="button-list">
+                <RockButton btnType="primary"
+                            class="checkout-button"
+                            @click="onCheckout">
+                    Checkout
+                </RockButton>
+
+                <RockButton btnType="default"
+                            class="check-in-button"
+                            @click="onCheckIn">
+                    Check In
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    let isSelectingValue = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.getCurrentFamily()?.name ?? "";
+    });
+
+    const subtitle = computed((): string => {
+        return "Select action";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Handles the click event for the checkout button.
+     */
+    async function onCheckout(): Promise<void> {
+        // Prevent tapping two different buttons.
+        if (isSelectingValue) {
+            return;
+        }
+
+        try {
+            isSelectingValue = true;
+
+            const newSession = await props.session.withCheckoutAction();
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isSelectingValue = false;
+        }
+    }
+
+    /**
+     * Handles the click event for the check-in button.
+     */
+     async function onCheckIn(): Promise<void> {
+        // Prevent tapping two different buttons.
+        if (isSelectingValue) {
+            return;
+        }
+
+        try {
+            isSelectingValue = true;
+
+            emit("next", await props.session.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isSelectingValue = false;
+        }
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

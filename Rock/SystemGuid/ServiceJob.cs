@@ -229,6 +229,32 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_161_CHOP_ACCOUNTENTRY_AND_LOGIN = "A65D26C1-229E-4198-B388-E269C3534BC0";
 
         /// <summary>
+        /// The Job to run Post v16.6 Data Migrations to update the newly
+        /// created TargetCount column on AchievementType.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_UPDATE_ACHIEVEMENTTYPE_TARGETCOUNT_COLUMN = "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5";
+
+        /// <summary>
+        /// The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX = "2B2E2C6F-0184-4797-9D39-E8FC700D9887";
+        
+        /// <summary>
+        /// The Job to run Post v16.6 Add CommunicationRecipient Index.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX = "48070B65-FC20-401F-B25F-8F4D13BA5F36";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop Shortened Link Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK = "8899363A-C52B-4D82-88C2-CA199D73E95C";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop 6 blocks Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS = "4B8A66B3-1D92-480C-B473-D066B64E72AD";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

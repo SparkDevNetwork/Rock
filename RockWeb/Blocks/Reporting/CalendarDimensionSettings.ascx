@@ -11,6 +11,8 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbGenerate" runat="server" Text="This will populate the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it." />
 
+                <Rock:NotificationBox ID="nbGenerateWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DatePicker ID="dpStartDate" runat="server" Label="Start Date" Required="true" />

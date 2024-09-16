@@ -1,0 +1,68 @@
+<template>
+    <DropDownList label="Icon"
+                  v-model="icon"
+                  :items="iconItems" />
+
+    <div class="form-group">
+        <RockLabel>Options</RockLabel>
+
+        <div class="control-wrapper">
+            <InlineCheckBox label="Invert Colors"
+                            v-model="isColorInverted" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { PropType, ref, watch } from "vue";
+    import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
+    const icon = ref<string>("");
+    const isColorInverted = ref(false);
+
+    const iconItems = blockConfig.icons ?? [];
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as IconFieldConfigurationBag;
+
+        icon.value = configuration.icon ?? "";
+        isColorInverted.value = asBoolean(configuration.isColorInverted);
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([icon, isColorInverted], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as IconFieldConfigurationBag;
+
+            fieldConfig.icon = icon.value;
+            fieldConfig.isColorInverted = isColorInverted.value ? "true" : "false";
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

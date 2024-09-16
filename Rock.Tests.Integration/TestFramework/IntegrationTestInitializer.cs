@@ -65,8 +65,7 @@ namespace Rock.Tests.Integration.TestFramework
             if ( ConfigurationManager.ConnectionStrings["RockContext"] != null )
             {
                 DatabaseTestsBase.IsContainersEnabled = false;
-                RockInstanceConfig.Database.SetConnectionString( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
-                RockInstanceConfig.SetDatabaseIsAvailable( true );
+                TestHelper.ConfigureRockApp( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
             }
 
             AddTestContextSettingsFromConfigurationFile( context );

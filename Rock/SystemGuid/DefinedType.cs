@@ -507,6 +507,26 @@ namespace Rock.SystemGuid
         public const string ADMINISTRATOR_CHECKLIST = "4BF34677-37E9-4E71-BD03-252B66C9373D";
 
         /// <summary>
+        /// List of different types of relationships and individual could have in their Peer Network.
+        /// </summary>
+        public const string PEER_NETWORK_RELATIONSHIP_TYPE = "F2E8E639-F16D-489D-AAFB-BE0133531E41";
+
+        /// <summary>
+        /// List of different sources from which website traffic may originate.
+        /// </summary>
+        public const string UTM_SOURCE = "3CFE43A9-5D0C-4BE4-B1EC-AFA06BBB7C32";
+
+        /// <summary>
+        /// List of different marketing or advertising mediums that may initiate website traffic.
+        /// </summary>
+        public const string UTM_MEDIUM = "31693856-8553-4321-A302-B84CF1D22BAB";
+
+        /// <summary>
+        /// List of different campaigns that may generate website traffic.
+        /// </summary>
+        public const string UTM_CAMPAIGN = "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete("Use FinancialStatementTemplate instead")]

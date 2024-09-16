@@ -31,7 +31,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tests.Integration.Modules.Core;
+using Rock.Tests.Integration.Core;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Transactions;
@@ -931,7 +931,7 @@ namespace Rock.Tests.Integration.Modules.Crm
 
             var personService = new PersonService( dataContext );
 
-            processor.CurrentPerson = new CoreModuleTestHelper( "" ).GetAdminPersonOrThrow( dataContext );
+            processor.CurrentPerson = CoreDataManager.Current.GetAdminPersonOrThrow( dataContext );
 
             // Add some well-known people.
             var personGuidList = GetWellKnownPeopleGuidList();

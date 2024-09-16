@@ -997,7 +997,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( item.Value.IsActive && item.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    mediums.AddOrIgnore( item.Value.EntityType.FriendlyName, item.Value.EntityType.Id );
+                    mediums.TryAdd( item.Value.EntityType.FriendlyName, item.Value.EntityType.Id );
                 }
             }
 

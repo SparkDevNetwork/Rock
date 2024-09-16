@@ -91,6 +91,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
 
         /// <summary>
         /// Gets or sets the amount to pay now.
+        /// <para>This is a separate amount from recurring payments configured in the <see cref="PaymentPlan"/>.</para>
         /// </summary>
         /// <value>
         /// The amount to pay now.
@@ -110,5 +111,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
             get => Registrar.AsRegistrarInfoOrNull();
             set => Registrar = value.AsRegistrarBagOrNull();
         }
+        
+        /// <summary>
+        /// Gets or sets the payment plan.
+        /// </summary>
+        /// <value>
+        /// The payment plan.
+        /// </value>
+        public RegistrationEntryCreatePaymentPlanRequestBag PaymentPlan { get; set; }
     }
 }

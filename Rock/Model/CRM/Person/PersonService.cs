@@ -256,6 +256,15 @@ namespace Rock.Model
                 }
             }
 
+            if ( !personQueryOptions.IncludeRestUsers )
+            {
+                int? recordTypeRestUserId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() );
+                if ( recordTypeRestUserId.HasValue )
+                {
+                    excludedPersonRecordTypeIds.Add( recordTypeRestUserId.Value );
+                }
+            }
+
             if ( excludedPersonRecordTypeIds.Any() )
             {
                 if ( excludedPersonRecordTypeIds.Count == 1 )
@@ -4207,7 +4216,7 @@ namespace Rock.Model
 
             foreach ( var key in preferences.GetKeys() )
             {
-                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+                prefs.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return prefs;
@@ -4653,16 +4662,16 @@ FROM (
             bool includeDeceased = true;
             bool includeArchived = false;
 
-            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            /* Determine people in security role groups with ElevatedSecurityLevel.Extreme */
             var groupMemberService = new GroupMemberService( rockContext );
-            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
+            var personIdsInGroupsWithExtremeSecurityLevelQuery = groupMemberService
                 .Queryable( includeDeceased, includeArchived )
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
                 .Select( gm => gm.PersonId );
 
-            /* Determine people in security role groups with ElevatedSecurityLevel.Low */
-            var personIdsInGroupsWithLowSecurityLevelQuery = groupMemberService
+            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
                 .Queryable( includeDeceased, includeArchived )
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
@@ -4721,16 +4730,18 @@ FROM (
                   - No Risk Items
 
                 Medium
-                  - Individual Has Login
+                  - one or more of the following -
+                    + Individual Has Login
 
                 High
                   - one or more of the following -
                     + Active Scheduled Financial Transaction (inactive are not viewable)
                     + Saved Payment Account
-                    + in a Security Role Marked w/ Low Elevated Security 
+                    + in a Security Role Marked w/ High Elevated Security
 
                 Extreme
-                  - in a Security Role marked w/ High Elevated Security Level 
+                  - one or more of the following -
+                    + in a Security Role marked w/ Extreme Elevated Security Level
              */
 
             // set up query as all person records regardless of Deceased, record type, etc
@@ -4745,9 +4756,9 @@ FROM (
             //  -- No Risk Items
             var personToSetAsAccountProtectionProfileLowQuery = personQuery.Where( p =>
                     !personIdsWithLoginsQuery.Contains( p.Id )
-                    && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
-                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.Low );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileLowQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Low } );
@@ -4757,27 +4768,27 @@ FROM (
             //  -- No other Risk items
             var personToSetAsAccountProtectionProfileMediumQuery = personQuery.Where( p =>
                     personIdsWithLoginsQuery.Contains( p.Id )
-                    && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
-                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.Medium );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileMediumQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Medium } );
 
-            // update the people that meet the AccountProtectionProfile.Medium criteria:
-            //   -- In a Low Security Role Group or Has Financial Data
-            //   -- Not in a High security role group
+            // update the people that meet the AccountProtectionProfile.High criteria:
+            //   -- In a High Security Role Group or Has Financial Data
+            //   -- Not in an Extreme security role group
             var personToSetAsAccountProtectionProfileHighQuery = personQuery.Where( p =>
-                    ( personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
-                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    ( personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.High );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileHighQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.High } );
 
             // update the people that meet the AccountProtectionProfile.Extreme criteria:
-            //   -- In a High security role group
+            //   -- In an Extreme security role group
             var personToSetAsAccountProtectionProfileExtremeQuery = personQuery.Where( p =>
-                personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                 && p.AccountProtectionProfile != AccountProtectionProfile.Extreme );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileExtremeQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Extreme } );

@@ -1090,8 +1090,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // If this person's statuses are already in view state, remove them so a
-            // refreshed collection will be added within the SetRequirementStatuses()
+            // If this person's group requirement statuses are already in view state, remove
+            // them so a refreshed collection will be added within the SetRequirementStatuses()
             // method below, for future postbacks.
             var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
             if ( this.GroupRequirementStatusesByPersonState.ContainsKey( personId ) )
@@ -1117,7 +1117,7 @@ namespace RockWeb.Blocks.Groups
 
             var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
 
-            // Try to pull this person's requirement statuses out of view state.
+            // Try to pull this person's group requirement statuses out of view state.
             this.GroupRequirementStatusesByPersonState.TryGetValue( personId, out var requirementStatuses );
 
             if ( requirementStatuses == null )
@@ -1134,16 +1134,17 @@ namespace RockWeb.Blocks.Groups
                         .Include( gm => gm.Person )
                         .FirstOrDefault( gm => gm.Id == groupMemberId );
 
-                    // If the member's persisted role matches the currently-selected role, get
-                    // their persisted statuses rather than recalculating them every time.
+                    // If the member's existing role matches the currently-selected role, try to get their
+                    // group requirement statuses from their existing group member requirements rather than
+                    // recalculating them every time.
                     if ( groupMember.GroupRoleId == selectedGroupRoleId.Value )
                     {
                         requirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
                     }
                 }
 
-                // If the person doesn't yet have any persisted statuses or their persisted group role
-                // doesn't match the currently-selected role, calculate the requirements on demand.
+                // If the person doesn't yet have any existing group member requirements or their existing
+                // role doesn't match the currently-selected role, calculate the requirements on demand.
                 if ( requirementStatuses?.Any() != true && personId > 0 )
                 {
                     requirementStatuses = group.PersonMeetsGroupRequirements( rockContext, personId, selectedGroupRoleId );

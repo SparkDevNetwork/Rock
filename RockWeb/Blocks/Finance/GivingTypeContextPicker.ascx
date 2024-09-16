@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <ul class="nav navbar-nav contextsetter givingtype-context-setter">
+        <ul id="btnGivingTypes" runat="server" class="nav navbar-nav contextsetter givingtype-context-setter">
             <li class="dropdown">
 
                 <div class="btn-group">
@@ -17,5 +17,10 @@
                 </div>
             </li>
         </ul>
+
+        <div class="nav navbar-nav contextsetter givingtype-context-setter">
+            <Rock:RockDropDownList runat="server" ID="ddlGivingTypes" Visible="false" OnSelectedIndexChanged="ddlGivingTypes_SelectedIndexChanged" AutoPostBack="true" />
+        </div>
+
     </ContentTemplate>
 </asp:UpdatePanel>

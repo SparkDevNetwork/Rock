@@ -37,6 +37,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Lava.Helpers;
@@ -3288,7 +3289,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = RockDateTime.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );
@@ -3651,11 +3652,11 @@ namespace Rock.Lava
 
             foreach ( var kvp in inputPageReference.Parameters )
             {
-                allParameters.AddOrIgnore( kvp.Key, kvp.Value );
+                allParameters.TryAdd( kvp.Key, kvp.Value );
             }
             foreach ( var nv in inputPageReference.QueryString.AllKeys )
             {
-                allParameters.AddOrIgnore( nv, inputPageReference.QueryString[nv] );
+                allParameters.TryAdd( nv, inputPageReference.QueryString[nv] );
             }
 
             // Add, remove or modify the target parameter.
@@ -3998,8 +3999,8 @@ namespace Rock.Lava
         public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
         {
             string inputString = input?.ToString();
-            var queryStringKey = "Id";
             var useFallbackUrl = false;
+            var queryStringKey = "Id";
 
             if ( !inputString.AsIntegerOrNull().HasValue )
             {
@@ -4052,12 +4053,103 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) : string.Empty;
 
-                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+                if ( queryStringKey == "Id" )
+                {
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions() );
+                }
+                else
+                {
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions() );
+                }
             }
 
-            return url;
+            return url ?? fallbackUrl ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Returns the image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="fallbackUrl"></param>
+        /// <param name="options"></param>
+        /// <returns>Returns the image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.</returns>
+        public static string AvatarUrl( object input, string fallbackUrl = null, string options = null )
+        {
+            string inputString = input?.ToString();
+            var useFallbackUrl = false;
+            var queryStringKey = "Id";
+
+            if ( !inputString.AsIntegerOrNull().HasValue )
+            {
+                queryStringKey = "Guid";
+
+                if ( !inputString.AsGuidOrNull().HasValue )
+                {
+                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    useFallbackUrl = true;
+                }
+            }
+
+            if ( useFallbackUrl )
+            {
+                return fallbackUrl ?? string.Empty;
+            }
+
+            var avatarOptions = new GetAvatarUrlOptions();
+
+            if ( !string.IsNullOrEmpty( options ) )
+            {
+                var optionParts = options.Split( ',' );
+                foreach ( var optionPart in optionParts )
+                {
+                    var optionKeyValue = optionPart.Split( '=' );
+                    if ( optionKeyValue.Length == 2 )
+                    {
+                        var optionKey = optionKeyValue[0].Trim();
+                        var optionValue = optionKeyValue[1].Trim();
+
+                        switch ( optionKey.ToLower() )
+                        {
+                            case "width":
+                                avatarOptions.Width = optionValue.AsIntegerOrNull();
+                                break;
+                            case "height":
+                                avatarOptions.Height = optionValue.AsIntegerOrNull();
+                                break;
+                            case "ageclassification":
+                                if ( Enum.TryParse<Rock.Model.AgeClassification>( optionValue, out var ageClassification ) )
+                                {
+                                    avatarOptions.AgeClassification = ageClassification;
+                                }
+                                break;
+                            case "text":
+                                avatarOptions.Text = optionValue;
+                                break;
+                            case "gender":
+                                if ( Enum.TryParse<Rock.Model.Gender>( optionValue, out var gender ) )
+                                {
+                                    avatarOptions.Gender = gender;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            string url = null;
+
+            if ( queryStringKey == "Id" )
+            {
+                url = FileUrlHelper.GetAvatarUrl( inputString.ToIntSafe(), avatarOptions );
+            }
+            else
+            {
+                url = FileUrlHelper.GetAvatarUrl( inputString.AsGuid(), avatarOptions );
+            }
+
+            return url ?? fallbackUrl ?? string.Empty;
         }
 
         /// <summary>
@@ -4071,31 +4163,31 @@ namespace Rock.Lava
 
             if ( valueName == "applicationdirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+                return RockApp.Current.HostingSettings.VirtualRootPath;
             }
             else if ( valueName == "isclustered" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+                return WebFarm.RockWebFarm.IsEnabled();
             }
             else if ( valueName == "machinename" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+                return RockApp.Current.HostingSettings.MachineName;
             }
             else if ( valueName == "physicaldirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+                return RockApp.Current.HostingSettings.WebRootPath;
             }
             else if ( valueName == "systemdatetime" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+                return RockDateTime.SystemDateTime;
             }
             else if ( valueName == "aspnetversion" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
+                return RockApp.Current.HostingSettings.DotNetVersion;
             }
             else if ( valueName == "lavaengine" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.LavaEngineName;
+                return RockApp.Current.GetCurrentLavaEngineName();
             }
 
             return $"Configuration setting \"{ input }\" is not available.";
@@ -4203,19 +4295,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Determines whether [contains] [the specified input].
+        /// Determines whether the input collection contains the specified value.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="containValue">The contain value.</param>
+        /// <param name="input">The input collection.</param>
+        /// <param name="containValue">The search value.</param>
         /// <returns>
-        ///   <c>true</c> if [contains] [the specified input]; otherwise, <c>false</c>.
+        ///   <c>true</c> if the input collection contains the specified value; otherwise, <c>false</c>.
         /// </returns>
         public static bool Contains( object input, object containValue )
         {
-            var inputList = ( input as IList );
-            if ( inputList != null )
+            if ( input == null || containValue == null )
             {
+                return false;
+            }
+
+            if ( input is IList inputList )
+            { 
                 return inputList.Contains( containValue );
+            }
+            else if ( input is IEnumerable<object> inputGenericEnumerable )
+            {
+                return inputGenericEnumerable.ToList().Contains( containValue );
+            }
+            else if ( input is IEnumerable inputEnumerable )
+            {
+                return inputEnumerable.Cast<object>().ToList().Contains( containValue );
             }
 
             return false;

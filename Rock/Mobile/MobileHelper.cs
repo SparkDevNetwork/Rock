@@ -30,6 +30,7 @@ using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
@@ -189,6 +190,7 @@ namespace Rock.Mobile
                 HomeAddress = GetMobileAddress( person.GetHomeLocation() ),
                 CampusGuid = person.GetCampus()?.Guid,
                 PersonAliasId = person.PrimaryAliasId.Value,
+                PersonAliasGuid = person.PrimaryAlias.Guid,
                 PhotoUrl = ( person.PhotoId.HasValue ? $"{baseUrl}{person.PhotoUrl}" : null ),
                 SecurityGroupGuids = roleGuids,
                 PersonalizationSegmentGuids = new List<Guid>(),
@@ -431,7 +433,10 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = $"{applicationRoot}/GetImage.ashx?Id={site.FavIconBinaryFileId.Value}";
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, new GetImageUrlOptions
+                {
+                    PublicAppRoot = applicationRoot
+                } );
             }
 
             //
@@ -581,8 +586,12 @@ namespace Rock.Mobile
         {
             foreach ( var page in pages )
             {
-                var additionalPageSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+                var additionalPageSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
+                var imageUrlOptions = new GetImageUrlOptions
+                {
+                    PublicAppRoot = applicationRoot
+                };
 
                 var mobilePage = new MobilePage
                 {
@@ -599,7 +608,7 @@ namespace Rock.Mobile
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconBinaryFileId.HasValue ? $"{applicationRoot}GetImage.ashx?Id={page.IconBinaryFileId.Value}" : null,
+                    IconUrl = page.IconBinaryFileId.HasValue ? FileUrlHelper.GetImageUrl( page.IconBinaryFileId.Value, imageUrlOptions ) : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,
@@ -608,7 +617,7 @@ namespace Rock.Mobile
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
                     ShowFullScreen = additionalPageSettings.ShowFullScreen,
                     AutoRefresh = additionalPageSettings.AutoRefresh,
-                    PageType = additionalPageSettings.PageType,
+                    PageType = additionalPageSettings.PageType.ToMobile(),
                     WebPageUrl = additionalPageSettings.WebPageUrl
                 };
 

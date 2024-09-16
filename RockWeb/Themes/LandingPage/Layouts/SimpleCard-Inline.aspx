@@ -10,7 +10,7 @@
     <Rock:Lava ID="HeaderImage" runat="server">
         {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
         {%- if headerImageId != '' -%}
-        <div class="hero hero-card has-overlay" style="background-image: url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500');">
+        <div class="hero hero-card has-overlay" style="background-image: url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500');">
         {%- else -%}
         <div class="hero hero-card">
         {%- endif -%}

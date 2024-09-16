@@ -156,6 +156,7 @@
     <Compile Include="Controllers\CodeGenerated\BenevolenceTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\CheckInLabelsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="Controllers\CodeGenerated\SnippetsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\SnippetTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\SystemPhoneNumbersController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ThemesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="Controllers\EntitySetsController.cs" />
@@ -188,7 +190,9 @@
     <Compile Include="Handler\RockHttpControllerSelector.cs" />
     <Compile Include="Handler\ServiceScopeHandler.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
+    <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
+    <Compile Include="v2\CheckInController.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
@@ -232,7 +236,7 @@
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\MediaAccountsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\MediaAccountsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaElementsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaFoldersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.CodeGenerated.cs" />

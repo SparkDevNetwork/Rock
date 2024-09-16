@@ -63,14 +63,14 @@
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
-    import { RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
+    import { PaymentPlanConfiguration, RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, OriginalFormFieldValues, ConfigurePaymentPlan } from "./RegistrationEntry/utils.partial";
     import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
     import { useStore } from "@Obsidian/PageState";
     import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { List } from "@Obsidian/Utility/linq";
     import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
@@ -150,12 +150,15 @@
         sessionExpirationDateMs: null,
         registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
         ownFamilyGuid: config.currentPersonFamilyGuid || newGuid(),
+        paymentPlan: null,
     });
     const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
         paidAmount: 0,
         remainingAmount: 0,
         minimumRemainingAmount: 0
     });
+    const wipPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
+    const finalPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
 
     // #endregion
 
@@ -380,6 +383,18 @@
 
     /** Gets the args needed for persisting the session. */
     function getRegistrationEntryBlockArgs(): RegistrationEntryArgsBag {
+        let {
+            paymentPlan
+        } = registrationEntryState.value;
+
+        if (!paymentPlan?.amountPerPayment
+            || !paymentPlan?.transactionFrequencyGuid
+            || !paymentPlan?.numberOfPayments
+            || !paymentPlan?.startDate) {
+            // One of the required payment plan fields is missing, so clear the payment plan.
+            paymentPlan = null;
+        }
+
         return {
             registrationSessionGuid: registrationEntryState.value.registrationSessionGuid,
             gatewayToken: registrationEntryState.value.gatewayToken,
@@ -390,6 +405,7 @@
             registrants: registrationEntryState.value.registrants,
             amountToPayNow: registrationEntryState.value.amountToPayToday,
             registrationGuid: config.session?.registrationGuid || null,
+            paymentPlan,
         };
     }
 
@@ -483,7 +499,11 @@
     }
 
     function onSummaryNext(): void {
-        if (registrationEntryState.value.amountToPayToday) {
+        if (registrationEntryState.value.amountToPayToday
+            || (
+                registrationEntryState.value.paymentPlan?.amountPerPayment
+                && registrationEntryState.value.paymentPlan?.numberOfPayments)
+        ) {
             registrationEntryState.value.currentStep = Step.Payment;
         }
         else {
@@ -542,6 +562,12 @@
     provide(CurrentRegistrationEntryState, registrationEntryState.value);
     provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
     provide(PersistSession, persistSession);
+
+    // Provide the same dependencies with simple string keys for dependent plugins.
+    provide("registrationEntryState", registrationEntryState.value);
+    provide("getRegistrationEntryBlockArgs", getRegistrationEntryBlockArgs);
+    provide("persistSession", getRegistrationEntryBlockArgs);
+
     provide(RegistrationCostSummary, {
         // Provide a read-only version of the registrationCostSummary so
         // child components can only use the updateRegistrationCostSummary() to update
@@ -562,11 +588,18 @@
             };
         }
     });
+    provide(ConfigurePaymentPlan, {
+        wipPaymentPlanConfiguration,
+        finalPaymentPlanConfiguration,
+    });
+    provide(OriginalFormFieldValues, ref<Record<string, Record<string, unknown>>>({}));
 
     onMounted(() => {
         if (config.loginRequiredToRegister && !currentPerson.value) {
             store.redirectToLogin();
         }
     });
+
+    onConfigurationValuesChanged(useReloadBlock());
 
 </script>

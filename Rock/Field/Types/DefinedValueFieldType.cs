@@ -21,6 +21,8 @@ using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Microsoft.ServiceBus.Messaging;
+
 #endif
 
 using Rock.Attribute;
@@ -155,32 +157,36 @@ namespace Rock.Field.Types
             }
 
             // Get the list of values that can be selected.
-            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
+            if ( definedType != null )
             {
-                if ( definedType != null )
-                {
-                    int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
-                        ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
-                        : null;
+                int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
+                    ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
+                    : null;
 
-                    var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( includeInactive || v.IsActive )
+                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) );
 
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
-                        .Where( v => ( includeInactive || v.IsActive )
-                            && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
-                        .OrderBy( v => v.Order )
-                        .Select( v => new
-                        {
-                            Value = v.Guid,
-                            Text = v.Value,
-                            v.Description
-                        } )
-                        .ToCamelCaseJson( false, true );
-                }
-                else
+                if ( usage == ConfigurationValueUsage.View )
                 {
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
+                    var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                    definedValues = definedValues.Where( dv => selectedValues.Contains( dv.Guid ) );
                 }
+
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new
+                    {
+                        Value = v.Guid,
+                        Text = v.Value,
+                        v.Description
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
             }
 
             return publicConfigurationValues;
@@ -408,36 +414,6 @@ namespace Rock.Field.Types
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
             var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
             return string.Format( format, titleJs );
-        }
-
-        /// <inheritdoc/>
-        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateValue.FromJsonOrNull<List<string>>();
-
-            if ( values?.Count == 2 )
-            {
-                return new ComparisonValue
-                {
-                    ComparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains ),
-                    Value = values[1]
-                };
-            }
-            else if ( values?.Count == 1 )
-            {
-                return new ComparisonValue
-                {
-                    ComparisonType = ComparisonType.Contains,
-                    Value = values[0]
-                };
-            }
-            else
-            {
-                return new ComparisonValue
-                {
-                    Value = string.Empty
-                };
-            }
         }
 
         /// <summary>

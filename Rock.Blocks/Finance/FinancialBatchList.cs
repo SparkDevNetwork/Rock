@@ -60,6 +60,12 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.ShowAccountsColumn,
         Order = 2 )]
 
+    [BooleanField( "Show Transaction Count Column",
+        Description = "Should the transaction count column be displayed.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowTransactionCountColumn,
+        Order = 3 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "a68dd358-1392-475f-92b4-dea544ff219e" )]
     [Rock.SystemGuid.BlockTypeGuid( "f1950524-e959-440f-9cf6-1a8b9b7527d8" )]
     [CustomizedGrid]
@@ -74,6 +80,8 @@ namespace Rock.Blocks.Finance
             public const string ShowAccountingSystemCode = "ShowAccountingCode";
 
             public const string ShowAccountsColumn = "ShowAccountsColumn";
+
+            public const string ShowTransactionCountColumn = "ShowTransactionCountColumn";
         }
 
         private static class NavigationUrlKey
@@ -189,6 +197,7 @@ namespace Rock.Blocks.Finance
 
             options.ShowAccountingSystemCodeColumn = GetAttributeValue( AttributeKey.ShowAccountingSystemCode ).AsBoolean();
             options.ShowAccountsColumn = GetAttributeValue( AttributeKey.ShowAccountsColumn ).AsBoolean();
+            options.ShowTransactionCountColumn = GetAttributeValue( AttributeKey.ShowTransactionCountColumn ).AsBoolean();
 
             options.TransactionTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )
                 .DefinedValues
@@ -401,6 +410,7 @@ namespace Rock.Blocks.Finance
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.Batch.IdKey )
                 .AddField( "id", a => a.Batch.Id )
+                .AddTextField( "batchId", a => $"#{a.Batch.Id}" )
                 .AddTextField( "name", a => a.Batch.Name )
                 .AddTextField( "note", a => a.Batch.Note )
                 .AddField( "accounts", a => a.Accounts )
@@ -413,8 +423,8 @@ namespace Rock.Blocks.Finance
                 .AddField( "remoteSettlementAmount", a => a.Batch.RemoteSettlementAmount )
                 .AddField( "remoteSettlementKey", a => a.Batch.RemoteSettlementBatchKey )
                 .AddTextField( "remoteSettlementUrl", a => a.Batch.RemoteSettlementBatchUrl )
-                .AddField( "transactionCount", a => a.TransactionCount )
-                .AddAttributeFieldsFrom( a => a.Batch, _gridAttributes.Value );
+                .AddAttributeFieldsFrom( a => a.Batch, _gridAttributes.Value )
+                .AddField( "transactionCount", a => a.TransactionCount );
         }
 
         #endregion
@@ -442,7 +452,7 @@ namespace Rock.Blocks.Finance
 
                 if ( !entity.IsAuthorized( Authorization.DELETE, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${FinancialBatch.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {FinancialBatch.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

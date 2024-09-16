@@ -5,9 +5,12 @@
             <FilterHeaderRow v-if="!light"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
+                             :title="title"
+                             :isTitleHidden="isTitleHidden"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
                              :countMessage="countMessage"
+                             :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
                              :isSearchVisible="isSearchVisible" />
 
@@ -39,6 +42,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       @click="onRowClick" />
@@ -51,6 +55,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       @click="onRowClick" />
@@ -62,6 +67,7 @@
                          :grid="gridState"
                          :tooltipField="tooltipField"
                          :isSelectable="isSelectionEnabled"
+                         :itemTerm="gridState.itemTerm"
                          :markInactiveRows="markInactiveRows"
                          :rowClass="rowClass"
                          @click="onRowClick" />
@@ -69,16 +75,18 @@
         <div class="grid-footing">
             <slot name="gridFooterPrepend" />
 
-            <PagerRow v-if="!light"
-                      v-model:pageSize="pageSize"
-                      v-model:currentPage="currentPage"
-                      :pageCount="pageCount"
-                      :pageSizes="pageSizes"
-                      :visibleColumnCount="visibleColumnCount" />
+            <template v-if="!isFooterHidden">
+                <PagerRow v-if="isPagerRowVisible"
+                          v-model:pageSize="pageSize"
+                          v-model:currentPage="currentPage"
+                          :pageCount="pageCount"
+                          :pageSizes="pageSizes"
+                          :visibleColumnCount="visibleColumnCount" />
 
-            <LightFooterRow v-else
-                            :grid="gridState"
-                            :gridActions="gridActions" />
+                <LightFooterRow v-else
+                                :grid="gridState"
+                                :gridActions="gridActions" />
+            </template>
 
             <slot name="gridFooterAppend" />
         </div>
@@ -332,6 +340,12 @@
     gap: 8px;
 }
 
+.grid-column-header > .grid-filter-popup .alert {
+    border-top: 0;
+    box-shadow: none;
+    padding: 8px;
+}
+
 .grid-row {
     display: flex;
     background-color: #fff;
@@ -356,6 +370,8 @@
     align-items: flex-start;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     overflow-x: hidden;
+    align-self: center;
+    line-height: 1.4;
 }
 
 .grid-select-field:first-child {
@@ -457,6 +473,15 @@
     background-color: var(--theme-light);
 }
 
+.grid-obsidian .grid-cell .highlight-detail {
+    color: var(--theme-medium);
+    font-size: 14px;
+}
+
+.grid-obsidian .grid-cell .highlight-title {
+    font-weight: 600;
+}
+
 @media (max-width: 767px) {
     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
         display: none;
@@ -533,6 +558,21 @@
         definition: {
             type: Object as PropType<GridDefinitionBag>,
             required: false
+        },
+
+        /**
+         * The title of the grid. If not provided and `isTitleHidden` is `false`,
+         * the default title of `${itemTerm} List` will be shown.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** When `true`, the grid's title will be hidden. */
+        isTitleHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /**
@@ -833,6 +873,35 @@
             default: true
         },
 
+        /**
+         * Light mode: When `true`, the actions row will be hidden.
+         *
+
+         * Full mode: When `true`, paging will be disabled, making all data rows
+         * visible. Both the pager and actions rows will be hidden. If instead,
+         * you only want to disable paging, but still want the actions row to be
+         * shown, leave this property set to `false`, and set the `disablePaging`
+         * property to `true`.
+         */
+        isFooterHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Light mode: This property will have no effect.
+         *
+         * Full mode: When `true`, paging will be disabled, making all data rows
+         * visible. The pager row will be hidden but the actions row will be
+         * shown. If instead, you want to hide BOTH the pager and actions rows,
+         * leave this property set to `false`, and set the `isFooterHidden`
+         * property to `true`.
+         */
+        disablePaging: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
     });
 
     const emit = defineEmits<{
@@ -865,6 +934,7 @@
     const visibleRows = ref<Record<string, unknown>[]>([]);
     const pageCount = ref(0);
     const countMessage = ref("");
+    const selectedRowCount = ref(0);
     const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>([]);
     const dragOptions = ref<IDragSourceOptions | undefined>();
     const isRowSelectionInProgress = ref(false);
@@ -1044,7 +1114,8 @@
                 iconCssClass: "fa fa-plus-square",
                 isPrimary: true,
                 title: "Add item",
-                tooltip: "Add a new item."
+                tooltip: "Add a new item. (Alt+N)",
+                shortcutKey: "n"
             });
         }
 
@@ -1178,6 +1249,21 @@
         return !!props.onSelectItem;
     });
 
+    /**
+     * Contains `true` if paging should be disabled on this grid.
+     */
+    const isPagingDisabled = computed((): boolean => {
+        return props.isFooterHidden || props.disablePaging;
+    });
+
+    /**
+     * Contains `true` if this grid is not operating in light mode
+     * and paging has not been disabled.
+     */
+    const isPagerRowVisible = computed((): boolean => {
+        return !props.light && !isPagingDisabled.value;
+    });
+
     // #endregion
 
     // #region Functions
@@ -1203,9 +1289,14 @@
      * Updates the {@link visibleRows} value based on the current selections.
      */
     function updateVisibleRows(): void {
-        const startIndex = (currentPage.value - 1) * pageSize.value;
+        if (isPagingDisabled.value) {
+            visibleRows.value = gridState.sortedRows.slice();
+        }
+        else {
+            const startIndex = (currentPage.value - 1) * pageSize.value;
 
-        visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+            visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+        }
     }
 
     /**
@@ -1213,7 +1304,12 @@
      * selected page size.
      */
     function updatePageCount(): void {
-        pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+        if (isPagingDisabled.value) {
+            pageCount.value = 1;
+        }
+        else {
+            pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+        }
     }
 
     /**
@@ -1949,6 +2045,16 @@
     }
 
     /**
+     * Called when the {@link gridState.selectedKeys} value has changed.
+     * Update the UI to reflect the selection count.
+     */
+    function onSelectedKeysChanged(): void {
+        selectedRowCount.value = gridState.selectedKeys.length;
+
+        emit("selectedKeysChanged", gridState);
+    }
+
+    /**
      * Called when a row has been clicked if selection is enabled.
      *
      * @param key The key of the row that was clicked.
@@ -2027,9 +2133,10 @@
     gridState.on("sortedRowsChanged", onSortedRowsChanged);
     gridState.on("visibleColumnsChanged", () => visibleColumnDefinitions.value = gridState.visibleColumns);
     gridState.on("filteredRowsChanged", () => emit("filteredRowsChanged", gridState));
-    gridState.on("selectedKeysChanged", () => emit("selectedKeysChanged", gridState));
+    gridState.on("selectedKeysChanged", onSelectedKeysChanged);
 
     onUnmounted(() => {
+        gridState.off("selectedKeysChanged", onSelectedKeysChanged);
         gridState.off("sortedRowsChanged", onSortedRowsChanged);
         gridState.dispose();
     });

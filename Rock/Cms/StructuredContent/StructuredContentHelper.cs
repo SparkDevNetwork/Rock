@@ -96,7 +96,7 @@ namespace Rock.Cms.StructuredContent
                     {
                         var renderer = ( IStructuredContentBlockRenderer ) Activator.CreateInstance( type );
 
-                        blockRenderers.AddOrIgnore( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
+                        blockRenderers.TryAdd( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
                     }
                     catch
                     {
@@ -131,7 +131,7 @@ namespace Rock.Cms.StructuredContent
                     {
                         var renderer = ( IStructuredContentBlockRenderer ) Activator.CreateInstance( type );
 
-                        blockRenderers.AddOrIgnore( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
+                        blockRenderers.TryAdd( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
                     }
                     catch
                     {
@@ -157,7 +157,7 @@ namespace Rock.Cms.StructuredContent
 
                 foreach ( var renderer in GetCustomRenderers() )
                 {
-                    blockTypes.AddOrIgnore( renderer.Key, renderer.Value );
+                    blockTypes.TryAdd( renderer.Key, renderer.Value );
                 }
 
                 _blockRenderers = blockTypes;

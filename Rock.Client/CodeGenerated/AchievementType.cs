@@ -114,6 +114,9 @@ namespace Rock.Client
         /// <summary />
         public int? SourceEntityTypeId { get; set; }
 
+        /// <summary />
+        public int? TargetCount { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -173,6 +176,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.ResultsLavaTemplate = source.ResultsLavaTemplate;
             this.SourceEntityTypeId = source.SourceEntityTypeId;
+            this.TargetCount = source.TargetCount;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

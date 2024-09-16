@@ -62,11 +62,18 @@ export function splitCase(val: string): string {
 }
 
 /**
- * Returns an English comma-and fragment.
- * Ex: ['a', 'b', 'c'] => 'a, b, and c'
- * @param strs
+ * Returns a string that has each item comma separated except for the last
+ * which will use the word "and".
+ *
+ * @example
+ * ['a', 'b', 'c'] => 'a, b and c'
+ *
+ * @param strs The strings to be joined.
+ * @param andStr The custom string to use instead of the word "and".
+ *
+ * @returns A string that represents all the strings.
  */
-export function asCommaAnd(strs: string[]): string {
+export function asCommaAnd(strs: string[], andStr?: string): string {
     if (strs.length === 0) {
         return "";
     }
@@ -75,12 +82,16 @@ export function asCommaAnd(strs: string[]): string {
         return strs[0];
     }
 
+    if (!andStr) {
+        andStr = "and";
+    }
+
     if (strs.length === 2) {
-        return `${strs[0]} and ${strs[1]}`;
+        return `${strs[0]} ${andStr} ${strs[1]}`;
     }
 
     const last = strs.pop();
-    return `${strs.join(", ")}, and ${last}`;
+    return `${strs.join(", ")} ${andStr} ${last}`;
 }
 
 /**

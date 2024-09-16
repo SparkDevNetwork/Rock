@@ -228,11 +228,7 @@
                             for (var i = 0; i < personalSections.length; i++) {
                                 if (personalSections[ i ].PersonalLinks.length > 0) {
                                     var itemsHtml = '';
-                                    if (personalSections[ i ].IsShared) {
-                                        itemsHtml = '<li><strong><i class="fa fa-users""></i> ' + personalSections[ i ].Name + '</strong></li>';
-                                    } else {
-                                        itemsHtml = '<li><strong>' + personalSections[ i ].Name + '</strong></li>';
-                                    }
+                                    itemsHtml = '<li><strong>' + personalSections[ i ].Name + '</strong></li>';
 
                                     for (var personalLinkIndex in personalSections[ i ].PersonalLinks) {
                                         var personalLink = personalSections[ i ].PersonalLinks[ personalLinkIndex ];

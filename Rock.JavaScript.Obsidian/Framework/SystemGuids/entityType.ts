@@ -149,6 +149,8 @@ export const EntityType = {
     CampusTopic: "0FFDCB0B-B435-4E66-9085-2750534E706A",
     /** The EntityType Guid for Rock.Model.Category  */
     Category: "1D68154E-EC76-44C8-9813-7736B27AECF9",
+    /** The EntityType Guid for Rock.Model.CheckInLabel  */
+    CheckInLabel: "8B651EB1-492F-46D0-821B-CA7355C6E6E7",
     /** The checkr provider */
     CheckrProvider: "8D9DE88A-C649-47B2-BA5C-92A24F60AE61",
     /** The EntityType Guid for Rock.Model.Communication  */
@@ -231,6 +233,8 @@ export const EntityType = {
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
+    /** The EntityType Guid for Rock.Model.EntityIntent  */
+    EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */
@@ -387,6 +391,32 @@ export const EntityType = {
     LavaShortcodeCategory: "6CFE20AD-F883-4F53-A678-0D048406299D",
     /** The EntityType Guid for Rock.Model.Layout */
     Layout: "9DACC861-FED4-47FC-946D-D6A120FF6D56",
+    /** The EntityType Guid for Rock.Model.LearningActivity */
+    LearningActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
+    /** The EntityType Guid for Rock.Model.LearningActivityCompletion */
+    LearningActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
+    /** The EntityType Guid for Rock.Model.LearningClass */
+    LearningClass: "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9",
+    /** The EntityType Guid for Rock.Model.LearningClassAnnouncement */
+    LearningClassAnnouncement: "D2CE59D3-55E1-4275-9EA1-38C18A05A32B",
+    /** The EntityType Guid for Rock.Model.LearningClassContentPage */
+    LearningClassContentPage: "72A061C4-B7E6-4A91-A4F2-80551F772D46",
+    /** The EntityType Guid for Rock.Model.LearningCourse */
+    LearningCourse: "21870376-4A6E-4402-ACE3-42AA4441FC2E",
+    /** The EntityType Guid for Rock.Model.LearningCourseRequirement */
+    LearningCourseRequirement: "576F54E1-CE70-43ED-A7D8-5169529C70E9",
+    /** The EntityType Guid for Rock.Model.LearningGradingSystem */
+    LearningGradingSystem: "0B693CAF-3718-4913-B7AC-61D31B4DF099",
+    /** The EntityType Guid for Rock.Model.LearningGradingSystem */
+    LearningGradingSystemScale: "14BA9B5B-6B4A-4462-ACDF-898DCEC9EC0D",
+    /** The EntityType Guid for Rock.Model.LearningParticipant */
+    LearningParticipant: "03195758-1770-4794-9487-7A4AA02930A7",
+    /** The EntityType Guid for Rock.Model.LearningProgram */
+    LearningProgram: "AFD89885-6923-4FA1-B6FE-A1DF8D821BBC",
+    /** The EntityType Guid for Rock.Model.LearningProgramCompletion */
+    LearningProgramCompletion: "B82813A7-E70E-4F04-8568-0D84EFB484B2",
+    /** The EntityType Guid for Rock.Model.LearningSemester */
+    LearningSemester: "F9A40931-0ACE-4B50-A507-0D1D75F92BC4",
     /** The EntityType Guid for Rock.Model.Location  */
     Location: "0D6410AD-C83C-47AC-AF3D-616D09EDF63B",
     /** The EntityType Guid for Rock.Model.MediaAccount  */

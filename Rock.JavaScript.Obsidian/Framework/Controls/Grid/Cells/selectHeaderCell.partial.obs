@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
     import { standardHeaderCellProps } from "@Obsidian/Core/Controls/grid";
-    import {  ref } from "vue";
+    import {  onUnmounted, ref } from "vue";
 
     const props = defineProps(standardHeaderCellProps);
 
@@ -20,17 +20,29 @@
      * Called when the checkbox value has been changed by the individual.
      */
     function onValueChange(): void {
-        isChecked.value = !isChecked.value;
-
-        if (!isChecked.value) {
+        if (isChecked.value) {
             // Deselect all selected rows.
             props.grid.selectedKeys = [];
         }
         else {
             // Select all rows that have a key.
-            props.grid.selectedKeys = props.grid.rows
+            props.grid.selectedKeys = props.grid.filteredRows
                 .map(r => props.grid.getRowKey(r))
                 .filter(k => k !== undefined) as string[];
         }
     }
+
+    /**
+     * Called when the selected keys has changed. Update the checked state of
+     * the select all checkbox.
+     */
+    function onSelectedKeysChanged(): void {
+        isChecked.value = props.grid.selectedKeys.length === props.grid.filteredRows.length;
+    }
+
+    props.grid.on("selectedKeysChanged", onSelectedKeysChanged);
+
+    onUnmounted(() => {
+        props.grid.off("selectedKeysChanged", onSelectedKeysChanged);
+    });
 </script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -576,7 +576,7 @@ namespace Rock.Storage.AssetStorage
                 {
                     BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ),
                     Key = asset.Key,
-                    Expires = RockInstanceConfig.SystemDateTime.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
+                    Expires = RockDateTime.SystemDateTime.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
                 };
 
                 url = client.GetPreSignedURL( request );

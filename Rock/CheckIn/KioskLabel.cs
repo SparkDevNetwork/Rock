@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -132,7 +133,7 @@ namespace Rock.CheckIn
                         string mergeField = definedValue.GetAttributeValue( "MergeField" );
                         if ( mergeField != null )
                         {
-                            mergeFields.AddOrIgnore( keyDefinedValueId.Key, mergeField );
+                            mergeFields.TryAdd( keyDefinedValueId.Key, mergeField );
                         }
                     }
                 }
@@ -175,7 +176,7 @@ namespace Rock.CheckIn
                 {
                     var label = new KioskLabel();
                     label.Guid = file.Guid;
-                    label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                    label.Url = FileUrlHelper.GetFileUrl( file.Id );
                     label._mergeCodeDefinedValueIds = new Dictionary<string, int>();
                     label.FileContent = file.ContentsToString();
 
@@ -197,7 +198,7 @@ namespace Rock.CheckIn
                                 int? definedValueId = nameAndValue[1].AsIntegerOrNull();
                                 if ( definedValueId.HasValue )
                                 {
-                                    label._mergeCodeDefinedValueIds.AddOrIgnore( mergeCodeKey, definedValueId.Value );
+                                    label._mergeCodeDefinedValueIds.TryAdd( mergeCodeKey, definedValueId.Value );
                                 }
                             }
                         }

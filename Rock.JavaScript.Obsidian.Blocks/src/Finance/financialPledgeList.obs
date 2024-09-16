@@ -1,0 +1,347 @@
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Financial Pledge"
+          :entityTypeGuid="EntityType.FinancialPledge"
+          :showLaunchWorkflow="false"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <PersonColumn name="person"
+                      title="Person"
+                      field="person"
+                      :filter="textValueFilter"
+                      filterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
+                      width="15%"
+                      visiblePriority="xs" />
+
+        <TextColumn name="group"
+                    title="For"
+                    field="group"
+                    :filter="textValueFilter"
+                    width="5%"
+                    v-if="showGroupColumn"
+                    visiblePriority="md" />
+
+        <TextColumn name="account"
+                    title="Account"
+                    field="account"
+                    :filter="textValueFilter"
+                    v-if="showAccountColumn"
+                    visiblePriority="sm" />
+
+        <CurrencyColumn name="totalAmount"
+                        title="Total Amount"
+                        field="totalAmount"
+                        :headerClass="'text-right'"
+                        :itemClass="'justify-content-end text-end'"
+                        :filter="numberValueFilter"
+                        v-if="!hideAmount"
+                        visiblePriority="xs" />
+
+        <TextColumn name="pledgeFrequency"
+                    title="Payment Schedule"
+                    field="pledgeFrequency"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
+        <DateColumn name="startDate"
+                    title="Starts"
+                    field="startDate"
+                    :headerClass="'text-right'"
+                    :itemClass="'justify-content-end text-end'"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
+
+        <DateColumn name="endDate"
+                    title="Ends"
+                    field="startDate"
+                    :headerClass="'text-right'"
+                    :itemClass="'justify-content-end text-end'"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
+
+        <DateColumn name="modifiedDate"
+                    title="Last Modified"
+                    field="modifiedDate"
+                    :headerClass="'text-right'"
+                    :itemClass="'justify-content-end text-end'"
+                    :filter="dateValueFilter"
+                    v-if="showLastModifiedDateColumn"
+                    visiblePriority="sm" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <!-- Total Amount Footer Section -->
+        <template #gridFooterAppend v-if="showAccountSummary">
+            <div v-if="accountSummaries.length > 0 || total || pledgeCount" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <div class="flex-grow-1"></div>
+                <div>
+                    <SectionHeader title="Total Results">
+                        <template #actions v-if="accountSummaries.length > 5">
+                            <RockButton btnType="link"
+                                        btnSize="xs"
+                                        @click="showAllSummaryAccounts = !showAllSummaryAccounts">
+                                {{ showAllSummaryAccounts ? "Show Top 5" : "Show All" }}
+                            </RockButton>
+                        </template>
+                    </SectionHeader>
+                    <table>
+                        <!-- Visible Account Summaries Toggle -->
+                        <tr v-for="account in visibleAccountSummaries" :key="account.idKey">
+                            <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
+                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount) }}</td>
+                        </tr>
+                        <!-- Total -->
+                        <tr v-if="total">
+                            <td class="text-bold">Total</td>
+                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(total) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </template>
+    </Grid>
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :config="config" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { DateColumn, numberValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, CurrencyColumn, dateValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, PreferenceKey } from "./FinancialPledgeList/types.partial";
+    import { computed, reactive, watch, ref } from "vue";
+    import { AccountSummary } from "./FinancialBatchList/types.partial";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import GridSettingsModal from "./FinancialPledgeList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions } from "./FinancialPledgeList/types.partial";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+
+    const config = useConfigurationValues<ListBlockBox<FinancialPledgeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const preferences = usePersonPreferences().blockPreferences;
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        activeOnly: preferences.getValue(PreferenceKey.FilterActiveOnly) === "true",
+        dateRange: preferences.getValue(PreferenceKey.FilterDateRange) ? JSON.parse(preferences.getValue(PreferenceKey.FilterDateRange)) : undefined,
+        lastModified: preferences.getValue(PreferenceKey.FilterLastModified) ? JSON.parse(preferences.getValue(PreferenceKey.FilterLastModified)) : undefined,
+        person: preferences.getValue(PreferenceKey.FilterPerson) ? JSON.parse(preferences.getValue(PreferenceKey.FilterPerson)) : undefined,
+        accounts: preferences.getValue(PreferenceKey.FilterAccounts) ? JSON.parse(preferences.getValue(PreferenceKey.FilterAccounts)) : []
+    });
+
+    const showAllSummaryAccounts = ref(false);
+    const accountSummaries = ref<AccountSummary[]>([]);
+    const accountTotals = ref<{ [accountName: string]: number }>({});
+    const pledgeCount = ref<number>(0);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const showAccountColumn = computed(() => config.options?.showAccountColumn ?? true);
+    const showGroupColumn = computed(() => config.options?.showGroupColumn ?? true);
+    const showLastModifiedDateColumn = computed(() => config.options?.showLastModifiedDateColumn ?? true);
+    const hideAmount = computed(() => config.options?.hideAmount ?? false);
+    const showAccountSummary = computed(() => config.options?.showAccountSummary ?? true);
+
+    const hasSettingsFilters = computed((): boolean => {
+        return config.options?.showPersonFilter !== false
+            || config.options?.showAccountFilter !== false
+            || config.options?.showDateRangeFilter !== false
+            || config.options?.showLastModifiedFilter !== false;
+    });
+
+    const visibleAccountSummaries = computed((): AccountSummary[] => {
+        if (showAllSummaryAccounts.value && accountSummaries.value.length > 5) {
+            return accountSummaries.value;
+        }
+
+        const summaries: AccountSummary[] = [];
+        let otherAccountTotal = 0;
+
+        for (let i = 0; i < accountSummaries.value.length; i++) {
+            if (i < 5) {
+                summaries.push(accountSummaries.value[i]);
+            }
+            else {
+                otherAccountTotal += accountSummaries.value[i].amount;
+            }
+        }
+
+        if (otherAccountTotal > 0) {
+            summaries.push({
+                idKey: "",
+                name: "Other",
+                amount: otherAccountTotal,
+                isOtherAccount: true
+            });
+        }
+
+        return summaries;
+    });
+
+    const total = computed(() => {
+        let total = 0;
+        for (const accountName in accountTotals.value) {
+            total += accountTotals.value[accountName];
+        }
+        return total;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function calculateAccountTotalsAndSummaries(): void {
+        accountTotals.value = {};
+
+        gridData?.rows?.forEach(row => {
+            if (row["account"]) {
+                const accountName = row["account"] as string;
+                const amount = row["totalAmount"] as number;
+                if (accountTotals.value[accountName]) {
+                    accountTotals.value[accountName] += amount;
+                }
+                else {
+                    accountTotals.value[accountName] = amount;
+                }
+            }
+        });
+
+        const summaries: AccountSummary[] = [];
+        for (const accountName in accountTotals.value) {
+            summaries.push({
+                idKey: "",
+                name: accountName,
+                amount: accountTotals.value[accountName],
+                isOtherAccount: false
+            });
+        }
+
+        summaries.sort((a, b) => b.amount - a.amount);
+        accountSummaries.value = summaries;
+    }
+
+    async function applyFilter(): Promise<void> {
+        const result = await invokeBlockAction<GridDataBag>("ApplyFilter", {
+            dateRange: formatRange(gridSettings.value.dateRange),
+            lastModified: formatRange(gridSettings.value.lastModified),
+            personGuid: gridSettings.value.person?.value ?? null,
+            accountGuids: Array.isArray(gridSettings.value.accounts) ? gridSettings.value.accounts.map(a => a.value) : [],
+            activeOnly: gridSettings.value.activeOnly,
+            attributeFiltersJson: JSON.stringify({})
+        });
+
+        if (result.isSuccess && result.data) {
+            gridData = result.data;
+            gridDataSource.value = Promise.resolve(gridData);
+            calculateAccountTotalsAndSummaries();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while applying filters.");
+        }
+    }
+
+    function formatRange(range: DateRangeParts | undefined): string {
+        if (!range) {
+            return "1||4||"; // Default value for empty range
+        }
+        const { lowerValue, upperValue } = range;
+        return `DateRange|0|Day|${lowerValue ?? ""}|${upperValue ?? ""}`;
+    }
+
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            if (hasSettingsFilters.value) {
+                await applyFilter();
+            }
+
+            calculateAccountTotalsAndSummaries();
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #region Event Handlers
+
+    const onGridSettingsClick = (): void => {
+        isGridSettingsVisible.value = true;
+    };
+
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+
+            loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete financial pledge.");
+        }
+    }
+
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+
+    // region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRange, JSON.stringify(gridSettings.value.dateRange ?? {}));
+        preferences.setValue(PreferenceKey.FilterLastModified, JSON.stringify(gridSettings.value.lastModified ?? {}));
+        preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.person ?? {}));
+        preferences.setValue(PreferenceKey.FilterAccounts, JSON.stringify(gridSettings.value.accounts));
+        preferences.setValue(PreferenceKey.FilterActiveOnly, gridSettings.value.activeOnly ? "true" : "");
+
+        await preferences.save();
+
+        await applyFilter();
+    }, { deep: true });
+
+    // endregion
+
+    gridDataSource.value = loadGridData();
+</script>

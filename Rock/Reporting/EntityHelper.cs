@@ -209,96 +209,7 @@ namespace Rock.Reporting
             // Go thru filteredEntityProperties and create the list of EntityFields that we can include
             foreach ( var property in filteredEntityProperties )
             {
-                EntityField entityField = new EntityField( property.Name, FieldKind.Property, property );
-                entityField.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
-                var fieldTypeAttribute = property.GetCustomAttribute<Rock.Data.FieldTypeAttribute>();
-
-                // check if we can set it from the fieldTypeAttribute
-                if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
-                {
-                    // intentionally blank, entity field is already setup
-                }
-
-                // Enum Properties
-                else if ( property.PropertyType.IsEnum )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
-
-                    var list = new List<string>();
-                    foreach ( var name in Enum.GetNames( property.PropertyType ) )
-                    {
-                        // ignore Obsolete Enum values
-                        object value = Enum.Parse( property.PropertyType, name );
-                        var fieldInfo = value.GetType().GetField( name );
-                        if ( fieldInfo?.GetCustomAttribute<ObsoleteAttribute>() != null )
-                        {
-                            continue;
-                        }
-
-                        // if the Enum has a [Description] attribute, use the description text
-                        var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
-                        list.Add( string.Format( "{0}^{1}", value, description ) );
-                    }
-
-                    var listSource = string.Join( ",", list );
-                    entityField.FieldConfig.Add( "values", new Field.ConfigurationValue( listSource ) );
-                    entityField.FieldConfig.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
-                }
-
-                // Boolean properties
-                else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.BOOLEAN.AsGuid() );
-                }
-
-                // Datetime properties
-                else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
-                {
-                    var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
-                    if ( colAttr != null && ( ( ColumnAttribute ) colAttr ).TypeName == "Date" )
-                    {
-                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE.AsGuid() );
-                    }
-                    else
-                    {
-                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE_TIME.AsGuid() );
-                    }
-                }
-
-                // Decimal properties
-                else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
-                }
-
-                // Text Properties
-                else if ( property.PropertyType == typeof( string ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid() );
-                }
-
-                // Integer Properties (which may be a DefinedValue)
-                else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER.AsGuid() );
-
-                    var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
-                    if ( definedValueAttribute != null )
-                    {
-                        // Defined Value Properties
-                        Guid? definedTypeGuid = definedValueAttribute.DefinedTypeGuid;
-                        if ( definedTypeGuid.HasValue )
-                        {
-                            var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
-                            entityField.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
-                            if ( definedType != null )
-                            {
-                                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
-                                entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
-                            }
-                        }
-                    }
-                }
+                var entityField = GetEntityFieldForProperty( property );
 
                 if ( entityField != null && entityField.FieldType != null )
                 {
@@ -307,7 +218,10 @@ namespace Rock.Reporting
             }
 
             // Get Attributes
-            var entityTypeCache = EntityTypeCache.Get( entityType, true );
+            var entityTypeCache = typeof( IHasAttributes ).IsAssignableFrom( entityType )
+                ? EntityTypeCache.Get( entityType, true )
+                : null;
+
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
@@ -400,6 +314,107 @@ namespace Rock.Reporting
             }
 
             return sortedFields;
+        }
+
+        /// <summary>
+        /// Constructs a single entity field from the given property.
+        /// </summary>
+        /// <param name="property">The definition of the property.</param>
+        /// <returns>A new instance of <see cref="EntityField"/>.</returns>
+        internal static EntityField GetEntityFieldForProperty( PropertyInfo property )
+        {
+            EntityField entityField = new EntityField( property.Name, FieldKind.Property, property );
+            entityField.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
+            var fieldTypeAttribute = property.GetCustomAttribute<Rock.Data.FieldTypeAttribute>();
+
+            // check if we can set it from the fieldTypeAttribute
+            if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
+            {
+                // intentionally blank, entity field is already setup
+            }
+
+            // Enum Properties
+            else if ( property.PropertyType.IsEnum )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
+
+                var list = new List<string>();
+                foreach ( var name in Enum.GetNames( property.PropertyType ) )
+                {
+                    // ignore Obsolete Enum values
+                    object value = Enum.Parse( property.PropertyType, name );
+                    var fieldInfo = value.GetType().GetField( name );
+                    if ( fieldInfo?.GetCustomAttribute<ObsoleteAttribute>() != null )
+                    {
+                        continue;
+                    }
+
+                    // if the Enum has a [Description] attribute, use the description text
+                    var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+                    list.Add( string.Format( "{0}^{1}", value, description ) );
+                }
+
+                var listSource = string.Join( ",", list );
+                entityField.FieldConfig.Add( "values", new Field.ConfigurationValue( listSource ) );
+                entityField.FieldConfig.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
+            }
+
+            // Boolean properties
+            else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.BOOLEAN.AsGuid() );
+            }
+
+            // Datetime properties
+            else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
+            {
+                var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
+                if ( colAttr != null && ( ( ColumnAttribute ) colAttr ).TypeName == "Date" )
+                {
+                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE.AsGuid() );
+                }
+                else
+                {
+                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE_TIME.AsGuid() );
+                }
+            }
+
+            // Decimal properties
+            else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
+            }
+
+            // Text Properties
+            else if ( property.PropertyType == typeof( string ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid() );
+            }
+
+            // Integer Properties (which may be a DefinedValue)
+            else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER.AsGuid() );
+
+                var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
+                if ( definedValueAttribute != null )
+                {
+                    // Defined Value Properties
+                    Guid? definedTypeGuid = definedValueAttribute.DefinedTypeGuid;
+                    if ( definedTypeGuid.HasValue )
+                    {
+                        var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
+                        entityField.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
+                        if ( definedType != null )
+                        {
+                            entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
+                            entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
+                        }
+                    }
+                }
+            }
+
+            return entityField;
         }
 
         /// <summary>
@@ -645,6 +660,18 @@ namespace Rock.Reporting
 
             return entityField;
         }
+
+        /// <summary>
+        /// Takes a property name and returns the <see cref="EntityField.UniqueName"/>
+        /// version of it.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A new string that represents the unique name.</returns>
+        [RockInternal( "1.16.6", true )]
+        internal static string MakePropertyNameUnique( string name )
+        {
+            return $"Property_{name}";
+        }
     }
 
     #region Helper Classes
@@ -670,7 +697,7 @@ namespace Rock.Reporting
                 }
                 else
                 {
-                    return string.Format( "Property_{0}", this.Name );
+                    return EntityHelper.MakePropertyNameUnique( Name );
                 }
             }
         }

@@ -485,7 +485,8 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "data-requireyear", this.RequireYear.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-allowFuture", this.AllowFutureDates.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-itemlabel", this.Label );
-
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
+            writer.AddAttribute( "id", this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Get date format and separater for current culture

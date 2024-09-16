@@ -316,7 +316,7 @@ namespace Rock.Model
             foreach ( var reflectedType in reflectedTypes )
             {
                 var entityType = CreateFromType( reflectedType );
-                entityTypesFromReflection.AddOrIgnore( reflectedType.FullName, entityType );
+                entityTypesFromReflection.TryAdd( reflectedType.FullName, entityType );
             };
 
             using ( var rockContext = new RockContext() )

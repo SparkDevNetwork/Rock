@@ -24,6 +24,7 @@ using System.Web.Compilation;
 using System.Web.Routing;
 
 using Rock.Bus.Message;
+using Rock.Cms.Utm;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Tasks;
@@ -178,7 +179,7 @@ namespace Rock.Web
                                     var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
 
                                     // Use the short link if the site IDs match or the current site and shortlink site are not exclusive.
-                                    // Note: this is only a restriction based on the site chosen as the owner of the shortlink, the acutal URL can go anywhere.
+                                    // Note: this is only a restriction based on the site chosen as the owner of the shortlink, the actual URL can go anywhere.
                                     if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || ( !site.EnableExclusiveRoutes && !pageShortLink.Site.EnableExclusiveRoutes ) ) )
                                     {
                                         if ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null )
@@ -196,28 +197,31 @@ namespace Rock.Web
                                                 }
                                             }
 
-                                            string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
+                                            var urlWithUtm = pageShortLink.UrlWithUtm;
 
                                             // Dummy interaction to get UTM source value from the Request/ShortLink url.
-                                            var interaction = new Interaction();
-                                            interaction.SetUTMFieldsFromURL( requestContext.HttpContext?.Request?.Url?.OriginalString );
+                                            var interactionUtm = new Interaction();
+
+                                            // First, set the UTM field values associated with the shortlink;
+                                            // then overwrite with any values that are specified in the original request.
+                                            interactionUtm.SetUTMFieldsFromURL( urlWithUtm );
 
                                             var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
                                             {
                                                 PageShortLinkId = pageShortLink.Id,
                                                 Token = pageShortLink.Token,
-                                                Url = trimmedUrl,
+                                                Url = urlWithUtm,
                                                 DateViewed = RockDateTime.Now,
                                                 IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest ),
                                                 UserAgent = routeHttpRequest.UserAgent ?? string.Empty,
                                                 UserName = requestContext.HttpContext.User?.Identity.Name,
                                                 VisitorPersonAliasIdKey = visitorPersonAliasIdKey,
-                                                UtmSource = interaction.Source
+                                                UtmSource = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( interactionUtm.SourceValueId, interactionUtm.Source )
                                             };
 
                                             addShortLinkInteractionMsg.Send();
 
-                                            requestContext.HttpContext.Response.Redirect( trimmedUrl, false );
+                                            requestContext.HttpContext.Response.Redirect( urlWithUtm, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();
 
                                             // Global.asax.cs will throw and log an exception if null is returned, so just return a new page.
@@ -227,6 +231,21 @@ namespace Rock.Web
                                 }
                             }
                         }
+
+                        // Store the current UTM values in a non-persistent session cookie.
+                        var interaction = new Interaction();
+
+                        interaction.SetUTMFieldsFromURL( requestContext.HttpContext?.Request?.Url?.OriginalString );
+                        var utmCookieData = new UtmCookieData
+                        {
+                            Source = interaction.GetUtmSourceName(),
+                            Medium = interaction.GetUtmMediumName(),
+                            Campaign = interaction.GetUtmCampaignName(),
+                            Content = interaction.Content,
+                            Term = interaction.Term
+                        };
+
+                        UtmHelper.SetUtmCookieDataForRequest( requestContext.HttpContext, utmCookieData );
 
                         // If site has has been enabled for mobile redirect, then we'll need to check what type of device is being used
                         if ( site.EnableMobileRedirect )

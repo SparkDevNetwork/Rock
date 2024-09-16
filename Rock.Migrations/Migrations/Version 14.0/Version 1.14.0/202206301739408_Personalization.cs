@@ -131,6 +131,7 @@ namespace Rock.Migrations
 
         private void PageRoutes_Up()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:Request Filter Detail
             //   Route:admin/cms/request-filters/{RequestFilterId}
@@ -150,6 +151,7 @@ namespace Rock.Migrations
             //   Page:Personalization Segments
             //   Route:admin/cms/personalization-segments
             RockMigrationHelper.AddPageRoute( "905F6132-AE1C-4C85-9752-18D22E604C3A", "admin/cms/personalization-segments", "55D0D8A0-D534-467E-9C85-12B4C79EC5B1" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
 

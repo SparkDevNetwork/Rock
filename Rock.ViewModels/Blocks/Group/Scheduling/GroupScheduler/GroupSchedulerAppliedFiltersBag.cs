@@ -41,6 +41,14 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         public List<GroupSchedulerOccurrenceBag> ScheduleOccurrences { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique, ordered group, location and schedule name combinations.
+        /// </summary>
+        /// <value>
+        /// The unique, ordered group, location and schedule name combinations.
+        /// </value>
+        public List<GroupSchedulerGroupLocationScheduleNamesBag> GroupLocationScheduleNames { get; set; }
+
+        /// <summary>
         /// Gets or sets the unassigned resource counts, limited by the applied filters.
         /// </summary>
         /// <value>

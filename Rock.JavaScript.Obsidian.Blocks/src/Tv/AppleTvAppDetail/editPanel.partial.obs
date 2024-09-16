@@ -25,6 +25,7 @@
 
                 <NumberBox v-if="enablePageViews"
                            v-model="pageViewRetentionPeriod"
+                           :minimumValue="0"
                            label="Page View Retention Period"
                            help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
 

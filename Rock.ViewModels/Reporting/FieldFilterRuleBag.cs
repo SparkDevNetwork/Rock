@@ -17,6 +17,9 @@
 
 using System;
 
+using Rock.Enums.Reporting;
+using Rock.Model;
+
 namespace Rock.ViewModels.Reporting
 {
     /// <summary>
@@ -35,7 +38,7 @@ namespace Rock.ViewModels.Reporting
         /// The type of comparison to use when comparing the source value (left-hand
         /// side) and <see cref="Value"/> (right-hand side).
         /// </summary>
-        public int ComparisonType { get; set; }
+        public ComparisonType ComparisonType { get; set; }
 
         /// <summary>
         /// The right-hand side of the comparison to use when executing the rule.
@@ -43,14 +46,27 @@ namespace Rock.ViewModels.Reporting
         public string Value { get; set; }
 
         /// <summary>
+        /// The property path from the main object being filtered to the object
+        /// that contains the property or attribute. This may be <c>null</c> or
+        /// an empty string, which means the main object is used.
+        /// </summary>
+        public string Path { get; set; }
+
+        /// <summary>
         /// The source location for where to get the left-hand side value.
         /// </summary>
-        public int SourceType { get; set; }
+        public FieldFilterSourceType SourceType { get; set; }
 
         /// <summary>
         /// The attribute unique identifier to use as the left-hand side value
         /// if <see cref="SourceType"/> specifies an Attribute.
         /// </summary>
         public Guid? AttributeGuid { get; set; }
+
+        /// <summary>
+        /// The property unique name to use as the left-hand side value if
+        /// <see cref="SourceType"/> specifies a Property.
+        /// </summary>
+        public string PropertyName { get; set; }
     }
 }

@@ -187,7 +187,8 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void BindGrid()
         {
-            var qry = new SignatureDocumentService( new RockContext() )
+            var rockContext = new RockContext();
+            var qry = new SignatureDocumentService( rockContext )
                 .Queryable().AsNoTracking();
 
             if ( TargetPerson != null )
@@ -225,17 +226,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            SortProperty sortProperty = gSignatureDocuments.SortProperty;
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderByDescending( d => d.LastInviteDate ).ThenByDescending( a => a.SignedDateTime ).ThenByDescending( a => a.CreatedDateTime );
-            }
-
-            gSignatureDocuments.DataSource = qry.Select( d => new
+            var documentListQry = qry.Select( d => new
             {
                 d.Id,
                 d.Name,
@@ -246,6 +237,7 @@ namespace RockWeb.Blocks.Core
                 d.Status,
                 d.LastInviteDate,
                 d.SignedDateTime,
+                d.CreatedDateTime,
                 d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "<i class='fa fa-exclamation-triangle text-danger' title='File deleted'></i>",
                 FileGuid = d.BinaryFile == null ? Guid.Empty : d.BinaryFile.Guid,
@@ -254,9 +246,24 @@ namespace RockWeb.Blocks.Core
                 .ToList()
                 .Where( d => d.Key != null && d.Key.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 .SelectMany( d => d )
-                .ToList();
+                .AsQueryable();
 
+
+            SortProperty sortProperty = gSignatureDocuments.SortProperty;
+            if ( sortProperty != null )
+            {
+                documentListQry = documentListQry.Sort( sortProperty );
+            }
+            else
+            {
+                documentListQry = documentListQry.OrderByDescending( d => d.LastInviteDate ).ThenByDescending( a => a.SignedDateTime ).ThenByDescending( a => a.CreatedDateTime );
+            }
+
+            rockContext.SqlLogging( true );
+            gSignatureDocuments.DataSource = documentListQry.ToList();
             gSignatureDocuments.DataBind();
+
+            rockContext.SqlLogging( false );
         }
 
         private void NavigateToDetailPage( int documentId )

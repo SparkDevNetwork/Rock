@@ -55,6 +55,7 @@ namespace Rock.Tests.Shared
         public const string Personalization = "Personalization";
 
         public const string Lava = "Core.Lava";
+        public const string DataModelValidation = "Core.Model.Validation";
     }
 
     public static class TestPurposes

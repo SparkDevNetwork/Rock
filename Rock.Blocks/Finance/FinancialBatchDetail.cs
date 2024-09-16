@@ -647,8 +647,9 @@ namespace Rock.Blocks.Finance
 
                 entity.LoadAttributes( rockContext );
 
+                // Put the financial batch to the context entities.
                 var contextEntity = RequestContext.GetContextEntity<FinancialBatch>();
-                contextEntity.CopyPropertiesFrom( entity );
+                contextEntity?.CopyPropertiesFrom( entity );
 
                 return ActionOk( GetEntityBagForView( entity ) );
             }

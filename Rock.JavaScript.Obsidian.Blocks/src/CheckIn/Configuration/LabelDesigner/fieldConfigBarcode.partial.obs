@@ -1,0 +1,129 @@
+<template>
+    <div class="form-group">
+        <RockLabel>Barcode Type</RockLabel>
+
+        <div class="control-wrapper">
+            <div class="btn-group">
+                <RockButton :btnType="format === BarcodeFormat.QRCode.toString() ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="format = BarcodeFormat.QRCode.toString()">
+                    <i class="fa fa-qrcode"></i> QR
+                </RockButton>
+
+                <RockButton :btnType="format === BarcodeFormat.Code128.toString() ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="format = BarcodeFormat.Code128.toString()">
+                    <i class="fa fa-barcode"></i> Code 128
+                </RockButton>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="control-wrapper">
+            <div class="btn-group">
+                <RockButton :btnType="!isDynamic ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="isDynamic = false">
+                    Person Identifier
+                </RockButton>
+
+                <RockButton :btnType="isDynamic ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="isDynamic = true">
+                    Dynamic
+                </RockButton>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="isDynamic" class="form-group">
+        <RockButton @click="onEditLavaTemplateClick">
+            <i class="fa fa-edit"></i>
+            Edit Lava Template
+        </RockButton>
+    </div>
+
+    <Modal v-model="isEditLavaTemplateVisible" title="Dynamic Text Template" saveText="Save" @save="onEditLavaTemplateSave">
+        <CodeEditor label="Lava Template"
+                    v-model="editDynamicTextTemplate"
+                    mode="lava" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { PropType, ref, watch } from "vue";
+    import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
+    import { LabelUndoManager } from "./undoManager.partial";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const format = ref<string>("");
+    const isDynamic = ref(false);
+    const dynamicTextTemplate = ref("");
+
+    const isEditLavaTemplateVisible = ref(false);
+    const editDynamicTextTemplate = ref("");
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as BarcodeFieldConfigurationBag;
+
+        format.value = configuration.format ?? "";
+        isDynamic.value = asBoolean(configuration.isDynamic);
+        dynamicTextTemplate.value = configuration.dynamicTextTemplate ?? "";
+    }
+
+    /**
+     * Event handler for when the Edit Lava Template button is clicked. Open
+     * the modal with the code editor to allow the user to set the lava template
+     * that will be used to render this text field.
+     */
+     function onEditLavaTemplateClick(): void {
+        editDynamicTextTemplate.value = dynamicTextTemplate.value;
+        isEditLavaTemplateVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the Save button is clicked in the lava template
+     * modal. Save the value from the editor into our local value.
+     */
+    function onEditLavaTemplateSave(): void {
+        dynamicTextTemplate.value = editDynamicTextTemplate.value;
+        isEditLavaTemplateVisible.value = false;
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([format, isDynamic, dynamicTextTemplate], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as BarcodeFieldConfigurationBag;
+
+            fieldConfig.format = format.value;
+            fieldConfig.isDynamic = asTrueOrFalseString(isDynamic.value);
+            fieldConfig.dynamicTextTemplate = dynamicTextTemplate.value;
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

@@ -5,7 +5,7 @@
         <div class="radio">
             <label>
                 <input type="radio" name="item-value" @click="onItemSelected">
-                <span class="label-text d-flex gap">
+                <span class="label-text d-flex gap align-items-start">
                     <span class="flex-grow-1">{{ result.title }}</span>
                     <span class="d-flex gap">
                         <span v-for="label in result.labels"

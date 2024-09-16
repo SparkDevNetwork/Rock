@@ -1,0 +1,132 @@
+<template>
+    <div class="btn-group">
+        <button type="button"
+                class="btn"
+                :class="buttonClass"
+                :disabled="isDisabled"
+                @click.prevent="onClickItem(primaryItem)">
+            {{ primaryItem.text }}
+        </button>
+
+        <button type="button"
+                class="btn dropdown-toggle"
+                :class="buttonClass"
+                :disabled="isDisabled"
+                data-toggle="dropdown">
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu">
+            <li v-for="item of items">
+                <a href="#" @click.prevent="onClickItem(item)">
+                    {{ item.text }}
+                </a>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, ref } from "vue";
+
+    const props = defineProps({
+        /** The type of button to render, this affects the coloring. */
+        btnType: {
+            type: String as PropType<"default" | "primary" | "success" | "info" | "warning" | "danger">,
+            default: "default"
+        },
+
+        /** The items to display in the button. */
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            required: false
+        },
+
+        /** True if the button should be disabled. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** True if the button should disable itself while executing. */
+        autoDisable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The function to call when a button action is clicked. */
+        onClick: {
+            type: Function as PropType<(itemValue: string) => (void | Promise<void>)>,
+            required: false
+        }
+    });
+
+    const isRunning = ref(false);
+
+    /**
+     * A sanitized list of items. This will always contain at least one item.
+     */
+    const items = computed((): ListItemBag[] => {
+        if (!props.items || props.items.length === 0) {
+            return [
+                {
+                    value: "default",
+                    text: "Default"
+                }
+            ];
+        }
+
+        return props.items;
+    });
+
+    /**
+     * The additional classes to apply to the button.
+     */
+    const buttonClass = computed((): string => {
+        let classString = `btn-${props.btnType}`;
+
+        if (isDisabled.value) {
+            classString += " disabled";
+        }
+
+        return classString;
+    });
+
+    /**
+     * True if the button is currently disabled.
+     */
+    const isDisabled = computed((): boolean => {
+        return props.disabled || (props.autoDisable && isRunning.value);
+    });
+
+    /**
+     * The primary item that will be represented by clicking on the main button.
+     */
+    const primaryItem = computed((): ListItemBag => {
+        return items.value[0];
+    });
+
+    /**
+     * Called when the person clicks either the main button or a menu item.
+     *
+     * @param item The item that was clicked.
+     */
+    async function onClickItem(item: ListItemBag): Promise<void> {
+        isRunning.value = true;
+
+        try {
+            if (props.onClick && item.value) {
+                const result = props.onClick(item.value);
+
+                if (isPromise(result)) {
+                    await result;
+                }
+            }
+        }
+        finally {
+            isRunning.value = false;
+        }
+    }
+</script>

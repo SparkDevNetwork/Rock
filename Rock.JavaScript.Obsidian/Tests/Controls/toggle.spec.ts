@@ -13,7 +13,7 @@ describe("Toggle", () => {
                 falseText: "FalseText"
             }
         });
-        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[1];
+        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[0];
         assert.deepStrictEqual(onButton.classes(), ["active", "btn", "btn-primary"]);
     });
 
@@ -26,7 +26,7 @@ describe("Toggle", () => {
                 falseText: "FalseText"
             }
         });
-        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[0];
+        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[1];
         assert.deepStrictEqual(offButton.classes(), ["active", "btn", "btn-primary"]);
     });
 
@@ -40,7 +40,7 @@ describe("Toggle", () => {
                 onButtonActiveCssClass: "btn-success"
             }
         });
-        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[1];
+        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[0];
         assert.deepStrictEqual(onButton.classes(), ["active", "btn", "btn-primary", "btn-success"]);
     });
 
@@ -54,7 +54,7 @@ describe("Toggle", () => {
                 offButtonActiveCssClass: "btn-warning"
             }
         });
-        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[0];
+        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[1];
         assert.deepStrictEqual(offButton.classes(), ["active", "btn", "btn-primary", "btn-warning"]);
     });
 });
