@@ -60,5 +60,10 @@ namespace Rock.SystemGuid
         /// Gets the Left Sidebar layout (Checkin Manager Site)
         /// </summary>
         public const string CHECKIN_MANAGER_LEFT_SIDEBAR = "2669A579-48A5-4160-88EA-C3A10024E1E1";
+
+        /// <summary>
+        /// Gets the Model layout ()
+        /// </summary>
+        public const string MODAL = "8F15C679-D757-4225-839E-2589A80F7180";
     }
 }

@@ -7,9 +7,6 @@
           :entityTypeGuid="EntityType.PageShortLink"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          :onGridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
@@ -23,7 +20,7 @@
         <TextColumn name="site"
                     title="Site"
                     field="site"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="token"
@@ -39,49 +36,29 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :siteItems="siteItems"/>
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, ButtonColumn,  } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter,  } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./PageShortLinkList/types.partial";
-    import { reactive, ref, computed, watch } from "vue";
+    import { NavigationUrlKey } from "./PageShortLinkList/types.partial";
+    import { reactive, ref } from "vue";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
-    import GridSettingsModal from "./PageShortLinkList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isGridSettingsVisible = ref(false);
-    const siteItems = ref(config.options?.siteItems ?? []);
-    const gridSettings = ref<GridSettingsOptions>({
-        site: preferences.getValue(PreferenceKey.FilterSite),
-        token: preferences.getValue(PreferenceKey.FilterToken)
-    });
-
     // #endregion
-
-    // #region Computed Values
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!(gridSettings.value.site || gridSettings.value.token);
-    });
-
 
     // #region Functions
 
@@ -161,25 +138,6 @@
             alert("Short link copied to clipboard.");
         }
     }
-
-    /**
-     * Called when the grid settings icon is clicked, displays the block filters..
-     */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-      /**
-    * Watch for changes to the grid settings and update the preferences as needed.
-    */
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterSite, gridSettings.value.site ?? "");
-        preferences.setValue(PreferenceKey.FilterToken, gridSettings.value.token ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     // #endregion
 

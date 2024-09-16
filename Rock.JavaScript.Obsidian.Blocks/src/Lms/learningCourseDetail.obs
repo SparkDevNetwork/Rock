@@ -84,9 +84,9 @@
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
     const isOnDemandMode = ref(config.options?.configurationMode === ConfigurationMode.OnDemandLearning);
 
-    const imageGuid = ref<string>(learningCourseViewBag.value?.imageBinaryFile?.value ?? "");
-    const iconCssClass = ref<string>(learningCourseViewBag.value?.programIconCssClass ?? "");
-    const highlightColor = ref<string>(learningCourseViewBag.value?.programHighlightColor ?? "");
+    const imageGuid = computed(() => learningCourseViewBag.value?.imageBinaryFile?.value ?? "");
+    const iconCssClass = computed(() => learningCourseViewBag.value?.programIconCssClass ?? "");
+    const highlightColor = computed(() => learningCourseViewBag.value?.programHighlightColor ?? "");
 
     // #endregion
 
@@ -139,7 +139,7 @@
         }
         else {
             labels.push({
-                title: "Private",
+                title: "Internal",
                 type: "warning"
             });
         }
@@ -188,12 +188,12 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningCourseBag>>("Edit", {
             key: learningCourseViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            learningCourseEditBag.value.bag = result.data.entity;
+        if (result.isSuccess && result.data && result.data) {
+            learningCourseEditBag.value = result.data;
 
             return true;
         }

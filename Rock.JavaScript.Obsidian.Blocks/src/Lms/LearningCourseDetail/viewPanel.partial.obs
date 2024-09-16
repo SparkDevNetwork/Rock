@@ -37,7 +37,7 @@
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
-import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         modelValue: {
@@ -85,11 +85,18 @@ import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
             return valueBuilder.build();
         }
 
-        const emptyValue = "<br />";
-        valueBuilder.addHtmlValue("", `<h4>Public Name</h4>${props.modelValue.publicName ?? emptyValue}`);
-        valueBuilder.addHtmlValue("", `<h4>Credits</h4>${props.modelValue.credits ?? 0}`);
-        valueBuilder.addHtmlValue("", `<h4>Enable Announcements</h4>${props.modelValue.enableAnnouncements === true ? "Yes" : "No"}`);
-        valueBuilder.addHtmlValue("", `<h4>Completion Workflow Type</h4>${props.modelValue.completionWorkflowType?.text ?? emptyValue}`);
+        const publicName = props.modelValue.publicName ?? "";
+        if (publicName.length > 0) {
+            valueBuilder.addTextValue("Public Name", publicName);
+        }
+
+        valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
+        valueBuilder.addTextValue("Enable Announcements", props.modelValue.enableAnnouncements === true ? "Yes" : "No");
+
+        const completionWorkflowText = props.modelValue.completionWorkflowType?.text ?? "";
+        if (completionWorkflowText.length > 0) {
+            valueBuilder.addTextValue("Completion Workflow Type", completionWorkflowText);
+        }
 
         return valueBuilder.build();
     });
@@ -103,9 +110,9 @@ import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
         }
         const emptyValue = "<br />";
 
-        valueBuilder.addHtmlValue("", `<h4>Course Code</h4>${props.modelValue.courseCode ?? emptyValue}`);
+        valueBuilder.addTextValue("Course Code", props.modelValue.courseCode ?? "");
 
-        valueBuilder.addHtmlValue("", `<h4>Allow Historical Access</h4>${asYesNoOrNull(props.modelValue.allowHistoricalAccess) ?? "No"}`);
+        valueBuilder.addTextValue("Allow Historical Access", asYesNoOrNull(props.modelValue.allowHistoricalAccess) ?? "No");
 
         // Create a function for constructing the html that will represent a single requirement.
         const requirementHtml = (r: LearningCourseRequirementBag): string => {
@@ -121,9 +128,8 @@ import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
 
             if (distinctRequirementTypes) {
                 distinctRequirementTypes.forEach(requirementType => {
-
                     const requirements = courseRequirements.filter(r => r.requirementType === requirementType).map(r => requirementHtml(r)).join("");
-                    valueBuilder.addHtmlValue("", `<h4>${pluralize(RequirementTypeDescription[requirementType])}</h4><ul>${requirements ?? emptyValue}</ul>`);
+                    valueBuilder.addHtmlValue(pluralize(RequirementTypeDescription[requirementType]), `<ul>${requirements ?? emptyValue}</ul>`);
                 });
 
             }

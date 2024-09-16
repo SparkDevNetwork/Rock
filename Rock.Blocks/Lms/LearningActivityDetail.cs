@@ -45,7 +45,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning activity." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -88,6 +88,16 @@ namespace Rock.Blocks.Lms
             box.Options = GetBoxOptions( box.IsEditable );
 
             return box;
+        }
+
+        private void EnsureLearningClassIdPageParameter()
+        {
+            if ( PageParameter( PageParameterKey.LearningClassId ).IsNullOrWhiteSpace() )
+            {
+                var courseId = PageParameter( PageParameterKey.LearningCourseId );
+                var defaultClass = new LearningClassService( RockContext ).GetCourseDefaultClass( courseId, c => c.Id );
+                
+            }
         }
 
         /// <summary>
@@ -472,22 +482,19 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityId ) ?? "";
+
+            var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "New Activity", breadCrumbPageRef );
+
+            return new BreadCrumbResult
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityId ) ?? "";
-
-                var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Activity", breadCrumbPageRef );
-
-                return new BreadCrumbResult
+                BreadCrumbs = new List<IBreadCrumb>
                 {
-                    BreadCrumbs = new List<IBreadCrumb>
-                    {
-                        breadCrumb
-                    }
-                };
-            }
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

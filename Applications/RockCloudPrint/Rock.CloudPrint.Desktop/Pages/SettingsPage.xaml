@@ -65,20 +65,6 @@
 
         <StackPanel Orientation="Horizontal"
                     Margin="0,12,0,0">
-            <TextBlock Text="Priority" />
-            <ui:SymbolIcon Margin="4,0,0,0"
-                           Symbol="QuestionCircle20"
-                           ToolTipService.ToolTip="The priority of this printer proxy when multiple proxies are configured as the same device. Lower values have a higher priority."
-                           ToolTipService.InitialShowDelay="400" />
-        </StackPanel>
-        <ui:NumberBox
-            x:Name="Priority"
-            MinWidth="160"
-            HorizontalAlignment="Left"
-            Margin="0,12,0,0" />
-
-        <StackPanel Orientation="Horizontal"
-                    Margin="0,12,0,0">
             <TextBlock Text="Name" />
             <ui:SymbolIcon Margin="4,0,0,0"
                            Symbol="QuestionCircle20"

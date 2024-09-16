@@ -15,30 +15,14 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-
-namespace Rock.Bus.Queue
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// A Rock Message Bus Queue for Cloud Print commands.
+    /// The options that can be passed to the GetAIProviders API action of
+    /// the AIProviderPicker control.
     /// </summary>
-    [RockInternal( "1.16.7", true )]
-    public sealed class CloudPrintQueue : SendCommandQueue
+    public class AIProviderPickerGetAIProviderOptionsBag
     {
-        /// <summary>
-        /// Gets the queue name. Each instance of Rock shares this name for this queue.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public override string Name => "rock-cloud-print-queue";
-
-        /// <summary>
-        /// Creates a new instance of <see cref="CloudPrintQueue"/>.
-        /// </summary>
-        public CloudPrintQueue()
-        {
-            TimeToLiveSeconds = 10;
-        }
+        /* Intentionally left blank for compatibility with future options. */
     }
 }

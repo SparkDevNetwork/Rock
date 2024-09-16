@@ -40,21 +40,5 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceFeeList
         /// The name of the export file.
         /// </value>
         public string ExportFileName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the fee name items for the fee name filter dropdown.
-        /// </summary>
-        /// <value>
-        /// The fee name items.
-        /// </value>
-        public List<ListItemBag> FeeNameItems { get; set; }
-
-        /// <summary>
-        /// Gets or sets the fee options items for the fee options filter dropdown.
-        /// </summary>
-        /// <value>
-        /// The fee option items.
-        /// </value>
-        public List<ListItemBag> FeeOptionsItems { get; set; }
     }
 }

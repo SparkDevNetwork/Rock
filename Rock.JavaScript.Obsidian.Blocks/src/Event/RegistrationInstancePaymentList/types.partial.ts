@@ -18,11 +18,3 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export const enum PreferenceKey {
-    FilterDateRange = "filter-payment-date-range",
-}
-
-export type GridSettingsOptions = {
-    dateRange?: string | null;
-};

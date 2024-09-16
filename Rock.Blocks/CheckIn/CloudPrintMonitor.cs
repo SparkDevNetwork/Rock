@@ -15,17 +15,19 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Model;
-using Rock.Utility;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn
 {
@@ -65,14 +67,11 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A list of <see cref="ListItemBag"/> objects that represent the proxy devices.</returns>
         private List<ListItemBag> GetPrintProxyBags()
         {
+            var proxyDeviceTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_PROXY.AsGuid(), RockContext ).Id;
             var deviceService = new DeviceService( RockContext );
-            var proxyIdQry = deviceService
-                .Queryable()
-                .Where( d => d.ProxyDeviceId.HasValue )
-                .Select( d => d.ProxyDeviceId.Value );
 
             var devices = deviceService.Queryable()
-                .Where( d => proxyIdQry.Contains( d.Id ) )
+                .Where( d => d.DeviceTypeValueId == proxyDeviceTypeId )
                 .ToList();
 
             return devices
@@ -90,66 +89,32 @@ namespace Rock.Blocks.CheckIn
         #region Block Actions
 
         /// <summary>
-        /// Find all proxy connections in the web farm that exist for the set of
-        /// encrypted proxyd <see cref="Device"/> identifiers.
+        /// Subscribes to the real-time channels.
         /// </summary>
-        /// <param name="proxyIds">The encrypted proxy device identifiers.</param>
-        /// <returns>A list of proxy connections.</returns>
+        /// <param name="connectionId">The connection identifier.</param>
         [BlockAction]
-        public async Task<BlockActionResult> GetProxyConnections( List<string> proxyIds )
+        public async Task<BlockActionResult> SubscribeToRealTime( string connectionId )
         {
-            var results = new List<ProxyConnectionBag>();
-            var cts = new CancellationTokenSource( 2_500 );
+            var topicChannels = RealTimeHelper.GetTopicContext<ICloudPrint>().Channels;
 
-            var tasks = proxyIds.Select( p => IdHasher.Instance.GetId( p ) )
-                .Where( p => p.HasValue )
-                .Select( p =>
-                {
-                    return CloudPrintProxyStatusMessage.RequestAsync( p.Value, cts.Token );
-                } );
+            await topicChannels.AddToChannelAsync( connectionId, CloudPrintTopic.ProxyStatusChannel );
 
-            // Wait for each task to complete, ignoring any that never gave
-            // a response (signalled by TaskCancelledException).
-            foreach ( var task in tasks )
-            {
-                try
-                {
-                    var response = await task;
+            return ActionOk();
+        }
 
-                    if ( response != null && response.Connections != null )
-                    {
-                        foreach ( var connection in response.Connections )
-                        {
-                            results.Add( new ProxyConnectionBag
-                            {
-                                ProxyId = IdHasher.Instance.GetHash( response.Id ),
-                                ProxyName = connection.Name,
-                                Priority = connection.Priority,
-                                ServerName = response.NodeName
-                            } );
-                        }
-                    }
-                }
-                catch ( TaskCanceledException )
-                {
-                    continue;
-                }
-            }
+        /// <summary>
+        /// Requests that all servers send a status update on their connected
+        /// proxies.
+        /// </summary>
+        /// <returns>A status code that indicates if the request succeeded.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> UpdateProxyStatus()
+        {
+            await CloudPrintSendProxyStatusMessage.PublishAsync();
 
-            return ActionOk( results );
+            return ActionOk();
         }
 
         #endregion
-
-        private class ProxyConnectionBag
-        {
-            public string ProxyId { get; set; }
-
-            public string ProxyName { get; set; }
-
-            public int Priority { get; set; }
-
-            public string ServerName { get; set; }
-        }
     }
 }

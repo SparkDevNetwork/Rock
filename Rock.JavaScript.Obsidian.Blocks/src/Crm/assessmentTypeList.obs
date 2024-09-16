@@ -7,9 +7,6 @@
           :entityTypeGuid="EntityType.AssessmentType"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="isGridSettingsVisible = true"
           :showLaunchWorkflow="false"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
@@ -24,12 +21,14 @@
         <BooleanColumn name="requiresRequest"
                        title="Requires Request"
                        field="requiresRequest"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs"
                        width="5%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs"
                        width="5%" />
 
@@ -39,76 +38,26 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AssessmentTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeList/assessmentTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./AssessmentTypeList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./AssessmentTypeList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./AssessmentTypeList/types.partial";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<AssessmentTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-    const isGridSettingsVisible = ref(false);
-
-    const gridSettings = ref<GridSettingsOptions>({
-        title: preferences.getValue(PreferenceKey.FilterTitle),
-        active: preferences.getValue(PreferenceKey.FilterActive),
-        request: preferences.getValue(PreferenceKey.FilterRequest),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /**
-     * Returns `true` if the grid settings filters are active; otherwise `false`.
-     */
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.active ||
-            !!gridSettings.value.request ||
-            !!gridSettings.value.title;
-    });
-
-    // #endregion
-
-    // #region Watchers
-
-    /**
-     * Watch for changes to the grid settings and update the preferences as needed.
-     */
-    watch(gridSettings, async () => {
-        // Handle the potential null or undefined values for each setting
-        const activeValue = gridSettings.value.active ?? "";
-        const requestValue = gridSettings.value.request ?? "";
-        const titleValue = gridSettings.value.title ?? "";
-
-        // Set the preferences with the appropriate values
-        preferences.setValue(PreferenceKey.FilterActive, activeValue);
-        preferences.setValue(PreferenceKey.FilterRequest, requestValue);
-        preferences.setValue(PreferenceKey.FilterTitle, titleValue);
-
-        // Save the preferences
-        await preferences.save();
-
-        // Reload the grid data
-        gridDataSource.value = loadGridData();
-    });
 
     // #endregion
 

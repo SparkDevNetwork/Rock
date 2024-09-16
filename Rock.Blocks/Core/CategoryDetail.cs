@@ -286,8 +286,8 @@ namespace Rock.Blocks.Core
                     var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                     bag.EntityType = new ViewModels.Utility.ListItemBag
                     {
-                        Text = entityType.Name,
-                        Value = entityType.Guid.ToString()
+                        Text = entityType?.Name,
+                        Value = entityType?.Guid.ToString()
                     };
                 }
 
@@ -599,6 +599,45 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
+        /// Changes the ordered position of a single child category.
+        /// </summary>
+        /// <param name="key">The guid of the item that will be moved.</param>
+        /// <param name="beforeKey">The guid of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderChildCategory( string parentCategoryIdKey, string idKey, string beforeIdKey )
+        {
+            using (var rockContext = new RockContext() )
+            {
+                // Get the queryable and make sure it is ordered correctly.
+                var items = OrderedChildCategories( parentCategoryIdKey, rockContext );
+
+                if ( !items.ReorderEntity( idKey, beforeIdKey ) )
+                {
+                    return ActionBadRequest( "Invalid reorder attempt." );
+                }
+
+                foreach ( var item in items )
+                {
+                    rockContext.Entry( item ).State = System.Data.Entity.EntityState.Modified;
+                }
+
+                rockContext.SaveChanges();
+
+                // Clear cached content for the changed items.
+                CategoryCache.Remove( parentCategoryIdKey );
+                CategoryCache.Remove( idKey );
+
+                if ( beforeIdKey?.Length > 0 )
+                {
+                    CategoryCache.Remove( beforeIdKey );
+                }
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
         /// Gets a list of Categories that are a direct child of specified Category.Guid.
         /// </summary>
         /// <returns>A List of Categories.</returns>
@@ -618,19 +657,32 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetChildCategories( string idKey )
         {
-            var categoryService = new CategoryService( RockContext );
-            var guid = categoryService.GetSelect( idKey, c => c.Guid );
-
             var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuid();
             var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
 
-            var childCategories = categoryService
+            return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( OrderedChildCategories( idKey, RockContext ) ) );
+        }
+
+        /// <summary>
+        /// Gets a list of ordered child categories for the specified Category <paramref name="idKey"/>.
+        /// </summary>
+        /// <param name="idKey">The parent id key hash to use for getting the list of child categories.</param>
+        /// <returns>A list of <see cref="Category"/>.</returns>
+        private List<Category> OrderedChildCategories(string idKey, RockContext rockContext )
+        {
+            var categoryService = new CategoryService( rockContext );
+            var parentGuid = categoryService.GetSelect( idKey, c => c.Guid );
+
+            return categoryService
                 .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
                 {
-                    ParentGuid = guid
-                } );
-
-            return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( childCategories ) );
+                    ParentGuid = parentGuid
+                } )
+                .ToList()
+                .OrderBy( c => c.Order )
+                .ThenBy( c => c.Name )
+                .ThenBy( c => c.Id )
+                .ToList();
         }
 
         /// <summary>

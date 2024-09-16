@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.CheckIn.v2
@@ -35,5 +37,12 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The check in area data.</value>
         public AreaConfigurationData CheckInAreaData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the overflow location identifiers. These are in
+        /// proper order of location priority.
+        /// </summary>
+        /// <value>The overflow location identifiers.</value>
+        public List<string> OverflowLocationIds { get; set; }
     }
 }

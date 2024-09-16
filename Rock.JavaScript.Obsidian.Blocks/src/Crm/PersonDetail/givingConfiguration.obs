@@ -1,247 +1,245 @@
 <template>
-    <div>
-        <Panel :visible="config?.isVisible" title="Giving Configuration">
-            <template #default class="panel-body">
-                <!-- Add One-time Gift Button -->
-                <div>
-                    <button class="btn btn-default btn-sm btn-block mb-3" @click.prevent="addOneTimeGift">
-                        Add One-time Gift
-                    </button>
-                </div>
+    <Panel v-if="config?.isVisible && isVisible" title="Giving Configuration">
+        <template #default class="panel-body">
+            <!-- Add One-time Gift Button -->
+            <div>
+                <button class="btn btn-default btn-sm btn-block mb-3" @click.prevent="addOneTimeGift">
+                    Add One-time Gift
+                </button>
+            </div>
 
-                <hr class="separator" />
+            <hr class="separator" />
 
-                <!-- Text-To-Give Settings -->
-                <div>
-                    <div class="row">
-                        <div class="col-sm-10">
-                            <h5 class="my-0">Text-To-Give Settings</h5>
-                        </div>
-                        <div class="col-sm-12">
-                            <button v-if="!showTextToGive" class="btn btn-default btn-square btn-xs mt-3 mb-2 pull-right" type="button" title="Add Text-To-Give Configuration" @click.prevent="addTextToGiveSettings">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                            <button v-else-if="!isEditingTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" @click.prevent="toggleEditTextToGive">
-                                <i class="fa fa-pencil"></i>
-                            </button>
-                        </div>
+            <!-- Text-To-Give Settings -->
+            <div>
+                <div class="row">
+                    <div class="col-sm-10">
+                        <h5 class="my-0">Text-To-Give Settings</h5>
                     </div>
-
-                    <div v-if="showTextToGive">
-                        <div v-if="!isEditingTextToGive">
-                            <div class="row">
-                                <div class="col-md-6 col-sm-12">
-                                    <strong class="d-block text-sm">Default Account</strong>
-                                    <span class="d-block text-sm text-muted margin-b-sm">{{ defaultAccount }}</span>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <strong class="d-block text-sm">Saved Account</strong>
-                                    <span class="d-block text-sm text-muted">{{ savedAccount }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div v-else>
-                            <RockForm @submit="saveTextToGive">
-                                <div class="row margin-t-sm">
-                                    <div class="col-md-5 col-sm-12">
-                                        <AccountPicker v-model="selectedFinancialAccount" label="Default Account" />
-                                    </div>
-                                    <div class="col-md-7 col-sm-12">
-                                        <RockDropDownList
-                                                          v-model="selectedSavedAccount"
-                                                          label="Saved Account"
-                                                          :items="savedAccountOptions"
-                                                          placeholder="Select Saved Account"
-                                                          :disabled="savedAccountOptions.length === 0" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <button class="btn btn-sm btn-primary mb-3" type="submit">Save</button>
-                                    <button class="btn btn-sm btn-link mb-3" type="button" @click.prevent="cancelTextToGive">Cancel</button>
-                                </div>
-                            </RockForm>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="separator" />
-
-                <!-- Scheduled Transactions -->
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <h5 class="my-0">Scheduled Transactions</h5>
-                        <button v-if="hasInactiveTransactions" class="text-sm showinactive" @click.prevent="toggleShowInactive">
-                            {{ showInactiveText }}
+                    <div class="col-sm-12">
+                        <button v-if="!showTextToGive" class="btn btn-default btn-square btn-xs mt-3 mb-2 pull-right" type="button" title="Add Text-To-Give Configuration" @click.prevent="addTextToGiveSettings">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                        <button v-else-if="!isEditingTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" @click.prevent="toggleEditTextToGive">
+                            <i class="fa fa-pencil"></i>
                         </button>
                     </div>
-                    <table class="table table-inline">
-                        <tbody>
-                            <tr v-for="transaction in scheduledTransactions" :key="transaction.id" class="rollover-container-nested">
-                                <td class="pl-0 py-4">
-                                    <strong class="d-block text-sm">{{ transaction.accountSummary?.join(', ') }}</strong>
-                                    <span class="d-block text-sm text-muted">{{ transaction.frequencyText }} {{ transaction.nextPaymentDate ? `| Next Gift ${formatDate(transaction.nextPaymentDate)}` : '' }}</span>
-                                    <span class="d-block text-sm text-muted">
-                                        <span v-if="transaction?.financialPaymentDetail?.currencyType">{{ transaction.financialPaymentDetail?.creditCardType }} - {{ transaction.financialPaymentDetail?.accountNumberMasked?.substr(-4) }} | Exp: {{ transaction.financialPaymentDetail?.expirationDate }}</span>
-                                        <span v-else>{{ transaction?.financialPaymentDetail?.currencyType }}</span>
-                                    </span>
-                                    <span class="d-block text-sm text-muted">
-                                        <span v-if="transaction.savedAccountName">{{ transaction.savedAccountName }}</span>
-                                    </span>
-                                </td>
-                                <td class="text-right pr-0 py-4">
-                                    <span class="d-block">
-                                        <span v-if="!transaction.isActive" class="text-xs text-warning text-nowrap">
-                                            Inactive
-                                        </span>
-                                    </span>
-                                    <span class="scheduled-total font-weight-semibold text-sm d-block">
-                                        {{ toCurrencyOrNull(transaction.totalAmount) }}
-                                    </span>
-                                    <div class="rollover-item mt-3">
-                                        <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editScheduledTransaction(transaction)" title="Edit Scheduled Transaction">
-                                            <i class="fa fa-pencil"></i>
-                                        </button>
-                                        <button v-if="transaction.isActive" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <button class="btn btn-default btn-square btn-xs mt-3 pull-right" type="button" @click.prevent="addScheduledTransaction" title="Add Scheduled Transaction">
-                                <i class="fa fa-plus"></i>
-                            </button>
+                </div>
+
+                <div v-if="showTextToGive">
+                    <div v-if="!isEditingTextToGive">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <strong class="d-block text-sm">Default Account</strong>
+                                <span class="d-block text-sm text-muted margin-b-sm">{{ defaultAccount }}</span>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <strong class="d-block text-sm">Saved Account</strong>
+                                <span class="d-block text-sm text-muted">{{ savedAccount }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Saved Accounts -->
-                <div v-if="hasSavedAccounts" class="mb-3">
-                    <hr class="separator" />
-                    <h5 class="my-0">
-                        Saved Accounts
-                    </h5>
-                    <table class="table table-inline table-hide-last-border">
-                        <tbody>
-                            <tr v-for="account in savedAccounts" :key="'account' + account.id" class="rollover-container-nested">
-                                <td class="pl-0 py-4">
-                                    <strong class="d-block text-sm">
-                                        {{ account.name }}
-                                    </strong>
-                                    <span class="d-block text-sm text-muted">
-                                        <span v-if="account.financialPaymentDetail?.currencyType">
-                                            {{ account.financialPaymentDetail.creditCardType }} - {{ account.financialPaymentDetail.accountNumberMasked?.substr(-4) }} | Exp: {{ account.financialPaymentDetail.expirationDate }}
-                                        </span>
-                                        <span v-else>
-                                            {{ account.financialPaymentDetail?.currencyType }}
-                                        </span>
+                    <div v-else>
+                        <RockForm @submit="saveTextToGive">
+                            <div class="row margin-t-sm">
+                                <div class="col-md-5 col-sm-12">
+                                    <AccountPicker v-model="selectedFinancialAccount" label="Default Account" />
+                                </div>
+                                <div class="col-md-7 col-sm-12">
+                                    <RockDropDownList
+                                                        v-model="selectedSavedAccount"
+                                                        label="Saved Account"
+                                                        :items="savedAccountOptions"
+                                                        placeholder="Select Saved Account"
+                                                        :disabled="savedAccountOptions.length === 0" />
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary mb-3" type="submit">Save</button>
+                                <button class="btn btn-sm btn-link mb-3" type="button" @click.prevent="cancelTextToGive">Cancel</button>
+                            </div>
+                        </RockForm>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="separator" />
+
+            <!-- Scheduled Transactions -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="my-0">Scheduled Transactions</h5>
+                    <button v-if="hasInactiveTransactions" class="text-sm showinactive" @click.prevent="toggleShowInactive">
+                        {{ showInactiveText }}
+                    </button>
+                </div>
+                <table class="table table-inline">
+                    <tbody>
+                        <tr v-for="transaction in scheduledTransactions" :key="transaction.id" class="rollover-container-nested">
+                            <td class="pl-0 py-4">
+                                <strong class="d-block text-sm">{{ transaction.accountSummary?.join(', ') }}</strong>
+                                <span class="d-block text-sm text-muted">{{ transaction.frequencyText }} {{ transaction.nextPaymentDate ? `| Next Gift ${formatDate(transaction.nextPaymentDate)}` : '' }}</span>
+                                <span class="d-block text-sm text-muted">
+                                    <span v-if="transaction?.financialPaymentDetail?.currencyType">{{ transaction.financialPaymentDetail?.creditCardType }} - {{ transaction.financialPaymentDetail?.accountNumberMasked?.substr(-4) }} | Exp: {{ transaction.financialPaymentDetail?.expirationDate }}</span>
+                                    <span v-else>{{ transaction?.financialPaymentDetail?.currencyType }}</span>
+                                </span>
+                                <span class="d-block text-sm text-muted">
+                                    <span v-if="transaction.savedAccountName">{{ transaction.savedAccountName }}</span>
+                                </span>
+                            </td>
+                            <td class="text-right pr-0 py-4">
+                                <span class="d-block">
+                                    <span v-if="!transaction.isActive" class="text-xs text-warning text-nowrap">
+                                        Inactive
                                     </span>
-                                </td>
-                                <td class="text-right pr-0 py-4">
-                                    <div v-if="account.isExpired" class="text-danger text-xs">
-                                        Expired
-                                    </div>
-                                    <div v-else-if="account.lastErrorCode" class="text-danger text-xs">
-                                        {{ `Error: ${account.lastErrorCode} on ${formatDate(account.lastErrorCodeDateTime ?? null)}` }}
-                                    </div>
-                                    <div v-else-if="accountIsInUse(account.id.toString())" class="text-success text-xs">
-                                        In Use
-                                    </div>
-                                    <div v-else-if="account.isDefault" class="text-muted text-xs">
-                                        Default
-                                    </div>
-                                    <div v-else class="text-muted text-xs">
-                                        Not In Use
-                                    </div>
-                                    <div class="rollover-item">
-                                        <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" @click.prevent="deleteSavedAccount(account)">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </span>
+                                <span class="scheduled-total font-weight-semibold text-sm d-block">
+                                    {{ toCurrencyOrNull(transaction.totalAmount) }}
+                                </span>
+                                <div class="rollover-item mt-3">
+                                    <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editScheduledTransaction(transaction)" title="Edit Scheduled Transaction">
+                                        <i class="fa fa-pencil"></i>
+                                    </button>
+                                    <button v-if="transaction.isActive" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <button class="btn btn-default btn-square btn-xs mt-3 pull-right" type="button" @click.prevent="addScheduledTransaction" title="Add Scheduled Transaction">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
+            </div>
 
+            <!-- Saved Accounts -->
+            <div v-if="hasSavedAccounts" class="mb-3">
+                <hr class="separator" />
+                <h5 class="my-0">
+                    Saved Accounts
+                </h5>
+                <table class="table table-inline table-hide-last-border">
+                    <tbody>
+                        <tr v-for="account in savedAccounts" :key="'account' + account.id" class="rollover-container-nested">
+                            <td class="pl-0 py-4">
+                                <strong class="d-block text-sm">
+                                    {{ account.name }}
+                                </strong>
+                                <span class="d-block text-sm text-muted">
+                                    <span v-if="account.financialPaymentDetail?.currencyType">
+                                        {{ account.financialPaymentDetail.creditCardType }} - {{ account.financialPaymentDetail.accountNumberMasked?.substr(-4) }} | Exp: {{ account.financialPaymentDetail.expirationDate }}
+                                    </span>
+                                    <span v-else>
+                                        {{ account.financialPaymentDetail?.currencyType }}
+                                    </span>
+                                </span>
+                            </td>
+                            <td class="text-right pr-0 py-4">
+                                <div v-if="account.isExpired" class="text-danger text-xs">
+                                    Expired
+                                </div>
+                                <div v-else-if="account.lastErrorCode" class="text-danger text-xs">
+                                    {{ `Error: ${account.lastErrorCode} on ${formatDate(account.lastErrorCodeDateTime ?? null)}` }}
+                                </div>
+                                <div v-else-if="accountIsInUse(account.id.toString())" class="text-success text-xs">
+                                    In Use
+                                </div>
+                                <div v-else-if="account.isDefault" class="text-muted text-xs">
+                                    Default
+                                </div>
+                                <div v-else class="text-muted text-xs">
+                                    Not In Use
+                                </div>
+                                <div class="rollover-item">
+                                    <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" @click.prevent="deleteSavedAccount(account)">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="separator" />
+
+            <!-- Pledges -->
+            <div class="mb-3">
+                <h5 class="my-0">
+                    Pledges
+                </h5>
+                <table class="table table-inline">
+                    <tbody>
+                        <tr v-for="pledge in pledges" :key="pledge.guid" class="rollover-container-nested">
+                            <td class="pl-0 py-4">
+                                <span class="d-block text-sm">
+                                    <strong v-if="!pledge.startDate && !pledge.endDate">
+                                        No Dates Provided
+                                    </strong>
+                                    <strong v-else-if="pledge.startDate && pledge.endDate">
+                                        {{ formatDate(pledge.startDate) }} {{ calculateDuration(pledge.startDate, pledge.endDate) }}
+                                    </strong>
+                                    <strong v-else-if="pledge.startDate && !pledge.endDate">
+                                        {{ formatDate(pledge.startDate) }} Onward
+                                    </strong>
+                                    <strong v-else-if="!pledge.startDate && pledge.endDate">
+                                        Till {{ formatDate(pledge.endDate) }}
+                                    </strong>
+                                </span>
+                                <span class="d-block text-sm text-muted">
+                                    {{ pledge.account?.publicName }}
+                                    <span v-if="pledge.pledgeFrequencyValue" class="o-30">|</span>
+                                    {{ pledge.pledgeFrequencyValue }}
+                                </span>
+                            </td>
+                            <td class="text-right pr-0 py-4">
+                                <span class="scheduled-total font-weight-semibold text-sm d-block">
+                                    {{ toCurrencyOrNull(pledge.totalAmount) }}
+                                </span>
+                                <div class="rollover-item d-flex justify-content-end">
+                                    <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editPledge(pledge)" title="Edit Pledge">
+                                        <i class="fa fa-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge" @click.prevent="deletePledge(pledge)" title="Delete Pledge">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <button class="btn btn-default btn-square btn-xs mt-3 pull-right" @click.prevent="addPledge" title="Add Pledge">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contribution Statements -->
+            <div v-if="contributionStatements.length > 0">
                 <hr class="separator" />
 
-                <!-- Pledges -->
-                <div class="mb-3">
-                    <h5 class="my-0">
-                        Pledges
+                <div class="border-panel">
+                    <h5 class="mt-0 mb-3">
+                        Contribution Statements
                     </h5>
-                    <table class="table table-inline">
-                        <tbody>
-                            <tr v-for="pledge in pledges" :key="pledge.guid" class="rollover-container-nested">
-                                <td class="pl-0 py-4">
-                                    <span class="d-block text-sm">
-                                        <strong v-if="!pledge.startDate && !pledge.endDate">
-                                            No Dates Provided
-                                        </strong>
-                                        <strong v-else-if="pledge.startDate && pledge.endDate">
-                                            {{ formatDate(pledge.startDate) }} {{ calculateDuration(pledge.startDate, pledge.endDate) }}
-                                        </strong>
-                                        <strong v-else-if="pledge.startDate && !pledge.endDate">
-                                            {{ formatDate(pledge.startDate) }} Onward
-                                        </strong>
-                                        <strong v-else-if="!pledge.startDate && pledge.endDate">
-                                            Till {{ formatDate(pledge.endDate) }}
-                                        </strong>
-                                    </span>
-                                    <span class="d-block text-sm text-muted">
-                                        {{ pledge.account?.publicName }}
-                                        <span v-if="pledge.pledgeFrequencyValue" class="o-30">|</span>
-                                        {{ pledge.pledgeFrequencyValue }}
-                                    </span>
-                                </td>
-                                <td class="text-right pr-0 py-4">
-                                    <span class="scheduled-total font-weight-semibold text-sm d-block">
-                                        {{ toCurrencyOrNull(pledge.totalAmount) }}
-                                    </span>
-                                    <div class="rollover-item d-flex justify-content-end">
-                                        <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editPledge(pledge)" title="Edit Pledge">
-                                            <i class="fa fa-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge" @click.prevent="deletePledge(pledge)" title="Delete Pledge">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <button class="btn btn-default btn-square btn-xs mt-3 pull-right" @click.prevent="addPledge" title="Add Pledge">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
+                    <div>
+                        <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default mx-1" @click.prevent="viewContributionStatement(statement)">
+                            {{ statement.isCurrentYear ? `${statement.year} YTD` : statement.year }}
+                        </button>
                     </div>
                 </div>
-
-                <!-- Contribution Statements -->
-                <div v-if="contributionStatements.length > 0">
-                    <hr class="separator" />
-
-                    <div class="border-panel">
-                        <h5 class="mt-0 mb-3">
-                            Contribution Statements
-                        </h5>
-                        <div>
-                            <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default mx-1" @click.prevent="viewContributionStatement(statement)">
-                                {{ statement.isCurrentYear ? `${statement.year} YTD` : statement.year }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </Panel>
-    </div>
+            </div>
+        </template>
+    </Panel>
 </template>
 
 <style scoped>
@@ -307,6 +305,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { NavigationUrlKey, PageParameterKey } from "./types.partial";
+    import { useStore } from "@Obsidian/PageState";
 
     // #region Values
 
@@ -329,6 +328,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown;
+    });
 
     const showInactiveText = computed(() => showInactive.value ? "Hide Inactive" : "Show Inactive");
 

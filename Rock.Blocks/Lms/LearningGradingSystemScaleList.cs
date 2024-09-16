@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays a list of learning grading system scales." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning grading system scale details.",
@@ -78,7 +78,7 @@ namespace Rock.Blocks.Lms
 
             box.IsAddEnabled = GetIsAddEnabled();
             box.IsDeleteEnabled = true;
-            box.ExpectedRowCount = 5;
+            box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
@@ -114,9 +114,15 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningGradingSystemId] = PageParameter( PageParameterKey.LearningGradingSystemId ),
+                ["LearningGradingSystemScaleId"] = "((Key))",
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningGradingSystemScaleId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
@@ -136,7 +142,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "thresholdPercentage ", a => a.ThresholdPercentage )
+                .AddField( "thresholdPercentage", a => a.ThresholdPercentage )
                 .AddField( "isPassing", a => a.IsPassing )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );

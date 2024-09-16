@@ -6,15 +6,16 @@
                 <TextBox v-model="name"
                          label="Name"
                          rules="required" />
-
             </div>
 
             <div class="col-md-12">
-                <StructuredContentEditor v-model="description"
-                                         label="Description" />
-
+                <TextBox v-model="description"
+                         textMode="multiline"
+                         label="Description" />
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-6">
                 <RadioButtonList v-model="assignTo"
                                  :disabled="options.hasCompletions"
@@ -24,16 +25,11 @@
                                  help="Determines if the activity will be completed by the student or the facilitator."
                                  :items="assignTos" />
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-6">
-                <CheckBox v-model="isStudentCommentingEnabled"
-                          :disabled="options.hasCompletions"
-                          label="Enable Student Commenting"
-                          help="Allow students to comment on this assignment." />
-            </div>
-            <div class="col-md-6">
-                <DropDownList
-                              v-model="availableDateCalculationMethod"
+                <DropDownList v-model="availableDateCalculationMethod"
                               :disabled="options.hasCompletions"
                               :grouped="false"
                               :items="availableDateCalculationMethods"
@@ -45,6 +41,7 @@
             </div>
             <div class="col-md-6">
                 <template v-if="availableDateCalculationMethod == AvailableDateCalculationMethod.Specific.toString()">
+
                     <DatePicker v-model="availableDateDefault"
                                 :disabled="options.hasCompletions"
                                 rules="required"
@@ -68,6 +65,9 @@
                     </NumberBox>
                 </template>
             </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-6">
                 <DropDownList
                               v-model="dueDateCalculationMethod"
@@ -80,7 +80,6 @@
                               :multiple="false"
                               :showBlankItem="false" />
             </div>
-
             <div class="col-md-6">
                 <template v-if="dueDateCalculationMethod == DueDateCalculationMethod.Specific.toString()">
                     <DatePicker v-model="dueDateDefault" rules="required"
@@ -105,6 +104,27 @@
                     </NumberBox>
                 </template>
             </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <WorkflowTypePicker v-model="completionWorkflowType"
+                                    :disabled="options.hasCompletions"
+                                    label="Completion Workflow Type"
+                                    help="The workflow to launch when an individual completes the activity." />
+
+            </div>
+
+            <div class="col-md-6">
+                <NumberBox v-model="points"
+                           :disabled="options.hasCompletions"
+                           label="Points"
+                           help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
+                           inputGroupClasses="input-width-md" />
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-6">
                 <CheckBox v-model="sendNotificationCommunication"
                           :disabled="options.hasCompletions"
@@ -112,21 +132,15 @@
                           help="Determines if a notification should be sent when this activity is available." />
             </div>
             <div class="col-md-6">
-                <WorkflowTypePicker v-model="completionWorkflowType"
-                                    :disabled="options.hasCompletions"
-                                    label="Completion Workflow Type"
-                                    help="The workflow to launch when an individual completes the activity." />
+                <CheckBox v-model="isStudentCommentingEnabled"
+                          :disabled="options.hasCompletions"
+                          label="Enable Student Commenting"
+                          help="Allow students to comment on this assignment." />
             </div>
-            <div class="col-md-6">
-                <NumberBox v-model="points"
-                           :disabled="options.hasCompletions"
-                           label="Points"
-                           help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
-                           inputGroupClasses="input-width-md">
-                </NumberBox>
-            </div>
-            <div class="col-md-6">
+        </div>
 
+        <div class="row">
+            <div class="col-md-6">
                 <DropDownList v-model="activityComponentValue"
                               :disabled="options.hasCompletions"
                               :grouped="false"
@@ -139,9 +153,7 @@
         </div>
 
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent v-model:activityBag="activityBag"
-                               :disabled="options.hasCompletions"
-                               :screenToShow="ComponentScreen.Configuration" />
+        <activityTypeComponent v-model:activityBag="activityBag" :disabled="options.hasCompletions" :screenToShow="ComponentScreen.Configuration" />
     </fieldset>
 </template>
 
@@ -154,7 +166,6 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
-    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

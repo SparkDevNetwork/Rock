@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -72,6 +72,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import BadgeList from "@Obsidian/Controls/badgeList.obs";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -83,6 +84,7 @@
     const isSaving = ref(false);
     const submitForm = ref(false);
     const customActionClassList = ref(["action", "panel-action-context", "clickable"]);
+    const store = useStore();
 
     const businessDetailViewBag = ref(config.entity);
     const businessDetailEditBag = ref<ValidPropertiesBox<BusinessDetailBag>>({
@@ -191,6 +193,7 @@
             }
         }
         else {
+            store.setAreSecondaryBlocksShown(true);
             panelMode.value = DetailPanelMode.View;
         }
     }
@@ -213,6 +216,7 @@
             };
 
             panelMode.value = DetailPanelMode.Edit;
+            store.setAreSecondaryBlocksShown(false);
         }
     }
 
@@ -233,6 +237,7 @@
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 businessDetailViewBag.value = result.data.bag;
+                store.setAreSecondaryBlocksShown(true);
                 panelMode.value = DetailPanelMode.View;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
@@ -273,6 +278,15 @@
         businessDetailEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onMounted(() => {
+        if (config.entity?.idKey) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 
     onConfigurationValuesChanged(useReloadBlock());
 

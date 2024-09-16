@@ -41,7 +41,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning class announcement." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -318,22 +318,19 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassAnnouncementId ) ?? "";
+
+            var entityName = entityKey.Length > 0 ? new Service<LearningClassAnnouncement>( RockContext ).GetSelect( entityKey, p => p.Title ) : "New Announcement";
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "New Announcement", breadCrumbPageRef );
+
+            return new BreadCrumbResult
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassAnnouncementId ) ?? "";
-
-                var entityName = entityKey.Length > 0 ? new Service<LearningClassAnnouncement>( rockContext ).GetSelect( entityKey, p => p.Title ) : "New Announcement";
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Announcement", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
+                BreadCrumbs = new List<IBreadCrumb>
                     {
                         breadCrumb
                     }
-                };
-            }
+            };
         }
 
         #endregion

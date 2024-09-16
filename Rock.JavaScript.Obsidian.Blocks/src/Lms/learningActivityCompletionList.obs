@@ -64,7 +64,8 @@
                 :filterValue="getRowStatusesFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div v-html="getRowStatusLabels(row)"></div>
+                <span v-if="getRequiresScoring(row)" class="mr-1 mb-1 label label-warning">Requires Scoring</span>
+                <span v-if="getIsLate(row)" class="mr-1 mb-1 label label-warning">Late</span>
             </template>
         </Column>
 
@@ -76,7 +77,8 @@
                 :filterValue="getRowCommentsFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div v-html="getRowCommentLabels(row)"></div>
+                <span v-if="hasValue(row.studentComment)" class="mr-1 mb-1 label label-info">Student</span>
+                <span v-if="hasValue(row.facilitatorComment)" class="mr-1 mb-1 label label-default">Facilitator</span>
             </template>
         </Column>
     </Grid>
@@ -154,10 +156,6 @@
 
     // #region Functions
 
-    function getLabelHtml(type: string, text: string): string {
-        return `<span class="mr-1 mb-1 label label-${type}">${text}</span>`;
-    }
-
     /**
      * Gets the filter value text to use for the statuses column.
      *
@@ -184,29 +182,32 @@
      */
     function getRowStatusesFilterValue(row: Record<string, unknown>): string {
         return [
-            row.isFacilitatorCompleted === false && !!row.completionDate ? "requires scoring" : "",
-            !row.wasCompletedOnTime ? "late: " : "",
+            getRequiresScoring(row) ? "requires scoring" : "",
+            getIsLate(row) ? "late: " : "",
         ].join(" ");
     }
 
-    function getRowStatusLabels(row: Record<string, unknown>): string {
-        if (!row.completionDate) {
-            return "";
-        }
+    /**
+     * Determines whether the activity completion requires scoring.
+     * @param row The row from the grid for determining if scoring is required.
+     * @returns true if the row requires scoring; otherwise false.
+     */
+    function getRequiresScoring(row: Record<string, unknown>): boolean {
+        const availablePoints = Number(row.points);
+        return row.isFacilitatorCompleted === false && row.isStudentCompleted === true && availablePoints > 0;
+    }
 
-        const isFacilitatorCompleted = row.isFacilitatorCompleted === true ?? false;
-        const wasCompletedOnTime = row.wasCompletedOnTime === true ?? false;
-
-        let labels = "";
-        if (!isFacilitatorCompleted) {
-            labels += getLabelHtml("warning", "Requires Scoring");
-        }
-
-        if (!wasCompletedOnTime) {
-            labels += getLabelHtml("warning", "Late");
-        }
-
-        return labels;
+    /**
+     * Determines whether the activity completion is currently or was completed late.
+     * @param row The row from the grid for determining if completed late.
+     * @returns true if the row is currently or was completed late; otherwise false.
+     */
+    function getIsLate(row: Record<string, unknown>): boolean {
+        const dueDate = RockDateTime.parseISO(row.dueDate as string);
+        const isLate = dueDate != null && dueDate >= RockDateTime.now();
+        const isStudentCompleted = row.isStudentCompleted === true;
+        const wasCompletedLate = isStudentCompleted && row.wasCompletedOnTime === false;
+        return (isLate && !isStudentCompleted) || wasCompletedLate;
     }
 
     /**
@@ -220,22 +221,6 @@
             hasValue(row.studentComment as string) ? "student: " + row.studentComment as string : "",
             hasValue(row.facilitatorComment as string) ? "facilitator: " + row.studentComment as string : "",
         ].join(" ");
-    }
-
-    function getRowCommentLabels(row: Record<string, unknown>): string {
-        const facilitatorComment = row.facilitatorComment as string ?? "";
-        const studentComment = row.studentComment as string ?? "";
-
-        let labels = "";
-        if (hasValue(studentComment)) {
-            labels += getLabelHtml("info", "Student");
-        }
-
-        if (hasValue(facilitatorComment)) {
-            labels += getLabelHtml("default", "Facilitator");
-        }
-
-        return labels;
     }
 
     function hasValue(text: string): boolean {

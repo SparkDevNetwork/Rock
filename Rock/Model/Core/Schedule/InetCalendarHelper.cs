@@ -104,7 +104,8 @@ namespace Rock.Model
             var iCalString = serializer.SerializeToString();
             return iCalString;
         }
-        
+
+        /// <summary>
         /// Gets the occurrences for the specified iCal
         /// </summary>
         /// <param name="iCalendarContent">RFC 5545 ICal Content</param>

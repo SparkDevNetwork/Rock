@@ -1,15 +1,42 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="input-group input-width-md js-date-picker date">
-        <input ref="inputEl" type="text" :id="computedId" class="form-control" v-model.lazy="internalValue" :disabled="disabled" />
-        <span class="input-group-addon">
+        <!-- Switch between Bootstrap and Native Date Picker depending on screen size for better mobile experience -->
+        <input v-show="!isNative"
+               ref="inputEl"
+               type="text"
+               :id="computedId"
+               class="form-control"
+               v-model.lazy="internalValue"
+               :disabled="disabled" />
+        <span v-show="!isNative" class="input-group-addon">
             <i class="fa fa-calendar"></i>
         </span>
+        <input v-if="isNative"
+               type="date"
+               class="form-control native-date-picker"
+               v-model="nativeDatePickerValue"
+               @change="onDateInputChange"
+               :disabled="disabled"
+               :min="dateLimiterOptions.startDate?.toISOString().substring(0, 10)"
+               :max="dateLimiterOptions.endDate?.toISOString().substring(0, 10)" />
     </div>
 </template>
 
+<style>
+.input-group .native-date-picker.form-control {
+    max-width: 150px;
+    border-radius: 4px;
+    padding-left: 5px;
+    padding-right: 5px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, onMounted, PropType, watch, ref, nextTick } from "vue";
+    import { computed, onMounted, PropType, watch, ref, nextTick, onUnmounted } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { LocaleDateFormatter } from "@Obsidian/Utility/localeDateFormatter";
     import { DateTime } from "luxon";
@@ -104,8 +131,10 @@
     // #region Values
 
     const internalValue = ref<string | null>(null);
+    const nativeDatePickerValue = ref("");
     const defaultId = `datepicker-${newGuid()}`;
     const inputEl = ref<HTMLInputElement | null>(null);
+    const isNative = ref(false);
 
     // #endregion
 
@@ -117,6 +146,7 @@
 
     const asRockDateOrNull = computed(() => {
         let date: DateTime | undefined = undefined;
+
         if (internalValue.value) {
             date = DateTime.fromFormat(internalValue.value, currentLocaleDateFormatter.aspDateFormat);
         }
@@ -147,7 +177,6 @@
 
     function initializePopup(): void {
         const input = inputEl.value;
-
         if (!input) {
             return;
         }
@@ -161,12 +190,36 @@
             todayHighlight: !props.disableHighlightToday,
             forceParse: !props.disableForceParse,
             onChangeScript: () => {
-                internalValue.value = input.value;
+                // We need to wait for the next tick because if internalValue is set manually,
+                // `input.value` will not have been updated.
+                nextTick(() => {
+                    internalValue.value = input.value;
+                });
             },
             container: props.container ?? "body",
             orientation: props.horizontalOrientation || "auto",
             actions
         });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onDateInputChange(e: Event): void {
+        const newVal = DateTime.fromISO((e.target as HTMLInputElement)?.value ?? "")
+            ?.toFormat(currentLocaleDateFormatter.aspDateFormat);
+
+        internalValue.value = newVal;
+    }
+
+    function onResize(): void {
+        if (screen.width <= 480) {
+            isNative.value = true;
+        }
+        else {
+            isNative.value = false;
+        }
     }
 
     // #endregion
@@ -193,6 +246,7 @@
     }, { immediate: true });
 
     watch(asRockDateOrNull, () => {
+        nativeDatePickerValue.value = asRockDateOrNull.value ?? "";
         emit("update:modelValue", asRockDateOrNull.value);
     });
 
@@ -204,7 +258,14 @@
         // Bit of a back to make sure all our props are set correctly.
         nextTick(() => {
             initializePopup();
+            onResize();
         });
+
+        window.addEventListener("resize", onResize);
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener("resize", onResize);
     });
 
     // #endregion

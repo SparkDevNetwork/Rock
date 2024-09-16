@@ -33,7 +33,6 @@ using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
 {
@@ -48,13 +47,10 @@ namespace Rock.Blocks.Lms
 
     #region Block Attributes
 
-    [CategoryField(
-        "Category",
-        Description = "Optional category for the Program.",
-        Key = AttributeKey.Category,
-        AllowMultiple = false,
-        EntityType = typeof( Rock.Model.LearningProgram ),
-        IsRequired = false,
+    [BooleanField( "Show KPIs",
+        Description = "Determines if the KPIs are visible.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowKPIs,
         Order = 1 )]
 
     [CustomDropdownListField(
@@ -65,11 +61,6 @@ namespace Rock.Blocks.Lms
         IsRequired = true,
         DefaultValue = "Summary",
         Order = 2 )]
-
-    [BooleanField( "Show KPIs",
-        Description = "Determines if the KPIs are visible.",
-        DefaultBooleanValue = true,
-        Key = AttributeKey.ShowKPIs )]
 
     [LinkedPage( "Courses Page",
         Description = "The page that will show the courses for the learning program.",
@@ -265,7 +256,7 @@ namespace Rock.Blocks.Lms
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 CompletionWorkflowTypeId = entity.CompletionWorkflowTypeId,
                 Completions = kpis.Completions,
-                ConfigurationMode = entity.ConfigurationMode,
+                ConfigurationMode = entity.Id > 0 ? ( ConfigurationMode? ) entity.ConfigurationMode : null,
                 Description = entity.Description,
                 HighlightColor = entity.HighlightColor,
                 IconCssClass = entity.IconCssClass,
@@ -376,7 +367,7 @@ namespace Rock.Blocks.Lms
             }
 
             box.IfValidProperty( nameof( box.Bag.ConfigurationMode ),
-                () => entity.ConfigurationMode = box.Bag.ConfigurationMode );
+                () => entity.ConfigurationMode = box.Bag.ConfigurationMode.Value );
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
@@ -431,7 +422,7 @@ namespace Rock.Blocks.Lms
         {
             var initialEntity = GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
 
-            if (initialEntity.Id == 0 )
+            if ( initialEntity.Id == 0 )
             {
                 const string infoColor = "#007aff";
                 initialEntity.IsActive = true;
@@ -514,22 +505,19 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
+
+            var entityName = entityKey.Length > 0 ? new LearningProgramService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
+
+            return new BreadCrumbResult
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
-
-                var entityName = entityKey.Length > 0 ? new LearningProgramService( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
+                BreadCrumbs = new List<IBreadCrumb>
                 {
                     breadCrumb
                 }
-                };
-            }
+            };
         }
 
         #endregion
@@ -543,7 +531,7 @@ namespace Rock.Blocks.Lms
         /// <returns>A box that contains the entity and any other information required.</returns>
         [BlockAction]
         public BlockActionResult GetEntityBagWithAllAttributes()
-    {
+        {
             var entity = GetInitialEntity();
 
             // Reload attributes based on the new property values.
@@ -563,20 +551,20 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-                if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
 
-                entity.LoadAttributes( RockContext );
+            entity.LoadAttributes( RockContext );
 
             var bag = GetEntityBagForEdit( entity );
 
-                return ActionOk( new ValidPropertiesBox<LearningProgramBag>
-                {
-                    Bag = bag,
-                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-                } );
+            return ActionOk( new ValidPropertiesBox<LearningProgramBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -645,22 +633,22 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-                var entityService = new LearningProgramService( RockContext );
+            var entityService = new LearningProgramService( RockContext );
 
-                if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
 
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
 
-                entityService.Delete( entity );
-                RockContext.SaveChanges();
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>

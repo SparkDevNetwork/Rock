@@ -31,7 +31,8 @@ namespace Rock.CheckIn.v2
     /// if this node has any connected services for the indicated proxy device
     /// and sends the label data to the proxy.
     /// </summary>
-    internal class CloudPrintLabelConsumer : RockConsumer<CloudPrintQueue, CloudPrintLabelMessage>
+    [DynamicConsumer]
+    internal class CloudPrintLabelConsumer : RockConsumer<CloudPrintCommandQueue, CloudPrintLabelMessage>
     {
         /// <inheritdoc/>
         public override async Task Consume( ConsumeContext<CloudPrintLabelMessage> context )

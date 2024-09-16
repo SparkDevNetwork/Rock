@@ -61,6 +61,7 @@
                         {{ action.title }}
                     </RockButton>
                 </div>
+
                 <Modal v-model="showDetailsModal" title="Additional Details">
                     <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
                 </Modal>
@@ -106,10 +107,6 @@
 
     // #region Values
 
-    const tabs = ref(["Overview", "Description", "Completions", "Semesters"]);
-
-    const selectedTabIndex = ref(0);
-
     const blockError = ref("");
     const errorMessage = ref("");
     const showDetailsModal = ref(false);
@@ -122,39 +119,43 @@
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    const imageGuid = ref<string>(learningProgramViewBag.value?.imageBinaryFile?.value ?? "");
-    const iconCssClass = ref<string>(learningProgramViewBag.value?.iconCssClass ?? "");
-    const highlightColor = ref<string>(learningProgramViewBag.value?.highlightColor ?? "");
-
     const activeClasses = ref(learningProgramViewBag.value?.activeClasses);
     const activeStudents = ref(learningProgramViewBag.value?.activeStudents);
     const completions = ref(learningProgramViewBag.value?.completions);
     const showKpis = ref(learningProgramViewBag.value?.showKpis);
 
     const programName = ref(learningProgramViewBag.value?.publicName ?? "");
-    const isAcademicConfigurationMode = learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar;
+    const isAcademicConfigurationMode = ref(learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar);
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
         entity: learningProgramEditBag
     });
 
+    const tabs = computed(() =>
+        isAcademicConfigurationMode ?
+        ["Overview", "Description", "Completions", "Semesters"] :
+        ["Overview", "Description"]
+    );
+
+    const selectedTabIndex = ref(0);
+
     // #endregion
 
     // #region Computed Values
 
+    const imageGuid = computed((): string => learningProgramViewBag.value?.imageBinaryFile?.value ?? "");
+    const iconCssClass = computed((): string => learningProgramViewBag.value?.iconCssClass ?? "");
+    const highlightColor = computed((): string => learningProgramViewBag.value?.highlightColor ?? "");
+
     /**
      * The entity name to display in the block panel.
      */
-    const panelName = computed((): string => {
-        return learningProgramViewBag.value?.name ?? "";
-    });
+    const panelName = computed((): string => learningProgramViewBag.value?.name ?? "");
 
     /**
      * The identifier key value for this entity.
      */
-    const entityKey = computed((): string => {
-        return learningProgramViewBag.value?.idKey ?? "";
-    });
+    const entityKey = computed((): string => learningProgramViewBag.value?.idKey ?? "");
 
     /**
      * Additional labels to display in the block panel.
@@ -166,7 +167,8 @@
             return undefined;
         }
 
-        if (learningProgramViewBag.value != null) {
+        if (learningProgramViewBag.value?.configurationMode != null) {
+
             labels.push({
                 title: ConfigurationModeDescription[learningProgramViewBag.value.configurationMode],
                 type: "default"
@@ -188,7 +190,7 @@
         }
         else {
             labels.push({
-                title: "Private",
+                title: "Internal",
                 type: "warning"
             });
         }
@@ -231,22 +233,33 @@
             });
         }
 
-        footerActionsPanelActions.push({
-            title: "Completions",
-            type: "default",
-            handler: () => {
-                onSelectTab(tabs.value.findIndex(t => t === "Completions"));
-            }
-        });
-
-        if (learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar) {
+        // Completions and Semesters are only applicable to Academic Calendar mode programs.
+        if (isAcademicConfigurationMode.value === true) {
             footerActionsPanelActions.push({
-                title: "Semesters",
+                title: "Completions",
                 type: "default",
                 handler: () => {
-                    onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
+                    onSelectTab(tabs.value.findIndex(t => t === "Completions"));
+
+                    // Because we're showing other content and
+                    // we don't want secondary blocks to be visible
+                    // we need to alert them via the browser bus.
+                    browserBus.publish(BlockMessages.BeginEdit);
                 }
             });
+
+            footerActionsPanelActions.push({
+                    title: "Semesters",
+                    type: "default",
+                    handler: () => {
+                        onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
+
+                        // Because we're showing other content and
+                        // we don't want secondary blocks to be visible
+                        // we need to alert them via the browser bus.
+                        browserBus.publish(BlockMessages.BeginEdit);
+                    }
+                });
         }
 
         return footerActionsPanelActions;
@@ -296,6 +309,7 @@
     const isCompletionsTabSelected = computed((): boolean => selectedTabIndex.value === 2);
     const isDescriptionTabSelected = computed((): boolean => selectedTabIndex.value === 1);
     const isSemestersTabSelected = computed((): boolean => selectedTabIndex.value === 3);
+    const isOverviewTabSelected = computed((): boolean => selectedTabIndex.value === 0);
 
     const options = computed((): LearningProgramDetailOptionsBag => {
         return config.options ?? {};
@@ -435,8 +449,7 @@
         return false;
     }
 
-    function onSelectTab(tabIndex: number): void {
-
+    async function onSelectTab(tabIndex: number): Promise<void> {
         if (selectedTabIndex.value === tabIndex) {
             return;
         }
@@ -449,7 +462,14 @@
         selectedTabIndex.value = tabIndex;
 
         if (isDescriptionTabSelected.value === true && isEditable.value === true) {
-            onEdit();
+            if (await onEdit()) {
+                panelMode.value = DetailPanelMode.Edit;
+            }
+        }
+        else if (isOverviewTabSelected.value === true){
+            // If we're coming from another tab we should send an alert
+            // via the browser bus that we're exiting edit mode.
+            browserBus.publish(BlockMessages.EndEdit);
         }
     }
 
@@ -497,6 +517,12 @@
     let tabIndex = 0;
     if (queryString.has("tab")) {
         const tab = queryString.get("tab")?.toLowerCase() ?? "";
+
+        // Because we include a secondary block that should be hidden in edit mode
+        // and when on other tabs we also want secondary blocks hidden -
+        // send the 'Begin/End Edit' bus message as necessary.
+        const busMessage = tabIndex === 0 ? BlockMessages.EndEdit : BlockMessages.BeginEdit;
+        browserBus.publish(busMessage);
 
         if (tab === "description") {
             tabIndex = 1;

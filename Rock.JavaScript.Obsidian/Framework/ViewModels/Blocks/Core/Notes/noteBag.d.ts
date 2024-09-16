@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { NoteApprovalStatus } from "@Obsidian/Enums/Core/noteApprovalStatus";
+
 /** Describes an existing note that should be displayed to the person. */
 export type NoteBag = {
     /** Gets or sets the unique anchor identifier used to link to this note. */
@@ -79,4 +81,7 @@ export type NoteBag = {
 
     /** Gets or sets the text of the note. */
     text?: string | null;
+
+    /** Gets or sets the approval status of this note. */
+    approvalStatus: NoteApprovalStatus;
 };

@@ -8498,13 +8498,23 @@ export default defineComponent({
     margin-left: -20px;
     margin-right: -20px;
 }
+
+@media only screen and (max-width: 480px) {
+    .galleryContainer {
+        flex-direction: column !important;
+    }
+
+    .gallerySidebar {
+        max-height: 150px;
+    }
+}
 </v-style>
 <Panel type="block">
     <template #title>
         Obsidian Control Gallery
     </template>
     <template #default>
-        <div class="panel-flex-fill-body flex-row">
+        <div class="panel-flex-fill-body flex-row galleryContainer">
 
             <div class="gallerySidebar well">
                 <h4>Components</h4>

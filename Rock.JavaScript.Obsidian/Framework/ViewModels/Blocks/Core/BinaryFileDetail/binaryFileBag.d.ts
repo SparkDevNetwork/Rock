@@ -41,6 +41,9 @@ export type BinaryFileBag = {
     /** Gets or sets the document. */
     file?: ListItemBag | null;
 
+    /** Gets or sets the file identifier. */
+    fileId?: string | null;
+
     /** Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required. */
     fileName?: string | null;
 

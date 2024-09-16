@@ -687,6 +687,9 @@
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
+    <Compile Include="AI\Automations\AIAutomation.cs" />
+    <Compile Include="AI\Automations\PrayerRequestAnalyzerResponse.cs" />
+    <Compile Include="AI\Automations\PrayerRequestFormatterResponse.cs" />
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequestMessage.cs" />
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequest.cs" />
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponse.cs" />
@@ -730,6 +733,7 @@
     <Compile Include="Attribute\ReminderTypesFieldAttribute.cs" />
     <Compile Include="Attribute\SecondaryAuthsFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
+    <Compile Include="Attribute\OpenAIModelPickerFieldAttribute.cs" />
     <Compile Include="Attribute\SignatureDocumentTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
@@ -890,18 +894,20 @@
     <Compile Include="Blocks\Types\Mobile\Reminders\ReminderDashboard.cs" />
     <Compile Include="Blocks\Types\Mobile\Reminders\ReminderEdit.cs" />
     <Compile Include="Blocks\Types\Mobile\Reminders\ReminderList.cs" />
+    <Compile Include="Bus\Consumer\DynamicConsumerAttribute.cs" />
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="Bus\Message\CloudPrintLabelMessage.cs" />
-    <Compile Include="Bus\Message\CloudPrintProxyStatusMessage.cs" />
+    <Compile Include="Bus\Message\CloudPrintSendProxyStatusMessage.cs" />
     <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
-    <Compile Include="Bus\Queue\CloudPrintQueue.cs" />
+    <Compile Include="Bus\Queue\CloudPrintCommandQueue.cs" />
+    <Compile Include="Bus\Queue\CloudPrintEventQueue.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="Chart\ChartJs\ChartColorPaletteGenerator.cs" />
@@ -924,7 +930,7 @@
     <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
     <Compile Include="CheckIn\v2\CheckInFieldFilterBuilder.cs" />
     <Compile Include="CheckIn\v2\CloudPrintLabelConsumer.cs" />
-    <Compile Include="CheckIn\v2\CloudPrintProxyStatusConsumer.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintSendProxyStatusConsumer.cs" />
     <Compile Include="CheckIn\v2\CloudPrintSocket.cs" />
     <Compile Include="CheckIn\v2\DefaultLabelProvider.cs" />
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
@@ -932,6 +938,7 @@
     <Compile Include="CheckIn\v2\FamilyRegistrationSaveResult.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
@@ -1169,6 +1176,7 @@
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
     <Compile Include="Core\InteractionInfo.cs" />
+    <Compile Include="Configuration\XmlHelper.cs" />
     <Compile Include="Constants\RegexPatterns.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
@@ -1210,6 +1218,7 @@
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
+    <Compile Include="Field\Types\AIProviderFieldType.cs" />
     <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
@@ -1218,6 +1227,7 @@
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Field\Types\OpenAIModelPickerFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemEnumPickerFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemPickerFieldType.cs" />
@@ -1228,10 +1238,12 @@
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
+    <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
+    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.SaveHook.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
@@ -1376,6 +1388,7 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\Device\Device.SaveHook.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
@@ -1390,6 +1403,7 @@
     <Compile Include="Model\Core\PersonPreference\PersonPreference.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreference.SaveHook.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreferenceService.cs" />
+    <Compile Include="Model\Core\ScheduleCategoryExclusion\ScheduleCategoryExclusion.SaveHook.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
     <Compile Include="Model\Event\CheckInLabel\CheckInLabel.cs" />
@@ -1571,8 +1585,12 @@
     <Compile Include="RealTime\IContextInternal.cs" />
     <Compile Include="RealTime\ITopicExtensions.cs" />
     <Compile Include="RealTime\RealTimeException.cs" />
+    <Compile Include="RealTime\Topics\CheckInTopic.cs" />
+    <Compile Include="RealTime\Topics\CloudPrintTopic.cs" />
     <Compile Include="RealTime\Topics\EntityUpdatedTopic.cs" />
     <Compile Include="RealTime\Topics\ConversationParticipantTopic.cs" />
+    <Compile Include="RealTime\Topics\ICheckIn.cs" />
+    <Compile Include="RealTime\Topics\ICloudPrint.cs" />
     <Compile Include="RealTime\Topics\IEntityUpdated.cs" />
     <Compile Include="RealTime\Topics\IConversationParticipant.cs" />
     <Compile Include="RealTime\Topics\IInteractiveExperienceParticipant.cs" />
@@ -2569,6 +2587,7 @@
     <Compile Include="Web\UI\Controls\LocationList.cs" />
     <Compile Include="Web\UI\Controls\PDFViewer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AccountTreeViewItem.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AIProviderPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EthnicityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialStatementTemplatePicker.cs" />

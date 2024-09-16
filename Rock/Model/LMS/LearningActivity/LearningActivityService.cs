@@ -118,7 +118,9 @@ namespace Rock.Model
             }
 
             var averagePoints = completedActivities.Average( a => a.PointsEarned );
-            var averagePercent = points > 0 ? averagePoints / points * 100 : 0;
+
+            // If there are no points treat it as a passing grade (100%).
+            var averagePercent = points > 0 ? averagePoints / points * 100 : 100;
 
             var averageGrade = new LearningGradingSystemScaleService( ( RockContext ) Context )
                 .Queryable()

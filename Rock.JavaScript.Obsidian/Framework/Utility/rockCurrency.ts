@@ -21,6 +21,10 @@ import { toCurrencyOrNull } from "./numberUtils";
 
 type RockCurrencyValue = number | string | RockCurrency;
 
+type RockCurrencyFormatOptions = {
+    excludeGroupingSeparators: boolean;
+};
+
 export class RockCurrency {
     private readonly big: Big;
 
@@ -219,6 +223,14 @@ export class RockCurrency {
     mod(divisor: number): RockCurrency {
         const { remainder } = this.divide(divisor);
         return remainder;
+    }
+
+    format(options: RockCurrencyFormatOptions | null = null): string {
+        if(options?.excludeGroupingSeparators) {
+            const valueString = this.big.toFixed(this.currencyInfo.decimalPlaces, Big.roundDown);
+            return `${this.currencyInfo.symbol}${valueString}`;
+        }
+        return this.toString();
     }
 
     /**
