@@ -1664,6 +1664,7 @@
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
+    <Compile Include="SystemKey\GlobalAttributeKey.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
