@@ -112,28 +112,6 @@ namespace Rock.Blocks.CheckIn
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The web host environment for this block.
-        /// </summary>
-        private readonly IWebHostEnvironment _environment;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CheckInKioskSetup"/> class.
-        /// </summary>
-        /// <param name="environment">The environment.</param>
-        public CheckInKioskSetup( IWebHostEnvironment environment )
-        {
-            _environment = environment;
-        }
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -246,14 +224,18 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
         private List<ListItemBag> GetThemes()
         {
-            var di = new DirectoryInfo( Path.Combine( _environment.WebRootPath, "Themes" ) );
+            var checkInPurposeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.THEME_PURPOSE_CHECKIN.AsGuid(), RockContext ).Id;
 
-            return di.EnumerateDirectories()
-                .OrderBy( d => d.Name )
-                .Select( d => new ListItemBag
+            return new ThemeService( RockContext )
+                .Queryable()
+                .Where( t => t.PurposeValueId == checkInPurposeValueId )
+                .OrderBy( t => t.Name )
+                .Select( t => t.Name )
+                .ToList()
+                .Select( n => new ListItemBag
                 {
-                    Value = d.Name.ToLower(),
-                    Text = d.Name.SplitCase()
+                    Value = n.ToLower(),
+                    Text = n.SplitCase()
                 } )
                 .ToList();
         }
