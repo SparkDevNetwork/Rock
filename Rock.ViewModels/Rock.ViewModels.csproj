@@ -120,6 +120,7 @@
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelList\CheckInLabelListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonDetail\GivingConfiguration\GivingConfigurationBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakList\StreakListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerGroupLocationScheduleNamesBag.cs" />

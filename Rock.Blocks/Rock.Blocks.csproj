@@ -90,6 +90,7 @@
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
     <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
+    <Compile Include="Engagement\StreakList.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Engagement\CampaignList.cs" />
     <Compile Include="Security\UserLoginList.cs" />
