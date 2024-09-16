@@ -198,7 +198,7 @@ namespace Rock.Blocks.Mobile
         {
             var layout = GetInitialEntity<Layout, LayoutService>( rockContext, PageParameterKey.LayoutId );
 
-            if ( layout.Id == 0 )
+            if ( layout?.Id == 0 )
             {
                 var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId )?.AsIntegerOrNull();
                 if ( siteId.HasValue )
@@ -392,7 +392,11 @@ namespace Rock.Blocks.Mobile
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    { "SiteId", PageParameter( "SiteId" ) },
+                    { "Tab", "Layouts" }
+                } ) );
             }
         }
 

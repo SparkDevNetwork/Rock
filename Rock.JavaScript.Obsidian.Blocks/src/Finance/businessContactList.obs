@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Business Contacts"
+          itemTerm="Contacts"
+          title="Business Contacts"
           :entityTypeGuid="EntityType.Person"
           stickyHeader
           liveUpdates
