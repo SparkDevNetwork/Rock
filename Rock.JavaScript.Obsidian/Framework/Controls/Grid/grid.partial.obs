@@ -513,6 +513,7 @@
     import { Guid } from "@Obsidian/Types";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { downloadFile } from "@Obsidian/Utility/file";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -1458,24 +1459,11 @@
             ? await workbook.xlsx.writeBuffer()
             : await workbook.csv.writeBuffer();
 
-        // Create the URL that contains the file data.
-        const url = URL.createObjectURL(new Blob([buffer], {
+        const data = new Blob([buffer], {
             type: "application/octet-stream"
-        }));
+        });
 
-        // Create a fake hyperlink to simulate an attempt to download a file.
-        const element = document.createElement("a");
-        element.innerText = "Download";
-        element.style.position = "absolute";
-        element.style.top = "-100px";
-        element.style.left = "0";
-        element.href = url;
-        element.download = `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
     }
 
     /**
