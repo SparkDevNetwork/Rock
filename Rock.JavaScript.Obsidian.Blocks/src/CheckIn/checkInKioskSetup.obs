@@ -1,8 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="check-in-page">
-        <PageHeader title="Rock Solid"
-                    :hasBack="false"
+        <PageHeader :hasBack="false"
                     :hideNavigation="true" />
 
         <section class="page-body">
