@@ -483,7 +483,7 @@
 
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <div class="btn-group toggle-container">
+                                                <div class="btn-group toggle-container js-btn-group-image-type">
                                                     <asp:HyperLink ID="aImagePickerTypeImage" runat="server" CssClass="js-image-picker-type-image btn btn-toggle btn-xs btn-primary">Image</asp:HyperLink>
                                                     <asp:HyperLink ID="aImagePickerTypeAsset" runat="server" CssClass="js-image-picker-type-asset btn btn-toggle btn-xs btn-default">Asset</asp:HyperLink>
                                                 </div>
@@ -495,15 +495,15 @@
                                                         ID="componentAssetManager"
                                                         runat="server"
                                                         BlockTypePath="~/Blocks/CMS/AssetManager.ascx"
-                                                        ShowInModal=true
+                                                        ShowInModal="true"
                                                         SelectControlCssClass="imageupload-group"
                                                         CssClass="js-component-asset-manager picker-asset"
                                                         ModalSaveButtonText="Select"
                                                         ModalSaveButtonCssClass="js-singleselect aspNetDisabled"
                                                         ModalCssClass="js-AssetManager-modal"
                                                         ButtonTextTemplate="Select Asset"
-                                                        ModalTitle="Asset Manager"
-                                                        ShowSelectNoneButton=false>
+                                                        ModalTitle="Asset Manager" 
+                                                        ShowSelectNoneButton="false">
                                                     </Rock:ItemFromBlockPicker>
                                                     </ContentTemplate>
                                                 </asp:UpdatePanel>
@@ -1569,36 +1569,8 @@
             Sys.Application.add_load(function () {
                 Rock.controls.fullScreen.initialize('body');
 
-                if ($('#<%=aImagePickerTypeAsset.ClientID%>').hasClass("btn-primary")) {
-                    $('.js-component-asset-manager').show();
-                    $('#componentImageUploader').hide();
-                } else {
-                    $('.js-component-asset-manager').hide();
-                    $('#componentImageUploader').show();
-                }
-
-                $('.js-image-picker-type-asset').off('click').on('click', function (e) {
-                    $('.js-image-picker-type-asset').removeClass("btn-default");
-                    $('.js-image-picker-type-asset').addClass("btn-primary");
-                    $('.js-image-picker-type-image').removeClass("btn-primary");
-                    $('.js-image-picker-type-image').addClass("btn-default");
-                    $('#componentImageUploader').hide();
-                    $('.js-component-asset-manager').show();
-                    return false;
-                });
-
-                $('.js-image-picker-type-image').off('click').on('click', function (e) {
-                    $('.js-image-picker-type-asset').removeClass("btn-primary");
-                    $('.js-image-picker-type-asset').addClass("btn-default");
-                    $('.js-image-picker-type-image').removeClass("btn-default");
-                    $('.js-image-picker-type-image').addClass("btn-primary");
-                    $('#componentImageUploader').show();
-                    $('.js-component-asset-manager').hide();
-                    return false;
-                });
-
                 if ($('#<%=pnlEmailEditor.ClientID%>').length) {
-                    loadEmailEditor()
+                    loadEmailEditor();
                 }
 
                 if ($('#<%=pnlEmailPreview.ClientID%>').length) {
@@ -1790,8 +1762,7 @@
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
                     }
                 });
-            }
-            );
+            });
 
             function resizeIframe(el) {
                 el.style.height = el.contentWindow.document.documentElement.scrollHeight + 'px';
@@ -1969,8 +1940,7 @@
                 Rock.controls.emailEditor.imageComponentHelper.handleAssetUpdate(e, data);
             }
 
-            function handleVideoImageUpdate(e, data)
-			{
+            function handleVideoImageUpdate(e, data) {
 			    Rock.controls.emailEditor.videoComponentHelper.handleVideoImageUpdate(e, data);
             }
 
