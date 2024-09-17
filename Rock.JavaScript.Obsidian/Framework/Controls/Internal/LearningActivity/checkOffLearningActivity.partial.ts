@@ -26,6 +26,7 @@ export type CheckOffActivityConfiguration = {
 export type CheckOffActivityCompletion = {
     isConfirmed: boolean;
     dateConfirmed: string | null;
+    pointsPossibleAtCompletion?: number;
 };
 
 export class CheckOffActivityDefaults

@@ -877,7 +877,9 @@
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestDetail.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\MyNotes.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\QuickNote.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\SmartSearch.cs" />
     <Compile Include="Blocks\Types\Mobile\Crm\GroupMembers.cs" />
@@ -1664,6 +1666,7 @@
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
+    <Compile Include="SystemKey\GlobalAttributeKey.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />

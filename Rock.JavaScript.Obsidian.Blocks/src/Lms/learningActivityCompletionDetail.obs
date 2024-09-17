@@ -188,6 +188,11 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
+        if (!learningActivityCompletionEditBag.value || !learningActivityCompletionEditBag.value.bag){
+            return false;
+        }
+
+        learningActivityCompletionEditBag.value.bag.isFacilitatorCompleted = true;
         const result = await invokeBlockAction<string>("Save", {
             box: learningActivityCompletionEditBag.value
         });

@@ -122,6 +122,7 @@ export type AssessmentActivityConfiguration = {
 
 export type AssessmentActivityCompletion = {
     completedItems: Array<AssessmentItem | MultipleChoiceItem | SectionItem | ShortAnswerItem>;
+    multipleChoiceWeightAtCompletion: number;
 };
 
 export class AssessmentActivityDefaults
@@ -132,12 +133,13 @@ export class AssessmentActivityDefaults
             assessmentTerm: "Test",
             header: "",
             items: [],
-            multipleChoiceWeight: 1,
+            multipleChoiceWeight: 0,
             showMissedQuestionsOnResults: false,
             showResultsOnCompletion: false,
         };
         this.defaultCompletion = {
-            completedItems: []
+            completedItems: [],
+            multipleChoiceWeightAtCompletion: 0,
         };
     }
 }

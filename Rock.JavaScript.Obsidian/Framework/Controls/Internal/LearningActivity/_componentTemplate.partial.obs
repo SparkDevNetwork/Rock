@@ -16,6 +16,12 @@
         <div v-if="screenToShow === ComponentScreen.Completion">
             <fieldset>
                 <!-- TODO: Add Completion Screen -->
+                <div class="footer-section">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="emits('completed', true)">
+                        Complete
+                    </RockButton>
+                </div>
             </fieldset>
         </div>
 
@@ -36,14 +42,16 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, toValue, watch, } from "vue";
+    import { computed, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    // TODO: Replace below imports with those specific to the new you're creating component.
+    // TODO: Replace below imports with those specific to the new component you're creating.
     import { CheckOffActivityCompletion, CheckOffActivityConfiguration, CheckOffActivityDefaults } from "./checkOffLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.
@@ -51,9 +59,9 @@
     const emits = defineEmits({ ...learningActivityEmits });
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = ref(props.activityBag);
-    const completionBag = ref(props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = ref(props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
     // TODO: Replace usages with logic for showing/hiding Summary messages.
     const showSuccess = false;
@@ -102,6 +110,8 @@
 
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
             //TODO: Add my specific ref values for the component completion here.
+            // If you need to be aware of the total points possible be sure to capture it
+            // from activityBag.points.
         }) ?? "{}";
         emits("update:completionBag", updatedCompletionBag);
     });

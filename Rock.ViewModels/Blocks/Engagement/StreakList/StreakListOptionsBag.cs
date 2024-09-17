@@ -14,31 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.SystemGuid
+
+namespace Rock.ViewModels.Blocks.Engagement.StreakList
 {
     /// <summary>
-    /// System Site guids
+    /// Additional Configuration for the Streak List Block.
     /// </summary>
-    public static class Site
+    public class StreakListOptionsBag
     {
         /// <summary>
-        /// Gets the default Rock Site guid
+        /// Gets or sets the name of the streak type.
         /// </summary>
-        public const string SITE_ROCK_INTERNAL = "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
+        /// <value>
+        /// The name of the streak type.
+        /// </value>
+        public string StreakTypeName { get; set; }
 
         /// <summary>
-        /// Gets the External Site guid.
+        /// Gets or sets the streak type identifier key.
         /// </summary>
-        public const string EXTERNAL_SITE = "F3F82256-2D66-432B-9D67-3552CD2F4C2B";
-
-        /// <summary>
-        /// The check in manager site guid
-        /// </summary>
-        public const string CHECK_IN_MANAGER = "A5FA7C3C-A238-4E0B-95DE-B540144321EC";
-
-        /// <summary>
-        /// The next generation check-in site guid.
-        /// </summary>
-        public const string NEXT_GEN_CHECK_IN = "BFBB35BD-D0B0-459E-9329-B082CE4F253E";
+        /// <value>
+        /// The streak type identifier key.
+        /// </value>
+        public string StreakTypeIdKey { get; set; }
     }
 }

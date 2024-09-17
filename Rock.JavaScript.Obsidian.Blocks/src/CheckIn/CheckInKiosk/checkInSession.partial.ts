@@ -880,7 +880,8 @@ export class CheckInSession {
     }
 
     /**
-     * Creates a new session by append the selections for the current attendee.
+     * Creates a new session by replacing the selections for the current
+     * attendee.
      *
      * @param selections The selections for the current attendee.
      *
@@ -895,7 +896,8 @@ export class CheckInSession {
     }
 
     /**
-     * Creates a new session by append the selections for the specified attendee.
+     * Creates a new session by replacing the selections for the specified
+     * attendee.
      *
      * @param attendeeId The attendee identifier these selections are for.
      * @param selections The selections for the current attendee.
@@ -915,7 +917,7 @@ export class CheckInSession {
             allSelections.push(attendeeSelection);
         }
         else {
-            attendeeSelection.selections.push(...selections);
+            attendeeSelection.selections = selections;
         }
 
         return new CheckInSession(this, {

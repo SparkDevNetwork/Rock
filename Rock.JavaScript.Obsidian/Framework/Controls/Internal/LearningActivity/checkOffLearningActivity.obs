@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref,  toValue, watch, } from "vue";
+    import { computed, ref,  toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -72,9 +72,9 @@
     const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = ref(props.activityBag);
-    const completionBag = ref(props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = ref(props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -86,7 +86,8 @@
         defaultAssigneeDescription,
         isConfirmed,
         isConfirmationRequired,
-        panelTitle
+        panelTitle,
+        pointsPossibleAtCompletion
     } = useLearningComponent<CheckOffActivityConfiguration, CheckOffActivityCompletion>(
         activityBag,
         completionBag,
@@ -120,7 +121,8 @@
 
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
             isConfirmed: isConfirmed.value,
-            dateConfirmed: dateConfirmed.value
+            dateConfirmed: dateConfirmed.value,
+            pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
         }) ?? "{}";
         emits("update:completionBag", updatedCompletionBag);
     });
