@@ -162,7 +162,8 @@ namespace Rock.CheckIn.v2
                 GradeOffset = person.GradeOffset,
                 GradeFormatted = person.GradeFormatted,
                 AbilityLevel = abilityLevel,
-                Gender = person.Gender
+                Gender = person.Gender,
+                IsSpecialNeeds = person.GetAttributeValue( "core_SpecialNeeds" ).AsBoolean()
             };
         }
 
