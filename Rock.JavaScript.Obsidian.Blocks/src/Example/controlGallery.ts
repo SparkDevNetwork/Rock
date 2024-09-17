@@ -83,7 +83,6 @@ import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
-import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
 import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -252,6 +251,7 @@ import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.ob
 import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
 import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
 import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
+import DatePartsPickerGallery from "./ControlGallery/datePartsPickerGallery.partial.obs";
 import FirstNameTextBoxGallery from "./ControlGallery/firstNameTextBoxGallery.partial.obs";
 import ImageUploaderGallery from "./ControlGallery/imageUploaderGallery.partial.obs";
 import MediaPlayerGallery from "./ControlGallery/mediaPlayerGallery.partial.obs";
@@ -1255,43 +1255,6 @@ const dateTimePickerGallery = defineComponent({
                 <InlineCheckBox v-model="disabled" label="Is Disabled" />
             </div>
         </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates date part pickers */
-const datePartsPickerGallery = defineComponent({
-    name: "DatePartsPickerGallery",
-    components: {
-        GalleryAndResult,
-        Toggle,
-        DatePartsPicker
-    },
-    setup() {
-        return {
-            showYear: ref(true),
-            datePartsModel: ref<DatePartsPickerValue>({
-                month: 1,
-                day: 1,
-                year: 2020
-            }),
-            importCode: getControlImportPath("datePartsPicker"),
-            exampleCode: `<DatePartsPicker label="Date" v-model="date" :requireYear="true" :showYear="true" :allowFutureDates="true" :futureYearCount="50" :startYear="1900" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="datePartsModel"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DatePartsPicker label="Date" v-model="datePartsModel" :showYear="showYear" />
-
-    <template #settings>
-        <Toggle label="Show Year" v-model="showYear" />
-        <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -7999,7 +7962,7 @@ const controlGalleryComponents: Record<string, Component> = [
     datePickerGallery,
     dateRangePickerGallery,
     dateTimePickerGallery,
-    datePartsPickerGallery,
+    DatePartsPickerGallery,
     radioButtonListGallery,
     dialogGallery,
     checkBoxGallery,
