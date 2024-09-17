@@ -336,6 +336,9 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
                 get,
                 post
             });
+            provide("blockActionUrl", (actionName: string): string => {
+                return `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`;
+            });
             provide("invokeBlockAction", invokeBlockAction);
             provideBlockGuid(blockGuid);
             provideBlockTypeGuid(blockTypeGuid);
