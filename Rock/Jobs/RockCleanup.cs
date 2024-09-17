@@ -3357,115 +3357,76 @@ END
 DECLARE @startDate DATETIME = DATEADD(MONTH, -12, dbo.RockGetDate());
 DECLARE @endDate DATETIME = dbo.RockGetDate();
 
-IF OBJECT_ID('tempdb..#BatchedTransactions') IS NOT NULL
-BEGIN
-	DROP TABLE #BatchedTransactions
-END
+-- Only Include Person Type Records
+DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
 
 IF OBJECT_ID('tempdb..#GivingFamilies') IS NOT NULL
 BEGIN
-	DROP TABLE #GivingFamilies
+ DROP TABLE #GivingFamilies
 END
-
-IF OBJECT_ID('tempdb..#GroupLocations') IS NOT NULL
-BEGIN
-	DROP TABLE #GroupLocations
-END
-
--- Temporary Table for the Families and their Postal Codes.
-CREATE TABLE #GroupLocations (
-    GroupId INT,
-    PostalCode NVARCHAR(MAX)
-);
-
--- Temporary table for the TransactionDetails within the time frame we are interested in, so we don't have to scan countless rows when processing.
-CREATE TABLE #BatchedTransactions (
-	[PrimaryFamilyId] INT,
-	[PrimaryCampusId] INT,
-    PostalCode NVARCHAR(MAX)
-);
 
 -- Temporary table for the families who have given and their postal codes.
 CREATE TABLE #GivingFamilies (
     PrimaryFamilyId INT,
-    CampusId INT,
-    PostalCodes NVARCHAR(MAX)
+    PrimaryCampusId INT,
+    FamiliesMedianTithe INT,
+    GivingAmount INT,
 );
 
--- Store families and their Postal Codes.
-INSERT INTO #GroupLocations ([GroupId], [PostalCode])
-SELECT 
-    [gl].[GroupId],
-    [l].[PostalCode]
-FROM 
-    [dbo].[GroupLocation] gl
-INNER JOIN 
-    [dbo].[DefinedValue] dv ON [gl].[GroupLocationTypeValueId] = dv.Id
-INNER JOIN 
-    [dbo].[Location] l ON [gl].[LocationId] = [l].[Id]
-WHERE 
-    [dv].[Guid] = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
-    AND [gl].[IsMappedLocation] = 1;
+;WITH CTE AS (
+    SELECT [PrimaryCampusId]
+    , [PrimaryFamilyId]
+    , SUM(ftd.[Amount]) AS [GivingAmount]
+    , (SELECT TOP 1 
+            LEFT([PostalCode], 5)
+        FROM [dbo].[Location] l
+        INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1
+      ) AS [PostalCode]
+    , (SELECT [FamiliesMedianIncome] FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1) ) AS [FamiliesMedianTithe]
+ FROM
+  [Person] p
+  INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+  INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
+  INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+  INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
+  INNER JOIN [dbo].[AnalyticsSourceDate] asd ON asd.[DateKey] = ft.[TransactionDateKey]
+ WHERE
+  fa.[IsTaxDeductible] = 1
+  AND asd.[DateKey] > = @StartDate AND asd.[DateKey] <= @EndDate
+  AND p.[RecordTypeValueId] = @PersonRecordTypeId
+ GROUP BY [PrimaryCampusId], [PrimaryFamilyId]
+)
 
--- Store TransactionDetails and the AuthorizedPerson details.
-INSERT INTO #BatchedTransactions
-SELECT DISTINCT
-    [p].[PrimaryFamilyId],
-    [p].[PrimaryCampusId],
-	gl.[PostalCode]
-FROM 
-    [dbo].[FinancialTransactionDetail] ftd
-INNER JOIN 
-    [dbo].[FinancialTransaction] ft ON [ftd].[TransactionId] = [ft].[Id]
-INNER JOIN 
-    [dbo].[PersonAlias] pa ON [ft].[AuthorizedPersonAliasId] = [pa].[Id]
-INNER JOIN 
-    [dbo].[Person] p ON [pa].[PersonId] = [p].[Id]
-LEFT JOIN 
-    #GroupLocations gl ON [p].[PrimaryFamilyId] = [gl].[GroupId]
-WHERE 
-    [ftd].[AccountId] IN (SELECT Id FROM [dbo].[FinancialAccount] WHERE [IsTaxDeductible] = 1)
-    AND [ft].[TransactionDateTime] BETWEEN @startDate AND @endDate
-
--- Store families who have given within the specified time frame.
-INSERT INTO #GivingFamilies ([PrimaryFamilyId], [CampusId], [PostalCodes])
-SELECT 
-    [ftd].[PrimaryFamilyId],
-    [ftd].[PrimaryCampusId] AS CampusId,
-    STRING_AGG([ftd].[PostalCode], ',') AS PostalCodes
-FROM #BatchedTransactions ftd
-GROUP BY 
-    [ftd].[PrimaryFamilyId], [ftd].[PrimaryCampusId];
+INSERT INTO #GivingFamilies ([PrimaryFamilyId], [PrimaryCampusId], [FamiliesMedianTithe], [GivingAmount])
+SELECT PrimaryFamilyId, PrimaryCampusId, FamiliesMedianTithe, GivingAmount
+FROM CTE 
+-- Only include families that have a postal code and/or we have a [FamiliesMedianIncome] value
+WHERE ( PostalCode IS NOT NULL AND PostalCode != '') and [FamiliesMedianTithe] is NOT NULL and [FamiliesMedianTithe] > 0
 
 DECLARE @campusId INT;
-DECLARE @postalCodes NVARCHAR(MAX);
 DECLARE @hasGivenCount INT;
 DECLARE @totalMedianIncome INT;
 
 DECLARE campus_cursor CURSOR FOR
-SELECT DISTINCT CampusId FROM #GivingFamilies WHERE CampusId IS NOT NULL;
-DECLARE @CampusCount INT = (SELECT COUNT(DISTINCT CampusId) FROM #GivingFamilies WHERE CampusId IS NOT NULL);
+SELECT DISTINCT PrimaryCampusId FROM #GivingFamilies WHERE PrimaryCampusId IS NOT NULL;
+DECLARE @CampusCount INT = (SELECT COUNT(DISTINCT PrimaryCampusId) FROM #GivingFamilies WHERE PrimaryCampusId IS NOT NULL);
 
 OPEN campus_cursor;
 FETCH NEXT FROM campus_cursor INTO @campusId;
 
 WHILE @@FETCH_STATUS = 0
 BEGIN
-    SELECT @postalCodes = STRING_AGG(PostalCodes, ',')
+    SELECT @hasGivenCount = SUM(CASE WHEN [GivingAmount] >= 0 THEN 1 ELSE 0 END)
     FROM #GivingFamilies
-    WHERE CampusId = @campusId;
+    WHERE PrimaryCampusId = @campusId;
 
-    SELECT @hasGivenCount = COUNT(DISTINCT PrimaryFamilyId)
+    SELECT @totalMedianIncome = SUM(FamiliesMedianTithe)
     FROM #GivingFamilies
-    WHERE CampusId = @campusId AND PostalCodes IS NOT NULL;
+    WHERE PrimaryCampusId = @campusId;
 
-    SELECT @totalMedianIncome = SUM(FamiliesMedianIncome)
-    FROM AnalyticsSourcePostalCode
-    WHERE PostalCode IN (SELECT value FROM STRING_SPLIT(@postalCodes, ','));
-
-	UPDATE CAMPUS 
-    SET TitheMetric = (@totalMedianIncome / @hasGivenCount) * 0.1
-	WHERE Id = @campusId
+ UPDATE CAMPUS 
+    SET TitheMetric = (@totalMedianIncome / @hasGivenCount)* 0.1
+ WHERE Id = @campusId
 
     FETCH NEXT FROM campus_cursor INTO @campusId;
 END
@@ -3474,8 +3435,6 @@ CLOSE campus_cursor;
 DEALLOCATE campus_cursor;
 
 DROP TABLE #GivingFamilies;
-DROP TABLE #GroupLocations;
-DROP TABLE #BatchedTransactions;
 
 SET @UpdatedCampusCount = @CampusCount;
 ";
