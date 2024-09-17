@@ -120,6 +120,12 @@ namespace Rock.ViewModels.CheckIn
         public CheckInItemBag AbilityLevel { get; set; }
 
         /// <summary>
+        /// Determines the value of the person's Is Special Needs attribute
+        /// value.
+        /// </summary>
+        public bool IsSpecialNeeds { get; set; }
+
+        /// <summary>
         /// Gets or sets the photo URL.
         /// </summary>
         /// <value>The photo URL.</value>

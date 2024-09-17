@@ -215,6 +215,14 @@
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
                                     <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer"
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
+
+                                    <Rock:RockCheckBoxList ID="cblSpecialNeeds"
+                                        runat="server"
+                                        Label="Special Needs"
+                                        Help="This feature is only supported on next-gen check-in. When Remove Special Needs Groups is selected, then a group will not be available unless the person is also marked as special needs. When Remove Non-Special Needs Groups is selected, then a group will not be available unless the person is not marked as special needs.">
+                                        <asp:ListItem Value="special-needs" Text="Remove Special Needs Groups" />
+                                        <asp:ListItem Value="non-special-needs" Text="Remove Non-Special Needs Groups" />
+                                    </Rock:RockCheckBoxList>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes"
