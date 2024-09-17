@@ -67,6 +67,21 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
 }
 
 /**
+ * Gets the function that will return the URL for a block action.
+ *
+ * @returns A function that can be called to determine the URL for a block action.
+ */
+export function useBlockActionUrl(): (actionName: string) => string {
+    const result = inject<(actionName: string) => string>("blockActionUrl");
+
+    if (result === undefined) {
+        throw "Attempted to access block action URL outside of a RockBlock.";
+    }
+
+    return result;
+}
+
+/**
  * Creates a function that can be provided to the block that allows calling
  * block actions.
  *

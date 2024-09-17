@@ -410,6 +410,9 @@ export default defineComponent({
             post
         });
 
+        provide("blockActionUrl", (actionName: string): string => {
+            return `/api/v2/BlockActions/${store.state.pageGuid}/${props.config.blockGuid}/${actionName}`;
+        });
         provide("invokeBlockAction", invokeBlockAction);
         provide("configurationValues", configurationValues);
         provideReloadBlock(reloadBlock);

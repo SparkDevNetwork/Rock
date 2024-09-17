@@ -861,6 +861,7 @@
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
     <Compile Include="Blocks\ConfigurationChangedReloadAttribute.cs" />
     <Compile Include="Blocks\CustomizedGridAttribute.cs" />
+    <Compile Include="Blocks\FileBlockActionResult.cs" />
     <Compile Include="Blocks\IHasCustomActions.cs" />
     <Compile Include="Blocks\InitialBlockHeightAttribute.cs" />
     <Compile Include="Blocks\IRockObsidianBlockType.cs" />
