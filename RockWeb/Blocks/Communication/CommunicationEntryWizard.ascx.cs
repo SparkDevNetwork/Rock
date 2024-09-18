@@ -367,10 +367,13 @@ namespace RockWeb.Blocks.Communication
 </div>";
 
             componentAssetManager.JsScriptToRegister = @"
-    Sys.Application.add_load(function (e) {
-        var data = '{{ SelectedValue }}';
-        handleAssetUpdate(e, data);
-    });";
+function communicationEntryWizardHandleAssetUpdateOnLoad(e) {
+    Sys.Application.remove_load(communicationEntryWizardHandleAssetUpdateOnLoad);
+
+    var data = '{{ SelectedValue }}';
+    handleAssetUpdate(e, data);
+}
+Sys.Application.add_load(communicationEntryWizardHandleAssetUpdateOnLoad);";
 
             var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
             lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";

@@ -194,6 +194,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public ScheduleConfirmationLogic? ScheduleConfirmationLogic { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Group.IsSpecialNeeds" />
+        [DataMember]
+        public bool IsSpecialNeeds { get; private set; }
+
         #endregion
 
         #region Navigation Properties
@@ -308,6 +312,7 @@ namespace Rock.Web.Cache
             ReminderOffsetDays = group.ReminderOffsetDays;
             ReminderAdditionalDetails = group.ReminderAdditionalDetails;
             ScheduleConfirmationLogic = group.ScheduleConfirmationLogic;
+            IsSpecialNeeds = group.IsSpecialNeeds;
         }
 
         /// <inheritdoc/>

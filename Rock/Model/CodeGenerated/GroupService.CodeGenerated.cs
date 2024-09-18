@@ -246,6 +246,7 @@ namespace Rock.Model
             target.IsArchived = source.IsArchived;
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
+            target.IsSpecialNeeds = source.IsSpecialNeeds;
             target.IsSystem = source.IsSystem;
             target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
             target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;

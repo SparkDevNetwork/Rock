@@ -186,6 +186,22 @@ namespace Rock.SystemKey
         /// Attribute key for grouptypes location selection strategy (Ask, Fill in order, balance).
         /// </summary>
         public const string CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY = "core_LocationSelectionStrategy";
+
+        /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// groups marked as special needs should be removed from the opportunity
+        /// list if the person is not also marked as special needs.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS = "core_RemoveSpecialNeedsGroups";
+
+        /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// groups <strong>not</strong> marked as special needs should be removed
+        /// from the opportunity list if the person <strong>is</strong> marked as
+        /// special needs.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS = "core_RemoveNonSpecialNeedsGroups";
+
         #endregion
 
         #region Display

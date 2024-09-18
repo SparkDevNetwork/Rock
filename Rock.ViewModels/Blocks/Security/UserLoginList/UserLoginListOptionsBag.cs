@@ -28,6 +28,6 @@ namespace Rock.ViewModels.Blocks.Security.UserLoginList
         /// <value>
         ///   <c>true</c> if this block has a person context entity; otherwise, <c>false</c>.
         /// </value>
-        public bool IsContextEntityPerson { get; set; }
+        public bool HasPersonContextEntity { get; set; }
     }
 }

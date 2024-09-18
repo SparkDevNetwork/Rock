@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,16 @@
 // </copyright>
 //
 
-export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+namespace Rock.ViewModels.Blocks.Cms.PageList
+{
+    /// <summary>
+    /// The additional configuration options for the Page List block.
+    /// </summary>
+    public class PageListOptionsBag
+    {
+        /// <summary>
+        /// Determines if the page's ID should be displayed.
+        /// </summary>
+        public bool ShowPageId { get; set; }
+    }
 }
-
-export const enum PreferenceKey {
-    FilterStartDate = "filter-start-date",
-
-    FilterEndDate = "filter-end-date",
-}
-
-export type GridSettingsOptions = {
-    startDate?: string | null;
-
-    endDate?: string | null;
-};

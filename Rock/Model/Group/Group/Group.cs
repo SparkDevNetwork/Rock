@@ -469,6 +469,23 @@ namespace Rock.Model
         [DecimalPrecision( 8, 2 )]
         public decimal? NonLeaderToLeaderRelationshipMultiplierOverride { get; set; }
 
+        /// <summary>
+        /// <para>
+        /// Gets or sets a value that indicates if this group is a special needs
+        /// group.
+        /// </para>
+        /// <para>
+        /// For a check-in group, this indicates that the group is intended for
+        /// people with special needs. It can be used in other contexts to have
+        /// different meaning for "special needs".
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// A value that indicates if this gorup is a special needs group.
+        /// </value>
+        [DataMember]
+        public bool IsSpecialNeeds { get; set; }
+
         #endregion
 
         #region Navigation Properties
