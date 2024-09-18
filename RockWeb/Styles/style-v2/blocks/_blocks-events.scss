@@ -1,0 +1,202 @@
+/*
+    Used to manage styles for specific blocks.
+
+    1. Calendar - Styles for the calendar blocks
+    2. Event Entry - The event registration entry screen
+
+*/
+
+// 1. Calendar
+// -------------------------
+
+
+.calendar {
+  display: inline-block;
+  width: 100%;
+  padding: 0 10px 10px;
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-small);
+}
+
+.calendar-month {
+  border-spacing: 0;
+  border-collapse: separate;
+  border: 0;
+
+  a {
+    color: var(--color-interface-stronger) !important;
+    text-decoration: none;
+  }
+
+  th {
+    text-align: center;
+  }
+
+  td {
+    color: var(--color-interface-stronger) !important;
+  }
+
+  table.calendar-title td {
+    padding: 10px 5px;
+  }
+
+  td.calendar-day {
+    padding: 5px;
+  }
+
+  table.calendar-title,
+  table.calendar-title a {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .calendar-today,
+  .calendar-selecteditem {
+    color: var(--color-info-strong) !important;
+    background-color: var(--color-info-soft) !important;
+    border-radius: 0;
+  }
+
+  .calendar-today {
+    border-radius: var(--rounded-small);
+  }
+
+  .calendar-selected {
+    color: var(--color-interface-softest) !important;
+    background-color: var(--color-info-soft) !important;
+
+    a {
+      color: var(--color-interface-softest) !important;
+    }
+  }
+
+  .calendar-last-month a {
+    opacity: .2;
+  }
+
+  .calendar-hasevent {
+    font-weight: var(--font-weight-bold);
+  }
+}
+
+
+// 2. Event Entry
+// -------------------------
+
+.registrationentry-intro {
+  text-align: center;
+
+  h1 {
+    margin-top: 24px;
+    margin-bottom: 48px;
+  }
+
+  .input-group {
+    margin: 0 auto 48px;
+  }
+}
+
+.registration-entry {
+  .feetype-allowmultiples {
+    > .control-label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .form-group {
+      margin-left: 19px;
+    }
+  }
+}
+
+.registrationentry-summary {
+  .fee-table {
+    margin: 0 24px;
+
+    > .row {
+      padding: 6px 0;
+
+      div[class^="col-"] {
+        padding-right: 0;
+        padding-left: 0;
+      }
+    }
+  }
+
+  .row.fee-header {
+    padding-bottom: 2px;
+    margin-bottom: 6px;
+    font-size: var(--font-size-small);
+    border-bottom: 2px solid var(--color-interface-strong);
+  }
+
+  .fee-row-cost,
+  .fee-row-total {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .fee-row-total {
+    margin-top: 6px;
+    border-top: 1px solid var(--color-interface-strong);
+  }
+
+  .row.fee-row-fee {
+    font-weight: var(--font-weight-light);
+
+    @media (min-width: $screen-small) {
+      > div.fee-caption {
+        padding-left: 20px;
+      }
+    }
+  }
+
+  @media (min-width: $screen-small) {
+    div.fee-value {
+      text-align: right;
+    }
+  }
+}
+
+.registrationentry-payment {
+  .payment-method-options .payment-method {
+    margin-bottom: 20px;
+  }
+
+  .payment-method .payment-method-image {
+    height: 1.4em;
+    margin-right: 8px;
+  }
+
+  .payment-method-account {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .payment-method .payment-method-name {
+    margin-right: 8px;
+    font-weight: 600;
+  }
+
+  .hosted-payment-control {
+    margin-bottom: 60px;
+  }
+
+  @media (min-width: 500px) {
+    .payment-method-options .payment-method-entry {
+      padding-left: 28px;
+    }
+  }
+}
+
+.fee-totals {
+  margin-top: 24px;
+
+  .fee-totals-options {
+    text-align: right;
+  }
+}
+
+.amount-to-pay {
+  input {
+    text-align: right;
+  }
+}

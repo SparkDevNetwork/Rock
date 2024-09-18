@@ -1,0 +1,1082 @@
+@import "_rock-variables";
+@import "_rock-mixins";
+
+@import "rock-components/picker-date.less";
+@import "rock-components/checkbox.less";
+
+/*
+  Used to style the check-in screens
+
+  1. Check-in specific variables
+  2. Bootstrap Overrides
+  3. Global Styles
+  4. Components
+  5. Specific Page Styles
+  6. Scroll container
+  7. Kiosk Manager
+
+*/
+
+// 1. Check-in specific variables
+// -------------------------
+@checkin-scrollbar-bg: fade(@text-color, 40%);
+
+@checkin-container-padding: 30px;
+
+@checkin-keypad-width: 260px;
+
+@header-letter-spacing: -0.03em;
+
+@font-size-base: 18px;
+@font-size-h1: 28px;
+
+@checkin-button-alttext-font-size: 20px;
+@celebration-color-1: #f24730;
+@celebration-color-2: #6abfd3;
+@celebration-color-3: #ffc639;
+@celebration-color-4: #ff9239;
+@celebration-color-5: #fc83a3;
+@celebration-color-6: #5395e5;
+@celebration-box-shadow-color: rgb(126,205,239);
+
+@grid-gutter-width: 30px;
+@card-bottom-margin: 30px;
+
+@card-color: #161e2e;
+@card-spacer-y: 18px;
+@card-spacer-x: 18px;
+
+// 2. Bootstrap Overrides
+// -------------------------
+@import "./FontAwesome/_rock-upgrade-map-variables.less";
+@import "./FontAwesome/_rock-fa-mixins.less";
+
+@fa-theme-weight: 900;
+@fa-theme-weight-name: 'solid';
+.fa-font-face(@fa-theme-weight-name);
+
+@btn-change-color: @btn-primary-color;
+@btn-change-bg: lighten(@btn-primary-bg, 13%);
+@btn-change-border: @btn-primary-border;
+
+// Fix to allow SVGs inside of buttons.
+.btn svg {
+  display: block;
+  width: auto;
+  height: 1em;
+  fill: currentColor;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: @header-letter-spacing;
+}
+
+h1 {
+  color: @header-text-color;
+}
+
+.close {
+  color: @header-text-color;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+}
+
+.btn-block + .btn-block {
+  margin-top: 12px;
+}
+
+.btn-checkin-select {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: @font-weight-semibold;
+  white-space: normal;
+
+  .row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-right: 0;
+    margin-left: 0;
+
+    &::before,
+    &::after {
+      content: normal;
+    }
+  }
+
+  .checkbox-container,
+  .photo-container,
+  .name-container {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+
+  .checkbox-container,
+  .photo-container {
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+  }
+
+  .checkbox-container {
+    margin-right: 5px;
+  }
+
+  .name-container,
+  .col {
+    -ms-flex-preferred-size: 0;
+    flex-basis: 0;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    max-width: 100%;
+  }
+}
+
+.btn-barcode {
+  position: relative;
+  margin-top: 40px;
+  overflow: hidden;
+
+  video {
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  #qr-shaded-region {
+    bottom: -5px !important;
+  }
+}
+
+.btn-checkin-change {
+  .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: center;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-left: 0;
+}
+
+.row-checkin-item {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 20px;
+
+  .btn-checkin-select {
+    margin-bottom: 0;
+  }
+}
+
+.checkin-change {
+  .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.checkin-person-has-change {
+  .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+
+// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+// 3. Global Styles
+// -------------------------
+
+a.help {
+  margin-left: 6px;
+  color: @help-color;
+  outline: 0;
+}
+
+// Validation Alert
+.alert-validation {
+  .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  font-weight: 700;
+
+  ul,
+  span {
+    font-weight: 400;
+    color: #484848;
+  }
+
+  ul {
+    padding: 5px 25px 0;
+    line-height: 1.5;
+  }
+}
+
+// turn off configuration items
+#cms-admin-footer,
+.config-bar {
+  display: none;
+}
+
+.btn-dimmed {
+  opacity: .33; // todo does this look good JME
+}
+
+// set page background
+body {
+  .checkinBackground;
+
+  overflow-x: hidden;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+
+  @media all and (-webkit-min-device-pixel-ratio: 1.5) {
+    .checkinBackgroundRetina();
+  }
+}
+
+// 4. Components
+// -------------------------
+
+// main body
+.body-content {
+  position: relative;
+  height: 100vh;
+}
+
+// checkin header items
+
+.checkin-header {
+  margin: 45px @checkin-container-padding 24px;
+
+  h1 {
+    font-size: 48px;
+    font-weight: @header-font-weight;
+  }
+
+  .checkin-sub-title {
+    margin-top: 12px;
+    font-size: 24px;
+    color: @subheader-text-color;
+  }
+}
+
+// button sub-text
+.btn .checkin-sub-title {
+  margin-left: 20px;
+  font-size: @checkin-button-alttext-font-size;
+  font-weight: @checkin-button-alttext-weight;
+  white-space: normal;
+}
+
+// checkin body items
+
+.checkin-body {
+  .checkin-actions {
+    text-align: right;
+
+    .btn-primary {
+      font-size: 36px;
+    }
+  }
+}
+
+.checkin-body-container > label {
+  padding: 0 0 @padding-base-vertical 0;
+}
+
+.checkin-search-actions {
+  text-align: center;
+  a {
+    display: inline-flex;
+    justify-content: center;
+    width: 520px;
+    max-width: 100%;
+    padding: 20px;
+    font-size: 48px;
+    font-weight: @checkin-button-text-weight;
+    line-height: 48px;
+  }
+}
+
+.checkin-start {
+  margin-top: 25%;
+  text-align: center;
+}
+
+.checkin-camera {
+  margin-top: 24px;
+  text-align: center;
+}
+
+
+// checkin footer
+
+.checkin-footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0 ((@grid-gutter-width / 2) + @checkin-container-padding);
+  margin-top: 6px;
+  margin-bottom: 12px;
+
+  .btn-primary {
+    float: right;
+  }
+}
+
+.checkin-actions {
+  .btn {
+    padding: 12px 24px;
+    font-size: 22px;
+    font-weight: @checkin-button-text-weight;
+  }
+
+  .btn-primary {
+    padding: 14px 26px;
+    font-size: 28px;
+  }
+}
+
+// time select checkbox
+.btn-checkbox {
+  padding: 24px;
+  font-size: 20px;
+  color: @btn-default-color;
+  background-color: @btn-default-bg;
+  border-color: @btn-default-border;
+
+  &.active,
+  &.active:focus {
+    color: @btn-primary-color;
+    background-color: @btn-primary-bg;
+    border-color: @btn-primary-border;
+  }
+
+  i {
+    display: block;
+    font-size: 92px;
+    line-height: 92px;
+  }
+
+  &.active i::before {
+    // checked icon
+    content: @fa-var-check-square;
+  }
+}
+
+/* Ten Key Keypad */
+.tenkey {
+  width: (@checkin-keypad-width + 5);
+  text-align: center;
+
+  .btn {
+    width: 80px;
+    height: 80px;
+    margin: 2px;
+
+    &:focus,
+    &:active {
+      background-color: @btn-default-bg;
+    }
+
+    &.digit {
+      font-size: 48px;
+      font-weight: @font-weight-semibold;
+    }
+
+    &.command {
+      padding-top: 28px;
+      font-size: 20px;
+      font-weight: @font-weight-light;
+    }
+  }
+}
+
+/* bootbox modal styles */
+.bootbox {
+  z-index: @zindex-popover;
+
+  .modal-content {
+    color: @modal-body-text-color;
+    background-color: @modal-body-bg;
+  }
+
+  .modal-footer {
+    border-top-color: @modal-footer-border-color;
+  }
+}
+
+// checkin override button
+.btn-checkin-override {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 110px;
+  height: 110px;
+  background-color: transparent;
+  border: 0;
+}
+
+// round photos
+.photo-round {
+  background-repeat: no-repeat;
+  background-position-x: center;
+  background-size: cover;
+
+  &.photo-round-md {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+  }
+}
+
+// dim no photo images
+img[src*="no-photo"] {
+  opacity: .4;
+}
+
+// 5. Specific Page Styles
+// -------------------------
+
+// search page
+.checkin-search-body {
+  width: 360px;
+  margin: 0 auto;
+
+  &.search-phone {
+    width: @checkin-keypad-width;
+  }
+}
+
+.search-phone-form-group {
+  width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
+  margin: 0 auto;
+}
+
+input.checkin-phone-entry {
+  width: @checkin-keypad-width; // keypad is 320 - padding (24px x 2)
+  height: 60px;
+  padding: 6px 20px;
+  margin: 0 auto 10px;
+  font-size: 36px;
+  font-weight: @checkin-button-text-weight;
+}
+
+input.namesearch {
+  width: 360px;
+  height: 60px;
+  padding: 6px 20px;
+  margin: 0 auto 10px;
+  font-size: 36px;
+  font-weight: @checkin-button-text-weight;
+}
+
+.checkin-phone-keypad {
+  margin: 0 auto 24px;
+}
+
+// time select
+.checkin-time-select {
+  display: table;
+  margin: 0 auto;
+
+  .control-label {
+    display: block;
+    font-size: @font-size-h1;
+    font-weight: @headings-font-weight;
+  }
+}
+
+.checkin-timelist {
+  margin-bottom: 12px;
+}
+
+// checkin summary page
+.checkin-messages,
+.checkin-summary {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+
+  li {
+    margin-bottom: 18px;
+    font-size: 22px;
+    color: @text-color;
+  }
+}
+
+.checkin-error {
+  padding: 0;
+  list-style-type: none;
+}
+
+// closed page
+.checkin-closed-header {
+  > h1 {
+    margin-bottom: 0;
+    font-size: 5em;
+    line-height: 1;
+    @media @sm {
+      font-size: 9em;
+    }
+    @media @md {
+      font-size: 14em;
+    }
+    @media @lg {
+      font-size: 17em;
+    }
+  }
+}
+
+.checkin-closed-body {
+  padding-left: .5em;
+  @media @sm {
+    padding-left: 1em;
+  }
+  @media @md {
+    padding-left: 2em;
+  }
+}
+
+// family select - select person
+
+.family-personselect {
+  font-size: 26px;
+  text-align: left;
+}
+
+.family-no-option,
+.family-auto-select {
+  padding-left: 10px !important;
+  font-size: 16px;
+  text-align: left;
+}
+
+.no-option-caption,
+.auto-select-caption {
+  opacity: .75;
+}
+
+// Family Registration
+
+.btn-action {
+  .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
+}
+
+.value-list-rows .controls-row {
+  margin-bottom: 6px;
+
+  .input-width-lg {
+    width: 100%;
+    max-width: ~"calc(100% - 50px)";
+  }
+}
+
+.form-control-group .form-control {
+  float: left;
+  margin-right: 6px;
+}
+
+.datepicker {
+  color: @modal-body-text-color;
+}
+
+.toggle-container {
+  margin-top: @line-height-computed + 6px;
+  margin-bottom: @form-group-margin-bottom;
+
+  &.form-group {
+    margin-top: 0;
+  }
+
+  .btn-group {
+    display: -ms-flexbox;
+    display: flex;
+    height: @input-height-base;
+    border-radius: 50px;
+
+    > .btn {
+      width: 100%;
+      margin-bottom: 0;
+      border-radius: 50px;
+
+      &:active {
+        box-shadow: none;
+
+        &:focus {
+          color: #fff;
+          background-color: fade(#76c24e, 75%);
+        }
+      }
+    }
+
+    > .btn-default {
+      color: #a09fa0;
+      background-color: #fff;
+      border-color: #dad8d6;
+    }
+
+    > .active,
+    > .active:hover,
+    &:active {
+      color: #fff;
+      background-color: #76c24e;
+      border-color: #76c24e;
+      box-shadow: none;
+    }
+  }
+}
+
+.table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+.table > tbody > tr:last-child > td {
+  border-bottom: 1px solid @table-border-color;
+}
+
+// Moved to _forms.scss
+// highlight required fields
+.form-group.required {
+  .control-label::after {
+    margin-left: 4px;
+    font-family: @fa-font-face;
+    font-size: 6px;
+    font-weight: @fa-theme-weight;
+    color: @required-field-color;
+    vertical-align: super;
+    content: @fa-var-circle;
+  }
+}
+// ===================
+
+.qr-code-container {
+  position: relative;
+  display: block;
+  width: 60vw;
+  width: 100%;
+  max-width: 75%;
+  padding: 0;
+  margin: 0 auto 32px;
+  overflow: hidden;
+  border-radius: @border-radius-large;
+
+  &::before {
+    display: block;
+    padding-top: 100%;
+    content: "";
+  }
+
+  .qr-code {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+
+//
+// 6. Scroll Container
+// --------------------------------------
+
+.checkin-scroll-panel {
+  position: absolute;
+  top: 45px;
+  bottom: 24px;
+  z-index: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+.scroller {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  padding: 0 @checkin-container-padding;
+  -webkit-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+  -moz-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+.iScrollIndicator {
+  position: absolute;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  background-color: @checkin-scrollbar-bg;
+  border-radius: 20px;
+  -webkit-transition: 0ms cubic-bezier(.1, .57, .1, 1);
+  transition: 0ms cubic-bezier(.1, .57, .1, 1);
+  transform: translate(0, 0) translateZ(0);
+}
+
+.iScrollVerticalScrollbar,
+.iScrollLoneScrollbar {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  bottom: 2px;
+  z-index: 1;
+  width: 20px;
+  overflow: hidden;
+}
+
+//
+
+// 7. Kiosk Manager
+// --------------------------------------
+
+.kioskmanager-activate {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  z-index: @zindex-navbar;
+  color: @text-color;
+  opacity: .5;
+
+  &:hover {
+    color: @text-color;
+  }
+}
+
+.kioskmanager-locations {
+  max-width: 75%;
+}
+
+.kioskmanager-location {
+  position: relative;
+  padding: 16px;
+  margin: 0 60px 0 0;
+  background-color: rgba(0, 0, 0, .1);
+  border-radius: @border-radius-base;
+
+  .clearfix();
+
+  .kioskmanager-location-toggle {
+    float: left;
+    margin-top: 4px;
+  }
+
+  .kioskmanager-location-label {
+    float: left;
+    padding-left: 8px;
+    font-size: 36px;
+    font-weight: 600;
+  }
+
+  .kioskmanager-location-count {
+    position: absolute;
+    right: 12px;
+    margin-top: 12px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+.kioskmanager-actions {
+  position: absolute;
+  bottom: 0;
+  left: 75%;
+}
+
+.kioskmanager-counts {
+  .kioskmanager-count h3,
+  .kioskmanager-count li {
+    color: @text-color;
+  }
+
+  .kioskmanager-count-locations,
+  .kioskmanager-count-groups,
+  .kioskmanager-count-schedules {
+    padding: 0;
+    list-style: none;
+  }
+
+  .kioskmanager-count-locations > li {
+    margin-right: 12px;
+  }
+
+  .kioskmanager-counts ul li {
+    float: left;
+    margin-right: 24px;
+  }
+}
+
+//
+
+// 8. Celebrations
+// --------------------------------------
+
+//   /* Only Needed for Testing */
+//   .checkin-summary.checkin-body-container {
+//     margin-top: 72px;
+// }
+
+.checkin-summary {
+  h3 {
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    margin-bottom: @card-bottom-margin;
+    text-align: left;
+  }
+
+  .person-name {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+.checkin-celebrations > .row,
+.checkin-confirmations > .row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Celebration Adds */
+.checkin-celebrations{
+
+  + .checkin-confirmations {
+    padding: 48px 0 0;
+    margin: 36px 0 0;
+    border-top: 1px solid @card-border-color;
+  }
+
+  .card {
+    box-shadow: 0 0 12px 0 @celebration-box-shadow-color;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .person-name {
+    -webkit-animation:
+      fade-in-bottom .6s cubic-bezier(.25, .1, .25, 1) 200ms
+      both;
+    animation: fade-in-bottom .6s cubic-bezier(.25, .1, .25, 1) 200ms both;
+  }
+
+  .person-checkin-details {
+    -webkit-animation: fade-in 1.2s cubic-bezier(.25, .1, .25, 1) 200ms both;
+    animation: fade-in 1.2s cubic-bezier(.25, .1, .25, 1) 200ms both;
+  }
+}
+
+.left-icon {
+  padding-left: 1rem;
+  margin-right: 1rem;
+  -webkit-animation: scale-in-center .5s cubic-bezier(.25, .46, .45, .94) both;
+  animation: scale-in-center .5s cubic-bezier(.25, .46, .45, .94) both;
+}
+
+.right-icon {
+  margin-left: auto;
+
+  svg {
+    -webkit-animation: rotate-in-diag-1 .5s cubic-bezier(.25, .46, .45, .94) 650ms both;
+    animation: rotate-in-diag-1 .5s cubic-bezier(.25, .46, .45, .94) 650ms both;
+  }
+}
+
+.celebration-progress {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16px 0 0;
+  margin: 16px 0 0;
+  border-top: 1px solid @card-border-color;
+}
+
+.celebration-progress-name {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.celebration-progress-stat {
+  align-self: flex-end;
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* Icon Incomplete */
+.checkin-confirmations .left-icon {
+  padding-left: 0;
+  opacity: .6;
+  -webkit-animation: none;
+  animation: none;
+}
+
+.checkin-confirmations .left-icon.complete {
+  opacity: 1;
+}
+
+/**
+* ----------------------------------------
+* animation rotate-in-diag-1
+* ----------------------------------------
+*/
+@-webkit-keyframes rotate-in-diag-1 {
+  0% {
+    opacity: 0;
+    -webkit-transform: rotate3d(1, 1, 0, -360deg);
+    transform: rotate3d(1, 1, 0, -360deg);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: rotate3d(1, 1, 0, 0deg);
+    transform: rotate3d(1, 1, 0, 0deg);
+  }
+}
+
+@keyframes rotate-in-diag-1 {
+  0% {
+    opacity: 0;
+    -webkit-transform: rotate3d(1, 1, 0, -360deg);
+    transform: rotate3d(1, 1, 0, -360deg);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: rotate3d(1, 1, 0, 0deg);
+    transform: rotate3d(1, 1, 0, 0deg);
+  }
+}
+
+/**
+* ----------------------------------------
+* animation scale-in-center
+* ----------------------------------------
+*/
+@-webkit-keyframes scale-in-center {
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-in-center {
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+/**
+* ----------------------------------------
+* animation fade-in-bottom
+* ----------------------------------------
+*/
+@-webkit-keyframes fade-in-bottom {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(18px);
+    transform: translateY(18px);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-bottom {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(18px);
+    transform: translateY(18px);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+/**
+* ----------------------------------------
+* animation fade-in
+* ----------------------------------------
+*/
+@-webkit-keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
