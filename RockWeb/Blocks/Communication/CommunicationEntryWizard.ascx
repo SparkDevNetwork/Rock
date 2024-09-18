@@ -493,7 +493,7 @@
                                                         ModalCssClass="js-AssetManager-modal"
                                                         ButtonTextTemplate="Select Asset"
                                                         ModalTitle="Asset Manager" 
-                                                        ShowSelectNoneButton="false">
+                                                        ShowSelectNoneButton="true">
                                                     </Rock:ItemFromBlockPicker>
                                                     </ContentTemplate>
                                                 </asp:UpdatePanel>
