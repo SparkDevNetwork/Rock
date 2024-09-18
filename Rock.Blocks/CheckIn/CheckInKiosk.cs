@@ -87,6 +87,12 @@ namespace Rock.Blocks.CheckIn
         DefaultIntegerValue = 20,
         Order = 4 )]
 
+    [BooleanField( "Select All Schedules Automatically",
+        Description = "When enabled, the kiosk will automatically select all available schedules instead of asking the individual to make a selection.",
+        Key = AttributeKey.SelectAllSchedulesAutomatically,
+        IsRequired = false,
+        Order = 5 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b208cafe-2194-4308-aa52-a920c516805a" )]
@@ -102,6 +108,7 @@ namespace Rock.Blocks.CheckIn
             public const string PromotionsContentChannel = "PromotionsContentChannel";
             public const string RestKey = "RestKey";
             public const string IdleTimeout = "IdleTimeout";
+            public const string SelectAllSchedulesAutomatically = "SelectAllSchedulesAutomatically";
         }
 
         private static class PageParameterKey
@@ -145,6 +152,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 ApiKey = apiKey,
                 CurrentTheme = PageCache.Layout?.Site?.Theme?.ToLower(),
                 IdleTimeout = GetAttributeValue( AttributeKey.IdleTimeout ).AsInteger(),
+                AreAllSchedulesSelectedAutomatically = GetAttributeValue( AttributeKey.SelectAllSchedulesAutomatically ).AsBoolean(),
                 SetupPageRoute = this.GetLinkedPageUrl( AttributeKey.SetupPage ),
                 ShowCountsByLocation = GetAttributeValue( AttributeKey.ShowCountsByLocation ).AsBoolean()
             };
