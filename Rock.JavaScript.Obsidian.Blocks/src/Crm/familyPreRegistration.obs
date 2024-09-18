@@ -62,6 +62,15 @@
                         </div>
                     </Panel>
 
+                    <Panel v-if="config.prioritizeChildEntry" type="default" title="Children">
+                        <PreRegistrationChildren
+                                                 v-model="children"
+                                                 :disabled="isSaving || isNavigating"
+                                                 :lastName="adult1.lastName"
+                                                 @addChild="onAddChild"
+                                                 @removeChild="onRemoveChild" />
+                    </Panel>
+
                     <Panel title="Adult Information">
                         <template #default>
                             <h4 class="heading-individual">First Adult</h4>
@@ -449,7 +458,7 @@
                         </template>
                     </Panel>
 
-                    <Panel type="default" title="Children">
+                    <Panel v-if="!config.prioritizeChildEntry" type="default" title="Children">
                         <PreRegistrationChildren
                                                  v-model="children"
                                                  :disabled="isSaving || isNavigating"
