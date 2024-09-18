@@ -287,6 +287,13 @@
                             else {
                                 this.setImageThumbnail("/Assets/Images/no-picture.svg");
                             }
+                        },
+
+                        /**
+                         * Hides the asset picker.
+                         */
+                        hideAssetPicker: function () {
+                            getAssetPicker$().hide();
                         }
                     });
                 })(),
@@ -621,7 +628,7 @@
             },
 
             /**
-             * Handles the event when an asset is picked or removed.
+             * Handles the event when an asset is picked, removed, or when *any* post-back occurs.
              *
              * @param {any} e The event.
              * @param {any} data The asset data.
@@ -637,8 +644,11 @@
                     // maybe check for an access denied error here and display it.
                     this.setAssetFromData(e, parsedData);
                 }
-                else {
-                    showPlaceholderImageInComponent();
+
+                // This handler is called when *any* post-back occurs and will cause the asset picker to be visible.
+                // Ensure the asset picker is hidden if an asset is not used in this image component.
+                if (!propertyHelper.image.isAssetButtonSelected() && !isAssetShownInComponent()) {
+                    propertyHelper.image.hideAssetPicker();
                 }
             },
 
