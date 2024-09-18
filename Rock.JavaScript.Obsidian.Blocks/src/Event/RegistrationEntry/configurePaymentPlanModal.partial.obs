@@ -4,6 +4,7 @@
            :isSaveButtonDisabled="!wipPaymentPlanConfiguration?.endDate"
            :saveText="wipPaymentPlanConfiguration?.endDate ? 'Apply' : ''"
            title="Set Up Payment Plan"
+           v-model:submit="submit"
            @save="onConfigurePaymentPlan"
            @closeModal="onCancel">
         <template v-if="paymentPlanDeadlineDate?.isLaterThan(RockDateTime.now())">
@@ -38,7 +39,7 @@
                     <CurrencyBox :modelValue="amountToPayTodayPlusAdjustmentCurrency?.number ?? 0"
                                  @update:modelValue="onUpdateAmountToPayToday"
                                  label="Amount To Pay Today"
-                                 :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]"
+                                 :rules="amountToPayTodayRules"
                                  @blur="onBlurAmountToPayToday">
 
                         <template #append>
@@ -106,7 +107,7 @@
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { validateValue, ValidationResult, ValidationRule, ValidationRuleFunction } from "@Obsidian/ValidationRules";
     import { RegistrationEntryGetScheduledPaymentDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryGetScheduledPaymentDatesRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -133,6 +134,8 @@
 
     const invokeBlockAction = useInvokeBlockAction();
 
+    const amountToPayTodayRules: ValidationRule[] = ["required", validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining];
+
     //#region Values
 
     // Initialize refs with empty values,
@@ -148,6 +151,7 @@
     const paymentDates = ref<RockDateTime[]>([]);
     const getScheduledPaymentDatesRequestGuid = ref<Guid | null | undefined>();
     const isPaymentFrequencyWarningShown = ref<boolean>(false);
+    const submit = ref<boolean>(false);
 
     //#endregion
 
@@ -276,8 +280,8 @@
     }
 
     function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
-        if (wipPaymentPlanConfiguration.value?.balanceDue.isLessThan(amountToPayToday.value ?? 0)) {
-            return "must be less than or equal to the total amount";
+        if (wipPaymentPlanConfiguration.value?.balanceDue.isLessThanOrEqualTo(amountToPayToday.value ?? 0)) {
+            return "must be less than the total amount";
         }
         else {
             return true;
@@ -393,9 +397,20 @@
 
     function onBlurAmountToPayToday(): void {
         if (wipPaymentPlanConfiguration.value) {
-            reconfigureWorkInProgress({
-                amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo),
-            });
+            // Validate the field before trying to recalculate the payment plan
+            // so errors can be displayed.
+            const validationErrors = validateValue(amountToPayToday.value, amountToPayTodayRules);
+
+            if (validationErrors?.length) {
+                // This field is invalid and will prevent the form from being submitted.
+                // Submit the form which will revalidate this field and show validation errors.
+                submit.value = true;
+            }
+            else {
+                reconfigureWorkInProgress({
+                    amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo),
+                });
+            }
         }
     }
 
