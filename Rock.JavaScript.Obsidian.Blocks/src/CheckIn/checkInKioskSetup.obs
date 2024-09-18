@@ -545,6 +545,33 @@
     }
 
     /**
+     * Sets the initial UI selection values based on the saved data.
+     */
+    function setInitialValues(): void {
+        try {
+            const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.Configuration");
+
+            if (!json) {
+                return;
+            }
+
+            const savedConfig = JSON.parse(json) as SavedKioskConfigurationBag;
+
+            if (savedConfig.campusId) {
+                campusId.value = savedConfig.campusId;
+            }
+
+            if (savedConfig.kioskId) {
+                kioskId.value = savedConfig.kioskId;
+            }
+        }
+        catch {
+            // If we can't load the saved config, just move on.
+            return;
+        }
+    }
+
+    /**
      * Attempts to restore the temporary configuration from a theme selection
      * redirect. If the temporary configuration was found then the UI state is
      * restored.
@@ -709,6 +736,8 @@
     });
 
     onMounted(() => updateActions());
+
+    setInitialValues();
 
     if (blockConfiguration.isConfigureByLocationEnabled) {
         attemptConfigureByGeoLocation();

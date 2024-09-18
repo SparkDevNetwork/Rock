@@ -427,7 +427,11 @@
      */
     function onIdleTimerCheck(): void {
         if (currentScreen.value === Screen.Welcome) {
-            if (isRealTimeDisconnected) {
+            const tenMinutes = 10 * 60 * 1000;
+
+            // If on the welcome screen with no activity for 10 minutes then
+            // force a reload to reconnect.
+            if (isRealTimeDisconnected && Date.now() - lastActivity > tenMinutes) {
                 if (idleTimer !== undefined) {
                     window.clearInterval(idleTimer);
                     idleTimer = undefined;
@@ -440,11 +444,18 @@
 
             return;
         }
+
         if (currentScreen.value >= SupervisorScreen.Login) {
             return;
         }
 
-        if (Date.now() - lastActivity > 20000) {
+        let timeout = (blockConfiguration.idleTimeout as number) * 1000;
+
+        if (timeout <= 0) {
+            timeout = 20000;
+        }
+
+        if (Date.now() - lastActivity > timeout) {
             navigateToScreen(Screen.Welcome);
         }
     }
@@ -624,7 +635,8 @@
         configuration.value.locationCountAdjustments = [];
 
         if (isRealTimeDisconnected) {
-            // If we lost real-time connection, force a reconnect.
+            // If we lost real-time connection, force a reconnect when coming
+            // back to the welcome screen.
             if (idleTimer !== undefined) {
                 window.clearInterval(idleTimer);
                 idleTimer = undefined;
