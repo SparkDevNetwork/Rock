@@ -160,7 +160,8 @@ namespace Rock.Blocks.Engagement
             }
             else
             {
-                streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsInteger();
+                var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
+                streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsInteger();
             }
 
             var streakType = StreakTypeCache.Get( streakTypeId );
@@ -175,7 +176,8 @@ namespace Rock.Blocks.Engagement
         {
             if ( _streak == null )
             {
-                var streakId = PageParameter( PageParameterKey.StreakId ).AsIntegerOrNull();
+                var streakIdParam = PageParameter( PageParameterKey.StreakId );
+                var streakId = Rock.Utility.IdHasher.Instance.GetId( streakIdParam ) ?? streakIdParam.AsIntegerOrNull();
 
                 if ( streakId.HasValue && streakId.Value > 0 )
                 {
@@ -196,7 +198,8 @@ namespace Rock.Blocks.Engagement
         {
             if ( _streakTypeExclusion == null )
             {
-                var id = PageParameter( PageParameterKey.StreakTypeExclusionId ).AsIntegerOrNull();
+                var exclusionIdParam = PageParameter( PageParameterKey.StreakTypeExclusionId );
+                var id = Rock.Utility.IdHasher.Instance.GetId( exclusionIdParam ) ?? exclusionIdParam.AsIntegerOrNull();
 
                 if ( id.HasValue && id.Value > 0 )
                 {

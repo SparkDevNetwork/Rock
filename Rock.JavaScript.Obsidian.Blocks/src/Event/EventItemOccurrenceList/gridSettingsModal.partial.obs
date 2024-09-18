@@ -12,24 +12,12 @@
                                  label="Next Start Date Range"
                                  :disallowPastDateSelection="false" />
             </div>
-
-            <div class="col-md-4">
-                <CheckBoxList v-model="campuses"
-                              label="Campuses"
-                              :items="campusItems"
-                              :horizontal="false" />
-            </div>
-
-            <div class="col-md-4">
-                <TextBox v-model="contact"
-                         label="Contact" />
-            </div>
         </div>
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
@@ -38,8 +26,6 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 
     const props = defineProps({
         modelValue: {
@@ -68,16 +54,12 @@
         lowerValue: props.modelValue.startDate,
         upperValue: props.modelValue.endDate
     });
-    const contact = ref(props.modelValue.contact ?? "");
-    const campuses = ref(props.modelValue.campuses);
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
             startDate: dateRange.value?.lowerValue,
-            endDate: dateRange.value?.upperValue,
-            contact: contact.value,
-            campuses: campuses.value
+            endDate: dateRange.value?.upperValue
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -92,8 +74,6 @@
             lowerValue: props.modelValue.startDate,
             upperValue: props.modelValue.endDate
         };
-        contact.value = props.modelValue.contact ?? "";
-        campuses.value = props.modelValue.campuses;
     });
 
     watch(isVisible, () => {
