@@ -86,7 +86,7 @@
   padding: var(--spacing-tiny);
   margin-top: 1px;
 
-  *zoom: 1;
+  zoom: 1;
   border-radius: (--rounded-small);
 
   &::before,
