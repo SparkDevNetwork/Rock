@@ -167,12 +167,15 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose ability levels should be updated.</param>
         protected virtual void UpdateAbilityLevels( Attendee attendee )
         {
-            // Skip the ability level selection if the configuration tells us
-            // to never ask, or if we only ask if they have no ability level but
-            // they already do, or if no groups require ability level for check-in.
+            // Skip the ability level selection if:
+            // The configuration tells us to never ask.
+            // If we only ask if they have no ability level but they already do
+            // If we only ask if they have an ability level but they don't have one
+            // If no groups require ability level for check-in.
             var skipAbilityLevels =
                 Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAsk
-                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsNoAbilityLevel && attendee.Person.AbilityLevel != null )
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsNoAbilityLevel && attendee.Person.AbilityLevel == null )
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsAnAbilityLevel && attendee.Person.AbilityLevel != null )
                 || !attendee.Opportunities.Groups.Any( g => g.AbilityLevelId.IsNotNullOrWhiteSpace() );
 
             if ( skipAbilityLevels )
