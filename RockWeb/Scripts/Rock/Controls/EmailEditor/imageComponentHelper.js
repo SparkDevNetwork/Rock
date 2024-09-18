@@ -96,418 +96,390 @@
         /**
          * A helper object for working with the image component properties on the right side of the email editor.
          */
-        var propertyHelper = (function () {
-            return Object.freeze({
-                getPropertiesContainer$: function () {
-                    return $("#emaileditor-properties");
+        var propertyHelper = Object.freeze({
+            getPropertiesContainer$: function () {
+                return $("#emaileditor-properties");
+            },
+
+            width: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-imgcsswidth");
                 },
 
-                image: (function () {
-                    function isOptionSelected($option) {
-                        var classList = $option.attr("class");
-                        return classList && classList.includes("btn-primary");
+                setValue: function (value) {
+                    if (value === "full") {
+                        this.getProperty$().val(1);
                     }
-
-                    function selectOption($option) {
-                        $option.removeClass("btn-default");
-                        $option.addClass("btn-primary");
+                    else {
+                        this.getProperty$().val(0);
                     }
+                },
 
-                    function deselectOption($option) {
-                        $option.removeClass("btn-primary");
-                        $option.addClass("btn-default");
-                    }
+                getValue: function () {
+                    return this.getProperty$().val();
+                }
+            }),
 
-                    function getButtonGroup$() {
-                        return propertyHelper.getPropertiesContainer$().find(".js-btn-group-image-type");
-                    }
+            align: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-imagealign");
+                },
 
-                    function getAssetPicker$() {
-                        return propertyHelper.getPropertiesContainer$().find(".js-component-asset-manager");
-                    }
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
 
-                    function getAssetUploaderRemoveButton$() {
-                        return getAssetPicker$().find("a.js-picker-select-none");
-                    }
+                getValue: function () {
+                    return this.getProperty$().val();
+                }
+            }),
 
-                    function getAssetUploaderThumbnail$() {
-                        return getAssetPicker$().find(".js-asset-thumbnail");
-                    }
+            imageWidth: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-imagewidth");
+                },
 
-                    function getAssetUploaderThumbnailName$() {
-                        return getAssetPicker$().find(".js-asset-thumbnail-name");
-                    }
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
 
-                    function getImageUploader$() {
-                        return propertyHelper.getPropertiesContainer$().find("#componentImageUploader");
-                    }
+                getValue: function () {
+                    return this.getProperty$().val();
+                },
 
-                    function getImageUploaderRemoveButton$() {
-                        return getImageUploader$().find(".imageupload-remove a");
-                    }
+                getValueAsInt: function () {
+                    return parseInt(this.getValue());
+                }
+            }),
 
-                    function getImageUploaderThumbnailImage$() {
-                        return getImageUploader$().find(".imageupload-thumbnail-image");
-                    }
+            imageHeight: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-imageheight");
+                },
 
-                    return Object.freeze({
-                        /**
-                         * Sets the thumbnail value of the asset picker.
-                         *
-                         * Note: Use `clearAssetValue` for clearing the value.
-                         * @param {string} thumbnailImageUrl The thumbnail image URL.
-                         * @param {string} thumbnailFileName The thumbnail file name.
-                         */
-                        setAssetThumbnail: function (thumbnailImageUrl, thumbnailFileName) {
-                            if (thumbnailImageUrl) {
-                                getAssetUploaderThumbnail$().attr("style", "background-image:url('" + thumbnailImageUrl + "')");
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                },
+
+                getValueAsInt: function () {
+                    return parseInt(this.getProperty$().val());
+                }
+            }),
+
+            resizeMode: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-resizemode");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                }
+            }),
+
+            altText: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-alt");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                }
+            }),
+
+            marginTop: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-margin-top");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                },
+
+                getValueAsPixels: function () {
+                    return Rock.controls.util.getValueAsPixels(this.getValue());
+                }
+            }),
+
+            marginLeft: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-margin-left");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                },
+
+                getValueAsPixels: function () {
+                    return Rock.controls.util.getValueAsPixels(this.getValue());
+                }
+            }),
+
+            marginRight: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-margin-right");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                },
+
+                getValueAsPixels: function () {
+                    return Rock.controls.util.getValueAsPixels(this.getValue());
+                }
+            }),
+
+            marginBottom: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-margin-bottom");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                },
+
+                getValueAsPixels: function () {
+                    return Rock.controls.util.getValueAsPixels(this.getValue());
+                }
+            }),
+
+            link: Object.freeze({
+                getProperty$: function () {
+                    return propertyHelper.getPropertiesContainer$().find("#component-image-link");
+                },
+
+                setValue: function (value) {
+                    this.getProperty$().val(value);
+                },
+
+                getValue: function () {
+                    return this.getProperty$().val();
+                }
+            }),
+
+            image: (function () {
+                function isOptionSelected($option) {
+                    var classList = $option.attr("class");
+                    return classList && classList.includes("btn-primary");
+                }
+
+                function selectOption($option) {
+                    $option.removeClass("btn-default");
+                    $option.addClass("btn-primary");
+                }
+
+                function deselectOption($option) {
+                    $option.removeClass("btn-primary");
+                    $option.addClass("btn-default");
+                }
+
+                function getButtonGroup$() {
+                    return propertyHelper.getPropertiesContainer$().find(".js-btn-group-image-type");
+                }
+
+                function getAssetPicker$() {
+                    return propertyHelper.getPropertiesContainer$().find(".js-component-asset-manager");
+                }
+
+                function getAssetUploaderRemoveButton$() {
+                    return getAssetPicker$().find("a.js-picker-select-none");
+                }
+
+                function getAssetUploaderThumbnail$() {
+                    return getAssetPicker$().find(".js-asset-thumbnail");
+                }
+
+                function getAssetUploaderThumbnailName$() {
+                    return getAssetPicker$().find(".js-asset-thumbnail-name");
+                }
+
+                function getImageUploader$() {
+                    return propertyHelper.getPropertiesContainer$().find("#componentImageUploader");
+                }
+
+                function getImageUploaderRemoveButton$() {
+                    return getImageUploader$().find(".imageupload-remove a");
+                }
+
+                function getImageUploaderThumbnailImage$() {
+                    return getImageUploader$().find(".imageupload-thumbnail-image");
+                }
+
+                return Object.freeze({
+                    /**
+                     * Sets the thumbnail value of the asset picker.
+                     *
+                     * Note: Use `clearAssetValue` for clearing the value.
+                     * @param {string} thumbnailImageUrl The thumbnail image URL.
+                     * @param {string} thumbnailFileName The thumbnail file name.
+                     */
+                    setAssetThumbnail: function (thumbnailImageUrl, thumbnailFileName) {
+                        if (thumbnailImageUrl) {
+                            getAssetUploaderThumbnail$().attr("style", "background-image:url('" + thumbnailImageUrl + "')");
+                        }
+                        else {
+                            getAssetUploaderThumbnail$().attr("style", "");
+                        }
+
+                        var $assetThumbnailName = getAssetUploaderThumbnailName$();
+
+                        $assetThumbnailName.text(thumbnailFileName);
+                        $assetThumbnailName.attr("title", thumbnailFileName);
+
+                        if (thumbnailFileName) {
+                            $assetThumbnailName.removeClass("file-link-default");
+                            $assetThumbnailName.attr("style", "background-color: transparent");
+                        }
+                        else {
+                            $assetThumbnailName.addClass("file-link-default");
+                            $assetThumbnailName.attr("style", "");
+                        }
+                    },
+
+                    /**
+                     * Sets the thumbnail value of the image uploader.
+                     *
+                     * Note: Use `clearImageValue` for clearing the value.
+                     * @param {string} thumbnailImageUrl The thumbnail image path.
+                     */
+                    setImageThumbnail: function (thumbnailImageUrl) {
+                        if (thumbnailImageUrl) {
+                            getImageUploaderThumbnailImage$().css("background-image", "url('" + thumbnailImageUrl + "')");
+                        }
+                        else {
+                            getImageUploaderThumbnailImage$().css("background-image", "");
+                        }
+                    },
+
+                    /**
+                     * Gets the "Image" option that switches from asset picker to image uploader.
+                     */
+                    getImageOption$: function () {
+                        return getButtonGroup$().find(".js-image-picker-type-image");
+                    },
+
+                    /**
+                     * Gets the "Asset" option that switches from image uploader to asset picker.
+                     */
+                    getAssetOption$: function () {
+                        return getButtonGroup$().find(".js-image-picker-type-asset");
+                    },
+
+                    /**
+                     * Gets a value determining whether the "Image" option is selected.
+                     */
+                    isImageOptionSelected: function () {
+                        return isOptionSelected(this.getImageOption$());
+                    },
+
+                    /**
+                     * Gets a value determining whether the "Asset" option is selected.
+                     */
+                    isAssetButtonSelected: function () {
+                        return isOptionSelected(this.getAssetOption$());
+                    },
+
+                    /**
+                     * Selects the "Asset" option and shows the asset picker.
+                     */
+                    selectAssetOption: function () {
+                        selectOption(this.getAssetOption$());
+                        deselectOption(this.getImageOption$());
+
+                        getAssetPicker$().show();
+                        getImageUploader$().hide();
+                    },
+
+                    /**
+                     * Selects the "Image" option and shows the image uploader.
+                     */
+                    selectImageOption: function () {
+                        selectOption(this.getImageOption$());
+                        deselectOption(this.getAssetOption$());
+
+                        getImageUploader$().show();
+                        getAssetPicker$().hide();
+                    },
+
+                    /**
+                     * Clears the asset picker value.
+                     */
+                    clearAssetValue: function () {
+                        var $removeButton = getAssetUploaderRemoveButton$();
+
+                        // If there is a remove button, then simulate a click to clear the asset.
+                        if ($removeButton.length > 0) {
+                            var href = $removeButton.attr("href");
+
+                            if (href && href.startsWith("javascript:")) {
+                                window.location.href = href;
                             }
                             else {
-                                getAssetUploaderThumbnail$().attr("style", "");
+                                $removeButton.click();
                             }
+                        }
+                        // Otherwise, just clear the thumbnail and file name.
+                        else {
+                            this.setAssetThumbnail("", "");
+                        }
+                    },
 
-                            var $assetThumbnailName = getAssetUploaderThumbnailName$();
+                    /**
+                     * Clears the image uploader value.
+                     */
+                    clearImageValue: function () {
+                        var $removeButton = getImageUploaderRemoveButton$();
 
-                            $assetThumbnailName.text(thumbnailFileName);
-                            $assetThumbnailName.attr("title", thumbnailFileName);
-
-                            if (thumbnailFileName) {
-                                $assetThumbnailName.removeClass("file-link-default");
-                                $assetThumbnailName.attr("style", "background-color: transparent");
-                            }
-                            else {
-                                $assetThumbnailName.addClass("file-link-default");
-                                $assetThumbnailName.attr("style", "");
-                            }
-                        },
-
-                        /**
-                         * Sets the thumbnail value of the image uploader.
-                         *
-                         * Note: Use `clearImageValue` for clearing the value.
-                         * @param {string} thumbnailImageUrl The thumbnail image path.
-                         */
-                        setImageThumbnail: function (thumbnailImageUrl) {
-                            if (thumbnailImageUrl) {
-                                getImageUploaderThumbnailImage$().css("background-image", "url('" + thumbnailImageUrl + "')");
+                        if ($removeButton) {
+                            var href = $removeButton.attr("href");
+                            if (href && href.startsWith("javascript:")) {
+                                window.location.href = href;
                             }
                             else {
-                                getImageUploaderThumbnailImage$().css("background-image", "");
+                                $removeButton.click();
                             }
-                        },
-
-                        /**
-                         * Gets the "Image" option that switches from asset picker to image uploader.
-                         */
-                        getImageOption$: function () {
-                            return getButtonGroup$().find(".js-image-picker-type-image");
-                        },
-
-                        /**
-                         * Gets the "Asset" option that switches from image uploader to asset picker.
-                         */
-                        getAssetOption$: function () {
-                            return getButtonGroup$().find(".js-image-picker-type-asset");
-                        },
-
-                        /**
-                         * Gets a value determining whether the "Image" option is selected.
-                         */
-                        isImageOptionSelected: function () {
-                            return isOptionSelected(this.getImageOption$());
-                        },
-
-                        /**
-                         * Gets a value determining whether the "Asset" option is selected.
-                         */
-                        isAssetButtonSelected: function () {
-                            return isOptionSelected(this.getAssetOption$());
-                        },
-
-                        /**
-                         * Selects the "Asset" option and shows the asset picker.
-                         */
-                        selectAssetOption: function () {
-                            selectOption(this.getAssetOption$());
-                            deselectOption(this.getImageOption$());
-
-                            getAssetPicker$().show();
-                            getImageUploader$().hide();
-                        },
-
-                        /**
-                         * Selects the "Image" option and shows the image uploader.
-                         */
-                        selectImageOption: function () {
-                            selectOption(this.getImageOption$());
-                            deselectOption(this.getAssetOption$());
-
-                            getImageUploader$().show();
-                            getAssetPicker$().hide();
-                        },
-
-                        /**
-                         * Clears the asset picker value.
-                         */
-                        clearAssetValue: function () {
-                            var $removeButton = getAssetUploaderRemoveButton$();
-
-                            // If there is a remove button, then simulate a click to clear the asset.
-                            if ($removeButton.length > 0) {
-                                var href = $removeButton.attr("href");
-
-                                if (href && href.startsWith("javascript:")) {
-                                    window.location.href = href;
-                                }
-                                else {
-                                    $removeButton.click();
-                                }
-                            }
-                            // Otherwise, just clear the thumbnail and file name.
-                            else {
-                                this.setAssetThumbnail("", "");
-                            }
-                        },
-
-                        /**
-                         * Clears the image uploader value.
-                         */
-                        clearImageValue: function () {
-                            var $removeButton = getImageUploaderRemoveButton$();
-
-                            if ($removeButton) {
-                                var href = $removeButton.attr("href");
-                                if (href && href.startsWith("javascript:")) {
-                                    window.location.href = href;
-                                }
-                                else {
-                                    $removeButton.click();
-                                }
-                            }
-                            else {
-                                this.setImageThumbnail("/Assets/Images/no-picture.svg");
-                            }
-                        },
-
-                        /**
-                         * Hides the asset picker.
-                         */
-                        hideAssetPicker: function () {
-                            getAssetPicker$().hide();
                         }
-                    });
-                })(),
-
-                width: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-imgcsswidth");
-                        },
-
-                        setValue: function (value) {
-                            if (value === "full") {
-                                this.getProperty$().val(1);
-                            }
-                            else {
-                                this.getProperty$().val(0);
-                            }
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
+                        else {
+                            this.setImageThumbnail("/Assets/Images/no-picture.svg");
                         }
-                    })
-                })(),
+                    },
 
-                align: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-imagealign");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        }
-                    })
-                })(),
-
-                imageWidth: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-imagewidth");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsInt: function () {
-                            return parseInt(this.getValue());
-                        }
-                    })
-                })(),
-
-                imageHeight: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-imageheight");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsInt: function () {
-                            return parseInt(this.getProperty$().val());
-                        }
-                    })
-                })(),
-
-                resizeMode: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-resizemode");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        }
-                    })
-                })(),
-
-                altText: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-alt");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        }
-                    })
-                })(),
-
-                marginTop: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-margin-top");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsPixels: function () {
-                            return Rock.controls.util.getValueAsPixels(this.getValue());
-                        }
-                    })
-                })(),
-
-                marginLeft: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-margin-left");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsPixels: function () {
-                            return Rock.controls.util.getValueAsPixels(this.getValue());
-                        }
-                    })
-                })(),
-
-                marginRight: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-margin-right");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsPixels: function () {
-                            return Rock.controls.util.getValueAsPixels(this.getValue());
-                        }
-                    })
-                })(),
-
-                marginBottom: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-margin-bottom");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsPixels: function () {
-                            return Rock.controls.util.getValueAsPixels(this.getValue());
-                        }
-                    })
-                })(),
-
-                link: (function () {
-                    return Object.freeze({
-                        getProperty$: function () {
-                            return propertyHelper.getPropertiesContainer$().find("#component-image-link");
-                        },
-
-                        setValue: function (value) {
-                            this.getProperty$().val(value);
-                        },
-
-                        getValue: function () {
-                            return this.getProperty$().val();
-                        },
-
-                        getValueAsPixels: function () {
-                            return Rock.controls.util.getValueAsPixels(this.getValue());
-                        }
-                    })
-                })()
-            });
-        })();
+                    /**
+                     * Hides the asset picker.
+                     */
+                    hideAssetPicker: function () {
+                        getAssetPicker$().hide();
+                    }
+                });
+            })()
+        });
 
         var exports = {
             /**
