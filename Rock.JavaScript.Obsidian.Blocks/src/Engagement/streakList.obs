@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           personKeyField="personId"
@@ -113,6 +114,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StreakListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -128,7 +130,11 @@
     //#region Computed Values
 
     const gridTitle = computed((): string => {
-        return `${config.options?.streakTypeName} Enrollments`;
+        return `${config.options?.streakTypeName ?? ""} Enrollments`;
+    });
+
+    const isVisible = computed((): boolean => {
+        return !!config.options?.streakTypeIdKey && useStore().state.areSecondaryBlocksShown;
     });
 
     //#endregion
