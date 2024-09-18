@@ -80,6 +80,13 @@ namespace Rock.Blocks.CheckIn
         IsRequired = false,
         Order = 3 )]
 
+    [IntegerField( "Idle Timeout",
+        Description = "The number of seconds that the kiosk can be idle without mouse or keyboard interaction before returning to the welcome screen.",
+        Key = AttributeKey.IdleTimeout,
+        IsRequired = false,
+        DefaultIntegerValue = 20,
+        Order = 4 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b208cafe-2194-4308-aa52-a920c516805a" )]
@@ -94,6 +101,7 @@ namespace Rock.Blocks.CheckIn
             public const string ShowCountsByLocation = "ShowCountsByLocation";
             public const string PromotionsContentChannel = "PromotionsContentChannel";
             public const string RestKey = "RestKey";
+            public const string IdleTimeout = "IdleTimeout";
         }
 
         private static class PageParameterKey
@@ -109,30 +117,6 @@ FROM [UserLogin] AS [U]
 INNER JOIN [Person] AS [P] ON [P].[Id] = [U].[PersonId]
 INNER JOIN [DefinedValue] AS [RT] ON [RT].[Id] = [P].[RecordTypeValueId]
 WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "'";
-
-        #endregion
-
-        private readonly Lazy<int> GroupTypeRoleAdultId;
-
-        private readonly Lazy<int> PersonSearchAlternateValueId;
-
-        #region Constructors
-
-        /// <summary>
-        /// Creates a new instance of <see cref="CheckInKiosk"/>.
-        /// </summary>
-        public CheckInKiosk()
-        {
-            GroupTypeRoleAdultId = new Lazy<int>( () => GroupTypeCache
-                .Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), RockContext )
-                .Roles
-                .FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
-                ?.Id ?? 0 );
-
-            PersonSearchAlternateValueId = new Lazy<int>( () => DefinedValueCache
-                .Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() )
-                ?.Id ?? 0 );
-        }
 
         #endregion
 
@@ -160,6 +144,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             {
                 ApiKey = apiKey,
                 CurrentTheme = PageCache.Layout?.Site?.Theme?.ToLower(),
+                IdleTimeout = GetAttributeValue( AttributeKey.IdleTimeout ).AsInteger(),
                 SetupPageRoute = this.GetLinkedPageUrl( AttributeKey.SetupPage ),
                 ShowCountsByLocation = GetAttributeValue( AttributeKey.ShowCountsByLocation ).AsBoolean()
             };
