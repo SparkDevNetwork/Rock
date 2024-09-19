@@ -127,4 +127,7 @@ export type CustomSettingsBag = {
 
     /** Gets or sets the trending term to use when displaying the sort option. */
     trendingTerm?: string | null;
+
+    /** Gets or sets whether or not to include unapproved items. */
+    includeUnapproved: boolean;
 };
