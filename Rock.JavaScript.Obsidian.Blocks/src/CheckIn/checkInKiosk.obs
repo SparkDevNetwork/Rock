@@ -311,7 +311,9 @@
     }
 
     function createNewSession(): CheckInSession {
-        let session = new CheckInSession(configuration.value, http);
+        let session = new CheckInSession(configuration.value, http, {
+            areAllSchedulesSelectedAutomatically: blockConfiguration.areAllSchedulesSelectedAutomatically as boolean
+        });
 
         if (blockConfiguration.apiKey) {
             session = session.withApiKey(blockConfiguration.apiKey as string);

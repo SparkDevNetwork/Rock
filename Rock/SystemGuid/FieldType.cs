@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -46,7 +44,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Asset field type
         /// </summary>
-        public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";
+        public const string ASSET = "4E4E8692-23B4-49EA-88B4-2AB07899E0EE";
 
         /// <summary>
         /// Asset storage provider field type

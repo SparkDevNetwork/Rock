@@ -206,6 +206,34 @@ export function useConfigurePaymentPlanFeature() {
         });
     }
 
+    /**
+     * Gets a preview of a payment plan configuration
+     * that modifies the current work-in-progress config with the provided options.
+     */
+    function previewWorkInProgress(overrides?: Partial<PaymentPlanConfigurationOptions>): PaymentPlanConfiguration | null | undefined {
+        const wipConfig = wipPaymentPlanConfiguration.value;
+
+        if (!isWorkInProgress.value || !wipConfig) {
+            // Nothing to reconfigure.
+            return;
+        }
+
+        // Reconfigure the "work in progress" payment plan.
+        return getPaymentPlanConfiguration({
+            amountToPayToday: wipConfig.amountToPayToday,
+            balanceDue: wipConfig.balanceDue,
+            desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
+            desiredNumberOfPayments: wipConfig.numberOfPayments,
+            desiredPaymentPlanFrequency: wipConfig.paymentPlanFrequency,
+            desiredStartDate: wipConfig.startDate ?? RockDateTime.now().date,
+            endDate: wipConfig.endDate,
+            minAmountToPayToday: wipConfig.minAmountToPayToday,
+
+            // Override with values provided to the function.
+            ...overrides
+        });
+    }
+
     /** Removes the new payment plan from the registration. */
     function cancel(): void {
         wipPaymentPlanConfiguration.value = null;
@@ -282,6 +310,7 @@ export function useConfigurePaymentPlanFeature() {
         init,
         initializeWorkInProgress,
         reconfigureWorkInProgress,
+        previewWorkInProgress
     };
 }
 

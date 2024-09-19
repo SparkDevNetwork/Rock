@@ -130,11 +130,17 @@
         wipPaymentPlanConfiguration,
         configure,
         initializeWorkInProgress,
+        previewWorkInProgress,
         reconfigureWorkInProgress } = useConfigurePaymentPlanFeature();
 
     const invokeBlockAction = useInvokeBlockAction();
 
-    const amountToPayTodayRules: ValidationRule[] = ["required", validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining];
+    const amountToPayTodayRules: ValidationRule[] = [
+        "required",
+        validateAmountToPayTodayRule,
+        validateAmountToPayTodayLessThanRemaining,
+        validateAmountToPayTodayResultsInAtLeastTwoNumberOfPayments
+    ];
 
     //#region Values
 
@@ -288,6 +294,32 @@
         }
     }
 
+    function validateAmountToPayTodayResultsInAtLeastTwoNumberOfPayments(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (!wipPaymentPlanConfiguration.value) {
+            // Skip validation if there isn't a payment plan yet.
+            return true;
+        }
+
+        // Get a preview so we can ensure more than one number of payment
+        // is possible with the new configuration.
+        const paymentPlanConfigPreview = previewWorkInProgress({
+            amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo)
+        });
+
+        if (!paymentPlanConfigPreview) {
+            // Skip validation if a payment plan configuration preview was not created.
+            // Another field may handle this validation.
+            return true;
+        }
+
+        if (paymentPlanConfigPreview.numberOfPayments < 2) {
+            return "must leave a balance that can be divided into multiple payments";
+        }
+        else {
+            return true;
+        }
+    }
+
     function updateModal(config: PaymentPlanConfiguration | null | undefined): void {
         if (!config) {
             // No payment plan config was supplied so reset the modal.
@@ -408,7 +440,7 @@
             }
             else {
                 reconfigureWorkInProgress({
-                    amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo),
+                    amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo)
                 });
             }
         }

@@ -21,26 +21,26 @@
 // </copyright>
 //
 
-/** Represents the approval status of a note */
-export const NoteApprovalStatus = {
-    /** The Note is pending approval. */
-    PendingApproval: 0,
+/** The type of text enhancement to be performed by AI automation (if any). */
+export const TextEnhancement = {
+    /** Do not make any changes in regards to text enhancement. */
+    NoChanges: 0,
 
-    /** The Note has been approved. */
-    Approved: 1,
+    /** Fix minor formatting and spelling mistakes. */
+    MinorFormattingAndSpelling: 1,
 
-    /** The Note was denied. */
-    Denied: 2
+    /** Improve the readabililty of the text. */
+    EnhanceReadability: 2
 } as const;
 
-/** Represents the approval status of a note */
-export const NoteApprovalStatusDescription: Record<number, string> = {
-    0: "Pending Approval",
+/** The type of text enhancement to be performed by AI automation (if any). */
+export const TextEnhancementDescription: Record<number, string> = {
+    0: "No Changes",
 
-    1: "Approved",
+    1: "Minor Formatting and Spelling",
 
-    2: "Denied"
+    2: "Enhance Readability"
 };
 
-/** Represents the approval status of a note */
-export type NoteApprovalStatus = typeof NoteApprovalStatus[keyof typeof NoteApprovalStatus];
+/** The type of text enhancement to be performed by AI automation (if any). */
+export type TextEnhancement = typeof TextEnhancement[keyof typeof TextEnhancement];

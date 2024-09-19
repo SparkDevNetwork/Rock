@@ -149,7 +149,7 @@
 .check-in-page .button-list .btn {
     display: flex;
     padding: var(--spacing-large);
-    gap: var(--spacing-small);
+    gap: var(--spacing-medium);
     align-items: center;
 }
 
@@ -180,9 +180,9 @@
 
 .check-in-page .number-pad {
     display: grid;
-    margin: auto;
-    grid-template-columns: 130px 130px 130px;
-    grid-template-rows: 56px 56px 56px 56px;
+    /*margin: auto;*/
+    grid-template-columns: 150px 150px 150px;
+    grid-template-rows: 60px 60px 60px 60px ;
     gap: var(--spacing-small);
 }
 
@@ -250,8 +250,8 @@
 }
 
 .check-in-page h3 {
-    color: var(--color-interface-strong);
-    font-size: var(--font-size-h5);
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-h3);
     font-weight: var(--font-weight-semibold);
     margin: 0 0 var(--spacing-tiny) 0;
 }
@@ -262,6 +262,7 @@
 
 .check-in-page .panel-header .subtitle {
     text-align: center;
+    color: var(--color-interface-strong);
 }
 
 .check-in-page .btn .title {
@@ -297,7 +298,7 @@
 }
 
 .check-in-page .btn-toggle .btn {
-    font-size: var(--font-size-h4);
+    font-size: var(--font-size-regular);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -319,8 +320,8 @@
 }
 
 .check-in-page .illustrated-button .selection {
-    font-size: 48px;
-    line-height: 1;
+    font-size: var(--font-size-h1);
+    line-height: var(--line-height-compact);
 }
 
 
@@ -453,7 +454,7 @@
 }
 
 .check-in-page .welcome-screen .scan-barcode-button .subtitle {
-    font-size: 22px;
+    font-size: var(--font-size-h4);
 }
 
 .check-in-page .welcome-screen.kiosk-closed,
@@ -481,7 +482,7 @@
 
 .check-in-page .search-screen input.search-term {
     height: 64px;
-    font-size: 36px;
+    font-size: var(--font-size-h2);
     width: 0;
     min-width: 100%;
 }
@@ -700,8 +701,8 @@
 .supervisor-login-screen .current-counts {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: var(--spacing-large);
-    font-size: var(--font-size-h5)
+    column-gap: var(--spacing-huge);
+    font-size: var(--font-size-regular)
 }
 
 .supervisor-login-screen .current-counts .count-row {
@@ -711,6 +712,17 @@
 
 .supervisor-login-screen .current-counts .title {
     flex-grow: 1;
+    color: var(--color-interface-strong);
+}
+
+.supervisor-login-screen .current-counts-column h4.count-row > .title{
+    font-size: var(--font-size-h5);
+    margin-left: var(--spacing-medium);
+    color: var(--color-interface-strong);
+}
+
+.current-counts-column ul {
+    margin-left: var(--spacing-medium);
 }
 
 
