@@ -34,7 +34,7 @@ export const FieldType = {
     /** Assessment field type */
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
     /** Asset field type */
-    Asset: "FC27D395-8F57-467E-91FF-E648F807110E",
+    Asset: "4E4E8692-23B4-49EA-88B4-2AB07899E0EE",
     /** Asset storage provider field type */
     AssetStorageProvider: "1596F562-E8D0-4C5F-9A00-23B5594F17E2",
     /** Asset Storage System field type */
