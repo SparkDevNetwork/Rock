@@ -24,9 +24,10 @@
                  label="Summary"
                  textMode="multiline" />
 
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
+        <HtmlEditor v-model="description"
+                    label="Description"
+                    :editorHeight="100"
+                    toolbar="light" />
 
         <div class="row">
             <div class="col-md-6">
@@ -156,6 +157,7 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventItemBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemBag";
