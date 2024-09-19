@@ -35,7 +35,7 @@
                     <RadioButtonList
                                      v-if="familyOptions.length"
                                      :label="`${registrar.nickName || registrationEntryTerms.registrantSingularTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`"
-                                     rules='required:{"allowEmptyString": true}'
+                                     rules="required"
                                      :modelValue="registrar.familyGuid ?? undefined"
                                      @update:modelValue="onUpdateFamilyGuid"
                                      :items="familyOptions"

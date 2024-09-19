@@ -42,6 +42,35 @@
                     Once you change a note type to the Structured format, it cannot be changed back. Be sure this is what you want to do.
                 </NotificationBox>
 
+                <template v-if="options.hasActiveAIProviders">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <CheckBox v-model="requiresApprovals"
+                                    label="Enabled Approvals"
+                                    @click="toggleRequiresApprovals()"
+                                    text="Yes" />
+                        </div>
+                        <div class="col-md-6" v-if="requiresApprovals">
+                            <CheckBox v-model="enabledAIApprovals"
+                                    label="Enabled AI Approvals"
+                                    help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note."
+                                    text="Yes" />
+
+                        </div>
+                    </div>
+
+                    <TextBox
+                            v-if="enabledAIApprovals"
+                            v-model="aiApprovalGuidelines"
+                            rules="required"
+                            label="AI Approval Guidelines"
+                            :help="aiApprovalGuidelineHelpText"
+                            textMode="multiline" />
+
+                    <AIProviderPicker
+                                    v-if="enabledAIApprovals"
+                                    v-model="aiProvider" label="AI Provider" help="The AI provider to use for the approval. If no provider is selected the default provider will be used." />
+                </template>
             </div>
 
             <div class="col-md-6">
@@ -114,17 +143,19 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import AIProviderPicker from "@Obsidian/Controls/aiProviderPicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeBag";
     import { NoteTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeDetailOptionsBag";
     import { NoteFormatType, NoteFormatTypeDescription } from "@Obsidian/Enums/Core/noteFormatType";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<NoteTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<NoteTypeBag>>,
             required: true
         },
 
@@ -135,35 +166,45 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: NoteTypeBag): void;
+        (e: "update:modelValue", value: ValidPropertiesBox<NoteTypeBag>): void;
         (e: "propertyChanged", value: string): void;
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const color = propertyRef(props.modelValue.color ?? "", "Color");
-    const userSelectable = propertyRef(props.modelValue.userSelectable, "UserSelectable");
-    const allowsWatching = propertyRef(props.modelValue.allowsWatching, "AllowsWatching");
-    const autoWatchAuthors = propertyRef(props.modelValue.autoWatchAuthors, "AutoWatchAuthors");
-    const allowsReplies = propertyRef(props.modelValue.allowsReplies, "AllowsReplies");
-    const maxReplyDepth = propertyRef(props.modelValue.maxReplyDepth ?? "", "MaxReplyDepth");
-    const allowsAttachments = propertyRef(props.modelValue.allowsAttachments, "AllowsAttachments");
-    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
-    const formatType = propertyRef(props.modelValue.formatType.toString(), "FormatType");
-    const isMentionEnabled = propertyRef(props.modelValue.isMentionEnabled, "IsMentionEnabled");
-    const showEntityTypePicker = ref(props.modelValue.showEntityTypePicker);
-    const showContentFormatDropdown = ref(props.modelValue.formatType !== NoteFormatType.Structured);
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const entityType = propertyRef(props.modelValue.bag?.entityType ?? {}, "EntityTypeId");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const color = propertyRef(props.modelValue.bag?.color ?? "", "Color");
+    const userSelectable = propertyRef(props.modelValue.bag?.userSelectable ?? false, "UserSelectable");
+    const allowsWatching = propertyRef(props.modelValue.bag?.allowsWatching ?? false, "AllowsWatching");
+    const autoWatchAuthors = propertyRef(props.modelValue.bag?.autoWatchAuthors ?? false, "AutoWatchAuthors");
+    const allowsReplies = propertyRef(props.modelValue.bag?.allowsReplies ?? false, "AllowsReplies");
+    const maxReplyDepth = propertyRef(props.modelValue.bag?.maxReplyDepth ?? "", "MaxReplyDepth");
+    const allowsAttachments = propertyRef(props.modelValue.bag?.allowsAttachments ?? false, "AllowsAttachments");
+    const binaryFileType = propertyRef(props.modelValue.bag?.binaryFileType ?? {}, "BinaryFileTypeId");
+    const formatType = propertyRef(props.modelValue.bag?.formatType.toString() ?? "", "FormatType");
+    const isMentionEnabled = propertyRef(props.modelValue.bag?.isMentionEnabled ?? false, "IsMentionEnabled");
+    const requiresApprovals = propertyRef(props.modelValue.bag?.requiresApprovals ?? false, "RequiresApprovals");
+    const enabledAIApprovals = propertyRef(props.modelValue.bag?.enabledAIApprovals ?? false, "AdditionalSettingsJson");
+    const aiApprovalGuidelines = propertyRef(props.modelValue.bag?.aiApprovalGuidelines ?? "", "AdditionalSettingsJson");
+    const aiProvider = propertyRef(props.modelValue.bag?.aiProvider ?? null, "AdditionalSettingsJson");
+    const showEntityTypePicker = ref(props.modelValue.bag?.showEntityTypePicker);
+    const showContentFormatDropdown = ref(props.modelValue.bag?.formatType !== NoteFormatType.Structured);
+
+    const aiApprovalGuidelineHelpText = ref(`
+    This field defines the criteria for AI to automatically approve notes. Consider including guidance on content appropriateness, where/how/who will be viewing the note, privacy considerations, etc. An example might be:
+    <br /><br />
+    This note represents a comment on a prayer request. Please approve it based on if it would be appropriate  to be displayed on a public website. Be sure that it does not have any personal information including full names of individuals, first names are ok.
+    `);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [name, entityType, iconCssClass, color, userSelectable,
         allowsWatching, autoWatchAuthors, allowsReplies, maxReplyDepth, allowsAttachments,
-        binaryFileType, formatType, isMentionEnabled];
+        binaryFileType, formatType, isMentionEnabled, requiresApprovals, enabledAIApprovals, aiApprovalGuidelines, aiProvider];
 
     const formatTypeItems = enumToListItemBag(NoteFormatTypeDescription);
 
@@ -196,6 +237,20 @@
         return true;
     }
 
+    /**
+     * Function that's called after clicking the "Enabled Approvals" checkbox.
+     * This function is called before the model value is changed so references
+     * to requiresApprovals would be the previously selected value.
+     */
+    function toggleRequiresApprovals(): void {
+        const wasRequired = requiresApprovals.value;
+        if (wasRequired) {
+            // If the "Enabled Approvals" checkbox was checked, but is no longer
+            // then uncheck the "Enabled AI Approvals" checkbox as well.
+            enabledAIApprovals.value = false;
+        }
+    }
+
     function isValidNumber(num: number): boolean {
         return !isNaN(num) && isFinite(num);
     }
@@ -204,41 +259,50 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(entityType, props.modelValue.entityType ?? {});
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(color, props.modelValue.color ?? "");
-        updateRefValue(userSelectable, props.modelValue.userSelectable);
-        updateRefValue(allowsWatching, props.modelValue.allowsWatching);
-        updateRefValue(maxReplyDepth, props.modelValue.maxReplyDepth ?? "");
-        updateRefValue(allowsAttachments, props.modelValue.allowsAttachments);
-        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
-        updateRefValue(formatType, props.modelValue.formatType.toString());
-        updateRefValue(isMentionEnabled, props.modelValue.isMentionEnabled);
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(entityType, props.modelValue.bag?.entityType ?? {});
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(color, props.modelValue.bag?.color ?? "");
+        updateRefValue(userSelectable, props.modelValue.bag?.userSelectable ?? false);
+        updateRefValue(allowsWatching, props.modelValue.bag?.allowsWatching ?? false);
+        updateRefValue(maxReplyDepth, props.modelValue.bag?.maxReplyDepth ?? "");
+        updateRefValue(allowsAttachments, props.modelValue.bag?.allowsAttachments ?? false);
+        updateRefValue(binaryFileType, props.modelValue.bag?.binaryFileType ?? {});
+        updateRefValue(formatType, props.modelValue.bag?.formatType.toString() ?? "");
+        updateRefValue(isMentionEnabled, props.modelValue.bag?.isMentionEnabled ?? false);
+        updateRefValue(requiresApprovals, props.modelValue.bag?.requiresApprovals ?? false);
+        updateRefValue(enabledAIApprovals, props.modelValue.bag?.enabledAIApprovals ?? false);
+        updateRefValue(aiApprovalGuidelines, props.modelValue.bag?.aiApprovalGuidelines ?? "");
+        updateRefValue(aiProvider, props.modelValue.bag?.aiProvider ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: NoteTypeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            name: name.value,
-            entityType: entityType.value,
-            iconCssClass: iconCssClass.value,
-            color: color.value,
-            userSelectable: userSelectable.value,
-            allowsWatching: allowsWatching.value,
-            autoWatchAuthors: autoWatchAuthors.value,
-            allowsReplies: allowsReplies.value,
-            maxReplyDepth: maxReplyDepth.value,
-            allowsAttachments: allowsAttachments.value,
-            binaryFileType: binaryFileType.value,
-            formatType: parseInt(formatType.value) as NoteFormatType,
-            isMentionEnabled: isMentionEnabled.value
+
+        const newValue: ValidPropertiesBox<NoteTypeBag> = {
+            bag: { ...props.modelValue.bag } as NoteTypeBag
         };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "entityType", entityType.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "color", color.value);
+        setPropertiesBoxValue(newValue, "userSelectable", userSelectable.value ?? false);
+        setPropertiesBoxValue(newValue, "allowsWatching", allowsWatching.value ?? false);
+        setPropertiesBoxValue(newValue, "autoWatchAuthors", autoWatchAuthors.value ?? false);
+        setPropertiesBoxValue(newValue, "allowsReplies", allowsReplies.value ?? false);
+        setPropertiesBoxValue(newValue, "maxReplyDepth", maxReplyDepth.value);
+        setPropertiesBoxValue(newValue, "allowsAttachments", allowsAttachments.value ?? false);
+        setPropertiesBoxValue(newValue, "binaryFileType", binaryFileType.value);
+        setPropertiesBoxValue(newValue, "formatType", parseInt(formatType.value ?? "") as NoteFormatType);
+        setPropertiesBoxValue(newValue, "isMentionEnabled", isMentionEnabled.value ?? false);
+        setPropertiesBoxValue(newValue, "requiresApprovals", requiresApprovals.value ?? false);
+        setPropertiesBoxValue(newValue, "enabledAIApprovals", enabledAIApprovals.value ?? false);
+        setPropertiesBoxValue(newValue, "aiApprovalGuidelines", aiApprovalGuidelines.value);
+        setPropertiesBoxValue(newValue, "aiProvider", aiProvider.value ?? null);
 
         emit("update:modelValue", newValue);
     });

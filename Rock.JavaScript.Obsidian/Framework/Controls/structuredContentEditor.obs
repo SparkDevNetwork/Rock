@@ -220,7 +220,7 @@
         });
     }
 
-    /** Toggle the readOnly state of editor control. Initializes if the control if necessary. */
+    /** Toggle the readOnly state of editor control. Initializes the control if necessary. */
     async function toggleReadOnly(): Promise<void> {
         if (!editor) {
             // If the editor hasn't been initialized then initialization will

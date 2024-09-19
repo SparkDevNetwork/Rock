@@ -39,7 +39,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays a list of learning grading systems." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning grading system details.",

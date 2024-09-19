@@ -22,5 +22,9 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
     /// </summary>
     public class NoteTypeDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether there any active AI providers.
+        /// </summary>
+        public bool HasActiveAIProviders { get; set; }
     }
 }

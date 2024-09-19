@@ -473,31 +473,7 @@ namespace Rock.Rest.v2
             }
             else if ( result is BlockActionResult actionResult )
             {
-                var isErrorStatusCode = ( int ) actionResult.StatusCode >= 400;
-
-                if ( isErrorStatusCode && actionResult.Content is string )
-                {
-                    return new NegotiatedContentResult<HttpError>( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ), defaultContentNegotiator, controller.Request, validFormatters );
-                }
-                else if ( actionResult.Error != null )
-                {
-                    return new NegotiatedContentResult<HttpError>( actionResult.StatusCode, new HttpError( actionResult.Error ), defaultContentNegotiator, controller.Request, validFormatters );
-                }
-                else if ( actionResult.Content is HttpContent httpContent )
-                {
-                    var response = controller.Request.CreateResponse( actionResult.StatusCode );
-                    response.Content = httpContent;
-                    return new ResponseMessageResult( response );
-                }
-                else if ( actionResult.ContentClrType != null )
-                {
-                    var genericType = typeof( System.Web.Http.Results.NegotiatedContentResult<> ).MakeGenericType( actionResult.ContentClrType );
-                    return ( IHttpActionResult ) Activator.CreateInstance( genericType, actionResult.StatusCode, actionResult.Content, controller );
-                }
-                else
-                {
-                    return new StatusCodeResult( actionResult.StatusCode, controller );
-                }
+                return await actionResult.ExecuteAsync( controller, defaultContentNegotiator, validFormatters, System.Threading.CancellationToken.None );
             }
             else if ( action.ReturnType == typeof( void ) )
             {

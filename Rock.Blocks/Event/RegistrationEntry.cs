@@ -3018,7 +3018,6 @@ namespace Rock.Blocks.Event
                     }
                 }
 
-                // TODO JMH Should this be done even if the field is locked?
                 field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 

@@ -94,6 +94,16 @@
 
                     <Rock:DateTimePicker ID="dtpFutureSend" runat="server" Label="Delay Send Until" SourceTypeName="Rock.Model.Communication" PropertyName="FutureSendDateTime" />
 
+                    <div>
+                        <Rock:RockCheckBox
+                            ID="cbDuplicatePreventionOption"
+                            runat="server"
+                            Label="Prevent Duplicate Email/SMS Addresses"
+                            Text="Yes"
+                            Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.
+                            This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
                         <asp:LinkButton ID="btnTest" runat="server" Text="Send Test" CssClass="btn btn-link" OnClick="btnTest_Click" />

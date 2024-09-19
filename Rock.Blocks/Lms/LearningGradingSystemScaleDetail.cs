@@ -39,7 +39,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning grading system scale." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -276,7 +276,7 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningGradingSystemScale();
+                entity = new LearningGradingSystemScale { LearningGradingSystemId = RequestContext.PageParameterAsId( PageParameterKey.LearningGradingSystemId ) };
                 entityService.Add( entity );
             }
 

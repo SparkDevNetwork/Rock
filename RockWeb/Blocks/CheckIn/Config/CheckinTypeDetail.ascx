@@ -215,6 +215,14 @@
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
                                     <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer"
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
+
+                                    <Rock:RockCheckBoxList ID="cblSpecialNeeds"
+                                        runat="server"
+                                        Label="Special Needs"
+                                        Help="This feature is only supported on next-gen check-in. When Remove Special Needs Groups is selected, then a group will not be available unless the person is also marked as special needs. When Remove Non-Special Needs Groups is selected, then a group will not be available unless the person is not marked as special needs.">
+                                        <asp:ListItem Value="special-needs" Text="Remove Special Needs Groups" />
+                                        <asp:ListItem Value="non-special-needs" Text="Remove Non-Special Needs Groups" />
+                                    </Rock:RockCheckBoxList>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes"
@@ -226,10 +234,12 @@
                                         Help="Determines how check-in should gather the individual's current ability level.
                                             &quot;Ask&quot; means that the individual will be asked as a part of each check-in.
                                             &quot;Don't Ask&quot; will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
-                                            &quot;Don't Ask if...&quot; will only ask if they already have an ability level. This will allow a person's ability level to be updated during the check-in process.">
+                                            &quot;Don't Ask If There Is No...&quot; will only ask if they already have an ability level. This will allow a person's ability level to be updated during the check-in process.
+                                            &quot;Don't Ask If There Is an...&quot; will only ask if they don't already have an ability level (this is only supported in next-gen check-in).">
                                         <asp:ListItem Text="Ask" Value="0" />
                                         <asp:ListItem Text="Don't Ask" Value="1" />
                                         <asp:ListItem Text="Don't Ask If There Is No Ability Level" Value="2" />
+                                        <asp:ListItem Text="Don't Ask If There Is an Ability Level" Value="3" />
                                     </Rock:RockRadioButtonList>
 
                                     <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes"

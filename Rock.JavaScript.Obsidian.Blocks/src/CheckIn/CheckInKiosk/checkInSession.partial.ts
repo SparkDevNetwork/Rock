@@ -60,6 +60,15 @@ type FunctionPropertyNames<T> = {
 type CheckInSessionProperties = Partial<Omit<CheckInSession, NonNullable<FunctionPropertyNames<CheckInSession>>>>;
 
 /**
+ * The initialization options that can be provided to the {@link CheckInSession}
+ * constructor to alter the behavior of the session.
+ */
+export type CheckInSessionOptions = {
+    /** Determines if all available schedules will be automatically selected. */
+    areAllSchedulesSelectedAutomatically?: boolean;
+};
+
+/**
  * Handles the heavy logic for a single check-in session. A session begins when
  * a search operation is initiated and ends when the welcome screen is displayed.
  * So a session can handle a single person check-in or a whole family check-in.
@@ -101,6 +110,9 @@ export class CheckInSession {
 
     /** The currently selected attendee identifier. */
     public readonly currentAttendeeId?: string | null;
+
+    /** The timestamp from {@link Date.now} when the attendee was selected. */
+    public readonly currentAttendeeSelectedTimestamp?: number;
 
     /** The available opportunities for the currently selected attendee. */
     public readonly attendeeOpportunities?: OpportunityCollectionBag;
@@ -170,6 +182,9 @@ export class CheckInSession {
     /** The kiosk configuration that this session will conform to. */
     public readonly configuration: KioskConfigurationBag;
 
+    /** The options this session was configured with. */
+    public readonly options: CheckInSessionOptions;
+
     /** The object to use when making HTTP requests to the server. */
     public readonly http: HttpFunctions;
 
@@ -192,7 +207,7 @@ export class CheckInSession {
      * @param http The object that provides HTTP access to the server.
      * @param sessionGuid The session unique identifier, if not specified then one will be generated.
      */
-    public constructor(configuration: KioskConfigurationBag, http: HttpFunctions, sessionGuid?: Guid);
+    public constructor(configuration: KioskConfigurationBag, http: HttpFunctions, options: CheckInSessionOptions);
 
     /**
      * Clones an existing session and then updates any specific override values.
@@ -202,10 +217,11 @@ export class CheckInSession {
      */
     public constructor(session: CheckInSession, overrides: CheckInSessionProperties);
 
-    public constructor(configurationOrSession: KioskConfigurationBag | CheckInSession, httpOrOverrides: HttpFunctions | CheckInSessionProperties, sessionGuid?: Guid) {
+    public constructor(configurationOrSession: KioskConfigurationBag | CheckInSession, httpOrOverrides: HttpFunctions | CheckInSessionProperties, options?: CheckInSessionOptions) {
         if (configurationOrSession instanceof CheckInSession) {
             this.sessionGuid = configurationOrSession.sessionGuid;
             this.configuration = configurationOrSession.configuration;
+            this.options = configurationOrSession.options;
             this.http = configurationOrSession.http;
             this.apiKey = configurationOrSession.apiKey;
             this.overridePinCode = configurationOrSession.overridePinCode;
@@ -218,6 +234,7 @@ export class CheckInSession {
             this.currentlyCheckedIn = clone(configurationOrSession.currentlyCheckedIn);
             this.selectedAttendeeIds = clone(configurationOrSession.selectedAttendeeIds);
             this.currentAttendeeId = configurationOrSession.currentAttendeeId;
+            this.currentAttendeeSelectedTimestamp = configurationOrSession.currentAttendeeSelectedTimestamp;
             this.attendeeOpportunities = clone(configurationOrSession.attendeeOpportunities);
             this.selectedAbilityLevel = clone(configurationOrSession.selectedAbilityLevel);
             this.selectedArea = clone(configurationOrSession.selectedArea);
@@ -240,8 +257,9 @@ export class CheckInSession {
         else {
             this.currentScreen = Screen.Welcome;
             this.configuration = configurationOrSession;
+            this.options = options ?? {};
             this.http = httpOrOverrides as HttpFunctions;
-            this.sessionGuid = sessionGuid ?? newGuid();
+            this.sessionGuid = newGuid();
         }
     }
 
@@ -631,6 +649,7 @@ export class CheckInSession {
         if (!attendeeId) {
             return new CheckInSession(this, {
                 currentAttendeeId: undefined,
+                currentAttendeeSelectedTimestamp: undefined,
                 attendeeOpportunities: undefined
             });
         }
@@ -657,6 +676,7 @@ export class CheckInSession {
 
             return new CheckInSession(this, {
                 currentAttendeeId: attendeeId,
+                currentAttendeeSelectedTimestamp: Date.now(),
                 attendeeOpportunities: response.data.opportunities,
                 selectedAbilityLevel: undefined,
                 selectedArea: undefined,
@@ -668,6 +688,7 @@ export class CheckInSession {
 
         const newPropertyValues: Mutable<CheckInSessionProperties> = {
             currentAttendeeId: attendeeId,
+            currentAttendeeSelectedTimestamp: Date.now(),
             attendeeOpportunities: response.data.opportunities,
             selectedAbilityLevel: undefined,
             selectedArea: undefined,
@@ -873,7 +894,8 @@ export class CheckInSession {
     }
 
     /**
-     * Creates a new session by append the selections for the current attendee.
+     * Creates a new session by replacing the selections for the current
+     * attendee.
      *
      * @param selections The selections for the current attendee.
      *
@@ -888,7 +910,8 @@ export class CheckInSession {
     }
 
     /**
-     * Creates a new session by append the selections for the specified attendee.
+     * Creates a new session by replacing the selections for the specified
+     * attendee.
      *
      * @param attendeeId The attendee identifier these selections are for.
      * @param selections The selections for the current attendee.
@@ -908,7 +931,7 @@ export class CheckInSession {
             allSelections.push(attendeeSelection);
         }
         else {
-            attendeeSelection.selections.push(...selections);
+            attendeeSelection.selections = selections;
         }
 
         return new CheckInSession(this, {
@@ -1495,7 +1518,7 @@ export class CheckInSession {
                 throw new Error("Nothing available to check-in to.");
             }
 
-            if (this.possibleSchedules.length > 1) {
+            if (this.possibleSchedules.length > 1 && !this.options.areAllSchedulesSelectedAutomatically) {
                 return this.withScreen(Screen.ScheduleSelect);
             }
 
@@ -1722,20 +1745,20 @@ export class CheckInSession {
             return familySession.withScreen(Screen.AbilityLevelSelect);
         }
 
-        if ((this.attendeeOpportunities?.schedules?.length ?? 0) > 1) {
-            return this.withScreen(Screen.ScheduleSelect);
-        }
-
         if (!this.attendeeOpportunities?.schedules || this.attendeeOpportunities.schedules.length === 0) {
             throw new InvalidCheckInStateError("No schedules available.");
         }
 
-        if (!this.attendeeOpportunities.schedules[0].id) {
+        if (!this.attendeeOpportunities.schedules.some(s => !s.id)) {
             throw new InvalidCheckInStateError("Invalid schedule.");
         }
 
-        const scheduleIds = [this.attendeeOpportunities.schedules[0].id];
-        const individualSession = await this.withSelectedSchedules(scheduleIds);
+        if (this.attendeeOpportunities.schedules.length > 1 && !this.options.areAllSchedulesSelectedAutomatically) {
+            return this.withScreen(Screen.ScheduleSelect);
+        }
+
+        const scheduleIds = this.attendeeOpportunities.schedules.map(s => s.id as string);
+        const individualSession = this.withSelectedSchedules(scheduleIds);
 
         return await individualSession.withNextScreenFromScheduleSelect();
     }

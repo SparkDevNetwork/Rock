@@ -54,13 +54,13 @@ namespace Rock.Blocks.Lms
     #region Block Attributes
 
     [LinkedPage( "Facilitator Portal Page",
-        Description = "The page that will be navigated to when clicking facilitator portal link.",
+        Description = "The page that will be navigated to when clicking the facilitator portal link.",
         Key = AttributeKey.FacilitatorPortalPage,
         Order = 1 )]
 
     [CodeEditorField( "Lava Header Template",
         Key = AttributeKey.HeaderTemplate,
-        Description = "The lava template to use to render the header on the page. Merge fields include: Course, Activities, Announcements, Facilitators, Content Pages and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The lava template to use to render the header on the page. Merge fields include: Course, Activities, Announcements, Facilitators, ContentPages and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -174,33 +174,41 @@ namespace Rock.Blocks.Lms
 
         #endregion Keys
 
+        #region Properties
+
+        /// <summary>
+        /// Determines whether the ShowGrades attribute is configured to show grades.
+        /// </summary>
+        /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
+        bool AreGradesShown => GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
+        string HeaderTemplate => GetAttributeValue( AttributeKey.HeaderTemplate ) ?? AttributeDefault.HeaderTemplate;
+        int NumberOfNotificationsToShow => GetAttributeValue( AttributeKey.NumberOfNotificationsToShow ).AsInteger();
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = GetPublicLearningClassWorkspaceBox( out var course );
-
-            var mergeFields = this.RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Course", course );
-            mergeFields.Add( "Activities", box.Activities );
-            mergeFields.Add( "Announcements", box.Announcements );
-            mergeFields.Add( "ContentPages", box.ContentPages );
-            mergeFields.Add( "Facilitators", box.Facilitators );
-
-            var template = GetAttributeValue( AttributeKey.HeaderTemplate ) ?? string.Empty;
-            box.HeaderHtml = template.ResolveMergeFields( mergeFields );
-
+            GetHtmlContent( out var box );
             return box;
         }
 
-        /// <summary>
-        /// Provide html to the block for it's initial rendering.
-        /// </summary>
-        /// <returns>The HTML content to initially render.</returns>
+        /// <inheritdoc/>
         protected override string GetInitialHtmlContent()
         {
-            var box = GetPublicLearningClassWorkspaceBox( out var course );
+            return GetHtmlContent( out var _ );
+        }
+
+        /// <summary>
+        /// Gets the resolved Lava template for the block.
+        /// </summary>
+        /// <param name="box">The initialized <see cref="PublicLearningClassWorkspaceBox"/> for the block.</param>
+        /// <returns>The resolved HeaderHTML for the block.</returns>
+        private string GetHtmlContent( out PublicLearningClassWorkspaceBox box )
+        {
+            box = GetPublicLearningClassWorkspaceBox( out var course );
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Course", course );
@@ -209,8 +217,8 @@ namespace Rock.Blocks.Lms
             mergeFields.Add( "ContentPages", box.ContentPages );
             mergeFields.Add( "Facilitators", box.Facilitators );
 
-            var template = GetAttributeValue( AttributeKey.HeaderTemplate ) ?? string.Empty;
-            return template.ResolveMergeFields( mergeFields );
+            box.HeaderHtml = HeaderTemplate.ResolveMergeFields( mergeFields );
+            return box.HeaderHtml;
         }
 
         /// <summary>
@@ -240,6 +248,8 @@ namespace Rock.Blocks.Lms
             var activityCompletionService = new LearningActivityCompletionService( rockContext );
 
             var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId )
+                .Include( c => c.LearningActivity.LearningClass )
+                .Include( c => c.LearningActivity.LearningClass.LearningSemester )
                 .Where( a => a.LearningActivity.AssignTo == AssignTo.Student )
                 .ToList()
                 .OrderBy( a => a.LearningActivity.Order );
@@ -337,9 +347,9 @@ namespace Rock.Blocks.Lms
                     CompletedDate = activity.CompletedDateTime,
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
-                    GradeText = activity.GradeText( scales ),
+                    GradeText = activity.GetGradeText( scales ),
                     IsAvailable = isActivityAvailable,
-                    IsGradePassing = activity.LearningActivity.Points == 0 || activity.Grade( scales ).IsPassing,
+                    IsGradePassing = activity.LearningActivity.Points == 0 || activity.GetGrade( scales ).IsPassing,
                     IsFacilitatorCompleted = activity.IsFacilitatorCompleted,
                     IsStudentCompleted = activity.IsStudentCompleted,
                     PointsEarned = activity.PointsEarned,
@@ -386,8 +396,8 @@ namespace Rock.Blocks.Lms
                     CourseName = course.PublicName,
                     CourseSummary = course.Summary,
                     ProgramConfigurationMode = course.LearningProgram.ConfigurationMode,
-                    NumberOfNotificationsToShow = GetAttributeValue( AttributeKey.NumberOfNotificationsToShow ).ToIntSafe(),
-                    ShowGrades = ShowGrades()
+                    NumberOfNotificationsToShow = NumberOfNotificationsToShow,
+                    ShowGrades = AreGradesShown
                 };
 
             if ( box.CourseName.IsNullOrWhiteSpace() )
@@ -551,15 +561,6 @@ namespace Rock.Blocks.Lms
             box.Notifications.AddRange( activityNotifications.OrderBy( a => a.NotificationDateTime ).ToList() );
         }
 
-        /// <summary>
-        /// Determines whether the ShowGrades attribute is configured to show grades.
-        /// </summary>
-        /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
-        private bool ShowGrades()
-        {
-            return GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
-        }
-
         #endregion
 
         #region Block Actions
@@ -598,22 +599,27 @@ namespace Rock.Blocks.Lms
                     var components = LearningActivityContainer.Instance.Components;
                     var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
 
-                    activity.ActivityComponentCompletionJson = activityCompletionBag.ActivityComponentCompletionJson;
+                    activity.ActivityComponentCompletionJson = activityComponent.GetCompletionJsonToPersist(
+                        activityCompletionBag.ActivityComponentCompletionJson,
+                        activity.LearningActivity.ActivityComponentSettingsJson );
+
                     activity.PointsEarned = activityComponent.CalculatePointsEarned(
                         activity.LearningActivity.ActivityComponentSettingsJson,
                         activityCompletionBag.ActivityComponentCompletionJson,
                         activity.LearningActivity.Points
                     );
                 }
-
-                var currentPerson = GetCurrentPerson();
-                activity.CompletedByPersonAliasId = currentPerson.PrimaryAliasId;
+                
+                if ( !activity.CompletedByPersonAliasId.HasValue )
+                {
+                    var currentPerson = GetCurrentPerson().PrimaryAliasId;
+                }
 
                 if ( !activity.CompletedDateTime.HasValue )
                 {
                     var now = RockDateTime.Now;
                     activity.CompletedDateTime = now;
-                    activity.WasCompletedOnTime = activity.DueDate > now;
+                    activity.WasCompletedOnTime = activity.DueDate.HasValue && activity.DueDate >= now;
                 }
 
                 rockContext.SaveChanges();
@@ -625,12 +631,16 @@ namespace Rock.Blocks.Lms
                 // Return the raw component settings so a grade can be computed (if applicable).
                 activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
 
+                // Include the updated activity completion in the response.
+                // if the activity checks the completion JSON for historical configuration
+                // we'll want to ensure it's provided now.
+                activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
+
                 return ActionOk( activityCompletionBag );
             }
         }
 
         #endregion
-
 
     }
 }

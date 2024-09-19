@@ -216,6 +216,13 @@ namespace Rock.Blocks.Crm
         DefaultBooleanValue = false,
         Order = 19 )]
 
+    [BooleanField(
+        "Prioritize Child Entry",
+        Key = AttributeKey.PrioritizeChildEntry,
+        Description = "Moves the Child panel above the Adult Information panel and starts with one child to be filled in.",
+        IsRequired = false,
+        Order = 20 )]
+
     #region Adult Category
 
     [CustomDropdownListField(
@@ -562,7 +569,8 @@ namespace Rock.Blocks.Crm
             public const string RequireCampus = "RequireCampus";
             public const string DisplaySmsOptIn = "DisplaySmsOptIn";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
-            
+            public const string PrioritizeChildEntry = "PrioritizeChildEntry";
+
             public const string AdultSuffix = "AdultSuffix";
             public const string AdultGender = "AdultGender";
             public const string AdultBirthdate = "AdultBirthdate";
@@ -624,8 +632,8 @@ namespace Rock.Blocks.Crm
             public const string HIDE_OPTIONAL = "Hide,Optional";
             public const string SQL_RELATIONSHIP_TYPES = @"
                 SELECT 
-	                R.[Id] AS [Value],
-	                R.[Name] AS [Text]
+                    R.[Id] AS [Value],
+                    R.[Name] AS [Text]
                 FROM [GroupType] T
                 INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
                 WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
@@ -636,8 +644,8 @@ namespace Rock.Blocks.Crm
 
             public const string SQL_SAME_IMMEDIATE_FAMILY_RELATIONSHIPS = @"
                 SELECT 
-	                R.[Id] AS [Value],
-	                R.[Name] AS [Text]
+                    R.[Id] AS [Value],
+                    R.[Name] AS [Text]
                 FROM [GroupType] T
                 INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
                 WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
@@ -648,8 +656,8 @@ namespace Rock.Blocks.Crm
 
             public const string SQL_CAN_CHECKIN_RELATIONSHIP = @"
                 SELECT 
-	                R.[Id] AS [Value],
-	                R.[Name] AS [Text]
+                    R.[Id] AS [Value],
+                    R.[Name] AS [Text]
                 FROM [GroupType] T
                 INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
                 WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
@@ -708,6 +716,12 @@ namespace Rock.Blocks.Crm
         /// An optional campus to use by default when adding a new family.
         /// </summary>
         private Guid DefaultCampusGuid => this.GetAttributeValue( AttributeKey.DefaultCampus ).AsGuid();
+
+        /// <summary>
+        /// Moves the Child panel above the Adult Information panel and starts
+        /// with one child to be filled in.
+        /// </summary>
+        private bool PrioritizeChildEntry => this.GetAttributeValue( AttributeKey.PrioritizeChildEntry ).AsBoolean();
 
         /// <summary>
         /// Gets the family attribute guids.
@@ -1939,6 +1953,7 @@ namespace Rock.Blocks.Crm
                 VisitDateField = GetVisitDateFieldBag( out var errorMessage ),
                 ErrorMessage = errorMessage,
                 DisplaySmsOptIn = GetSmsOptInFieldBag(),
+                PrioritizeChildEntry = this.PrioritizeChildEntry,
                 AdultMobilePhoneField = GetFieldBag( AttributeKey.AdultMobilePhone ),
                 AdultProfilePhotoField = GetFieldBag( AttributeKey.AdultProfilePhoto ),
                 CreateAccountField = GetFieldBag( AttributeKey.FirstAdultCreateAccount ),
@@ -2232,6 +2247,14 @@ namespace Rock.Blocks.Crm
             adult1.LoadAttributes( rockContext );
             adult2.LoadAttributes( rockContext );
             family.LoadAttributes( rockContext );
+
+            // When prioritizing child entry, if they are adding a new family
+            // then we want to be sure that there is one new child to be added.
+            if ( PrioritizeChildEntry && !children.Any() )
+            {
+                var person = new Person();
+                children.Add( (new Person(), SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()) );
+            }
 
             foreach ( var child in children.Select( c => c.Person ) )
             {

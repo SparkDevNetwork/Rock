@@ -21,6 +21,10 @@ import { toCurrencyOrNull } from "./numberUtils";
 
 type RockCurrencyValue = number | string | RockCurrency;
 
+type RockCurrencyFormatOptions = {
+    excludeGroupingSeparators: boolean;
+};
+
 export class RockCurrency {
     private readonly big: Big;
 
@@ -155,7 +159,7 @@ export class RockCurrency {
     }
 
     /**
-     * Determines if this currency is less than to another currency.
+     * Determines if this currency is less than another currency.
      *
      * @param value The currency to which to compare.
      * @returns `true` if this currency is less than the provided currency; otherwise, `false` is returned.
@@ -163,6 +167,17 @@ export class RockCurrency {
     isLessThan(value: RockCurrencyValue): boolean {
         const currency = this.asRockCurrency(value);
         return this.big.lt(currency.big);
+    }
+
+    /**
+     * Determines if this currency is less than or equal to another currency.
+     *
+     * @param value The currency to which to compare.
+     * @returns `true` if this currency is less than or equal to the provided currency; otherwise, `false` is returned.
+     */
+    isLessThanOrEqualTo(value: RockCurrencyValue): boolean {
+        const currency = this.asRockCurrency(value);
+        return this.big.lte(currency.big);
     }
 
     /**
@@ -182,7 +197,7 @@ export class RockCurrency {
     }
 
     /**
-     * Determines if this currency is greater than to another currency.
+     * Determines if this currency is greater than another currency.
      *
      * @param value The currency to which to compare.
      * @returns `true` if this currency is greater than the provided currency; otherwise, `false` is returned.
@@ -219,6 +234,14 @@ export class RockCurrency {
     mod(divisor: number): RockCurrency {
         const { remainder } = this.divide(divisor);
         return remainder;
+    }
+
+    format(options: RockCurrencyFormatOptions | null = null): string {
+        if (options?.excludeGroupingSeparators) {
+            const valueString = this.big.toFixed(this.currencyInfo.decimalPlaces, Big.roundDown);
+            return `${this.currencyInfo.symbol}${valueString}`;
+        }
+        return this.toString();
     }
 
     /**

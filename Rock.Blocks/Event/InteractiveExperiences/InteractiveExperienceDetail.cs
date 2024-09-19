@@ -574,7 +574,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     Value = experienceSchedule.Schedule.iCalendarContent,
                     Text = experienceSchedule.Schedule.ToString( true )
                 },
-                EnableMinutesBefore = experienceSchedule.Schedule.CheckInStartOffsetMinutes,
+                EnableMinutesBefore = experienceSchedule.Schedule.CheckInStartOffsetMinutes ?? 0,
                 Campuses = experienceSchedule.InteractiveExperienceScheduleCampuses
                     .Select( c => c.Campus )
                     .OrderBy( c => c.Order )
@@ -653,7 +653,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     }
 
                     schedule.Schedule.iCalendarContent = scheduleBag.Schedule.Value;
-                    schedule.Schedule.CheckInStartOffsetMinutes = scheduleBag.EnableMinutesBefore;
+                    schedule.Schedule.CheckInStartOffsetMinutes = scheduleBag.EnableMinutesBefore ?? 0;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
                     schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
                     schedule.SetPublicAttributeValues( scheduleBag.AttributeValues, RequestContext.CurrentPerson );

@@ -6,47 +6,41 @@
                 <TextBox v-model="name"
                          label="Name"
                          rules="required" />
-
             </div>
 
             <div class="col-md-12">
-                <StructuredContentEditor v-model="description"
-                                         label="Description" />
-
+                <TextBox v-model="description"
+                         textMode="multiline"
+                         label="Description" />
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-6">
                 <RadioButtonList v-model="assignTo"
-                                 :disabled="options.hasCompletions"
                                  label="Completed By"
                                  horizontal
                                  rules="required"
                                  help="Determines if the activity will be completed by the student or the facilitator."
                                  :items="assignTos" />
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-6">
-                <CheckBox v-model="isStudentCommentingEnabled"
-                          :disabled="options.hasCompletions"
-                          label="Enable Student Commenting"
-                          help="Allow students to comment on this assignment." />
-            </div>
-            <div class="col-md-6">
-                <DropDownList
-                              v-model="availableDateCalculationMethod"
-                              :disabled="options.hasCompletions"
+                <DropDownList v-model="availableDateCalculationMethod"
                               :grouped="false"
                               :items="availableDateCalculationMethods"
                               rules="required"
-                              label="Available Date Calcuation Method"
+                              label="Available Date Calculation Method"
                               help="Determines how the date the assignment is available is determined."
                               :multiple="false"
                               :showBlankItem="false" />
             </div>
             <div class="col-md-6">
                 <template v-if="availableDateCalculationMethod == AvailableDateCalculationMethod.Specific.toString()">
+
                     <DatePicker v-model="availableDateDefault"
-                                :disabled="options.hasCompletions"
                                 rules="required"
                                 label="Available Date" />
                 </template>
@@ -57,7 +51,6 @@
                 ].includes(availableDateCalculationMethod)">
 
                     <NumberBox v-model="availableDateOffset"
-                               :disabled="options.hasCompletions"
                                label="Available Date Offset"
                                rules="required"
                                help="The number of days from the calculation reference to add before the assignment is available."
@@ -68,10 +61,12 @@
                     </NumberBox>
                 </template>
             </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-6">
                 <DropDownList
                               v-model="dueDateCalculationMethod"
-                              :disabled="options.hasCompletions"
                               :grouped="false"
                               :items="dueDateCalculationMethods"
                               rules="required"
@@ -80,11 +75,9 @@
                               :multiple="false"
                               :showBlankItem="false" />
             </div>
-
             <div class="col-md-6">
                 <template v-if="dueDateCalculationMethod == DueDateCalculationMethod.Specific.toString()">
                     <DatePicker v-model="dueDateDefault" rules="required"
-                                :disabled="options.hasCompletions"
                                 label="Due Date" />
                 </template>
 
@@ -94,7 +87,6 @@
                 ].includes(dueDateCalculationMethod)">
 
                     <NumberBox v-model="dueDateOffset"
-                               :disabled="options.hasCompletions"
                                label="Due Date Offset"
                                rules="required"
                                help="The number of days from the calculation reference to add before the assignment is due."
@@ -105,30 +97,40 @@
                     </NumberBox>
                 </template>
             </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <WorkflowTypePicker v-model="completionWorkflowType"
+                                    label="Completion Workflow Type"
+                                    help="The workflow to launch when an individual completes the activity." />
+
+            </div>
+
+            <div class="col-md-6">
+                <NumberBox v-model="points"
+                           label="Points"
+                           help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
+                           inputGroupClasses="input-width-md" />
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-6">
                 <CheckBox v-model="sendNotificationCommunication"
-                          :disabled="options.hasCompletions"
                           label="Send Notification Communication"
                           help="Determines if a notification should be sent when this activity is available." />
             </div>
             <div class="col-md-6">
-                <WorkflowTypePicker v-model="completionWorkflowType"
-                                    :disabled="options.hasCompletions"
-                                    label="Completion Workflow Type"
-                                    help="The workflow to launch when an individual completes the activity." />
+                <CheckBox v-model="isStudentCommentingEnabled"
+                          label="Enable Student Commenting"
+                          help="Allow students to comment on this assignment." />
             </div>
-            <div class="col-md-6">
-                <NumberBox v-model="points"
-                           :disabled="options.hasCompletions"
-                           label="Points"
-                           help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
-                           inputGroupClasses="input-width-md">
-                </NumberBox>
-            </div>
-            <div class="col-md-6">
+        </div>
 
+        <div class="row">
+            <div class="col-md-6">
                 <DropDownList v-model="activityComponentValue"
-                              :disabled="options.hasCompletions"
                               :grouped="false"
                               :items="activityComponentListItems"
                               rules="required"
@@ -139,9 +141,7 @@
         </div>
 
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent v-model:activityBag="activityBag"
-                               :disabled="options.hasCompletions"
-                               :screenToShow="ComponentScreen.Configuration" />
+        <activityTypeComponent v-model:activityBag="activityBag" :screenToShow="ComponentScreen.Configuration" />
     </fieldset>
 </template>
 
@@ -154,7 +154,6 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
-    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -189,8 +188,6 @@
     // Keep track of the configuration if the user switches activity type components.
     const typeConfigMap = new Map<string, string>();
 
-    const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));
-    const dueDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(DueDateCalculationMethodDescription ?? []));
     const assignTos = ref<ListItemBag[]>(enumToListItemBag(AssignToDescription ?? []));
     const activityComponentListItems = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
     const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
@@ -216,6 +213,9 @@
     const points = propertyRef(activityBag.value?.points ?? 0, "Points");
 
     const activityComponentValue = ref(activityBag.value?.activityComponent?.guid ?? "");
+
+    const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));
+    const dueDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(DueDateCalculationMethodDescription ?? []));
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().

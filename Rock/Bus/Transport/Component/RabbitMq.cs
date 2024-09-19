@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,7 +79,7 @@ namespace Rock.Bus.Transport
             return MassTransit.Bus.Factory.CreateUsingRabbitMq( configurator =>
             {
                 var user = GetUser();
-                var url = $"amqps://{user}:{GetPassword()}@{GetHost()}/{user}";
+                var url = $"amqp://{user}:{GetPassword()}@{GetHost()}/{user}";
                 configurator.Host( new Uri( url ), host => { } );
                 configureEndpoints( configurator );
             } );
@@ -103,8 +103,15 @@ namespace Rock.Bus.Transport
 
             */
 
-            var url = $"rabbitmq://{GetHost()}:5671/{GetUser()}/{queueName}";
-            return bus.GetSendEndpoint( new Uri( url ) ).Result;
+            var address = GetDestinationAddressForQueue( bus, queueName );
+            return bus.GetSendEndpoint( address ).Result;
+        }
+
+
+        /// <inheritdoc/>
+        public override Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
+        {
+            return new Uri( $"rabbitmq://{GetHost()}:5672/{GetUser()}/{queueName}" );
         }
 
         /// <summary>

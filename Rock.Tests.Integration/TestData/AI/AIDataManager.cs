@@ -15,12 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.AI
 {

@@ -114,7 +114,7 @@ namespace Rock.Web.Cache.Entities
         #region Additional Properties
 
         /// <summary>
-        /// Gets the asset storage component.
+        /// Gets the AI Provider component.
         /// </summary>
         public AIProviderComponent AIComponent
         {

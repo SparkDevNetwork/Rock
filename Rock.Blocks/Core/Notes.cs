@@ -182,7 +182,9 @@ namespace Rock.Blocks.Core
 
             using ( var rockContext = new RockContext() )
             {
-                var notes = GetViewableNotes( rockContext, RequestContext.CurrentPerson, contextEntity, noteTypes.Select( nt => nt.Id ).ToList() );
+                var noteTypeIds = noteTypes.Select( nt => nt.Id ).ToList();
+
+                var notes = GetViewableNotes( rockContext, RequestContext.CurrentPerson, contextEntity, noteTypeIds );
                 var watchedNoteIds = GetWatchedNoteIds( notes, RequestContext.CurrentPerson, rockContext );
 
                 if ( GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" )
@@ -239,13 +241,14 @@ namespace Rock.Blocks.Core
         private static List<Note> GetViewableNotes( RockContext rockContext, Person currentPerson, IEntity entity, List<int> noteTypeIds )
         {
             var entityTypeId = entity.TypeId;
+
             var noteService = new NoteService( rockContext );
             var noteQry = noteService.Queryable()
                 .Include( n => n.CreatedByPersonAlias.Person )
                 .Include( n => n.EditedByPersonAlias.Person )
+                .AreViewableBy( currentPerson.Id )
                 .AsNoTracking()
-                .Where( n => n.NoteType.EntityTypeId == entityTypeId
-                    && n.EntityId == entity.Id );
+                .Where( n => n.NoteType.EntityTypeId == entityTypeId && n.EntityId == entity.Id );
 
             // Limit to the selected note types.
             if ( noteTypeIds != null && noteTypeIds.Count > 0 )
@@ -305,6 +308,7 @@ namespace Rock.Blocks.Core
                 NoteTypeIdKey = noteType.IdKey,
                 Caption = note.Caption,
                 Text = note.Text,
+                ApprovalStatus = note.ApprovalStatus,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
                 IsPinned = note.IsPinned,
@@ -587,12 +591,6 @@ namespace Rock.Blocks.Core
                 note.EditedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 note.EditedDateTime = RockDateTime.Now;
                 note.NoteUrl = this.GetCurrentPageUrl();
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                // Set this so anything doing direct SQL queries will still find
-                // the right set of notes.
-                note.ApprovalStatus = NoteApprovalStatus.Approved;
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 note.LoadAttributes( rockContext );
                 note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson );

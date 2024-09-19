@@ -39,7 +39,7 @@
     import { SupervisorScreen, SupervisorScreenData, KioskButton } from "./types.partial";
     import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
     import { printLabels, printLegacyLabels } from "./utils.partial";
-    import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
+    import { PrintResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/printResponseBag";
 
     type ReprintAttendanceBag = {
         id?: string | null;
@@ -144,7 +144,7 @@
             attendanceId: id
         };
 
-        const response = await invokeBlockAction<{ errorMessages?: string[] | null, legacyLabels?: Record<string, unknown>[] | null, labels: ClientLabelBag[] | null | undefined }>("PrintLabels", data);
+        const response = await invokeBlockAction<PrintResponseBag>("PrintLabels", data);
 
         if (response.isSuccess) {
             const errors: string[] = [];

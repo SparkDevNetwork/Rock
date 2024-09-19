@@ -53,16 +53,18 @@ namespace Rock.Model
         public int StudentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the id of the <see cref="Rock.Model.PersonAlias"/> related to this completion.
+        /// Gets or sets the id of the <see cref="Rock.Model.PersonAlias"/> that completed this activity.
         /// </summary>
         /// <value>
-        /// The identifier of the <see cref="Rock.Model.PersonAlias"/> related to this completion.
+        /// The identifier of the <see cref="Rock.Model.PersonAlias"/> that completed this activity.
         /// </value>
         [DataMember]
         public int? CompletedByPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the completion json for the activity component.
+        /// This is the JSON configuration for the activity component including
+        /// the responses and configuration at the time of completion.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the completion json for the activity component.

@@ -161,9 +161,15 @@ namespace Rock.Blocks.Event
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var calendar = GetEventCalendar();
+
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "EventCalendarId", calendar?.IdKey );
+            qryParams.Add( "EventItemId", "((Key))" );
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "EventCalendarItemId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, qryParams )
             };
         }
 
@@ -259,7 +265,7 @@ namespace Rock.Blocks.Event
             return new GridBuilder<EventCalendarItem>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "date", a => GetNextStartDateTime( a.EventItem ) )
+                .AddDateTimeField( "date", a => GetNextStartDateTime( a.EventItem ) )
                 .AddTextField( "name", a => a.EventItem?.Name )
                 .AddField( "occurrences", a => GetOccurrences( a.EventItem ) )
                 .AddField( "calendars", a => a.EventItem?.EventCalendarItems?.Select( i => i.EventCalendar.Name ).ToList() )
@@ -339,7 +345,7 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        private string GetNextStartDateTime( EventItem item )
+        private DateTime? GetNextStartDateTime( EventItem item )
         {
             DateTime? lowerDateRange = FilterStartDate.AsDateTime();
             DateTime? upperDateRange = FilterEndDate.AsDateTime();
@@ -362,7 +368,7 @@ namespace Rock.Blocks.Event
                 nextStartDate = item.NextStartDateTime;
             }
 
-            return nextStartDate.HasValue ? nextStartDate.ToShortDateString() : "N/A";
+            return nextStartDate;
         }
 
         /// <summary>

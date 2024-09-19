@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -32,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -46,6 +47,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakTypeExclusionBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionBag";
     import { StreakTypeExclusionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionDetailOptionsBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<StreakTypeExclusionBag, StreakTypeExclusionDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -55,6 +57,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const store = useStore();
 
     const streakTypeExclusionViewBag = ref(config.entity);
     const streakTypeExclusionEditBag = ref<StreakTypeExclusionBag>({} as StreakTypeExclusionBag);
@@ -121,10 +124,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
 
     /**
@@ -181,7 +180,6 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             streakTypeExclusionEditBag.value = result.data.entity;
-
             return true;
         }
         else {
@@ -258,5 +256,14 @@
     }
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        if (config.entity?.idKey) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 
 </script>

@@ -12,7 +12,7 @@
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="FinancialGateway"
                  :isAuditHidden="false"
-                 :isBadgesVisible="true"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"

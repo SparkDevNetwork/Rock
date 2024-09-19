@@ -58,7 +58,6 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// <param name="message"></param>
         internal OpenAIChatCompletionsRequestMessage( ChatCompletionsRequestMessage message )
         {
-
             this.Role = OpenAIUtilities.ConvertRockChatRoleToOpenAIRole( message.Role );
             this.Content = message.Content;
         }

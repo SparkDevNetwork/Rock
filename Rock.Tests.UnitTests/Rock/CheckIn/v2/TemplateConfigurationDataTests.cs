@@ -44,6 +44,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         // Start Configuration Properties section.
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelDetermination ), AbilityLevelDeterminationMode.DoNotAsk, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION )]
         [DataRow( nameof( TemplateConfigurationData.AchievementTypeGuids ), "d6b38cb2-eb9a-4f73-a4bc-978cf6b9d1a2,dc71b47f-35e9-4d26-b012-d7d6a6141c55", GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES )]
+        [DataRow( nameof( TemplateConfigurationData.AreNonSpecialNeedsGroupsRemoved ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS )]
+        [DataRow( nameof( TemplateConfigurationData.AreSpecialNeedsGroupsRemoved ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS )]
         [DataRow( nameof( TemplateConfigurationData.AutoSelectDaysBack ), 14, "core_checkin_AutoSelectDaysBack" )]
         [DataRow( nameof( TemplateConfigurationData.AutoSelect ), AutoSelectMode.PeopleAndAreaGroupLocation, "core_checkin_AutoSelectOptions" )]
         // KioskCheckInType has its own test.
@@ -364,7 +366,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 67;
+            var expectedPropertyCount = 69;
 
             var propertyCount = type.GetProperties().Length;
 
@@ -383,27 +385,26 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         private void SetupGroupTypeRoleMocks( Mock<RockContext> rockContextMock )
         {
             var knownRelationshipsGroupType = CreateEntityMock<GroupType>( 2, SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var relationshipOne = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeOneId, KnownRelationshipTypeOneGuid );
+            var relationshipTwo = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeTwoId, KnownRelationshipTypeTwoGuid );
+            var relationshipThree = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeThreeId, KnownRelationshipTypeThreeGuid );
+
+            var relationshipOneCache = new GroupTypeRoleCache();
+            var relationshipTwoCache = new GroupTypeRoleCache();
+            var relationshipThreeCache = new GroupTypeRoleCache();
+
+            relationshipOneCache.SetFromEntity( relationshipOne.Object );
+            relationshipTwoCache.SetFromEntity( relationshipTwo.Object );
+            relationshipThreeCache.SetFromEntity( relationshipThree.Object );
 
             rockContextMock.SetupDbSet( knownRelationshipsGroupType.Object );
 
             var knownRelationshipsGroupTypeCache = GroupTypeCache.Get( knownRelationshipsGroupType.Object.Id, rockContextMock.Object );
             var roles = new List<GroupTypeRoleCache>
             {
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeOneId,
-                    Guid = KnownRelationshipTypeOneGuid
-                } ),
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeTwoId,
-                    Guid = KnownRelationshipTypeTwoGuid
-                } ),
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeThreeId,
-                    Guid = KnownRelationshipTypeThreeGuid
-                } )
+                relationshipOneCache,
+                relationshipTwoCache,
+                relationshipThreeCache
             };
 
             // Use reflection to set the backing field since we can't currently

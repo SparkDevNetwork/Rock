@@ -483,28 +483,25 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningParticipantId ) ?? "";
+
+            var entityDetail =
+                    entityKey.Length == 0 ?
+                    null :
+                    new Service<LearningParticipant>( RockContext )
+                        .GetSelect( entityKey, p => new { p.Person.NickName, p.Person.LastName, p.Person.SuffixValueId } );
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var entityName = entityDetail == null ? null : Rock.Model.Person.FormatFullName( entityDetail.NickName, entityDetail.LastName, entityDetail.SuffixValueId );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "New Participant", breadCrumbPageRef );
+
+            return new BreadCrumbResult
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningParticipantId ) ?? "";
-
-                var entityDetail =
-                        entityKey.Length == 0 ?
-                        null :
-                        new Service<LearningParticipant>( rockContext )
-                            .GetSelect( entityKey, p => new { p.Person.NickName, p.Person.LastName, p.Person.SuffixValueId } );
-
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var entityName = entityDetail == null ? null : Rock.Model.Person.FormatFullName( entityDetail.NickName, entityDetail.LastName, entityDetail.SuffixValueId );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Participant", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
+                BreadCrumbs = new List<IBreadCrumb>
                     {
                         breadCrumb
                     }
-                };
-            }
+            };
         }
 
         #endregion
@@ -652,7 +649,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
                 .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                .AddTextField( "grade", a => a.GradeText( gradeScales ) );
+                .AddTextField( "grade", a => a.GetGradeText( gradeScales ) );
 
             return ActionOk( gridBuilder.Build( learningPlan ) );
         }

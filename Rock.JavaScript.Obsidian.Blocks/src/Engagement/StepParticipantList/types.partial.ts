@@ -15,32 +15,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export const enum PreferenceKey {
-    FilterFirstName = "filter-first-name",
-    FilterLastName = "filter-last-name",
-    FilterStepStatus = "filter-step-status",
-    FilterDateStartedUpper = "filter-date-started-upper",
-    FilterDateStartedLower = "filter-date-started-lower",
-    FilterDateCompletedUpper = "filter-date-completed-upper",
-    FilterDateCompletedLower = "filter-date-completed-lower",
-    FilterNote = "filter-note",
-    FilterCampus = "filter-campus",
-}
-
-export type GridSettingsOptions = {
-    firstName?: string | null;
-    lastName?: string | null;
-    stepStatus: string[];
-    dateStartedUpper?: string | null;
-    dateStartedLower?: string | null;
-    dateCompletedUpper?: string | null;
-    dateCompletedLower?: string | null;
-    note?: string | null;
-    campus?: ListItemBag | null;
-};

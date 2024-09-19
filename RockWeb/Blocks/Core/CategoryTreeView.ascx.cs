@@ -18,15 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.UI;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
@@ -60,7 +59,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.ShowUnnamedEntityItems )]
 
     [TextField( "Page Parameter Key",
-        Description = "The page parameter to use for determining the currently selected category integer identifier.",
+        Description = "The page parameter to use for determining the currently selected entity whose category is selected. If not present, the currently selected category node is used.",
         Key = AttributeKey.PageParameterKey )]
 
     [TextField( "Default Icon CSS Class",
@@ -68,7 +67,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         DefaultValue = "fa fa-list-ol",
         Key = AttributeKey.DefaultIconCSSClass )]
-    
+
     [CategoryField( "Root Category",
         Description = "Select the root category to use as a starting point for the tree view.",
         AllowMultiple = false,
@@ -547,7 +546,7 @@ namespace RockWeb.Blocks.Core
                     excludedCategoryGuids.Add( excludedCategory.Guid );
                 }
             }
-
+            
             this.SetAttributeValue( AttributeKey.ExcludeCategories, excludedCategoryGuids.AsDelimited( "," ) );
 
             this.SaveAttributeValues();

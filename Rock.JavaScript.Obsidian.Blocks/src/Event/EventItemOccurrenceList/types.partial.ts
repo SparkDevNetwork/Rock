@@ -23,18 +23,10 @@ export const enum PreferenceKey {
     FilterStartDate = "filter-start-date",
 
     FilterEndDate = "filter-end-date",
-
-    FilterCampus = "filter-campus",
-
-    FilterContact = "filter-contact"
 }
 
 export type GridSettingsOptions = {
     startDate?: string | null;
 
     endDate?: string | null;
-
-    campuses: string[];
-
-    contact?: string | null;
 };

@@ -42,12 +42,11 @@
                      label="Description"
                      textMode="multiline" />
 
-            <CodeEditor v-model="documentation"
+            <HtmlEditor v-model="documentation"
                         label="Documentation"
                         help="Technical description of the internals of the shortcode."
-                        theme="rock"
-                        mode="text"
-                        :editorHeight="250" />
+                        :editorHeight="250"
+                        toolbar="light" />
 
             <CodeEditor v-model="markup"
                         label="Short Code Markup"
@@ -123,8 +122,8 @@
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
-    import  { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";

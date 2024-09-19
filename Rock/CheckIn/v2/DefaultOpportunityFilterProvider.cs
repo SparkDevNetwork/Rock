@@ -40,6 +40,7 @@ namespace Rock.CheckIn.v2
             typeof( BirthMonthOpportunityFilter ),
             typeof( GradeOpportunityFilter ),
             typeof( GenderOpportunityFilter ),
+            typeof( SpecialNeedsOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
             typeof( DataViewOpportunityFilter )
         };
@@ -50,7 +51,8 @@ namespace Rock.CheckIn.v2
         private static readonly List<Type> _defaultLocationFilterTypes = new List<Type>
         {
             typeof( LocationClosedOpportunityFilter ),
-            typeof( ThresholdOpportunityFilter )
+            typeof( ThresholdOpportunityFilter ),
+            typeof( LocationOverflowOpportunityFilter )
         };
 
         /// <summary>
@@ -117,7 +119,12 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any locations that have no group referencing them.
-            var allReferencedLocationIds = new HashSet<string>( person.Opportunities.Groups.SelectMany( g => g.LocationIds ) );
+            var allReferencedLocationIds = new HashSet<string>(
+                person.Opportunities
+                    .Groups
+                    .SelectMany( g => g.LocationIds )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocationIds ) )
+            );
             person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
 
             // Run location filters.
@@ -160,12 +167,15 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose ability levels should be updated.</param>
         protected virtual void UpdateAbilityLevels( Attendee attendee )
         {
-            // Skip the ability level selection if the configuration tells us
-            // to never ask, or if we only ask if they have no ability level but
-            // they already do, or if no groups require ability level for check-in.
+            // Skip the ability level selection if:
+            // The configuration tells us to never ask.
+            // If we only ask if they have no ability level but they already do
+            // If we only ask if they have an ability level but they don't have one
+            // If no groups require ability level for check-in.
             var skipAbilityLevels =
                 Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAsk
-                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsNoAbilityLevel && attendee.Person.AbilityLevel != null )
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsNoAbilityLevel && attendee.Person.AbilityLevel == null )
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsAnAbilityLevel && attendee.Person.AbilityLevel != null )
                 || !attendee.Opportunities.Groups.Any( g => g.AbilityLevelId.IsNotNullOrWhiteSpace() );
 
             if ( skipAbilityLevels )

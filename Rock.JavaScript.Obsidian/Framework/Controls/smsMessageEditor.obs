@@ -46,6 +46,8 @@
                                     ref="toolbarCountDownPlugin"
                                     :modelValue="internalValue"
                                     :countDownMaxChars="countDownMaxChars" />
+
+            <EmojisPlugin ref="emojisPlugin" />
         </template>
     </RockFormField>
 </template>
@@ -79,7 +81,7 @@
 <script setup lang="ts">
     import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
     import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
-    import CountDownPlugin from "./NoteEditor/countDownPlugin.partial.obs";
+    import EmojisPlugin from "./NoteEditor/emojisPlugin.partial.obs";
     import ToolbarCountDownPlugin from "./NoteEditor/toolbarCountDownPlugin.partial.obs";
     import ToolbarLabelPlugin from "./NoteEditor/toolbarLabelPlugin.partial.obs";
     import ToolbarSpacerPlugin from "./NoteEditor/toolbarSpacerPlugin.partial.obs";
@@ -188,6 +190,7 @@
     const toolbarLabelPlugin = ref<InstanceType<typeof ToolbarLabelPlugin> | undefined>();
     const toolbarSpacerPlugin = ref<InstanceType<typeof ToolbarSpacerPlugin> | undefined>();
     const toolbarCountDownPlugin = ref<InstanceType<typeof ToolbarCountDownPlugin> | undefined>();
+    const emojisPlugin = ref<InstanceType<typeof EmojisPlugin> | undefined>();
     const pluginManager = providePluginsFeature({
         editorInstance: computed(() => tinyMceInstance.value),
         toolbarElement: computed(() => toolbarElement.value)
@@ -320,7 +323,7 @@
                 resize: "both",
 
                 // Only include the built-in plugins that are needed to keep TinyMCE leaner.
-                plugins: "searchreplace emoticons",
+                plugins: "searchreplace",
 
                 // Define the toolbar buttons.
                 // They are displayed in the order in which they are defined
@@ -330,7 +333,7 @@
                 // }
                 // If necessary, don't forget to add the related built-in plugins to the `plugins` option above
                 // or composed as child components if using custom plugins.
-                toolbar: `${toolbarLabelPlugin.value?.id} ${toolbarSpacerPlugin.value?.id} ${mergeFieldPlugin.value?.id} emoticons ${toolbarCountDownPlugin.value?.id}`,
+                toolbar: `${toolbarLabelPlugin.value?.id} ${toolbarSpacerPlugin.value?.id} ${mergeFieldPlugin.value?.id} ${emojisPlugin.value?.id} ${toolbarCountDownPlugin.value?.id}`,
 
                 // The callback that is executed when the editor is initialized.
                 setup: (editor): void => {

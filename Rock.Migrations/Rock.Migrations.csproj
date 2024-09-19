@@ -124,6 +124,22 @@
     <Compile Include="Migrations\202409051811471_CodeGenerated_20240905.designer.cs">
       <DependentUpon>202409051811471_CodeGenerated_20240905.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202409161746029_AddNextGenCheckInPages.cs" />
+    <Compile Include="Migrations\202409161746029_AddNextGenCheckInPages.Designer.cs">
+      <DependentUpon>202409161746029_AddNextGenCheckInPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202409172055592_AddIsSpecialNeedsToGroup.cs" />
+    <Compile Include="Migrations\202409172055592_AddIsSpecialNeedsToGroup.Designer.cs">
+      <DependentUpon>202409172055592_AddIsSpecialNeedsToGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202409191717170_Rollup_20240919.cs" />
+    <Compile Include="Migrations\202409191717170_Rollup_20240919.designer.cs">
+      <DependentUpon>202409191717170_Rollup_20240919.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202409191803193_CodeGenerated_20240919.cs" />
+    <Compile Include="Migrations\202409191803193_CodeGenerated_20240919.designer.cs">
+      <DependentUpon>202409191803193_CodeGenerated_20240919.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2242,6 +2258,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202409051811471_CodeGenerated_20240905.resx">
       <DependentUpon>202409051811471_CodeGenerated_20240905.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409161746029_AddNextGenCheckInPages.resx">
+      <DependentUpon>202409161746029_AddNextGenCheckInPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409172055592_AddIsSpecialNeedsToGroup.resx">
+      <DependentUpon>202409172055592_AddIsSpecialNeedsToGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409191717170_Rollup_20240919.resx">
+      <DependentUpon>202409191717170_Rollup_20240919.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409191803193_CodeGenerated_20240919.resx">
+      <DependentUpon>202409191803193_CodeGenerated_20240919.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>

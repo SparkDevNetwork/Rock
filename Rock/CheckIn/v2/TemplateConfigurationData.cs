@@ -51,6 +51,20 @@ namespace Rock.CheckIn.v2
         public virtual IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
 
         /// <summary>
+        /// Gets a value indicating whether groups not marked as special needs
+        /// should be removed from a person's opportunity list if the person
+        /// <strong>is</strong> marked as special needs.
+        /// </summary>
+        public virtual bool AreNonSpecialNeedsGroupsRemoved { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether groups marked as special needs
+        /// should be removed from a person's opportunity list if the person
+        /// is <strong>not</strong> marked as special needs.
+        /// </summary>
+        public virtual bool AreSpecialNeedsGroupsRemoved { get; }
+
+        /// <summary>
         /// Gets the number of days back the AutoSelect feature will use to
         /// determine automatic selections. A value of <c>0</c> will disable.
         /// </summary>
@@ -558,6 +572,8 @@ namespace Rock.CheckIn.v2
         {
             AbilityLevelDetermination = ( AbilityLevelDeterminationMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
             AchievementTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+            AreNonSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean();
+            AreSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AutoSelectDaysBack = groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ).AsInteger();
             AutoSelect = ( AutoSelectMode ) groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectOptions" ).AsInteger();
             KioskCheckInType = groupTypeCache.GetAttributeValue( "core_checkin_CheckInType" ) == "1" ? KioskCheckInMode.Family : KioskCheckInMode.Individual;
@@ -714,7 +730,7 @@ namespace Rock.CheckIn.v2
                 results.Add( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() );
             }
 
-            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ).ToList() )
+            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ) )
             {
                 results.Add( role.Guid, true );
             }

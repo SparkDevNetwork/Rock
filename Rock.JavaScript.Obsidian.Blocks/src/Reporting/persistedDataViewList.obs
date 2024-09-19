@@ -14,6 +14,7 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
+                    width="25%"
                     visiblePriority="xs" />
 
         <TextColumn name="persistedInterval"
@@ -46,7 +47,8 @@
                         field="persistedLastRefreshDateTime"
                         itemClass="grid-item-pull-left"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="xs"
+                        width="200" />
     </Grid>
 </template>
 

@@ -204,6 +204,9 @@
             if (!isValidNumber(stringValue)) {
                 return "must be a valid number.";
             }
+            else if (Number(stringValue) < 0) {
+                return "must have a value of 0 or more.";
+            }
         }
 
         return true;

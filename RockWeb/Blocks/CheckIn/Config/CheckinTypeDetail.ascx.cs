@@ -377,6 +377,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE, ddlSuccessTemplateOverrideDisplayMode.SelectedValue );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE, ceSuccessTemplate.Text );
 
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS, cblSpecialNeeds.SelectedValues.Contains( "special-needs" ).ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS, cblSpecialNeeds.SelectedValues.Contains( "non-special-needs" ).ToString() );
+
                 // Save group type and attributes
                 rockContext.WrapTransaction( () =>
                 {
@@ -631,6 +634,17 @@ namespace RockWeb.Blocks.CheckIn.Config
                 ddlSuccessTemplateOverrideDisplayMode.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ) );
                 ceSuccessTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
 
+                var specialNeedsValues = new List<string>();
+                if ( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean() )
+                {
+                    specialNeedsValues.Add( "special-needs" );
+                }
+                if ( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean() )
+                {
+                    specialNeedsValues.Add( "non-special-needs" );
+                }
+                cblSpecialNeeds.SetValues( specialNeedsValues );
+
                 // Other GroupType Attributes
                 BuildAttributeEdits( groupType, true );
 
@@ -714,6 +728,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS );
+
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS );
 
             if ( groupType.Attributes.Any( t => !excludeList.Contains( t.Value.Key ) ) )
             {

@@ -1,0 +1,50 @@
+<template>
+    <GalleryAndResult :value="value ?? null" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <NotificationBox v-if="showNotification" dismissible @dismiss="showNotification = false" alertType="warning">This control is meant for internal use only.</NotificationBox>
+
+        <AssetPicker v-model="value" label="Select an Asset" />
+
+        <template #props>
+            <!-- <h5>TextBox Props</h5> -->
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td><span title="import { FileAsset } from '@Obsidian/ViewModels/Controls/fileAsset'">FileAsset</span></td>
+                        <td><code>undefined</code></td>
+                        <td>The <code>v-model</code> for providing/receiving the input value.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+
+
+    const value = ref<FileAsset>();
+
+    const showNotification = ref(true);
+
+    const importCode = getSfcControlImportPath("Internal/assetPicker");
+    const exampleCode = computed(() => {
+        return `<AssetPicker v-model="value" />`;
+    });
+</script>

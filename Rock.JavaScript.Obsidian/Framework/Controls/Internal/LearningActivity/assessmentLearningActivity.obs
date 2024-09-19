@@ -90,10 +90,6 @@
                     <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                 </div>
             </div>
-
-            <div class="footer-content-section mt-3">
-                <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)">Complete</RockButton>
-            </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
@@ -113,7 +109,6 @@
                 </NotificationBox>
             </div>
         </div>
-
     </Panel>
 
     <div v-if="screenToShow === ComponentScreen.Completion">
@@ -171,10 +166,13 @@
                     <h4>Missed Questions</h4>
 
                     <div class="well well-sm student-completion-summary" v-for="question of incorrectMultipleChoiceItems">
+                        <div class="missed-question-text-section">
+                            {{ question.question }}
+                        </div>
                         <div class="student-response-section">
                             Your Answer: {{ question.response }}
                         </div>
-                        <div>
+                        <div class="correct-response-section">
                             Correct Answer: {{ question.correctAnswer }}
                         </div>
                     </div>
@@ -261,7 +259,7 @@ div.summary-sub-title {
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, toRef, toValue, watch, } from "vue";
+    import { computed, ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -299,9 +297,9 @@ div.summary-sub-title {
     const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow);
 
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
@@ -317,6 +315,7 @@ div.summary-sub-title {
         header,
         items,
         multipleChoiceWeight,
+        multipleChoiceWeightAtCompletion,
         panelTitle,
         showMissedQuestionsOnResults,
         showResultsOnCompletion
@@ -331,9 +330,6 @@ div.summary-sub-title {
     if (items.value) {
         items.value.sort((a, b) => a.order - b.order);
     }
-
-    // Initialize the completion values to the configuration, but include saved responses.
-    completedItems.value = getItemsForStudentCompletion();
 
     // Add drag reorder functionality, updating the order on successful drop.
     const dragOptions = useDragReorder(items);
@@ -377,7 +373,8 @@ div.summary-sub-title {
 
     /**
      * Gets a list of completion items for the student.
-     * (Takes the configuration values and adds the student response).
+     * For complete activities this will take the configuration values from the
+     * completed activity; otherwise from the activity's configuration.
      */
     function getItemsForStudentCompletion(): AssessmentItem[] {
         return toValue((toValue(items.value) ?? [])
@@ -411,6 +408,8 @@ div.summary-sub-title {
     );
 
     const correctMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response === i.correctAnswer));
+
+    /** The list of multiple choice items that were incorrect (excludes questions that were added after completion, if any). */
     const incorrectMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response !== i.correctAnswer));
 
     const multipleChoiceItemCount = computed(() => multipleChoiceItems.value.length);
@@ -428,13 +427,13 @@ div.summary-sub-title {
         const availableMultipleChoicePoints = activityBag.value.points * (multipleChoiceWeight.value / 100);
         const earnedMultipleChoicePoints = multipleChoiceGradePercent.value * availableMultipleChoicePoints;
 
-        // each short answer score * weight * points possible
+        // Each short answer score * weight * points possible
         // Points possible is the total activity points possible * the individual question weight.
-        const shortAnswerPoints = shortAnswerItems.value
-            .map(i => i.pointsEarned)
+        const earnedShortAnswerPoints = shortAnswerItems.value
+            .map(i => Number(i.pointsPossible) > 0 ? (i.pointsEarned / Number(i.pointsPossible)) * (i.questionWeight / 100) * activityBag.value.points : 0)
             .reduce((prev, cur) => cur + prev, 0);
 
-        return Math.round(earnedMultipleChoicePoints + shortAnswerPoints);
+        return Math.round((earnedMultipleChoicePoints + earnedShortAnswerPoints) * 100);
     });
 
     const multipleChoiceGradePercent = computed(() => {
@@ -560,6 +559,7 @@ div.summary-sub-title {
 
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
             completedItems: toValue(completedItems.value),
+            multipleChoiceWeight: toValue(multipleChoiceWeight.value)
         }) ?? "{}";
 
         updatedCompletionBag.studentComment = studentComment.value;
@@ -570,4 +570,19 @@ div.summary-sub-title {
 
         emit("update:completionBag", updatedCompletionBag);
     }, { deep: true });
+
+    // If the student hasn't completed the assessment ensure we are using
+    // the latest configuration; otherwise use the assessment that was saved
+    // at the time of completion (In case the facilitator has since updated the assessment).
+    if (isStudentAssignedAndCompleted.value !== true){
+        completedItems.value = getItemsForStudentCompletion();
+    }
+    else {
+        // If the assessment has been completed use the weights
+        // that were configured at the time of completion (if present).
+        if (multipleChoiceWeightAtCompletion){
+            multipleChoiceWeight.value = multipleChoiceWeightAtCompletion.value;
+        }
+    }
+
 </script>

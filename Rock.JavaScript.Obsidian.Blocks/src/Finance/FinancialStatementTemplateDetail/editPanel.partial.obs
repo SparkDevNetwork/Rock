@@ -18,7 +18,7 @@
                  label="Description"
                  textMode="multiline" />
 
-        <Panel title="Transaction Settings" :isDrawerOpen="false" :hasCollapse="true">
+        <Panel title="Transaction Settings" :modelValue="true" :hasCollapse="true">
             <div class="row">
                 <div class="col-md-6">
                     <RadioButtonList label="Accounts" v-model="accountOption" :items="accountOptions" :horizontal="true" :repeatColumns="0" />
@@ -43,7 +43,7 @@
             </div>
         </Panel>
 
-        <Panel title="Pledge Settings" :isDrawerOpen="false" :hasCollapse="true">
+        <Panel title="Pledge Settings" :modelValue="true" :hasCollapse="true">
             <div class="row">
                 <div class="col-md-6">
                     <AccountPicker v-model="pledgeAccounts" multiple label="Accounts for Pledges" />
@@ -57,13 +57,13 @@
                 </div>
             </div>
         </Panel>
-        <Panel title="Report Settings" :isDrawerOpen="false" :hasCollapse="true">
+        <Panel title="Report Settings" :modelValue="true" :hasCollapse="true">
             <CodeEditor v-model="reportTemplate" theme="rock" mode="lava" :editorHeight="400" label="Report Template" />
             <CodeEditor v-model="footerTemplateHtmlFragment"
                         theme="rock"
                         mode="lava"
                         label="Footer Template"
-                        help="PDF Merge fields include: <code>{date} {title} {url} {pageNumber} {totalPages}</code> Specify these as a span class to include them in the footer. For example: <code>&lt;span class='totalPages'&gt;&lt;span&gt;</code>" />
+                        :help="footetContentHelpText" />
 
 
             <ImageUploader v-model="logoBinaryFile" label="Logo" showDeleteButton />
@@ -168,6 +168,8 @@
         { text: "Custom", value: "1" },
     ] as ListItemBag[];
 
+    // Passed as string literal so vue does not parse as HTML.
+    const footetContentHelpText = "PDF Merge fields include: <code>{date} {title} {url} {pageNumber} {totalPages}</code> Specify these as a span class to include them in the footer. For example: <code>&lt;span class='totalPages'&gt;&lt;span&gt;</code>";
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name];

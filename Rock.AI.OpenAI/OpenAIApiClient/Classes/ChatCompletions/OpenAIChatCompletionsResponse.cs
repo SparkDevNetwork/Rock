@@ -75,7 +75,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
 
         #region Methods
         /// <summary>
-        /// Converst the OpenAI completion response to a generic response.
+        /// Converts the OpenAI completion response to a generic response.
         /// </summary>
         /// <returns></returns>
         internal ChatCompletionsResponse AsChatCompletionsResponse()

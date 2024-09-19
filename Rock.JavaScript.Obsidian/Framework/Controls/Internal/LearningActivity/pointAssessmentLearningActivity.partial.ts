@@ -22,7 +22,9 @@ export type PointAssessmentActivityConfiguration = {
     rubric: string;
 };
 
-export type PointAssessmentActivityCompletion = Record<string, never>;
+export type PointAssessmentActivityCompletion = {
+    pointsPossibleAtCompletion?: number;
+};
 
 export class PointAssessmentActivityDefaults
     extends LearningComponentBaseDefaults<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion> {

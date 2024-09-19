@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -56,6 +56,7 @@
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
@@ -86,6 +87,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Administration\SystemConfiguration.cs" />
     <Compile Include="Bus\BusStatus.cs" />
     <Compile Include="Bus\ConsumerList.cs" />
     <Compile Include="Bus\QueueList.cs" />
@@ -135,6 +137,7 @@
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
     <Compile Include="Mobile\CheckIn\CheckIn.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
+    <Compile Include="Cms\PageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
@@ -159,6 +162,7 @@
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
+    <Compile Include="Engagement\StreakList.cs" />
     <Compile Include="Engagement\CampaignList.cs" />
     <Compile Include="Security\UserLoginList.cs" />
     <Compile Include="Security\RestKeyList.cs" />

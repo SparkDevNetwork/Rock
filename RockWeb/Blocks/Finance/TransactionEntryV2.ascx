@@ -134,7 +134,7 @@
                                 </asp:Panel>
                                 <asp:Panel ID="pnlNotLoggedInNameEntry" runat="server">
                                     <div class="form-group">
-                                        <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" ValidationGroup="vgFirstName" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
+                                        <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <div class="form-group">
                                         <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
@@ -169,10 +169,10 @@
                                     <hr />
                                     <h4>Business Contact</h4>
                                     <div class="form-group">
-                                        <Rock:RockTextBox ID="tbBusinessContactFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" />
+                                        <Rock:RockTextBox ID="tbBusinessContactFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <div class="form-group">
-                                        <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" />
+                                        <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Placeholder="Phone" CssClass="margin-b-sm" />
                                     <div class="form-group">

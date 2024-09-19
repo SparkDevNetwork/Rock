@@ -94,6 +94,10 @@ class NamedPipeService : BackgroundService
                 }
             }
         }
+        catch ( UnauthorizedAccessException )
+        {
+            return; 
+        }
         catch ( TaskCanceledException ) when ( stoppingToken.IsCancellationRequested )
         {
             return;

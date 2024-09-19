@@ -25,6 +25,7 @@ import { LearningCourseRequirementBag } from "@Obsidian/ViewModels/Blocks/Lms/Le
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** A bag containing Learning Course information. */
 export type LearningCourseBag = {
     /** Indicates whether or not this course allows students to access after completion. */
     allowHistoricalAccess: boolean;

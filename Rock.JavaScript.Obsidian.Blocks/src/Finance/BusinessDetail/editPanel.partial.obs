@@ -268,26 +268,27 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, searchKeys, phoneNumber, saveFormerAddress, isSms, isUnlisted, address, ...propRefs], () => {
+    watch([attributeValues, searchKeys, phoneNumber, saveFormerAddress, isSms, isUnlisted, address, countryCode, ...propRefs], () => {
         const newValue: ValidPropertiesBox<BusinessDetailBag> = {
             bag: { ...props.modelValue.bag } as BusinessDetailBag
         };
-            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
-            setPropertiesBoxValue(newValue, "businessName", businessName.value),
-            setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value),
-            setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value),
-            setPropertiesBoxValue(newValue, "emailAddress", email.value),
-            setPropertiesBoxValue(newValue, "campus", campus.value),
-            setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value),
-            setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value),
-            setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value),
-            setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value),
-            setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value),
-            setPropertiesBoxValue(newValue, "address", address.value),
-            setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value),
-            setPropertiesBoxValue(newValue, "countryCode", countryCode.value),
 
-            emit("update:modelValue", newValue);
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+        setPropertiesBoxValue(newValue, "businessName", businessName.value),
+        setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value),
+        setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value),
+        setPropertiesBoxValue(newValue, "emailAddress", email.value),
+        setPropertiesBoxValue(newValue, "campus", campus.value),
+        setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value),
+        setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value),
+        setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value),
+        setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value),
+        setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value),
+        setPropertiesBoxValue(newValue, "address", address.value),
+        setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value),
+        setPropertiesBoxValue(newValue, "countryCode", countryCode.value),
+
+        emit("update:modelValue", newValue);
     }, { deep: true });
 
     // Watch for any changes to props that represent properties and then

@@ -103,6 +103,11 @@ namespace Rock.Model
         /// <returns></returns>
         internal static async Task<bool> RunNowAsync( ServiceJob job )
         {
+            if ( job == null )
+            {
+                return await Task.FromResult( false );
+            }
+
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
 

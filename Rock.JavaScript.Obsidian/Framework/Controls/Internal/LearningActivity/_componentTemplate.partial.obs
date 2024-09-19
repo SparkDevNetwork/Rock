@@ -1,0 +1,121 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<!--
+    This template can be used as a starting point for new Learning Activity Components.
+    When creating the new component - the extension should be changed from .partial.obs to .obs.
+    See the various TODO comments throughout.
+    In addition to this a .cs class inheriting from the LearningActivityComponent
+    is expected to have been compiled and available as a .dll in the RockWeb\bin directory.
+    That component should provide the url to this file.
+ -->
+<template>
+    <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <!-- TODO: Add Configuration Screen -->
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <fieldset>
+                <!-- TODO: Add Completion Screen -->
+                <div class="footer-section">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="emits('completed', true)">
+                        Complete
+                    </RockButton>
+                </div>
+            </fieldset>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <!-- TODO: Add Scoring Screen -->
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <!-- TODO: Add Summary Screen -->
+            <NotificationBox v-if="showSuccess" alertType="success">
+                {{ assignee?.name ?? defaultAssigneeDescription }} ...
+            </NotificationBox>
+            <NotificationBox v-if="showWarning" alertType="warning">
+                {{ assignee?.name ?? defaultAssigneeDescription }} ...
+            </NotificationBox>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, toValue, watch, } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    // TODO: Replace below imports with those specific to the new component you're creating.
+    import { CheckOffActivityCompletion, CheckOffActivityConfiguration, CheckOffActivityDefaults } from "./checkOffLearningActivity.partial";
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+
+    // TODO: Replace usages with logic for showing/hiding Summary messages.
+    const showSuccess = false;
+    const showWarning = false;
+
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        containerClasses,
+        defaultAssigneeDescription,
+        panelTitle
+        // TODO: Add component specific properties to monitor...
+        // These will be defined by the 2 types passed to useLearningComponent<TConfig, TCompletion>:
+        // ...ActivityConfiguration and ...ActivityCompletion.
+    } = useLearningComponent<CheckOffActivityConfiguration, CheckOffActivityCompletion>(
+        activityBag,
+        completionBag,
+        screenToShow,
+        // TODO: Create a class extending LearningComponentBaseDefaults<TConfig, TCompletion>
+        // that will initialize all properties to default values.
+        // This is necessary for the Refs to be returned by the useLearningComponent composable.
+        new CheckOffActivityDefaults()
+    );
+
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
+
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            //TODO: Add my specific ref values for the component settings here.
+        }) ?? "{}";
+
+        emits("update:activityBag", updatedActivityBag);
+    });
+    watch([/* TODO: Add my specific configuration ref values to watch here */], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
+
+    /** Watch for modified component completion. */
+    const debouncedCompletionBagEmits = debounce(() => {
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
+
+        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+            //TODO: Add my specific ref values for the component completion here.
+            // If you need to be aware of the total points possible be sure to capture it
+            // from activityBag.points.
+        }) ?? "{}";
+        emits("update:completionBag", updatedCompletionBag);
+    });
+    watch([/* TODO: Add my specific completion ref values to watch here */], () => {
+        debouncedCompletionBagEmits();
+    }, { deep: true });
+</script>

@@ -39,10 +39,4 @@ internal class CloudPrintOptions
     /// failover.
     /// </summary>
     public string Id { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The priority of this proxy connection compared to others. The proxy with
-    /// the lowest priority value will be used for printing.
-    /// </summary>
-    public int Priority { get; set; }
 }

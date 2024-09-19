@@ -18,19 +18,3 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export const enum PreferenceKey {
-    FilterDateRange = "filter-date-range",
-
-    FilterFeeName = "filter-fee-name",
-
-    FilterFeeOptions = "filter-fee-options"
-}
-
-export type GridSettingsOptions = {
-    dateRange?: string | null;
-
-    feeName?: string | null;
-
-    feeOptions: string[];
-};
