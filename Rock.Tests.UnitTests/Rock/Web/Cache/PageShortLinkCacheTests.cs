@@ -95,8 +95,8 @@ namespace Rock.Tests.UnitTests.Rock.Web.Cache
 
         private string GetScheduleContentForNow()
         {
-            var start = DateTime.Now.AddMinutes( -30 ).ToString( "yyyyMMddTHHmm00" );
-            var end = DateTime.Now.AddMinutes( 30 ).ToString( "yyyyMMddTHHmm00" );
+            var start = RockDateTime.Now.AddMinutes( -30 ).ToString( "yyyyMMddTHHmm00" );
+            var end = RockDateTime.Now.AddMinutes( 30 ).ToString( "yyyyMMddTHHmm00" );
 
             return $@"BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -108,8 +108,8 @@ END:VCALENDAR";
 
         private string GetScheduleContentForYesterday()
         {
-            var start = DateTime.Now.AddDays( -1 ).AddMinutes( -30 ).ToString( "yyyyMMddTHHmm00" );
-            var end = DateTime.Now.AddDays( -1 ).AddMinutes( 30 ).ToString( "yyyyMMddTHHmm00" );
+            var start = RockDateTime.Now.AddDays( -1 ).AddMinutes( -30 ).ToString( "yyyyMMddTHHmm00" );
+            var end = RockDateTime.Now.AddDays( -1 ).AddMinutes( 30 ).ToString( "yyyyMMddTHHmm00" );
 
             return $@"BEGIN:VCALENDAR
 BEGIN:VEVENT
