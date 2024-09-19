@@ -140,6 +140,8 @@ export const ServiceJob = {
     DataMigrations170RemoveDiscBlock: "795AE7B0-8B61-4577-B50A-350907CA0C65",
     /** The post update data migration job to remove legacy preference attributes. */
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
+    /** The Job to run Post v17.0 Data Migrations to swap Block. */
+    DataMigrations170SwapObsidianBlocks: "EA16D2B2-35CB-4E6B-A6A7-CBD6BCA5998F",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

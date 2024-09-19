@@ -21,26 +21,26 @@
 // </copyright>
 //
 
-/** Represents the approval status of a note */
-export const NoteApprovalStatus = {
-    /** The Note is pending approval. */
-    PendingApproval: 0,
+/** The type of name removal to be performed by AI automation (if any). */
+export const NameRemoval = {
+    /** Do not make any changes in regards to name removal. */
+    NoChanges: 0,
 
-    /** The Note has been approved. */
-    Approved: 1,
+    /** Remove only last names (if present). */
+    LastNamesOnly: 1,
 
-    /** The Note was denied. */
-    Denied: 2
+    /** Remove first and last names (if present). */
+    FirstAndLastNames: 2
 } as const;
 
-/** Represents the approval status of a note */
-export const NoteApprovalStatusDescription: Record<number, string> = {
-    0: "Pending Approval",
+/** The type of name removal to be performed by AI automation (if any). */
+export const NameRemovalDescription: Record<number, string> = {
+    0: "No Changes",
 
-    1: "Approved",
+    1: "Last Names Only",
 
-    2: "Denied"
+    2: "First and Last Names"
 };
 
-/** Represents the approval status of a note */
-export type NoteApprovalStatus = typeof NoteApprovalStatus[keyof typeof NoteApprovalStatus];
+/** The type of name removal to be performed by AI automation (if any). */
+export type NameRemoval = typeof NameRemoval[keyof typeof NameRemoval];

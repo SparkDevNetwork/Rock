@@ -33,6 +33,8 @@ export const Layout = {
     LeftSidebar: "325B7BFD-8B80-44FD-A951-4E4763DA6C0D",
     /** Gets the Left Sidebar layout (Internal Site) */
     LeftSidebarInternalSite: "0cb60906-6b74-44fd-ab25-026050ef70eb",
+    /** Gets the Model layout () */
+    Modal: "8F15C679-D757-4225-839E-2589A80F7180",
     /** Gets the Checkin layout (Next-gen Check-in Site). */
     NextGenCheckInCheckin: "BC067A3C-1257-4D19-BAD7-505FD28F916B",
     /** Gets the Person Detail layout (Internal Site) */
