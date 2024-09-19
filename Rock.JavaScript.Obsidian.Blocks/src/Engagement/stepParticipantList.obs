@@ -5,19 +5,22 @@
           :data="gridDataSource"
           keyField="idKey"
           personKeyField="personIdKey"
-          :itemTerm="itemTerm"
+          itemTerm="Step Participant"
+          :title="itemTerm"
           :entityTypeGuid="EntityType.Step"
           stickyHeader
           liveUpdates
           :showCommunicate="true"
           :showPersonMerge="true"
           :showBulkUpdate="true"
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
+
+        <Column name="id"
+                title="ID"
+                field="id"
+                :hideOnScreen="true" />
 
         <Column name="person"
                 title="Name"
@@ -25,7 +28,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getNameFilterValue"
                 visiblePriority="xs"
-                width="35%">
+                width="25%">
             <template #format="{ row }">
                 <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
                      ref="popOverEl"
@@ -48,8 +51,8 @@
                     title="Date Started"
                     field="dateStarted"
                     :filter="dateValueFilter"
-                    itemClass="grid-item-pull-left"
-                    width="170"
+                    itemClass="grid-item-pull-right"
+                    width="20%"
                     visiblePriority="md" />
 
         <DateColumn name="dateCompleted"
@@ -66,6 +69,11 @@
                     field="campus"
                     :filter="pickExistingValueFilter"
                     visiblePriority="md" />
+
+        <Column name="stepStatusId"
+                title="Step Status Id"
+                field="stepStatusId"
+                :hideOnScreen="true" />
 
         <Column name="stepStatus"
                 title="Status"
@@ -88,16 +96,28 @@
                     :filter="textValueFilter"
                     visiblePriority="md" />
 
+        <Column name="personId"
+                title="Person Id"
+                field="personId"
+                :hideOnScreen="true" />
+
+        <Column name="exportPerson"
+                title="Person"
+                field="exportPerson"
+                :hideOnScreen="true" />
+
+        <Column name="isCompleted"
+                title="Is Completed"
+                field="isCompleted"
+                :hideOnScreen="true" />
+
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <ButtonColumn v-if="config.options?.personProfilePageUrl" name="user" iconClass="fa fa-user" @click="onPersonClick" visiblePriority="md" />
+        <ButtonColumn v-if="config.options?.personProfilePageUrl" :excludeFromExport="true" name="user" iconClass="fa fa-user" @click="onPersonClick" visiblePriority="md" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :stepStatusItems="config.options?.stepStatusItems ?? []" />
 </template>
 
 <style>
@@ -105,25 +125,27 @@
     flex-direction: column;
     align-items: end;
 }
+.grid-item-pull-right {
+    flex-direction: column;
+    align-items: start;
+}
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, pickExistingValueFilter, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { StepParticipantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepParticipantList/stepParticipantListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./StepParticipantList/types.partial";
+    import { NavigationUrlKey } from "./StepParticipantList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./StepParticipantList/gridSettingsModal.partial.obs";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { useHttp } from "@Obsidian/Utility/http";
 
     const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
     const popOverEl = ref<HTMLElement | null>(null);
     const http = useHttp();
 
@@ -132,18 +154,6 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        dateCompletedLower: preferences.getValue(PreferenceKey.FilterDateCompletedLower),
-        dateCompletedUpper: preferences.getValue(PreferenceKey.FilterDateCompletedUpper),
-        campus: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "{}"),
-        dateStartedLower: preferences.getValue(PreferenceKey.FilterDateStartedLower),
-        dateStartedUpper: preferences.getValue(PreferenceKey.FilterDateStartedUpper),
-        firstName: preferences.getValue(PreferenceKey.FilterFirstName),
-        lastName: preferences.getValue(PreferenceKey.FilterLastName),
-        note: preferences.getValue(PreferenceKey.FilterNote),
-        stepStatus: JSON.parse(preferences.getValue(PreferenceKey.FilterStepStatus) || "[]"),
-    });
     const stepStatusBackgroundColors = config.options?.stepStatusBackgroundColors ?? {};
 
     // #endregion
@@ -155,19 +165,6 @@
      */
     const itemTerm = computed((): string => {
         return config.options?.stepType?.text ? `${config.options.stepType.text} Step Participants` : "Step Participants";
-    });
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.dateCompletedLower
-            || !!gridSettings.value.dateCompletedUpper
-            || !!gridSettings.value.dateStartedLower
-            || !!gridSettings.value.dateStartedUpper
-            || !!gridSettings.value.firstName
-            || !!gridSettings.value.lastName
-            || (config.options?.isCampusColumnVisible && !!gridSettings.value.campus?.value)
-            || !!gridSettings.value.note
-            || gridSettings.value.stepStatus.length > 0;
     });
 
     // #endregion
@@ -283,14 +280,6 @@
         }
     }
 
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
     // #endregion
 
     watch(popOverEl, (element) => {
@@ -340,22 +329,6 @@
             });
         }
 
-    });
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterDateCompletedLower, gridSettings.value.dateCompletedLower ?? "");
-        preferences.setValue(PreferenceKey.FilterDateCompletedUpper, gridSettings.value.dateCompletedUpper ?? "");
-        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus));
-        preferences.setValue(PreferenceKey.FilterDateStartedLower, gridSettings.value.dateStartedLower ?? "");
-        preferences.setValue(PreferenceKey.FilterDateStartedUpper, gridSettings.value.dateStartedUpper ?? "");
-        preferences.setValue(PreferenceKey.FilterFirstName, gridSettings.value.firstName ?? "");
-        preferences.setValue(PreferenceKey.FilterLastName, gridSettings.value.lastName ?? "");
-        preferences.setValue(PreferenceKey.FilterNote, gridSettings.value.note ?? "");
-        preferences.setValue(PreferenceKey.FilterStepStatus, JSON.stringify(gridSettings.value.stepStatus));
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
     });
 
     gridDataSource.value = loadGridData();
