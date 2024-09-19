@@ -29,6 +29,12 @@ export type SaveConfigurationResponseBag = {
     /** Gets or sets the error message. */
     errorMessage?: string | null;
 
+    /** Gets or sets the secondary message. */
+    secondaryMessage?: string | null;
+
+    /** Gets or sets the type of the secondary message alert. */
+    secondaryMessageAlertType?: string | null;
+
     /** Gets or sets the success message. */
     successMessage?: string | null;
 };

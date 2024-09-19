@@ -65,6 +65,9 @@ export type CustomSettingsBag = {
      */
     groupResultsBySource: boolean;
 
+    /** Whether or not to include unapproved items in the search results. */
+    includeUnapproved: boolean;
+
     /**
      * Gets or sets the template that will be used to render each individual
      * search result item.
@@ -127,7 +130,4 @@ export type CustomSettingsBag = {
 
     /** Gets or sets the trending term to use when displaying the sort option. */
     trendingTerm?: string | null;
-
-    /** Gets or sets whether or not to include unapproved items. */
-    includeUnapproved: boolean;
 };
