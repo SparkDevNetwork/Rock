@@ -1,0 +1,98 @@
+
+
+//  BLOCK COMMUNICATION STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Communication Entry 
+//  + Communication Detail
+//  + Communication Wizard
+// =============================================================
+
+
+// ======================== COMMUNICATION ENTRY ========================
+.recipients {
+  .recipient {
+    float:                left;
+    width:                100%;
+    @media (min-width: $screen-small) {
+      width:              50%;
+    }
+    @media (min-width: $screen-medium) {
+      width:              25%;
+    }
+
+    &.failed {
+      color:              var(--color-danger-strong);
+    }
+
+    &.opened {
+      color:              var(--color-success-strong);
+    }
+  }
+}
+// ====================== END Contributions ======================
+
+
+// ======================== COMMUNICATION DETAIL ========================
+iframe.email-body {
+  width:                100%;
+  height:               300px;
+  background-color:     var(--color-interface-softest);
+  border:               1px solid var(--color-interface-soft);
+}
+// ======================== END COMMUNICATION DETAIL ========================
+
+
+
+// ======================== COMMUNICATION WIZARD ========================
+.communication-template {
+  position:             relative;
+  display:              block;
+  height:               192px;
+  padding:              15px;
+  margin-bottom:        24px;
+  overflow:             hidden;
+  color:                var(--color-interface-stronger);
+  border:               1px solid var(--panel-border);
+  outline-offset:       -1px;
+
+  &:focus,
+  &:hover {
+    color:              var(--color-interface-stronger);
+    outline:            2px solid var(--color-info-strong);
+  }
+
+  label {
+    font-size:          16px;
+  }
+
+  &.template-selected {
+    outline:            2px solid var(--color-info-strong);
+
+    &:hover {
+      outline:          2px solid var(--color-info-strong);
+    }
+
+    &::before {
+      position:         absolute;
+      top:              -4px;
+      left:             8px;
+      z-index:          1;
+      font-family:      'FontAwesome';
+      font-size:        36px;
+      font-weight:      var(--font-weight-bold);
+      color:            var(--color-info-strong);
+      content:          '\f058';
+    }
+  }
+}
+
+.step-title {
+  margin-top:           0;
+}
+// ====================== END COMMUNICATION WIZARD ======================
+
+
+

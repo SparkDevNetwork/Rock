@@ -17,47 +17,14 @@
 
 */
 
-// 1. Check-in specific variables
-// -------------------------
-@checkin-scrollbar-bg: fade(@text-color, 40%);
-
-@checkin-container-padding: 30px;
-
-@checkin-keypad-width: 260px;
-
-@header-letter-spacing: -0.03em;
-
-@font-size-base: 18px;
-@font-size-h1: 28px;
-
-@checkin-button-alttext-font-size: 20px;
-@celebration-color-1: #f24730;
-@celebration-color-2: #6abfd3;
-@celebration-color-3: #ffc639;
-@celebration-color-4: #ff9239;
-@celebration-color-5: #fc83a3;
-@celebration-color-6: #5395e5;
-@celebration-box-shadow-color: rgb(126,205,239);
-
-@grid-gutter-width: 30px;
-@card-bottom-margin: 30px;
-
-@card-color: #161e2e;
-@card-spacer-y: 18px;
-@card-spacer-x: 18px;
-
 // 2. Bootstrap Overrides
 // -------------------------
-@import "./FontAwesome/_rock-upgrade-map-variables.less";
-@import "./FontAwesome/_rock-fa-mixins.less";
+// @import "./FontAwesome/_rock-upgrade-map-variables.less";
+// @import "./FontAwesome/_rock-fa-mixins.less";
 
-@fa-theme-weight: 900;
-@fa-theme-weight-name: 'solid';
-.fa-font-face(@fa-theme-weight-name);
-
-@btn-change-color: @btn-primary-color;
-@btn-change-bg: lighten(@btn-primary-bg, 13%);
-@btn-change-border: @btn-primary-border;
+// @fa-theme-weight: 900;
+// @fa-theme-weight-name: 'solid';
+// .fa-font-face(@fa-theme-weight-name);
 
 // Fix to allow SVGs inside of buttons.
 .btn svg {
@@ -70,15 +37,15 @@
 h1,
 h2,
 h3 {
-  letter-spacing: @header-letter-spacing;
+  letter-spacing: -0.03em;
 }
 
 h1 {
-  color: @header-text-color;
+  color: var(--color-interface-strongest);
 }
 
 .close {
-  color: @header-text-color;
+  color: var(--color-interface-strongest);
 }
 
 .form-group label {
@@ -94,7 +61,7 @@ h1 {
   padding-bottom: 14px;
   margin-bottom: 20px;
   font-size: 24px;
-  font-weight: @font-weight-semibold;
+  font-weight: var(--font-weight-semibold);
   white-space: normal;
 
   .row {
@@ -160,7 +127,53 @@ h1 {
 }
 
 .btn-checkin-change {
-  .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
+  // .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
+  color: var(--color-interface-softest);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+
+  &:focus,
+  &.focus {
+    color: var(--color-interface-softest);
+    background-color: darken(var(--color-primary), 10%);
+    border-color: darken(var(--color-primary), 25%);
+  }
+  &:hover {
+    color: var(--color-interface-softest);
+    background-color: darken(var(--color-primary), 10%);
+    border-color: darken(var(--color-primary), 12%);
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-toggle& {
+    color: var(--color-interface-softest);
+    background-color: darken(var(--color-primary), 10%);
+    background-image: none;
+    border-color: darken(var(--color-primary), 12%);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color: var(--color-interface-softest);
+      background-color: darken(var(--color-primary), 17%);
+      border-color: darken(var(--color-primary), 25%);
+    }
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+  }
+
+  .badge {
+    color: var(--color-primary);
+    background-color: var(--color-interface-softest);
+  }
   display: -ms-flexbox;
   display: flex;
   -ms-flex-align: center;
@@ -213,13 +226,24 @@ h1 {
 
 a.help {
   margin-left: 6px;
-  color: @help-color;
+  color: var(--color-info-strong);
   outline: 0;
 }
 
 // Validation Alert
 .alert-validation {
-  .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  // .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  color: var(--color-danger-strong);
+  background-color: var(--color-warning-soft);
+  border-color: var(--color-warning-strong);
+ 
+  hr {
+    border-top-color: darken(var(--color-warning-strong), 5%);
+  }
+ 
+  .alert-link {
+    color: darken(var(--color-interface-stronger), 10%);
+  }
   font-weight: 700;
 
   ul,
@@ -246,15 +270,14 @@ a.help {
 
 // set page background
 body {
-  .checkinBackground;
-
+  background-color: var(--color-interface-soft);
   overflow-x: hidden;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   background-size: cover;
-
+  
   @media all and (-webkit-min-device-pixel-ratio: 1.5) {
-    .checkinBackgroundRetina();
+    background-color: var(--color-interface-soft);
   }
 }
 
@@ -270,25 +293,25 @@ body {
 // checkin header items
 
 .checkin-header {
-  margin: 45px @checkin-container-padding 24px;
+  margin: 45px 30px 24px;
 
   h1 {
     font-size: 48px;
-    font-weight: @header-font-weight;
+    font-weight: var(--font-weight-bold);
   }
 
   .checkin-sub-title {
     margin-top: 12px;
     font-size: 24px;
-    color: @subheader-text-color;
+    color: var(--color-interface-strong);
   }
 }
 
 // button sub-text
 .btn .checkin-sub-title {
   margin-left: 20px;
-  font-size: @checkin-button-alttext-font-size;
-  font-weight: @checkin-button-alttext-weight;
+  font-size: var(--font-size-h5);
+  font-weight: var(--font-weight-light);
   white-space: normal;
 }
 
@@ -305,7 +328,7 @@ body {
 }
 
 .checkin-body-container > label {
-  padding: 0 0 @padding-base-vertical 0;
+  padding: 0 0 6px 0;
 }
 
 .checkin-search-actions {
@@ -317,7 +340,7 @@ body {
     max-width: 100%;
     padding: 20px;
     font-size: 48px;
-    font-weight: @checkin-button-text-weight;
+    font-weight: var(--font-weight-bold);
     line-height: 48px;
   }
 }
@@ -328,7 +351,7 @@ body {
 }
 
 .checkin-camera {
-  margin-top: 24px;
+  margin-top: var(--spacing-large);
   text-align: center;
 }
 
@@ -340,7 +363,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-  padding: 0 ((@grid-gutter-width / 2) + @checkin-container-padding);
+  padding: 0 (($grid-gutter-width / 2) + 30px);
   margin-top: 6px;
   margin-bottom: 12px;
 
@@ -353,7 +376,7 @@ body {
   .btn {
     padding: 12px 24px;
     font-size: 22px;
-    font-weight: @checkin-button-text-weight;
+    font-weight: var(--font-weight-bold);
   }
 
   .btn-primary {
@@ -366,15 +389,15 @@ body {
 .btn-checkbox {
   padding: 24px;
   font-size: 20px;
-  color: @btn-default-color;
-  background-color: @btn-default-bg;
-  border-color: @btn-default-border;
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-softer);
 
   &.active,
   &.active:focus {
-    color: @btn-primary-color;
-    background-color: @btn-primary-bg;
-    border-color: @btn-primary-border;
+    color: var(--color-interface-softest);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
   }
 
   i {
@@ -385,7 +408,7 @@ body {
 
   &.active i::before {
     // checked icon
-    content: @fa-var-check-square;
+    content: '\f14a';
   }
 }
 
@@ -401,12 +424,12 @@ body {
 
     &:focus,
     &:active {
-      background-color: @btn-default-bg;
+      background-color: var(--color-interface-softest);
     }
 
     &.digit {
       font-size: 48px;
-      font-weight: @font-weight-semibold;
+      font-weight: var(--font-weight-semibold);
     }
 
     &.command {
@@ -484,7 +507,7 @@ input.checkin-phone-entry {
   padding: 6px 20px;
   margin: 0 auto 10px;
   font-size: 36px;
-  font-weight: @checkin-button-text-weight;
+  font-weight: var(--font-weight-bold);
 }
 
 input.namesearch {
@@ -493,7 +516,7 @@ input.namesearch {
   padding: 6px 20px;
   margin: 0 auto 10px;
   font-size: 36px;
-  font-weight: @checkin-button-text-weight;
+  font-weight: var(--font-weight-bold);
 }
 
 .checkin-phone-keypad {
@@ -526,7 +549,7 @@ input.namesearch {
   li {
     margin-bottom: 18px;
     font-size: 22px;
-    color: @text-color;
+    color: var(--color-interface-stronger);
   }
 }
 
@@ -684,7 +707,7 @@ input.namesearch {
   padding: 0;
   margin: 0 auto 32px;
   overflow: hidden;
-  border-radius: @border-radius-large;
+  border-radius: var(--color-primary-radius-large;
 
   &::before {
     display: block;
@@ -771,11 +794,11 @@ input.namesearch {
   right: 12px;
   bottom: 8px;
   z-index: @zindex-navbar;
-  color: @text-color;
+  color: var(--color-interface-stronger);
   opacity: .5;
 
   &:hover {
-    color: @text-color;
+    color: var(--color-interface-stronger);
   }
 }
 
@@ -788,7 +811,7 @@ input.namesearch {
   padding: 16px;
   margin: 0 60px 0 0;
   background-color: rgba(0, 0, 0, .1);
-  border-radius: @border-radius-base;
+  border-radius: var(--color-primary-radius-base;
 
   .clearfix();
 
@@ -822,7 +845,7 @@ input.namesearch {
 .kioskmanager-counts {
   .kioskmanager-count h3,
   .kioskmanager-count li {
-    color: @text-color;
+    color: var(--color-interface-stronger);
   }
 
   .kioskmanager-count-locations,

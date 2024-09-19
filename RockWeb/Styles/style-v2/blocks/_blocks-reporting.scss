@@ -1,39 +1,40 @@
-/*
-    Used to manage styles for specific blocks.
-
-    1. Data Views - block for creating data views
-    2. Dynamic Report - block for making reports dynamically updated
-    3. Interactions
-*/
 
 
-// 1. Data Views
-// -------------------------
+//  BLOCK REPORTING STYLE
 
-/* data views */
+
+// =============================================================
+// Table of Content           
+//  + Data Views - block for creating data views
+//  + Dynamic Report - block for making reports dynamically updated
+//  + Interactions
+// =============================================================
+
+
+// ======================== DATA VIEW ========================
 .filter-toggle {
-  align-self: flex-start;
-  padding-right: var(--spacing-small);
-  //margin-top: 5px;
+  align-self:            flex-start;
+  padding-right:        var(--spacing-small);
+  // margin-top:         5px;
 
   & > span {
-    float: left;
+    float:              left;
   }
 
   .btn-toggle {
-    margin: 0 6px;
+    margin:             0 6px;
   }
 }
 
 .filter-item-select {
   > span {
-    float: left;
-    padding: 8px 6px 0 0;
+    float:              left;
+    padding:            8px 6px 0 0;
   }
 
   .chosen-container {
-    float: left;
-    width: 250px !important;
+    float:              left;
+    width:              250px !important;
   }
 }
 
@@ -42,137 +43,138 @@
   // Add margin to in-columns because checkbox-inline is not inherited
   .in-columns,
   .checkbox-inline {
-    margin-top: var(--spacing-small);
+    margin-top:        var(--spacing-small);
   }
 
   @media (min-width: $screen-medium) {
     // Vertically align criteria fields to the top
     > div {
-      display: table-cell;
-      float: none;
-      vertical-align: top;
+      display:         table-cell;
+      float:          none;
+      vertical-align:  top;
     }
 
     .vertical-align-bottom {
-      vertical-align: bottom;
+      vertical-align:  bottom;
     }
   }
 }
 
 .filter-item div[class*="col"] {
-  margin-bottom: 6px;
+  margin-bottom:         6px;
   @media (min-width: $screen-medium) {
-    margin-bottom: 0;
+    margin-bottom:      0;
   }
 }
 
 /* text between input elements in dataview filters - DT */
 span.data-view-filter-label {
-  display: inline-block;
-  min-height: calc(($line-height-computed + var(--font-size-regular)) - 2);
-  padding-top: var(--spacing-small);
-  padding-bottom: var(--spacing-small);
-  margin: 0 12px 0 0;
+  display:              inline-block;
+  min-height:          calc(($line-height-computed + var(--font-size-regular)) - 2);
+  padding-top:         var(--spacing-small);
+  padding-bottom:      var(--spacing-small);
+  margin:              0 12px 0 0;
 }
+// ====================== END DATA VIEW ======================
 
-// 2. Dynamic Report
-// -------------------------
 
+// ====================== DYNAMIC REPORT ======================
 .filterfield {
-  margin-bottom: 12px;
+  margin-bottom:        12px;
 
   // Override table-cell alignment for dynamic reports and data views
   .field-criteria > div {
-    display: block;
-    float: left;
+    display:          block;
+    float:           left;
   }
 }
 
 .filterfield-label {
-  display: block;
-  margin-top: var(--spacing-small);
-  font-weight: var(--font-weight-semibold);
+  display:             block;
+  margin-top:         var(--spacing-small);
+  font-weight:        var(--font-weight-semibold);
 }
+// ==================== END DYNAMIC REPORT ====================
 
-// 3. Interactions
-// -------------------------
 
+// ==================== INTERACTIONS ====================
 .list-panel {
   > .grid-filter {
-    padding: 6px 0;
-    margin: -18px -18px 18px;
-    border-bottom: 1px solid var(--color-interface-softer);
+    padding:            6px 0;
+    margin:            -18px -18px 18px;
+    border-bottom:      1px solid var(--color-interface-softer);
 
     > header {
-      position: relative;
+      position:        relative;
     }
 
     .grid-filter-entry {
-      padding-top: inherit;
-      border: 0;
+      padding-top:    inherit;
+      border:         0;
     }
 
     .btn-link {
-      position: relative;
-      margin: 0;
+      position:      relative;
+      margin:        0;
     }
   }
 }
+// ================== END INTERACTIONS ==================
 
-// 4. Form Field Filter
-// -------------------------
+
+// ==================== FORM FIELD FILTER ====================
 .filter-rule-remove,
 .filtervisibilityrules-type {
-  margin-bottom: var(--spacing-medium);
+  margin-bottom:       var(--spacing-medium);
 }
 
 .filter-rule {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-medium);
-}
+  display:             flex;
+  align-items:        flex-start;
+  margin-bottom:      var(--spacing-medium);
 
-.filter-rule {
   .filter-rule-fields {
-    flex: 1 1 auto;
-    margin-right: 5px;
+    flex:            1 1 auto;
+    margin-right:    5px;
   }
 
   .flex-rule-remove {
-    flex: 0 0 auto;
+    flex:           0 0 auto;
   }
 }
 
 .filter-rule-fieldfilter,
 .filter-rule-fieldfilter .field-criteria,
 .filter-rule-fields {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display:            flex;
+  flex-wrap:         wrap;
+  align-items:       flex-start;
 }
 
 .filter-rule-fieldfilter .field-criteria,
 .filter-rule-fields {
   &::before,
   &::after {
-    display: none !important;
+    display:        none !important;
   }
 }
 
 .filter-rule-fieldfilter .field-criteria {
-  width: calc(100% + 10px);
+  width:            calc(100% + 10px);
 }
 
 // .control-wrapper is for Obsidian
 .filter-rule-comparefield > .form-control,
 .filter-rule-comparefield > .control-wrapper,
 .filter-rule-fieldfilter > .field-criteria .form-control {
-  min-width: 100%;
+  min-width:        100%;
 }
 
 .filter-rule-fieldfilter {
   .field-criteria > div {
-    display: block;
-    float: left;
+    display:        block;
+    float:         left;
   }
 }
+// ================== END FORM FIELD FILTER ==================
+

@@ -17,9 +17,11 @@
 /* ==================== NORMALIZE ==================== */
 @import 'core/normalize';                   // Fully Format. Normalize the html and all the elements
 
+
 /* ===================== VARIABLES =================== */
 @import 'sass-variable';                    // Fully Format.
 @import 'css-variable';                     // Fully Format.
+
 
 /* ===================== LEGACY  =================== */
 @import 'legacy/jumbotron';                 // Fully Format. When color-mix() use, go in the file there's TODO comments at where it is need to be use.
@@ -27,11 +29,13 @@
 @import 'legacy/grid-layoutLegacy'; 
 @import 'legacy/spacing-utilitiesLegacy';            
 
+
 /* ======================= CORE  ======================*/
 @import 'core/page-admin';                  // Fully Format. There are Some hard coded value.
 @import 'utilities/grid-layout';
 @import 'core/print';                       // Fully Format.
 @import 'core/scroll';
+
 
 /* ==================== COMPONENTS ==================== */
 @import 'components/alerts';                // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need to be use.
@@ -112,17 +116,23 @@
 @import 'rock-components/html-editor';
 @import 'rock-components/ant-select';
 @import 'rock-components/card';
-@import 'rock-components/range-slider';
+@import 'rock-components/range-slider';             // Fully Format.
 
 
 /* ===================== BLOCK =================== */
-@import 'blocks/blocks-core';                       // All classes are in use.
-@import 'blocks/blocks-groups';
-@import 'blocks/blocks-reporting';
+@import 'blocks/blocks-core';                       
+@import 'blocks/blocks-groups';                     // Fully Format.
+@import 'blocks/blocks-reporting';                  // Fully Format.
+@import 'blocks/blocks-finance';                    // Fully Format.
+@import 'blocks/blocks-communication';              // Fully Format.
+@import 'blocks/blocks-security';                   // Fully Format.
+@import 'blocks/blocks-workflow';                   // Fully Format.
+@import 'blocks/blocks-cms';                        // Fully Format.
+@import 'blocks/blocks-events';                     // Fully Format.
+@import 'blocks/kiosk-core';                        // Fully Format.
+@import 'blocks/checkin-mobile';                    // Fully Format.
 @import 'blocks/skeleton';
 @import 'blocks/page-specific';
-@import 'blocks/skeleton';
-@import 'blocks/blocks-events';
 
 
 /* ===================== UTILITIES =================== */

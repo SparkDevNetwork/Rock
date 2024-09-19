@@ -1,0 +1,115 @@
+
+
+//  BLOCK FINANCE STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Contributions      
+//  + Scheduled Transactions
+//  + Transaction Matching
+// =============================================================
+
+
+// ======================== Contributions ========================
+.contribution-payment .tab-content {
+  margin-top:   calc($grid-gutter-width * .25);
+}
+// ====================== END Contributions ======================
+
+
+// ======================== SCHEDULED TRANSACTIONS ========================
+.scheduledtransaction-item {
+  padding-bottom:   6px;
+  margin-bottom:    12px;
+  border-bottom:    1px solid var(--color-interface-softer);
+
+  &:last-child {
+    border-bottom:  0;
+  }
+
+  .actions {
+    margin:         6px 0;
+  }
+}
+// ====================== END SCHEDULED TRANSACTIONS ======================
+
+
+// ======================== TRANSACTIONS MATCHING ========================
+.transaction-image {
+  width:            100%;
+  margin-bottom:    12px;
+  border:           2px solid var(--color-interface-soft);
+
+  .fluidbox-ghost {
+    cursor:         -webkit-zoom-in;
+    cursor:         -moz-zoom-in;
+    cursor:         zoom-in;
+  }
+}
+
+.transaction-image-thumbnail {
+  max-width:    200px;
+  max-height:   100px;
+  margin:       5px;
+  cursor:       pointer;
+  border:       2px solid var(--color-interface-soft);
+}
+
+.transaction-entry-v2 {
+  max-width:  600px;
+  margin:     0 auto;
+
+  h2 {
+    margin-bottom:  var(--spacing-large);
+    text-align:     center;
+  }
+
+  .toggle-container {
+    margin-bottom:  var(--spacing-small);
+  }
+
+  .navigate-actions {
+    margin-top:     var(--spacing-medium);
+    text-align:     center;
+  }
+}
+
+.giving-personal-information {
+  padding:          var(--spacing-medium) 0;
+}
+
+.amount-summary {
+  text-align:       center;
+}
+
+.gateway-type-selector {
+  margin-bottom:    var(--spacing-medium);
+}
+
+.gateway-iframe-container {
+  min-height:     44px;
+  margin:         -5px -15px 10px;
+}
+
+
+.amount-display {
+  font-size:            var(--font-size-h1);
+  line-height:          1.15;
+  -webkit-transition:   .25s;
+  transition:           .25s;
+
+  @media (min-width: $screen-small) {
+    font-size:    100px;
+
+    &-md {
+      font-size:  var(--font-size-h1);
+    }
+
+    &-lg {
+      font-size:  60px;
+    }
+  }
+}
+// ====================== END TRANSACTIONS MATCHING ======================
+
