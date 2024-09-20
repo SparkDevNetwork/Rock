@@ -32,9 +32,9 @@ namespace Rock.SystemGuid
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
 
         /// <summary>
-        /// AI provider picker field type.
+        /// AI provider field type.
         /// </summary>
-        public const string AI_PROVIDER_PICKER = "2BAA190B-3EF7-47CE-AF70-C7613ED344AB";
+        public const string AI_PROVIDER = "2BAA190B-3EF7-47CE-AF70-C7613ED344AB";
 
         /// <summary>
         /// Assessment field type
