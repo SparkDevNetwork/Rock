@@ -58,7 +58,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
+            valueBuilder.addTextValue("", props.modelValue.description);
         }
 
         return valueBuilder.build();

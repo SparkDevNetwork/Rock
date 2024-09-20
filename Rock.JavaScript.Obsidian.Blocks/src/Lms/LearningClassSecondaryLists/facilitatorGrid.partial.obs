@@ -12,12 +12,38 @@
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
         <SelectColumn />
 
-        <PersonColumn name="name"
-                      title="Name"
-                      field="name"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      visiblePriority="xs" />
+        <Column name="name"
+                title="Name"
+                field="name"
+                :filter="textValueFilter"
+                :filterValue="getPersonNameFilterValue">
+            <template #format="{ row }">
+
+                <div class="d-flex flex-fill align-items-center">
+                    <div class="mr-2 flex-shrink-0"
+                         :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${getPhotoUrl(row)}')`, 'background-size': 'cover' }">
+                    </div>
+                    <div class="flex-grow-1">
+                        <span>
+                            <strong>{{ getFormattedName(row) }}</strong>
+                            <span
+                                v-if="row.note"
+                                :ref="(el) => addTooltip(el as Element)"
+                                data-toggle="tooltip"
+                                data-placement="auto"
+                                data-container="body"
+                                data-html="true"
+                                class="note-tooltip ml-2"
+                                :data-original-title="row.note">
+                                <i class='fa fa-file-text-o text-info'></i>
+                            </span>
+                        </span>
+                        <div v-if="row.role" class="text-muted">{{ row.role }}</div>
+                    </div>
+                </div>
+            </template>
+        </Column>
+
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>
@@ -26,10 +52,11 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { PersonColumn, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, DeleteColumn, SelectColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+	import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -64,6 +91,13 @@
 
     // #region Functions
 
+    /** Adds the tooltip behavior to the element. */
+    function addTooltip(noteElement: Element | null): void {
+        if (noteElement) {
+            tooltip(noteElement);
+        }
+    }
+
     /**
     * Gets the filter value text to use for the name column.
     *
@@ -72,6 +106,36 @@
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
         const person = row["individual"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /** Contains the URL for the avatar. */
+    function getPhotoUrl(row: Record<string, unknown>): string {
+        if (!row["name"]) {
+            return "";
+        }
+
+        const value = row["name"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    }
+
+    /** Contains the full name in the correct format. */
+    function getFormattedName(row: Record<string, unknown>): string {
+        if (!row["name"]) {
+            return "";
+        }
+
+        const value = row["name"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
     }
 
     // #endregion

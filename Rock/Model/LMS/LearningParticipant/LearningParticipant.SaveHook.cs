@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -39,6 +40,16 @@ namespace Rock.Model
 
                 if ( PreSaveState == EntityContextState.Added )
                 {
+                    var group = new GroupService( RockContext )
+                        .Queryable()
+                        .Include( g => g.GroupType )
+                        .FirstOrDefault( g => g.Id == Entity.LearningClassId );
+
+                    // Ensure we have the group role.
+                    var roleAndGroup = new GroupTypeRoleService( RockContext ).Get( Entity.GroupRoleId );
+                    Entity.GroupRole = Entity.GroupRole ?? roleAndGroup;
+                    Entity.Group = group;
+
                     var isStudent = !Entity.GroupRole.IsLeader;
 
                     if ( isStudent )

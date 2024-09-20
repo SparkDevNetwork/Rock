@@ -160,7 +160,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of students who are assigned this activity.
+        /// Gets or sets the percentage of students who have completed this activity.
         /// </summary>
         public double PercentComplete { get; set; }
 

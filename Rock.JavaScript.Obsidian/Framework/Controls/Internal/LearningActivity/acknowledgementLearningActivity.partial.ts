@@ -17,20 +17,20 @@
 
 import { LearningComponentBaseDefaults } from "./learningActivity";
 
-export type CheckOffActivityConfiguration = {
+export type AcknowledgementActivityConfiguration = {
     isConfirmationRequired: boolean;
     confirmationText: string;
     content: string;
 };
 
-export type CheckOffActivityCompletion = {
+export type AcknowledgementActivityCompletion = {
     isConfirmed: boolean;
     dateConfirmed: string | null;
     pointsPossibleAtCompletion?: number;
 };
 
-export class CheckOffActivityDefaults
-    extends LearningComponentBaseDefaults<CheckOffActivityConfiguration, CheckOffActivityCompletion> {
+export class AcknowledgementActivityDefaults
+    extends LearningComponentBaseDefaults<AcknowledgementActivityConfiguration, AcknowledgementActivityCompletion> {
     constructor() {
         super();
         this.defaultConfig = {

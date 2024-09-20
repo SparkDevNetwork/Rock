@@ -117,7 +117,7 @@
                          :class="getActivityContainerClasses(activity)"
                          v-for="(activity, index) in activities" :key="activity.idKey ?? activity.activityBag?.idKey ?? ''">
                         <div>
-                            <span class="icon-stack-container fa-stack fa-2x">
+                            <span class="icon-stack-container fa-stack">
                                 <i :class="activityIconStackClasses(activity)"></i>
                                 <i class="icon fa-stack-1x" :class="activity.activityBag?.activityComponent?.iconCssClass"></i>
                             </span>
@@ -127,13 +127,13 @@
                                 {{ activity?.activityBag?.name }}
                             </div>
                             <div class="activity-item-icons">
-                                <span v-if="activity.facilitatorComment" class="badge badge-info">Comment Available</span>
+                                <span v-if="activity.facilitatorComment" class="badge badge-info"><i class="fa fa-comment"></i>Comments</span>
                             </div>
-                            <div class="activity-item-time">
+                            <div class="activity-item-time" :class="{'text-warning' : isDueSoonAndIncomplete(activity) }">
                                 <span>{{ getActivityTimeText(activity) }}</span>
                             </div>
                             <div class="activity-item-status text-right">
-                                <span :class="'pull-right px-1 badge badge-' + badgeType(activity)">
+                                <span v-if="activity.isStudentCompleted" class="pull-right px-1 badge badge-success">
                                     {{ badgeText(activity) }}
                                 </span>
                             </div>
@@ -164,7 +164,7 @@
 </template>
 <style scoped>
 .workspace-page-container {
-    background-color: #F5F9FA;
+    background-color: var(--color-interface-softer);
 
 }
 
@@ -176,7 +176,7 @@
 .workspace-main-content,
 .main-content,
 .side-content {
-    background-color: #FFF;
+    background-color: var(--color-interface-softest);
     padding: 16px;
     border-radius: 12px;
 }
@@ -217,7 +217,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         max-width: 300px;
-        border: 1px solid #D9EDF2;
+        border: 1px solid var(--theme-color-light);
         border-radius: 12px;
         padding: 16px;
         margin-right: 8px;
@@ -243,7 +243,7 @@
     }
 
     .announcement-container {
-        background-color: #F5F9FA;
+        background-color: var(--interface-softer);
         padding: 16px;
     }
 
@@ -256,7 +256,7 @@
 .class-workspace-tabs {
     > ul li.active > span {
         background-color: var(--color-primary);
-        color: #fff;
+        color: var(--theme-white);
     }
 }
 
@@ -267,7 +267,7 @@
     padding-bottom: 1em;
     padding-left: 3em;
     padding-right: 3em;
-    background-color: #fff;
+    background-color: var(--color-interface-softest);
 
     .workspace-header-bar {
         flex-grow: 1;
@@ -295,7 +295,7 @@
         display: flex;
         flex-direction: column;
         text-align: center;
-        background-color: white;
+        background-color: var(--theme-white);
         border-radius: 12px;
 
         /* For smaller devices don't apply margins and use the full width. */
@@ -320,7 +320,7 @@
 }
 
 .workspace-navigation-pane {
-    background-color: #f6f9fa;
+    background-color: var(--theme-lightest);
     border-radius: 12px;
     min-width: 350px;
 
@@ -329,8 +329,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-top: 1px solid #ebf4f7;
-        border-bottom: 1px solid #ebf4f7;
+        border-top: 1px solid var(--theme-color-light);
+        border-bottom: 1px solid var(--theme-color-light);
         min-height: 100px;
         padding-left: 12px;
         padding-right: 12px;
@@ -374,7 +374,7 @@
     }
 
     .activity-navigation-item-container.is-selected {
-        background-color: #fff;
+        background-color: var(--color-interface-softest);
 
     }
 
@@ -432,7 +432,6 @@ span.icon-stack-container i.icon {
     import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
     import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
-    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -463,7 +462,7 @@ span.icon-stack-container i.icon {
     const facilitatorPortalUrl = ref(config.navigationUrls?.[NavigationUrlKey.FacilitatorPortalPage] ?? "");
     const facilitators = ref(config.facilitators ?? []);
     const notificationsToShow = ref(config.numberOfNotificationsToShow);
-    const notifications = ref(config.notifications?.filter((a, i) => i < notificationsToShow.value) ?? []);
+    const notifications = ref(config.notifications?.filter((_, i) => i < notificationsToShow.value) ?? []);
     const showGrades = ref(config.showGrades);
     const currentGrade = ref(config.currentGrade);
 
@@ -476,52 +475,6 @@ span.icon-stack-container i.icon {
     // #endregion
 
     // #region Computed Values
-
-    function badgeText(activity: LearningActivityCompletionBag): string | undefined {
-        if (activity.isStudentCompleted) {
-            const pointsPossible = activity.activityBag?.points ?? 0;
-            if (activity.isFacilitatorCompleted && pointsPossible > 0) {
-                return activity.isGradePassing === true ?
-                    "Passed" :
-                    "Complete";
-            }
-            else {
-                return "Complete";
-            }
-        }
-        else {
-            if (activity.isPastDue) {
-                return "Past Due";
-            }
-        }
-
-        if (activity.isDueSoon) {
-            return "Due Soon";
-        }
-        else if (activity.isAvailable) {
-            return "Available";
-        }
-
-        return "";
-    }
-
-    function badgeType(activity: LearningActivityCompletionBag): BadgeType | string | undefined {
-        if (activity.isStudentCompleted) {
-            return BadgeType.Success;
-        }
-
-        if (activity.isPastDue) {
-            return BadgeType.Warning;
-        }
-        if (activity.isDueSoon) {
-            return BadgeType.Warning;
-        }
-        else if (activity.isAvailable) {
-            return "default";
-        }
-
-        return;
-    }
 
     /** An array of student completed activities. */
     const completedActivitiesCount = computed(() => activities.value.filter(a => a.isStudentCompleted).length);
@@ -548,6 +501,16 @@ span.icon-stack-container i.icon {
     // #endregion
 
     // #region Functions
+
+    function badgeText(activity: LearningActivityCompletionBag): string | undefined {
+        if (activity.isStudentCompleted && activity.gradeName) {
+            return activity.gradeName;
+        }
+    }
+
+    function isDueSoonAndIncomplete(activity: LearningActivityCompletionBag): boolean {
+        return !activity.isStudentCompleted && (activity.isDueSoon || activity.isPastDue);
+    }
 
     /** The CSS classes to apply to the activity container. */
     function getActivityContainerClasses(activity: LearningActivityCompletionBag): string[] {

@@ -37,11 +37,22 @@
         <Column name="category"
                 title="Category"
                 :filter="pickExistingValueFilter"
-                width="15%"
-                visiblePriority="lg">
+                width="20%"
+                visiblePriority="md">
             <template #format="{ row }">
                 <span class="label label-default" :style="'color: ' + row.categoryColor">
                     {{ row.category }}
+                </span>
+            </template>
+        </Column>
+        <Column name="configurationMode"
+                title="Configuration Mode"
+                :filter="pickExistingValueFilter"
+                width="20%"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <span :class="getConfigurationModeLabelClass(row.configurationMode)">
+                    {{ getConfigurationModeText(row.configurationMode) }}
                 </span>
             </template>
         </Column>
@@ -50,14 +61,14 @@
                        field="isPublic"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="xs" />
+                       visiblePriority="lg" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="xs" />
+                       visiblePriority="lg" />
 
         <template #skeleton>
             <div class="skeleton skeleton-text skeleton-rounded" />
@@ -79,6 +90,7 @@
     import { NavigationUrlKey } from "./LearningProgramList/types.partial";
     import { reactive, ref } from "vue";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -92,6 +104,16 @@
     // #endregion
 
     // #region Functions
+
+    function getConfigurationModeLabelClass(configurationMode: ConfigurationMode): string {
+        return `label label-${configurationMode === ConfigurationMode.AcademicCalendar ? "success" : "info"}`;
+    }
+
+    function getConfigurationModeText(configurationMode: ConfigurationMode): string {
+        const txt = ConfigurationModeDescription[configurationMode];
+        console.warn(txt, ConfigurationModeDescription, configurationMode);
+        return ConfigurationModeDescription[configurationMode];
+    }
 
     function getRowBadge(row: Record<string, unknown>): string {
         const baseColor = row.highlightColor as string;

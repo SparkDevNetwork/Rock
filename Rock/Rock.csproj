@@ -1306,7 +1306,7 @@
     <Compile Include="Lms\PointAssessmentComponent.cs" />
     <Compile Include="Lms\VideoWatchComponent.cs" />
     <Compile Include="Lms\FileUploadComponent.cs" />
-    <Compile Include="Lms\CheckOffComponent.cs" />
+    <Compile Include="Lms\AcknowledgementComponent.cs" />
     <Compile Include="Lms\LearningActivityComponent.cs" />
     <Compile Include="Lms\LearningActivityContainer.cs" />
     <Compile Include="Logging\DynamicConfigurationProvider.cs" />

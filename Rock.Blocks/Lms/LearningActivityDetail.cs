@@ -122,6 +122,12 @@ namespace Rock.Blocks.Lms
 
             options.HasCompletions = ActivityHasCompletions();
 
+            var configurationMode = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
+            var activityService = new LearningActivityService( RockContext );
+
+            options.AvailabilityCriteriaOptions = activityService.GetAvailabilityCriteria( configurationMode );
+            options.DueDateCriteriaOptions = activityService.GetDueDateCriteria( configurationMode );
+
             return options;
         }
 
@@ -278,6 +284,17 @@ namespace Rock.Blocks.Lms
             };
         }
 
+        private LearningActivity GetDefaultEntity()
+        {
+            return new LearningActivity
+            {
+                Id = 0,
+                Guid = Guid.Empty,
+                AvailableDateCalculationMethod = Enums.Lms.AvailableDateCalculationMethod.AlwaysAvailable,
+                DueDateCalculationMethod = Enums.Lms.DueDateCalculationMethod.NoDate
+            };
+        }
+
         /// <inheritdoc/>
         protected override LearningActivityBag GetEntityBagForView( LearningActivity entity )
         {
@@ -391,11 +408,7 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
-                return new LearningActivity
-                {
-                    Id = 0,
-                    Guid = Guid.Empty
-                };
+                return GetDefaultEntity();
             }
 
             var entityService = new LearningActivityService( RockContext );
@@ -441,7 +454,7 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningActivity();
+                entity = GetDefaultEntity();
                 entityService.Add( entity );
 
                 var maxOrder = entityService.Queryable()
@@ -472,8 +485,8 @@ namespace Rock.Blocks.Lms
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityId ) ?? "";
 
             // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
-            var excludedParamKeys = new[] { PageParameterKey.AutoEdit, PageParameterKey.ReturnUrl };
-            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+            var excludedParamKeys = new[] { PageParameterKey.AutoEdit.ToLower(), PageParameterKey.ReturnUrl.ToLower() };
+            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
@@ -628,7 +641,6 @@ namespace Rock.Blocks.Lms
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( queryParams ) );
         }
-
 
         #endregion
     }

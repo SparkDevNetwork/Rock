@@ -3,13 +3,13 @@
     <Panel v-if="[ComponentScreen.Configuration, ComponentScreen.Summary].includes(screenToShow)" :title="panelTitle" :hasFullscreen="false" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="header-content-section">
-                <StructuredContentEditor label="Content" v-model="content" :disabled="disabled" />
+                <StructuredContentEditor label="Content" v-model="content" :disabled="disabled" help="Text the individual will acknowledge or provide consent for." />
             </div>
             <div class="is-required-section">
                 <CheckBox
                     v-model="isConfirmationRequired"
                     label="Confirmation Required"
-                    help="Is the student required to check the checkbox in order to complete the activity."
+                    help="Is the individual required to check the checkbox in order to complete the activity."
                     :disabled="disabled" />
             </div>
 
@@ -42,7 +42,7 @@
             </div>
 
             <div class="footer-content-section">
-                <RockButton :btnType="BtnType.Primary" :disabled="!isConfirmed || completionBag.isStudentCompleted" @click="emits('completed', true)">
+                <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed) || completionBag.isStudentCompleted" @click="emits('completed', true)">
                     Complete
                 </RockButton>
             </div>
@@ -63,7 +63,7 @@
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { CheckOffActivityCompletion, CheckOffActivityConfiguration, CheckOffActivityDefaults } from "./checkOffLearningActivity.partial";
+    import { AcknowledgementActivityCompletion, AcknowledgementActivityConfiguration, AcknowledgementActivityDefaults } from "./acknowledgementLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -88,11 +88,11 @@
         isConfirmationRequired,
         panelTitle,
         pointsPossibleAtCompletion
-    } = useLearningComponent<CheckOffActivityConfiguration, CheckOffActivityCompletion>(
+    } = useLearningComponent<AcknowledgementActivityConfiguration, AcknowledgementActivityCompletion>(
         activityBag,
         completionBag,
         screenToShow,
-        new CheckOffActivityDefaults()
+        new AcknowledgementActivityDefaults()
     );
 
     /** Watch for modified component settings. */

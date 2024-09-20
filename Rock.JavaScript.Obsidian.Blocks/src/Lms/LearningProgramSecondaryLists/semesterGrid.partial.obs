@@ -35,7 +35,7 @@
             </div>
 
             <!-- This causes a break on extra small and small devices. -->
-            <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
+            <div class="d-md-none grid-header-separator"></div>
             <div class="flex-grow-1 d-md-none grid-header-fill" style="min-width: 1px;"></div>
         </template>
         <TextColumn name="name"
@@ -68,7 +68,13 @@
 </template>
 <style scoped>
     .grid-custom-tab-bar {
-        background-color: #efefef;
+        background-color: var(--body-background);
+    }
+
+    .grid-header-separator {
+        height: 0;
+        border-bottom: 1px solid var(--input-border);
+        flex-basis: 100%;
     }
 </style>
 

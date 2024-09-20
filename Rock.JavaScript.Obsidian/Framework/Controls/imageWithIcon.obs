@@ -86,7 +86,7 @@ import { Guid } from "@Obsidian/Types";
             "/Assets/Images/no-picture.svg"
     );
 
-    const stackClass = computed(() => `fa-stack fa-${iconSize.value}x`);
+    const stackClass = computed(() => iconSize.value > 1 ? `fa-stack fa-${iconSize.value}x` : "fa-stack");
 
     // The color style attribute value for the highlight color.
     const highlightColorStyle = computed(() => `color: ${highlightColor.value};`);

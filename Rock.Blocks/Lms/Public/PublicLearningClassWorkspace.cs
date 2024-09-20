@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using DotLiquid.Util;
-
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
@@ -334,7 +332,7 @@ namespace Rock.Blocks.Lms
 
                 var availableDate =
                     isPreviousMethodCalculation && isPreviousActivityCompleted ?
-                    previousActivityCompletion.CompletedDate :
+                    previousActivityCompletion?.CompletedDate :
                     activity.AvailableDateTime;
 
                 var activityCompletion = new LearningActivityCompletionBag
@@ -347,6 +345,7 @@ namespace Rock.Blocks.Lms
                     CompletedDate = activity.CompletedDateTime,
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
+                    GradeName = activity.GetGrade( scales )?.Name,
                     GradeText = activity.GetGradeText( scales ),
                     IsAvailable = isActivityAvailable,
                     IsGradePassing = activity.LearningActivity.Points == 0 || activity.GetGrade( scales ).IsPassing,

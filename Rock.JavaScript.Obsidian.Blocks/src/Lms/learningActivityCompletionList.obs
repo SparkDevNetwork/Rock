@@ -92,8 +92,8 @@
 
         <DropDownList v-model="studentGuidToAdd"
                       :items="studentsWithoutActivity"
-                      label="For Student"
-                      help="Select the student to add the activity for." />
+                      label="For Individual"
+                      help="Select the individual to add the activity for." />
 
     </Modal>
 </template>
@@ -267,7 +267,7 @@
             reloadBlock();
         }
         else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to add student.");
+            throw new Error(result.errorMessage ?? "Unknown error while trying to add individual.");
         }
     }
 

@@ -32,7 +32,7 @@ namespace Rock.Model
             {
                 switch ( AvailableDateCalculationMethod )
                 {
-                    case AvailableDateCalculationMethod.Specific:
+                    case AvailableDateCalculationMethod.SpecificDate:
                         if ( AvailableDateDefault.HasValue )
                         {
                             return AvailableDateDefault.Value.ToShortDateString();
@@ -75,7 +75,7 @@ namespace Rock.Model
             {
                 switch ( DueDateCalculationMethod )
                 {
-                    case DueDateCalculationMethod.Specific:
+                    case DueDateCalculationMethod.SpecificDate:
                         if ( DueDateDefault.HasValue )
                         {
                             return DueDateDefault.Value.ToShortDateString();
@@ -139,7 +139,7 @@ namespace Rock.Model
         {
             switch ( method )
             {
-                case AvailableDateCalculationMethod.Specific:
+                case AvailableDateCalculationMethod.SpecificDate:
                     if ( defaultDate.HasValue )
                     {
                         return defaultDate.Value;
@@ -180,7 +180,7 @@ namespace Rock.Model
         {
             switch ( method )
             {
-                case DueDateCalculationMethod.Specific:
+                case DueDateCalculationMethod.SpecificDate:
                     if ( defaultDate.HasValue )
                     {
                         return defaultDate.Value;

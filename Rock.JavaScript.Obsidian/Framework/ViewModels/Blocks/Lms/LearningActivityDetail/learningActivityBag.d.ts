@@ -121,7 +121,7 @@ export type LearningActivityBag = {
     /** Gets or sets the order in which the activity should be displayed. */
     order: number;
 
-    /** Gets or sets the number of students who are assigned this activity. */
+    /** Gets or sets the percentage of students who have completed this activity. */
     percentComplete: number;
 
     /** Gets or sets the maximum number of points the activity is worth. */

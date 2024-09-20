@@ -14,15 +14,70 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Lms;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
     public partial class LearningActivityService
     {
+        /// <summary>
+        /// Creates a new Activity with Attributes by copying values from the specified activity.
+        /// </summary>
+        /// <param name="key">The identifer to use for retreiving the Activity to use as a template for the copy.</param>
+        /// <returns>
+        ///     A new Activity whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
+        ///     of the Activity whose <paramref name="key"/> was provided.
+        /// </returns>
+        public LearningActivity Copy( string key )
+        {
+            var activity = Get( key );
+            var newActivity = activity.CloneWithoutIdentity();
+            newActivity.Name += " - Copy";
+            this.Add( newActivity );
+            activity.LoadAttributes();
+            newActivity.LoadAttributes();
+            newActivity.CopyAttributesFrom( activity );
+
+            var rockContext = this.Context as RockContext;
+
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                newActivity.SaveAttributeValues( rockContext );
+            } );
+            return newActivity;
+        }
+
+        /// <summary>
+        /// Gets the availability criteria based on the configuration mode.
+        /// </summary>
+        /// <remarks>
+        /// Program ConfigurationMode's that don't have the concept of a <see cref="LearningSemester"/>
+        /// should not allow calculations based on the 'ClassStartOffset' (the <see cref="LearningSemester.StartDate"/>)..
+        /// </remarks>
+        /// <param name="configurationMode">The <see cref="LearningProgram.ConfigurationMode"/> for the parent <see cref="LearningClass"/>.</param>
+        /// <returns>The list of <see cref="AvailableDateCalculationMethod"/> options available for the <see cref="LearningActivity"/>.</returns>
+        public List<ListItemBag> GetAvailabilityCriteria( ConfigurationMode configurationMode )
+        {
+            var onDemandExclusions = new []{ AvailableDateCalculationMethod.ClassStartOffset };
+            return Enum.GetValues( typeof( AvailableDateCalculationMethod ) )
+                .Cast<AvailableDateCalculationMethod>()
+                .Where( value => configurationMode != ConfigurationMode.OnDemandLearning || !onDemandExclusions.Contains( value ) )
+                .Select( value => new ListItemBag
+                {
+                    Value = value.ConvertToInt().ToString(),
+                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                } )
+                .ToList();
+        }
+
         /// <summary>
         /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
@@ -35,7 +90,6 @@ namespace Rock.Model
             return
                 includeCompletions ?
                 Queryable()
-                    .AsNoTracking()
                     .Include( a => a.LearningActivityCompletions )
                     .Include( a => a.LearningClass )
                     .Include( a => a.LearningClass.LearningSemester )
@@ -44,7 +98,6 @@ namespace Rock.Model
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id ) :
                 Queryable()
-                    .AsNoTracking()
                     .Include( a => a.LearningClass )
                     .Include( a => a.LearningClass.LearningSemester )
                     .Include( a => a.LearningClass.LearningSemester.LearningProgram )
@@ -142,31 +195,26 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new Activity with Attributes by copying values from the specified activity.
+        /// Gets the due date criteria based on the configuration mode.
         /// </summary>
-        /// <param name="key">The identifer to use for retreiving the Activity to use as a template for the copy.</param>
-        /// <returns>
-        ///     A new Activity whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
-        ///     of the Activity whose <paramref name="key"/> was provided.
-        /// </returns>
-        public LearningActivity Copy( string key )
+        /// <remarks>
+        /// Program ConfigurationMode's that don't have the concept of a <see cref="LearningSemester"/>
+        /// should not allow calculations based on the 'ClassStartOffset' (the <see cref="LearningSemester.StartDate"/>)..
+        /// </remarks>
+        /// <param name="configurationMode">The <see cref="LearningProgram.ConfigurationMode"/> for the parent <see cref="LearningClass"/>.</param>
+        /// <returns>The list of <see cref="DueDateCalculationMethod"/> options available for the <see cref="LearningActivity"/>.</returns>
+        public List<ListItemBag> GetDueDateCriteria( ConfigurationMode configurationMode )
         {
-            var activity = Get( key );
-            var newActivity = activity.CloneWithoutIdentity();
-            newActivity.Name += " - Copy";
-            this.Add( newActivity );
-            activity.LoadAttributes();
-            newActivity.LoadAttributes();
-            newActivity.CopyAttributesFrom( activity );
-
-            var rockContext = this.Context as RockContext;
-
-            rockContext.WrapTransaction( () =>
-            {
-                rockContext.SaveChanges();
-                newActivity.SaveAttributeValues( rockContext );
-            } );
-            return newActivity;
+            var onDemandExclusions = new[] { DueDateCalculationMethod.ClassStartOffset };
+            return Enum.GetValues( typeof( DueDateCalculationMethod ) )
+                .Cast<DueDateCalculationMethod>()
+                .Where( value => configurationMode != ConfigurationMode.OnDemandLearning || !onDemandExclusions.Contains( value ) )
+                .Select( value => new ListItemBag
+                {
+                    Value = value.ConvertToInt().ToString(),
+                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                } )
+                .ToList();
         }
     }
 }

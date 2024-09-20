@@ -188,6 +188,7 @@ namespace Rock.Blocks.Lms
                 AbsencesLabelStyle = entity.LearningClass?.AbsencesLabelStyle( absences ?? 0 ),
                 CurrentGradePercent = entity.LearningGradePercent,
                 CurrentGradeText = entity.LearningGradingSystemScale?.Name,
+                Note = entity.Note,
                 ParticipantRole = entity.GroupRole?.ToListItemBag(),
                 PersonAlias = entity.Person?.PrimaryAlias?.ToListItemBag(),
                 IsFacilitator = entity.GroupRole?.IsLeader ?? false

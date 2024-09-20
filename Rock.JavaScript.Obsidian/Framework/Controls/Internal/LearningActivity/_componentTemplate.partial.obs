@@ -10,12 +10,12 @@
 <template>
     <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
-            <!-- TODO: Add Configuration Screen -->
+            <!-- TODO: Add Configuration Screen that the facilitator can use to configure the activity. -->
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Completion">
             <fieldset>
-                <!-- TODO: Add Completion Screen -->
+                <!-- TODO: Add Completion Screen that the AssignTo will use to complete. -->
                 <div class="footer-section">
                     <RockButton :btnType="BtnType.Primary"
                                 @click="emits('completed', true)">
@@ -26,11 +26,11 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
-            <!-- TODO: Add Scoring Screen -->
+            <!-- TODO: Add Scoring Screen that the facilitator will use to grade/score. -->
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
-            <!-- TODO: Add Summary Screen -->
+            <!-- TODO: Add Summary Screen that the facilitator can use to view the graded results. -->
             <NotificationBox v-if="showSuccess" alertType="success">
                 {{ assignee?.name ?? defaultAssigneeDescription }} ...
             </NotificationBox>
@@ -52,7 +52,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     // TODO: Replace below imports with those specific to the new component you're creating.
-    import { CheckOffActivityCompletion, CheckOffActivityConfiguration, CheckOffActivityDefaults } from "./checkOffLearningActivity.partial";
+    import { AcknowledgementActivityCompletion, AcknowledgementActivityConfiguration, AcknowledgementActivityDefaults } from "./acknowledgementLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -76,14 +76,14 @@
         // TODO: Add component specific properties to monitor...
         // These will be defined by the 2 types passed to useLearningComponent<TConfig, TCompletion>:
         // ...ActivityConfiguration and ...ActivityCompletion.
-    } = useLearningComponent<CheckOffActivityConfiguration, CheckOffActivityCompletion>(
+    } = useLearningComponent<AcknowledgementActivityConfiguration, AcknowledgementActivityCompletion>(
         activityBag,
         completionBag,
         screenToShow,
         // TODO: Create a class extending LearningComponentBaseDefaults<TConfig, TCompletion>
         // that will initialize all properties to default values.
         // This is necessary for the Refs to be returned by the useLearningComponent composable.
-        new CheckOffActivityDefaults()
+        new AcknowledgementActivityDefaults()
     );
 
     /** Watch for modified component settings. */

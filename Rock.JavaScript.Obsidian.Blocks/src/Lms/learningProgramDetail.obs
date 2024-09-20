@@ -349,7 +349,7 @@
     function onCompletionClick(idKey: string): void {
         const url = (config.navigationUrls && config.navigationUrls[NavigationUrlKey.CompletionDetailPage]) ?? "";
         if (url.length > 0) {
-            window.location.href = url.replace("((Key))", idKey + "?autoEdit=True&returnUrl=" + window.location);
+            window.location.href = url.replace("((Key))", idKey + "?autoEdit=True&returnUrl=" + encodeURIComponent(window.location.href));
         }
     }
 

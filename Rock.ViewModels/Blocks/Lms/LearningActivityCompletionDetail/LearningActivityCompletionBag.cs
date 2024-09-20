@@ -66,7 +66,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public string FacilitatorComment { get; set; }
 
         /// <summary>
-        /// Gets or sets the text for the achieved grade.
+        /// Gets or sets the text of the grade earned by the student.
+        /// </summary>
+        public string GradeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text for the achieved grade. For example, "B (87%).
         /// </summary>
         public string GradeText { get; set; }
 
