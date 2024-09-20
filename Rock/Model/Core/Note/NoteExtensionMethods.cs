@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
 using System.Linq;
 
 namespace Rock.Model
@@ -37,14 +36,23 @@ namespace Rock.Model
         /// and filtered to only those notes where the specified person
         /// created the note or the note is approved.
         /// </returns>
-        public static IQueryable<Note> AreViewableBy( this IQueryable<Note> notes, int viewerPersonId )
+        public static IQueryable<Note> AreViewableBy( this IQueryable<Note> notes, int? viewerPersonId )
         {
             // The viewer is the creator of the note and the approval status is not denied.
             // OR the note is not private and is either approved or not required to be approved.
-            return notes
-                .Where( n =>
-                ( ( viewerPersonId == n.CreatedByPersonAlias.PersonId && n.ApprovalStatus != NoteApprovalStatus.Denied )
-                || ( !n.IsPrivateNote && ( !n.NoteType.RequiresApprovals || n.ApprovalStatus == NoteApprovalStatus.Approved ) ) ) );
+            if ( viewerPersonId.HasValue && viewerPersonId.Value > 0 )
+            {
+                return notes
+                    .Where( n =>
+                    ( ( viewerPersonId == n.CreatedByPersonAlias.PersonId && n.ApprovalStatus != NoteApprovalStatus.Denied )
+                    || ( !n.IsPrivateNote && ( !n.NoteType.RequiresApprovals || n.ApprovalStatus == NoteApprovalStatus.Approved ) ) ) );
+            }
+            else
+            {
+                return notes
+                    .Where( n =>
+                    ( ( !n.IsPrivateNote && ( !n.NoteType.RequiresApprovals || n.ApprovalStatus == NoteApprovalStatus.Approved ) ) ) );
+            }
         }
 
         /// <summary>
