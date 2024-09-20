@@ -17,9 +17,9 @@
 namespace Rock.Enums.Lms
 {
     /// <summary>
-    /// Determines the method for calculating the available date.
+    /// Determines the method for calculating the due date.
     /// </summary>
-    public enum AvailableDateCalculationMethod
+    public enum DueDateCriteria
     {
         /// <summary>
         /// A specific date.
@@ -37,13 +37,8 @@ namespace Rock.Enums.Lms
         EnrollmentOffset = 2,
 
         /// <summary>
-        /// Always available.
+        /// No calculation.
         /// </summary>
-        AlwaysAvailable = 3,
-
-        /// <summary>
-        /// No calculation (becomes available after previous is completed).
-        /// </summary>
-        AfterPreviousCompleted = 4
+        NoDate = 3
     }
 }

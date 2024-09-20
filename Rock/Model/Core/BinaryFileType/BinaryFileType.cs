@@ -185,6 +185,12 @@ namespace Rock.Model
         [DataMember]
         public int? MaxFileSizeBytes { get; set; }
 
+        /// <summary>
+        /// If true then the file type allows anonymous uploads.
+        /// </summary>
+        [DataMember]
+        public bool AllowAnonymous { get; set; }
+
         private RockCacheability _cacheControlHeader;
        
         #endregion

@@ -120,6 +120,7 @@ namespace Rock.Model
             target.FacilitatorComment = source.FacilitatorComment;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GradedByPersonAliasId = source.GradedByPersonAliasId;
             target.IsFacilitatorCompleted = source.IsFacilitatorCompleted;
             target.IsStudentCompleted = source.IsStudentCompleted;
             target.LearningActivityId = source.LearningActivityId;

@@ -104,13 +104,13 @@ namespace Rock.Model
         public AssignTo AssignTo { get; set; }
 
         /// <summary>
-        /// The calculation method used for determing the DueDate of the activity.
+        /// The method used for determining the DueDate of the activity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Enum"/> for the due date calculation method (i.e Specific, Class Start Offset, Enrollment Offset or No Date ).
+        /// An <see cref="System.Enum"/> for the method of determining the due date (i.e Specific Date, Class Start Offset, Enrollment Offset or No Date ).
         /// </value>
         [DataMember]
-        public DueDateCalculationMethod DueDateCalculationMethod { get; set; }
+        public DueDateCriteria DueDateCriteria { get; set; }
 
         /// <summary>
         /// Gets or sets the default date the <see cref="Rock.Model.LearningActivity">activity</see> is due.
@@ -126,19 +126,19 @@ namespace Rock.Model
         /// The optional offset to use for calculating the DueDate.
         /// </summary>
         /// <value>
-        /// The number of days to offset the DueDate to be used in conjunction with <see cref="DueDateCalculationMethod"/>.
+        /// The number of days to offset the DueDate to be used in conjunction with <see cref="DueDateCriteria"/>.
         /// </value>
         [DataMember]
         public int? DueDateOffset { get; set; }
 
         /// <summary>
-        /// The calculation method used for determing the AvailableDate of the activity.
+        /// The method used for determining the AvailableDate of the activity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Enum"/> for the available date calculation method (i.e Specific, Class Start Offset, Enrollment Offset, No Date or Always Available ).
+        /// An <see cref="System.Enum"/> for the method of determining the available date (i.e Specific Date, Class Start Offset, Enrollment Offset, No Date or Always Available ).
         /// </value>
         [DataMember]
-        public AvailableDateCalculationMethod AvailableDateCalculationMethod { get; set; }
+        public AvailabilityCriteria AvailabilityCriteria { get; set; }
 
         /// <summary>
         /// Gets or sets the default date the <see cref="Rock.Model.LearningActivity">activity</see>
@@ -155,7 +155,7 @@ namespace Rock.Model
         /// The optional offset to use for calculating the AvailableDate.
         /// </summary>
         /// <value>
-        /// The number of days to offset the AvailableDate to be used in conjunction with <see cref="AvailableDateCalculationMethod"/>.
+        /// The number of days to offset the AvailableDate to be used in conjunction with <see cref="AvailabilityCriteria"/>.
         /// </value>
         [DataMember]
         public int? AvailableDateOffset { get; set; }
