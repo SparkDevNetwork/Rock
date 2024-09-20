@@ -1,5 +1,5 @@
-// Stacked Icons
-// -------------------------
+
+// This files is being imported by './_font-styling-core.scss'
 
 .fa-stack {
   display: inline-block;
@@ -19,5 +19,5 @@
 
 .fa-stack-1x { line-height: inherit; }
 .fa-stack-2x { font-size: 2em; }
-.fa-inverse { color: #fff; }
+.fa-inverse { color: var(--color-interface-softest); }
   

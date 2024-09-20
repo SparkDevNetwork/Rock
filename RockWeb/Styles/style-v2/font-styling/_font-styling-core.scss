@@ -1,7 +1,6 @@
 
-// This file is being imported by core.scss
+// This file is being imported by `../core.scss`
 
-// Working
 @import './fixed-width';
 @import './list';
 @import './sizes';
@@ -10,6 +9,6 @@
 @import './border-pulled';
 
 // Got it working by adding display: inline-block; to `.ti{ }` class 
-// located in the `_core-icon.css`
+// located in the `../icons/_core-icon.css`
 @import './rotated-flipped';
 @import './animation';

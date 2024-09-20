@@ -102,8 +102,8 @@ $datepicker-active-text-shadow:     0 -1px 0 rgba(0,0,0,.25);
 $datepicker-disabled-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
 
 // Brand Color
-$brand-facebook: #3B5998;
-$brand-twitter: #1da1f2;
+$brand-facebook:    #3B5998;
+$brand-twitter:     #1da1f2;
 
 // Card
 $card-height: "";
@@ -111,3 +111,6 @@ $card-color: "";
 $card-cap-color: "";
 
 $line-height-computed: calc(var(--font-size-regular) * var(--line-height-normal));
+
+// Checkin
+$checkin-keypad-width:  260px;
