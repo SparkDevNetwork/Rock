@@ -25,7 +25,7 @@ const noElementsFound = "No element was found in collection.";
  * For the purposes of a compare, null and undefined are always a lower
  * value - unless both values are null or undefined in which case they
  * are considered equal.
- * 
+ *
  * @param keySelector The function that will select the value.
  * @param descending True if this comparison should be in descending order.
  */
@@ -76,7 +76,7 @@ export class List<T> {
 
     /**
      * Creates a new list with the given elements.
-     * 
+     *
      * @param elements The elements to be made available to LINQ queries.
      */
     constructor(elements?: T[]) {
@@ -91,7 +91,7 @@ export class List<T> {
 
     /**
      * Creates a new List from the elements without copying to a new array.
-     * 
+     *
      * @param elements The elements to initialize the list with.
      * @returns A new list of elements.
      */
@@ -131,13 +131,12 @@ export class List<T> {
      * @returns true if the collection contains any elements; otherwise false.
      */
     public any(predicate?: PredicateFn<T>): boolean {
-        let elements = this.elements;
-
         if (predicate !== undefined) {
-            elements = elements.filter(predicate);
+            return this.elements.some(predicate);
         }
-
-        return elements.length > 0;
+        else {
+            return this.elements.length > 0;
+        }
     }
 
     /**
@@ -210,14 +209,12 @@ export class List<T> {
      * @returns The first element in the filtered collection or undefined.
      */
     public firstOrUndefined(predicate?: PredicateFn<T>): T | undefined {
-        let elements = this.elements;
-
         if (predicate !== undefined) {
-            elements = elements.filter(predicate);
+            return this.elements.find(predicate);
         }
 
-        if (elements.length === 1) {
-            return elements[0];
+        if (this.elements.length === 1) {
+            return this.elements[0];
         }
         else {
             return undefined;
@@ -319,7 +316,7 @@ export class List<T> {
     /**
      * Orders the elements of the array and returns a new list of items
      * in that order.
-     * 
+     *
      * @param keySelector The selector for the key to be ordered by.
      * @returns A new ordered list of elements.
      */
@@ -345,9 +342,9 @@ export class List<T> {
     /**
      * Filters the results and returns a new list containing only the elements
      * that match the predicate.
-     * 
+     *
      * @param predicate The predicate to filter elements with.
-     * 
+     *
      * @returns A new collection of elements that match the predicate.
      */
     public where(predicate: PredicateFn<T>): List<T> {
@@ -385,7 +382,7 @@ class OrderedList<T> extends List<T> {
     /**
      * Orders the elements of the array and returns a new list of items
      * in that order.
-     * 
+     *
      * @param keySelector The selector for the key to be ordered by.
      * @returns A new ordered list of elements.
      */

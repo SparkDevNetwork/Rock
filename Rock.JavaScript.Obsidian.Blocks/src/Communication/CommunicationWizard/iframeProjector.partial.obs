@@ -1,0 +1,21 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HtmlExtractor @update:html="html = $event"><slot></slot></HtmlExtractor>
+    <iframe :srcdoc="html"></iframe>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import HtmlExtractor from "./htmlExtractor.partial.obs";
+
+    defineProps({
+        width: {
+            type: String as PropType<string | number | undefined>
+        },
+        height: {
+            type: String as PropType<string | number | undefined>
+        }
+    });
+
+    const html = ref<string>("");
+</script>
