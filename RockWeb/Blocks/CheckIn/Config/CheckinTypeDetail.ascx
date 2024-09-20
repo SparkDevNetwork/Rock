@@ -56,19 +56,25 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <Rock:RockCheckBox ID="cbAllowCheckoutAtKiosk" runat="server" Label="Enable Check-out at Kiosk" Text="Yes"
-                                        Help="Allows individuals to check-out using the kiosks." />
+                                                Help="Allows individuals to check-out using the kiosks." />
+
+                                            <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"
+                                                Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
+
+                                            <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes"
+                                                Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
                                         </div>
                                         <div class="col-md-6">
-                                             <Rock:RockCheckBox ID="cbAllowCheckoutInManager" runat="server" Label="Enable Check-out in Manager" Text="Yes"
-                                        Help="Allows check-out to be enabled in the Check-in Manager." />
+                                            <Rock:RockCheckBox ID="cbAllowCheckoutInManager" runat="server" Label="Enable Check-out in Manager" Text="Yes"
+                                                Help="Allows check-out to be enabled in the Check-in Manager." />
+
+                                            <Rock:RockCheckBox ID="cbAllowRemoveFromFamilyAtKiosk" runat="server" Label="Enable Remove From Family at Kiosk" Text="Yes"
+                                                Help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login." />
+
+                                            <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes"
+                                                Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                                         </div>
                                     </div>
-                                    <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"
-                                        Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
-                                    <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes"
-                                        Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
-                                    <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes"
-                                        Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
 
                                     <Rock:RockListBox ID="listboxAchievementTypes" runat="server" Label="Achievement Types" Help="Select achievement types that will used for checkin celebrations." />
 

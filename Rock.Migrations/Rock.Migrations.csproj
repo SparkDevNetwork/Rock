@@ -140,6 +140,10 @@
     <Compile Include="Migrations\202409191803193_CodeGenerated_20240919.designer.cs">
       <DependentUpon>202409191803193_CodeGenerated_20240919.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202409201452552_AddIsCheckInAllowedToGroupTypeRole.cs" />
+    <Compile Include="Migrations\202409201452552_AddIsCheckInAllowedToGroupTypeRole.Designer.cs">
+      <DependentUpon>202409201452552_AddIsCheckInAllowedToGroupTypeRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2270,6 +2274,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202409191803193_CodeGenerated_20240919.resx">
       <DependentUpon>202409191803193_CodeGenerated_20240919.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409201452552_AddIsCheckInAllowedToGroupTypeRole.resx">
+      <DependentUpon>202409201452552_AddIsCheckInAllowedToGroupTypeRole.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>

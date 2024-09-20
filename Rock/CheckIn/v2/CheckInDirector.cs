@@ -557,6 +557,7 @@ namespace Rock.CheckIn.v2
                 IsLocationCountDisplayed = configuration.IsLocationCountDisplayed,
                 IsOverrideAvailable = configuration.IsOverrideAvailable,
                 IsPhotoHidden = configuration.IsPhotoHidden,
+                IsRemoveFromFamilyAtKioskAllowed = configuration.IsRemoveFromFamilyAtKioskAllowed,
                 IsSupervisorEnabled = configuration.IsSupervisorEnabled,
                 MaximumPhoneNumberLength = configuration.MaximumPhoneNumberLength,
                 MinimumPhoneNumberLength = configuration.MinimumPhoneNumberLength,

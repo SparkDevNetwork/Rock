@@ -214,6 +214,7 @@
     <Compile Include="Rock\CheckIn\v2\Filters\LocationClosedOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationOverflowOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\MembershipOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\PreferredGroupsOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\ThresholdOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\TextLabelRendererTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplImageHelperTests.cs" />

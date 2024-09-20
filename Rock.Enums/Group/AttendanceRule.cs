@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -37,6 +39,13 @@ namespace Rock.Model
         /// <summary>
         /// User must already belong to the group before they will be allowed to check-in
         /// </summary>
-        AlreadyBelongs = 2
+        [Obsolete( "Use AlreadyEnrolledInGroup instead." )]
+        AlreadyBelongs = 2,
+
+        /// <summary>
+        /// The person must already be a member of the group before they will
+        /// be allowed to check into the group.
+        /// </summary>
+        AlreadyEnrolledInGroup = 2
     }
 }
