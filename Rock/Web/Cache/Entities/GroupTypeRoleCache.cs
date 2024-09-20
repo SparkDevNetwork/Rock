@@ -122,6 +122,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsExcludedFromPeerNetwork { get; private set; }
 
+        /// <inheritdoc cref="GroupTypeRole.IsCheckInAllowed"/>
+        [DataMember]
+        public bool IsCheckInAllowed { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -177,6 +181,7 @@ namespace Rock.Web.Cache
             CanEdit = role.CanEdit;
             CanManageMembers = role.CanManageMembers;
             IsExcludedFromPeerNetwork = role.IsExcludedFromPeerNetwork;
+            IsCheckInAllowed = role.IsCheckInAllowed;
         }
 
         /// <summary>

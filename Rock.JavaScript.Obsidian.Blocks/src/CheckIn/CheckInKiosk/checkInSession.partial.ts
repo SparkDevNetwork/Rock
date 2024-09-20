@@ -940,7 +940,7 @@ export class CheckInSession {
     }
 
     /**
-     * Creats a new session that is ready to start accepting selections for
+     * Creates a new session that is ready to start accepting selections for
      * the current attendee at the next selected family schedule. If the new
      * session {@link currentFamilyScheduleId} property is undefined then this was
      * the last schedule.
@@ -977,6 +977,28 @@ export class CheckInSession {
             selectedGroup: undefined,
             selectedLocation: undefined,
             currentFamilyScheduleId: nextScheduleId
+        });
+    }
+
+    /**
+     * Creates a new session that will have the specified attendee excluded
+     * from the list of attendees.
+     *
+     * @param attendeeId The identifier of the attendee to remove.
+     * @returns A new {@link CheckInSession} object.
+     */
+    public withRemovedAttendee(attendeeId: string): CheckInSession {
+        // Remove any selections that have been made for this attendee.
+        const session = this.withUnstashedAttendeeSelections(attendeeId);
+
+        if (!session.attendees) {
+            throw new InvalidCheckInStateError("Attendees have not been loaded.");
+        }
+
+        const newAttendees = session.attendees.filter(a => a.person?.id !== attendeeId);
+
+        return new CheckInSession(session, {
+            attendees: newAttendees
         });
     }
 
@@ -1749,7 +1771,7 @@ export class CheckInSession {
             throw new InvalidCheckInStateError("No schedules available.");
         }
 
-        if (!this.attendeeOpportunities.schedules.some(s => !s.id)) {
+        if (this.attendeeOpportunities.schedules.some(s => !s.id)) {
             throw new InvalidCheckInStateError("Invalid schedule.");
         }
 

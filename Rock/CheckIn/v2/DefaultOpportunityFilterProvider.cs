@@ -42,7 +42,8 @@ namespace Rock.CheckIn.v2
             typeof( GenderOpportunityFilter ),
             typeof( SpecialNeedsOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
-            typeof( DataViewOpportunityFilter )
+            typeof( DataViewOpportunityFilter ),
+            typeof( PreferredGroupsOpportunityFilter )
         };
 
         /// <summary>

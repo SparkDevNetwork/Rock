@@ -217,7 +217,7 @@ namespace Rock.Blocks.Core
                 SignatureInputTypes = GetSignatureInputTypes(),
                 SignatureType = entity.SignatureType.ConvertToStringSafe(),
                 IsValidInFuture = entity.IsValidInFuture,
-                ValidityDurationInDays = entity.ValidityDurationInDays,
+                ValidityDurationInDays = entity.ValidityDurationInDays.ToString(),
             };
         }
 
@@ -348,7 +348,7 @@ namespace Rock.Blocks.Core
                     () => entity.IsValidInFuture = box.Entity.IsValidInFuture );
 
             box.IfValidProperty( nameof( box.Entity.ValidityDurationInDays ),
-                    () => entity.ValidityDurationInDays = box.Entity.ValidityDurationInDays );
+                    () => entity.ValidityDurationInDays = box.Entity.ValidityDurationInDays.AsIntegerOrNull() );
 
             return true;
         }

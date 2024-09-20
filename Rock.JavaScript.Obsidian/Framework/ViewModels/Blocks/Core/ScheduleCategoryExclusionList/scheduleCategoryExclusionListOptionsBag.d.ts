@@ -21,29 +21,11 @@
 // </copyright>
 //
 
-import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+/** The additional configuration options for the Schedule Category Exclusion List block. */
+export type ScheduleCategoryExclusionListOptionsBag = {
+    /** Gets or sets a value indicating whether the current user has the CanAdministrate authorization. */
+    canAdministrate: boolean;
 
-/**
- * A single member of a family. A family member may not belong to the actual
- * family as they may be assocaited via a "can check-in" relationship. This
- * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.IsInPrimaryFamily value.
- */
-export type FamilyMemberBag = {
-    /** Gets or sets the primary family identifier this person belongs to. */
-    familyId?: string | null;
-
-    /**
-     * Gets or sets a value indicating whether this attendee is in the
-     * primary family matched during the search operation.
-     */
-    isInPrimaryFamily: boolean;
-
-    /** Gets or sets the person that represents this family member. */
-    person?: PersonBag | null;
-
-    /**
-     * Gets or sets the group role order. This can be used to order parents
-     * above children.
-     */
-    roleOrder: number;
+    /** Gets or sets a value indicating whether the block should be visible. */
+    isBlockVisible: boolean;
 };

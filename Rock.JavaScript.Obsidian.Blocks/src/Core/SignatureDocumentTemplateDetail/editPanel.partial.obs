@@ -34,14 +34,14 @@
                                  :items="signatureInputTypes" />
 
                 <CheckBox v-model="isValidInFuture"
-                         label="Valid In Future"
-                         help="Determines if documents of this type should be considered valid for future eligibility needs." />
-                <NumberBox v-model="validityDurationInDays"
-                            v-if="isValidInFuture"
-                            label="Valid Duration Days"
-                            help="The number of days a signed document of this type will be considered valid."
-                            minimum-value="1"
-                            rules="required"/>
+                          label="Valid In Future"
+                          help="Determines if documents of this type should be considered valid for future eligibility needs." />
+                <TextBox v-model="validityDurationInDays"
+                         v-if="isValidInFuture"
+                         label="Valid Duration Days"
+                         help="The number of days a signed document of this type will be considered valid."
+                         minimum-value="1"
+                         :rules="validityDurationRules" />
             </div>
 
             <div class="col-md-6">
@@ -183,7 +183,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -205,6 +205,7 @@
     import { GetPdfPreviewUrlRequestBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/getPdfPreviewUrlRequestBag";
     import { SignatureDocumentTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -239,7 +240,7 @@
     const providerTemplateKey = propertyRef(props.modelValue.providerTemplateKey ?? "", "ProviderTemplateKey");
     const lavaTemplate = propertyRef(props.modelValue.lavaTemplate ?? "", "LavaTemplate");
     const isValidInFuture = propertyRef(props.modelValue.isValidInFuture ?? false, "IsValidInFuture");
-    const validityDurationInDays = propertyRef(props.modelValue.validityDurationInDays, "ValidityDurationInDays");
+    const validityDurationInDays = propertyRef(props.modelValue.validityDurationInDays ?? "", "ValidityDurationInDays");
     const communicationTemplates = ref(props.options.communicationTemplates ?? []);
     const showLegacyExternalProviders = ref(props.options.showLegacyExternalProviders);
     const externalProviders = ref<ListItemBag[]>([]);
@@ -253,6 +254,40 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, documentTerm, signatureType, binaryFileType, completionSystemCommunicationValue, lavaTemplate, providerTemplateKey, providerEntityType, isValidInFuture, validityDurationInDays];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const validityDurationRules = computed<ValidationRule[]>(() => [
+        "required",
+        validateIntegerValue
+    ]);
+
+    // #endregion
+
+    // #region Functions
+
+    function validateIntegerValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+            else if (num < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
 
     // #endregion
 
@@ -342,7 +377,7 @@
         updateRefValue(providerTemplateKey, props.modelValue.providerTemplateKey ?? "");
         updateRefValue(providerEntityType, props.modelValue.providerEntityType ?? {});
         updateRefValue(isValidInFuture, props.modelValue.isValidInFuture ?? false);
-        updateRefValue(validityDurationInDays, props.modelValue.validityDurationInDays);
+        updateRefValue(validityDurationInDays, props.modelValue.validityDurationInDays ?? "");
         updateRefValue(showLegacyExternalProviders, props.options.showLegacyExternalProviders);
     });
 

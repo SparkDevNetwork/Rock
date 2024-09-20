@@ -17,35 +17,43 @@
 
 using System;
 
-namespace Rock.Model
+namespace Rock.ViewModels.Blocks.Core.ScheduleCategoryExclusionList
 {
     /// <summary>
-    /// Represents and indicates the  attendance rule to use when a Rock.Model.Person checks in to a Rock.Model.Group of this Rock.Model.GroupType
+    /// Contains the ScheduleCategoryExclusion details.
     /// </summary>
-    [Enums.EnumDomain( "Group" )]
-    public enum AttendanceRule
+    public class ScheduleCategoryExclusionBag
     {
         /// <summary>
-        /// None, person does not need to belong to the group, and they will not automatically 
-        /// be added to the group
+        /// Gets or sets the identifier key of this entity.
         /// </summary>
-        None = 0,
+        /// <value>
+        /// The identifier key of this entity.
+        /// </value>
+        public string IdKey { get; set; }
 
         /// <summary>
-        /// Person will be added to the group whenever they check-in
+        /// Gets or sets the title.
         /// </summary>
-        AddOnCheckIn = 1,
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title { get; set; }
 
         /// <summary>
-        /// User must already belong to the group before they will be allowed to check-in
+        /// Gets or sets the start date.
         /// </summary>
-        [Obsolete( "Use AlreadyEnrolledInGroup instead." )]
-        AlreadyBelongs = 2,
+        /// <value>
+        /// The start date.
+        /// </value>
+        public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The person must already be a member of the group before they will
-        /// be allowed to check into the group.
+        /// Gets or sets the end date.
         /// </summary>
-        AlreadyEnrolledInGroup = 2
+        /// <value>
+        /// The end date.
+        /// </value>
+        public DateTime EndDate { get; set; }
     }
 }

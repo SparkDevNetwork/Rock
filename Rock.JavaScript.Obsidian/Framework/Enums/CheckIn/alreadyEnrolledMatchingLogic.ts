@@ -21,29 +21,34 @@
 // </copyright>
 //
 
-import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+/**
+ * Determines the matching logic used when the area attendance rule
+ * is set to already enrolled.
+ */
+export const AlreadyEnrolledMatchingLogic = {
+    /** The person must be enrolled as an active member of the group. */
+    MustBeEnrolled: 0,
+
+    /**
+     * The person must be enrolled as an active member of the group. In
+     * addition, the group will be marked as preferred. If any preferred
+     * group is available then all non-preferred groups are removed.
+     */
+    PreferEnrolledGroups: 1
+} as const;
 
 /**
- * A single member of a family. A family member may not belong to the actual
- * family as they may be assocaited via a "can check-in" relationship. This
- * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.IsInPrimaryFamily value.
+ * Determines the matching logic used when the area attendance rule
+ * is set to already enrolled.
  */
-export type FamilyMemberBag = {
-    /** Gets or sets the primary family identifier this person belongs to. */
-    familyId?: string | null;
+export const AlreadyEnrolledMatchingLogicDescription: Record<number, string> = {
+    0: "Must Be Enrolled",
 
-    /**
-     * Gets or sets a value indicating whether this attendee is in the
-     * primary family matched during the search operation.
-     */
-    isInPrimaryFamily: boolean;
-
-    /** Gets or sets the person that represents this family member. */
-    person?: PersonBag | null;
-
-    /**
-     * Gets or sets the group role order. This can be used to order parents
-     * above children.
-     */
-    roleOrder: number;
+    1: "Prefer Enrolled Groups"
 };
+
+/**
+ * Determines the matching logic used when the area attendance rule
+ * is set to already enrolled.
+ */
+export type AlreadyEnrolledMatchingLogic = typeof AlreadyEnrolledMatchingLogic[keyof typeof AlreadyEnrolledMatchingLogic];

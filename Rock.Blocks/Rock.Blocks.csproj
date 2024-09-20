@@ -116,6 +116,7 @@
     <Compile Include="Core\DocumentTypeList.cs" />
     <Compile Include="Crm\PhotoUpload.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
+    <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Lms\LearningActivityCompletionDetail.cs" />
     <Compile Include="Lms\LearningActivityCompletionList.cs" />

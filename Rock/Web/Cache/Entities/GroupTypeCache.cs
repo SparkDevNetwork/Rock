@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.CheckIn.v2;
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
 using Rock.Model;
 
@@ -174,6 +175,10 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public AttendanceRule AttendanceRule { get; private set; }
+
+        /// <inheritdoc cref="GroupType.AlreadyEnrolledMatchingLogic"/>
+        [DataMember]
+        public AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; private set; }
 
         /// <summary>
         /// Gets or sets the group capacity rule.
@@ -1002,6 +1007,7 @@ namespace Rock.Web.Cache
             SendAttendanceReminder = groupType.SendAttendanceReminder;
             ShowConnectionStatus = groupType.ShowConnectionStatus;
             AttendanceRule = groupType.AttendanceRule;
+            AlreadyEnrolledMatchingLogic = groupType.AlreadyEnrolledMatchingLogic;
             GroupCapacityRule = groupType.GroupCapacityRule;
             AttendancePrintTo = groupType.AttendancePrintTo;
             Order = groupType.Order;
