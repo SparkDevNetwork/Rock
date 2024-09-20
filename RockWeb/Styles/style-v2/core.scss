@@ -68,10 +68,10 @@
 
 
 /* ======================= ROCK COMPONENTS ======================*/
-@import 'rock-components/follow';
-@import 'rock-components/group-list';
+@import 'rock-components/follow';                   // Fully Format.
+@import 'rock-components/group-list';               // Fully Format.
 @import 'rock-components/code-editor';
-@import 'rock-components/labels';
+@import 'rock-components/labels';                   // Fully Format.
 @import 'rock-components/pagelist';                 // Fully Format. There are Some hard coded value.
 @import 'rock-components/panel-helper';
 @import 'rock-components/panel';                    // Fully Format. The harded code is the num of row and col
@@ -99,7 +99,7 @@
 @import 'rock-components/paneled-list';             // Fully Format.            
 @import 'rock-components/person-directory';         // Fully Format.  
 @import 'rock-components/picker-date';              // Fully Format. There are Some hard coded value.
-@import 'rock-components/asset-manager';
+@import 'rock-components/asset-manager';            // Fully Format.
 @import 'rock-components/update-panel-status';      // Fully Format. There are Some hard coded value.
 @import 'rock-components/upload-controls';          // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need to be use.
 @import 'rock-components/value-list';               // Fully Format.
@@ -111,8 +111,8 @@
 @import 'rock-components/key-value';                // Fully Format.
 @import 'rock-components/image-with-icon';          // Fully Format. There are Some hard coded value. 
 @import 'rock-components/grid-obisidian';
-@import 'rock-components/modal';                    // Must import below the bootstrap modal.
-@import 'rock-components/pickers';
+@import 'rock-components/modal';                    // Fully Format. Must import below the bootstrap modal.
+@import 'rock-components/pickers';                  // Fully Format.
 @import 'rock-components/html-editor';
 @import 'rock-components/ant-select';
 @import 'rock-components/card';
@@ -120,7 +120,7 @@
 
 
 /* ===================== BLOCK =================== */
-@import 'blocks/blocks-core';                       
+@import 'blocks/blocks-core';                       // Fully Format.
 @import 'blocks/blocks-groups';                     // Fully Format.
 @import 'blocks/blocks-reporting';                  // Fully Format.
 @import 'blocks/blocks-finance';                    // Fully Format.
@@ -129,12 +129,12 @@
 @import 'blocks/blocks-workflow';                   // Fully Format.
 @import 'blocks/blocks-cms';                        // Fully Format.
 @import 'blocks/blocks-events';                     // Fully Format.
-@import 'blocks/blocks-crm';                        
+@import 'blocks/blocks-crm';                        // Fully Format.                   
 @import 'blocks/kiosk-core';                        // Fully Format.
 @import 'blocks/checkin-mobile';                    // Fully Format.
 @import 'blocks/checkin-core';                      // Fully Format.
-@import 'blocks/skeleton';
-@import 'blocks/page-specific';
+@import 'blocks/skeleton';                          // Fully Format.
+@import 'blocks/page-specific';                     // Fully Format.
 
 
 /* ===================== UTILITIES =================== */
@@ -144,8 +144,8 @@
 @import 'utilities/flex-utilities';         // Fully Format.
 @import 'utilities/display-utilities';      // Fully Format.
 @import 'utilities/rounded-utilities';      // Fully Format.
-@import 'utilities/cursor';
-@import 'utilities/borders';
+@import 'utilities/cursor';                 // Fully Format.
+@import 'utilities/borders';                // Fully Format.
 
 
 /* ======================= ANIMATION ======================*/

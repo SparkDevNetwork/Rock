@@ -1,86 +1,88 @@
+
+
 .skeleton {
-  width: 100%;
-  background: var(--color-interface-softer);
-  border-radius: 999px;
-  animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite;
+  width:          100%;
+  background:     var(--color-interface-softer);
+  border-radius:  999px;
+  animation:      pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
 }
 
 .skeleton.skeleton-block {
-  height: 50px;
-  border-radius: 4px;
+  height:         50px;
+  border-radius:  4px;
 }
 
 .skeleton.skeleton-block + .skeleton-block {
-  margin-top: var(--spacing-large);
+  margin-top:     var(--spacing-large);
 }
 
 .skeleton.skeleton-block.w-lg {
-  max-width: min(100%,1200px);
+  max-width:      min(100%, 1200px);
 }
 
 .skeleton.skeleton-block.w-md {
-  max-width: min(75%,640px);
+  max-width:      min(75%, 640px);
 }
 
 .skeleton.skeleton-block.w-sm {
-  max-width: min(50%,300px);
+  max-width:      min(50%, 300px);
 }
 
 .skeleton.skeleton-heading {
-  max-width: 600px;
-  height: 28px;
-  margin: 20px 0;
+  max-width:      600px;
+  height:         28px;
+  margin:         20px 0;
 }
 
 .skeleton.skeleton-subheading {
-  max-width: 500px;
-  height: 20px;
-  margin: var(--spacing-medium) 0;
+  max-width:      500px;
+  height:         20px;
+  margin:         var(--spacing-medium) 0;
 }
 
 .skeleton.skeleton-text {
-  height: 12px;
-  margin: 10px 0;
+  height:         12px;
+  margin:         10px 0;
 }
 
 .skeleton.skeleton-text:first-child {
-  margin-top: 0;
+  margin-top:     0;
 }
 
 .skeleton.skeleton-text:last-child {
-  width: 75%;
+  width:          75%;
 }
 
 .skeleton.skeleton-button {
-  max-width: 160px;
-  height: 38px;
-  margin-top: var(--spacing-large);
-  border-radius: var(--rounded-small);
+  max-width:      160px;
+  height:         38px;
+  margin-top:     var(--spacing-large);
+  border-radius:  var(--rounded-small);
 }
 
 .skeleton.skeleton-avatar {
-  width: 64px;
-  height: 64px;
+  width:          64px;
+  height:         64px;
 }
 
 .skeleton.skeleton-sm {
-  height: 128px;
+  height:         128px;
 }
 
 .skeleton.skeleton-md {
-  height: 280px;
+  height:         280px;
 }
 
 .skeleton.skeleton-lg {
-  height: 540px;
+  height:         540px;
 }
 
 .skeleton-group + .skeleton-group {
-  margin-top: 36px;
+  margin-top:     36px;
 }
 
 @keyframes pulse {
   50% {
-    opacity: .5;
+    opacity:      .5;
   }
 }

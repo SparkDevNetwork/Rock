@@ -1,44 +1,43 @@
-//
-// MODAL STYLES
-// --------------------------------------------------
+// Modal Style (Rock Component)
 
 
-// Imports
-// -------------------------
+// =============================================================
+// Table of Content           
+//  + Rock Modal
+//  + All Modals
+// =============================================================
 
 
-// Rock modal (page properties, etc.)
-// -------------------------
-
+// ======================== ROCK MODAL ========================
 body.rock-modal {
-  background: transparent;
+  background:     transparent;
 
   .modal-content {
-    border: 0 !important;
-    box-shadow: none;
+    border:       0 !important;
+    box-shadow:   none;
     //background: transparent;
   }
 }
 
 .modal-content.rock-modal,
 .rock-modal .modal-content {
-  background: transparent;
-  border: 0;
-  box-shadow: 0 12px 24px 0 rgba(0,0,0,.1);
+  background:         transparent;
+  border:             0;
+  box-shadow:         0 12px 24px 0 rgba(0,0,0,.1);
 
   .modal-header {
-    min-height: 34px;
-    padding: var(--spacing-small) var(--spacing-large);
-    color: var(--color-interface-softest);
+    min-height:       34px;
+    padding:          var(--spacing-small) var(--spacing-large);
+    color:            var(--color-interface-softest);
     background-color: var(--color-primary);
 
     &:before,
     &:after {
-      display: table; // 2
-      content: " "; // 1
+      display:    table; // 2
+      content:    " "; // 1
     }
     &:after {
-      clear: both;
+      clear:      both;
     }
 
     h3 {
@@ -46,45 +45,45 @@ body.rock-modal {
     }
 
     a {
-      color: var(--color-interface-softest);
-      text-decoration: underline;
+      color:            var(--color-interface-softest);
+      text-decoration:  underline;
     }
 
     .close {
-      padding: 6px;
-      text-decoration: none;
-      color: var(--color-interface-softest);
-      text-shadow: none;
+      padding:          6px;
+      text-decoration:  none;
+      color:            var(--color-interface-softest);
+      text-shadow:      none;
     }
 
     .label {
-      margin-top: var(--spacing-small);
+      margin-top:       var(--spacing-small);
     }
 
     small {
-      display: block;
-      margin-top: var(--spacing-small);
-      color: var(--color-interface-softest); // TODO darken by 10% when available
+      display:      block;
+      margin-top:   var(--spacing-small);
+      color:        var(--color-interface-softest); // TODO darken by 10% when available
     }
 
     @media screen and (min-width: $screen-small) {
       h3 {
-        float: left;
+        float:      left;
       }
     }
   }
 
   .modal-body {
-    padding: var(--spacing-medium);
-    color: var(--color-interface-strongest);
-    text-align: left;
-    background-color: var(--color-interface-softest);
+    padding:            var(--spacing-medium);
+    color:              var(--color-interface-strongest);
+    text-align:         left;
+    background-color:   var(--color-interface-softest);
 
     > .scroll-container {
-      width: 720px;
+      width:    720px;
 
       > .viewport {
-        width: 670px;
+        width:  670px;
       }
     }
 
@@ -94,86 +93,86 @@ body.rock-modal {
   }
 
   .modal-footer {
-    padding: var(--spacing-small) var(--spacing-large);
-    margin-top: 0;
-    color: var(--color-interface-softest);
-    background-color: var(--color-interface-softer);
-    border-radius: 0 0 var(--rounded-small) var(--rounded-small);
+    padding:            var(--spacing-small) var(--spacing-large);
+    margin-top:         0;
+    color:              var(--color-interface-softest);
+    background-color:   var(--color-interface-softer);
+    border-radius:      0 0 var(--rounded-small) var(--rounded-small);
   }
 }
 
 .rock-modal {
 
   .modal-footer .btn {
-    float: right;
-    margin-left: 5px;
+    float:        right;
+    margin-left:  5px;
   }
 }
 
 .rock-modal-frame {
-  border-radius: var(--rounded-large) !important;
+  border-radius:  var(--rounded-large) !important;
 }
 
 // Fix for overflow scrolling on iOS
 .modal.modal-overflow {
-  top: $grid-gutter-width;
-  margin-bottom: $grid-gutter-width;
+  top:              $grid-gutter-width;
+  margin-bottom:    $grid-gutter-width;
 }
 
 @supports (-webkit-overflow-scrolling: touch) {
   // CSS specific to iOS devices
   .modal.modal-overflow {
-    top: 1%;
-    height: calc(100% - 1px) !important;
+    top:      1%;
+    height:   calc(100% - 1px) !important;
   }
 }
 
 #modal-popup_iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
+  display:    block;
+  width:      100%;
+  height:     100%;
+  border:     0;
 }
+// ====================== END ROCK MODAL ======================
 
 
-// All modals
-// -------------------------
-
+// ======================== ALL MODALS ========================
 // This next section is needed because we're using bootstrap-modal plugin to allow for responsive sized modals. Since they
 // hard code the opacity in their CSS we override it here.
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  background: var(--color-interface-strongest);
-  filter: alpha(opacity=70);
-  opacity: .5;
+  background:   var(--color-interface-strongest);
+  filter:       alpha(opacity=70);
+  opacity:      .5;
 }
 
 // Fixes some appearance issues from switching standard BS modal to
 // responsive bootstrap-modal.
-
 .modal-dialog {
-  width: auto;
-  margin: 0;
+  width:    auto;
+  margin:   0;
 }
 
 .modal-content {
-  border: none;
+  border:   none;
 }
+// ====================== END ALL MODALS ======================
+
 
 // Moved from _form.less `\RockWeb\Styles\_forms.less`
 dl:not(.dl-horizontal) {
   dt {
-    margin-top: var(--spacing-medium);
-    margin-bottom: 2px;
-    font-weight: var(--font-weight-bold);
+    margin-top:     var(--spacing-medium);
+    margin-bottom:  2px;
+    font-weight:    var(--font-weight-bold);
 
     &:first-child {
-      margin-top: 0;
+      margin-top:   0;
     }
   }
 
   dd {
-    margin-left: 0;
+    margin-left:    0;
   }
 }
 // ==================
@@ -182,25 +181,25 @@ dl:not(.dl-horizontal) {
 .connection-request-board {
 
   .modal-content.rock-modal .modal-header {
-    color: var(--color-interface-stronger);
-    background: var(--color-interface-softer);
+    color:        var(--color-interface-stronger);
+    background:   var(--color-interface-softer);
   }
 
   .modal-content.rock-modal .modal-body {
-    padding: 12px var(--spacing-medium);
+    padding:      12px var(--spacing-medium);
   }
 
   .modal-content.rock-modal .modal-header .close {
-    color: var(--color-interface-medium);
+    color:        var(--color-interface-medium);
   }
 
   .modal-content.rock-modal .modal-header small {
-    margin-top: 5px;
-    font-size: 100%;
+    margin-top:   5px;
+    font-size:    100%;
   }
 
   .modal-content.rock-modal .modal-header .label {
-    margin-top: 0;
+    margin-top:   0;
   }
 }
 // ==================

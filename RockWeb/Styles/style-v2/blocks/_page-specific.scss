@@ -11,39 +11,39 @@
 // -------------------------
 
 .error-wrap {
-  max-width: 450px;
-  margin: 0 auto;
-  text-align: center;
+  max-width:    450px;
+  margin:       0 auto;
+  text-align:   center;
 
   h1 {
-    font-size: 45px;
+    font-size:  45px;
   }
 
   .error-icon {
-    margin: calc($grid-gutter-width * .5);
-    font-size: 256px;
-    line-height: 256px;
-    opacity: .7;
+    margin:       calc($grid-gutter-width * .5);
+    font-size:    256px;
+    line-height:  256px;
+    opacity:      .7;
 
     &.info {
-      color: var(--color-info-strong);
+      color:      var(--color-info-strong);
     }
 
     &.warning {
-      color: var(--color-warning-soft);
+      color:      var(--color-warning-soft);
     }
 
     &.danger {
-      color: var(--color-danger-strong);
+      color:      var(--color-danger-strong);
     }
   }
 }
 
 .error-details {
   pre {
-    color: var(--color-danger-strong);
+    color:        var(--color-danger-strong);
     background-color: transparent;
-    border: 0;
+    border:       0;
   }
 }
 
@@ -54,34 +54,34 @@
   background-color: var(--color-interface-softest);
 
   main.container {
-    padding: 12px;
-    margin: 0;
+    padding:        12px;
+    margin:         0;
   }
 }
 
 // 3. Exception Page
 // -------------------------
 .exception-table {
-  word-break: break-all;
-  word-wrap: break-word;
+  word-break:     break-all;
+  word-wrap:      break-word;
 
   td {
-    min-width: 200px;
+    min-width:    200px;
     vertical-align: text-top;
   }
 }
 
 .exceptionDetail-stackTrace-hide {
-  display: none;
+  display:      none;
 }
 
 .exceptionDetail-stackTrace-show {
-  display: table-row;
+  display:      table-row;
 
   pre {
-    padding: 0;
-    color: inherit;
+    padding:          0;
+    color:            inherit;
     background-color: transparent;
-    border-color: transparent;
+    border-color:     transparent;
   }
 }

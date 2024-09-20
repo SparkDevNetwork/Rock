@@ -17,97 +17,97 @@
 
 
   .body-content {
-    position: inherit;
-    height: calc(100vh - 200px);
+    position:   inherit;
+    height:     calc(100vh - 200px);
 
     // Unset 100vh in iOS
     @supports (-webkit-touch-callout: none) {
-      height: unset;
-      min-height: -webkit-fill-available;
+      height:       unset;
+      min-height:   -webkit-fill-available;
     }
   }
 
   .container {
-    padding: 0;
+    padding:    0;
   }
 
   // Override Adventure Theme
   .checkin-body-container {
-    width: 100% !important;
+    width:      100% !important;
   }
 
   .checkin-header {
-    margin: 15px;
+    margin:     15px;
 
     h1 {
-      margin: 0;
-      font-size: 28px;
+      margin:     0;
+      font-size:  var(--font-size-h3);
     }
   }
 
   .iScrollVerticalScrollbar,
   .iScrollLoneScrollbar {
-    width: 10px;
+    width:      10px;
   }
 
   .scroller {
-    padding: 0 15px;
+    padding:    0 15px;
   }
 
   .row-checkin-item,
   .btn-checkin-select {
-    margin-bottom: 10px;
+    margin-bottom:    10px;
   }
 
   .checkin-time-select,
   .checkin-timelist {
-    display: block;
+    display:          block;
   }
 
   .checkin-timelist {
     .btn {
-      display: block;
-      float: none;
-      width: 100%;
-      margin-bottom: 10px;
-      border-radius: var(--rounded-small) !important;
+      display:        block;
+      float:          none;
+      width:          100%;
+      margin-bottom:  10px;
+      border-radius:  var(--rounded-small) !important;
     }
   }
 
   .checkin-error:empty {
-    display: none;
+    display:          none;
   }
 
   .checkin-footer {
-    z-index: 1000;
-    display: block;
-    padding: 0;
+    z-index:          1000;
+    display:          block;
+    padding:          0;
 
     .checkin-actions {
-      display: -ms-flexbox;
-      display: flex;
-      -ms-flex-flow: row wrap;
-      flex-flow: row wrap;
-      padding-right: 15px;
-      padding-left: 15px;
-      margin-right: auto;
-      margin-left: auto;
+      display:        -ms-flexbox;
+      display:        flex;
+      -ms-flex-flow:  row wrap;
+      flex-flow:      row wrap;
+      padding-right:  15px;
+      padding-left:   15px;
+      margin-right:   auto;
+      margin-left:    auto;
 
       .btn {
-        padding: var(--spacing-small) var(--spacing-large);
-        margin: 4px;
-        font-size: var(--font-size-small);
-        font-weight: var(--font-weight-regular);
+        padding:      var(--spacing-small) var(--spacing-large);
+        margin:       var(--spacing-tiny);
+        font-size:    var(--font-size-small);
+        font-weight:  var(--font-weight-regular);
       }
 
       .btn-primary {
-        display: block;
-        width: 100%;
-        font-size: var(--font-size-small);
+        display:      block;
+        width:        100%;
+        font-size:    var(--font-size-small);
       }
 
       .btn-default {
-        flex-grow: 1;
+        flex-grow:    1;
       }
     }
   }

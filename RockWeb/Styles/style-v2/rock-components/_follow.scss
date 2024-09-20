@@ -11,8 +11,8 @@
 // ======================== BASE STYLE ========================
 
 .panel .panel-heading.panel-follow {
-  position: relative;
-  padding-right: var(--spacing-xlarge);
+  position:       relative;
+  padding-right:  var(--spacing-xlarge);
 }
 
 .panel .panel-heading.panel-follow-fullscreen {
@@ -48,26 +48,26 @@
 
 //Panha: Move from rock theme.less
 .panel-follow-status {
-  width: 50px;
-  padding: 0;
+  width:    50px;
+  padding:  0;
 
   &::before {
-    display: grid;
-    place-items: center;
-    height: 100%;
+    display:      grid;
+    place-items:  center;
+    height:       100%;
   }
 
   .panel-more & {
-    position: relative;
-    width: 28px;
-    padding: 2px 0;
-    border: 0;
-    opacity: 1;
+    position:   relative;
+    width:      28px;
+    padding:    2px 0;
+    border:     0;
+    opacity:    1;
 
     &.following {
-      font-weight: var(--font-weight-black);
-      color: var(--color-primary);
-      background: transparent;
+      font-weight:  var(--font-weight-black);
+      color:        var(--color-primary);
+      background:   transparent;
     }
   }
 }

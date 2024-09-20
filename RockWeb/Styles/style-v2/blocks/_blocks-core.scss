@@ -8,41 +8,52 @@
 
 */
 
+
+//  BLOCK CORE STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + 
+//  + 
+// =============================================================
+
+
 .rock-fullscreen-toggle {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: inline-flex; /* make element size relative to content */
-  align-items: center; /* vertical alignment of items */
-  justify-content: center;
-  width: 50px;
-  padding: 0 10px; /* horizontal with padding-l/r */
-  line-height: 40px; /* vertically size by height, line-height or padding */
-  color: var(--color-interface-stronger);
-  text-align: center;
-  cursor: pointer;
-  border-left: 1px solid var(--color-interface-soft);
-  opacity: .5;
-  transition: .2s;
+  position:         absolute;
+  top:              0;
+  right:            0;
+  bottom:           0;
+  display:          inline-flex; /* make element size relative to content */
+  align-items:      center; /* vertical alignment of items */
+  justify-content:  center;
+  width:            50px;
+  padding:          0 10px; /* horizontal with padding-l/r */
+  line-height:      40px; /* vertically size by height, line-height or padding */
+  color:            var(--color-interface-stronger);
+  text-align:       center;
+  cursor:           pointer;
+  border-left:      1px solid var(--color-interface-soft);
+  opacity:          .5;
+  transition:       .2s;
 
   &:hover {
-    font-size: 110%;
-    color: var(--color-interface-stronger);
-    opacity: .75;
+    font-size:      110%;
+    color:          var(--color-interface-stronger);
+    opacity:        .75;
   }
 
   &::before {
-    font-family: 'FontAwesome';
-    font-weight: var(--font-weight-black);
-    text-align: center;
-    content: "\f065";
+    font-family:    'FontAwesome';
+    font-weight:    var(--font-weight-black);
+    text-align:     center;
+    content:        "\f065";
   }
 
   .is-fullscreen & {
-    color: var(--color-interface-stronger);
+    color:          var(--color-interface-stronger);
     &::before {
-      content: "\f066";
+      content:      "\f066";
     }
   }
 }
@@ -156,8 +167,7 @@
 // }
 // ==============
 
-// 1. Notes
-// -------------------------
+// ======================== NOTES ========================
 .panel-note {
   border-top-color:   var(--color-interface-softer);
 
@@ -477,19 +487,19 @@
 }
 
 .note-list-nested {
-  margin-left: 0;
+  margin-left:    0;
 
   @media (min-width: $screen-small) {
-    margin-left: 60px;
+    margin-left:  60px;
   }
 
   > .note:first-child {
-    border-top: 0;
+    border-top:   0;
   }
 
   .note-content,
   .note-footer {
-    margin-left: 44px;
+    margin-left:  44px;
   }
 }
 
@@ -614,6 +624,7 @@
     resize:   vertical; // Options: horizontal, vertical, both
   }
 }
+// ====================== END NOTES ======================
 
 
 // Moved from Rock theme.less to fix of the "Message" input box on the `Communication Entry` Block
@@ -627,17 +638,17 @@
 }
 
 .note-editor .note-toolbar {
-  padding: 0;
-  border: 1px solid var(--color-interface-soft);
-  border-bottom: 0;
+  padding:        0;
+  border:         1px solid var(--color-interface-soft);
+  border-bottom:  0;
 }
 
 .note-btn {
-  padding: 5px 10px 7px;
-  background: var(--color-interface-softest);
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  padding:        5px 10px 7px;
+  background:     var(--color-interface-softest);
+  border:         0;
+  border-radius:  0;
+  box-shadow:     none;
 
   &:hover,
   &:focus {
@@ -653,42 +664,40 @@
   }
 
   &.btn-primary {
-    background: var(--color-primary);
-    border-radius: var(--rounded-small);
+    background:     var(--color-primary);
+    border-radius:  var(--rounded-small);
 
     &:active,
     &:active:focus,
     &.active,
     &.active:focus,
     &.active:hover {
-      background: var(--color-primary); // Darken by 10% when available
+      background:   var(--color-primary); // Darken by 10% when available
     }
   }
 }
 
 .btn-mergefield {
-  font-weight: var(--font-weight-black);
+  font-weight:      var(--font-weight-black);
 }
 
 .note-editor .note-toolbar > .btn-group {
-  margin-top: 0;
+  margin-top:       0;
 }
 
 .note-editor .note-editable {
-  border: 1px solid var(--color-interface-soft);
-  border-radius: 0;
+  border:           1px solid var(--color-interface-soft);
+  border-radius:    0;
 }
 // =========================
 
-// 2. Schedule Builder
-// -------------------------
 
+// ======================== SCHEDULE BUILDER ========================
 .recurrence-pattern-type {
   padding-left:   30px;
   margin-top:     12px;
 }
 
-//Panha: use by scheduleBuilder.js
 .recurrence-pattern-specific-date {
 
   &:before,
@@ -753,16 +762,16 @@
     }
   }
 }
+// ====================== END SCHEDULE BUILDER ======================
 
-// 3. Workflow
-// -------------------------
 
+// ======================== WORKFLOW ========================
 .workflow-section-activities {
-  margin-top:       64px;
+  margin-top:         64px;
 }
 
 .workflow-activities-readonly-header {
-  color:            var(--color-interface-stronger);
+  color:              var(--color-interface-stronger);
 
   &:hover,
   &:active,
@@ -1063,9 +1072,10 @@
   display:      none !important;
   visibility:   hidden !important;
 }
+// ====================== END WORKFLOW ======================
 
-// 4. Electronic Signatures
 
+// ======================== ELECTRONIC SIGNATURE ========================
 .icon-property {
   display:            flex;
   flex-direction:     row;
@@ -1121,3 +1131,6 @@
   display:      flex;
   align-items:  center;
 }
+// ====================== END ELECTRONIC SIGNATURE ======================
+
+

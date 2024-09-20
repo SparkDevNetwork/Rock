@@ -23,10 +23,10 @@
 // ======================== HEADER ========================
 .originate-call {
   &::before {
-    margin-right: var(--spacing-small);
-    font-family: 'FontAwesome';
-    font-weight: var(--font-weight-bold);
-    content: '\f098';
+    margin-right:     var(--spacing-small);
+    font-family:      'FontAwesome';
+    font-weight:      var(--font-weight-bold);
+    content:          '\f098';
   }
 }
 // ====================== END HEADER ======================
@@ -34,58 +34,58 @@
 
 // ======================== BADGE BAR ========================
 .rockbadge {
-  position: relative;
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  margin: 0 .133333em;
-  font-size:  var(--font-size-h2);
-  line-height: 1;
-  color: var(--color-interface-softest);
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: default;
+  position:         relative;
+  display:          inline-flex;
+  flex-shrink:      0;
+  align-items:      center;
+  justify-content:  center;
+  margin:           0 .133333em;
+  font-size:        var(--font-size-h2);
+  line-height:      1;
+  color:            var(--color-interface-softest);
+  text-align:       center;
+  white-space:      nowrap;
+  vertical-align:   middle;
+  cursor:           default;
   background-color: inherit;
 
   &:empty {
-    display: none;
+    display:        none;
   }
 
   .badge-content {
-    display: block;
+    display:        block;
   }
 
   .alert-text {
-    position: absolute;
-    top: 0;
-    right: 0;
-    min-width: 1.5em;
-    padding: .25em .125em;
-    font-size: .26666em;
-    color: var(--color-interface-softest);
-    background: var(--color-danger-strong);
-    border-radius: 999px;
+    position:       absolute;
+    top:            0;
+    right:          0;
+    min-width:      1.5em;
+    padding:        .25em .125em;
+    font-size:      .26666em;
+    color:          var(--color-interface-softest);
+    background:     var(--color-danger-strong);
+    border-radius:  999px;
   }
 
   .tooltip-inner {
-    max-width: 300px;
-    padding: 12px;
+    max-width:      300px;
+    padding:        12px;
   }
 
   .fa-stack {
-    width: 1em;
-    height: 1em;
-    line-height: 1em;
+    width:          1em;
+    height:         1em;
+    line-height:    1em;
   }
 
   .fa-stack-1x {
-    font-size: .5em;
+    font-size:      .5em;
   }
 
   .fa-stack-2x {
-    font-size: 1em;
+    font-size:      1em;
   }
 }
 
@@ -93,14 +93,14 @@ $badge-icon-height: 45px;
 $badge-count-width: 18px;
 
 .rockbadge-grid {
-  flex-direction: column;
-  font-size: 0;
+  flex-direction:   column;
+  font-size:        0;
 
   .rockbadge {
-    width: 1em;
-    height: 1em;
-    margin: 0 .09523em .09523em;
-    font-size: calc(var(--badge-size, 45px) * 0.46667);
+    width:        1em;
+    height:       1em;
+    margin:       0 .09523em .09523em;
+    font-size:    calc(var(--badge-size, 45px) * 0.46667);
   }
 
   .badge-row:last-child .rockbadge {
@@ -110,194 +110,194 @@ $badge-count-width: 18px;
 
 // Used to provide background in :before
 .rockbadge-background {
-  display: block;
-  width: 1em;
-  height: 1em;
-  content: " ";
-  background: currentColor;
-  border-radius: .1em;
+  display:        block;
+  width:          1em;
+  height:         1em;
+  content:        " ";
+  background:     currentColor;
+  border-radius:  .1em;
 }
 
 .rockbadge-standard {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 1em;
-  height: 1em;
-  color: #fff;
-  background: fade(#939393, 20%);
-  border-radius: 999px;
+  display:          inline-flex;
+  flex-direction:   column;
+  align-items:      center;
+  justify-content:  center;
+  width:            1em;
+  height:           1em;
+  color:          #fff;
+  background:       fade(#939393, 20%);
+  border-radius:    999px;
 
   .metric-value {
-    font-size: .4em;
-    font-weight: 700;
-    line-height: .9em;
+    font-size:      .4em;
+    font-weight:    700;
+    line-height:    .9em;
   }
 
   .metric-unit {
-    font-size: .2442em;
-    font-weight: 400;
-    line-height: 1;
+    font-size:      .2442em;
+    font-weight:    400;
+    line-height:    1;
   }
 
   &.duration-new {
-    background: var(--color-danger-strong);
+    background:     var(--color-danger-strong);
   }
 
   &.duration-months {
-    background: var(--color-success-strong);
+    background:     var(--color-success-strong);
   }
 
   &.duration-years {
-    background: var(--color-info-strong)
+    background:     var(--color-info-strong)
   }
 
   &.rockbadge-era {
-    background: var(--color-success-strong);
+    background:     var(--color-success-strong);
   }
 
   &.era-loss {
-    background: var(--color-critical-strong);
+    background:     var(--color-critical-strong);
   }
 }
 
 .rockbadge-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1em;
-  height: 1em;
-  background: currentColor;
-  border-radius: .1em;
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  width:            1em;
+  height:           1em;
+  background:       currentColor;
+  border-radius:    .1em;
 
   .badge-icon {
-    font-size: .65em;
-    color: var(--color-interface-softest);
+    font-size:      .65em;
+    color:          var(--color-interface-softest);
   }
 
   &.rockbadge-circle {
-    border-radius: 999px;
+    border-radius:  999px;
   }
 
   &.rockbadge-icon-nobg {
-    background: transparent;
+    background:     transparent;
 
     .badge-icon {
-      font-size: 1em;
-      color: currentColor;
+      font-size:    1em;
+      color:        currentColor;
     }
   }
 
   &.rockbadge-disabled {
-    color: var(--color-interface-medium);
-    opacity: .2;
+    color:          var(--color-interface-medium);
+    opacity:        .2;
   }
 }
 
 .rockbadge-fraction {
-  color: var(--color-interface-medium);
+  color:            var(--color-interface-medium);
 
   &::before {
-    display: block;
-    width: 1em;
-    height: 1em;
-    content: " ";
-    background: currentColor;
-    border-radius: .1em;
+    display:        block;
+    width:          1em;
+    height:         1em;
+    content:        " ";
+    background:     currentColor;
+    border-radius:  .1em;
     background-color: var(--color-warning-strong);
   }
 
   .metric-value {
-    position: absolute;
-    top: .388em;
-    left: .2em;
-    display: block;
-    width: 1em;
-    font-size: .45em;
-    font-weight: var(--font-weight-bold);
-    text-align: center;
-    letter-spacing: -.1em;
+    position:   absolute;
+    top:        .388em;
+    left:       .2em;
+    display:    block;
+    width:      1em;
+    font-size:  .45em;
+    font-weight:      var(--font-weight-bold);
+    text-align:       center;
+    letter-spacing:   -.1em;
   }
 
   .metric-unit {
-    position: absolute;
-    right: .363em;
-    bottom: .9em;
-    font-size: .275em; // 11px
-    font-weight: var(--font-weight-semibold);
+    position:       absolute;
+    right:          .363em;
+    bottom:         .9em;
+    font-size:      .275em; // 11px
+    font-weight:    var(--font-weight-semibold);
   }
 }
 
 .rockbadge-label {
-  font-size: var(--font-size-regular);
+  font-size:        var(--font-size-regular);
 }
 
 .rockbadge-step {
   .metric-value {
-    position: absolute;
-    top: calc($badge-count-width / -3);
-    right: calc($badge-count-width / -3);
-    width: $badge-count-width;
-    height: $badge-count-width;
-    font-size: .266em;
-    font-weight: var(--font-weight-regular);
-    line-height: $badge-count-width;
-    color: var(--color-interface-softest);
+    position:       absolute;
+    top:            calc($badge-count-width / -3);
+    right:          calc($badge-count-width / -3);
+    width:          $badge-count-width;
+    height:         $badge-count-width;
+    font-size:      .266em;
+    font-weight:    var(--font-weight-regular);
+    line-height:    $badge-count-width;
+    color:          var(--color-interface-softest);
     background-color: var(--color-danger-strong);
-    border-radius: 50%;
+    border-radius:  50%;
   }
 }
 
 .rockbadge-slash {
   &::before {
-    position: absolute;
-    display: block;
-    font-family: 'FontAwesome';
-    font-size: .6em;
-    font-weight: 600;
-    color: var(--color-danger-strong);
-    content: '\f715';
+    position:       absolute;
+    display:        block;
+    font-family:    'FontAwesome';
+    font-size:      .6em;
+    font-weight:    600;
+    color:          var(--color-danger-strong);
+    content:        '\f715';
   }
 
   &.rockbadge-disabled {
     &::before {
-      color: var(--color-interface-softest);
-      text-shadow: -.074em .074em var(--color-interface-medium);
+      color:        var(--color-interface-softest);
+      text-shadow:  -.074em .074em var(--color-interface-medium);
     }
   }
 }
 
 .rockbadge-baptism {
-  color: var(--color-info-soft);
+  color:        var(--color-info-soft);
 }
 
 .rockbadge-disc {
   .rockbadge-disc-chart {
-    display: table;
-    width: 1em;
-    height: .888em;
-    margin: 0 auto;
+    display:  table;
+    width:    1em;
+    height:   .888em;
+    margin:   0 auto;
     //http://codepen.io/Victa/pen/xDqbf
     table-layout: fixed;
 
     li {
-      position: relative;
-      display: table-cell;
-      width: 3px;
-      height: 100%;
+      position:   relative;
+      display:    table-cell;
+      width:      3px;
+      height:     100%;
       vertical-align: bottom;
 
       span {
-        display: block;
-        width: .2222em;
-        min-height: 2px;
-        background: var(--color-info-soft); // TODO lighten this by 20%
+        display:      block;
+        width:        .2222em;
+        min-height:   2px;
+        background:   var(--color-info-soft); // TODO lighten this by 20%
 
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
-          position: absolute;
-          bottom: 0;
+          position:   absolute;
+          bottom:     0;
         }
       }
 
@@ -309,76 +309,76 @@ $badge-count-width: 18px;
 
       &.rockbadge-disc-disabled {
         span {
-          background-color: var(--color-interface-medium);
-          opacity: .2;
+          background-color:   var(--color-interface-medium);
+          opacity:            .2;
         }
       }
     }
   }
 
   .requested {
-    position: absolute;
-    padding: .041em .25em;
-    font-size: .5em;
+    position:         absolute;
+    padding:          .041em .25em;
+    font-size:        .5em;
     background-color: var(--color-interface-soft);
-    border-radius: 99px;
-    opacity: .8;
+    border-radius:    99px;
+    opacity:          .8;
   }
 
   &.animate {
     ul.rockbadge-disc-chart li span {
-      -webkit-animation: bar-grow 1s ease-in-out;
-      -moz-animation: bar-grow 1s ease-in-out;
-      animation: bar-grow 1s ease-in-out;
+      -webkit-animation:  bar-grow 1s ease-in-out;
+      -moz-animation:     bar-grow 1s ease-in-out;
+      animation:          bar-grow 1s ease-in-out;
     }
   }
 }
 
 .badge-content {
   &.fa-layers {
-    width: 50px;
-    height: 43px;
-    font-size: 4em;
+    width:      50px;
+    height:     43px;
+    font-size:  4em;
   }
 }
 
 .rockbadge-overlay {
-  width: 1em;
-  height: 1em;
+  width:    1em;
+  height:   1em;
 
   .badge-icon {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    font-size: inherit;
-    line-height: 1.15em;
-    text-align: center;
+    position:     absolute;
+    top:          0;
+    right:        0;
+    left:         0;
+    font-size:    inherit;
+    line-height:  1.15em;
+    text-align:   center;
   }
 
   &-invert {
     .metric-value {
-      color: var(--color-interface-softest);
+      color:      var(--color-interface-softest);
     }
   }
 
   .metric-value {
-    position: absolute;
-    top: .5em; // 8px
-    right: .3em;
-    bottom: .95em;
-    left: .3em;
-    display: inline-flex;
-    align-items: center;
+    position:     absolute;
+    top:          .5em; // 8px
+    right:        .3em;
+    bottom:       .95em;
+    left:         .3em;
+    display:      inline-flex;
+    align-items:  center;
     justify-content: center;
-    font-size: .4em; // 16px
-    font-weight: var(--font-weight-bold);
-    text-align: center;
+    font-size:    .4em; // 16px
+    font-weight:  var(--font-weight-bold);
+    text-align:   center;
   }
 
   .badge-content {
-    font-size: .888em;
-    color: var(--color-info-soft);
+    font-size:  .888em;
+    color:      var(--color-info-soft);
 
     &.today {
       .metric-value {
@@ -387,62 +387,62 @@ $badge-count-width: 18px;
     }
 
     &.recent {
-      opacity: .8;
+      opacity:  .8;
     }
 
     &.moderate {
-      opacity: .6;
+      opacity:  .6;
     }
 
     &.not-recent {
-      opacity: .4;
+      opacity:  .4;
     }
 
     &.old {
-      opacity: .2;
+      opacity:  .2;
     }
   }
 }
 
 .rockbadge-signal .metric-value {
-  top: .6em;
-  bottom: .6em;
+  top:      .6em;
+  bottom:   .6em;
 }
 
 .rockbadge-personaldevice {
-  width: .6em;
+  width:  .6em;
   .badge-content .metric-value {
-    top: .7142em;
+    top:  .7142em;
   }
 }
 
 .rockbadge-assessment {
   a {
-    display: inline-flex;
-    color: inherit;
+    display:  inline-flex;
+    color:    inherit;
   }
 
   .fa-stack-1x {
-    color: var(--color-interface-softest);
+    color:    var(--color-interface-softest);
   }
 
   .fa-stack-2x {
-    color: currentColor;
+    color:    currentColor;
   }
 
   // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
   &.not-requested {
-    color: fade(var(--color-interface-medium), 20%) !important;
+    color:    fade(var(--color-interface-medium), 20%) !important;
   }
 
   &.requested {
-    color: var(--color-link-strong) !important;
+    color:    var(--color-link-strong) !important;
   }
 }
 
 .assessment-tooltip-item {
-  display: flex;
-  margin-bottom: 12px;
+  display:        flex;
+  margin-bottom:  12px;
 
   &:last-child {
     margin-bottom: 0;
@@ -450,138 +450,137 @@ $badge-count-width: 18px;
 }
 
 .assessment-tooltip-value {
-  margin: 2px 0 0 var(--spacing-small);
+  margin:         2px 0 0 var(--spacing-small);
 
   .assessment-name {
-    display: block;
-    font-weight: var(--font-weight-bold);
+    display:      block;
+    font-weight:  var(--font-weight-bold);
   }
 
   .assessment-summary {
-    display: block;
-    font-size: var(--font-size-xsmall);
-    color: var(--color-interface-softest);
+    display:      block;
+    font-size:    var(--font-size-xsmall);
+    color:        var(--color-interface-softest);
   }
 }
 
 .rockbadge-container {
-  --badge-size: $badge-icon-height;
+  --badge-size:   $badge-icon-height;
 }
 
 .rockbadge-container-xs {
-  --badge-size: 24px;
+  --badge-size:   24px;
 
   .rockbadge-grid {
     flex-direction: row;
 
     .rockbadge {
-      font-size: var(--badge-size);
+      font-size:    var(--badge-size);
     }
   }
 
   .rockbadge-fraction {
     .metric-value {
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      font-size: .7em;
+      top:      0;
+      right:    0;
+      bottom:   0;
+      left:     0;
+      display:  inline-flex;
+      align-items:      center;
+      justify-content:  center;
+      width:            100%;
+      font-size:        .7em;
     }
   }
 
   .rockbadge-fraction,
   .rockbadge-standard {
     .metric-unit {
-      display: none;
+      display:          none;
     }
   }
 }
 
 .rockbadge-container-sm {
-  --badge-size: 32px;
+  --badge-size:         32px;
 }
-
 
 @-webkit-keyframes bar-grow {
   0% {
-    height: 0;
-    opacity: 0;
+    height:   0;
+    opacity:  0;
   }
 }
 
 @-moz-keyframes bar-grow {
   0% {
-    height: 0;
-    opacity: 0;
+    height:   0;
+    opacity:  0;
   }
 }
 
 @keyframes bar-grow {
   0% {
-    height: 0;
-    opacity: 0;
+    height:   0;
+    opacity:  0;
   }
 }
 
 .trend-chart {
   //http://codepen.io/Victa/pen/xDqbf
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-wrap: wrap;
-  flex-wrap: nowrap;
-  width: 100%;
-  height: 40px;
-  padding: 0;
-  margin: 0;
-  color: var(--color-link-strong);
-  list-style: none;
+  display:        -ms-flexbox;
+  display:        flex;
+  -ms-flex-wrap:  wrap;
+  flex-wrap:      nowrap;
+  width:          100%;
+  height:         40px;
+  padding:        0;
+  margin:         0;
+  color:          var(--color-link-strong);
+  list-style:     none;
 
   &-sm {
-    height: 20px;
+    height:       20px;
   }
 
   &-block {
-    height: 18px;
+    height:       18px;
 
     li span {
-      width: calc(100% - 3px);
-      color: var(--color-info-strong);
+      width:      calc(100% - 3px);
+      color:      var(--color-info-strong);
     }
   }
 
   .rockbadge-attendance & {
-    width: 220px;
-    height: var(--badge-size, 40px);
+    width:        220px;
+    height:       var(--badge-size, 40px);
   }
 
   li {
-    position: relative;
-    flex-basis: 0;
-    flex-grow: 1;
-    max-width: 100%;
+    position:     relative;
+    flex-basis:   0;
+    flex-grow:    1;
+    max-width:    100%;
     margin-right: 2px;
-    overflow: hidden;
-    -ms-flex-preferred-size: 0;
-    -ms-flex-positive: 1;
+    overflow:     hidden;
+    -ms-flex-preferred-size:  0;
+    -ms-flex-positive:        1;
 
     &:hover {
-      opacity: .85;
+      opacity:    .85;
     }
 
     &.has-exclusion {
-      opacity: .3;
+      opacity:    .3;
     }
 
     span {
-      position: absolute;
-      bottom: 0;
-      display: block;
-      width: 100%;
-      min-width: 2px;
+      position:   absolute;
+      bottom:     0;
+      display:    block;
+      width:      100%;
+      min-width:  2px;
       min-height: 1px;
       max-height: 100%;
       background: currentColor;
@@ -602,32 +601,32 @@ $badge-count-width: 18px;
 }
 
 .streak-chart {
-  width: 100%;
-  height: 18px;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
+  width:      100%;
+  height:     18px;
+  padding:    0;
+  margin:     0;
+  overflow:   hidden;
   list-style: none;
 
   li {
-    position: relative;
-    display: table-cell;
-    float: right;
-    width: 9px;
-    height: 100%;
-    margin-right: 2px;
+    position:       relative;
+    display:        table-cell;
+    float:          right;
+    width:          9px;
+    height:         100%;
+    margin-right:   2px;
     vertical-align: bottom;
 
     span {
-      display: block;
-      width: 100%;
-      min-height: 1px;
-      background: var(--color-info-strong);
+      display:      block;
+      width:        100%;
+      min-height:   1px;
+      background:   var(--color-info-strong);
 
       @media screen and (-webkit-min-device-pixel-ratio: 0) {
         // needed for chrome but kills ie
-        position: absolute;
-        bottom: 0;
+        position:   absolute;
+        bottom:     0;
       }
     }
   }
@@ -638,10 +637,10 @@ $badge-count-width: 18px;
 // ====================== EDIT GROUP PAGE ======================
 .editgroup-list {
   li.member {
-    min-width: 200px;
+    min-width:  200px;
 
     .radio {
-      margin: 0;
+      margin:   0;
     }
   }
 
@@ -660,38 +659,38 @@ $badge-count-width: 18px;
 // history page
 span.field-name,
 span.field-value {
-  padding: 2px 4px;
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: 90%;
-  color: var(--font-family-monospace);
-  white-space: nowrap;
+  padding:      2px 4px;
+  font-family:  Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size:    90%;
+  color:        var(--font-family-monospace);
+  white-space:  nowrap;
   background-color: var(--color-interface-softer);
-  border-radius: 4px;
+  border-radius:    4px;
 }
 
 /* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
 span.field-value {
-  white-space: inherit;
+  white-space:      inherit;
 }
 // ====================== END PAGE TAB ======================
 
 
 // ======================== ADD GROUP ========================
 .row-duplicate {
-  padding-top: 12px;
-  border-top: 1px solid var(--color-info-strong);
+  padding-top:    12px;
+  border-top:     1px solid var(--color-info-strong);
 }
 
 .row-duplicate:first-child {
-  padding-top: 0;
-  border-top: 0;
+  padding-top:  0;
+  border-top:   0;
 }
 // ====================== END ADD GROUP ======================
 
 
 // ======================== FLUID BOX ========================
 #fluidbox-overlay {
-  background: var(--color-interface-strongest);
+  background:     var(--color-interface-strongest);
 }
 // ====================== END FLUID BOX ======================
 
@@ -699,8 +698,8 @@ span.field-value {
 // ======================== PAGE PERSON VIEW ========================
 .panel-widget.pageviewsession {
   .pageviewsession-client {
-    line-height: 1;
-    text-align: right;
+    line-height:  1;
+    text-align:   right;
   }
 }
 // ====================== END PAGE PERSON VIEW ======================
@@ -709,30 +708,30 @@ span.field-value {
 // ======================== DECEASED / INACTIVE STYLES ========================
 .person-bio {
   div.deceased h1.title.name::after {
-    margin-left: 12px;
-    font-size: var(--font-size-small);
-    color: var(--color-danger-strong);
-    content: "Deceased";
+    margin-left:  12px;
+    font-size:    var(--font-size-small);
+    color:        var(--color-danger-strong);
+    content:      "Deceased";
   }
 }
 
 .groupmembers {
   .member.deceased {
     &:hover {
-      background-color: var(--color-interface-strong);
+      background-color:   var(--color-interface-strong);
     }
 
     .person-info::after {
-      font-size: var(--font-size-xsmall);
-      color: var(--color-danger-strong);
-      content: "Deceased";
+      font-size:  var(--font-size-xsmall);
+      color:      var(--color-danger-strong);
+      content:    "Deceased";
     }
   }
 }
 
 tr.inactive {
   td {
-    color: var(--color-interface-medium);
+    color:  var(--color-interface-medium);
   }
 }
 // ====================== END DECEASED / INACTIVE STYLES ======================
@@ -763,9 +762,9 @@ tr.inactive {
   }
 
   .form-group.bulk-item-selected {
-    padding: 12px;
-    background-color: var(--color-interface-softer);
-    border-radius: var(--rounded-small);
+    padding:            12px;
+    background-color:   var(--color-interface-softer);
+    border-radius:      var(--rounded-small);
   }
 }
 // ====================== END BULK UPDATE ======================
@@ -774,14 +773,14 @@ tr.inactive {
 // ======================== PHOTO REQUESTS ========================
 .photoupload-photo {
   .image-editor {
-    float: left;
-    margin-right: var(--spacing-xlarge);
+    float:          left;
+    margin-right:   var(--spacing-xlarge);
 
     label {
-      width: 150px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      width:          150px;
+      overflow:       hidden;
+      text-overflow:  ellipsis;
+      white-space:    nowrap;
     }
   }
 }
@@ -792,7 +791,7 @@ tr.inactive {
 .grid-table tbody tr.duplicate-source {
   td,
   &:hover > td {
-    color: var(--color-interface-strong);
+    color:            var(--color-interface-strong);
     background-color: var(--color-interface-medium);
   }
 }
@@ -802,67 +801,67 @@ tr.inactive {
 // ======================== DISC & ASSESSMENTS ========================
 .disc-assessment {
   th {
-    padding: var(--spacing-small);
+    padding:          var(--spacing-small);
 
     &:last-child {
-      border-radius: 0 var(--rounded-small) 0 0;
+      border-radius:  0 var(--rounded-small) 0 0;
     }
 
     &.disc-question {
-      padding: var(--spacing-small);
-      font-weight: var(--font-weight-bold);
-      border-radius: var(--rounded-small) 0 0 0;
+      padding:        var(--spacing-small);
+      font-weight:    var(--font-weight-bold);
+      border-radius:  var(--rounded-small) 0 0 0;
     }
   }
 
   td {
-    vertical-align: middle;
+    vertical-align:   middle;
   }
 
   .disc-answer {
-    width: 20%;
-    min-width: calc(20px + 30px);
-    text-align: center;
+    width:            20%;
+    min-width:        calc(20px + 30px);
+    text-align:       center;
   }
 }
 
 .disc-heading {
-  text-align: center;
+  text-align:         center;
 }
 
 .disc-row {
-  margin-bottom: var(--spacing-xlarge);
+  margin-bottom:      var(--spacing-xlarge);
 
   &::after {
-    display: block;
-    width: 100%;
-    margin: var(--spacing-xlarge) 0;
-    content: " ";
-    border-bottom: 1px solid var(--color-interface-softer);
+    display:          block;
+    width:            100%;
+    margin:           var(--spacing-xlarge) 0;
+    content:          " ";
+    border-bottom:    1px solid var(--color-interface-softer);
   }
 }
 
 .question-row {
-  margin-bottom: calc(var(--spacing-small) * 8);
+  margin-bottom:      calc(var(--spacing-small) * 8);
 
   .answered {
-    color: var(--color-interface-medium);
+    color:            var(--color-interface-medium);
   }
 
   .likert > .control-label {
-    margin-bottom: calc(var(--spacing-small) * 1.5);
+    margin-bottom:    calc(var(--spacing-small) * 1.5);
   }
 
   .likert {
     .radio-inline {
-      padding: 5px var(--spacing-medium) 7px calc(20px + var(--spacing-medium) + 4px);
-      cursor: pointer;
-      background-clip: padding-box;
-      border-radius: 4px;
+      padding:          5px var(--spacing-medium) 7px calc(20px + var(--spacing-medium) + 4px);
+      cursor:           pointer;
+      background-clip:  padding-box;
+      border-radius:    4px;
 
       @media (min-width: $screen-medium) {
-        margin-right: var(--spacing-medium);
-        margin-left: calc(var(--spacing-medium) * -1);
+        margin-right:   var(--spacing-medium);
+        margin-left:    calc(var(--spacing-medium) * -1);
       }
 
       &:hover {
@@ -871,29 +870,29 @@ tr.inactive {
 
       .label-text::before,
       .label-text::after {
-        top: 50%;
-        left: 8px;
-        transform: translateY(-50%);
+        top:        50%;
+        left:       8px;
+        transform:  translateY(-50%);
       }
     }
   }
 
   .likert-7 > span {
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-    align-items: center;
+    display:          -ms-flexbox;
+    display:          flex;
+    -ms-flex-align:   center;
+    align-items:      center;
 
 
     @media (max-width: $screen-medium) {
-      -ms-flex-align: start;
-      -ms-flex-direction: column;
-      flex-direction: column;
-      align-items: flex-start;
+      -ms-flex-align:       start;
+      -ms-flex-direction:   column;
+      flex-direction:       column;
+      align-items:          flex-start;
     }
 
     .radio-inline {
-      flex: 0 0 14.28571428571429%;
+      flex:           0 0 14.28571428571429%;
     }
   }
 }
@@ -902,10 +901,10 @@ tr.inactive {
 
 // ======================== EDIT PERSON ========================
 .phonegroup-label {
-  margin-bottom: 5px;
+  margin-bottom:    5px;
 
   @media (min-width: $screen-small) {
-    padding-top: var(--spacing-tiny);
+    padding-top:    var(--spacing-tiny);
   }
 }
 // ====================== END EDIT PERSON ======================

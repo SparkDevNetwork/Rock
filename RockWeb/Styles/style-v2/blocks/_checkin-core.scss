@@ -1,3 +1,22 @@
+
+
+
+//  CHECKIN CORE STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Bootstrap Overrides
+//  + Global Styles
+//  + Components
+//  + Specific Page Styles
+//  + Scroll Container
+//  + Celebration
+//  + Animation
+// =============================================================
+
+
+// Old import from less.
 // @import "_rock-variables";
 // @import "_rock-mixins";
 
@@ -11,22 +30,7 @@
 @import '../rock-components/checkbox';
 
 
-
-/*
-  Used to style the check-in screens
-
-  1. Check-in specific variables
-  2. Bootstrap Overrides
-  3. Global Styles
-  4. Components
-  5. Specific Page Styles
-  6. Scroll container
-  7. Kiosk Manager
-
-*/
-
-// 2. Bootstrap Overrides
-// -------------------------
+// ======================== BOOTSTRAP OVERRIDES ========================
 // @import "./FontAwesome/_rock-upgrade-map-variables.less";
 // @import "./FontAwesome/_rock-fa-mixins.less";
 
@@ -218,7 +222,6 @@ h1 {
   }
 }
 
-
 // unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
 .table-responsive {
   width:            100%;
@@ -227,10 +230,9 @@ h1 {
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style:         -ms-autohiding-scrollbar;
 }
+// ====================== END BOOTSTRAP OVERRIDES ======================
 
-// 3. Global Styles
-// -------------------------
-
+// ======================== GLOBAL STYLES ========================
 a.help {
   margin-left:  6px;
   color:        var(--color-info-strong);
@@ -277,7 +279,7 @@ a.help {
 
 // set page background
 body {
-  background-color:         var(--color-interface-soft);
+  background-color:         var(--color-interface-softer);
   overflow-x:               hidden;
   -webkit-background-size:  cover;
   -moz-background-size:     cover;
@@ -287,18 +289,16 @@ body {
     background-color:       var(--color-interface-soft);
   }
 }
+// ====================== END GLOBAL STYLES ======================
 
-// 4. Components
-// -------------------------
 
-// main body
+// ======================== COMPONENT ========================
 .body-content {
   position:     relative;
   height:       100vh;
 }
 
 // checkin header items
-
 .checkin-header {
   margin:         45px 30px 24px;
 
@@ -323,7 +323,6 @@ body {
 }
 
 // checkin body items
-
 .checkin-body {
   .checkin-actions {
     text-align:   right;
@@ -362,9 +361,7 @@ body {
   text-align:   center;
 }
 
-
 // checkin footer
-
 .checkin-footer {
   position:       absolute;
   right:          0;
@@ -489,11 +486,10 @@ body {
 img[src*="no-photo"] {
   opacity: .4;
 }
+// ====================== END COMPONENT ======================
 
-// 5. Specific Page Styles
-// -------------------------
 
-// search page
+// ======================== SPECIFIC PAGE STYLES ========================
 .checkin-search-body {
   width:    360px;
   margin:   0 auto;
@@ -594,7 +590,6 @@ input.namesearch {
 }
 
 // family select - select person
-
 .family-personselect {
   font-size:      26px;
   text-align:     left;
@@ -613,7 +608,6 @@ input.namesearch {
 }
 
 // Family Registration
-
 .btn-action {
   // .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
   color:            var(--color-interface-softest);
@@ -776,12 +770,10 @@ input.namesearch {
     height:       100%;
   }
 }
+// ====================== END SPECIFIC PAGE STYLES ======================
 
 
-//
-// 6. Scroll Container
-// --------------------------------------
-
+// ======================== SCROLL CONTAINER ========================
 .checkin-scroll-panel {
   position:   absolute;
   top:        45px;
@@ -836,12 +828,10 @@ input.namesearch {
   width:        20px;
   overflow:     hidden;
 }
+// ====================== END SCROLL CONTAINER ======================
 
-//
 
-// 7. Kiosk Manager
-// --------------------------------------
-
+// ======================== KIOSK MANAGER ========================
 .kioskmanager-activate {
   position:   absolute;
   right:      12px;
@@ -924,17 +914,10 @@ input.namesearch {
     margin-right:   var(--spacing-large);
   }
 }
+// ====================== END KIOSK MANAGER ======================
 
-//
 
-// 8. Celebrations
-// --------------------------------------
-
-//   /* Only Needed for Testing */
-//   .checkin-summary.checkin-body-container {
-//     margin-top: 72px;
-// }
-
+// ======================== CELEBRATION ========================
 .checkin-summary {
   h3 {
     margin-top:     0;
@@ -1037,7 +1020,10 @@ input.namesearch {
 .checkin-confirmations .left-icon.complete {
   opacity:            1;
 }
+// ====================== END CELEBRATION ======================
 
+
+// ======================== ANIMATION ========================
 /**
 * ----------------------------------------
 * animation rotate-in-diag-1
@@ -1161,3 +1147,4 @@ input.namesearch {
     opacity: 1;
   }
 }
+// ====================== END ANIMATION ======================
