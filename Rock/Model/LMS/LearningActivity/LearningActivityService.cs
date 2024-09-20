@@ -63,12 +63,12 @@ namespace Rock.Model
         /// should not allow calculations based on the 'ClassStartOffset' (the <see cref="LearningSemester.StartDate"/>)..
         /// </remarks>
         /// <param name="configurationMode">The <see cref="LearningProgram.ConfigurationMode"/> for the parent <see cref="LearningClass"/>.</param>
-        /// <returns>The list of <see cref="AvailableDateCalculationMethod"/> options available for the <see cref="LearningActivity"/>.</returns>
+        /// <returns>The list of <see cref="AvailabilityCriteria"/> options available for the <see cref="LearningActivity"/>.</returns>
         public List<ListItemBag> GetAvailabilityCriteria( ConfigurationMode configurationMode )
         {
-            var onDemandExclusions = new []{ AvailableDateCalculationMethod.ClassStartOffset };
-            return Enum.GetValues( typeof( AvailableDateCalculationMethod ) )
-                .Cast<AvailableDateCalculationMethod>()
+            var onDemandExclusions = new []{ AvailabilityCriteria.ClassStartOffset };
+            return Enum.GetValues( typeof( AvailabilityCriteria ) )
+                .Cast<AvailabilityCriteria>()
                 .Where( value => configurationMode != ConfigurationMode.OnDemandLearning || !onDemandExclusions.Contains( value ) )
                 .Select( value => new ListItemBag
                 {
@@ -202,12 +202,12 @@ namespace Rock.Model
         /// should not allow calculations based on the 'ClassStartOffset' (the <see cref="LearningSemester.StartDate"/>)..
         /// </remarks>
         /// <param name="configurationMode">The <see cref="LearningProgram.ConfigurationMode"/> for the parent <see cref="LearningClass"/>.</param>
-        /// <returns>The list of <see cref="DueDateCalculationMethod"/> options available for the <see cref="LearningActivity"/>.</returns>
+        /// <returns>The list of <see cref="DueDateCriteria"/> options available for the <see cref="LearningActivity"/>.</returns>
         public List<ListItemBag> GetDueDateCriteria( ConfigurationMode configurationMode )
         {
-            var onDemandExclusions = new[] { DueDateCalculationMethod.ClassStartOffset };
-            return Enum.GetValues( typeof( DueDateCalculationMethod ) )
-                .Cast<DueDateCalculationMethod>()
+            var onDemandExclusions = new[] { DueDateCriteria.ClassStartOffset };
+            return Enum.GetValues( typeof( DueDateCriteria ) )
+                .Cast<DueDateCriteria>()
                 .Where( value => configurationMode != ConfigurationMode.OnDemandLearning || !onDemandExclusions.Contains( value ) )
                 .Select( value => new ListItemBag
                 {

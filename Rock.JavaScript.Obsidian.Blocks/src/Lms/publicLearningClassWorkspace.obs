@@ -430,7 +430,7 @@ span.icon-stack-container i.icon {
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
-    import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
+    import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
@@ -646,7 +646,7 @@ span.icon-stack-container i.icon {
                     const hasNextActivity = nextActivityIndex < activities.value?.length ?? -1;
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
 
-                    if (nextActivity != null && nextActivity.activityBag?.availableDateCalculationMethod === AvailableDateCalculationMethod.AfterPreviousCompleted) {
+                    if (nextActivity != null && nextActivity.activityBag?.AvailabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
                         nextActivity.availableDate = viewingCompletionBag.value.completedDate;
                         nextActivity.isAvailable = true;
                     }

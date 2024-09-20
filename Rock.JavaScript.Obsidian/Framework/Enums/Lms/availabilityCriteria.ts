@@ -22,7 +22,7 @@
 //
 
 /** Determines the method for calculating the available date. */
-export const AvailableDateCalculationMethod = {
+export const AvailabilityCriteria = {
     /** A specific date. */
     Specific: 0,
 
@@ -40,7 +40,7 @@ export const AvailableDateCalculationMethod = {
 } as const;
 
 /** Determines the method for calculating the available date. */
-export const AvailableDateCalculationMethodDescription: Record<number, string> = {
+export const AvailabilityCriteriaDescription: Record<number, string> = {
     0: "Specific",
 
     1: "Class Start Offset",
@@ -53,4 +53,4 @@ export const AvailableDateCalculationMethodDescription: Record<number, string> =
 };
 
 /** Determines the method for calculating the available date. */
-export type AvailableDateCalculationMethod = typeof AvailableDateCalculationMethod[keyof typeof AvailableDateCalculationMethod];
+export type AvailabilityCriteria = typeof AvailabilityCriteria[keyof typeof AvailabilityCriteria];

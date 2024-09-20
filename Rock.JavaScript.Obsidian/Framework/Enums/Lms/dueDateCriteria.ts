@@ -22,9 +22,9 @@
 //
 
 /** Determines the method for calculating the due date. */
-export const DueDateCalculationMethod = {
+export const DueDateCriteria = {
     /** A specific date. */
-    Specific: 0,
+    SpecificDate: 0,
 
     /** An offset of the class start date. */
     ClassStartOffset: 1,
@@ -37,7 +37,7 @@ export const DueDateCalculationMethod = {
 } as const;
 
 /** Determines the method for calculating the due date. */
-export const DueDateCalculationMethodDescription: Record<number, string> = {
+export const DueDateCriteriaDescription: Record<number, string> = {
     0: "Specific",
 
     1: "Class Start Offset",
@@ -48,4 +48,4 @@ export const DueDateCalculationMethodDescription: Record<number, string> = {
 };
 
 /** Determines the method for calculating the due date. */
-export type DueDateCalculationMethod = typeof DueDateCalculationMethod[keyof typeof DueDateCalculationMethod];
+export type DueDateCriteria = typeof DueDateCriteria[keyof typeof DueDateCriteria];

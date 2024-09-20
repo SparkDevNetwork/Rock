@@ -19,7 +19,7 @@ namespace Rock.Enums.Lms
     /// <summary>
     /// Determines the method for calculating the available date.
     /// </summary>
-    public enum AvailableDateCalculationMethod
+    public enum AvailabilityCriteria
     {
         /// <summary>
         /// A specific date.

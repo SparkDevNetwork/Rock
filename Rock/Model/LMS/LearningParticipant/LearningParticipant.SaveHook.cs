@@ -73,10 +73,10 @@ namespace Rock.Model
                        LearningActivityId = a.Id,
                        EnrollmentDate = a.LearningClass.CreatedDateTime,
                        SemesterStart = a.LearningClass.LearningSemester.StartDate,
-                       a.AvailableDateCalculationMethod,
+                       a.AvailabilityCriteria,
                        a.AvailableDateDefault,
                        a.AvailableDateOffset,
-                       a.DueDateCalculationMethod,
+                       a.DueDateCriteria,
                        a.DueDateDefault,
                        a.DueDateOffset,
                        a.SendNotificationCommunication,
@@ -91,13 +91,13 @@ namespace Rock.Model
                         StudentId = Entity.Id,
                         LearningActivityId = a.LearningActivityId,
                         AvailableDateTime = LearningActivity.CalculateAvailableDate(
-                            a.AvailableDateCalculationMethod,
+                            a.AvailabilityCriteria,
                             a.AvailableDateDefault,
                             a.AvailableDateOffset,
                             a.SemesterStart,
                             a.EnrollmentDate
                         ),
-                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCalculationMethod, a.DueDateDefault, a.DueDateOffset, a.SemesterStart, a.EnrollmentDate ),
+                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.SemesterStart, a.EnrollmentDate ),
                         NotificationCommunicationId = a.SendNotificationCommunication ? ( int? ) a.NotificationCommunicationId : null
                     } );
 

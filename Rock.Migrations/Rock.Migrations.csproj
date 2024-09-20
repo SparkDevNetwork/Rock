@@ -144,6 +144,10 @@
     <Compile Include="Migrations\202409201452552_AddIsCheckInAllowedToGroupTypeRole.Designer.cs">
       <DependentUpon>202409201452552_AddIsCheckInAllowedToGroupTypeRole.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202409202056093_LMSAndBinaryFileTypeAllowAnonymous.cs" />
+    <Compile Include="Migrations\202409202056093_LMSAndBinaryFileTypeAllowAnonymous.Designer.cs">
+      <DependentUpon>202409202056093_LMSAndBinaryFileTypeAllowAnonymous.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2277,6 +2281,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202409201452552_AddIsCheckInAllowedToGroupTypeRole.resx">
       <DependentUpon>202409201452552_AddIsCheckInAllowedToGroupTypeRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409202056093_LMSAndBinaryFileTypeAllowAnonymous.resx">
+      <DependentUpon>202409202056093_LMSAndBinaryFileTypeAllowAnonymous.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>

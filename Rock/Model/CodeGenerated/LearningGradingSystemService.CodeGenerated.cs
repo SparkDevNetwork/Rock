@@ -57,6 +57,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningGradingSystem.FriendlyTypeName, LearningClass.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.DefaultLearningGradingSystemId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningGradingSystem.FriendlyTypeName, LearningProgram.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

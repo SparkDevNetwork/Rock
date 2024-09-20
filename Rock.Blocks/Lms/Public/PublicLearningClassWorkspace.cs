@@ -304,14 +304,14 @@ namespace Rock.Blocks.Lms
                     ActivityComponentSettingsJson = configurationToSend,
                     AssignTo = activity.LearningActivity.AssignTo,
                     AvailableDateCalculated = activity.LearningActivity.AvailableDateCalculated,
-                    AvailableDateCalculationMethod = activity.LearningActivity.AvailableDateCalculationMethod,
+                    AvailabilityCriteria = activity.LearningActivity.AvailabilityCriteria,
                     AvailableDateDefault = activity.LearningActivity.AvailableDateDefault,
                     AvailableDateOffset = activity.LearningActivity.AvailableDateOffset,
                     CurrentPerson = currentPersonBag,
                     Description = activity.LearningActivity.Description,
                     DescriptionAsHtml = activityDescriptionAsHtml,
                     DueDateCalculated = activity.LearningActivity.DueDateCalculated,
-                    DueDateCalculationMethod = activity.LearningActivity.DueDateCalculationMethod,
+                    DueDateCriteria = activity.LearningActivity.DueDateCriteria,
                     DueDateDefault = activity.LearningActivity.DueDateDefault,
                     DueDateDescription = activity.LearningActivity.DueDateDescription,
                     DueDateOffset = activity.LearningActivity.DueDateOffset,
@@ -322,11 +322,11 @@ namespace Rock.Blocks.Lms
                     Points = activity.LearningActivity.Points
                 };
 
-                var isPreviousMethodCalculation = activityBag.AvailableDateCalculationMethod == AvailableDateCalculationMethod.AfterPreviousCompleted;
+                var isPreviousMethodCalculation = activityBag.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted;
                 var isPreviousActivityCompleted = previousActivityCompletion == null || previousActivityCompletion.IsStudentCompleted | previousActivityCompletion.IsFacilitatorCompleted;
 
                 var isActivityAvailable =
-                    activityBag.AvailableDateCalculationMethod == AvailableDateCalculationMethod.AlwaysAvailable ||
+                    activityBag.AvailabilityCriteria == AvailabilityCriteria.AlwaysAvailable ||
                     ( activityBag.AvailableDateCalculated.HasValue && activityBag.AvailableDateCalculated.Value <= DateTime.Now ) ||
                     ( isPreviousMethodCalculation && isPreviousActivityCompleted );
 

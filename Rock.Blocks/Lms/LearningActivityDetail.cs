@@ -255,7 +255,7 @@ namespace Rock.Blocks.Lms
                 ActivityComponent = activityComponentBag,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
                 AssignTo = entity.AssignTo,
-                AvailableDateCalculationMethod = entity.AvailableDateCalculationMethod,
+                AvailabilityCriteria = entity.AvailabilityCriteria,
                 AvailableDateCalculated = entity.AvailableDateCalculated,
                 AvailableDateDefault = entity.AvailableDateDefault,
                 AvailableDateDescription = entity.AvailableDateDescription,
@@ -268,7 +268,7 @@ namespace Rock.Blocks.Lms
                 CurrentPerson = currentPersonBag,
                 Description = entity.Description,
                 DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
-                DueDateCalculationMethod = entity.DueDateCalculationMethod,
+                DueDateCriteria = entity.DueDateCriteria,
                 DueDateCalculated = entity.DueDateCalculated,
                 DueDateDefault = entity.DueDateDefault,
                 DueDateDescription = entity.DueDateDescription,
@@ -290,8 +290,8 @@ namespace Rock.Blocks.Lms
             {
                 Id = 0,
                 Guid = Guid.Empty,
-                AvailableDateCalculationMethod = Enums.Lms.AvailableDateCalculationMethod.AlwaysAvailable,
-                DueDateCalculationMethod = Enums.Lms.DueDateCalculationMethod.NoDate
+                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AlwaysAvailable,
+                DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
         }
 
@@ -353,8 +353,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.AssignTo ),
                 () => entity.AssignTo = box.Bag.AssignTo );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
-                () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
+            box.IfValidProperty( nameof( box.Bag.AvailabilityCriteria ),
+                () => entity.AvailabilityCriteria = box.Bag.AvailabilityCriteria );
 
             box.IfValidProperty( nameof( box.Bag.AvailableDateDefault ),
                 () => entity.AvailableDateDefault = box.Bag.AvailableDateDefault );
@@ -362,8 +362,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
                 () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateCalculationMethod ),
-                () => entity.DueDateCalculationMethod = box.Bag.DueDateCalculationMethod );
+            box.IfValidProperty( nameof( box.Bag.DueDateCriteria ),
+                () => entity.DueDateCriteria = box.Bag.DueDateCriteria );
 
             box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
                 () => entity.DueDateDefault = box.Bag.DueDateDefault );

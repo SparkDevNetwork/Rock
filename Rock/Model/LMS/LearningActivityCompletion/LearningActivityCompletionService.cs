@@ -88,13 +88,13 @@ namespace Rock.Model
                 StudentId = participantId,
                 LearningActivityId = activity.Id,
                 AvailableDateTime = LearningActivity.CalculateAvailableDate(
-                          activity.AvailableDateCalculationMethod,
+                          activity.AvailabilityCriteria,
                           activity.AvailableDateDefault,
                           activity.AvailableDateOffset,
                           semesterStartDate,
                           enrollmentDate ),
                 DueDate = LearningActivity.CalculateDueDate(
-                    activity.DueDateCalculationMethod,
+                    activity.DueDateCriteria,
                     activity.DueDateDefault,
                     activity.DueDateOffset,
                     semesterStartDate,
