@@ -24,7 +24,11 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.ElectronicSignature;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Pdf;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignatureDocumentTemplateDetail;
 using Rock.ViewModels.Utility;
@@ -153,8 +157,8 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -176,7 +180,7 @@ namespace Rock.Blocks.Core
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -213,7 +217,7 @@ namespace Rock.Blocks.Core
                 SignatureInputTypes = GetSignatureInputTypes(),
                 SignatureType = entity.SignatureType.ConvertToStringSafe(),
                 IsValidInFuture = entity.IsValidInFuture,
-                ValidityDurationInDays = entity.ValidityDurationInDays,
+                ValidityDurationInDays = entity.ValidityDurationInDays.ToString(),
             };
         }
 
@@ -224,7 +228,7 @@ namespace Rock.Blocks.Core
         private List<ListItemBag> GetSignatureInputTypes()
         {
             var signatureInputTypes = new List<ListItemBag>();
-            var names = Enum.GetNames(typeof(SignatureType));
+            var names = Enum.GetNames( typeof( SignatureType ) );
             foreach ( var name in names )
             {
                 signatureInputTypes.Add( new ListItemBag() { Text = name, Value = name } );
@@ -248,6 +252,7 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.CanAdministrate = BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() );
 
             return bag;
         }
@@ -257,7 +262,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="SignatureDocumentTemplateBag"/> that represents the entity.</returns>
-        private SignatureDocumentTemplateBag GetEntityBagForEdit( SignatureDocumentTemplate entity )
+        private SignatureDocumentTemplateBag GetEntityBagForEdit( SignatureDocumentTemplate entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -267,6 +272,22 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+
+            if ( entity.Id == 0 )
+            {
+                Guid? fileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuidOrNull();
+                if ( fileTypeGuid.HasValue )
+                {
+                    var binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid.Value );
+                    if ( binaryFileType != null )
+                    {
+                        bag.BinaryFileType = binaryFileType.ToListItemBag();
+                        entity.BinaryFileTypeId = binaryFileType.Id;
+                    }
+                }
+
+                bag.LavaTemplate = SignatureDocumentTemplate.DefaultLavaTemplate;
+            }
 
             return bag;
         }
@@ -327,7 +348,7 @@ namespace Rock.Blocks.Core
                     () => entity.IsValidInFuture = box.Entity.IsValidInFuture );
 
             box.IfValidProperty( nameof( box.Entity.ValidityDurationInDays ),
-                    () => entity.ValidityDurationInDays = box.Entity.ValidityDurationInDays );
+                    () => entity.ValidityDurationInDays = box.Entity.ValidityDurationInDays.AsIntegerOrNull() );
 
             return true;
         }
@@ -450,6 +471,52 @@ namespace Rock.Blocks.Core
             return communicationTemplates;
         }
 
+        /// <summary>
+        /// Gets the PDF preview URL.
+        /// </summary>
+        /// <param name="lavaTemplate">The lava template.</param>
+        /// <param name="binaryFileTypeId">The binary file type identifier.</param>
+        /// <param name="signatureType">Type of the signature.</param>
+        /// <returns></returns>
+        private string GetPdfPreviewUrl( string lavaTemplate, int binaryFileTypeId, SignatureType signatureType = SignatureType.Typed )
+        {
+            var mergeFields = LavaHelper.GetCommonMergeFields( null );
+            var signatureDocumentHtml = ElectronicSignatureHelper.GetSignatureDocumentHtml( lavaTemplate, mergeFields );
+            var fakeRandomHash = Rock.Security.Encryption.GetSHA1Hash( Guid.NewGuid().ToString() );
+
+            var signatureInformationHtml = ElectronicSignatureHelper.GetSignatureInformationHtml( new GetSignatureInformationHtmlOptions
+            {
+                SignatureType = signatureType,
+                DrawnSignatureDataUrl = ElectronicSignatureHelper.SampleSignatureDataURL,
+                SignedByPerson = GetCurrentPerson(),
+                SignedDateTime = RockDateTime.Now,
+                SignedClientIp = this.RequestContext.ClientInformation.IpAddress,
+                SignedName = this.GetCurrentPerson()?.FullName,
+                SignatureVerificationHash = fakeRandomHash
+            } );
+
+            string pdfPreviewUrl;
+
+            using ( var pdfGenerator = new PdfGenerator() )
+            {
+                var signedDocumentHtml = ElectronicSignatureHelper.GetSignedDocumentHtml( signatureDocumentHtml, signatureInformationHtml );
+
+                // put the pdf into a BinaryFile. We'll mark it IsTemporary so it'll eventually get cleaned up by RockCleanup
+                BinaryFile binaryFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId, "preview.pdf", signedDocumentHtml );
+                binaryFile.IsTemporary = true;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    new BinaryFileService( rockContext ).Add( binaryFile );
+                    rockContext.SaveChanges();
+                }
+
+                pdfPreviewUrl = string.Format( "{0}/GetFile.ashx?guid={1}", this.RequestContext.RootUrlPath, binaryFile.Guid );
+            }
+
+            return pdfPreviewUrl;
+        }
+
         #endregion
 
         #region Block Actions
@@ -474,7 +541,7 @@ namespace Rock.Blocks.Core
 
                 var box = new DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity ),
+                    Entity = GetEntityBagForEdit( entity, rockContext ),
                     Options = GetBoxOptions( true, rockContext )
                 };
 
@@ -591,7 +658,7 @@ namespace Rock.Blocks.Core
 
                 var refreshedBox = new DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -615,6 +682,76 @@ namespace Rock.Blocks.Core
                 }
 
                 return ActionOk( refreshedBox );
+            }
+        }
+
+        /// <summary>
+        /// Gets the PDF preview URL.
+        /// </summary>
+        /// <param name="requestBag">The request bag.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetPdfPreviewUrl( GetPdfPreviewUrlRequestBag requestBag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                SignatureType signatureType = requestBag.SignatureType.IsNotNullOrWhiteSpace() ? requestBag.SignatureType.ConvertToEnum<SignatureType>() : SignatureType.Typed;
+
+                var url = GetPdfPreviewUrl( requestBag.LavaTemplate, requestBag.BinaryFileType.GetEntityId<BinaryFileType>( rockContext ) ?? 0, signatureType );
+
+                return ActionOk( new { PreviewUrl = url } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the external providers.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetExternalProviders( Guid? entityTypeGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var externalProviders = new List<ListItemBag>();
+                var errorMessage = string.Empty;
+
+                if ( !entityTypeGuid.HasValue )
+                {
+                    return ActionOk(new { externalProviders = externalProviders } );
+                }
+
+                var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
+
+                if ( entityType == null )
+                {
+                    return ActionOk( new { externalProviders = externalProviders } );
+                }
+
+                var component = DigitalSignatureContainer.GetComponent( entityType.Name );
+                if ( component == null )
+                {
+                    return ActionOk( new { externalProviders = externalProviders } );
+                }
+
+                var errors = new List<string>();
+                var templates = component.GetTemplates( out errors );
+
+                if ( templates != null )
+                {
+                    foreach ( var keyVal in templates.OrderBy( d => d.Value ) )
+                    {
+                        externalProviders.Add( new ListItemBag() { Text = keyVal.Value, Value = keyVal.Key } );
+                    }
+
+                    return ActionOk( new { externalProviders = externalProviders } );
+                }
+                else
+                {
+                    errorMessage = string.Format( "<ul><li>{0}</li></ul>", errors.AsDelimited( "</li><li>" ) );
+
+                    return ActionBadRequest( errorMessage );
+                }
             }
         }
 

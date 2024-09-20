@@ -152,6 +152,7 @@
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
+	<Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobList\ScheduledJobListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
