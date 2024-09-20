@@ -447,7 +447,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                     return null;
                 }
 
-                var currentPersonId = GetCurrentPerson().Id;
+                var currentPersonId = GetCurrentPerson()?.Id;
                 var notesQuery = noteService.Queryable()
                     .AsNoTracking()
                     .Include( a => a.CreatedByPersonAlias.Person )
