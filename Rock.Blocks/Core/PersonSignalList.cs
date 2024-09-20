@@ -16,9 +16,7 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock;
@@ -28,9 +26,7 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.LayoutDetail;
 using Rock.ViewModels.Blocks.Core.PersonSignalList;
-using Rock.ViewModels.Blocks.Crm.BadgeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -83,6 +79,7 @@ namespace Rock.Blocks.Core
         {
             var options = new PersonSignalListOptionsBag();
             options.SignalTypeOptions = SignalTypeCache.All()
+                .Where( t => t.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 .OrderBy( t => t.Order )
                 .ThenBy( t => t.Id )
                 .ToListItemBagList();
@@ -186,15 +183,13 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.ExpirationDate ),
                 () => {
-                    if ( box.Bag.ExpirationDate.HasValue )
+                    if ( !box.Bag.ExpirationDate.HasValue )
                     {
-                        entity.ExpirationDate = box.Bag.ExpirationDate.Value.DateTime.Date;
+                        return false;
                     }
-                    else
-                    {
-                        entity.ExpirationDate = null;
-                    }
-                } );
+                    entity.ExpirationDate = box.Bag.ExpirationDate?.DateTime;
+                    return true;
+                }, true );
             box.IfValidProperty( nameof( box.Bag.Note ),
                 () => entity.Note = box.Bag.Note );
 
@@ -225,9 +220,8 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.SignalType.Name )
                 .AddPersonField( "owner", a => a.OwnerPersonAlias.Person )
-                .AddTextField( "note", a => a.Note )
-                .AddDateTimeField( "expirationDate", a => a.ExpirationDate )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddTextField( "note", a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ? a.Note : string.Empty )
+                .AddDateTimeField( "expirationDate", a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ? a.ExpirationDate : null )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -253,7 +247,7 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( $"{PersonSignal.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( "Not authorized to make changes to this signal." );
                 }
@@ -264,9 +258,8 @@ namespace Rock.Blocks.Core
                     IdKey = entity.IdKey,
                     SignalType = entity.SignalType.ToListItemBag(),
                     Owner = entity.OwnerPersonAlias.ToListItemBag(),
-                    ExpirationDate = entity.ExpirationDate,
+                    ExpirationDate = entity.ExpirationDate?.ToRockDateTimeOffset(),
                     Note = entity.Note,
-
                 };
 
                 return ActionOk( editBag );
@@ -324,7 +317,7 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( $"{PersonSignal.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "Not authorized to make changes to this signal." );
             }
