@@ -329,6 +329,8 @@
     watch(() => isPreviewMode.value, async () => {
 
         try {
+            pdfUrl.value = "";
+
             if (isPreviewMode.value === true) {
                 isLoadingUrl.value = true;
 
@@ -346,12 +348,6 @@
                 if (result.isSuccess && result.data) {
                     pdfUrl.value = result.data.previewUrl;
                 }
-                else {
-                    pdfUrl.value = "";
-                }
-            }
-            else {
-                pdfUrl.value = "";
             }
         }
         catch {

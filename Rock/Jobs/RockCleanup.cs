@@ -3354,8 +3354,8 @@ END
                 };
 
                 var updateQuery = @"
-DECLARE @startDate DATETIME = DATEADD(MONTH, -12, dbo.RockGetDate());
-DECLARE @endDate DATETIME = dbo.RockGetDate();
+DECLARE @StartDate int = FORMAT(DATEADD( d, -365, dbo.RockGetDate()), 'yyyyMMdd')
+DECLARE @EndDate int = FORMAT(dbo.RockGetDate(), 'yyyyMMdd')
 
 -- Only Include Person Type Records
 DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
