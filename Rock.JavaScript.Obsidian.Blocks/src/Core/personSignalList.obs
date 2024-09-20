@@ -20,8 +20,6 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
-
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
@@ -39,7 +37,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, DeleteColumn, SecurityColumn, TextColumn, PersonColumn, DateColumn, textValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, DeleteColumn, TextColumn, PersonColumn, DateColumn, textValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonSignalListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/personSignalListOptionsBag";

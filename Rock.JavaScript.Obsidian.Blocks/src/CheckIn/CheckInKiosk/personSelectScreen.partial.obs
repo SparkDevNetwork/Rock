@@ -8,7 +8,7 @@
                             btnType="primary"
                             class="attendee-button illustrated-button"
                             :disabled="attendee.isUnavailable || isProcessing"
-                            @click="onAttendeeClick(attendee)">
+                            @click="onAttendeeClick(attendee, $event)">
                     <span v-if="isFamilyMode" class="selection">
                         <i v-if="isAttendeeSelected(attendee)" class="fa fa-check-square"></i>
                         <i v-else class="fa fa-square-o"></i>
@@ -34,13 +34,13 @@
 
                     <span v-if="canRemoveAttendee(attendee)"
                           class="btn btn-danger remove-attendee-button"
-                          @click.stop="onRemoveAttendee(attendee)">
+                          @click="onRemoveAttendee(attendee)">
                         Remove
                     </span>
 
                     <span v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
                           class="btn btn-info change-selection-button"
-                          @click.stop="onChangeSelection(attendee)">
+                          @click="onChangeSelection(attendee)">
                         Change
                     </span>
                 </RockButton>
@@ -281,7 +281,13 @@
      *
      * @param family The family that was selected.
      */
-    async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
+    async function onAttendeeClick(attendee: AttendeeBag, event: MouseEvent): Promise<void> {
+        // Check if the user clicked our button or one of the nested buttons.
+        if (!(event.target instanceof HTMLElement) || event.target.closest(".btn") !== event.currentTarget) {
+            console.log("skip");
+            return;
+        }
+
         if (isFamilyMode.value) {
             if (isAttendeeSelected(attendee)) {
                 selections.value = selections.value.filter(s => s !== attendee.person?.id);
