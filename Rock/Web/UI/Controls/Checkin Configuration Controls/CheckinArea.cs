@@ -491,7 +491,7 @@ namespace Rock.Web.UI.Controls
                 }
                 _gCheckinLabels.RenderControl( writer );
 
-                writer.WriteLine( "<h3>Next Gen Check-in Labels</h3>" );
+                writer.WriteLine( "<h3>Next-Gen Check-in Labels</h3>" );
                 if ( NextGenCheckInLabels != null )
                 {
                     _gNextGenCheckInLabels.DataSource = NextGenCheckInLabels;
