@@ -9,11 +9,10 @@
 
             <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
                 <h1 class="panel-title">
-                    <slot v-if="$slots.title" name="title" />
-                    <template v-else>
+                    <slot name="title" v-bind="{ title: title, titleIconCssClass: titleIconCssClass }">
                         <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
                         {{ title }}
-                    </template>
+                    </slot>
                 </h1>
 
                 <div class="panel-header-actions">
