@@ -316,10 +316,6 @@ div.summary-sub-title {
         Ensure that the combined weights of all sections add up to 100%.`;
 
     const showGradingHelpText = ref(false);
-    const gradingHelpText = `
-        Assessment grading is highly configurable.
-        The first setting is "Multiple Choice Weight," which defines the percentage of the total score attributed to multiple choice questions.
-        Additionally, each short answer question is assigned a percentage weight contributing to the total score. The combined percentages must equal 100% to save the assessment.`;
 
     // #region Values
 

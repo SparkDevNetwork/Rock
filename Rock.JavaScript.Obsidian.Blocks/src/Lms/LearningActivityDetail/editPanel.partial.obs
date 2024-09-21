@@ -38,7 +38,7 @@
                               :showBlankItem="false" />
             </div>
             <div class="col-md-6">
-                <template v-if="availabilityCriteria == AvailableDateCalculationMethod.Specific.toString()">
+                <template v-if="availabilityCriteria == AvailabilityCriteria.SpecificDate.toString()">
 
                     <DatePicker v-model="availableDateDefault"
                                 rules="required"
@@ -46,8 +46,8 @@
                 </template>
 
                 <template v-if="[
-                    AvailableDateCalculationMethod.ClassStartOffset.toString(),
-                    AvailableDateCalculationMethod.EnrollmentOffset.toString()
+                    AvailabilityCriteria.ClassStartOffset.toString(),
+                    AvailabilityCriteria.EnrollmentOffset.toString()
                 ].includes(availabilityCriteria)">
 
                     <NumberBox v-model="availableDateOffset"
@@ -68,14 +68,14 @@
                 <DropDownList v-model="dueDateCriteria" :grouped="false" :items="dueDateCriteriaOptions" rules="required" label="Due Date Criteria" help="Determines how the date the assignment is due is determined." :multiple="false" :showBlankItem="false" />
             </div>
             <div class="col-md-6">
-                <template v-if="dueDateCriteria == DueDateCalculationMethod.Specific.toString()">
+                <template v-if="dueDateCriteria == DueDateCriteria.SpecificDate.toString()">
                     <DatePicker v-model="dueDateDefault" rules="required"
                                 label="Due Date" />
                 </template>
 
                 <template v-if="[
-                    DueDateCalculationMethod.ClassStartOffset.toString(),
-                    DueDateCalculationMethod.EnrollmentOffset.toString()
+                    DueDateCriteria.ClassStartOffset.toString(),
+                    DueDateCriteria.EnrollmentOffset.toString()
                 ].includes(dueDateCriteria)">
 
                     <NumberBox v-model="dueDateOffset"
@@ -145,8 +145,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
-    import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
-    import { DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
+    import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
+    import { DueDateCriteria } from "@Obsidian/Enums/Lms/dueDateCriteria";
 
     const props = defineProps({
         modelValue: {
@@ -180,10 +180,10 @@
     const description = propertyRef(activityBag.value?.description ?? "", "Description");
     const assignTo = propertyRef(activityBag.value?.assignTo?.toString() ?? "0", "AssignTo");
     const isStudentCommentingEnabled = propertyRef(activityBag.value?.isStudentCommentingEnabled ?? false, "EnableStudentCommenting");
-    const availabilityCriteria = propertyRef(activityBag.value?.availableDateCalculationMethod.toString() ?? "", "AvailableDateCalculationMethod");
+    const availabilityCriteria = propertyRef(activityBag.value?.availabilityCriteria?.toString() ?? "", "AvailabilityCriteria");
     const availableDateDefault = propertyRef(activityBag.value?.availableDateDefault, "AvailableDateDefault");
     const availableDateOffset = propertyRef(activityBag.value?.availableDateOffset, "AvailableDateOffset");
-    const dueDateCriteria = propertyRef(activityBag.value?.dueDateCalculationMethod.toString() ?? "", "DueDateCalculationMethod");
+    const dueDateCriteria = propertyRef(activityBag.value?.dueDateCriteria?.toString() ?? "", "DueDateCriteria");
     const dueDateDefault = propertyRef(activityBag.value?.dueDateDefault, "DueDateDefault");
     const dueDateOffset = propertyRef(activityBag.value?.dueDateOffset, "DueDateOffset");
     const sendNotificationCommunication = propertyRef(activityBag.value?.sendNotificationCommunication ?? false, "SendNotificationCommunication");
@@ -261,12 +261,12 @@
         updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(description, props.modelValue.bag?.description ?? "");
-        updateRefValue(assignTo, props.modelValue.bag?.assignTo.toString() ?? "");
+        updateRefValue(assignTo, props.modelValue.bag?.assignTo?.toString() ?? "");
         updateRefValue(isStudentCommentingEnabled, props.modelValue.bag?.isStudentCommentingEnabled ?? false);
-        updateRefValue(availabilityCriteria, props.modelValue.bag?.availableDateCalculationMethod.toString() ?? "");
+        updateRefValue(availabilityCriteria, props.modelValue.bag?.availabilityCriteria?.toString() ?? "");
         updateRefValue(availableDateDefault, props.modelValue.bag?.availableDateDefault);
         updateRefValue(availableDateOffset, props.modelValue.bag?.availableDateOffset);
-        updateRefValue(dueDateCriteria, props.modelValue.bag?.dueDateCalculationMethod.toString() ?? "");
+        updateRefValue(dueDateCriteria, props.modelValue.bag?.dueDateCriteria?.toString() ?? "");
         updateRefValue(dueDateDefault, props.modelValue.bag?.dueDateDefault);
         updateRefValue(dueDateOffset, props.modelValue.bag?.dueDateOffset);
         updateRefValue(sendNotificationCommunication, props.modelValue.bag?.sendNotificationCommunication ?? false);
@@ -290,10 +290,10 @@
         setPropertiesBoxValue(newValue, "description", description.value);
         setPropertiesBoxValue(newValue, "assignTo", parseInt(assignTo.value) as AssignTo);
         setPropertiesBoxValue(newValue, "isStudentCommentingEnabled", isStudentCommentingEnabled.value);
-        setPropertiesBoxValue(newValue, "availableDateCalculationMethod", parseInt(availabilityCriteria.value) as AvailableDateCalculationMethod);
+        setPropertiesBoxValue(newValue, "availabilityCriteria", parseInt(availabilityCriteria.value) as AvailabilityCriteria);
         setPropertiesBoxValue(newValue, "availableDateDefault", availableDateDefault.value);
         setPropertiesBoxValue(newValue, "availableDateOffset", availableDateOffset.value);
-        setPropertiesBoxValue(newValue, "dueDateCalculationMethod", parseInt(dueDateCriteria.value) as DueDateCalculationMethod);
+        setPropertiesBoxValue(newValue, "dueDateCriteria", parseInt(dueDateCriteria.value) as DueDateCriteria);
         setPropertiesBoxValue(newValue, "dueDateDefault", dueDateDefault.value);
         setPropertiesBoxValue(newValue, "dueDateOffset", dueDateOffset.value);
         setPropertiesBoxValue(newValue, "sendNotificationCommunication", sendNotificationCommunication.value);
@@ -306,6 +306,6 @@
     });
 
     watch(activityBag, () => {
-        activityComponentSettingsJson.value = activityBag.value.activityComponentSettingsJson ?? "";
+        activityComponentSettingsJson.value = activityBag.value?.activityComponentSettingsJson ?? "";
     });
 </script>

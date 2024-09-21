@@ -646,7 +646,7 @@ span.icon-stack-container i.icon {
                     const hasNextActivity = nextActivityIndex < activities.value?.length ?? -1;
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
 
-                    if (nextActivity != null && nextActivity.activityBag?.AvailabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
+                    if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
                         nextActivity.availableDate = viewingCompletionBag.value.completedDate;
                         nextActivity.isAvailable = true;
                     }

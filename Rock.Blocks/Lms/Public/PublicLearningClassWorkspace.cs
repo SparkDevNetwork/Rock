@@ -589,11 +589,10 @@ namespace Rock.Blocks.Lms
                 }
 
                 activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( rockContext );
-                activity.IsStudentCompleted = true;
                 activity.StudentComment = activityCompletionBag.StudentComment;
 
-                // Only allow student updating completion and points if this hasn't yet been completed by the facilitator.
-                if ( !activity.IsFacilitatorCompleted )
+                // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
+                if ( !activity.GradedByPersonAliasId.HasValue )
                 {
                     var components = LearningActivityContainer.Instance.Components;
                     var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
@@ -611,7 +610,18 @@ namespace Rock.Blocks.Lms
                 
                 if ( !activity.CompletedByPersonAliasId.HasValue )
                 {
-                    var currentPerson = GetCurrentPerson().PrimaryAliasId;
+                    activity.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+
+                    if ( activity.LearningActivity.AssignTo == AssignTo.Student )
+                    {
+                        activity.IsStudentCompleted = true;
+                        activityCompletionBag.IsStudentCompleted = true;
+                    }
+                    else
+                    {
+                        activity.IsFacilitatorCompleted = true;
+                        activityCompletionBag.IsFacilitatorCompleted = true;
+                    }
                 }
 
                 if ( !activity.CompletedDateTime.HasValue )
@@ -623,16 +633,16 @@ namespace Rock.Blocks.Lms
 
                 rockContext.SaveChanges();
 
-                activityCompletionBag.IsStudentCompleted = true;
                 activityCompletionBag.CompletedDate = activity.CompletedDateTime;
                 activityCompletionBag.WasCompletedOnTime = activity.WasCompletedOnTime;
+                activityCompletionBag.GradeName = activity.GetGrade()?.Name;
 
                 // Return the raw component settings so a grade can be computed (if applicable).
                 activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
 
                 // Include the updated activity completion in the response.
                 // if the activity checks the completion JSON for historical configuration
-                // we'll want to ensure it's provided now.
+                // we'll want to ensure it's provided.
                 activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
 
                 return ActionOk( activityCompletionBag );

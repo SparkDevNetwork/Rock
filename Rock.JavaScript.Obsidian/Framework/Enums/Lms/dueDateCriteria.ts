@@ -38,7 +38,7 @@ export const DueDateCriteria = {
 
 /** Determines the method for calculating the due date. */
 export const DueDateCriteriaDescription: Record<number, string> = {
-    0: "Specific",
+    0: "Specific Date",
 
     1: "Class Start Offset",
 

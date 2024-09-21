@@ -155,7 +155,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-	import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const invokeBlockAction = useInvokeBlockAction();
 

@@ -52,7 +52,7 @@
                      textMode="multiline"
                      :rows="answerBoxRows"
                      :maxLength="maxCharacterCount"
-                     :showCountDown="true"
+                     :showCountDown="maxCharacterCount > 0"
                      rules="required"
                      inputClasses="form-control" />
         </div>
@@ -196,7 +196,7 @@
     const helpText = ref(internalModelValue.value.helpText ?? "");
     const questionWeight = ref(internalModelValue.value.questionWeight);
     const answerBoxRows = ref(internalModelValue.value.answerBoxRows ?? defaultAnswerBoxRows);
-    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount);
+    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount ?? 0);
     const response = ref(internalModelValue.value.response ?? "");
     const pointsEarned = ref<number | null>(props.hasBeenGraded ? internalModelValue.value.pointsEarned : null);
 
