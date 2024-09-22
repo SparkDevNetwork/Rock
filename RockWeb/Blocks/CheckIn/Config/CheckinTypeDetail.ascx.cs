@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
             GroupType groupType = groupTypeService.Get( int.Parse( hfGroupTypeId.Value ) );
+            var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
             ShowEditDetails( groupType );
         }
 
