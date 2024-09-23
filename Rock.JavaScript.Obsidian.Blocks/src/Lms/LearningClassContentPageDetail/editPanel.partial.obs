@@ -5,15 +5,14 @@
             <div class="col-md-6">
                 <TextBox v-model="title"
                          label="Page Title"
-                         helpText="The title that will be used for the page in the navigation."
-                         placeholder="Syllabus"
+                         help="The title that will be used for the page in the navigation."
                          rules="required" />
             </div>
 
             <div class="col-md-3">
                 <DatePicker v-model="startDateTime"
                             label="Start Date"
-                            helpText="The date that this page should be shown. Leave this blank to have the page aways available to view." />
+                            help="The date that this page should be shown. Leave this blank to have the page aways available to view." />
             </div>
         </div>
 

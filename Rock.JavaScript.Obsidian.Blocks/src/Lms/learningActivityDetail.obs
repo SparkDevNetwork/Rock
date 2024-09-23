@@ -106,7 +106,7 @@
     });
 
     const options = computed((): LearningActivityDetailOptionsBag => {
-        return config.options ?? { hasCompletions: false };
+        return config.options ?? { hasCompletions: false, availabilityCriteriaOptions: [], dueDateCriteriaOptions: [] };
     });
 
     /**

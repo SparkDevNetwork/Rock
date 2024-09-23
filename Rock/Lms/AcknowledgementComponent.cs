@@ -20,14 +20,14 @@ using System.ComponentModel.Composition;
 namespace Rock.Lms
 {
     /// <summary>
-    /// The Check-Off activity is a learning activity that requires a participant to check a box for completion.
+    /// The acknowledgement activity is a learning activity that requires a participant to check a box for completion.
     /// </summary>
     [Description( "A Learning Activity that requires a participant to check a box of acknowledgement." )]
     [Export( typeof( LearningActivityComponent ) )]
-    [ExportMetadata( "ComponentName", "Check-Off" )]
+    [ExportMetadata( "ComponentName", "Acknowledgement" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "7fae61a2-5f08-4fd9-8bb7-ff7fab410ac5" )]
-    public class CheckOffComponent : LearningActivityComponent
+    public class AcknowledgementComponent : LearningActivityComponent
     {
         /// <summary>
         /// Gets the Highlight color for the component.
@@ -42,11 +42,11 @@ namespace Rock.Lms
         /// <summary>
         /// Gets the name of the component.
         /// </summary>
-        public override string Name => "Check-Off";
+        public override string Name => "Acknowledgement";
 
         /// <summary>
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
-        public CheckOffComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/checkOffLearningActivity.obs" ) { }
+        public AcknowledgementComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/acknowledgementLearningActivity.obs" ) { }
     }
 }

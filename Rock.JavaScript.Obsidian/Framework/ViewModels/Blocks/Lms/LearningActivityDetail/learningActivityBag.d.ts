@@ -22,8 +22,8 @@
 //
 
 import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
-import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
-import { DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
+import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
+import { DueDateCriteria } from "@Obsidian/Enums/Lms/dueDateCriteria";
 import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
 import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -49,8 +49,8 @@ export type LearningActivityBag = {
     /** Gets or sets the calculated available date for the activity. */
     availableDateCalculated?: string | null;
 
-    /** The calculation method used for determing the AvailableDate of the activity. */
-    availableDateCalculationMethod: AvailableDateCalculationMethod;
+    /** The criteria used for determing the AvailableDate of the activity. */
+    availabilityCriteria: AvailabilityCriteria;
 
     /**
      * Gets or sets the default date the activity
@@ -91,8 +91,8 @@ export type LearningActivityBag = {
     /** Gets or sets the calculated due date for the activity. */
     dueDateCalculated?: string | null;
 
-    /** The calculation method used for determing the DueDate of the activity. */
-    dueDateCalculationMethod: DueDateCalculationMethod;
+    /** The criteria used for determing the DueDate of the activity. */
+    dueDateCriteria: DueDateCriteria;
 
     /** Gets or sets the default date the activity is due. */
     dueDateDefault?: string | null;
@@ -121,7 +121,7 @@ export type LearningActivityBag = {
     /** Gets or sets the order in which the activity should be displayed. */
     order: number;
 
-    /** Gets or sets the number of students who are assigned this activity. */
+    /** Gets or sets the percentage of students who have completed this activity. */
     percentComplete: number;
 
     /** Gets or sets the maximum number of points the activity is worth. */

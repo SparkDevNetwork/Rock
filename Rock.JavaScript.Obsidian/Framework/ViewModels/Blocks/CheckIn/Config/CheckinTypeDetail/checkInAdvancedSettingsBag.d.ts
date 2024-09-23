@@ -36,8 +36,11 @@ export type CheckInAdvancedSettingsBag = {
     gradeRequired: boolean;
 
     /** Gets or sets the refresh interval. */
-    refreshInterval?: number | null;
+    refreshInterval?: string | null;
 
     /** Gets or sets the search regex. */
     searchRegex?: string | null;
+
+    /** Gets or sets the special needs values. */
+    specialNeedsValues?: string[] | null;
 };

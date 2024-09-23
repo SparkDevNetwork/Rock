@@ -942,6 +942,7 @@
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
@@ -1306,7 +1307,7 @@
     <Compile Include="Lms\PointAssessmentComponent.cs" />
     <Compile Include="Lms\VideoWatchComponent.cs" />
     <Compile Include="Lms\FileUploadComponent.cs" />
-    <Compile Include="Lms\CheckOffComponent.cs" />
+    <Compile Include="Lms\AcknowledgementComponent.cs" />
     <Compile Include="Lms\LearningActivityComponent.cs" />
     <Compile Include="Lms\LearningActivityContainer.cs" />
     <Compile Include="Logging\DynamicConfigurationProvider.cs" />

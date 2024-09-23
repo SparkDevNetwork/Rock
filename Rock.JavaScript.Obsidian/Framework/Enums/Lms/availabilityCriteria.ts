@@ -21,10 +21,10 @@
 // </copyright>
 //
 
-/** Determines the method for calculating the due date. */
-export const DueDateCalculationMethod = {
+/** Determines the method for calculating the available date. */
+export const AvailabilityCriteria = {
     /** A specific date. */
-    Specific: 0,
+    SpecificDate: 0,
 
     /** An offset of the class start date. */
     ClassStartOffset: 1,
@@ -32,20 +32,25 @@ export const DueDateCalculationMethod = {
     /** An offset of the class enrollment date. */
     EnrollmentOffset: 2,
 
-    /** No calculation. */
-    NoDate: 3
+    /** Always available. */
+    AlwaysAvailable: 3,
+
+    /** No calculation (becomes available after previous is completed). */
+    AfterPreviousCompleted: 4
 } as const;
 
-/** Determines the method for calculating the due date. */
-export const DueDateCalculationMethodDescription: Record<number, string> = {
-    0: "Specific",
+/** Determines the method for calculating the available date. */
+export const AvailabilityCriteriaDescription: Record<number, string> = {
+    0: "Specific Date",
 
     1: "Class Start Offset",
 
     2: "Enrollment Offset",
 
-    3: "No Date"
+    3: "Always Available",
+
+    4: "After Previous Completed"
 };
 
-/** Determines the method for calculating the due date. */
-export type DueDateCalculationMethod = typeof DueDateCalculationMethod[keyof typeof DueDateCalculationMethod];
+/** Determines the method for calculating the available date. */
+export type AvailabilityCriteria = typeof AvailabilityCriteria[keyof typeof AvailabilityCriteria];

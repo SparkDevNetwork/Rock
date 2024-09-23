@@ -320,6 +320,11 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.IsFacilitatorCompleted ),
                 () => entity.IsFacilitatorCompleted = box.Bag.IsFacilitatorCompleted );
 
+            if ( !entity.GradedByPersonAliasId.HasValue || box.Bag.PointsEarned != entity.PointsEarned )
+            {
+                entity.GradedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+            }
+
             box.IfValidProperty( nameof( box.Bag.PointsEarned ),
                 () => entity.PointsEarned = box.Bag.PointsEarned );
 

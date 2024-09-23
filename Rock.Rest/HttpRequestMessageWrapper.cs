@@ -75,7 +75,7 @@ namespace Rock.Rest
             }
 
             RequestUri = request.RequestUri;
-            
+
             Method = GetMethodAsUppercaseString( request.Method );
 
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
@@ -115,10 +115,27 @@ namespace Rock.Rest
                 }
             }
 
-            Cookies = new Dictionary<string, string>();
-            foreach ( var cookie in request.Headers.GetCookies().SelectMany( c => c.Cookies ) )
+#if WEBFORMS
+            // HttpRequestMessage.Headers.GetCookies() will barf on perfectly
+            // valid cookie names if they contain a ':' character. So we try to
+            // access cookies via the HttpContext first, which does not have
+            // that problem.
+            if ( requestBase != null )
             {
-                Cookies.AddOrReplace( cookie.Name, cookie.Value );
+                Cookies = new Dictionary<string, string>();
+                foreach ( var key in requestBase.Cookies.AllKeys )
+                {
+                    Cookies.AddOrReplace( key, requestBase.Cookies[key].Value );
+                }
+            }
+            else
+#endif
+            {
+                Cookies = new Dictionary<string, string>();
+                foreach ( var cookie in request.Headers.GetCookies().SelectMany( c => c.Cookies ) )
+                {
+                    Cookies.AddOrReplace( cookie.Name, cookie.Value );
+                }
             }
         }
 

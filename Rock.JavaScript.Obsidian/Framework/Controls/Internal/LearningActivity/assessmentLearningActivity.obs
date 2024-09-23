@@ -4,74 +4,86 @@
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="assessment-term-section">
                 <TextBox v-model="assessmentTerm"
-                         :disabled="disabled"
-                         label="Assessment Term"
-                         help="How we should refer to this assessment." />
+                        :disabled="disabled"
+                        label="Assessment Term"
+                        help="How we should refer to this assessment." />
             </div>
             <div class="header-content-section">
                 <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
             </div>
-            <div class="minor-fields-section">
-                <div class="additional-settings-section">
-                    <NumberBox v-model="multipleChoiceWeight"
-                               :decimalCount="0"
-                               :disabled="disabled"
-                               :min="0"
-                               label="Multiple Choice Weight"
-                               :rules="weightsSumTo100"
-                               :help="multipleChoiceWeightHelpText"
-                               inputGroupClasses="input-width-md">
-                        <template #inputGroupAppend>
-                            <span class="input-group-addon">%</span>
-                        </template>
-                    </NumberBox>
+            <div class="grading-configuration-section d-flex flex-column">
+                <div class="d-flex flex-row flex-fill mb-2">
+                    <SectionHeader title="Grading Configuration" description="" :isSeparatorHidden="true" />
+                    <a href="#" @click.prevent="showGradingHelpText = !showGradingHelpText" class="clickable-help"><i class="fa fa-info-circle text-info"></i></a>
                 </div>
+                <TransitionVerticalCollapse>
+                    <div v-if="showGradingHelpText" class="row">
+                        <div class="col-sm-12 mb-2">
+                            Assessment grading is highly configurable.
+                            The first setting is "Multiple Choice Weight," which defines the percentage of the total score attributed to multiple choice questions.
+                            Additionally, each short answer question is assigned a percentage weight contributing to the total score.
+                            The combined percentages must equal 100% to save the assessment.
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+                <div class="minor-fields-section">
+                    <div class="additional-settings-section">
+                        <NumberBox v-model="multipleChoiceWeight"
+                                :key="multiFieldWeightStateKey"
+                                :decimalCount="0"
+                                :disabled="disabled"
+                                :min="0"
+                                label="Multiple Choice Weight"
+                                :rules="weightsSumTo100"
+                                :help="multipleChoiceWeightHelpText"
+                                inputGroupClasses="input-width-md">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">%</span>
+                            </template>
+                        </NumberBox>
+                    </div>
 
-                <div class="show-results-on-completion-section">
-                    <CheckBox v-model="showResultsOnCompletion" label="Show Results On Completion" :disabled="disabled" />
-                </div>
+                    <div class="show-results-on-completion-section">
+                        <CheckBox v-model="showResultsOnCompletion" label="Show Results On Completion" :disabled="disabled" help="Select to show results summary immediately after assessment completion." />
+                    </div>
 
-                <div class="show-missed-questions-on-results-section">
-                    <CheckBox v-model="showMissedQuestionsOnResults" label="Show Missed Questions On Results" :disabled="disabled" />
+                    <div class="show-missed-questions-on-results-section">
+                        <CheckBox v-model="showMissedQuestionsOnResults" label="Show Missed Questions On Results" :disabled="disabled" help="Select to include missed questions in the results summary shown immediately after assessment completion." />
+                    </div>
                 </div>
             </div>
             <div class="assessment-items-section">
                 <div class="assessment-items-title-bar">
                     <h4 class="assessment-items-header">Assessment Items</h4>
 
-                    <button
-                            aria-label="Add an assessment item"
-                            :disabled="disabled"
-                            class="btn btn-default btn-small add-assessment-item-button text-muted"
-                            @click.prevent="addAssessmentItem(0)">
+                    <button aria-label="Add an assessment item" :disabled="disabled" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(0)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
-                <div class="assessment-items-container"
-                     v-dragSource="dragOptions"
-                     v-dragTarget="dragOptions">
+                <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
                     <div class="well well-sm assessment-item-container" v-for="(item, index) in items">
                         <div class="assessment-item assessment-item-reorder-section">
                             <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
 
-                            <button aria-label="Remove this item"
-                                    :disabled="disabled"
-                                    class="btn btn-default btn-square remove-item-button"
-                                    @click.prevent="items.splice(index, 1)">
+                            <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
                                 <i class="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div class="assessment-item assessment-item-type-section">
-                            <DropDownList v-model="item.typeName"
-                                          :disabled="disabled"
-                                          :items="itemTypes"
-                                          label="Type"
-                                          :show-blank-item="false" />
+                            <DropDownList v-model="item.typeName" :disabled="disabled" :items="itemTypes" label="Type" :show-blank-item="false" />
                         </div>
                         <div class="assessment-item assessment-item-configuration-section">
                             <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
                             <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
-                            <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" :totalActivityPoints="activityBag.points" />
+                            <AssessmentItemShortAnswer
+                                                    v-if="item.typeName === 'Short Answer'"
+                                                    :allAssessmentWeightsSumTo100="weightsSumTo100"
+                                                    :weightsValidationKey="multiFieldWeightStateKey"
+                                                    v-model="items[index]"
+                                                    :disabled="disabled"
+                                                    :screenToShow="screenToShow"
+                                                    rules="required"
+                                                    :totalActivityPoints="activityBag.points" />
                         </div>
                     </div>
                 </div>
@@ -86,8 +98,8 @@
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
             <div class="assessment-items-container" v-for="(item, index) of completedItems">
-                <div class="well well-sm assessment-item-container" v-if="item.typeName === 'Short Answer'">
-                    <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                <div class="well well-sm assessment-item-container-scoring" v-if="item.typeName === 'Short Answer'">
+                    <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
                 </div>
             </div>
         </div>
@@ -114,8 +126,7 @@
     <div v-if="screenToShow === ComponentScreen.Completion">
         <fieldset v-if="isStudentAssignedAndIncomplete">
             <div class="header-content-section-summary">
-                <StructuredContentEditor :disabled="true"
-                                         v-model="header" />
+                <StructuredContentEditor :disabled="true" v-model="header" />
             </div>
 
             <div class="assessment-item-container assessment-items-section">
@@ -135,23 +146,20 @@
             </div>
 
             <div v-if="showStudentComment" class="optional-comments-container">
-                <TextBox v-model="studentComment"
-                         label="Optional Comments"
-                         textMode="multiline"
-                         :rows="4" />
+                <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
             </div>
 
             <div class="footer-content-section mt-3">
                 <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)" :disabled="unansweredQuestions">Complete</RockButton>
             </div>
         </fieldset>
-        <div v-if="isStudentAssignedAndCompleted && showResultsOnCompletion">
+        <div v-if="isStudentAssignedAndCompleted">
             <div class="student-completion-summary-header">
                 <h2> {{ activityBag.activityComponent?.name }} </h2>
                 <div class="text-muted">{{ headerSubText }}</div>
             </div>
 
-            <div v-if="hasMultipleChoiceQuestions" class="well well-sm student-completion-summary">
+            <div v-if="hasMultipleChoiceQuestions && showResultsOnCompletion" class="well well-sm student-completion-summary">
                 <div class="results-summary-section">
                     <h4>Results Summary</h4>
                     <h5>{{ resultSummarySubHeader }}</h5>
@@ -182,7 +190,10 @@
     </div>
 
 </template>
-<style scoped>
+<style>
+.clickable-help {
+    margin-left: 6px;
+}
 /* Multiple Choice Weight, Show Results checkboxes... should be on a single line. */
 .minor-fields-section {
     display: flex;
@@ -194,44 +205,45 @@
 .assessment-items-section {
     display: flex;
     flex-direction: column;
+}
 
-    /* With the title bar having a title and add button on left and right respectively. */
-    > .assessment-items-title-bar {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-    }
 
-    .assessment-items-container > .assessment-item-container {
-        display: grid;
-        grid-template-columns: 24px minmax(80px, 30%) 66%;
-        row-gap: 8px;
-        column-gap: 12px;
+/* With the title bar having a title and add button on left and right respectively. */
+.assessment-items-section > .assessment-items-title-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
 
-        .assessment-item {
-            display: flex;
-            flex-direction: column;
-        }
+.assessment-items-container > .assessment-item-container {
+    display: grid;
+    grid-template-columns: 24px minmax(80px, 30%) 66%;
+    row-gap: 8px;
+    column-gap: 12px;
+}
 
-        .assessment-item-reorder-section {
-            grid-column: 1;
-            padding-left: 4px;
+.assessment-item {
+    display: flex;
+    flex-direction: column;
+}
 
-            /* Stack the reorder and delete buttons with space between. */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-        }
+.assessment-item-reorder-section {
+    grid-column: 1;
+    padding-left: 4px;
 
-        .assessment-item-type-section {
-            grid-column: 2;
-        }
+    /* Stack the reorder and delete buttons with space between. */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
 
-        .assessment-item-configuration-section {
-            grid-column: 3;
-        }
-    }
+.assessment-item-type-section {
+    grid-column: 2;
+}
+
+.assessment-item-configuration-section {
+    grid-column: 3;
 }
 
 .assessment-term-section {
@@ -270,6 +282,7 @@ div.summary-sub-title {
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import AssessmentItemMultipleChoice from "./assessmentItemMultipleChoice.obs";
     import AssessmentItemSection from "./assessmentItemSection.obs";
@@ -280,17 +293,29 @@ div.summary-sub-title {
     import { AssessmentActivityCompletion, AssessmentActivityConfiguration, AssessmentActivityDefaults, AssessmentItem, AssessmentItemType, MultipleChoiceItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder, DragOperation } from "@Obsidian/Directives/dragDrop";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emit = defineEmits({ ...learningActivityEmits });
 
+    /**
+     * Because we potentially have  multiple fields whose validity is shared
+     * (all control values must add up to 100) we want their validity to
+     * be updated when any of their values change. We set this key to a new value
+     * when any of the one components changes it's value - forcing the others to
+     * re-check validity.
+     */
+    const multiFieldWeightStateKey = ref("");
+
     const multipleChoiceWeightHelpText = `
         Enter the percentage weight for the multiple choice section of the test.
         This value will determine how much the multiple choice questions will contribute to the overall score of the test.
-        For example, if you set this to 40% then 40% of the student's total test score will be based on their performance in the multiple choice section.
-        Ensure that the combined weights of all sections add up to 100%.
-    `;
+        For example, if you set this to 40% then 40% of the individual's total test score will be based on their performance in the multiple choice section.
+        Ensure that the combined weights of all sections add up to 100%.`;
+
+    const showGradingHelpText = ref(false);
 
     // #region Values
 
@@ -372,7 +397,7 @@ div.summary-sub-title {
     }
 
     /**
-     * Gets a list of completion items for the student.
+     * Gets a list of completion items for the individual.
      * For complete activities this will take the configuration values from the
      * completed activity; otherwise from the activity's configuration.
      */
@@ -387,9 +412,39 @@ div.summary-sub-title {
             }));
     }
 
+    /** Validation rule for ensuring that all weights add up to 100 for the assessment item. */
+    function weightsSumTo100(): string | boolean {
+        // If there are no weights configured return true.
+        if (!Array.isArray(allWeights.value) || allWeights.value.length === 0) {
+            return true;
+        }
+
+        // Sum matches Sum To, should pass.
+        if (sumOfAllWeights.value === 100) {
+            return true;
+        }
+
+        return `All weights must add up to 100`;
+    }
+
+    /**
+     * If the validity of the current sum of weights is out of sync
+     * force all (weight) controls to update.
+     * */
+    function handleMultiFieldWeightValidity(): void {
+        const isCurrentlyValid = sumOfAllWeights.value === 100;
+
+        if (isCurrentlyValid !== areWeightsValid.value) {
+            multiFieldWeightStateKey.value = newGuid();
+            areWeightsValid.value = isCurrentlyValid;
+        }
+    }
+
     // #endregion
 
     // #region Computed Values
+
+    const hasBeenGraded = computed(() => completionBag.value.isFacilitatorCompleted === true);
 
     const isStudentAssignedAndCompleted = computed(() =>
         assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted === true
@@ -501,22 +556,14 @@ div.summary-sub-title {
         (completedItems.value ?? []).some(i => assessmentItemTypesRequiringResponse.includes(i.typeName) && (i.response ?? "").length === 0)
     );
 
-    /** Validation rule for ensuring that all weights add up to 100 for the assessment item. */
-    function weightsSumTo100(): string | boolean {
-        // If there are no weights configured return true.
-        if (!Array.isArray(allWeights.value) || allWeights.value.length === 0) {
-            return true;
-        }
+    /** Gets the combined value of all weights. */
+    const sumOfAllWeights = computed(() => allWeights.value?.reduce((prev, cur) => prev + cur) ?? 0);
 
-        const sum = allWeights.value.reduce((prev, cur) => prev + cur);
-
-        // Sum matches Sum To, should pass.
-        if (sum === 100) {
-            return true;
-        }
-
-        return `All weights must add up to 100`;
-    }
+    /**
+     * Tracks the previous state of the weights validity to ensure all necessary
+     * controls have their validity updated as needed.
+     */
+    const areWeightsValid = ref(sumOfAllWeights.value === 100);
 
     // #endregion
 
@@ -547,6 +594,7 @@ div.summary-sub-title {
         showResultsOnCompletion
     ], () => {
         if (screenToShow.value === ComponentScreen.Configuration) {
+            handleMultiFieldWeightValidity();
             debouncedActivityBagEmits();
         }
     }, { deep: true });
@@ -571,16 +619,16 @@ div.summary-sub-title {
         emit("update:completionBag", updatedCompletionBag);
     }, { deep: true });
 
-    // If the student hasn't completed the assessment ensure we are using
+    // If the individual hasn't completed the assessment ensure we are using
     // the latest configuration; otherwise use the assessment that was saved
     // at the time of completion (In case the facilitator has since updated the assessment).
-    if (isStudentAssignedAndCompleted.value !== true){
+    if (isStudentAssignedAndCompleted.value !== true) {
         completedItems.value = getItemsForStudentCompletion();
     }
     else {
         // If the assessment has been completed use the weights
         // that were configured at the time of completion (if present).
-        if (multipleChoiceWeightAtCompletion){
+        if (multipleChoiceWeightAtCompletion) {
             multipleChoiceWeight.value = multipleChoiceWeightAtCompletion.value;
         }
     }

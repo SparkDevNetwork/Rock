@@ -19,12 +19,12 @@ namespace Rock.Enums.Lms
     /// <summary>
     /// Determines the method for calculating the due date.
     /// </summary>
-    public enum DueDateCalculationMethod
+    public enum DueDateCriteria
     {
         /// <summary>
         /// A specific date.
         /// </summary>
-        Specific = 0,
+        SpecificDate = 0,
 
         /// <summary>
         /// An offset of the class start date.

@@ -18,11 +18,16 @@
                 </div>
                 <div class="configuration-field-question-weight">
                     <NumberBox v-model="questionWeight"
+                               :key="weightsValidationKey"
                                :disabled="disabled"
                                label="Question Weight"
-                               rules="required"
-                               :help="configurationWeightHelpText" />
-
+                               :rules="allAssessmentWeightsSumTo100"
+                               :help="configurationWeightHelpText"
+                               inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">%</span>
+                        </template>
+                    </NumberBox>
                 </div>
                 <div class="configuration-field-answer-box-rows">
                     <NumberBox v-model="answerBoxRows"
@@ -47,30 +52,33 @@
                      textMode="multiline"
                      :rows="answerBoxRows"
                      :maxLength="maxCharacterCount"
-                     :showCountDown="true"
+                     :showCountDown="maxCharacterCount > 0"
                      rules="required"
                      inputClasses="form-control" />
         </div>
 
-        <div v-if="screenToShow === ComponentScreen.Scoring">
-            <div class="scoring-screen-question-header question-header">
-                <span class="question-section">{{ question }}</span>
+        <template v-if="screenToShow === ComponentScreen.Scoring">
+            <div class="scoring-screen-question-header question-header d-flex flex-fill">
+                <div>
+                    <span class="question-section">{{ question }}</span>
+                    <div class="answer-section text-muted">
+                        {{ response }}
+                    </div>
+                </div>
+
                 <NumberBox v-model="pointsEarned"
                            label="Score"
                            :min="0"
                            :max="pointsPossible"
                            :rules="'lte:' + pointsPossible"
-                           inputGroupClasses="input-width-md">
+                           inputGroupClasses="input-width-lg">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">out of {{ pointsPossible }}</span>
                     </template>
                 </NumberBox>
             </div>
-            <div class="answer-section text-muted">
-                {{ response }}
-            </div>
 
-        </div>
+        </template>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
             <div class="summary-screen-question-header question-header">
@@ -135,10 +143,17 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ComponentScreen } from "./learningActivity";
-    import { AssessmentItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
+    import { AssessmentItem, ShortAnswerItem, WeightsValidationFunction } from "./assessmentLearningActivity.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether the activity has been graded yet. If not then the default pointsEarned will be empty. */
+        hasBeenGraded: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -149,30 +164,41 @@
             required: true
         },
 
-        totalActivityPoints: {
-            type: Number as PropType<number>,
-            default: 0
-        },
-
         screenToShow: {
             type: Object as PropType<ComponentScreen>,
             required: true
+        },
+
+        allAssessmentWeightsSumTo100: {
+            type: Function as PropType<WeightsValidationFunction>,
+        },
+
+        weightsValidationKey: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        totalActivityPoints: {
+            type: Number as PropType<number>,
+            default: 0
         }
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: ShortAnswerItem): void
+        (event: "update:modelValue", value: ShortAnswerItem): void,
+        (event: "update:weightsValidationKey", value: string): void
     }>();
 
+    const defaultAnswerBoxRows = 3;
     const internalModelValue = ref(props.modelValue as ShortAnswerItem);
 
     const question = ref(internalModelValue.value.question ?? "");
     const helpText = ref(internalModelValue.value.helpText ?? "");
     const questionWeight = ref(internalModelValue.value.questionWeight);
-    const answerBoxRows = ref(internalModelValue.value.answerBoxRows);
-    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount);
+    const answerBoxRows = ref(internalModelValue.value.answerBoxRows ?? defaultAnswerBoxRows);
+    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount ?? 0);
     const response = ref(internalModelValue.value.response ?? "");
-    const pointsEarned = ref(internalModelValue.value.pointsEarned ?? 0);
+    const pointsEarned = ref<number | null>(props.hasBeenGraded ? internalModelValue.value.pointsEarned : null);
 
     // If the completion record contains pointsPossible values then use those;
     // otherwise calculate based on current total activity points and question weight.
@@ -182,10 +208,10 @@
     const configurationWeightHelpText = `
         Enter the percentage weight for this question.
         This value will determine how much this one question will contribute to the overall score of the test.
-        For example, if you set this to 40% then 40% of the student's total test score will be based on their response to this one question.
+        For example, if you set this to 40% then 40% of the individual's total test score will be based on their response to this one question.
         Ensure that the combined weights of all sections add up to 100%.`;
 
-    watch([question, helpText, questionWeight, answerBoxRows, maxCharacterCount, response, pointsEarned], () => {
+    function emitNewModel(): void {
         const newModelValue = {
             answerBoxRows: toValue(answerBoxRows),
             helpText: toValue(helpText),
@@ -200,6 +226,18 @@
         } as ShortAnswerItem;
 
         emit("update:modelValue", newModelValue);
+    }
+
+    watch(questionWeight, () => {
+        // Because the parent component owns a control whose
+        // validity is tied to the value of this control
+        // we need to alert them when it's value changes.
+        emit("update:weightsValidationKey", newGuid());
+        emitNewModel();
+    });
+
+    watch([question, helpText, answerBoxRows, maxCharacterCount, response, pointsEarned], () => {
+        emitNewModel();
     });
 
     /** CSS classes for the panel. */

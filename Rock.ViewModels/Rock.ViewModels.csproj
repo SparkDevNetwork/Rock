@@ -163,6 +163,8 @@
     <Compile Include="Blocks\Cms\PageList\PageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionBag.cs" />
+    <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersistedDatasetList\PersistedDatasetListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkList\PersonalLinkListOptionsBag.cs" />
@@ -180,6 +182,7 @@
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientBag.cs" />
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientScopeBag.cs" />
+    <Compile Include="Blocks\Core\LogViewer\RockLogEventsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusTopicBag.cs" />
     <Compile Include="Blocks\Crm\PhotoVerifyList\PhotoVerifyListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryGetScheduledPaymentDatesRequestBag.cs" />

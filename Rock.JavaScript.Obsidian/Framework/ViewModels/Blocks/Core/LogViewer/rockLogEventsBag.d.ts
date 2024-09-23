@@ -21,36 +21,15 @@
 // </copyright>
 //
 
-/** Determines the method for calculating the available date. */
-export const AvailableDateCalculationMethod = {
-    /** A specific date. */
-    Specific: 0,
+export type RockLogEventsBag = {
+    /** Gets or sets the DateTime */
+    dateTime?: string | null;
 
-    /** An offset of the class start date. */
-    ClassStartOffset: 1,
+    domain?: string | null;
 
-    /** An offset of the class enrollment date. */
-    EnrollmentOffset: 2,
+    exception?: string | null;
 
-    /** Always available. */
-    AlwaysAvailable: 3,
+    level?: string | null;
 
-    /** No calculation (becomes available after previous is completed). */
-    AfterPreviousCompleted: 4
-} as const;
-
-/** Determines the method for calculating the available date. */
-export const AvailableDateCalculationMethodDescription: Record<number, string> = {
-    0: "Specific",
-
-    1: "Class Start Offset",
-
-    2: "Enrollment Offset",
-
-    3: "Always Available",
-
-    4: "After Previous Completed"
+    message?: string | null;
 };
-
-/** Determines the method for calculating the available date. */
-export type AvailableDateCalculationMethod = typeof AvailableDateCalculationMethod[keyof typeof AvailableDateCalculationMethod];

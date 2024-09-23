@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using DotLiquid.Util;
-
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
@@ -306,14 +304,14 @@ namespace Rock.Blocks.Lms
                     ActivityComponentSettingsJson = configurationToSend,
                     AssignTo = activity.LearningActivity.AssignTo,
                     AvailableDateCalculated = activity.LearningActivity.AvailableDateCalculated,
-                    AvailableDateCalculationMethod = activity.LearningActivity.AvailableDateCalculationMethod,
+                    AvailabilityCriteria = activity.LearningActivity.AvailabilityCriteria,
                     AvailableDateDefault = activity.LearningActivity.AvailableDateDefault,
                     AvailableDateOffset = activity.LearningActivity.AvailableDateOffset,
                     CurrentPerson = currentPersonBag,
                     Description = activity.LearningActivity.Description,
                     DescriptionAsHtml = activityDescriptionAsHtml,
                     DueDateCalculated = activity.LearningActivity.DueDateCalculated,
-                    DueDateCalculationMethod = activity.LearningActivity.DueDateCalculationMethod,
+                    DueDateCriteria = activity.LearningActivity.DueDateCriteria,
                     DueDateDefault = activity.LearningActivity.DueDateDefault,
                     DueDateDescription = activity.LearningActivity.DueDateDescription,
                     DueDateOffset = activity.LearningActivity.DueDateOffset,
@@ -324,17 +322,17 @@ namespace Rock.Blocks.Lms
                     Points = activity.LearningActivity.Points
                 };
 
-                var isPreviousMethodCalculation = activityBag.AvailableDateCalculationMethod == AvailableDateCalculationMethod.AfterPreviousCompleted;
+                var isPreviousMethodCalculation = activityBag.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted;
                 var isPreviousActivityCompleted = previousActivityCompletion == null || previousActivityCompletion.IsStudentCompleted | previousActivityCompletion.IsFacilitatorCompleted;
 
                 var isActivityAvailable =
-                    activityBag.AvailableDateCalculationMethod == AvailableDateCalculationMethod.AlwaysAvailable ||
+                    activityBag.AvailabilityCriteria == AvailabilityCriteria.AlwaysAvailable ||
                     ( activityBag.AvailableDateCalculated.HasValue && activityBag.AvailableDateCalculated.Value <= DateTime.Now ) ||
                     ( isPreviousMethodCalculation && isPreviousActivityCompleted );
 
                 var availableDate =
                     isPreviousMethodCalculation && isPreviousActivityCompleted ?
-                    previousActivityCompletion.CompletedDate :
+                    previousActivityCompletion?.CompletedDate :
                     activity.AvailableDateTime;
 
                 var activityCompletion = new LearningActivityCompletionBag
@@ -347,6 +345,7 @@ namespace Rock.Blocks.Lms
                     CompletedDate = activity.CompletedDateTime,
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
+                    GradeName = activity.GetGrade( scales )?.Name,
                     GradeText = activity.GetGradeText( scales ),
                     IsAvailable = isActivityAvailable,
                     IsGradePassing = activity.LearningActivity.Points == 0 || activity.GetGrade( scales ).IsPassing,
@@ -590,11 +589,10 @@ namespace Rock.Blocks.Lms
                 }
 
                 activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( rockContext );
-                activity.IsStudentCompleted = true;
                 activity.StudentComment = activityCompletionBag.StudentComment;
 
-                // Only allow student updating completion and points if this hasn't yet been completed by the facilitator.
-                if ( !activity.IsFacilitatorCompleted )
+                // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
+                if ( !activity.GradedByPersonAliasId.HasValue )
                 {
                     var components = LearningActivityContainer.Instance.Components;
                     var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
@@ -612,7 +610,18 @@ namespace Rock.Blocks.Lms
                 
                 if ( !activity.CompletedByPersonAliasId.HasValue )
                 {
-                    var currentPerson = GetCurrentPerson().PrimaryAliasId;
+                    activity.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+
+                    if ( activity.LearningActivity.AssignTo == AssignTo.Student )
+                    {
+                        activity.IsStudentCompleted = true;
+                        activityCompletionBag.IsStudentCompleted = true;
+                    }
+                    else
+                    {
+                        activity.IsFacilitatorCompleted = true;
+                        activityCompletionBag.IsFacilitatorCompleted = true;
+                    }
                 }
 
                 if ( !activity.CompletedDateTime.HasValue )
@@ -624,16 +633,16 @@ namespace Rock.Blocks.Lms
 
                 rockContext.SaveChanges();
 
-                activityCompletionBag.IsStudentCompleted = true;
                 activityCompletionBag.CompletedDate = activity.CompletedDateTime;
                 activityCompletionBag.WasCompletedOnTime = activity.WasCompletedOnTime;
+                activityCompletionBag.GradeName = activity.GetGrade()?.Name;
 
                 // Return the raw component settings so a grade can be computed (if applicable).
                 activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
 
                 // Include the updated activity completion in the response.
                 // if the activity checks the completion JSON for historical configuration
-                // we'll want to ensure it's provided now.
+                // we'll want to ensure it's provided.
                 activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
 
                 return ActionOk( activityCompletionBag );

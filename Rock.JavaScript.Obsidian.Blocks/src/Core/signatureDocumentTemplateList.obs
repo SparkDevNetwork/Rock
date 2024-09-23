@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Document Template"
+          title="Document Templates"
           :entityTypeGuid="EntityType.SignatureDocumentTemplate"
           stickyHeader
           liveUpdates
@@ -22,19 +23,20 @@
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="md"
-                    width="30%" />
+                    width="45%" />
 
         <TextColumn name="binaryFileType"
                     title="File Type"
                     field="binaryFileType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <NumberColumn name="documents"
                       title="Requested Documents"
                       field="documents"
                       :filter="numberValueFilter"
-                      visiblePriority="md" />
+                      visiblePriority="md"
+                      width="250"/>
 
         <SecurityColumn />
 
@@ -45,7 +47,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, numberValueFilter, DeleteColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, numberValueFilter, pickExistingValueFilter, DeleteColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SignatureDocumentTemplateListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateList/signatureDocumentTemplateListOptionsBag";

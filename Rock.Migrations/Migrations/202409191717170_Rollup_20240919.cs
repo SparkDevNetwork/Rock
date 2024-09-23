@@ -63,17 +63,10 @@ namespace Rock.Migrations
 
         private void UpdateAttributesUp()
         {
-            // Attribute for  BlockType
-            //   BlockType: Account Edit
-            //   Category: Security
-            //   Attribute: Show Addresses
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "F501AB3F-1F41-4C06-9BC2-57C42E702995", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Addresses", "ShowAddresses", "Show Addresses", @"Allows hiding the address field.", 0, @"False", "B8E2F6BB-E457-4EA1-A484-7C6C5BB599D3" );
+            Sql( @"
+UPDATE [Attribute] SET [Name] = 'Show Addresses', [Key] = 'ShowAddresses', [AbbreviatedName] = 'Show Addresses' WHERE [Guid] = '85534E70-C876-4E09-8DD5-B143896FAB38'
 
-            // Attribute for  BlockType
-            //   BlockType: Account Edit
-            //   Category: Security
-            //   Attribute: Address Type
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "F501AB3F-1F41-4C06-9BC2-57C42E702995", "48624B0B-6A58-45B8-9E47-B67B67898D25", "Address Type", "AddressType", "Location Type", @"The type of location that address should use.", 2, @"8C52E53C-2A66-435A-AE6E-5EE307D9A0DC", "FEDB6DBD-38AA-4E89-8C87-DF2F2DFD2959" );
+UPDATE [Attribute] SET [Name] = 'Address Type', [Key] = 'AddressType', [AbbreviatedName] = 'Address Type' WHERE [Guid] = 'DC31914A-0F13-4243-91E7-69A7EBBCCF10'" );
         }
 
         private void UpdateAttributesDown()
@@ -82,13 +75,13 @@ namespace Rock.Migrations
             //   BlockType: Account Edit
             //   Category: Security
             //   Attribute: Address Type
-            RockMigrationHelper.DeleteAttribute( "FEDB6DBD-38AA-4E89-8C87-DF2F2DFD2959" );
+            RockMigrationHelper.DeleteAttribute( "85534e70-c876-4e09-8dd5-b143896fab38" );
 
             // Attribute for BlockType
             //   BlockType: Account Edit
             //   Category: Security
             //   Attribute: Show Addresses
-            RockMigrationHelper.DeleteAttribute( "B8E2F6BB-E457-4EA1-A484-7C6C5BB599D3" );
+            RockMigrationHelper.DeleteAttribute( "dc31914a-0f13-4243-91e7-69a7ebbccf10" );
         }
 
         private void ChopBlocksUp()

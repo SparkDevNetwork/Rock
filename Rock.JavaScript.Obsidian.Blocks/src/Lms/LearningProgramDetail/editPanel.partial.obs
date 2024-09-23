@@ -32,7 +32,7 @@
 
                             <CheckBox
                                       v-model="isCompletionStatusTracked"
-                                      help="Determines if program start and end dates will be automatically tracked for students as they start/complete classes."
+                                      help="Determines if program start and end dates will be automatically tracked for individuals as they start/complete classes."
                                       label="Track Program Status" />
 
                             <DropDownList

@@ -16,6 +16,7 @@
 //
 
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -40,6 +41,12 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The attendance rule.</value>
         public virtual AttendanceRule AttendanceRule { get; }
+
+        /// <summary>
+        /// Gets the matching logic used when <see cref="AttendanceRule"/>
+        /// is <see cref="AttendanceRule.AlreadyEnrolledInGroup"/>.
+        /// </summary>
+        public virtual AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; }
 
         /// <summary>
         /// Gets where labels should be printed for groups in this area.
@@ -69,6 +76,7 @@ namespace Rock.CheckIn.v2
         internal AreaConfigurationData( GroupTypeCache groupTypeCache, RockContext rockContext )
         {
             AttendanceRule = groupTypeCache.AttendanceRule;
+            AlreadyEnrolledMatchingLogic = groupTypeCache.AlreadyEnrolledMatchingLogic;
             PrintTo = groupTypeCache.AttendancePrintTo;
         }
 

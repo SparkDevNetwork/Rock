@@ -72,6 +72,7 @@
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -116,6 +117,7 @@
     <Compile Include="Core\DocumentTypeList.cs" />
     <Compile Include="Crm\PhotoUpload.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
+    <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Lms\LearningActivityCompletionDetail.cs" />
     <Compile Include="Lms\LearningActivityCompletionList.cs" />
@@ -151,6 +153,7 @@
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\AuthClientDetail.cs" />
+    <Compile Include="Core\LogViewer.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />
     <Compile Include="Finance\FundraisingList.cs" />
     <Compile Include="Core\TagReport.cs" />

@@ -51,6 +51,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningParticipantDetail
         public bool IsFacilitator { get; set; }
 
         /// <summary>
+        /// Gets or sets the note specific to this class participant.
+        /// </summary>
+        public string Note { get; set; }
+
+        /// <summary>
         /// Gets or sets the (group type) role of the participant.
         /// </summary>
         public ListItemBag ParticipantRole { get; set; }

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass" >
+    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass">
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
                 <LearningPlanGrid :isAddEnabled="isEditable"
@@ -14,14 +14,14 @@
             <div v-else-if="item === 'Students'">
                 <StudentGrid :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
-                             @addClick="onAddParticipantClick"
+                             @addClick="onAddStudentClick"
                              @rowClick="onParticipantClick"
                              @deleteClick="onDeleteParticipantClick" />
             </div>
             <div v-else-if="item === 'Facilitators'">
                 <FacilitatorGrid :isAddEnabled="isEditable"
                                  :isDeleteEnabled="isEditable"
-                                 @addClick="onAddParticipantClick"
+                                 @addClick="onAddFacilitatorClick"
                                  @rowClick="onParticipantClick"
                                  @deleteClick="onDeleteParticipantClick" />
             </div>
@@ -35,17 +35,45 @@
 
             <div v-else-if="item === 'Announcements'">
                 <AnnouncementGrid :isAddEnabled="isEditable"
-                                 :isDeleteEnabled="isEditable"
-                                 @addClick="onAddAnnouncementClick"
-                                 @rowClick="onAnnouncementClick"
-                                 @deleteClick="onDeleteAnnouncementClick" />
+                                  :isDeleteEnabled="isEditable"
+                                  @addClick="onAddAnnouncementClick"
+                                  @rowClick="onAnnouncementClick"
+                                  @deleteClick="onDeleteAnnouncementClick" />
             </div>
         </template>
     </TabbedContent>
+
+    <Modal v-model="isParticipantModalOpen" :title="modalTitle" saveText="Save" @save="onSaveParticipant">
+        <NotificationBox v-show="participantModalError.length > 0" alertType="danger">
+            {{ participantModalError }}
+        </NotificationBox>
+
+        <PersonPicker
+                      formControlClasses="input-width-md margin-l-sm"
+                      v-model="personAlias"
+                      :excludeDeceased="true"
+                      :enableSelfSelection="true"
+                      label="Individual"
+                      rules="required" />
+
+        <TextBox
+                 v-model="participantNote"
+                 label="Note"
+                 textMode="multiline"
+                 :rows="4" />
+
+        <AttributeValuesContainer v-model="participantAttributeValues" :attributes="participantAttributes" isEditMode :numberOfColumns="2" />
+    </Modal>
+
 </template>
 
 <script setup lang="ts">
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import LearningPlanGrid from "./learningPlanGrid.partial.obs";
     import StudentGrid from "./studentGrid.partial.obs";
     import FacilitatorGrid from "./facilitatorGrid.partial.obs";
@@ -56,6 +84,9 @@
     import { NavigationUrlKey } from "./types.partial";
     import { PropType, ref, watch } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -97,7 +128,17 @@
 
     // Open the selected tab if one is specified.
     const params = new URLSearchParams(window.location.search);
-    const selectedTab = ref(params.get("selection") ?? "");
+    const selectedTab = ref(params.get("tab") ?? "");
+
+    // Participant Modal properties.
+    const participantModalError = ref("");
+    const isParticipantModalOpen = ref(false);
+    const isAddingFacilitator = ref(false);
+    const modalTitle = ref("Add Student");
+    const personAlias = ref<ListItemBag | undefined>();
+    const participantNote = ref("");
+    const participantAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const participantAttributeValues = ref<Record<string, string>>({});
 
     // #endregion
 
@@ -154,42 +195,53 @@
      * Called when the Add activity button has been clicked by the individual.
      */
     function onAddActivityClick(): void {
-        navigateToPage(NavigationUrlKey.ActivityDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+        navigateToPage(NavigationUrlKey.ActivityDetailPage, `0?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when the Add announcement button has been clicked by the individual.
      */
      function onAddAnnouncementClick(): void {
-        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `0?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when the Add content page button has been clicked by the individual.
      */
      function onAddContentPageClick(): void {
-        navigateToPage(NavigationUrlKey.ContentPageDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, `0?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
-     * Called when the Add student or facilitator button has been clicked by the individual.
+     * Called when the Add student button has been clicked by the individual.
      */
-     function onAddParticipantClick(): void {
-        navigateToPage(NavigationUrlKey.ParticipantDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+     function onAddStudentClick(): void {
+        modalTitle.value = "Add Student";
+        isAddingFacilitator.value = false;
+        isParticipantModalOpen.value = true;
+    }
+
+    /**
+     * Called when the Add facilitator button has been clicked by the individual.
+     */
+     function onAddFacilitatorClick(): void {
+        modalTitle.value = "Add Facilitator";
+        isAddingFacilitator.value = true;
+        isParticipantModalOpen.value = true;
     }
 
     /**
      * Called when an announcement row has been clicked by the individual.
      */
      function onAnnouncementClick(key: string | null): void {
-        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `${key}?returnUrl=${window.location}`);
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `${key}?returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when a content page row has been clicked by the individual.
      */
      function onContentPageClick(key: string | null): void {
-        navigateToPage(NavigationUrlKey.ContentPageDetailPage, `${key}?returnUrl=${window.location}`);
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, `${key}?returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
@@ -246,6 +298,31 @@
         });
 
         return result.isSuccess;
+    }
+
+    async function onSaveParticipant(): Promise<void> {
+        const participant: LearningParticipantBag = {
+            currentGradePercent: 0,
+            note: participantNote.value,
+            personAlias: personAlias.value,
+            isFacilitator: isAddingFacilitator.value
+        };
+
+        const result = await invokeBlockAction<string>("SaveParticipant", {
+            participantBag: participant
+        });
+
+        if (result.isError && result.errorMessage){
+            participantModalError.value = result.errorMessage;
+            return;
+        }
+
+        if (!result.isSuccess){
+            participantModalError.value = "Unknown error while trying to save the participant.";
+            return;
+        }
+
+        isParticipantModalOpen.value = false;
     }
 
     // #endregion

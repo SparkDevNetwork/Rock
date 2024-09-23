@@ -164,6 +164,22 @@ namespace Rock.CodeGeneration.FileGenerators
             for ( int i = 0; i < sortedFields.Count; i++ )
             {
                 var field = fields[i];
+                var obsoleteFieldAttribute = field.GetCustomAttribute<ObsoleteAttribute>();
+
+                if ( isDescription && obsoleteFieldAttribute != null )
+                {
+                    // If this enum value is obsolete and there is another
+                    // enum that is not obsolete with the same integer
+                    // value then skip this one.
+                    var hasOtherField = sortedFields
+                        .Any( f => ( int ) f.GetRawConstantValue() == ( int ) field.GetRawConstantValue()
+                            && f.GetCustomAttribute<ObsoleteAttribute>() == null );
+
+                    if ( hasOtherField )
+                    {
+                        continue;
+                    }
+                }
 
                 if ( i > 0 )
                 {
@@ -175,24 +191,12 @@ namespace Rock.CodeGeneration.FileGenerators
                 if ( !isDescription )
                 {
                     AppendCommentBlock( sb, field, 4 );
-                }
-                else
-                {
-                    fieldName = field.GetRawConstantValue().ToString();
 
-                    if ( fieldName[0] == '-' )
+                    if ( obsoleteFieldAttribute != null )
                     {
-                        fieldName = $"[{fieldName}]";
+                        sb.AppendLine( $"    /** @deprecated {obsoleteFieldAttribute.Message ?? string.Empty} */" );
                     }
-                }
 
-                if ( field.GetCustomAttribute<ObsoleteAttribute>() is ObsoleteAttribute obsoleteFieldAttribute )
-                {
-                    sb.AppendLine( $"    /** @deprecated {obsoleteFieldAttribute.Message ?? string.Empty} */" );
-                }
-
-                if ( !isDescription )
-                {
                     if ( type.GetCustomAttribute<FlagsAttribute>() != null )
                     {
                         sb.Append( $"    {fieldName}: 0x{( int ) field.GetRawConstantValue():X4}" );
@@ -204,9 +208,16 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
+                    fieldName = field.GetRawConstantValue().ToString();
+
+                    if ( fieldName[0] == '-' )
+                    {
+                        fieldName = $"[{fieldName}]";
+                    }
+
                     if ( field.GetCustomAttribute<DescriptionAttribute>() is DescriptionAttribute fieldDescriptionAttribute )
                     {
-                        sb.Append( $"    {fieldName}: \"{fieldDescriptionAttribute.Description}\"");
+                        sb.Append( $"    {fieldName}: \"{fieldDescriptionAttribute.Description}\"" );
                     }
                     else
                     {

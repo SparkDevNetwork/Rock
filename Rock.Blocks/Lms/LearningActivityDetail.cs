@@ -122,6 +122,12 @@ namespace Rock.Blocks.Lms
 
             options.HasCompletions = ActivityHasCompletions();
 
+            var configurationMode = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
+            var activityService = new LearningActivityService( RockContext );
+
+            options.AvailabilityCriteriaOptions = activityService.GetAvailabilityCriteria( configurationMode );
+            options.DueDateCriteriaOptions = activityService.GetDueDateCriteria( configurationMode );
+
             return options;
         }
 
@@ -249,7 +255,7 @@ namespace Rock.Blocks.Lms
                 ActivityComponent = activityComponentBag,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
                 AssignTo = entity.AssignTo,
-                AvailableDateCalculationMethod = entity.AvailableDateCalculationMethod,
+                AvailabilityCriteria = entity.AvailabilityCriteria,
                 AvailableDateCalculated = entity.AvailableDateCalculated,
                 AvailableDateDefault = entity.AvailableDateDefault,
                 AvailableDateDescription = entity.AvailableDateDescription,
@@ -262,7 +268,7 @@ namespace Rock.Blocks.Lms
                 CurrentPerson = currentPersonBag,
                 Description = entity.Description,
                 DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
-                DueDateCalculationMethod = entity.DueDateCalculationMethod,
+                DueDateCriteria = entity.DueDateCriteria,
                 DueDateCalculated = entity.DueDateCalculated,
                 DueDateDefault = entity.DueDateDefault,
                 DueDateDescription = entity.DueDateDescription,
@@ -275,6 +281,17 @@ namespace Rock.Blocks.Lms
                 PercentComplete = completionStatistics.PercentComplete,
                 Points = entity.Points,
                 SendNotificationCommunication = entity.SendNotificationCommunication
+            };
+        }
+
+        private LearningActivity GetDefaultEntity()
+        {
+            return new LearningActivity
+            {
+                Id = 0,
+                Guid = Guid.Empty,
+                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AlwaysAvailable,
+                DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
         }
 
@@ -336,8 +353,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.AssignTo ),
                 () => entity.AssignTo = box.Bag.AssignTo );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
-                () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
+            box.IfValidProperty( nameof( box.Bag.AvailabilityCriteria ),
+                () => entity.AvailabilityCriteria = box.Bag.AvailabilityCriteria );
 
             box.IfValidProperty( nameof( box.Bag.AvailableDateDefault ),
                 () => entity.AvailableDateDefault = box.Bag.AvailableDateDefault );
@@ -345,8 +362,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
                 () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateCalculationMethod ),
-                () => entity.DueDateCalculationMethod = box.Bag.DueDateCalculationMethod );
+            box.IfValidProperty( nameof( box.Bag.DueDateCriteria ),
+                () => entity.DueDateCriteria = box.Bag.DueDateCriteria );
 
             box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
                 () => entity.DueDateDefault = box.Bag.DueDateDefault );
@@ -391,11 +408,7 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
-                return new LearningActivity
-                {
-                    Id = 0,
-                    Guid = Guid.Empty
-                };
+                return GetDefaultEntity();
             }
 
             var entityService = new LearningActivityService( RockContext );
@@ -441,7 +454,7 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningActivity();
+                entity = GetDefaultEntity();
                 entityService.Add( entity );
 
                 var maxOrder = entityService.Queryable()
@@ -472,8 +485,8 @@ namespace Rock.Blocks.Lms
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityId ) ?? "";
 
             // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
-            var excludedParamKeys = new[] { PageParameterKey.AutoEdit, PageParameterKey.ReturnUrl };
-            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+            var excludedParamKeys = new[] { PageParameterKey.AutoEdit.ToLower(), PageParameterKey.ReturnUrl.ToLower() };
+            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
@@ -628,7 +641,6 @@ namespace Rock.Blocks.Lms
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( queryParams ) );
         }
-
 
         #endregion
     }

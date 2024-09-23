@@ -47,7 +47,7 @@ export type LearningActivityCompletionBag = {
     binaryFile?: ListItemBag | null;
 
     /**
-     * Gets or sets the date the student
+     * Gets or sets the date the individual
      * completed the related Rock.Model.LearningActivity.
      */
     completedDate?: string | null;
@@ -57,6 +57,9 @@ export type LearningActivityCompletionBag = {
 
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
+
+    /** Gets or sets the text of the grade earned by the student. */
+    gradeName?: string | null;
 
     /** Gets or sets the text for the achieved grade. */
     gradeText?: string | null;

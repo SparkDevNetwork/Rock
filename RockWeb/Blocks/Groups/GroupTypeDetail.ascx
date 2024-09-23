@@ -522,6 +522,7 @@
                         <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Text="Yes" Help="Should users with this role be able to manage the members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Is Check-in Allowed" Text="Yes" Help="Used with the &quot;already belongs&quot; check-in filter to only allow certain roles to check into a group." />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />

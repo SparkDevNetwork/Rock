@@ -11,7 +11,7 @@
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-xs-6">
-                            <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" />
+                            <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" :showBlankItem="false" />
                         </div>
                         <div class="col-xs-6">
                             <CheckBox label="Include Time" text="Yes" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { PropType, reactive, ref, watch, Ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -110,6 +110,8 @@
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -161,31 +163,27 @@
     // #region Computed Values
 
     const itemAttributesGridData: GridDataBag = reactive<GridDataBag>({
-        rows: itemAttributes.value.map(x => convertToAttributeGridRowItem(x))
+        rows: itemAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, itemAttributesReservedKeyNames))
     });
 
     const channelAttributesGridData: GridDataBag = reactive<GridDataBag>({
-        rows: channelAttributes.value.map(x => convertToAttributeGridRowItem(x))
+        rows: channelAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, channelAttributesReservedKeyNames))
     });
 
     // #endregion
 
     // #region Functions
 
-    function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+    function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag, reservedKeyNames: Ref<string[]>): Record<string, unknown> {
 
         if (attribute.key) {
-            if (!itemAttributesReservedKeyNames.value.includes(attribute.key)) {
-                itemAttributesReservedKeyNames.value.push(attribute.key);
-            }
-
-            if (!channelAttributesReservedKeyNames.value.includes(attribute.key)) {
-                channelAttributesReservedKeyNames.value.push(attribute.key);
+            if (!reservedKeyNames.value.includes(attribute.key)) {
+                reservedKeyNames.value.push(attribute.key);
             }
         }
 
         return {
-            key: attribute.key,
+            key: attribute.guid,
             name: attribute.name,
             description: attribute.description,
             isRequired: attribute.isRequired,
@@ -199,13 +197,14 @@
 
     async function onAddItemAttribute(): Promise<void> {
         itemAttribute.value = {} as PublicEditableAttributeBag;
+        itemAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isItemAttributeModalOpen.value = true;
         itemAttributeErrors.value = [];
     }
 
     const onEditItemAttribute = async (key: string): Promise<void> => {
         itemAttributeErrors.value = [];
-        const selectedAttribute = itemAttributes.value.find(x => x.key === key);
+        const selectedAttribute = itemAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
             itemAttribute.value = selectedAttribute;
@@ -219,8 +218,8 @@
     const onDeleteItemAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isItemAttributeModalOpen.value = false;
-        itemAttributes.value = itemAttributes.value.filter(s => s.key !== key);
-        itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== key);
+        itemAttributes.value = itemAttributes.value.filter(s => s.guid !== key);
+        itemAttributesReservedKeyNames.value = itemAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (itemAttributesGridData.rows) {
@@ -241,11 +240,11 @@
         }
         else {
             if (itemAttribute.value) {
-                const index = itemAttributes.value.findIndex(a => a.key === itemAttribute.value?.key);
+                const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
                 if (index !== -1) {
                     // Get the updated attribute and rowItem.
-                    let editedAttribute = itemAttributes.value.find(a => a.key == itemAttribute.value?.key);
-                    let rowItem = itemAttributesGridData.rows?.find(x => x.key == itemAttribute.value?.key);
+                    let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
+                    let rowItem = itemAttributesGridData.rows?.find(x => x.guid == itemAttribute.value?.guid);
 
                     if (editedAttribute) {
                         // Replace old attribute with updated attribute.
@@ -256,15 +255,16 @@
                     if (rowItem && itemAttributesGridData.rows && editedAttribute) {
                         // Update GridRowItem so changes are reflected in the UI.
                         const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
-                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute, itemAttributesReservedKeyNames);
                         itemAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                     }
                 }
                 else {
+                    itemAttribute.value.guid = newGuid();
                     itemAttributes.value.push(itemAttribute.value);
 
                     // Add new RowItem to the grid to represent the newly added attribute.
-                    const newRowItem = convertToAttributeGridRowItem(itemAttribute.value);
+                    const newRowItem = convertToAttributeGridRowItem(itemAttribute.value, itemAttributesReservedKeyNames);
                     itemAttributesGridData.rows?.push(newRowItem);
                 }
 
@@ -283,15 +283,32 @@
     * @returns `true` if the operation succeeded; otherwise `false`.
     */
     async function onItemAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const data = {
-            idKey: props.modelValue?.idKey,
-            guid: item["guid"],
-            beforeGuid: beforeItem?.["guid"] ?? null
-        };
 
-        const result = await invokeBlockAction<string>("ReorderItemAttributes", data);
+        if (props.modelValue?.idKey) {
 
-        return result.isSuccess;
+            const data = {
+                idKey: props.modelValue?.idKey,
+                guid: item["guid"],
+                beforeGuid: beforeItem?.["guid"] ?? null
+            };
+
+            const result = await invokeBlockAction<string>("ReorderItemAttributes", data);
+
+            return result.isSuccess;
+        }
+        else {
+
+            if (itemAttributesGridData.rows) {
+                const itemIndex = itemAttributes.value.findIndex(x => x.guid === item.guid);
+                const beforeItemIndex = itemAttributes.value.findIndex(x => x.guid === beforeItem?.guid);
+
+                if (itemIndex !== -1 && beforeItemIndex !== -1) {
+                    [itemAttributes.value[itemIndex], itemAttributes.value[beforeItemIndex]] = [itemAttributes.value[beforeItemIndex], itemAttributes.value[itemIndex]];
+                }
+            }
+
+            return true;
+        }
     }
     // #endregion
 
@@ -299,13 +316,14 @@
 
     async function onAddChannelAttribute(): Promise<void> {
         channelAttribute.value = {} as PublicEditableAttributeBag;
+        channelAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isChannelAttributeModalOpen.value = true;
         channelAttributeErrors.value = [];
     }
 
     const onEditChannelAttribute = async (key: string): Promise<void> => {
         channelAttributeErrors.value = [];
-        const selectedAttribute = channelAttributes.value.find(x => x.key === key);
+        const selectedAttribute = channelAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
             channelAttribute.value = selectedAttribute;
@@ -319,8 +337,8 @@
     const onDeleteChannelAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isChannelAttributeModalOpen.value = false;
-        channelAttributes.value = channelAttributes.value.filter(s => s.key !== key);
-        channelAttributesReservedKeyNames.value = channelAttributesReservedKeyNames.value.filter(k => k !== key);
+        channelAttributes.value = channelAttributes.value.filter(s => s.guid !== key);
+        channelAttributesReservedKeyNames.value = channelAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (channelAttributesGridData.rows) {
@@ -341,11 +359,11 @@
         }
         else {
             if (channelAttribute.value) {
-                const index = channelAttributes.value.findIndex(a => a.key === channelAttribute.value?.key);
+                const index = channelAttributes.value.findIndex(a => a.guid === channelAttribute.value?.guid);
                 if (index !== -1) {
                     // Get the updated attribute and rowItem.
-                    let editedAttribute = channelAttributes.value.find(a => a.key == channelAttribute.value?.key);
-                    let rowItem = channelAttributesGridData.rows?.find(x => x.key == channelAttribute.value?.key);
+                    let editedAttribute = channelAttributes.value.find(a => a.guid == channelAttribute.value?.guid);
+                    let rowItem = channelAttributesGridData.rows?.find(x => x.guid == channelAttribute.value?.guid);
 
                     if (editedAttribute) {
                         // Replace old attribute with updated attribute.
@@ -356,15 +374,16 @@
                     if (rowItem && channelAttributesGridData.rows && editedAttribute) {
                         // Update GridRowItem so changes are reflected in the UI.
                         const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.key);
-                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute, channelAttributesReservedKeyNames);
                         channelAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                     }
                 }
                 else {
+                    channelAttribute.value.guid = newGuid();
                     channelAttributes.value.push(channelAttribute.value);
 
                     // Add new RowItem to the grid to represent the newly added attribute.
-                    const newRowItem = convertToAttributeGridRowItem(channelAttribute.value);
+                    const newRowItem = convertToAttributeGridRowItem(channelAttribute.value, channelAttributesReservedKeyNames);
                     channelAttributesGridData.rows?.push(newRowItem);
                 }
 
@@ -383,15 +402,28 @@
     * @returns `true` if the operation succeeded; otherwise `false`.
     */
     async function onChannelAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const data = {
-            idKey: props.modelValue?.idKey,
-            guid: item["guid"],
-            beforeGuid: beforeItem?.["guid"] ?? null
-        };
+        if (props.modelValue?.idKey) {
+            const data = {
+                idKey: props.modelValue?.idKey,
+                guid: item["guid"],
+                beforeGuid: beforeItem?.["guid"] ?? null
+            };
 
-        const result = await invokeBlockAction<string>("ReorderChannelAttributes", data);
+            const result = await invokeBlockAction<string>("ReorderChannelAttributes", data);
 
-        return result.isSuccess;
+            return result.isSuccess;
+        }
+        else {
+            if (itemAttributesGridData.rows) {
+                const itemIndex = channelAttributes.value.findIndex(x => x.guid === item.guid);
+                const beforeItemIndex = channelAttributes.value.findIndex(x => x.guid === beforeItem?.guid);
+
+                if (itemIndex !== -1 && beforeItemIndex !== -1) {
+                    [channelAttributes.value[itemIndex], channelAttributes.value[beforeItemIndex]] = [channelAttributes.value[beforeItemIndex], channelAttributes.value[itemIndex]];
+                }
+            }
+            return true;
+        }
     }
 
     // #endregion

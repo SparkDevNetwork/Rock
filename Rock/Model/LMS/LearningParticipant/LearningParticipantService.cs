@@ -145,6 +145,7 @@ namespace Rock.Model
 
             return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
+
         /// <summary>
         /// Gets the participant in the specified class matching the provided <see cref="LearningParticipant"/> Guid.
         /// </summary>

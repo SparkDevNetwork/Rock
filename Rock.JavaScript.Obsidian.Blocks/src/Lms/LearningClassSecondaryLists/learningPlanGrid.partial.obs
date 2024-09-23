@@ -25,9 +25,10 @@
                 title="Assign To"
                 field="assignTo"
                 :filter="pickExistingValueFilter"
+                width="130px"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span :class="assignToIcons[row.assignTo] + ' fa-2x ml-4'" :style="'color: ' + assignToColors[row.assignTo]"></span>
+                <span :class="assignToIcons[row.assignTo] + ' ml-4'" :style="'color: ' + assignToColors[row.assignTo]"></span>
             </template>
         </Column>
 
@@ -76,18 +77,25 @@
                 title=""
                 visiblePriority="md">
             <template #format="{ row }">
-                <span v-if="row.isAttentionNeeded" class="fa-stack mr-3">
-                    <i class="fa fa-square fa-stack-2x fa-2x" style="color: #a9551d"></i>
-                    <i :class="row.isAttentionNeeded ? 'fa fa-chart-bar fw fa-stack-1x' : 'fw'" style="color: white"></i>
-                </span>
-
-                <span :class="row.hasStudentComments ? 'fa fa-comment-alt fw fa-2x' : 'fw'" style="color: #2f699f"></span>
+                <span :class="row.isAttentionNeeded ? 'attention-needed-icon fa fa-poll fw mr-3' : 'fw'"></span>
+                <span :class="row.hasStudentComments ? 'student-comments-icon fa fa-comment-alt' : 'fw'"></span>
             </template>
         </Column>
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>
 </template>
+<style>
+.student-comments-icon{
+    color: var(--color-info-strong);
+    background-color: var(--color-info-soft);
+}
+
+.attention-needed-icon{
+    color: var(--color-warning-strong);
+    background-color: var(--color-warning-soft);
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
@@ -100,7 +108,7 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
-    const assignToColors: Array<string> = ["#2f699f", "#a9551d"];
+    const assignToColors: Array<string> = ["var(--color-info-strong)", "var(--color-warning-strong)"];
 
     const emit = defineEmits<{
         (e: "deleteClick", idKey: string, gridData: GridDataBag | undefined): void;
