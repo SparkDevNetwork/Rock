@@ -46,7 +46,7 @@
                            label="Enabled Lava Commands"
                            :disabled="isSystem" />
 
-        <Panel title="Persistence Schedule">
+        <Panel title="Persistence Schedule" class="mt-4">
             <div>
                 <!-- Toggle Switch for Persistence Schedule -->
                 <Switch v-model="isPersistenceEnabled" text="Persistence Schedule" />
@@ -103,6 +103,7 @@
         <div class="row">
             <div class="col-md-4">
                 <NumberBox v-model="memoryCacheDuration"
+                           inputGroupClasses="input-width-md"
                            label="Memory Cache Duration"
                            help="How long the persisted object should be cached in memory. This is a sliding timeline, so each time the object is read the counter will reset. Leave blank to not cache the object in memory which will mean it will be deserialized into the object on each request (still fast)."
                            :decimalCount="0">
@@ -123,6 +124,7 @@
                                   label="Entity Type"
                                   help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified."
                                   :multiple="false"
+                                  enhanceForLongLists
                                   :showBlankItem="true"
                                   :disabled="isSystem" />
 
