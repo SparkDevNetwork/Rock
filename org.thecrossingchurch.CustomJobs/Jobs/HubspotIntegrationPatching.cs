@@ -54,8 +54,8 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
     )]
     [BooleanField( "Include TMBT", defaultValue: false )]
     [AccountField( "Financial Account", "If syncing a total amount given which fund should we sync from" )]
-    [TextField( "ENewsGuid", "ENews Subscriber Data View Guid", true, "e4f1db79-63c7-41ca-ab45-6ed6b16feb0e" )]
-    [TextField( "DefinedTypeId", "Environment Defined Type Id", true, "527" )]
+    [TextField( "ENewsGuid", "ENews Subscriber Data View Guid", true, "E4F1DB79-63C7-41CA-AB45-6ED6B16FEB0E" )]
+    [TextField( "DefinedTypeId", "Environment Defined Type Id", true, "528" )]
     public class HubSpotIntegrationPatching : RockJob
     {
         private string Key { get; set; }
@@ -98,7 +98,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
             var propRequest = new RestRequest( Method.GET );
             propRequest.AddHeader( "Authorization", $"Bearer {Key}" );
             IRestResponse propResponse = propClient.Execute( propRequest );
-            // WriteToLog( "Is propResponse Null? : " + propResponse.ToString() );
+            // WriteToLog( $"Is propResponse Null? : {propResponse}" );
             var props = new List<HubSpotProperty>();
             var tmbtProps = new List<HubSpotProperty>();
             var propsQry = JsonConvert.DeserializeObject<HubSpotPropertyQueryResult>( propResponse.Content );
@@ -113,7 +113,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
             // Save a list of the ones that are Rock attributes
             using ( RockContext context = new RockContext() )
             {
-                Guid transactionTypeGuid = GetAttributeValue( "ContributionTransactionType" ).AsGuid();
+                Guid transactionTypeGuid = GetAttributeValue( "ContributionTransactionType" )?.AsGuid() ?? Guid.Empty;
                 var transactionTypeDefinedValue = new DefinedValueService( context ).Get( transactionTypeGuid );
                 int transactionTypeValueId = transactionTypeDefinedValue.Id;
 
@@ -165,7 +165,11 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                 {
                     // Stopwatch watch = new Stopwatch();
                     // watch.Start();
-                    Person person = personService.Get( Contacts[i].properties.rock_person_id );
+                    Person person = null;
+                    if ( Contacts[i]?.properties?.rock_person_id != null )
+                    {
+                        person = personService.Get( Contacts[i].properties.rock_person_id );
+                    }
 
                     // For Testing
                     // WriteToLog( string.Format( "{1}i: {0}{1}", i, Environment.NewLine ) );
@@ -233,7 +237,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                             {
                                 if ( string.IsNullOrEmpty( value ) == false )
                                 {
-                                    if ( value.AsDateTime() != null )
+                                    if ( value?.AsDateTime() != null)
                                     {
                                         value = ConvertDate( value.AsDateTime() );
                                     }
@@ -287,7 +291,11 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                         }
 
                         // eNews Subscriber true or false
-                        string eNewsSub = ( person.Email != "" && person.Email != null && eNewsEmails.Contains( person.Email.ToLower() ) ) ? "true" : "false";
+                        string eNewsSub = "false";
+                        if ( personEmail != "" )
+                        {
+                            eNewsSub = eNewsEmails.Contains( personEmail ) ? "true" : "false";
+                        }
                         properties["enews_subscriber"] = eNewsSub;
                         // Debug.WriteLine( "Patching: eNews: " + eNewsSub + " | " + person.Email );
 
@@ -334,7 +342,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                     // WriteToLog( string.Format( "Last Person: " + person.FullName + "( " + person.Id + " )" ) );
 
                     // Output Job Status
-                    var resultMsg = ( $"{ i } of { Contacts.Count()+1 } Contacts Patched." );
+                    var resultMsg = $"{i} of {Contacts.Count()+1} Contacts Patched.";
                     UpdateLastStatusMessage( resultMsg.ToString() );
                 }
             }
@@ -468,7 +476,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
 
             public override string ToString()
             {
-                return "Id: " + id + "; Properties: " + properties.ToString();
+                return "Id: " + id + "; Properties: " + properties?.ToString();
             }
         }
 
@@ -492,7 +500,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                 string ret = "";
                 foreach ( var item in results )
                 {
-                    ret += "; " + item.ToString();
+                    ret += $"; {item}";
                 }
                 return ret;
 
