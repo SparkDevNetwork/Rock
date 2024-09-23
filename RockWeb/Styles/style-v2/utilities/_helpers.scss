@@ -1,0 +1,101 @@
+/*
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+*/
+
+// @import "_rock-variables";
+// @import (reference) "Bootstrap/bootstrap";
+
+@import "./deprecated";            //  Deprecated utilities and classes.
+@import "./align";                 //  Utilities for controlling the vertical alignment of an inline or table-cell box.
+@import "./background";            //  Utilities for controlling an element's background color.
+@import "./borders";               //  Utilities for controlling the style of an element's borders.
+@import "./card";                  //  Utilities for controlling the cursor style when hovering over an element.
+@import "./colors";                //  Utilities for controlling an element's background color.
+// @import "./cssgrid";               //  Utilities for controlling CSS grid
+@import "./cursor";                //  Utilities for controlling the cursor style when hovering over an element.
+// @import "./display";               //  Utilities for controlling the display box type of an element.
+// @import "./flex";                  //  Utilities for controlling flex
+@import "./links";                 //  BS4 Stretched Link
+@import "./_object-fit";           //  Utilities for controlling how a replaced element's content should be resized.
+@import "./opacity";               //  Utilities for controlling the opacity of an element.
+// @import "./order";                 //  Utilities for controlling the order of flex items.
+@import "./position";              //  Utilities for controlling how an element is positioned in the DOM.
+// @import "./ratios";                //  Utilities for controlling a fixed aspect ratio of an element.
+@import "./shadows";               //  Utilities for controlling the box shadow of an element.
+@import "./sizing";                //  Utilities for setting the width and height of an element
+@import "./spacing";               //  Shorthand responsive margin and padding utility classes.
+@import "./text";                  //  Text utilities to control alignment, wrapping, weight, and more.
+@import "./userselect";            //  Utilities for controlling whether the user can select text in an element.
+@import "./zindex";                //  Utilities for controlling the stack order of an element.
+
+
+.is-inactive {
+  opacity: .6;
+}
+
+// .util-mix-display;
+// .util-mix-css-grid;
+// .util-mix-flex;
+// .util-mix-order;
+// .util-mix-ratios;
+// .util-mix-spacing;
+// .util-mix-text-align;
+
+// @media (min-width: @screen-sm-min) {
+//   .util-mix-display("sm");
+//   .util-mix-css-grid("sm");
+//   .util-mix-flex("sm");
+//   .util-mix-order("sm");
+//   .util-mix-ratios("sm");
+//   .util-mix-spacing("sm");
+//   .util-mix-text-align("sm");
+// }
+
+// @media (min-width: @screen-md-min) {
+//   .util-mix-display("md");
+//   .util-mix-css-grid("md");
+//   .util-mix-flex("md");
+//   .util-mix-order("md");
+//   .util-mix-ratios("md");
+//   .util-mix-spacing("md");
+//   .util-mix-text-align("md");
+// }
+
+// @media (min-width: @screen-lg-min) {
+//   .util-mix-display("lg");
+//   .util-mix-css-grid("lg");
+//   .util-mix-flex("lg");
+//   .util-mix-order("lg");
+//   .util-mix-ratios("lg");
+//   .util-mix-spacing("lg");
+//   .util-mix-text-align("lg");
+// }
+
+// @media print {
+//   .util-mix-display("print");
+// }
+
+// Flex Utilities (Relocated in V11)
+
+.no-gutters {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.no-gutters > .col,
+.no-gutters > [class*="col-"] {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.abs-scroll-list {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+}
+

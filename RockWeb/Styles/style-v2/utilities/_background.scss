@@ -1,0 +1,32 @@
+// Also in Bootstrap/type.less
+
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.bg-success {
+  background-color: var(--color-success-soft) !important;
+}
+
+.bg-info {
+  background-color: var(--color-info-soft) !important;
+}
+
+.bg-warning {
+  background-color: var(--color-warning-soft) !important;
+}
+
+.bg-danger {
+  background-color: var(--color-danger-soft) !important;
+}
+
+.bg-critical {
+  background-color: var(--color-critical-soft) !important;
+}
+
+// background colors
+// .bg-color is legacy
+.bg-body,
+.bg-color {
+  background-color: var(--color-interface-softest) !important;
+}

@@ -132,12 +132,13 @@
 @import 'blocks/blocks-crm';                        // Fully Format.                   
 @import 'blocks/kiosk-core';                        // Fully Format.
 @import 'blocks/checkin-mobile';                    // Fully Format.
-@import 'blocks/checkin-core';                      // Fully Format.
+// @import 'blocks/checkin-core';                      // Fully Format. MIGHT HAVE TO DELETE BECAUSE WE MIGHT BE ONLY USING THE NEXT GEN CHECKIN
 @import 'blocks/skeleton';                          // Fully Format.
 @import 'blocks/page-specific';                     // Fully Format.
 
 
 /* ===================== UTILITIES =================== */
+@import 'utilities/helpers';
 @import 'utilities/spacing-utilities';      // FULLY COPY AND PAST FROM bootstrap _utilities.less.
 @import 'utilities/typography-utilities';   // Fully Format.
 @import 'utilities/color-utilities';        // Fully Format.

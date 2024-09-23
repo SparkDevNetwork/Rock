@@ -1,9 +1,11 @@
 
+/* This Files is being imported by Theme */
+
 @font-face {
   font-family: "tabler-icons-outline";
   font-style: normal;
   font-weight: 400;
-  src: url("../fonts/tabler-fonts/tabler-icons-outline.woff2") format("woff2"), url("../fonts/tabler-fonts/tabler-icons-outline.woff?") format("woff");
+  src: url("../../../Assets/Fonts/TablerFont/tabler-icons-outline.woff2") format("woff2"), url("../fonts/tabler-fonts/tabler-icons-outline.woff?") format("woff");
 }
 
 .ti {

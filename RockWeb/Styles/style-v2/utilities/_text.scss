@@ -1,0 +1,256 @@
+//
+// Text
+//
+
+.font-monospace { font-family: var(--font-family-monospace); }
+
+// Alignment
+
+.text-justify  { text-align: justify !important; }
+.text-wrap     { white-space: normal !important; }
+.text-nowrap   { white-space: nowrap !important; }
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Overflow
+
+.overflow-auto {
+  overflow: auto !important;
+}
+
+.overflow-hidden {
+  overflow: hidden !important;
+}
+
+.overflow-visible {
+  overflow: visible !important;
+}
+
+.overflow-y-auto {
+  overflow-y: auto !important;
+}
+
+.overflow-y-hidden {
+  overflow-y: hidden !important;
+}
+
+.text-break {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+// Responsive alignment
+// stylelint-disable
+// .util-mix-text-align(@breakpoint:"base") {
+//   .setInfix(@bp) when (@bp = "base") {
+//     .text-left   { text-align: left !important; }
+//     .text-right  { text-align: right !important; }
+//     .text-center { text-align: center !important; }
+//   }
+
+//   .setInfix(@bp) when (default()) {
+//     @infix: ~"@{breakpoint}";
+
+//     .display-text(@infix);
+//   }
+
+//   .setInfix(@breakpoint);
+// }
+// // stylelint-enable
+
+// // Includes legacy .sm-text-left style markup
+// .display-text(@infix) {
+//   .text-@{infix}-left,
+//   .@{infix}-text-left    { text-align: left !important; }
+//   .text-@{infix}-right,
+//   .@{infix}-text-right  { text-align: right !important; }
+//   .text-@{infix}-center,
+//   .@{infix}-text-right { text-align: center !important; }
+// }
+
+// Transformation
+
+// Replicated in Bootstrap/type.less
+.text-lowercase  { text-transform: lowercase !important; }
+.text-uppercase  { text-transform: uppercase !important; }
+.text-capitalize { text-transform: capitalize !important; }
+
+// // Weight and italics
+
+.font-weight-light,
+.text-light   { font-weight: var(--font-weight-light) !important; }
+.font-weight-lighter { font-weight: 200 !important; }
+.font-weight-normal,
+.text-normal  { font-weight: var(--font-weight-normal) !important; }
+.text-semibold,
+.font-weight-semibold { font-weight: var(--font-weight-semibold) !important; }
+.font-weight-bold,
+.text-bold    { font-weight: var(--font-weight-bold) !important; }
+.font-weight-bolder,
+.text-bolder  { font-weight: var(--font-weight-black) !important; }
+.font-italic         { font-style: italic !important; }
+
+// // Contextual colors
+
+// .text-white { color: @white !important; }
+
+.text-primary { color: var(--color-primary) !important; }
+.text-success { color: var(--color-success-strong) !important; }
+.text-danger { color: var(--color-danger-strong) !important; }
+.text-warning { color: var(--color-warning-strong) !important; }
+.text-info { color: var(--color-info-strong) !important; }
+.text-critical { color: var(--color-critical-strong) !important; }
+
+// // Text Color is Legacy
+.text-color,
+.text-body { color: var(--color-interface-stronger) !important; }
+
+.text-muted {
+    // color: inherit !important;  -- JE 2/12/2024 Commented this out as it was blocking the theme colors.
+    opacity: .8;
+}
+
+.text-black-50 { color: fade(#000, 50%) !important; }
+.text-white-50 { color: fade(#fff, 50%) !important; }
+
+// Misc
+
+.text-decoration-none { text-decoration: none !important; }
+.text-linethrough { text-decoration: line-through !important; }
+
+// Reset
+
+.text-reset { color: inherit !important; }
+
+// Legacy
+
+.text-shadow-light {
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
+
+.text-shadow {
+  text-shadow: -1px -1px 0 #777, 1px -1px 0 #777, -1px 1px 0 #777, 1px 1px 0 #777;
+}
+
+.text-shadow-dark {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+// Tailwind
+
+.leading-tight {
+  line-height: .9 !important;
+}
+
+.leading-snug {
+  line-height: 1 !important;
+}
+
+.leading-normal {
+  line-height: 1.5 !important;
+}
+
+.leading-relaxed {
+  line-height: 1.75 !important;
+}
+
+.leading-loose {
+  line-height: 2 !important;
+}
+
+
+// Line Clamp
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-4 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.line-clamp-5 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.line-clamp-6 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+}
+
+// Font Variant
+.ordinal {
+  font-variant-numeric: ordinal;
+}
+
+.diagonal-fractions {
+  font-variant-numeric: diagonal-fractions;
+}
+
+.stacked-fractions {
+  font-variant-numeric: stacked-fractions;
+}
+
+.slashed-zero {
+  font-variant-numeric: slashed-zero;
+}
+
+.lining-nums {
+  font-variant-numeric: lining-nums;
+}
+
+.oldstyle-nums {
+  font-variant-numeric: oldstyle-nums;
+}
+
+.proportional-nums {
+  font-variant-numeric: proportional-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+// Text Wrap
+.text-wrap {
+  text-wrap: wrap;
+}
+
+.text-nowrap {
+    text-wrap: none;
+}
+
+.text-balance {
+    text-wrap: balance;
+}
+
+.text-pretty {
+    text-wrap: pretty;
+}

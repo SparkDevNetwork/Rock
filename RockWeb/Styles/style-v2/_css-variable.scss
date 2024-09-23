@@ -11,23 +11,41 @@
   --color-interface-softest:   #FFFFFF;
 
   // APPLICATION COLORS 
-  --color-critical-soft:   #FEDEC8;
-  --color-critical-strong: #EE7624;
-  --color-danger-soft:     #FFCCD1;
-  --color-danger-strong:   #D70015;
-  --color-info-soft:       #D6EAFF;
-  --color-info-strong:     #007AFF;
-  --color-success-soft:    #D7F4DE;
-  --color-success-strong:  #248A3D;
-  --color-warning-soft:    #FFECD1;
-  --color-warning-strong:  #E58600;
+  --color-critical-soft:    #FEDEC8;
+  --color-critical-strong:  #EE7624;
+  --color-critical-tint:      color-mix(in srgb, var(--color-critical) 50%, #FFF 98%);
+  --color-critical-shade:     color-mix(in srgb, var(--color-critical) 100%, #000 15%);
+
+  --color-danger-soft:      #FFCCD1;
+  --color-danger-strong:    #D70015;
+  --color-danger-tint:        color-mix(in srgb, var(--color-danger) 50%, #FFF 98%);
+  --color-danger-shade:       color-mix(in srgb, var(--color-danger) 100%, #000 15%);
+
+  --color-info-soft:        #D6EAFF;
+  --color-info-strong:      #007AFF;
+  --color-info-tint:          color-mix(in srgb, var(--color-info) 50%, #FFF 98%);
+  --color-info-shade:         color-mix(in srgb, var(--color-info) 100%, #000 15%);
+
+  --color-success-soft:     #D7F4DE;
+  --color-success-strong:   #248A3D;
+  --color-success-tint:       color-mix(in srgb, var(--color-success) 50%, #FFF 98%);
+  --color-success-shade:      color-mix(in srgb, var(--color-success) 100%, #000 15%);
+
+  --color-warning-soft:     #FFECD1;
+  --color-warning-strong:   #E58600;
+  --color-warning-tint:       color-mix(in srgb, var(--color-warning) 50%, #FFF 98%);
+  --color-warning-shade:      color-mix(in srgb, var(--color-warning) 100%, #000 15%);
 
   // SYSTEM COLORS 
-  --color-primary:            #EE7725;
-  --color-primary-box-shadow: #fad5bc;
-  --color-campus:             #83758f;
-  --color-link:               #006DCC;
-  --color-link-hover:         #003766;
+  --color-primary:          #EE7725;
+  --color-primary-tint:       color-mix(in srgb, var(--color-primary) 50%, #FFF 98%);
+  --color-primary-shade:      color-mix(in srgb, var(--color-primary) 100%, #000 15%);
+
+  --color-link:             #006DCC;
+  --color-link-tint:          color-mix(in srgb, var(--color-link) 50%, #FFF 98%);
+  --color-link-shade:         color-mix(in srgb, var(--color-link) 100%, #000 15%);
+  
+  --color-campus:           #83758f;
 
   // CATEGORICAL COLORS 
   --color-categorial-1: #007aff;
@@ -40,30 +58,30 @@
   --color-categorial-8: #8e8e93;
 
   // DIVERGING COLORS
-  --color-diverging-1: #2507b7;
-  --color-diverging-2: #3109f5;
-  --color-diverging-3: #6447f7;
-  --color-diverging-4: #9884fa;
-  --color-diverging-5: #CBC1FC;
-  --color-diverging-6: #E5EEF9;
-  --color-diverging-7: #C8F5F0;
-  --color-diverging-8: #92ece2;
-  --color-diverging-9: #5be2d4;
+  --color-diverging-1:  #2507b7;
+  --color-diverging-2:  #3109f5;
+  --color-diverging-3:  #6447f7;
+  --color-diverging-4:  #9884fa;
+  --color-diverging-5:  #CBC1FC;
+  --color-diverging-6:  #E5EEF9;
+  --color-diverging-7:  #C8F5F0;
+  --color-diverging-8:  #92ece2;
+  --color-diverging-9:  #5be2d4;
   --color-diverging-10: #22c8b7;
   --color-diverging-11: #1ca394;
 
   // SEQUENTIAL COLORS
-  --color-sequential-1: #1a844a;
-  --color-sequential-2: #209f58;
-  --color-sequential-3: #25b967;
-  --color-sequential-4: #2AD476;
-  --color-sequential-5: #45D987;
-  --color-sequential-6: #5FDE98;
-  --color-sequential-7: #7AE4A9;
-  --color-sequential-8: #94E9BA;
-  --color-sequential-9: #AFEECB;
-  --color-sequential-10: #C9F4DC;
-  --color-sequential-11: #E4F9ED;
+  --color-sequential-1:   #1a844a;
+  --color-sequential-2:   #209f58;
+  --color-sequential-3:   #25b967;
+  --color-sequential-4:   #2AD476;
+  --color-sequential-5:   #45D987;
+  --color-sequential-6:   #5FDE98;
+  --color-sequential-7:   #7AE4A9;
+  --color-sequential-8:   #94E9BA;
+  --color-sequential-9:   #AFEECB;
+  --color-sequential-10:  #C9F4DC;
+  --color-sequential-11:  #E4F9ED;
 
   --color-code:    #c7254e;
   --color-code-bg: #f9f2f4;
@@ -127,7 +145,7 @@
   --adminbar-bg:              #45474c;
 
   --dropdown-box-shadow:      0 4px 8px 0 rgba(0,0,0,.1);
-  --input-focus-box-shadow:   0 0 0 2px var(--color-primary-box-shadow);
+  --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
 
   // BORDER RADIUS
   --rounded-tiny:     2px;
