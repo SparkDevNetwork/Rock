@@ -609,7 +609,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
             worksheet.Cells[row, 7].Value = contact.properties.phone;
             worksheet.Cells[row, 8].Value = num != null ? num.Number : "No Matching Number";
             // Color cells if they match
-            if ( HasValueAndEquals( contact.properties.phone, num.Number ) )
+            if ( HasValueAndEquals( contact.properties.phone, num?.Number ) )
             {
                 worksheet = ColorCell( worksheet, row, 7 );
                 worksheet = ColorCell( worksheet, row, 8 );
