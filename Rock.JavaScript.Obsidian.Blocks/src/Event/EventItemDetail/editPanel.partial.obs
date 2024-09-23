@@ -166,6 +166,8 @@
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -248,7 +250,7 @@
         }
 
         return {
-            key: bag.attribute?.key,
+            key: bag.attribute?.guid,
             name: bag.attribute?.name,
             fieldType: bag.fieldType,
             description: bag.attribute?.description,
@@ -295,13 +297,14 @@
 
     const onAddAttribute = (): void => {
         occurrenceAttribute.value = {} as PublicEditableAttributeBag;
+        occurrenceAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isAttributeModalOpen.value = true;
         attributeErrors.value = [];
     };
 
-    const onEditAttribute = async (key: string): Promise<void> => {
+    const onEditAttribute = (key: string): void => {
         attributeErrors.value = [];
-        const selectedAttribute = eventOccurenceAttributes.value.find(x => x.attribute?.key === key);
+        const selectedAttribute = eventOccurenceAttributes.value.find(x => x.attribute?.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute?.attribute) {
             occurrenceAttribute.value = selectedAttribute.attribute;
@@ -315,8 +318,8 @@
 
     const onDeleteAttribute = async (key: string): Promise<void> => {
         isAttributeModalOpen.value = false;
-        const deletedAttribute = eventOccurenceAttributes.value.find(s => s.attribute?.key === key);
-        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.key !== key);
+        const deletedAttribute = eventOccurenceAttributes.value.find(s => s.attribute?.guid === key);
+        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.guid !== key);
 
         if (deletedAttribute?.attribute) {
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.attribute?.key);
@@ -335,10 +338,10 @@
     const onSaveAttribute = (): void => {
 
         if (occurrenceAttribute.value && eventOccurenceAttributes.value) {
-            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.key === occurrenceAttribute.value?.key);
+            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
 
             if (index !== -1) {
-                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.key == occurrenceAttribute.value?.key);
+                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid == occurrenceAttribute.value?.guid);
                 let rowItem = occurenceAttributesGridData.rows?.find(x => x.key == occurrenceAttribute.value?.key);
 
                 if (editedAttribute?.attribute) {
@@ -358,6 +361,7 @@
                     attribute: occurrenceAttribute.value,
                     fieldType: ""
                 };
+                newEventAttribute.attribute.guid = newGuid();
                 eventOccurenceAttributes.value.push(newEventAttribute);
 
                 // Add new RowItem to the grid to represent the newly added attribute.
