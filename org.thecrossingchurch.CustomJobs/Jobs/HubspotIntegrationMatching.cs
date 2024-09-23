@@ -189,7 +189,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                                 if ( matches.Count() == 1 )
                                 {
                                     // If 1:1 Email match and HubSpot has no other info, make it a match
-                                    if ( String.IsNullOrEmpty( contact.properties.firstname ) && String.IsNullOrEmpty( contact.properties.lastname ) )
+                                    if ( string.IsNullOrEmpty( contact.properties.firstname ) && string.IsNullOrEmpty( contact.properties.lastname ) )
                                     {
                                         person = personService.Get( matches.First() );
                                         // New single match found, increment the counter!
