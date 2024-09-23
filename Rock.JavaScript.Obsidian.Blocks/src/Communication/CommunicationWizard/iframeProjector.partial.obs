@@ -1,21 +1,23 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <HtmlExtractor @update:html="html = $event"><slot></slot></HtmlExtractor>
-    <iframe :srcdoc="html"></iframe>
+    <HtmlExtractor v-show="false" @update:html="html = $event">
+        <slot></slot>
+    </HtmlExtractor>
+    <iframe ref="iframe" :srcdoc="html" v-bind="$attrs"></iframe>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { computed, ref } from "vue";
     import HtmlExtractor from "./htmlExtractor.partial.obs";
 
-    defineProps({
-        width: {
-            type: String as PropType<string | number | undefined>
-        },
-        height: {
-            type: String as PropType<string | number | undefined>
-        }
-    });
+    // #region Values
 
     const html = ref<string>("");
+    const iframe = ref<HTMLIFrameElement | undefined>();
+
+    // #endregion
+
+    defineExpose({
+        iframe: computed(() => iframe.value)
+    });
 </script>
