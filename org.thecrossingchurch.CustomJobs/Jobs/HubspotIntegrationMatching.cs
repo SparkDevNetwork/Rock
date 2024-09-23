@@ -178,24 +178,26 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                     // Atempt to match 1:1 based on email history making sure we exclude emails with multiple matches in the person table
                     if ( person == null && hasMultiEmail == false )
                     {
-                        string email = contact.properties.email.ToLower();
-                        var matches = personSearchKeyService.Queryable().Where( k => k.SearchTypeValueId == 3497 && k.SearchValue == email ).Select( k => k.PersonAlias.PersonId ).Distinct().ToList();
-
-                        if ( matches != null )
+                        string email = contact.properties.email?.ToLower();
+                        if ( string.IsNullOrEmpty( email ) == false )
                         {
-                            // Debug.WriteLine( "PersonSearchKeyService match count: " + matches.Count() );
-                            if ( matches.Count() == 1 )
+                            var matches = personSearchKeyService.Queryable().Where( k => k.SearchTypeValueId == 3497 && k.SearchValue == email ).Select( k => k.PersonAlias.PersonId ).Distinct().ToList();
+
+                            if ( matches != null )
                             {
-                                // If 1:1 Email match and HubSpot has no other info, make it a match
-                                if ( String.IsNullOrEmpty( contact.properties.firstname ) && String.IsNullOrEmpty( contact.properties.lastname ) )
+                                // Debug.WriteLine( "PersonSearchKeyService match count: " + matches.Count() );
+                                if ( matches.Count() == 1 )
                                 {
-                                    person = personService.Get( matches.First() );
-                                    // New single match found, increment the counter!
-                                    idSet++;
+                                    // If 1:1 Email match and HubSpot has no other info, make it a match
+                                    if ( String.IsNullOrEmpty( contact.properties.firstname ) && String.IsNullOrEmpty( contact.properties.lastname ) )
+                                    {
+                                        person = personService.Get( matches.First() );
+                                        // New single match found, increment the counter!
+                                        idSet++;
+                                    }
                                 }
                             }
                         }
-
                     }
                     WriteToLog( string.Format( "    After Email History: {0}", watch.ElapsedMilliseconds ) );
 
@@ -296,7 +298,10 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                 HashSet<string> HubSpotPersonEmails = new HashSet<string>();
                 foreach ( var contact in Contacts )
                 {
-                    HubSpotPersonIds.Add( contact.properties.rock_person_id.AsInteger() );
+                    if ( string.IsNullOrEmpty( contact.properties.rock_person_id ) == false )
+                    {
+                        HubSpotPersonIds.Add( contact.properties.rock_person_id.AsInteger() );
+                    }
                     if ( string.IsNullOrEmpty( contact.properties.email ) == false )
                     {
                         HubSpotPersonEmails.Add( contact.properties.email.ToLower() );
@@ -631,7 +636,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                     worksheet.Cells[row, 13].Value = HubSpotVal.ToString( "MM/dd/yyyy" );
                 }
             }
-            worksheet.Cells[row, 14].Value = person.CreatedDateTime.Value.ToString( "MM/dd/yyyy" );
+            worksheet.Cells[row, 14].Value = person.CreatedDateTime?.ToString( "MM/dd/yyyy" ) ?? "";
 
             // Add Modified Dates
             if ( string.IsNullOrEmpty( contact.properties.lastmodifieddate ) == false )
@@ -642,7 +647,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                     worksheet.Cells[row, 15].Value = HubSpotVal.ToString( "MM/dd/yyyy" );
                 }
             }
-            worksheet.Cells[row, 16].Value = person.ModifiedDateTime.Value.ToString( "MM/dd/yyyy" );
+            worksheet.Cells[row, 16].Value = person.ModifiedDateTime?.ToString( "MM/dd/yyyy" ) ?? "";
 
             // Add Rock Id
             worksheet.Cells[row, 17].Value = person.Id;
@@ -724,7 +729,7 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                 string ret = "";
                 foreach ( var item in results )
                 {
-                    ret += "; " + item.ToString();
+                    ret += $"; {item}";
                 }
                 return ret;
 
