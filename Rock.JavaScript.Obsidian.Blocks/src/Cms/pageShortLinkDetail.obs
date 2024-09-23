@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -48,10 +48,12 @@
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const store = useStore();
 
     // #region Values
 
@@ -228,6 +230,19 @@
 
         return false;
     }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(panelMode, () => {
+        if (panelMode.value === DetailPanelMode.View) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 
     // #endregion
 
