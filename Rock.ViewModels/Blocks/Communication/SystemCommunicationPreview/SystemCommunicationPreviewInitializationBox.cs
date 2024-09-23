@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Model;
 using Rock.ViewModels.Utility;
 
@@ -61,9 +63,14 @@ namespace Rock.ViewModels.Blocks.Communication.SystemCommunicationPreview
         public string Body { get; set; }
 
         /// <summary>
-        /// Get or set the date.
+        /// Get or set the publication date.
         /// </summary>
-        public string Date { get; set; }
+        public string PublicationDate { get; set; }
+
+        /// <summary>
+        /// Get or set the date options.
+        /// </summary>
+        public List<ListItemBag> DateOptions { get; set; }
 
         /// <summary>
         /// Get or set the HasSendDate property.
@@ -71,13 +78,18 @@ namespace Rock.ViewModels.Blocks.Communication.SystemCommunicationPreview
         public bool HasSendDate { get; set; }
 
         /// <summary>
-        /// Get or set the Person ID
+        /// Get or set the Target Person ID Key
         /// </summary>
-        public int TargetPersonId { get; set; }
+        public string TargetPersonIdKey { get; set; }
 
         /// <summary>
-        /// Get or set the publication date
+        /// Get or set the Target Person bag
         /// </summary>
-        public string PublicationDate { get; set; } 
+        public ListItemBag TargetPersonBag { get; set; }
+
+        /// <summary>
+        /// Get or set the error message
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }

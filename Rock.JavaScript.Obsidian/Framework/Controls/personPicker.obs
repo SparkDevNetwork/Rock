@@ -120,6 +120,7 @@
     }
 
     type PersonSearchResult = {
+        idKey?: string | null;
         guid?: string | null;
         primaryAliasGuid?: string | null;
         name?: string | null;
@@ -189,11 +190,17 @@
         isSearchModeOpen: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "update:selectedPersonChanged", person: ListItemBag | undefined, personIdKey: string | undefined): void;
         (e: "update:isSearchModeOpen", value: boolean): void;
     }>();
 
@@ -201,7 +208,7 @@
     const internalValue = ref(props.modelValue);
 
     /** Determines if the clear button should be shown. */
-    const showClear = computed(() => props.modelValue?.value);
+    const showClear = computed(() => props.modelValue?.value && props.isClearable);
 
     /** True if the popup person picker should be visible. */
     const showPopup = ref(false);
@@ -374,6 +381,7 @@
      */
     function onClear(): void {
         emit("update:modelValue", undefined);
+        emit("update:selectedPersonChanged", undefined, undefined);
     }
 
     /**
@@ -417,6 +425,7 @@
 
         // Emit the new value and close the popup.
         emit("update:modelValue", internalValue.value);
+        emit("update:selectedPersonChanged", internalValue.value, person.idKey ?? undefined);
         showPopup.value = false;
     }
 
@@ -451,7 +460,7 @@
 
     // Watch for changes in our provided value and update the UI.
     watch(() => props.modelValue, () => internalValue.value = props.modelValue);
-    
+
     watch(showPopup, () => {
         emit("update:isSearchModeOpen", showPopup.value);
     });
