@@ -52,6 +52,9 @@ namespace Rock.Rest
         /// <inheritdoc/>
         public string Method { get; }
 
+        /// <inheritdoc/>
+        public bool CookiesValuesAreUrlDecoded { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -136,6 +139,9 @@ namespace Rock.Rest
                 {
                     Cookies.AddOrReplace( cookie.Name, cookie.Value );
                 }
+
+                // HttpRequestMessage.Headers.GetCookies() automatically decodes cookie values.
+                CookiesValuesAreUrlDecoded = true;
             }
         }
 
