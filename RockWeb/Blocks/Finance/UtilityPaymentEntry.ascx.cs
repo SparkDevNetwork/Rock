@@ -3112,6 +3112,11 @@ mission. We are so grateful for your commitment.</p>
                     errorMessages.Add( "Make sure to enter both a first and last name for Business Contact" );
                 }
 
+                if ( !txtBusinessContactFirstName.IsValid )
+                {
+                    errorMessages.Add( txtBusinessContactFirstName.CustomValidator.ErrorMessage );
+                }
+
                 if ( System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
                 {
                     errorMessages.Add( "Make sure to enter a first and last name that does not contain special characters such as quotes, parentheses, etc for Business Contact." );
