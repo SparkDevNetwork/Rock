@@ -24,7 +24,8 @@
             <div class="communication-entry-wizard-editor-panel-body">
                 <div class="communication-entry-wizard-editor-toolbox">
                     <div class="communication-entry-wizard-editor-toolbox-menu">
-
+                        <div class="menu-item menu-item-content selected"><i class="fa fa-grip-horizontal"></i><span>Content</span></div>
+                        <div class="menu-item menu-item-design"><i class="fa fa-drafting-compass"></i><span>Design</span></div>
                     </div>
 
                     <div class="communication-entry-wizard-editor-toolbox-submenu">
@@ -110,7 +111,11 @@
 }
 
 .component-list {
-    columns: 3;
+    display: flex;
+    flex-direction: row;
+    /* TODO JMH Is this supported? */
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .component-list-item {
@@ -121,6 +126,10 @@
     text-align: center;
     align-items: center;
     border: 1px solid;
+    justify-content: center;
+}
+
+.component-list-item:active {
     border-color: var(--color-primary);
 }
 
@@ -130,8 +139,26 @@
 }
 
 .communication-entry-wizard-editor-toolbox-menu {
+    background-color: gray;
     display: flex;
     flex-direction: column;
+    gap: 16px;
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    width: 86px;
+    height: 74px;
+    text-align: center;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.menu-item.selected {
+    background-color: white;
 }
 
 .communication-entry-wizard-editor-toolbox-submenu {
@@ -157,7 +184,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
     import IFrameProjector from "./CommunicationWizard/iframeProjector.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -442,6 +469,19 @@
         iframeProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
     }
 
+    function onIFrameLoaded(): void {
+        const iframe = iframeProjector.value?.iframe;
+        // TODO JMH Add Rock fonts for access to font-awesome icons?
+        if (iframe?.contentDocument) {
+            var cssLink = document.createElement("link");
+            cssLink.className = "js-emaileditor2-addon";
+            cssLink.href = `/Themes/Rock/Styles/email-editor.css?v=${Date.now()}`;
+            cssLink.rel = "stylesheet";
+            cssLink.type = "text/css";
+            iframe.contentDocument.head.appendChild(cssLink);
+        }
+    }
+
     // #endregion
 
     // #region Hooks
@@ -454,6 +494,7 @@
         const iframe = iframeProjector.value?.iframe;
         if (iframe?.contentWindow) {
             iframe.contentWindow.addEventListener("message", onIFrameMessagePushed);
+            iframe.contentWindow.addEventListener("load", onIFrameLoaded);
         }
         else {
             console.error("An error occurred while loading the editor.");
@@ -464,6 +505,7 @@
         const iframe = iframeProjector.value?.iframe;
         if (iframe?.contentWindow) {
             iframe.contentWindow.removeEventListener("message", onIFrameMessagePushed);
+            iframe.contentWindow.removeEventListener("load", onIFrameLoaded);
         }
     });
 
