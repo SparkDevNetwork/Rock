@@ -265,7 +265,7 @@
   .dropdown-item-danger {
     color: var(--color-danger-strong);
     &:hover {
-      color: #fff;
+      color: var(--color-interface-softest);
       background-color: var(--color-danger-strong);
     }
   }

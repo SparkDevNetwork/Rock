@@ -14,7 +14,7 @@
 .badge {
   display:            inline-block;
   min-width:          10px;
-  padding:            var(--spacing-tiny) 7px;
+  padding:            var(--spacing-tiny) var(--spacing-small);
   font-size:          var(--font-size-small);
   font-weight:        var(--font-weight-bold);
   line-height:        var(--line-height-compact);
@@ -158,7 +158,7 @@ $badge-baptism-color: #23a5c5;
 
     .fa-stack-1x {
       font-size: .5em;
-      color: #fff;
+      color: var(--color-interface-softest);
     }
 
     .fa-stack-2x {
@@ -203,7 +203,7 @@ $badge-baptism-color: #23a5c5;
     left: 0;
     font-size: .5777em;
     line-height: 1.85em;
-    color: #fff;
+    color:      var(--color-interface-softest);
   }
 
   .badge-count {
@@ -215,7 +215,7 @@ $badge-baptism-color: #23a5c5;
     font-size: .266em;
     font-weight: var(--font-weight-regular);
     line-height: $badge-count-width;
-    color: #fff;
+    color: var(--color-interface-softest);
     background-color: var(--color-danger-soft);
     border-radius: 50%;
   }
@@ -250,7 +250,7 @@ $badge-baptism-color: #23a5c5;
     right: 0;
     left: 0;
     font-size: .3555em; // 16px
-    color: #fff;
+    color: var(--color-interface-softest);
   }
 }
 
@@ -273,7 +273,7 @@ $badge-baptism-color: #23a5c5;
     height: .888em;
     margin: 0 auto;
     //http://codepen.io/Victa/pen/xDqbf
-    font-size: 45px;
+    font-size: var(--font-size-h1);
     font-size: var(--badge-size, 45px);
     table-layout: fixed;
 
@@ -333,7 +333,7 @@ $badge-baptism-color: #23a5c5;
 }
 
 .badge-attendingduration {
-  font-size: 45px;
+  font-size: var(--font-size-h1);
   font-size: var(--badge-size, 45px);
 
   .duration-metric {
@@ -369,7 +369,7 @@ $badge-baptism-color: #23a5c5;
       font-size: .444em; // 20px
       font-weight: var(--font-weight-bold);
       line-height: .6em; //12px
-      color: #fff;
+      color: var(--color-interface-softest);
       text-align: center;
     }
 
@@ -484,7 +484,7 @@ $badge-baptism-color: #23a5c5;
 .badge-signal {
   .badge-content {
     position: relative;
-    font-size: 45px;
+    font-size: var(--font-size-h1);
     font-size: var(--badge-size, 45px);
 
     .badge-icon {
@@ -497,10 +497,10 @@ $badge-baptism-color: #23a5c5;
       right: 0;
       left: 0;
       padding-left: .5em;
-      font-size: .355em; //16px
-      font-weight: var(--font-weight-bold);
-      color: var(--color-info-soft);
-      text-align: center;
+      font-size:    .355em; //16px
+      font-weight:  var(--font-weight-bold);
+      color:        var(--color-info-soft);
+      text-align:   center;
     }
   }
 }
@@ -520,7 +520,7 @@ $badge-baptism-color: #23a5c5;
   }
 
   .fa-stack-1x {
-    color: #fff;
+    color: var(--color-interface-softest);
   }
 
   .fa-stack-2x {

@@ -60,14 +60,14 @@ box-sizing: inherit;
 // }
 
 .no-gutters {
-margin-right: 0;
-margin-left: 0;
+    margin-right: 0;
+    margin-left: 0;
 }
 
 .no-gutters > .col,
 .no-gutters > [class*="col-"] {
-padding-right: 0;
-padding-left: 0;
+    padding-right: 0;
+    padding-left: 0;
 }
 
 .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-10, .col-11, .col-12, .col,
@@ -122,17 +122,17 @@ padding-left: 0;
 }
 
 .col-4 {
--webkit-box-flex: 0;
--ms-flex: 0 0 33.333333%;
-flex: 0 0 33.333333%;
-max-width: 33.333333%;
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 33.333333%;
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
 }
 
 .col-5 {
--webkit-box-flex: 0;
--ms-flex: 0 0 41.666667%;
-flex: 0 0 41.666667%;
-max-width: 41.666667%;
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 41.666667%;
+    flex: 0 0 41.666667%;
+    max-width: 41.666667%;
 }
 
 .col-6 {

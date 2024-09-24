@@ -3,16 +3,17 @@
 @import "../../../Styles/summernote/summernote.min.css";
 
 /* ICON */
-@import "../../../Styles/style-v2/icons/fontawesome-solid.css";
-@import "../../../Styles/style-v2/icons/fontawesome-regular.css";
 @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
-/* @import "../../../Styles/FontAwesome/fontawesome-style-v2.css"; */
+
+// Need to import have solid and regular because RatingInput need both regualr and solid to work.
+@import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
+@import "../../../Styles/style-v2/icons/fontawesome-solid.css";
+/* @import "../../../Styles/style-v2/icons/fontawesome-light.css"; */
 
 @import "../../../Styles/style-v2/icons/tabler-icon.css";
 
 /* CORE STYLE */
 @import "../../../Styles/style-v2/core.css";
-
 
 html {
   -webkit-font-smoothing: antialiased;

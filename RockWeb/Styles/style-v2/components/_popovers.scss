@@ -183,13 +183,13 @@
       font-weight:  var(--font-weight-regular);
 
       small {
-        display: block;
+        display:    block;
       }
     }
   }
 
   .body div {
-    margin-bottom: 2px;
+    margin-bottom:  2px;
 
     &:last-child {
       margin-bottom: 0;
@@ -211,8 +211,8 @@
   color:          var(--color-interface-stronger);
 
   @media (min-width: $screen-xsmall) {
-    flex-wrap: nowrap;
-    max-height: 383px;
+    flex-wrap:    nowrap;
+    max-height:   383px;
   }
 
   .popover-title {

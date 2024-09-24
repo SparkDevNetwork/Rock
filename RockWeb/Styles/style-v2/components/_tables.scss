@@ -90,18 +90,18 @@ caption {
     border-color:       var(--color-interface-soft);
 
     > a:not(.btn) {
-      display:  inline;
-      color:    var(--color-interface-stronger);
+      display:          inline;
+      color:            var(--color-interface-stronger);
       &::after {
-        display:      inline-block;
-        padding-left: var(--spacing-tiny);
-        margin-right: -14px;
-        font-family:  'FontAwesome';
-        font-weight:  var(--font-weight-bold);
-        color:        var(--color-interface-strong);
+        display:        inline-block;
+        padding-left:   var(--spacing-tiny);
+        margin-right:   -14px;
+        font-family:    'FontAwesome';
+        font-weight:    var(--font-weight-bold);
+        color:          var(--color-interface-strong);
         text-decoration: none;
-        content:      '/f0dc';
-        opacity:      0;
+        content:        '/f0dc';
+        opacity:        0;
       }
     }
 
@@ -146,19 +146,19 @@ caption {
   }
 
   &.table-light > thead > tr > th {
-    color:            var(--color-interface-stronger);;
-    background-color: transparent;
-    border-color:     var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
+    color:              var(--color-interface-stronger);;
+    background-color:   transparent;
+    border-color:       var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
   }
 
   // Nesting
   .table {
-    background-color: var(--color-interface-softest);
+    background-color:   var(--color-interface-softest);
   }
 
   & .color-field {
-    width: 4px;
-    padding: 0;
+    width:            4px;
+    padding:          0;
   
     & + th {
       border-left-width: 0;
@@ -665,8 +665,8 @@ tr.row-highlight {
   }
 
   .btn-danger {
-    color: var(--color-interface-strong);
-    background: transparent;
+    color:        var(--color-interface-strong);
+    background:   transparent;
     &:active,
     &:hover {
       color:        var(--color-danger-strong);
@@ -824,19 +824,19 @@ td.grid-col-actions {
 
 // Moved to _grid-obisidian.scss
 .grid-actions {
-  text-align:       right;
-  background-color: var(--color-interface-softest);
+  text-align:         right;
+  background-color:   var(--color-interface-softest);
 
   .btn {
-    margin-left: var(--spacing-small);
+    margin-left:      var(--spacing-small);
   }
   
   &:hover {
-    color: var(--color-interface-strong);
+    color:            var(--color-interface-strong);
   }
 
   .btn-add:hover {
-    color: var(--color-success-strong);
+    color:            var(--color-success-strong);
   }
 
   .btn-grid-action {

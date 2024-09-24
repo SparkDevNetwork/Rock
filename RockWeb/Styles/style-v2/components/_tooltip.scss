@@ -22,7 +22,7 @@
   &.in { opacity: 1; }
   &.top {
     padding:      var(--spacing-tiny) 0;
-    margin-top:   -var(--spacing-tiny);
+    margin-top:   calc(var(--spacing-tiny) * -1);
   }
 
   &.right {
@@ -37,14 +37,14 @@
 
   &.left {
     padding:      0 var(--spacing-tiny);
-    margin-left:  -var(--spacing-tiny);
+    margin-left:  calc(var(--spacing-tiny) * -1);
   }
 
   // Note: Deprecated .top-left, .top-right, .bottom-left, and .bottom-right as of v3.3.1
   &.top .tooltip-arrow {
     bottom:               0;
     left:                 50%;
-    margin-left:          -var(--spacing-tiny);
+    margin-left:          calc(var(--spacing-tiny) * -1);
     border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
     border-top-color:     var(--color-interface-strongest);
   }
@@ -52,7 +52,7 @@
   &.top-left .tooltip-arrow {
     right:                var(--spacing-tiny);
     bottom:               0;
-    margin-bottom:        -var(--spacing-tiny);
+    margin-bottom:        calc(var(--spacing-tiny) * -1);
     border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
     border-top-color:     var(--color-interface-strongest);
   }
@@ -60,7 +60,7 @@
   &.top-right .tooltip-arrow {
     bottom:               0;
     left:                 var(--spacing-tiny);
-    margin-bottom:        -var(--spacing-tiny);
+    margin-bottom:        calc(var(--spacing-tiny) * -1);
     border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
     border-top-color:     var(--color-interface-strongest);
   }
@@ -68,7 +68,7 @@
   &.right .tooltip-arrow {
     top:                  50%;
     left:                 0;
-    margin-top:           -var(--spacing-tiny);
+    margin-top:           calc(var(--spacing-tiny) * -1);
     border-width:         var(--spacing-tiny) var(--spacing-tiny) var(--spacing-tiny) 0;
     border-right-color:   var(--color-interface-strongest);
   }
@@ -76,7 +76,7 @@
   &.left .tooltip-arrow {
     top:                  50%;
     right:                0;
-    margin-top:           -var(--spacing-tiny);
+    margin-top:           calc(var(--spacing-tiny) * -1);
     border-width:         var(--spacing-tiny) 0 var(--spacing-tiny) var(--spacing-tiny);
     border-left-color:    var(--color-interface-strongest);
   }
@@ -84,7 +84,7 @@
   &.bottom .tooltip-arrow {
     top:                  0;
     left:                 50%;
-    margin-left:          -var(--spacing-tiny);
+    margin-left:          calc(var(--spacing-tiny) * -1);
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }
@@ -92,7 +92,7 @@
   &.bottom-left .tooltip-arrow {
     top:                  0;
     right:                var(--spacing-tiny);
-    margin-top:           -var(--spacing-tiny);
+    margin-top:           calc(var(--spacing-tiny) * -1);
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }
@@ -100,7 +100,7 @@
   &.bottom-right .tooltip-arrow {
     top:                  0;
     left:                 var(--spacing-tiny);
-    margin-top:           -var(--spacing-tiny);
+    margin-top:           calc(var(--spacing-tiny) * -1);
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }

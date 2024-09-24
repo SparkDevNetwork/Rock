@@ -22,9 +22,9 @@ fieldset {
 }
 
 legend {
-  display:    block;
-  width:      100%;
-  padding:    0;
+  display:        block;
+  width:          100%;
+  padding:        0;
   margin-bottom:  var(--spacing-large);
   font-size:      var(--font-size-h5);
   font-weight:    var(--font-weight-medium);
@@ -103,93 +103,93 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 output {
-  display: block;
-  padding-top: (var(--spacing-small) + 1);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-normal);
-  color: var(--color-interface-stronger);
+  display:      block;
+  padding-top:  (var(--spacing-small) + 1);
+  font-size:    var(--font-size-small);
+  line-height:  var(--line-height-normal);
+  color:        var(--color-interface-stronger);
 }
 // ===================== END NORMALIZATION =====================
 
 
 // ======================= FORM CONTROL =====================
 .form-control {
-  display: block;
-  width: 100%;
-  height: 38px; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
-  padding: 6px 12px; // Need to hard code for the zoom function on the group scheduler.
-  font-size: var(--font-size-regular);
-  line-height: var(--line-height-normal);
-  color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softest);
-  background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
-  border: 1px solid var(--color-interface-soft);
-  border-radius: var(--rounded-small); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  display:            block;
+  width:              100%;
+  height:             38px; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+  padding:            6px 12px; // Need to hard code for the zoom function on the group scheduler.
+  font-size:          var(--font-size-regular);
+  line-height:        var(--line-height-normal);
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softest);
+  background-image:   none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border:             1px solid var(--color-interface-soft);
+  border-radius:      var(--rounded-small); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
+  box-shadow:         inset 0 1px 1px rgba(0, 0, 0, .075);
+  transition:         border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 
   // Customize the `:focus` state to imitate native WebKit styles.
   &:focus {
     border-color: rgba(238, 119, 37, 0.6);
-    outline: 0;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(238, 119, 37, 0.6);
+    outline:        0;
+    box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(238, 119, 37, 0.6);
   }
 
   // Placeholder
   &::-moz-placeholder {
-    color: var(--color-interface-strong);
-    opacity: 1; 
+    color:      var(--color-interface-strong);
+    opacity:    1; 
   }
   &:-ms-input-placeholder { color: var(--color-interface-strong); } 
   &::-webkit-input-placeholder  { color: var(--color-interface-strong); }
 
   // Unstyle the caret on `<select>`s in IE10+.
   &::-ms-expand {
-    background-color: transparent;
-    border: 0;
+    background-color:   transparent;
+    border:             0;
   }
 
   // Disabled and read-only inputs
   &[disabled],
   &[readonly],
   fieldset[disabled] & {
-    background-color: var(--color-interface-softer);
-    opacity: 1; // iOS fix for unreadable disabled content; see https://github.com/twbs/bootstrap/issues/11655
+    background-color:   var(--color-interface-softer);
+    opacity:            1; // iOS fix for unreadable disabled content; see https://github.com/twbs/bootstrap/issues/11655
   }
 
   &[disabled],
   fieldset[disabled] & {
-    cursor: not-allowed;
+    cursor:     not-allowed;
   }
 }
 
  // Reset height for `textarea`s
  textarea.form-control {
-  height: auto;
+  height:       auto;
 }
 
 .form-control-group{
   &,
   & > .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-medium);
+    display:      flex;
+    flex-wrap:    wrap;
+    gap:          var(--spacing-medium);
     margin-right: var(--spacing-medium);
-    align-items: center;
+    align-items:  center;
   }
   > .row,
   > .form-row {
-    width: 100%;
+    width:        100%;
   }
 
   > .form-row::before,
   > .form-row::after {
-    display: none;
+    display:      none;
   }
 
   // Add spacing so time "to" is centered on Request Filter Detail Block
   .form-control-static + .timepicker-input {
-    margin-left: 35px;
+    margin-left:  35px;
   }
 
   // Nested form controls get too much margin
@@ -204,87 +204,87 @@ output {
   }
 
   & > span {
-    display: inline-flex;
-    align-items: center;
-    font-size: var(--font-size-regular);
-    line-height: var(--line-height-normal);
-    color: var(--color-interface-medium);
+    display:        inline-flex;
+    align-items:    center;
+    font-size:      var(--font-size-regular);
+    line-height:    var(--line-height-normal);
+    color:          var(--color-interface-medium);
   }
 
   .form-group-auto & {
-    display: -ms-flexbox;
-    display: flex;
+    display:    -ms-flexbox;
+    display:    flex;
 
     .form-control {
-      -ms-flex: 1 1 0;
-      flex: 1 1 0;
+      -ms-flex:   1 1 0;
+      flex:       1 1 0;
     }
   }
 }
 
 .form-control-static {
-  min-height: (var(--spacing-large) + var(--font-size-small));
+  min-height:       calc(var(--spacing-large) + var(--font-size-small));
   // Size it appropriately next to real form controls
-  padding-top: (var(--spacing-small) + 1);
-  padding-bottom: (var(--spacing-small) + 1);
+  padding-top:      calc(var(--spacing-small) + 1);
+  padding-bottom:   calc(var(--spacing-small) + 1);
   // Remove default margin from `p`
-  margin-bottom: 0;
+  margin-bottom:    0;
 
   &.input-lg,
   &.input-sm {
-    padding-right: 0;
-    padding-left: 0;
+    padding-right:  0;
+    padding-left:   0;
   }
 }
 
 .form-control-feedback {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 2; // Ensure icon is above input groups
-  display: block;
-  width: 46px;
-  height: 46px;
-  line-height: 46px;
-  text-align: center;
-  pointer-events: none;
+  position:         absolute;
+  top:              0;
+  right:            0;
+  z-index:          2; // Ensure icon is above input groups
+  display:          block;
+  width:            46px;
+  height:           46px;
+  line-height:      46px;
+  text-align:       center;
+  pointer-events:   none;
 }
 
 .form-control.ssn-part {
   &.ssn-area {
-    width: 50px;
+    width:    50px;
   }
   &.ssn-group {
-    width: 45px;
+    width:    45px;
   }
   &.ssn-serial {
-    width: 60px;
+    width:    60px;
   }
 }
 
 .form-no-margin {
-  margin: 0;
+  margin:     0;
 }
 
 .form-right {
-  margin-bottom: var(--spacing-medium);
-  text-align: right;
+  margin-bottom:  var(--spacing-medium);
+  text-align:     right;
 
   &:before,
   &:after {
-    display: table; 
-    content: " "; 
+    display:  table; 
+    content:  " "; 
   }
   &:after {
-    clear: both;
+    clear:    both;
   }
 
   .control-label {
-    display: block;
+    display:  block;
   }
 
   .input-group {
-    float: right;
+    float:    right;
   }
 }
 
@@ -308,21 +308,21 @@ output {
   }
 
   .form-control-group & {
-    margin-right: 0;
-    margin-left: 0;
+    margin-right:   0;
+    margin-left:    0;
   }
 }
 
 // Moved from _checkin-core.less 
 .form-group.required {
   .control-label::after {
-    margin-left: var(--spacing-tiny);
-    font-family: 'FontAwesome';
-    font-size: 6px;
-    font-weight: var(--font-weight-black);
-    color: var(--color-danger-strong);
+    margin-left:    var(--spacing-tiny);
+    font-family:    'FontAwesome';
+    font-size:      6px;
+    font-weight:    var(--font-weight-black);
+    color:          var(--color-danger-strong);
     vertical-align: super;
-    content: '\f111';
+    content:        '\f111';
   }
 }
 // ===============
@@ -331,29 +331,29 @@ output {
 
 // Select
 select.form-control {
-  padding: 6px 36px 6px 12px;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right var(--spacing-medium) center;
-  background-size: var(--spacing-medium) 12px;
-  border-radius: var(--rounded-small);
-  appearance: none;
+  padding:                6px 36px 6px 12px;
+  background-image:       url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat:      no-repeat;
+  background-position:    right var(--spacing-medium) center;
+  background-size:        var(--spacing-medium) 12px;
+  border-radius:          var(--rounded-small);
+  appearance:             none;
 
   &[multiple],
   &[size]:not([size="1"]) {
-    padding-right: var(--spacing-medium);
-    background-image: none;
+    padding-right:      var(--spacing-medium);
+    background-image:   none;
   }
 
   // Remove outline from select box in FF
   &:-moz-focusring {
-    color: transparent;
-    text-shadow: 0 0 0 var(--color-interface-strong);
+    color:          transparent;
+    text-shadow:    0 0 0 var(--color-interface-strong);
   }
 
   &:focus::-ms-value {
-    color: var(--color-interface-stronger);
-    background-color: var(--color-interface-softest);
+    color:              var(--color-interface-stronger);
+    background-color:   var(--color-interface-softest);
   }
 }
 
@@ -392,10 +392,10 @@ select.form-control {
 }
 
 .help-block {
-  display: block; // account for any element using help-block
-  margin-top: 5px;
-  margin-bottom: 10px;
-  color: var(--color-interface-stronger); // lighten the text some for contrast`
+  display:        block; // account for any element using help-block
+  margin-top:     5px;
+  margin-bottom:  10px;
+  color:          var(--color-interface-stronger); // lighten the text some for contrast`
 }
 
 .form-inline {
@@ -404,25 +404,25 @@ select.form-control {
   @media (min-width: $screen-small) {
     // Inline-block all the things for "inline"
     .form-group {
-      display: inline-block;
-      margin-bottom: 0;
-      vertical-align: middle;
+      display:          inline-block;
+      margin-bottom:    0;
+      vertical-align:   middle;
     }
 
     // In navbar-form, allow folks to *not* use `.form-group`
     .form-control {
-      display: inline-block;
-      width: auto; // Prevent labels from stacking above inputs in `.form-group`
+      display:        inline-block;
+      width:          auto; // Prevent labels from stacking above inputs in `.form-group`
       vertical-align: middle;
     }
 
     // Make static controls behave like regular ones
     .form-control-static {
-      display: inline-block;
+      display:      inline-block;
     }
 
     .input-group {
-      display: inline-table;
+      display:        inline-table;
       vertical-align: middle;
 
       .input-group-addon,
@@ -438,18 +438,18 @@ select.form-control {
     }
 
     .control-label {
-      margin-bottom: 0;
-      vertical-align: middle;
+      margin-bottom:    0;
+      vertical-align:   middle;
     }
 
     // Remove default margin on radios/checkboxes that were used for stacking, and
     // then undo the floating of radios and checkboxes to match.
     .radio,
     .checkbox {
-      display: inline-block;
-      margin-top: 0;
-      margin-bottom: 0;
-      vertical-align: middle;
+      display:          inline-block;
+      margin-top:       0;
+      margin-bottom:    0;
+      vertical-align:   middle;
 
       label {
         padding-left: 0;
@@ -468,8 +468,8 @@ select.form-control {
   }
 
   .control-wrapper {
-    display: inline-table;
-    width: auto;
+    display:        inline-table;
+    width:          auto;
     vertical-align: middle;
   }
 
@@ -480,13 +480,13 @@ select.form-control {
 
 .form-inline-all {
   .form-control {
-    display: inline-block;
-    width: auto;
+    display:        inline-block;
+    width:          auto;
     vertical-align: middle;
   }
 
   .form-control-static {
-    display: inline-block;
+    display:        inline-block;
   }
 }
 
@@ -497,26 +497,26 @@ select.form-control {
 
   &.has-error {
     iframe {
-      border: 1px solid var(--color-danger-strong);
-      border-radius: 4px;
+      border:         1px solid var(--color-danger-strong);
+      border-radius:  var(--rounded-small);
     }
   }
 }
 
 a.help {
-  margin-left: 6px;
-  color: var(--color-interface-stronger);
-  outline: 0;
+  margin-left:  6px;
+  color:        var(--color-interface-stronger);
+  outline:      0;
 }
 
 a.warning {
-  margin-left: 6px;
-  color: var(--color-warning-strong);
-  outline: 0;
+  margin-left:    6px;
+  color:          var(--color-warning-strong);
+  outline:        0;
 }
 
 .help-message {
-  font-weight: var(--font-weight-regular);
+  font-weight:    var(--font-weight-regular);
 }
 // ===================== END FORM GROUP, HELP BLOCK, FORM-INLINE =====================
 
@@ -550,142 +550,142 @@ a.warning {
 .radio-inline input[type="radio"],
 .checkbox input[type="checkbox"],
 .checkbox-inline input[type="checkbox"] {
-  position: absolute;
-  margin-top: var(--spacing-tiny) \9;
-  margin-left: -20px;
+  position:         absolute;
+  margin-top:       var(--spacing-tiny) \9;
+  margin-left:      -20px;
 }
 
 .radio + .radio,
 .checkbox + .checkbox {
-  margin-top: -5px; // Move up sibling radios or checkboxes for tighter spacing
+  margin-top:       -5px; // Move up sibling radios or checkboxes for tighter spacing
 }
 
 .radio-inline,
 .checkbox-inline {
-  position: relative;
-  display: inline-block;
-  padding-left: 20px;
-  margin-bottom: 0;
-  font-weight: var(--font-weight-regular);
-  vertical-align: middle;
-  cursor: pointer;
+  position:         relative;
+  display:          inline-block;
+  padding-left:     20px;
+  margin-bottom:    0;
+  font-weight:      var(--font-weight-regular);
+  vertical-align:   middle;
+  cursor:           pointer;
 
   // These are used directly on <label>s
   &.disabled,
   fieldset[disabled] & {
-    cursor: not-allowed;
+    cursor:       not-allowed;
   }
 }
 
 .radio-inline + .radio-inline,
 .checkbox-inline + .checkbox-inline {
-  margin-top: 0;
-  margin-left: 10px; // space out consecutive inline controls
+  margin-top:     0;
+  margin-left:    10px; // space out consecutive inline controls
 }
 // ===================== CHECKBOXES AND RADIOS =====================
 
 
 // ======================= FORM CONTROL SIZING ======================
 .input-sm {
-  height: 34px;
-  padding: var(--spacing-small) var(--spacing-medium);
-  font-size: var(--font-size-small);
-  line-height: 16px; // Keep 16px to align with carot
-  border-radius: var(--rounded-small);
+  height:         34px;
+  padding:        var(--spacing-small) var(--spacing-medium);
+  font-size:      var(--font-size-small);
+  line-height:    16px; // Keep 16px to align with carot
+  border-radius:  var(--rounded-small);
 
   select & {
-    height: 34px;
-    padding: var(--spacing-small) 36px var(--spacing-small) var(--spacing-medium); // Modified to BS5
+    height:   34px;
+    padding:  var(--spacing-small) 36px var(--spacing-small) var(--spacing-medium); // Modified to BS5
   }
 
   textarea &,
   select[multiple] & {
-    height: auto;
+    height:   auto;
   }
 }
 
 .input-lg {
-  // .input-size(38px-large; var(--spacing-small)-lg; var(--spacing-medium)-lg; var(--font-size-medium); var(--line-height-normal)-lg; var(--rounded-small)-large);
-  height: 38px;
-  padding: var(--spacing-small) var(--spacing-medium);
-  font-size: var(--font-size-medium);
-  line-height: var(--line-height-normal);
-  border-radius: var(--rounded-normal);
+  // .input-size(38px-large; var(--spacing-small); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-small));
+  height:         38px;
+  padding:        var(--spacing-small) var(--spacing-medium);
+  font-size:      var(--font-size-medium);
+  line-height:    var(--line-height-normal);
+  border-radius:  var(--rounded-normal);
 
   selec t & {
     height: 38px;
-    padding: var(--spacing-small) var(--spacing-medium) var(--spacing-small) var(--spacing-medium); // Modified to BS5
+    padding:      var(--spacing-small) var(--spacing-medium) var(--spacing-small) var(--spacing-medium); // Modified to BS5
   }
 
   textarea &,
   select[multiple] & {
-    height: auto;
+    height:   auto;
   }
 }
 
 .input-lg + .form-control-feedback,
 .input-group-lg + .form-control-feedback,
 .form-group-lg .form-control + .form-control-feedback {
-  width:var(--line-height-normal)-large;
-  height:var(--line-height-normal)-large;
-  line-height:var(--line-height-normal)-large;
+  width:          var(--line-height-normal);
+  height:         var(--line-height-normal);
+  line-height:    var(--line-height-normal);
 }
 
 .input-sm + .form-control-feedback,
 .input-group-sm + .form-control-feedback,
 .form-group-sm .form-control + .form-control-feedback {
-  width: 34px;
-  height: 34px;
-  line-height: 34px;
+  width:        34px;
+  height:       34px;
+  line-height:  34px;
 }
 
 .form-group-sm {
   .form-control {
-    height: 34px;
-    padding: var(--spacing-small)-sm var(--spacing-medium)-sm;
-    font-size:var(--font-size-small);
-    line-height: var(--line-height-normal)-sm;
-    border-radius: var(--rounded-small)-small;
+    height:         34px;
+    padding:        var(--spacing-small) var(--spacing-medium);
+    font-size:      var(--font-size-small);
+    line-height:    var(--line-height-normal);
+    border-radius:  var(--rounded-small);
   }
   select.form-control {
     height: 34px;
-    line-height: var(--line-height-normal)-sm;
+    line-height: var(--line-height-normal);
   }
   textarea.form-control,
   select[multiple].form-control {
     height: auto;
   }
   .form-control-static {
-    height: var(--line-height-normal)-sm;
-    min-height: (var(--spacing-large) + var(--font-size-small));
-    padding: (var(--spacing-small) + 1) var(--spacing-medium);
-    font-size: var(--font-size-small);
-    line-height: var(--line-height-normal)-sm;
+    height:         var(--line-height-normal);
+    min-height:     calc(var(--spacing-large) + var(--font-size-small));
+    padding:        calc(var(--spacing-small) + 1) var(--spacing-medium);
+    font-size:      var(--font-size-small);
+    line-height:    var(--line-height-normal);
   }
 }
 
 .form-group-lg {
   .form-control {
-    height:var(--line-height-normal)-large;
-    padding: var(--spacing-small)-lg var(--spacing-medium)-lg;
-    font-size: var(--font-size-medium);
-    line-height: var(--line-height-normal)-lg;
-    border-radius: var(--rounded-small)-large;
+    height:         var(--line-height-normal);
+    padding:        var(--spacing-small) var(--spacing-medium);
+    font-size:      var(--font-size-medium);
+    line-height:    var(--line-height-normal);
+    border-radius:  var(--rounded-small);
   }
   select.form-control {
-    height:var(--line-height-normal)-large;
-    line-height:var(--line-height-normal)-large;
+    height:         var(--line-height-normal);
+    line-height:    var(--line-height-normal);
   }
   textarea.form-control,
   select[multiple].form-control {
     height: auto;
   }
   .form-control-static {
-    height:var(--line-height-normal)-large;
-    min-height: (var(--spacing-large) + var(--font-size-medium));
-    padding: (var(--spacing-small)-lg + 1) var(--spacing-medium)-lg;
-    font-size: var(--font-size-medium);
-    line-height: var(--line-height-normal)-lg;
+    height:       var(--line-height-normal);
+    min-height:   calc(var(--spacing-large) + var(--font-size-medium));
+    padding:      calc(var(--spacing-small) + 1) var(--spacing-medium);
+    font-size:    var(--font-size-medium);
+    line-height:  var(--line-height-normal);
   }
 }
 .form-control.input-width-xs,
@@ -740,7 +740,7 @@ a.warning {
 
   // Ensure icons don't overlap text
   .form-control {
-    padding-right: (46px * 1.25);
+    padding-right: calc(46px * 1.25);
   }
 }
 
@@ -755,26 +755,26 @@ a.warning {
   &.checkbox label,
   &.radio-inline label,
   &.checkbox-inline label  {
-    color: var(--color-success-strong);
+    color:      var(--color-success-strong);
   }
   // Set the border and box shadow on specific inputs to match
   .form-control {
-    border-color: var(--color-success-strong);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    border-color:   var(--color-success-strong);
+    box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
     &:focus {
-      border-color: var(--color-success-strong); // TODO Darken it by 10%
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-success-strong);
+      border-color:   var(--color-success-strong); // TODO Darken it by 10%
+      box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-success-strong);
     }
   }
   // Set validation states also for addons
   .input-group-addon {
-    color: var(--color-success-strong);
-    background-color: var(--color-success-soft);
-    border-color: var(--color-success-strong);
+    color:              var(--color-success-strong);
+    background-color:   var(--color-success-soft);
+    border-color:       var(--color-success-strong);
   }
   // Optional feedback icon
   .form-control-feedback {
-    color: var(--color-success-strong);
+    color:      var(--color-success-strong);
   }
 }
 
@@ -789,26 +789,26 @@ a.warning {
   &.checkbox label,
   &.radio-inline label,
   &.checkbox-inline label  {
-    color: var(--color-warning-strong);
+    color:      var(--color-warning-strong);
   }
   // Set the border and box shadow on specific inputs to match
   .form-control {
-    border-color: var(--color-warning-strong);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    border-color:     var(--color-warning-strong);
+    box-shadow:       inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
     &:focus {
-      border-color: var(--color-warning-strong); // TODO darken it by 10%
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-warning-medium);
+      border-color:   var(--color-warning-strong); // TODO darken it by 10%
+      box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-warning-medium);
     }
   }
   // Set validation states also for addons
   .input-group-addon {
-    color: var(--color-warning-strong);
-    background-color: var(--color-warning-soft);
-    border-color: var(--color-warning-strong);
+    color:              var(--color-warning-strong);
+    background-color:   var(--color-warning-soft);
+    border-color:       var(--color-warning-strong);
   }
   // Optional feedback icon
   .form-control-feedback {
-    color: var(--color-warning-strong);
+    color:        var(--color-warning-strong);
   }
 }
 
@@ -823,36 +823,36 @@ a.warning {
   &.checkbox label,
   &.radio-inline label,
   &.checkbox-inline label  {
-    color: var(--color-danger-strong);
+    color:    var(--color-danger-strong);
   }
   // Set the border and box shadow on specific inputs to match
   .form-control {
-    border-color: var(--color-danger-strong);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    border-color:   var(--color-danger-strong);
+    box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
     &:focus {
-      border-color: var(--color-danger-strong); // TODO darken it by 10%
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-danger-medium);
+      border-color:   var(--color-danger-strong); // TODO darken it by 10%
+      box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-danger-medium);
     }
   }
   // Set validation states also for addons
   .input-group-addon {
-    color: var(--color-danger-strong);
-    background-color: var(--color-danger-soft);
-    border-color: var(--color-danger-strong);
+    color:              var(--color-danger-strong);
+    background-color:   var(--color-danger-soft);
+    border-color:       var(--color-danger-strong);
   }
   // Optional feedback icon
   .form-control-feedback {
-    color: var(--color-danger-strong);
+    color:    var(--color-danger-strong);
   }
 }
 
 .has-feedback label {
 
   & ~ .form-control-feedback {
-    top: (var(--spacing-large) + 5); // Height of the `label` and its margin
+    top:    calc(var(--spacing-large) + 5); // Height of the `label` and its margin
   }
   &.sr-only ~ .form-control-feedback {
-    top: 0;
+    top:    0;
   }
 }
 // ===================== END FEEDBACK STATES =====================
@@ -920,7 +920,7 @@ a.warning {
   .form-group-lg {
     @media (min-width: $screen-small) {
       .control-label {
-        padding-top: (var(--spacing-small)-lg + 1);
+        padding-top: (var(--spacing-small) + 1);
         font-size: var(--font-size-medium);
       }
     }

@@ -52,24 +52,24 @@
   &.pull-right {
     .bootstrap-timepicker-widget {
       &.dropdown-menu {
-        right: 0;
-        left: auto;
+        right:    0;
+        left:     auto;
 
         &::before {
-          right: 12px;
-          left: auto;
+          right:  12px;
+          left:   auto;
         }
 
         &::after {
-          right: 13px;
-          left: auto;
+          right:  13px;
+          left:   auto;
         }
       }
     }
   }
 
   .input-group-addon {
-    cursor: pointer;
+    cursor:       pointer;
   }
 }
 // ====================== END BASE STYLE ======================
@@ -78,10 +78,10 @@
 // ======================== WIDGET ========================
 .bootstrap-timepicker-widget {
   &.dropdown-menu {
-    padding: 2px 3px 2px 2px;
+    padding:    2px 3px 2px 2px;
 
     &.open {
-      display: inline-block;
+      display:  inline-block;
     }
   }
 
@@ -163,10 +163,10 @@
 
 @media (max-width: $screen-small) {
   .bootstrap-timepicker {
-    width: 100%;
+    width:    100%;
 
     .dropdown-menu {
-      width: 100%;
+      width:  100%;
     }
   }
 }

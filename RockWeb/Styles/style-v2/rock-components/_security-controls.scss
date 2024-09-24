@@ -28,34 +28,34 @@
   margin: 0;
 
   & > li {
-    min-width: inherit;
+    min-width:  inherit;
     @media (max-width: $screen-medium) {
       position: static;
     }
 
     > a {
-      display: flex;
-      align-items: center;
-      padding: 0 18px;
-      color: currentColor;
+      display:      flex;
+      align-items:  center;
+      padding:      0 18px;
+      color:        currentColor;
 
       @media (max-width: $screen-medium) {
-        padding: 0 var(--spacing-small);
+        padding:    0 var(--spacing-small);
         .fa-caret-down {
-          display: none;
+          display:  none;
         }
       }
 
       .profile-photo {
-        float: left;
-        width: 32px;
-        height: 32px;
-        background-repeat: no-repeat;
-        background-size: cover;
-        border-radius: 50%;
+        float:      left;
+        width:      32px;
+        height:     32px;
+        background-repeat:  no-repeat;
+        background-size:    cover;
+        border-radius:      50%;
         @media (min-width: $screen-small) {
-          width: 40px;
-          height: 40px;
+          width:        40px;
+          height:       40px;
           margin-right: 12px;
         }
 
@@ -79,17 +79,17 @@
     }
 
     .dropdown-menu {
-      right: 0;
-      left: auto;
+      right:    0;
+      left:     auto;
       @media (max-width: $screen-small) {
-        position: absolute;
-        top: var(--top-header-height);
-        left: 0;
-        z-index: 1000;
-        background-color: var(--color-primary);
+        position:           absolute;
+        top:                var(--top-header-height); // This variable is not defined, got it from .less like this
+        left:               0;
+        z-index:            1000;
+        background-color:   var(--color-primary);
 
         & > li > a {
-          color: var(--navbar-top-color);
+          color: var(--color-interface-softest);
         }
       }
     }

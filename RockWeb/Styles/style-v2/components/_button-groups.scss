@@ -46,7 +46,7 @@
 
 // ============================ BUTTON TOOLBAR ============================
 .btn-toolbar {
-  margin-left: -var(--spacing-tiny); // Offset the first child's margin
+  margin-left: calc(var(--spacing-tiny) * -1); // Offset the first child's margin
   &:before,
   &:after {
     display: table;
