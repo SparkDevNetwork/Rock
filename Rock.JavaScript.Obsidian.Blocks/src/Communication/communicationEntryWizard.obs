@@ -31,13 +31,29 @@
                     <div class="communication-entry-wizard-editor-toolbox-submenu">
                         <TabbedContent v-model="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
                             <template #tabpane="{ item }">
-                                <div v-if="item === 'Components'" class="component-list">
-                                    <div v-for="component in components"
-                                         :key="component.type"
-                                         class="component-list-item draggable"
-                                         draggable="true"
-                                         @dragstart="onDragStart($event, component)"
-                                         @dragend="onDragEnd($event, component)"><i :class="component.iconCssClass"></i>{{ component.name }}</div>
+                                <div class="px-3">
+                                    <div v-if="item === 'Components'" class="component-list">
+                                        <div v-for="componentType in componentTypes"
+                                             :key="componentType.typeName"
+                                             class="component-list-item draggable"
+                                             draggable="true"
+                                             @dragstart="onComponentTypeDragStart($event, componentType)"
+                                             @dragend="onComponentTypeDragEnd($event, componentType)"><i :class="componentType.iconCssClass"></i>{{ componentType.name }}</div>
+                                    </div>
+
+                                    <div v-else-if="item === 'Sections'">
+                                        <DropDownList v-model="sectionCategory" :items="sectionCategories" label="Category">
+                                            <template #inputGroupPrepend>
+                                                <div class="input-group-addon">
+                                                    <i class="fa fa-folder"></i>
+                                                </div>
+                                            </template>
+                                        </DropDownList>
+
+                                        <div class="section-list">
+
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
                         </TabbedContent>
@@ -45,7 +61,7 @@
                 </div>
 
                 <div class="communication-entry-wizard-editor-content-container">
-                    <IFrameProjector ref="iframeProjector" :width="editorWidth" :height="editorHeight" frameborder="0" border="0">
+                    <IFrameProjector ref="editorIFrameProjector" :width="editorWidth" :height="editorHeight" frameborder="0" border="0">
                         <!DOCTYPE html>
                         <html>
 
@@ -55,20 +71,19 @@
                         <body>
                             <div style="display: flex; flex-direction: row;">
                                 <div class="dropzone" style="flex-grow: 1; background-color: lightblue;">
-                                    <p>this is in dropzone 1</p>
                                 </div>
                                 <div class="dropzone" style="flex-grow: 1; background-color: lightseagreen;">
-                                    <p>this is in dropzone 2</p>
                                 </div>
                             </div>
                         </body>
 
                         </html>
                     </IFrameProjector>
-                    <div v-if="isEditorOverlayVisible && draggingComponent"
+                    <div v-if="isEditorOverlayVisible && draggingComponentType"
                          class="communication-entry-wizard-editor-overlay"
-                         @dragover="onDragOver($event, draggingComponent)"
-                         @drop="onDragDrop($event, draggingComponent)"></div>
+                         @dragover="onComponentTypeDragOver($event, draggingComponentType)"
+                         @drop="onComponentTypeDragDrop($event, draggingComponentType)"
+                         @dragleave="onComponentTypeDragLeave($event, draggingComponentType)"></div>
                 </div>
             </div>
         </template>
@@ -98,8 +113,10 @@
     bottom: 0;
     width: v-bind(editorWidthPixels);
     height: v-bind(editorHeightPixels);
+    /* TODO JMH Remove this commented code.
     opacity: 0.4;
     background-color: orange;
+     */
 }
 
 .draggable {
@@ -164,7 +181,7 @@
 .communication-entry-wizard-editor-toolbox-submenu {
     display: flex;
     flex-direction: column;
-    width: 300px;
+    width: 322px;
 }
 
 .communication-entry-wizard-editor-panel-title {
@@ -184,14 +201,16 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref } from "vue";
     import IFrameProjector from "./CommunicationWizard/iframeProjector.partial.obs";
-    import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
+    import { EditorComponentType, EditorComponentTypeName } from "./CommunicationWizard/types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { buttonComponent, dividerComponent, getComponentOrThrow, imageComponent, lavaComponent, messageComponent, paragraphComponent, rsvpComponent, titleComponent, videoComponent } from "./CommunicationWizard/components.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const editorWidth = 500;
     const editorHeight = 500;
@@ -201,34 +220,41 @@
         y: number;
     };
 
-    type DragDropPushMessageEvent = {
-        type: "dragdrop";
-        componentType: EditorComponentType;
+    type ComponentTypeDragLeavePushMessageEvent = {
+        type: "COMPONENT_TYPE_DRAG_LEAVE";
+        componentTypeName: EditorComponentTypeName;
     };
 
-    type DragEndPushMessageEvent = {
-        type: "dragend";
-        componentType: EditorComponentType;
+    type ComponentTypeDragDropPushMessageEvent = {
+        type: "COMPONENT_TYPE_DRAG_DROP";
+        componentTypeName: EditorComponentTypeName;
     };
 
-    type DragStartPushMessageEvent = {
-        type: "dragstart";
-        componentType: EditorComponentType;
+    type ComponentTypeDragEndPushMessageEvent = {
+        type: "COMPONENT_TYPE_DRAG_END";
+        componentTypeName: EditorComponentTypeName;
     };
 
-    type DragOverPushMessageEvent = {
-        type: "dragover";
-        componentType: EditorComponentType;
+    type ComponentTypeDragStartPushMessageEvent = {
+        type: "COMPONENT_TYPE_DRAG_START";
+        componentTypeName: EditorComponentTypeName;
+    };
+
+    type ComponentTypeDragOverPushMessageEvent = {
+        type: "COMPONENT_TYPE_DRAG_OVER";
+        componentTypeName: EditorComponentTypeName;
         coords: Coords;
     };
 
     // #region Values
 
     const toolboxSubMenuTab = ref<string>("");
-    const iframeProjector = ref<InstanceType<typeof IFrameProjector> | undefined>();
+    const editorIFrameProjector = ref<InstanceType<typeof IFrameProjector> | undefined>();
     const isEditorOverlayVisible = ref<boolean>(false);
-    const draggingComponent = ref<EditorComponent | null | undefined>();
+    const draggingComponentType = ref<EditorComponentType | null | undefined>();
     const draggingComponentPlaceholderElement = ref<HTMLElement | null | undefined>();
+    const sectionCategory = ref<string>("");
+    const sectionCategories = ref<ListItemBag[]>([]);
 
     // #endregion
 
@@ -249,7 +275,7 @@
         return `${editorHeight}px`;
     });
 
-    const components: EditorComponent[] = [
+    const componentTypes: EditorComponentType[] = [
         titleComponent,
         videoComponent,
         buttonComponent,
@@ -266,95 +292,122 @@
     // #region Event Handlers
 
     /**
-     * Handles a component starting to be dragged in the parent window
+     * Handles a component type starting to be dragged in the parent window
      * and passes arguments to the child editor iframe to handle the event in the editor.
      */
-    function onDragStart(_event: DragEvent, component: EditorComponent): void {
-        draggingComponent.value = component;
+    function onComponentTypeDragStart(_event: DragEvent, componentType: EditorComponentType): void {
+        draggingComponentType.value = componentType;
 
-        // Tell the iframe that a drag start occurred.
-        sendDragStartMessageToEditorIFrame(component);
+        const e: ComponentTypeDragStartPushMessageEvent = {
+            type: "COMPONENT_TYPE_DRAG_START",
+            componentTypeName: componentType.typeName
+        };
 
-        // Show the editor overlay when a component starts being dragged
+        // Tell the editor iframe that a component type is starting to be dragged (whether or not the component type is over it).
+        editorIFrameProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
+
+        // Show the editor overlay when a component type starts being dragged
         // so it can capture the dragover and drop events.
         isEditorOverlayVisible.value = true;
     }
 
-    function onIFrameDragStart(e: DragStartPushMessageEvent): void {
-        const iframeDocument = iframeProjector.value?.iframe?.contentDocument;
+    function onIFrameComponentTypeDragStart(e: ComponentTypeDragStartPushMessageEvent): void {
+        const iframeDocument = editorIFrameProjector.value?.iframe?.contentDocument;
 
         if (!iframeDocument) {
             throw "The iframe document has not been initialized.";
         }
 
         // When dragging starts, create a temporary placeholder element that will be moved around
-        // the editor iframe as the "dragover" event is fired.
-        draggingComponentPlaceholderElement.value = getComponentOrThrow(e.componentType).createPlaceholder(iframeDocument);
+        // the editor iframe. The handler for the "dragover" event,
+        // which is fired repetitively even if the pointer is stationary,
+        // will handle moving the placeholder element to the correct location.
+        draggingComponentPlaceholderElement.value = getComponentOrThrow(e.componentTypeName).createComponentPlaceholder(iframeDocument);
     }
 
     /**
-     * Handles a component being dragged over the parent window's editor overlay
+     * Handles a component type being dragged over the parent window's editor overlay
      * and passes arguments to the child editor iframe to handle the event.
+     *
+     * FYI, the "dragover" event is fired repetitively even if the pointer is stationary,
+     * so this handler will be invoked many times.
      */
-    function onDragOver(event: DragEvent, component: EditorComponent): void {
+    function onComponentTypeDragOver(e: DragEvent, componentType: EditorComponentType): void {
         // Preventing default here makes the element a valid drop target.
-        // "dragover" is fired continuously.
-        event.preventDefault();
+        e.preventDefault();
 
         // Get the mouse coordinates relative to the iframe
         // (using the overlay in this case since it should have the same width and height as the iframe).
         // The iframe x and y coordinates will be passed to the iframe
         // so it can process which element(s) are currently being dragged over.
-        const coords = getRelativeCoordinates(event.target as HTMLElement, event.pageX, event.pageY);
+        const coords = getRelativeCoordinates(e.target as HTMLElement, e.pageX, e.pageY);
 
-        // Tell the iframe that a drag over occurred.
-        sendDragOverMessageToEditorIFrame(component, coords);
+        const event: ComponentTypeDragOverPushMessageEvent = {
+            type: "COMPONENT_TYPE_DRAG_OVER",
+            coords,
+            componentTypeName: componentType.typeName
+        };
+
+        // Tell the editor iframe that a component type is being dragged over it.
+        editorIFrameProjector.value?.iframe?.contentWindow?.postMessage(event, "/");
     }
 
-    function onIFrameDragOver(e: DragOverPushMessageEvent): void {
+    function onIFrameComponentTypeDragOver(e: ComponentTypeDragOverPushMessageEvent): void {
         if (!draggingComponentPlaceholderElement.value) {
             return;
         }
 
-        // Figure out between which iframe body elements the component/section is being drag-dropped,
-        // then insert the new placeholder element between them.
+        // This handler will place the current component type's placeholder element
+        // either before or after the element being hovered over.
 
         // TODO JMH This should probably add a mousemove event handler since dragover occurs non-stop and may affect performance.
-        const elementsOver = (iframeProjector.value?.iframe?.contentDocument?.elementsFromPoint(e.coords.x, e.coords.y) ?? []) as HTMLElement[];
+        const elementsOver = (editorIFrameProjector.value?.iframe?.contentDocument?.elementsFromPoint(e.coords.x, e.coords.y) ?? []) as HTMLElement[];
 
-        // The elements are in order from child to parent.
-        // Of the elements at this point, find the first ancestor that is a dropzone.
+        // Find the first hovered-over element whose parent is a dropzone,
+        // and move the placeholder either before or after it.
+        // FYI, elementsOver is sorted from descendant element to ancestor element.
         for (const elementOver of elementsOver) {
             if (elementOver.parentElement?.matches(".dropzone")) {
-                // Over another draggable element. Figure out whether the new element should be added before or after.
-                const midpoint = (elementOver.offsetHeight / 2) + elementOver.offsetTop;
+                const elementOverMidpointY = (elementOver.offsetHeight / 2) + elementOver.offsetTop;
 
                 // If the current mouse position is less than this midpoint,
-                // then the new element should be placed before.
-                if (e.coords.y < midpoint) {
+                // then the new element should be placed before it.
+                if (e.coords.y < elementOverMidpointY) {
                     elementOver.parentElement.insertBefore(draggingComponentPlaceholderElement.value, elementOver);
                 }
-                // ... otherwise, the new element should be placed after.
+                // ... otherwise, the new element should be placed after it.
                 else {
                     elementOver.parentElement.insertBefore(draggingComponentPlaceholderElement.value, elementOver.nextSibling);
                 }
+
+                return;
+            }
+            else if (elementOver.matches(".dropzone")) {
+                // TODO JMH Add case where dropping in dropzone but not on top of another child.
+                // TODO JMH For now, just put the element as the last child.
+                elementOver.appendChild(draggingComponentPlaceholderElement.value);
             }
         }
     }
 
     /**
-     * Handles a component being dropped on the editor overlay
+     * Handles a component type being dropped on the editor overlay
      * and passes arguments to the child editor iframe to handle the event.
      *
-     * This should ultimately add the component to the editor.
+     * This should ultimately add the component type to the editor.
      */
-    function onDragDrop(_event: DragEvent, component: EditorComponent): void {
-        // Tell the iframe that a drop occurred.
-        sendDragDropInfoToEditorIFrame(component);
+    function onComponentTypeDragDrop(_event: DragEvent, componentType: EditorComponentType): void {
+        const e: ComponentTypeDragDropPushMessageEvent = {
+            type: "COMPONENT_TYPE_DRAG_DROP",
+            componentTypeName: componentType.typeName
+        };
+
+        // Tell the editor iframe that the component type was dropped into it.
+        editorIFrameProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
     }
 
-    function onIFrameDragDrop(e: DragDropPushMessageEvent): void {
-        const iframeDocument = iframeProjector.value?.iframe?.contentDocument;
+    function onIFrameComponentTypeDragDrop(e: ComponentTypeDragDropPushMessageEvent): void {
+        const iframeDocument = editorIFrameProjector.value?.iframe?.contentDocument;
 
         if (!iframeDocument) {
             throw "Error processing the drop operation in the editor";
@@ -363,7 +416,7 @@
             console.log("Nothing to drop");
         }
         else {
-            const componentElement = getComponentOrThrow(e.componentType).createElement(iframeDocument);
+            const componentElement = getComponentOrThrow(e.componentTypeName).createComponentElement(iframeDocument);
 
             // Swap the placeholder element with the permanent element.
             draggingComponentPlaceholderElement.value.replaceWith(componentElement);
@@ -374,20 +427,25 @@
     }
 
     /**
-     * Handles a component stopping being dragged
+     * Handles a component type stopping being dragged
      * and passes arguments to the child editor iframe to handle the event.
      *
      * This is the last event that is occurs in the drag-drop cycle.
      */
-    function onDragEnd(_event: DragEvent, component: EditorComponent): void {
-        // Tell the iframe that a drag end occurred.
-        sendDragEndInfoToEditorIFrame(component);
+    function onComponentTypeDragEnd(_event: DragEvent, componentType: EditorComponentType): void {
+        const e: ComponentTypeDragEndPushMessageEvent = {
+            type: "COMPONENT_TYPE_DRAG_END",
+            componentTypeName: componentType.typeName
+        };
 
-        // Update the parent window.
+        // Tell the editor iframe that the component type is no longer being dragged (whether or not it was "dropped").
+        editorIFrameProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
+
+        // Remove the editor overlay in the parent window.
         isEditorOverlayVisible.value = false;
     }
 
-    function onIFrameDragEnd(): void {
+    function onIFrameComponentTypeDragEnd(): void {
         // If "dragend" happens and there was never a "drop",
         // then remove the temporary dragging element from the DOM.
         if (draggingComponentPlaceholderElement.value) {
@@ -397,26 +455,135 @@
     }
 
     /**
-     * Handles all messages communicated from the parent window to the editor iframe
+     * Handles a component type stopping being dragged
+     * and passes arguments to the child editor iframe to handle the event.
+     *
+     * This is the last event that is occurs in the drag-drop cycle.
+     */
+    function onComponentTypeDragLeave(_event: DragEvent, componentType: EditorComponentType): void {
+        const e: ComponentTypeDragLeavePushMessageEvent = {
+            type: "COMPONENT_TYPE_DRAG_LEAVE",
+            componentTypeName: componentType.typeName
+        };
+
+        // Tell the editor iframe that the component type has been dragged outside of the its border.
+        editorIFrameProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
+    }
+
+    function onIFrameComponentTypeDragLeave(): void {
+        // If "dragleave" happens then remove the temporary dragging element from the DOM.
+        if (draggingComponentPlaceholderElement.value) {
+            draggingComponentPlaceholderElement.value.remove();
+        }
+    }
+
+    /**
+     * Handles all messages communicated from the parent window to the editor iframe,
      * such as components or sections being dragged from the toolbox to the editor.
      */
-    function onIFrameMessagePushed(event: MessageEvent<DragDropPushMessageEvent | DragOverPushMessageEvent | DragEndPushMessageEvent | DragStartPushMessageEvent>): void {
+    function onIFrameMessagePushed(event: MessageEvent<
+        ComponentTypeDragDropPushMessageEvent
+        | ComponentTypeDragOverPushMessageEvent
+        | ComponentTypeDragEndPushMessageEvent
+        | ComponentTypeDragStartPushMessageEvent
+        | ComponentTypeDragLeavePushMessageEvent>): void {
         switch (event.data.type) {
-            case "dragstart":
-                onIFrameDragStart(event.data);
+            case "COMPONENT_TYPE_DRAG_START":
+                onIFrameComponentTypeDragStart(event.data);
                 break;
 
-            case "dragover":
-                onIFrameDragOver(event.data);
+            case "COMPONENT_TYPE_DRAG_OVER":
+                onIFrameComponentTypeDragOver(event.data);
                 break;
 
-            case "dragdrop":
-                onIFrameDragDrop(event.data);
+            case "COMPONENT_TYPE_DRAG_LEAVE":
+                onIFrameComponentTypeDragLeave();
                 break;
 
-            case "dragend":
-                onIFrameDragEnd();
+            case "COMPONENT_TYPE_DRAG_DROP":
+                onIFrameComponentTypeDragDrop(event.data);
                 break;
+
+            case "COMPONENT_TYPE_DRAG_END":
+                onIFrameComponentTypeDragEnd();
+                break;
+        }
+    }
+
+    /**
+     * Handles the editor iframe being loaded.
+     *
+     * This is a good time to add initial, temporary elements
+     * to the editor, like CSS, fonts, etc., but they should
+     * be removed before saving the email communication message.
+     */
+    function onIFrameLoaded(): void {
+        const iframe = editorIFrameProjector.value?.iframe;
+        // TODO JMH Add Rock fonts for access to font-awesome icons?
+        if (iframe?.contentDocument) {
+            // var cssLink = document.createElement("link");
+            // cssLink.className = "js-emaileditor2-addon";
+            // cssLink.href = `/Themes/Rock/Styles/email-editor.css?v=${Date.now()}`;
+            // cssLink.rel = "stylesheet";
+            // cssLink.type = "text/css";
+            // iframe.contentDocument.head.appendChild(cssLink);
+
+            var style = document.createElement("style");
+            style.className = "js-emaileditor2-addon";
+            style.textContent = `
+.dropzone:empty {
+    position: relative;
+    padding: 30px;
+    outline: 2px dashed rgba(0, 0, 0, 0.3);
+    outline-offset: -3px;
+    min-height: 22px;
+}
+
+.dropzone:empty::after {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    display: block;
+    width: 100%;
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.3);
+    text-align: center;
+    content: "Drop component here";
+    transform: translateY(-50%);
+}
+`;
+            iframe.contentDocument.head.appendChild(style);
+        }
+    }
+
+    /**
+     * Handles the mouse being down within the editor iframe.
+     *
+     * This will enable dragging behavior
+     */
+    function onIFrameMouseDown(event: MouseEvent): void {
+        // When the mouse is down in the editor iframe,
+        // find the nearest component element (or component ancestor element)
+        // where the mouse currently is, and allow it to be dragged/moved to another
+        // dropzone. This is as simple as adding the "draggable" attribute to the element
+        // while the mouse is down.
+        const component = (event.target as HTMLElement)?.closest(".component") as HTMLElement;
+
+        if (component) {
+            component.addEventListener("dragend", onIFrameComponentDragEnd);
+            component.setAttribute("draggable", "true");
+        }
+    }
+
+    function onIFrameComponentDragEnd(event: DragEvent): void {
+        const componentElement = event.target as HTMLElement;
+
+        if (componentElement) {
+            // When dragging is finished, remove the "draggable" attribute from the
+            // component so it isn't left draggable in the resulting email content.
+            // Also remove this function as an event listener to keep event system clean.
+            componentElement.removeEventListener("dragend", onIFrameComponentDragEnd);
+            componentElement.removeAttribute("draggable");
         }
     }
 
@@ -432,56 +599,6 @@
         return { x, y };
     }
 
-    function sendDragStartMessageToEditorIFrame(component: EditorComponent): void {
-        const e: DragStartPushMessageEvent = {
-            type: "dragstart",
-            componentType: component.type
-        };
-
-        iframeProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
-    }
-
-    function sendDragOverMessageToEditorIFrame(component: EditorComponent, coords: Coords): void {
-        const event: DragOverPushMessageEvent = {
-            type: "dragover",
-            coords,
-            componentType: component.type
-        };
-
-        iframeProjector.value?.iframe?.contentWindow?.postMessage(event, "/");
-    }
-
-    function sendDragDropInfoToEditorIFrame(component: EditorComponent): void {
-        const e: DragDropPushMessageEvent = {
-            type: "dragdrop",
-            componentType: component.type
-        };
-
-        iframeProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
-    }
-
-    function sendDragEndInfoToEditorIFrame(component: EditorComponent): void {
-        const e: DragEndPushMessageEvent = {
-            type: "dragend",
-            componentType: component.type
-        };
-
-        iframeProjector.value?.iframe?.contentWindow?.postMessage(e, "/");
-    }
-
-    function onIFrameLoaded(): void {
-        const iframe = iframeProjector.value?.iframe;
-        // TODO JMH Add Rock fonts for access to font-awesome icons?
-        if (iframe?.contentDocument) {
-            var cssLink = document.createElement("link");
-            cssLink.className = "js-emaileditor2-addon";
-            cssLink.href = `/Themes/Rock/Styles/email-editor.css?v=${Date.now()}`;
-            cssLink.rel = "stylesheet";
-            cssLink.type = "text/css";
-            iframe.contentDocument.head.appendChild(cssLink);
-        }
-    }
-
     // #endregion
 
     // #region Hooks
@@ -491,10 +608,13 @@
 
         // The iframe should be accessible at this point
         // so add event handlers.
-        const iframe = iframeProjector.value?.iframe;
+        const iframe = editorIFrameProjector.value?.iframe;
         if (iframe?.contentWindow) {
             iframe.contentWindow.addEventListener("message", onIFrameMessagePushed);
             iframe.contentWindow.addEventListener("load", onIFrameLoaded);
+
+            // Add handler that allows moving components inside the editor.
+            iframe.contentWindow.addEventListener("mousedown", onIFrameMouseDown);
         }
         else {
             console.error("An error occurred while loading the editor.");
@@ -502,10 +622,11 @@
     });
 
     onBeforeUnmount(() => {
-        const iframe = iframeProjector.value?.iframe;
+        const iframe = editorIFrameProjector.value?.iframe;
         if (iframe?.contentWindow) {
             iframe.contentWindow.removeEventListener("message", onIFrameMessagePushed);
             iframe.contentWindow.removeEventListener("load", onIFrameLoaded);
+            iframe.contentWindow.removeEventListener("mousedown", onIFrameMouseDown);
         }
     });
 

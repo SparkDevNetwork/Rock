@@ -1,18 +1,17 @@
-export type EditorComponentType =
-    "title" |
-    "video" |
-    "button" |
-    "paragraph" |
-    "divider" |
-    "message" |
-    "image" |
-    "lava" |
-    "rsvp";
-
-export type EditorComponent = {
-    readonly type: EditorComponentType;
+export type EditorComponentType = {
+    readonly typeName: "title"
+    | "video"
+    | "button"
+    | "paragraph"
+    | "divider"
+    | "message"
+    | "image"
+    | "lava"
+    | "rsvp";
     iconCssClass: string;
     name: string;
-    createPlaceholder(d: Document): HTMLElement;
-    createElement(d: Document): HTMLElement;
+    createComponentPlaceholder(d: Document): HTMLElement;
+    createComponentElement(d: Document): HTMLElement;
 };
+
+export type EditorComponentTypeName = EditorComponentType["typeName"];

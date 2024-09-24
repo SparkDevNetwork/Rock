@@ -1,6 +1,6 @@
-import { EditorComponent, EditorComponentType } from "./types.partial";
+import { EditorComponentType, EditorComponentTypeName } from "./types.partial";
 
-export function getComponentOrThrow(type: EditorComponentType): EditorComponent {
+export function getComponentOrThrow(type: EditorComponentTypeName): EditorComponentType {
     switch (type) {
         case "title":
             return titleComponent;
@@ -25,12 +25,12 @@ export function getComponentOrThrow(type: EditorComponentType): EditorComponent 
     }
 }
 
-export const titleComponent: EditorComponent = {
+export const titleComponent: EditorComponentType = {
     iconCssClass: "fa fa-font",
     name: "Title",
-    type: "title",
+    typeName: "title",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-text");
         el.dataset.state = "component";
@@ -38,7 +38,7 @@ export const titleComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.style.border = "1px solid gray";
         ph.innerHTML = `<i class="${this.iconCssClass}" style="font-family: 'rock-application' !important; speak: none; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; display: inline-block; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;"></i><br/>${this.name} (Placeholder)`;
@@ -46,12 +46,12 @@ export const titleComponent: EditorComponent = {
     }
 };
 
-export const videoComponent: EditorComponent = {
+export const videoComponent: EditorComponentType = {
     iconCssClass: "fa fa-video",
     name: "Video",
-    type: "video",
+    typeName: "video",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-video");
         el.dataset.state = "component";
@@ -59,19 +59,19 @@ export const videoComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const buttonComponent: EditorComponent = {
+export const buttonComponent: EditorComponentType = {
     iconCssClass: "fa fa-square",
     name: "Button",
-    type: "button",
+    typeName: "button",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-button", "v2");
         el.dataset.state = "component";
@@ -95,19 +95,19 @@ export const buttonComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const paragraphComponent: EditorComponent = {
+export const paragraphComponent: EditorComponentType = {
     iconCssClass: "fa fa-align-left",
     name: "Paragraph",
-    type: "paragraph",
+    typeName: "paragraph",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-paragraph");
         el.dataset.state = "component";
@@ -115,19 +115,19 @@ export const paragraphComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const dividerComponent: EditorComponent = {
+export const dividerComponent: EditorComponentType = {
     iconCssClass: "fa fa-ellipsis-h",
     name: "Divider",
-    type: "divider",
+    typeName: "divider",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-button", "v2");
         el.dataset.state = "component";
@@ -135,37 +135,39 @@ export const dividerComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const messageComponent: EditorComponent = {
+export const messageComponent: EditorComponentType = {
     iconCssClass: "fa fa-user",
     name: "Message",
-    type: "message",
+    typeName: "message",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
+        el.classList.add("component", "component-image");
+        el.dataset.state = "component";
         el.innerText = this.name;
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const imageComponent: EditorComponent = {
+export const imageComponent: EditorComponentType = {
     iconCssClass: "fa fa-image",
     name: "Image",
-    type: "image",
+    typeName: "image",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-image");
         el.dataset.state = "component";
@@ -173,19 +175,19 @@ export const imageComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const lavaComponent: EditorComponent = {
+export const lavaComponent: EditorComponentType = {
     iconCssClass: "fa fa-code",
     name: "Lava",
-    type: "lava",
+    typeName: "lava",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-code");
         el.dataset.state = "component";
@@ -193,19 +195,19 @@ export const lavaComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
     }
 };
 
-export const rsvpComponent: EditorComponent = {
+export const rsvpComponent: EditorComponentType = {
     iconCssClass: "fa fa-check-square",
     name: "RSVP",
-    type: "rsvp",
+    typeName: "rsvp",
 
-    createElement(d: Document): HTMLElement {
+    createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
         el.classList.add("component", "component-rsvp");
         el.dataset.state = "component";
@@ -250,7 +252,7 @@ export const rsvpComponent: EditorComponent = {
         return el;
     },
 
-    createPlaceholder(d: Document): HTMLElement {
+    createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
         ph.innerText = `${this.name} (Placeholder)`;
         return ph;
