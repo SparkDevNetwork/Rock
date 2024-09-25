@@ -146,16 +146,24 @@ namespace Rock.Blocks.Lms
         private LearningClassDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             var options = new LearningClassDetailOptionsBag();
 
             if ( programId > 0 )
             {
                 var programService = new LearningProgramService( RockContext );
-                options.ProgramConfigurationMode = programService.GetConfigurationMode( programId );
+                var configurationMode = programService.GetSelect( programId, p => p.ConfigurationMode );
+
+                options.ProgramConfigurationMode = configurationMode;
+                options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( classId ).Count();
+
                 options.Semesters = programService.GetSemesters( programId ).ToListItemBagList();
             }
 
-            options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable().Where( g => g.IsActive ).ToListItemBagList();
+            options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable()
+                .Where( g => g.IsActive )
+                .OrderBy( g => g.Name )
+                .ToListItemBagList();
 
             return options;
         }
@@ -239,6 +247,7 @@ namespace Rock.Blocks.Lms
                 IdKey = entity.IdKey,
                 Campus = entity.Campus?.ToListItemBag() ?? new ListItemBag(),
                 TakesAttendance = entity.GroupType?.TakesAttendance ?? false,
+                DefaultGradingSystem = entity.LearningCourse?.LearningProgram?.DefaultLearningGradingSystem?.ToListItemBag(),
                 Description = entity.Description,
                 Location = locationItem?.ToListItemBag() ?? new ListItemBag(),
                 IsActive = entity.IsActive,
@@ -247,7 +256,7 @@ namespace Rock.Blocks.Lms
                 CourseName = entity.LearningCourse?.Name,
                 GradingSystem = entity.LearningGradingSystem?.ToListItemBag() ?? new ListItemBag(),
                 Semester = entity.LearningSemester?.ToListItemBag() ?? new ListItemBag(),
-                StudentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count(),
+                StudentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id )?.Count() ?? 0,
                 Name = entity.Name,
                 Schedule = entity.Schedule?.ToListItemBag() ?? new ListItemBag()
             };
@@ -403,6 +412,7 @@ namespace Rock.Blocks.Lms
                 .Include( c => c.GroupLocations )
                 .Include( c => c.LearningCourse )
                 .Include( c => c.LearningCourse.LearningProgram )
+                .Include( c => c.LearningCourse.LearningProgram.DefaultLearningGradingSystem )
                 .Include( c => c.LearningGradingSystem )
                 .FirstOrDefault( a => a.Id == entityId );
         }
@@ -454,7 +464,6 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override bool TryGetEntityForEditAction( string idKey, out LearningClass entity, out BlockActionResult error )
         {
-            var entityService = new LearningClassService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -462,10 +471,12 @@ namespace Rock.Blocks.Lms
             {
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                entity = GetInitialEntity();
             }
             else
             {
+                var entityService = new LearningClassService( RockContext );
+
                 // Create a new entity.
                 entity = new LearningClass();
 
@@ -609,8 +620,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LearningClassBag> box )
         {
-            var entityService = new LearningClassService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
@@ -641,7 +650,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
+            entity = GetInitialEntity();
 
             var bag = GetEntityBagForEdit( entity );
 
@@ -903,7 +912,7 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
-                .AddTextField( "note", a=> a.Note );
+                .AddTextField( "note", a => a.Note );
 
             return ActionOk( gridBuilder.Build( facilitators ) );
         }
@@ -939,8 +948,8 @@ namespace Rock.Blocks.Lms
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
                 .AddField( "points", a => a.Points )
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
-                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );
+                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
+                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var orderedItems = GetOrderedLearningPlan( RockContext ).AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
@@ -964,11 +973,11 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
-                .AddField( "currentGradePercent", a => a.LearningGradePercent )
+                .AddField( "currentGradePercent", a => Math.Round(a.LearningGradePercent, 1) )
                 .AddField( "currentGrade", a => a.LearningGradingSystemScale?.Name )
                 .AddTextField( "note", a => a.Note )
                 .AddTextField( "role", a => a.GroupRole.Name )
-                .AddTextField( "currentAssignment", a => 
+                .AddTextField( "currentAssignment", a =>
                     a.LearningActivities
                     .OrderBy( t => t.DueDate )
                     .FirstOrDefault( t => !t.IsStudentCompleted )?
@@ -1037,7 +1046,7 @@ namespace Rock.Blocks.Lms
         /// Saves the new or updated participant for the class.
         /// </summary>
         /// <param name="participantBag">The bag containing the participant info that should be added or updated.</param>
-        /// <returns>The participantBag with updated data.</returns>
+        /// <returns>The newGradingSystemGuid with updated data.</returns>
         [BlockAction]
         public BlockActionResult SaveParticipant( LearningParticipantBag participantBag )
         {
@@ -1054,7 +1063,7 @@ namespace Rock.Blocks.Lms
             if ( isNew )
             {
                 entity = GetNewLearningParticipantFromBag( participantBag, classService, classId );
-                learningParticipantService.Add(entity);
+                learningParticipantService.Add( entity );
             }
             else
             {
@@ -1062,7 +1071,7 @@ namespace Rock.Blocks.Lms
                 entity.Note = participantBag.Note;
             }
 
-            if (participantBag.AttributeValues != null )
+            if ( participantBag.AttributeValues != null )
             {
                 // Load attributes for the entity.
                 entity.LoadAttributes( RockContext );
@@ -1076,6 +1085,66 @@ namespace Rock.Blocks.Lms
             var updatedBag = GetLearningParticipantBag( entity, learningParticipantService );
 
             return ActionOk( updatedBag );
+        }
+
+        /// <summary>
+        /// Gets the list of Active classes in the program and course excluding the class specified by <paramref name="exceptClassId"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method is provided to the LearningClassDetailOptionsBag for when prompting the user to update
+        /// <see cref="LearningGradingSystem"/> records for other classes that also use the <see cref="LearningProgram.DefaultLearningGradingSystem"/>.
+        /// </remarks>
+        /// <param name="exceptClassId">The current class (to be excluded from the update).</param>
+        /// <returns>An IQueryable of 'Active' classes for the LearningProgram and LearningCourse using the Program's default LearningGradingSystem.</returns>
+        private IQueryable<LearningClass> GetProgramActiveClassesWithDefaultGradingSystem( int exceptClassId )
+        {
+            var programIdKey = PageParameter( PageParameterKey.LearningProgramId );
+            var classService = new LearningClassService( RockContext );
+            var courseId = classService.GetSelect( exceptClassId, c => c.LearningCourseId );
+            var thisClassGradingSystemId = classService.GetSelect( exceptClassId, c => c.LearningGradingSystemId );
+
+            return classService.GetActiveClasses( programIdKey )
+                .Where( c =>
+                    c.LearningGradingSystemId == thisClassGradingSystemId
+                    && c.LearningCourseId == courseId
+                    && c.Id != exceptClassId );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="newGradingSystemGuid">The Guid of the <see cref="LearningGradingSystem"/> to use for all active classes.</param>
+        /// <returns>An Ok response with status message or </returns>
+        [BlockAction]
+        public BlockActionResult UpdateActiveClassGradingSystems( Guid newGradingSystemGuid )
+        {
+            var newGradingSystemId = new LearningGradingSystemService( RockContext ).GetId( newGradingSystemGuid ).ToIntSafe();
+
+            if ( newGradingSystemId == 0 )
+            {
+                return ActionNotFound( $"The {LearningGradingSystem.FriendlyTypeName} was not found." );
+            }
+
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+
+            var activeClassesToChange = GetProgramActiveClassesWithDefaultGradingSystem( classId ).ToList();
+
+            foreach ( var activeClass in activeClassesToChange )
+            {
+                activeClass.LearningGradingSystemId = newGradingSystemId;
+                RockContext.Entry( activeClass ).State = EntityState.Modified;
+            }
+
+            RockContext.SaveChanges();
+
+            if ( activeClassesToChange.Count() == 1 )
+            {
+                return ActionOk( $"1 {LearningClass.FriendlyTypeName} was updated." );
+            }
+            else
+            {
+                return ActionOk( $"{activeClassesToChange.Count()} {LearningClass.FriendlyTypeName.Pluralize()} were updated." );
+            }
         }
 
         #endregion
@@ -1103,7 +1172,7 @@ namespace Rock.Blocks.Lms
             {
                 IdKey = entity.IdKey,
                 CurrentGradePercent = participantDetails.LearningGradePercent,
-                CurrentGradeText = participantDetails.LearningGradingSystemScale.Name,
+                CurrentGradeText = participantDetails.LearningGradingSystemScale?.Name,
                 ParticipantRole = participantDetails.GroupRole.ToListItemBag(),
                 PersonAlias = participantDetails.Person.PrimaryAlias.ToListItemBag(),
                 IsFacilitator = participantDetails.GroupRole.IsLeader

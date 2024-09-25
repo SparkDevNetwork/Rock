@@ -134,6 +134,10 @@ namespace Rock.Blocks.Lms
             var options = new LearningProgramDetailOptionsBag();
 
             options.SystemCommunications = isEditable ? GetCommunicationTemplates() : new List<ListItemBag>();
+            options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable()
+                .Where( g => g.IsActive )
+                .OrderBy( g => g.Name )
+                .ToListItemBagList();
 
             return options;
         }
@@ -257,6 +261,7 @@ namespace Rock.Blocks.Lms
                 CompletionWorkflowTypeId = entity.CompletionWorkflowTypeId,
                 Completions = kpis.Completions,
                 ConfigurationMode = entity.Id > 0 ? ( ConfigurationMode? ) entity.ConfigurationMode : null,
+                DefaultGradingSystem = entity.DefaultLearningGradingSystem?.ToListItemBag(),
                 Description = entity.Description,
                 HighlightColor = entity.HighlightColor,
                 IconCssClass = entity.IconCssClass,
@@ -369,6 +374,9 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.ConfigurationMode ),
                 () => entity.ConfigurationMode = box.Bag.ConfigurationMode.Value );
 
+            box.IfValidProperty( nameof( box.Bag.DefaultGradingSystem ),
+                () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ).Value );
+
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
 
@@ -420,7 +428,10 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningProgram"/> to be viewed or edited on the page.</returns>
         protected override LearningProgram GetInitialEntity()
         {
-            var initialEntity = GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
+            var disablePredicatbleIds = this.PageCache.Layout.Site.DisablePredictableIds;
+            var initialEntity = new LearningProgramService( RockContext )
+                .GetInclude( PageParameter( PageParameterKey.LearningProgramId ), p => p.DefaultLearningGradingSystem, !disablePredicatbleIds )
+                ?? new LearningProgram();
 
             if ( initialEntity.Id == 0 )
             {
@@ -478,7 +489,7 @@ namespace Rock.Blocks.Lms
             {
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                entity = entityService.GetInclude( idKey, p => p.DefaultLearningGradingSystem, !PageCache.Layout.Site.DisablePredictableIds );
             }
             else
             {

@@ -29,7 +29,7 @@
                     </button>
                 </span>
             </div>
-            <a class="btn btn-xs btn-action btn-square" v-if="!disabled" href="#"><i class="fa fa-plus-circle" @click.prevent="answers.push('')"></i></a>
+            <a class="btn btn-xs btn-action btn-square" v-if="!disabled" @click.prevent="answers.push('')"><i class="fa fa-plus-circle"></i></a>
             <div class="correct-answer-field">
                 <DropDownList v-model="correctAnswer" :disabled="disabled" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
             </div>

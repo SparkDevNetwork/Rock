@@ -94,6 +94,8 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningGradingSystemScaleListOptionsBag();
 
+            options.LearningGradingSystemIdKey = PageParameter( PageParameterKey.LearningGradingSystemId );
+
             return options;
         }
 

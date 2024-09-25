@@ -174,14 +174,14 @@
                     <h4>Missed Questions</h4>
 
                     <div class="well well-sm student-completion-summary" v-for="question of incorrectMultipleChoiceItems">
-                        <div class="missed-question-text-section">
+                        <h5 class="missed-question-text-section mb-1">
                             {{ question.question }}
-                        </div>
-                        <div class="student-response-section">
-                            Your Answer: {{ question.response }}
+                        </h5>
+                        <div class="student-response-section mb-1">
+                            <span>Your Answer: {{ question.response }}</span>
                         </div>
                         <div class="correct-response-section">
-                            Correct Answer: {{ question.correctAnswer }}
+                            <span>Correct Answer: {{ question.correctAnswer }}</span>
                         </div>
                     </div>
                 </div>
@@ -194,6 +194,7 @@
 .clickable-help {
     margin-left: 6px;
 }
+
 /* Multiple Choice Weight, Show Results checkboxes... should be on a single line. */
 .minor-fields-section {
     display: flex;
@@ -337,6 +338,7 @@ div.summary-sub-title {
         completedItems,
         containerClasses,
         defaultAssigneeDescription,
+        hasBeenGraded,
         header,
         items,
         multipleChoiceWeight,
@@ -444,8 +446,6 @@ div.summary-sub-title {
 
     // #region Computed Values
 
-    const hasBeenGraded = computed(() => completionBag.value.isFacilitatorCompleted === true);
-
     const isStudentAssignedAndCompleted = computed(() =>
         assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted === true
     );
@@ -516,7 +516,7 @@ div.summary-sub-title {
     });
 
     const resultSummarySubHeader = computed(() =>
-        toValue(completionBag)?.isFacilitatorCompleted === true ?
+        hasBeenGraded.value === true ?
             `Score: ${gradePercent.value}%` :
             `Multiple Choice Score: ${correctMultipleChoiceItemCount.value} of ${multipleChoiceItemCount.value} correct.`
     );

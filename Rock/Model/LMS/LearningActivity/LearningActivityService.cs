@@ -84,7 +84,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
         /// <param name="includeCompletions">Whether the LearningActivityCompletions for each LearningActivity should be included.</param>
-        /// <returns>A <c>Queryable</c> of LearningActivity matched by the predicate.</returns>
+        /// <returns>A <c>Queryable</c> of LearningActivity for the specified LearningClass identifier.</returns>
         public IQueryable<LearningActivity> GetClassLearningPlan( int classId, bool includeCompletions = true )
         {
             return

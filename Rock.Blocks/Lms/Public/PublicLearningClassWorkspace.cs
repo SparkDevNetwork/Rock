@@ -248,7 +248,6 @@ namespace Rock.Blocks.Lms
             var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId )
                 .Include( c => c.LearningActivity.LearningClass )
                 .Include( c => c.LearningActivity.LearningClass.LearningSemester )
-                .Where( a => a.LearningActivity.AssignTo == AssignTo.Student )
                 .ToList()
                 .OrderBy( a => a.LearningActivity.Order );
 
@@ -345,6 +344,7 @@ namespace Rock.Blocks.Lms
                     CompletedDate = activity.CompletedDateTime,
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
+                    GradedByPersonAlias = activity.GradedByPersonAlias.ToListItemBag(),
                     GradeName = activity.GetGrade( scales )?.Name,
                     GradeText = activity.GetGradeText( scales ),
                     IsAvailable = isActivityAvailable,
@@ -411,8 +411,9 @@ namespace Rock.Blocks.Lms
                 return box;
             }
 
+            var now = RockDateTime.Now;
             box.ContentPages = new LearningClassContentPageService( RockContext ).Queryable()
-                .Where( c => c.LearningClassId == classId )
+                .Where( c => c.LearningClassId == classId && (!c.StartDateTime.HasValue || c.StartDateTime <= now ) )
                 .Select( c => new
                 {
                     c.Id,
@@ -546,7 +547,7 @@ namespace Rock.Blocks.Lms
 
             // Get any activities that have facilitator comments.
             var activityNotifications = box.Activities
-                .Where( a => a.IsFacilitatorCompleted && a.FacilitatorComment.IsNotNullOrWhiteSpace() )
+                .Where( a => a.FacilitatorComment.IsNotNullOrWhiteSpace() )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
                     Content = $"A facilitator commented on {a.ActivityBag.ActivityComponent.Name}: {a.ActivityBag.Name}.",

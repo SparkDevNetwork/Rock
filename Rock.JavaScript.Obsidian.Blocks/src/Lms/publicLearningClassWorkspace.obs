@@ -126,11 +126,9 @@
                             <div class="activity-item-name">
                                 {{ activity?.activityBag?.name }}
                             </div>
-                            <div class="activity-item-icons">
-                                <span v-if="activity.facilitatorComment" class="badge badge-info"><i class="fa fa-comment"></i>Comments</span>
-                            </div>
                             <div class="activity-item-time" :class="{'text-warning' : isDueSoonAndIncomplete(activity) }">
-                                <span>{{ getActivityTimeText(activity) }}</span>
+                                <div>{{ getActivityTimeText(activity) }}</div>
+                                <div v-if="activity.facilitatorComment" class="label comments-label"><i class="fa fa-comment"></i>Comments</div>
                             </div>
                             <div class="activity-item-status text-right">
                                 <span v-if="activity.isStudentCompleted" class="pull-right px-1 badge badge-success">
@@ -319,6 +317,11 @@
     }
 }
 
+.comments-label{
+    color: var(--color-interface-strongest);
+    background-color: var(--color-interface-soft);
+}
+
 .workspace-navigation-pane {
     background-color: var(--theme-lightest);
     border-radius: 12px;
@@ -353,12 +356,7 @@
 
             .activity-item-name {
                 grid-row: 1;
-                grid-column: 1;
-            }
-
-            .activity-item-icons {
-                grid-row: 1;
-                grid-column: 2;
+                grid-column: 1 / 2;
             }
 
             .activity-item-time {
@@ -476,8 +474,8 @@ span.icon-stack-container i.icon {
 
     // #region Computed Values
 
-    /** An array of student completed activities. */
-    const completedActivitiesCount = computed(() => activities.value.filter(a => a.isStudentCompleted).length);
+    /** An array of completed activities. */
+    const completedActivitiesCount = computed(() => activities.value.filter(a => !!a.completedDate).length);
 
     /** The activityComponent.componentUrl from the ActivityBag or an empty string. */
     const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
@@ -520,7 +518,7 @@ span.icon-stack-container i.icon {
             classes.push("is-selected");
         }
 
-        if (activity.isStudentCompleted) {
+        if (activity.completedDate) {
             classes.push("is-completed");
         }
 

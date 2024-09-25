@@ -58,6 +58,7 @@ namespace Rock.Model
         {
             return Queryable()
                 .Include( p => p.LearningActivities )
+                .Include( p => p.LearningClass )
                 .Where( p => p.Id == participantId )
                 .SelectMany( p => p.LearningActivities );
         }

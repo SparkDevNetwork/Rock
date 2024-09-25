@@ -91,6 +91,16 @@ namespace Rock.Model
             var rockContext = this.Context as RockContext;
             var newActivities = new List<LearningActivity>();
 
+            var contentPages = new LearningClassContentPageService( rockContext )
+                .Queryable()
+                .Where( c => c.LearningClassId == learningClass.Id )
+                .ToList();
+
+            foreach ( var contentPage in contentPages )
+            {
+                newLearningClass.ContentPages.Add( contentPage.CloneWithoutIdentity() );
+            }
+
             // If we're also copying activities populate a list of new activities.
             if ( includeActivities )
             {
@@ -317,6 +327,39 @@ namespace Rock.Model
                         p.PersonId == personId &&
                         p.GroupRole.IsLeader == false )
                     );
+        }
+
+        /// <summary>
+        /// Gets the active classes for the specified program.
+        /// </summary>
+        /// <param name="programIdKey">The identifier key of the <see cref="LearningProgram"/> to retrieve active classes for.</param>
+        /// <returns>An IQueryable of LearningClasses that are considered 'Active'.</returns>
+        public IQueryable<LearningClass> GetActiveClasses( string programIdKey )
+        {
+            if (int.TryParse(programIdKey, out var programId ) )
+            {
+                GetActiveClasses( programId );
+            }
+
+            var idFromHash = IdHasher.Instance.GetId( programIdKey ).ToIntSafe();
+
+            return idFromHash > 0 ? GetActiveClasses( idFromHash ) : Queryable();
+        }
+
+        /// <summary>
+        /// Gets the active classes for the specified program.
+        /// </summary>
+        /// <param name="programId">The identifier of the <see cref="LearningProgram"/> to retrieve active classes for.</param>
+        /// <returns>An IQueryable of LearningClasses that are considered 'Active'.</returns>
+        public IQueryable<LearningClass> GetActiveClasses( int programId )
+        {
+            var now = RockDateTime.Now;
+            return Queryable()
+                .Where( c =>
+                    c.LearningCourse.LearningProgramId == programId
+                    && c.IsActive
+                    && ( !c.LearningSemester.EndDate.HasValue || c.LearningSemester.EndDate > now )
+                );
         }
     }
 }

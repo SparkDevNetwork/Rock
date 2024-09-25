@@ -65,7 +65,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { SelectColumn, Column, numberValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn, PersonCell } from "@Obsidian/Controls/grid";
+    import Grid, { SelectColumn, Column, numberValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
