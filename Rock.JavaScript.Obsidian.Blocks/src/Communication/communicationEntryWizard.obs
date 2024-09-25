@@ -40,7 +40,7 @@
                                                  class="component-list-item draggable"
                                                  draggable="true"
                                                  @dragstart="onComponentTypeDragStart($event, componentType)"
-                                                 @dragend="onComponentTypeDragEnd($event, componentType)"><i :class="componentType.iconCssClass"></i>{{ componentType.name }}</div>
+                                                 @dragend="onComponentTypeDragEnd($event, componentType)"><i :class="componentType.iconCssClass"></i>{{ componentType.title }}</div>
                                         </div>
 
                                         <div v-else-if="item === 'Sections'">
@@ -88,6 +88,8 @@
 </template>
 
 <style scoped>
+@import "/Styles/RockFont/style.css";
+
 .draggable {
     cursor: grab;
 }
@@ -215,7 +217,7 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-    import { buttonComponent, dividerComponent, getComponentOrThrow, imageComponent, lavaComponent, messageComponent, paragraphComponent, rsvpComponent, titleComponent, videoComponent } from "./CommunicationWizard/components.partial";
+    import { buttonComponent, dividerComponent, getComponentOrThrow, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/components.partial";
     import IFrameProjector from "./CommunicationWizard/iframeProjector.partial.obs";
     import { EditorComponentType, EditorComponentTypeName } from "./CommunicationWizard/types.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -283,14 +285,6 @@
         ];
     });
 
-    const editorWidthPixels = computed<string>(() => {
-        return `${editorWidth}px`;
-    });
-
-    const editorHeightPixels = computed<string>(() => {
-        return `${editorHeight}px`;
-    });
-
     const componentTypes: EditorComponentType[] = [
         titleComponent,
         videoComponent,
@@ -301,6 +295,9 @@
         imageComponent,
         lavaComponent,
         rsvpComponent,
+        oneColumnSectionComponent,
+        twoColumnSectionComponent,
+        threeColumnSectionComponent
     ];
 
     // #endregion
@@ -405,7 +402,22 @@
         // and move the placeholder either before or after it.
         // FYI, elementsOver is sorted from descendant element to ancestor element.
         for (const elementOver of elementsOver) {
-            if (elementOver.parentElement?.matches(".dropzone")) {
+            if (elementOver.matches(".dropzone")) {
+                // TODO JMH Add case where dropping in dropzone but not on top of another child.
+                // TODO JMH For now, just put the element as the last child.
+                for (const child of elementOver.children) {
+                    const childElement = child as HTMLElement;
+
+                    if (childElement && e.coords.y < childElement.getBoundingClientRect().top) {
+                        elementOver.insertBefore(draggingComponentPlaceholderElement.value, childElement);
+                        return;
+                    }
+                }
+
+                elementOver.appendChild(draggingComponentPlaceholderElement.value);
+                return;
+            }
+            else if (elementOver.parentElement?.matches(".dropzone")) {
                 console.log("parent matches .dropzone");
                 const topOfHoveredElement = elementOver.getBoundingClientRect().top;
                 const elementOverMidpointY = (elementOver.offsetHeight / 2) + topOfHoveredElement;
@@ -420,21 +432,6 @@
                     elementOver.parentElement.insertBefore(draggingComponentPlaceholderElement.value, elementOver.nextSibling);
                 }
 
-                return;
-            }
-            else if (elementOver.matches(".dropzone")) {
-                // TODO JMH Add case where dropping in dropzone but not on top of another child.
-                // TODO JMH For now, just put the element as the last child.
-                for (const child of elementOver.children) {
-                    const childElement = child as HTMLElement;
-
-                    if (childElement && e.coords.y < childElement.getBoundingClientRect().top) {
-                        elementOver.insertBefore(draggingComponentPlaceholderElement.value, childElement);
-                        return;
-                    }
-                }
-
-                elementOver.appendChild(draggingComponentPlaceholderElement.value);
                 return;
             }
             else {
@@ -573,15 +570,10 @@
     function onIFrameLoaded(): void {
         const iframe = editorIFrame.value;
 
-        // TODO JMH Add Rock fonts for access to font-awesome icons?
         if (iframe?.contentDocument) {
-            // var cssLink = document.createElement("link");
-            // cssLink.className = "js-emaileditor2-addon";
-            // cssLink.href = `/Themes/Rock/Styles/email-editor.css?v=${Date.now()}`;
-            // cssLink.rel = "stylesheet";
-            // cssLink.type = "text/css";
-            // iframe.contentDocument.head.appendChild(cssLink);
-
+            // Only include styles needed for editing the email, such as drag effects.
+            // Styles for individual components in the HTML email should be styled by
+            // CSS defined in the Communication Template as these will be stripped out.
             var style = document.createElement("style");
             style.className = "js-emaileditor2-addon";
             style.textContent = `
@@ -605,8 +597,50 @@
     content: "Drop component here";
     transform: translateY(-50%);
 }
+
+.component[data-state="template"] {
+    float: left;
+    width: 40px;
+    padding: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 11px;
+    color: #343a40;
+    text-align: center;
+    cursor: move;
+    background-color: #fff;
+    border: 1px solid #dfe0e1;
+    border-radius: 4px;
+}
+
+.gu-transit {
+    box-sizing: border-box;
+    display: block;
+    float: none !important;
+    width: 100% !important;
+    height: 100%;
+    background: repeating-linear-gradient(-55deg, rgba(35, 79, 65, 0.1), rgba(35, 79, 65, 0.1) 3px, rgba(35, 79, 65, 0) 3px, rgba(35, 79, 65, 0) 6px) !important;
+    border-radius: 0 !important;
+    opacity: 1 !important;
+}
+
+.component.selected {
+    cursor: move;
+    outline: 3px solid #59c9a5;
+    outline-offset: -2px;
+    opacity: 1;
+}
 `;
             iframe.contentDocument.head.appendChild(style);
+
+            // Select the first component with the "selected" CSS class.
+            const selectedComponentElements = [...iframe.contentDocument.querySelectorAll(".component.selected")] as HTMLElement[];
+            if (selectedComponentElements?.length) {
+                selectComponent(selectedComponentElements[0]);
+
+                for (const otherSelectedComponentElement of selectedComponentElements.slice(1)) {
+                    deselectComponentElement(otherSelectedComponentElement);
+                }
+            }
         }
     }
 
@@ -621,11 +655,26 @@
         // where the mouse currently is, and allow it to be dragged/moved to another
         // dropzone. This is as simple as adding the "draggable" attribute to the element
         // while the mouse is down.
-        const component = (event.target as HTMLElement)?.closest(".component") as HTMLElement;
+        const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
-        if (component) {
-            component.addEventListener("dragend", onIFrameComponentDragEnd);
-            component.setAttribute("draggable", "true");
+        if (componentElement) {
+            // Enable dragging for the component element.
+            componentElement.addEventListener("dragend", onIFrameComponentDragEnd);
+            componentElement.addEventListener("dragstart", onIFrameComponentDragStart);
+            componentElement.setAttribute("draggable", "true");
+
+            componentElement.addEventListener("mouseup", onIFrameComponentMouseUp);
+        }
+    }
+
+    function onIFrameComponentDragStart(event: DragEvent): void {
+        const componentElement = event.target as HTMLElement;
+
+        if (componentElement) {
+            componentElement.removeEventListener("dragstart", onIFrameComponentDragStart);
+            componentElement.classList.add("gu-transit");
+
+            selectComponent(componentElement);
         }
     }
 
@@ -638,24 +687,65 @@
             // Also remove this function as an event listener to keep event system clean.
             componentElement.removeEventListener("dragend", onIFrameComponentDragEnd);
             componentElement.removeAttribute("draggable");
+            componentElement.classList.remove("gu-transit");
         }
+    }
+
+    function onIFrameComponentMouseUp(event: MouseEvent): void {
+        const componentElement = (event.target as HTMLElement)?.closest(".component") as HTMLElement;
+
+        if (componentElement) {
+            componentElement.removeEventListener("mouseup", onIFrameComponentMouseUp);
+        }
+    }
+
+    function selectComponent(componentElement: HTMLElement): void {
+        if (selectedComponent.value?.componentElement === componentElement) {
+            // Skip if the component is already selected.
+            return;
+        }
+
+        if (selectedComponent.value?.componentElement) {
+            // Deselect the previously selected component.
+            deselectComponentElement(selectedComponent.value.componentElement);
+        }
+
+        selectedComponent.value = {
+            componentElement,
+            type: getComponentOrThrow(componentElement)
+        };
+
+        componentElement.classList.add("selected");
+    }
+
+    function deselectComponentElement(componentElement: HTMLElement): void {
+        componentElement.classList.remove("selected");
     }
 
     function onIFrameClick(event: MouseEvent): void {
-        const targetElement = event.target as HTMLElement;
-        const componentElement = targetElement?.closest(".component") as HTMLElement;
+        const componentElement = (event.target as HTMLElement)?.closest(".component") as HTMLElement;
 
         if (componentElement?.dataset["state"] === "component") {
-            onIFrameComponentClick(event);
+            onIFrameComponentClick(event, componentElement);
         }
     }
 
-    function onIFrameComponentClick(event: MouseEvent): void {
+    function onIFrameComponentClick(event: MouseEvent, componentElement: HTMLElement): void {
         // Prevent things like links from taking you off the page.
         event.preventDefault();
         // Prevent event from bubbling up to parents.
         event.stopImmediatePropagation();
+
+        // Select the new component.
+        selectComponent(componentElement);
     }
+
+    type EditorComponent = {
+        type: EditorComponentType;
+        componentElement: HTMLElement;
+    };
+
+    const selectedComponent = ref<EditorComponent | null | undefined>();
 
     // #endregion
 

@@ -1,15 +1,19 @@
 export type EditorComponentType = {
-    readonly typeName: "title"
+    readonly typeName: "text"
     | "video"
     | "button"
     | "paragraph"
     | "divider"
     | "message"
     | "image"
-    | "lava"
-    | "rsvp";
+    | "code"
+    | "rsvp"
+    | "section"
+    | "one-column-section"
+    | "two-column-section"
+    | "three-column-section";
     iconCssClass: string;
-    name: string;
+    title: string;
     createComponentPlaceholder(d: Document): HTMLElement;
     createComponentElement(d: Document): HTMLElement;
 };

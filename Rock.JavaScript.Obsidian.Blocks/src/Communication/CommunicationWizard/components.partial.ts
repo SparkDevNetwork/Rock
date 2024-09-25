@@ -1,8 +1,19 @@
 import { EditorComponentType, EditorComponentTypeName } from "./types.partial";
+import { toWordFull } from "@Obsidian/Utility/numberUtils";
 
-export function getComponentOrThrow(type: EditorComponentTypeName): EditorComponentType {
+export function getComponentOrThrow(componentElement: HTMLElement): EditorComponentType;
+export function getComponentOrThrow(type: EditorComponentTypeName): EditorComponentType;
+export function getComponentOrThrow(componentElementOrType: EditorComponentTypeName | HTMLElement): EditorComponentType {
+    let type: string = "";
+    if (typeof componentElementOrType === "string") {
+        type = componentElementOrType;
+    }
+    else {
+        type = [...componentElementOrType.classList].find(cls => cls.startsWith("component-"))?.replace("component-", "") ?? "";
+    }
+
     switch (type) {
-        case "title":
+        case "text":
             return titleComponent;
         case "video":
             return videoComponent;
@@ -16,10 +27,18 @@ export function getComponentOrThrow(type: EditorComponentTypeName): EditorCompon
             return messageComponent;
         case "image":
             return imageComponent;
-        case "lava":
+        case "code":
             return lavaComponent;
         case "rsvp":
             return rsvpComponent;
+        case "section":
+            return sectionComponent;
+        case "one-column-section":
+            return oneColumnSectionComponent;
+        case "two-column-section":
+            return twoColumnSectionComponent;
+        case "three-column-section":
+            return threeColumnSectionComponent;
         default:
             throw "Unknown editor component";
     }
@@ -27,12 +46,12 @@ export function getComponentOrThrow(type: EditorComponentTypeName): EditorCompon
 
 export const titleComponent: EditorComponentType = {
     iconCssClass: "fa fa-font",
-    name: "Title",
-    typeName: "title",
+    title: "Title",
+    typeName: "text",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-text");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<h1>Title</h1>`;
         return el;
@@ -40,20 +59,21 @@ export const titleComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.style.border = "1px solid gray";
-        ph.innerHTML = `<i class="${this.iconCssClass}" style="font-family: 'rock-application' !important; speak: none; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; display: inline-block; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;"></i><br/>${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const videoComponent: EditorComponentType = {
     iconCssClass: "fa fa-video",
-    name: "Video",
+    title: "Video",
     typeName: "video",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-video");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<a href=""><img src="/Assets/Images/video-placeholder.jpg" style="width: 100%;" data-imgcsswidth="full"></a>`;
         return el;
@@ -61,19 +81,21 @@ export const videoComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const buttonComponent: EditorComponentType = {
     iconCssClass: "fa fa-square",
-    name: "Button",
+    title: "Button",
     typeName: "button",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-button", "v2");
+        el.classList.add("component", `component-${this.typeName}`, "v2");
         el.dataset.state = "component";
         el.innerHTML = `<table class="button-outerwrap" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width:100%;">
     <tbody>
@@ -97,19 +119,21 @@ export const buttonComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "v2", "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const paragraphComponent: EditorComponentType = {
     iconCssClass: "fa fa-align-left",
-    name: "Paragraph",
+    title: "Paragraph",
     typeName: "paragraph",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-paragraph");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<p>Can't wait to see what you have to say!</p>`;
         return el;
@@ -117,19 +141,21 @@ export const paragraphComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const dividerComponent: EditorComponentType = {
     iconCssClass: "fa fa-ellipsis-h",
-    name: "Divider",
+    title: "Divider",
     typeName: "divider",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-button", "v2");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<hr style="margin-top: 20px; margin-bottom: 20px; border: 0; height: 4px; background: #c4c4c4;" />`;
         return el;
@@ -137,39 +163,43 @@ export const dividerComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const messageComponent: EditorComponentType = {
     iconCssClass: "fa fa-user",
-    name: "Message",
+    title: "Message",
     typeName: "message",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-image");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
-        el.innerText = this.name;
+        el.innerText = this.title;
         return el;
     },
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const imageComponent: EditorComponentType = {
     iconCssClass: "fa fa-image",
-    name: "Image",
+    title: "Image",
     typeName: "image",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-image");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<img src="/Assets/Images/image-placeholder.jpg" style="width: 100%;" data-imgcsswidth="full" alt="">`;
         return el;
@@ -177,19 +207,21 @@ export const imageComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const lavaComponent: EditorComponentType = {
     iconCssClass: "fa fa-code",
-    name: "Lava",
-    typeName: "lava",
+    title: "Lava",
+    typeName: "code",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-code");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `Add your code here...`;
         return el;
@@ -197,19 +229,172 @@ export const lavaComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
+        return ph;
+    }
+};
+
+export const sectionComponent: EditorComponentType & { sectionCount: number; } = {
+    get iconCssClass(): string {
+        return `rk rk-${toWordFull(this.sectionCount)}-column`;
+    },
+    title: "Section",
+    typeName: "section",
+    sectionCount: 1,
+
+    createComponentElement(d: Document): HTMLElement {
+        function generateSections(sectionCount: number): string {
+            let tds = "";
+            const widths = {
+                2: ["50%", "50%"],
+                3: ["33%", "34%", "33%"],
+                4: ["25%", "25%", "25%", "25%"],
+                5: ["20%", "20%", "20%", "20%", "20%"],
+                6: ["16%", "17%", "17%", "17%", "17%", "16%"],
+                7: ["14%", "14%", "15%", "14%", "15%", "14%", "14%"],
+                8: ["12%", "12%", "13%", "13%", "13%", "13%", "12%", "12%"],
+                9: ["11%", "11%", "11%", "11%", "12%", "11%", "11%", "11%", "11%"],
+                10: ["10%", "10%", "10%", "10%", "10%", "10%", "10%", "10%", "10%", "10%"],
+                11: ["16%", "17%", "17%", "17%", "17%", "16%"],
+                12: ["8%", "9%", "9%", "9%", "9%", "9%", "9%", "9%", "9%", "9%", "9%", "8%"]
+            };
+
+            if (widths[sectionCount]) {
+                const width = widths[sectionCount];
+                const largeCssClass = `large-${12 / sectionCount}`;
+
+                tds += `<td class="dropzone columns ${largeCssClass} small-12 first" width="${width[0]}" valign="top"></td>\n`;
+                for (let i = 1; i < sectionCount - 1; i++) {
+                    tds += `<td class="dropzone columns ${largeCssClass} small-12" width="${width[i]}" valign="top"></td>\n`;
+                }
+                tds += `<td class="dropzone columns ${largeCssClass} small-12 last" width="${width[sectionCount - 1]}" valign="top"></td>`;
+            }
+            else {
+                tds = "<td>Invalid section count</td>";
+            }
+
+            return tds;
+        }
+
+        const el = d.createElement("div");
+        el.classList.add("component", "component-section");
+        el.dataset.state = "component";
+        if (this.sectionCount <= 1) {
+            el.innerHTML = `<div class="dropzone"></div>`;
+        }
+        else {
+            el.innerHTML = `<table class="row" width="100%">
+        <tbody>
+            <tr>
+                ${generateSections(this.sectionCount)}
+            </tr>
+        </tbody>
+    </table>`;
+        }
+
+        return el;
+    },
+
+    createComponentPlaceholder(d: Document): HTMLElement {
+        const ph = d.createElement("div");
+        ph.classList.add("component", "component-section", "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
+        return ph;
+    }
+};
+
+export const oneColumnSectionComponent: EditorComponentType = {
+    iconCssClass: "rk rk-one-column",
+    title: "One",
+    typeName: "one-column-section",
+
+    createComponentElement(d: Document): HTMLElement {
+        const el = d.createElement("div");
+        el.classList.add("component", "component-section");
+        el.dataset.state = "component";
+        el.innerHTML = `<div class="dropzone"></div>`;
+        return el;
+    },
+
+    createComponentPlaceholder(d: Document): HTMLElement {
+        const ph = d.createElement("div");
+        ph.classList.add("component", "component-section", "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
+        return ph;
+    }
+};
+
+export const twoColumnSectionComponent: EditorComponentType = {
+    iconCssClass: "rk rk-two-column",
+    title: "Two",
+    typeName: "two-column-section",
+
+    createComponentElement(d: Document): HTMLElement {
+        const el = d.createElement("div");
+        el.classList.add("component", "component-section");
+        el.dataset.state = "component";
+        el.innerHTML = `<table class="row" width="100%">
+    <tbody>
+        <tr>
+            <td class="dropzone columns large-6 small-12 first" width="50%" valign="top"></td>
+            <td class="dropzone columns large-6 small-12 last" width="50%" valign="top"></td>
+        </tr>
+    </tbody>
+</table>`;
+        return el;
+    },
+
+    createComponentPlaceholder(d: Document): HTMLElement {
+        const ph = d.createElement("div");
+        ph.classList.add("component", "component-section", "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
+        return ph;
+    }
+};
+
+export const threeColumnSectionComponent: EditorComponentType = {
+    iconCssClass: "rk rk-three-column",
+    title: "Three",
+    typeName: "three-column-section",
+
+    createComponentElement(d: Document): HTMLElement {
+        const el = d.createElement("div");
+        el.classList.add("component", "component-section");
+        el.dataset.state = "component";
+        el.innerHTML = `<table class="row" width="100%">
+    <tbody>
+        <tr>
+            <td class="dropzone columns large-4 small-12 first" width="33%" valign="top"></td>
+            <td class="dropzone columns large-4 small-12" width="34%" valign="top"></td>
+            <td class="dropzone columns large-4 small-12 last" width="33%" valign="top"></td>
+        </tr>
+    </tbody>
+</table>`;
+        return el;
+    },
+
+    createComponentPlaceholder(d: Document): HTMLElement {
+        const ph = d.createElement("div");
+        ph.classList.add("component", "component-section", "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
 
 export const rsvpComponent: EditorComponentType = {
     iconCssClass: "fa fa-check-square",
-    name: "RSVP",
+    title: "RSVP",
     typeName: "rsvp",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-rsvp");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<table class="rsvp-outerwrap" border="0" cellpadding="0" width="100%" style="min-width:100%;">
     <tbody>
@@ -254,7 +439,9 @@ export const rsvpComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.innerText = `${this.name} (Placeholder)`;
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
     }
 };
