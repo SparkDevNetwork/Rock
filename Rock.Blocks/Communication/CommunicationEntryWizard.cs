@@ -15,6 +15,8 @@
 // </copyright>
 
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -169,9 +171,15 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion PageParameterKeys
+
         public override object GetObsidianBlockInitialization()
         {
-            return base.GetObsidianBlockInitialization();
+            var communicationTemplate = new CommunicationTemplateService( this.RockContext ).Queryable().AsNoTracking().ToList().FirstOrDefault( c => c.SupportsEmailWizard() );
+
+            return new
+            {
+                EmailMessage = communicationTemplate?.Message?.ResolveMergeFields( this.RequestContext.GetCommonMergeFields() )
+            };
         }
 
         #region Old Block Code
