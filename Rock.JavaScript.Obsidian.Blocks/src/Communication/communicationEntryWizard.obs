@@ -4,9 +4,10 @@
            :headerSecondaryActions="[{
                title: 'TBD', type: 'default'
            }]"
-           panelClass="communication-entry-wizard-editor-panel">
+           panelClass="communication-entry-wizard-email-editor-panel"
+           type="block">
         <template #title>
-            <div class="communication-entry-wizard-editor-panel-title">
+            <div class="communication-entry-wizard-email-editor-panel-title">
                 <span>Email Editor, Window Scroll: [{{ tempWindowScrollX }}, {{ tempWindowScrollY }}], IFrame Scroll: [{{ tempIFrameWindowScrollX }}, {{ tempIFrameWindowScrollY }}], Cursor Position: [{{ tempCursorX }}, {{ tempCursorY }}]</span>
                 <HighlightLabel>1234 Recipients</HighlightLabel>
             </div>
@@ -14,97 +15,79 @@
 
         <template #subheaderRight>
             <div>
-                <RockButton class="communication-entry-wizard-editor-subheader-action" btnSize="xs">Send Test</RockButton>
-                <RockButton class="communication-entry-wizard-editor-subheader-action" btnSize="xs">Preview</RockButton>
-                <RockButton class="communication-entry-wizard-editor-subheader-action" btnSize="xs">Save</RockButton>
+                <RockButton class="communication-entry-wizard-email-editor-subheader-action" btnSize="xs">Send Test</RockButton>
+                <RockButton class="communication-entry-wizard-email-editor-subheader-action" btnSize="xs">Preview</RockButton>
+                <RockButton class="communication-entry-wizard-email-editor-subheader-action" btnSize="xs">Save</RockButton>
             </div>
         </template>
 
         <template #default>
-            <div class="communication-entry-wizard-editor-panel-body">
-                <div class="communication-entry-wizard-editor-toolbox">
-                    <div class="communication-entry-wizard-editor-toolbox-menu">
-                        <div class="menu-item menu-item-content selected"><i class="fa fa-grip-horizontal"></i><span>Content</span></div>
-                        <div class="menu-item menu-item-design"><i class="fa fa-drafting-compass"></i><span>Design</span></div>
-                    </div>
+            <div class="communication-entry-wizard-email-editor-panel-body">
+                <div class="communication-entry-wizard-email-editor-d3signer">
+                    <div class="communication-entry-wizard-email-editor-toolbox">
+                        <div class="communication-entry-wizard-email-editor-toolbox-menu">
+                            <div class="menu-item menu-item-content selected"><i class="fa fa-grip-horizontal"></i><span>Content</span></div>
+                            <div class="menu-item menu-item-design"><i class="fa fa-drafting-compass"></i><span>Design</span></div>
+                        </div>
 
-                    <div class="communication-entry-wizard-editor-toolbox-submenu">
-                        <TabbedContent v-model="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
-                            <template #tabpane="{ item }">
-                                <div class="px-3">
-                                    <div v-if="item === 'Components'" class="component-list">
-                                        <div v-for="componentType in componentTypes"
-                                             :key="componentType.typeName"
-                                             class="component-list-item draggable"
-                                             draggable="true"
-                                             @dragstart="onComponentTypeDragStart($event, componentType)"
-                                             @dragend="onComponentTypeDragEnd($event, componentType)"><i :class="componentType.iconCssClass"></i>{{ componentType.name }}</div>
-                                    </div>
+                        <div class="communication-entry-wizard-email-editor-toolbox-submenu">
+                            <TabbedContent v-model="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
+                                <template #tabpane="{ item }">
+                                    <div class="px-3">
+                                        <div v-if="item === 'Components'" class="component-list">
+                                            <div v-for="componentType in componentTypes"
+                                                 :key="componentType.typeName"
+                                                 class="component-list-item draggable"
+                                                 draggable="true"
+                                                 @dragstart="onComponentTypeDragStart($event, componentType)"
+                                                 @dragend="onComponentTypeDragEnd($event, componentType)"><i :class="componentType.iconCssClass"></i>{{ componentType.name }}</div>
+                                        </div>
 
-                                    <div v-else-if="item === 'Sections'">
-                                        <DropDownList v-model="sectionCategory" :items="sectionCategories" label="Category">
-                                            <template #inputGroupPrepend>
-                                                <div class="input-group-addon">
-                                                    <i class="fa fa-folder"></i>
-                                                </div>
-                                            </template>
-                                        </DropDownList>
+                                        <div v-else-if="item === 'Sections'">
+                                            <DropDownList v-model="sectionCategory" :items="sectionCategories" label="Category">
+                                                <template #inputGroupPrepend>
+                                                    <div class="input-group-addon">
+                                                        <i class="fa fa-folder"></i>
+                                                    </div>
+                                                </template>
+                                            </DropDownList>
 
-                                        <div class="section-list">
+                                            <div class="section-list">
 
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </template>
-                        </TabbedContent>
+                                </template>
+                            </TabbedContent>
+                        </div>
+                    </div>
+
+                    <div class="communication-entry-wizard-email-editor">
+                        <div class="communication-entry-wizard-email-editor-designer">
+                            <iframe ref="editorIFrame" :width="editorWidth" :height="editorHeight" frameborder="0" border="0" :srcdoc="config.emailMessage ?? ''"></iframe>
+                            <div v-if="isEditorOverlayVisible && draggingComponentType"
+                                 class="communication-entry-wizard-email-editor-designer-overlay"
+                                 @dragover="onComponentTypeDragOver($event, draggingComponentType)"
+                                 @drop="onComponentTypeDragDrop($event, draggingComponentType)"
+                                 @dragleave="onComponentTypeDragLeave($event, draggingComponentType)"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="communication-entry-wizard-editor">
-                    <div class="communication-entry-wizard-editor-content-container">
-                        <iframe ref="editorIFrame" :width="editorWidth" :height="editorHeight" frameborder="0" border="0" :srcdoc="config.emailMessage ?? ''">
-                        </iframe>
-                        <div v-if="isEditorOverlayVisible && draggingComponentType"
-                             class="communication-entry-wizard-editor-overlay"
-                             @dragover="onComponentTypeDragOver($event, draggingComponentType)"
-                             @drop="onComponentTypeDragDrop($event, draggingComponentType)"
-                             @dragleave="onComponentTypeDragLeave($event, draggingComponentType)"></div>
+                <div class="actions">
+                    <div class="footer-actions">
+                        <RockButton>Previous</RockButton>
+                    </div>
+                    <div class="footer-secondary-actions">
+                        <RockButton btnType="primary">Next</RockButton>
                     </div>
                 </div>
             </div>
-        </template>
-
-        <template #footerActions>
-            <RockButton>Previous</RockButton>
-        </template>
-
-        <template #footerSecondaryActions>
-            <RockButton btnType="primary">Next</RockButton>
         </template>
     </Panel>
 </template>
 
 <style scoped>
-.communication-entry-wizard-editor-content-container {
-    position: relative;
-    width: v-bind(editorWidthPixels);
-    height: v-bind(editorHeightPixels);
-}
-
-.communication-entry-wizard-editor-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: v-bind(editorWidthPixels);
-    height: v-bind(editorHeightPixels);
-    /* TODO JMH Remove this commented code.
-    opacity: 0.4;
-    background-color: orange;
-     */
-}
-
 .draggable {
     cursor: grab;
 }
@@ -136,12 +119,12 @@
     border-color: var(--color-primary);
 }
 
-.communication-entry-wizard-editor-toolbox {
+.communication-entry-wizard-email-editor-toolbox {
     display: flex;
     flex-wrap: wrap;
 }
 
-.communication-entry-wizard-editor-toolbox-menu {
+.communication-entry-wizard-email-editor-toolbox-menu {
     background-color: gray;
     display: flex;
     flex-direction: column;
@@ -164,33 +147,69 @@
     background-color: white;
 }
 
-.communication-entry-wizard-editor-toolbox-submenu {
+.communication-entry-wizard-email-editor-toolbox-submenu {
     display: flex;
     flex-direction: column;
     width: 322px;
 }
 
-.communication-entry-wizard-editor-panel-title {
+.communication-entry-wizard-email-editor-panel-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.communication-entry-wizard-editor-subheader-action + .communication-entry-wizard-editor-subheader-action {
+.communication-entry-wizard-email-editor-subheader-action + .communication-entry-wizard-email-editor-subheader-action {
     margin-left: 16px;
 }
 
-.communication-entry-wizard-editor-panel-body {
-    min-height: 300px;
+.communication-entry-wizard-email-editor-panel-body {
     display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-.communication-entry-wizard-editor {
+.communication-entry-wizard-email-editor-d3signer {
+    display: flex;
+    flex-grow: 1;
+}
+
+.communication-entry-wizard-email-editor {
     flex-grow: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: lightgray;
+}
+
+.communication-entry-wizard-email-editor-designer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.communication-entry-wizard-email-editor-designer iframe {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.communication-entry-wizard-email-editor-designer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    /* TODO JMH Remove this commented code.
+    opacity: 0.4;
+    background-color: orange;
+     */
 }
 </style>
 
@@ -622,6 +641,22 @@
         }
     }
 
+    function onIFrameClick(event: MouseEvent): void {
+        const targetElement = event.target as HTMLElement;
+        const componentElement = targetElement?.closest(".component") as HTMLElement;
+
+        if (componentElement?.dataset["state"] === "component") {
+            onIFrameComponentClick(event);
+        }
+    }
+
+    function onIFrameComponentClick(event: MouseEvent): void {
+        // Prevent things like links from taking you off the page.
+        event.preventDefault();
+        // Prevent event from bubbling up to parents.
+        event.stopImmediatePropagation();
+    }
+
     // #endregion
 
     // #region Functions
@@ -642,6 +677,9 @@
 
             // Add handler that allows moving components inside the editor.
             iframe.contentWindow.addEventListener("mousedown", onIFrameMouseDown);
+
+            // Add handler that reroutes component "click" events to the parent window.
+            iframe.contentWindow.addEventListener("click", onIFrameClick);
         }
         else {
             console.error("An error occurred while loading the editor.");
@@ -654,6 +692,7 @@
             iframe.contentWindow.removeEventListener("message", onIFrameMessagePushed);
             iframe.contentWindow.removeEventListener("load", onIFrameLoaded);
             iframe.contentWindow.removeEventListener("mousedown", onIFrameMouseDown);
+            iframe.contentWindow.removeEventListener("click", onIFrameClick);
         }
     });
 
