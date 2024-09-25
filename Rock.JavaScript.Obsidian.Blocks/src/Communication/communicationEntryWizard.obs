@@ -8,7 +8,7 @@
            type="block">
         <template #title>
             <div class="communication-entry-wizard-email-editor-panel-title">
-                <span>Email Editor, Window Scroll: [{{ tempWindowScrollX }}, {{ tempWindowScrollY }}], IFrame Scroll: [{{ tempIFrameWindowScrollX }}, {{ tempIFrameWindowScrollY }}], Cursor Position: [{{ tempCursorX }}, {{ tempCursorY }}]</span>
+                <span>Email Editor, Window Scroll: [{{ tempWindowScrollX }}, {{ tempWindowScrollY }}], IFrame Scroll: [{{ tempIFrameWindowScrollX }}, {{ tempIFrameWindowScrollY }}], Cursor Position: [{{ dragCursorX }}, {{ dragCursorY }}]</span>
                 <HighlightLabel>1234 Recipients</HighlightLabel>
             </div>
         </template>
@@ -217,8 +217,7 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-    import { buttonComponent, dividerComponent, getComponentOrThrow, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/components.partial";
-    import IFrameProjector from "./CommunicationWizard/iframeProjector.partial.obs";
+    import { buttonComponent, dividerComponent, getComponentOrThrow as getComponentTypeOrThrow, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/components.partial";
     import { EditorComponentType, EditorComponentTypeName } from "./CommunicationWizard/types.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -271,6 +270,7 @@
     const isEditorOverlayVisible = ref<boolean>(false);
     const draggingComponentType = ref<EditorComponentType | null | undefined>();
     const draggingComponentPlaceholderElement = ref<HTMLElement | null | undefined>();
+    const draggingComponentElement = ref<HTMLElement | null | undefined>();
     const sectionCategory = ref<string>("");
     const sectionCategories = ref<ListItemBag[]>([]);
 
@@ -335,7 +335,7 @@
         // the editor iframe. The handler for the "dragover" event,
         // which is fired repetitively even if the pointer is stationary,
         // will handle moving the placeholder element to the correct location.
-        draggingComponentPlaceholderElement.value = getComponentOrThrow(e.componentTypeName).createComponentPlaceholder(iframeDocument);
+        draggingComponentPlaceholderElement.value = getComponentTypeOrThrow(e.componentTypeName).createComponentPlaceholder(iframeDocument);
     }
 
     const tempIFrameWindowScrollX = ref<number>(0);
@@ -344,8 +344,8 @@
     const tempWindowScrollX = ref<number>(0);
     const tempWindowScrollY = ref<number>(0);
 
-    const tempCursorX = ref<number>(0);
-    const tempCursorY = ref<number>(0);
+    const dragCursorX = ref<number>(0);
+    const dragCursorY = ref<number>(0);
 
     /**
      * Handles a component type being dragged over the parent window's editor overlay
@@ -385,12 +385,12 @@
 
     function onIFrameComponentTypeDragOver(e: ComponentTypeDragOverPushMessageEvent): void {
         const iframe = editorIFrame.value;
-        if (!draggingComponentPlaceholderElement.value || !iframe?.contentDocument || (tempCursorX.value === e.coords.x && tempCursorY.value === e.coords.y)) {
+        if (!draggingComponentPlaceholderElement.value || !iframe?.contentDocument || (dragCursorX.value === e.coords.x && dragCursorY.value === e.coords.y)) {
             return;
         }
 
-        tempCursorX.value = e.coords.x;
-        tempCursorY.value = e.coords.y;
+        dragCursorX.value = e.coords.x;
+        dragCursorY.value = e.coords.y;
 
         // This handler will place the current component type's placeholder element
         // either before or after the element being hovered over.
@@ -466,7 +466,7 @@
             console.log("Nothing to drop");
         }
         else {
-            const componentElement = getComponentOrThrow(e.componentTypeName).createComponentElement(iframeDocument);
+            const componentElement = getComponentTypeOrThrow(e.componentTypeName).createComponentElement(iframeDocument);
 
             // Swap the placeholder element with the permanent element.
             draggingComponentPlaceholderElement.value.replaceWith(componentElement);
@@ -659,8 +659,10 @@
 
         if (componentElement) {
             // Enable dragging for the component element.
-            componentElement.addEventListener("dragend", onIFrameComponentDragEnd);
             componentElement.addEventListener("dragstart", onIFrameComponentDragStart);
+            //componentElement.addEventListener("dragover", onIFrameComponentDragOver); // This should be handled at the iframe level.
+            //componentElement.addEventListener("drop", onIFrameComponentDragDrop); // This should be handled at the iframe level.
+            componentElement.addEventListener("dragend", onIFrameComponentDragEnd);
             componentElement.setAttribute("draggable", "true");
 
             componentElement.addEventListener("mouseup", onIFrameComponentMouseUp);
@@ -668,23 +670,98 @@
     }
 
     function onIFrameComponentDragStart(event: DragEvent): void {
-        const componentElement = event.target as HTMLElement;
+        const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
         if (componentElement) {
-            componentElement.removeEventListener("dragstart", onIFrameComponentDragStart);
+            draggingComponentElement.value = componentElement;
+
             componentElement.classList.add("gu-transit");
 
             selectComponent(componentElement);
         }
     }
 
-    function onIFrameComponentDragEnd(event: DragEvent): void {
-        const componentElement = event.target as HTMLElement;
+    function onIFrameComponentDragOver(e: DragEvent): void {
+        // Preventing default here makes the element a valid drop target.
+        e.preventDefault();
+
+        const iframe = editorIFrame.value;
+
+        if (!draggingComponentElement.value || !iframe || dragCursorX.value === e.clientX && dragCursorY.value === e.clientY) {
+            return;
+        }
+
+        dragCursorX.value = e.clientX;
+        dragCursorY.value = e.clientY;
+
+        // This handler will place the current component element
+        // either before or after the element being hovered over.
+
+        const elementsOver = (iframe.contentDocument?.elementsFromPoint(e.clientX, e.clientY) ?? []) as HTMLElement[];
+
+        // Find the first hovered-over element whose parent is a dropzone,
+        // and move the placeholder either before or after it.
+        // FYI, elementsOver is sorted from descendant element to ancestor element.
+        for (const elementOver of elementsOver) {
+            if (elementOver.matches(".dropzone")) {
+                // TODO JMH Add case where dropping in dropzone but not on top of another child.
+                // TODO JMH For now, just put the element as the last child.
+                for (const child of elementOver.children) {
+                    const childElement = child as HTMLElement;
+
+                    if (childElement && e.clientY < childElement.getBoundingClientRect().top) {
+                        elementOver.insertBefore(draggingComponentElement.value, childElement);
+                        return;
+                    }
+                }
+
+                elementOver.appendChild(draggingComponentElement.value);
+                return;
+            }
+            else if (elementOver.parentElement?.matches(".dropzone")) {
+                const topOfHoveredElement = elementOver.getBoundingClientRect().top;
+                const elementOverMidpointY = (elementOver.offsetHeight / 2) + topOfHoveredElement;
+
+                // If the current mouse position is less than this midpoint,
+                // then the new element should be placed before it.
+                if (e.clientY < elementOverMidpointY) {
+                    elementOver.parentElement.insertBefore(draggingComponentElement.value, elementOver);
+                }
+                // ... otherwise, the new element should be placed after it.
+                else {
+                    elementOver.parentElement.insertBefore(draggingComponentElement.value, elementOver.nextSibling);
+                }
+
+                return;
+            }
+            else {
+                // Leave the element alone.
+            }
+        }
+    }
+
+    function onIFrameComponentDragDrop(event: DragEvent): void {
+        const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
         if (componentElement) {
+            draggingComponentElement.value = null;
+
+            console.log("I was dropped!", componentElement);
+        }
+    }
+
+    function onIFrameComponentDragEnd(event: DragEvent): void {
+        const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
+
+        if (componentElement) {
+            draggingComponentElement.value = null;
+
             // When dragging is finished, remove the "draggable" attribute from the
             // component so it isn't left draggable in the resulting email content.
-            // Also remove this function as an event listener to keep event system clean.
+            // Also remove drag event listeners on the component element.
+            componentElement.removeEventListener("dragstart", onIFrameComponentDragStart);
+            //componentElement.removeEventListener("dragover", onIFrameComponentDragOver); // This should be handled at the iframe level.
+            //componentElement.removeEventListener("drop", onIFrameComponentDragDrop); // This should be handled at the iframe level.
             componentElement.removeEventListener("dragend", onIFrameComponentDragEnd);
             componentElement.removeAttribute("draggable");
             componentElement.classList.remove("gu-transit");
@@ -712,7 +789,7 @@
 
         selectedComponent.value = {
             componentElement,
-            type: getComponentOrThrow(componentElement)
+            type: getComponentTypeOrThrow(componentElement)
         };
 
         componentElement.classList.add("selected");
@@ -770,6 +847,10 @@
 
             // Add handler that reroutes component "click" events to the parent window.
             iframe.contentWindow.addEventListener("click", onIFrameClick);
+
+            // Add handler for dealing with dragging components around the editor.
+            iframe.contentWindow.addEventListener("dragover", onIFrameComponentDragOver);
+            iframe.contentWindow.addEventListener("drop", onIFrameComponentDragDrop);
         }
         else {
             console.error("An error occurred while loading the editor.");
@@ -783,6 +864,8 @@
             iframe.contentWindow.removeEventListener("load", onIFrameLoaded);
             iframe.contentWindow.removeEventListener("mousedown", onIFrameMouseDown);
             iframe.contentWindow.removeEventListener("click", onIFrameClick);
+            iframe.contentWindow.removeEventListener("dragover", onIFrameComponentDragOver);
+            iframe.contentWindow.removeEventListener("drop", onIFrameComponentDragDrop);
         }
     });
 
