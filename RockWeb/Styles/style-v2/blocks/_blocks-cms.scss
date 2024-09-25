@@ -51,11 +51,11 @@
 
 .slug-row {
   display:              block;
-  margin-bottom:        3px;
+  margin-bottom:        var(--spacing-tiny);
   border-bottom:        1px solid var(--color-interface-soft);
 
   > .rollover-item {
-    margin-top:         7px;
+    margin-top:         var(--spacing-small);
   }
 }
 
@@ -197,7 +197,7 @@
       justify-content:  center;
       width:            40px;
       height:           40px;
-      font-size:        18px;
+      font-size:        var(--font-size-h5);
     }
 
     span > i {
@@ -215,12 +215,12 @@
     > .panel {
       background:       none;
       border:           0;
-      border-color:     #ddd;
+      border-color:     var(--color-interface-soft);
       box-shadow:       none;
 
       > .panel-heading {
-        padding:        0 0 15px;
-        margin-bottom:  15px;
+        padding:        0 0 var(--spacing-medium);
+        margin-bottom:  var(--spacing-medium);
         background:     none;
       }
     }
@@ -241,7 +241,7 @@
     word-wrap:          break-word;
     background-color:   var(--color-interface-softest);
     border:             2px solid var(--color-interface-soft);
-    border-radius:      6px;
+    border-radius:      var(--rounded-small);
     transition:         150ms linear all;
 
     &:hover {
@@ -256,25 +256,25 @@
   flex-basis:           100%;
 
   @media screen and (min-width: 992px) {
-    margin-bottom:      48px;
+    margin-bottom:      var(--spacing-xlarge);
   }
 
   .search-fulltext {
     .input-group-addon {
       padding:          0 20px;
       font-size:        24px;
-      color:            #bcbcbc;
-      background:       #f6f5f5;
-      border-color:     #f6f5f5;
+      color:            var(--color-interface-medium);
+      background:       var(--color-interface-softer);
+      border-color:     var(--color-interface-softer);
       border-top-left-radius:     var(--spacing-small);
       border-bottom-left-radius:  var(--spacing-small);
     }
 
     .form-control {
       height:           60px;
-      font-size:        18px;
-      background:       #f6f5f5;
-      border-color:     #f6f5f5;
+      font-size:        var(--font-size-h5);
+      background:       var(--color-interface-softer);
+      border-color:     var(--color-interface-softer);
       border-top-right-radius:    var(--spacing-small);
       border-bottom-right-radius: var(--spacing-small);
       box-shadow:       none;
@@ -298,8 +298,8 @@
   .radio-inline {
     display:            inline-block;
     padding:            0;
-    margin:             0 4px 8px;
-    font-size:          14px;
+    margin:             0 var(--spacing-tiny) var(--spacing-small);
+    font-size:          var(--font-size-small);
     font-weight:        var(--font-weight-regular);
     line-height:        20px;
     cursor:             pointer;
@@ -323,7 +323,7 @@
     .label-text {
       display:          block;
       min-width:        65px;
-      padding:          5px 15px;
+      padding:          var(--spacing-tiny) var(--spacing-medium);
       color:            var(--color-interface-stronger);
       text-align:       center;
       text-decoration:  none;
@@ -354,7 +354,7 @@
     display:            flex;
     align-items:        center;
     padding-bottom:     12px;
-    margin-bottom:      24px;
+    margin-bottom:      var(--spacing-large);
     border-bottom:      1px solid var(--color-interface-soft);
   }
 
@@ -396,7 +396,7 @@
   }
 
   .requirement-title {
-    margin:             0 4px 0 0;
+    margin:             0 var(--spacing-tiny) 0 0;
   }
 
   .requirement-summary,
@@ -410,7 +410,7 @@
 
   .list-requirements {
     margin:             12px 0 0;
-    font-weight:        500;
+    font-weight:        var(--font-weight-medium);
     a {
       border-bottom:    none;
     }

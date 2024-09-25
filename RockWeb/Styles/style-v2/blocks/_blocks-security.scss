@@ -12,14 +12,14 @@
 
 // ======================== USER REGISTRATION ========================
 .not-me {
-  margin-left:    21px;
+  margin-left:    var(--spacing-large);
 }
 // ====================== END USER REGISTRATION ======================
 
 
 // ======================== SECURITY POPUP ========================
 .security-inherited {
-  margin-top:     12px;
+  margin-top:     var(--spacing-medium);
 }
 // ====================== END SECURITY POPUP ======================
 

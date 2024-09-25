@@ -14,15 +14,15 @@
 .panel-parent {
 
   > .panel-body {
-    padding: 0;
+    padding:        0;
   }
 
   .panel {
-    margin-bottom: 0;
-    border: 0;
+    margin-bottom:  0;
+    border:         0;
 
     .panel-heading {
-      display: none;
+      display:      none;
     }
   }
 }

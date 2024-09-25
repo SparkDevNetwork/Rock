@@ -125,8 +125,8 @@ $badge-count-width: 18px;
   justify-content:  center;
   width:            1em;
   height:           1em;
-  color:          #fff;
-  background:       fade(#939393, 20%);
+  color:            var(--color-interface-softest);
+  background:       var(--color-interface-soft);
   border-radius:    999px;
 
   .metric-value {
@@ -594,7 +594,7 @@ $badge-count-width: 18px;
   @media (min-width: $screen-large) {
     &-gap {
       li {
-        margin-right: 5px;
+        margin-right: var(--spacing-tiny);
       }
     }
   }

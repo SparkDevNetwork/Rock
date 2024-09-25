@@ -49,13 +49,13 @@
   @media (min-width: $screen-medium) {
     // Vertically align criteria fields to the top
     > div {
-      display:         table-cell;
-      float:          none;
-      vertical-align:  top;
+      display:          table-cell;
+      float:            none;
+      vertical-align:   top;
     }
 
     .vertical-align-bottom {
-      vertical-align:  bottom;
+      vertical-align:   bottom;
     }
   }
 }
@@ -69,7 +69,7 @@
 
 /* text between input elements in dataview filters - DT */
 span.data-view-filter-label {
-  display:              inline-block;
+  display:             inline-block;
   min-height:          calc(($line-height-computed + var(--font-size-regular)) - 2);
   padding-top:         var(--spacing-small);
   padding-bottom:      var(--spacing-small);
@@ -147,8 +147,8 @@ span.data-view-filter-label {
 .filter-rule-fieldfilter .field-criteria,
 .filter-rule-fields {
   display:            flex;
-  flex-wrap:         wrap;
-  align-items:       flex-start;
+  flex-wrap:          wrap;
+  align-items:        flex-start;
 }
 
 .filter-rule-fieldfilter .field-criteria,

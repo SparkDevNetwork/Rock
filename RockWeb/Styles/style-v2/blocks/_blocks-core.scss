@@ -387,7 +387,7 @@
     border-top: 2px solid var(--color-danger-strong);
 
     @media (min-width: $screen-small) {
-      padding:    var(--spacing-tiny) 23px 6px;
+      padding:    var(--spacing-tiny) var(--spacing-large) 6px;
       font-size:  var(--font-size-small);
     }
 

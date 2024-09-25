@@ -93,12 +93,12 @@
   text-align:            center;
 
   h1 {
-    margin-top:         24px;
-    margin-bottom:      48px;
+    margin-top:         var(--spacing-large);
+    margin-bottom:      var(--spacing-xlarge);
   }
 
   .input-group {
-    margin:             0 auto 48px;
+    margin:             0 auto var(--spacing-xlarge);
   }
 }
 
@@ -106,7 +106,7 @@
   .feetype-allowmultiples {
     > .control-label {
       display:          block;
-      margin-bottom:    8px;
+      margin-bottom:    var(--spacing-small);
     }
 
     .form-group {
@@ -117,7 +117,7 @@
 
 .registrationentry-summary {
   .fee-table {
-    margin:            0 24px;
+    margin:            0 var(--spacing-large);
 
     > .row {
       padding:          6px 0;
@@ -170,7 +170,7 @@
 
   .payment-method .payment-method-image {
     height:            1.4em;
-    margin-right:      8px;
+    margin-right:      var(--spacing-small);
   }
 
   .payment-method-account {
@@ -179,7 +179,7 @@
   }
 
   .payment-method .payment-method-name {
-    margin-right:      8px;
+    margin-right:      var(--spacing-small);
     font-weight:       600;
   }
 
@@ -195,7 +195,7 @@
 }
 
 .fee-totals {
-  margin-top:           24px;
+  margin-top:           var(--spacing-large);
 
   .fee-totals-options {
     text-align:         right;

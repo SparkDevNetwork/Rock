@@ -51,8 +51,8 @@ iframe.email-body {
   position:             relative;
   display:              block;
   height:               192px;
-  padding:              15px;
-  margin-bottom:        24px;
+  padding:              var(--spacing-medium);
+  margin-bottom:        var(--spacing-large);
   overflow:             hidden;
   color:                var(--color-interface-stronger);
   border:               1px solid var(--panel-border);
@@ -65,7 +65,7 @@ iframe.email-body {
   }
 
   label {
-    font-size:          16px;
+    font-size:          var(--font-size-regular);
   }
 
   &.template-selected {
@@ -81,7 +81,7 @@ iframe.email-body {
       left:             8px;
       z-index:          1;
       font-family:      'FontAwesome';
-      font-size:        36px;
+      font-size:        var(--font-size-h2);
       font-weight:      var(--font-weight-bold);
       color:            var(--color-info-strong);
       content:          '\f058';

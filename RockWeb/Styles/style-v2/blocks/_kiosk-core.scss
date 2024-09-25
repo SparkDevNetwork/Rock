@@ -31,7 +31,7 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 
   a.digit {
-    font-size:         48px;
+    font-size:         var(--font-size-h1);
     font-weight:       var(--font-weight-semibold);
   }
 
@@ -47,25 +47,25 @@ input[type="number"]::-webkit-outer-spin-button {
   padding-top:            14px;
   padding-bottom:         14px;
   margin-bottom:          12px;
-  font-size:              24px;
+  font-size:              var(--font-size-h4);
   font-weight:            var(--font-weight-bold);
   text-align:             center;
 
   small {
-    margin-left:       var(--spacing-medium);
-    font-weight:       var(--font-weight-light);
+    margin-left:          var(--spacing-medium);
+    font-weight:          var(--font-weight-light);
   }
 }
 
 .btn-kiosk {
-  font-size:             24px;
+  font-size:             var(--font-size-h4);
   font-weight:           var(--font-weight-light);
 }
 
 .btn-kiosk-lg {
   width:                  100%;
   min-height:            120px;
-  font-size:             36px;
+  font-size:             var(--font-size-h2);
   font-weight:           var(--font-weight-bold);
   line-height:           110px;
 }

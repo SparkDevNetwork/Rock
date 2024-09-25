@@ -5,9 +5,9 @@
 // ====================================================================================================
 //  + Fully Format: This means the file is formatted for ease of reading. 
 //  ---------------------------------------------------------------------------------------------------
-//  + ** work in progress **: This mean the opposite of the fully polish.
+//  + ** WORK IN PROGRESS **: This mean the opposite of the fully polish.
 //  ---------------------------------------------------------------------------------------------------
-//  + After you have "Fully Format" or "** work in progress**" always have a full stop "." 
+//  + After you have "Fully Format" or "** WORK IN PROGRESS**" always have a full stop "." 
 //    then follow by the note you want to leave for the file.
 // ====================================================================================================
 
@@ -68,12 +68,12 @@
 
 
 /* ======================= ROCK COMPONENTS ======================*/
-@import 'rock-components/follow';                   // Fully Format.
-@import 'rock-components/group-list';               // Fully Format.
-@import 'rock-components/code-editor';
+@import 'rock-components/follow';                   // Fully Format. There are Some hard coded value.
+@import 'rock-components/group-list';               // Fully Format. There are Some hard coded value.
+@import 'rock-components/code-editor';              // Fully Format.
 @import 'rock-components/labels';                   // Fully Format.
 @import 'rock-components/pagelist';                 // Fully Format. There are Some hard coded value.
-@import 'rock-components/panel-helper';
+@import 'rock-components/panel-helper';             // Fully Format.
 @import 'rock-components/panel';                    // Fully Format. The harded code is the num of row and col
 @import 'rock-components/person-list';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/photo-frame';              // Fully Format. There are Some hard coded value.
@@ -110,9 +110,9 @@
 @import 'rock-components/kpi';                      // Fully Format. There are Some hard coded value. 
 @import 'rock-components/key-value';                // Fully Format.
 @import 'rock-components/image-with-icon';          // Fully Format. There are Some hard coded value. 
-@import 'rock-components/grid-obisidian';
+@import 'rock-components/grid-obisidian';           // ** WORK IN PROGRESS ** NOT DONE YET, NEED TO MOVE THE STYLE FROM THE OBSIDIAN FILE.
 @import 'rock-components/modal';                    // Fully Format. Must import below the bootstrap modal.
-@import 'rock-components/pickers';                  // Fully Format.
+@import 'rock-components/pickers';                  // Fully Format. There are Some hard coded value.
 @import 'rock-components/html-editor';
 @import 'rock-components/ant-select';
 @import 'rock-components/card';
@@ -120,21 +120,21 @@
 
 
 /* ===================== BLOCK =================== */
-@import 'blocks/blocks-core';                       // Fully Format.
-@import 'blocks/blocks-groups';                     // Fully Format.
-@import 'blocks/blocks-reporting';                  // Fully Format.
-@import 'blocks/blocks-finance';                    // Fully Format.
-@import 'blocks/blocks-communication';              // Fully Format.
+@import 'blocks/blocks-core';                       // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-groups';                     // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-reporting';                  // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-finance';                    // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-communication';              // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-security';                   // Fully Format.
 @import 'blocks/blocks-workflow';                   // Fully Format.
-@import 'blocks/blocks-cms';                        // Fully Format.
-@import 'blocks/blocks-events';                     // Fully Format.
-@import 'blocks/blocks-crm';                        // Fully Format.                   
-@import 'blocks/kiosk-core';                        // Fully Format.
-@import 'blocks/checkin-mobile';                    // Fully Format.
+@import 'blocks/blocks-cms';                        // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-events';                     // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-crm';                        // Fully Format. There are Some hard coded value.
+@import 'blocks/kiosk-core';                        // Fully Format. There are Some hard coded value.
+@import 'blocks/checkin-mobile';                    // Fully Format. There are Some hard coded value.
 // @import 'blocks/checkin-core';                      // Fully Format. MIGHT HAVE TO DELETE BECAUSE WE MIGHT BE ONLY USING THE NEXT GEN CHECKIN
-@import 'blocks/skeleton';                          // Fully Format.
-@import 'blocks/page-specific';                     // Fully Format.
+@import 'blocks/skeleton';                          // Fully Format. There are Some hard coded value.
+@import 'blocks/page-specific';                     // Fully Format. There are Some hard coded value.
 
 
 /* ===================== UTILITIES =================== */

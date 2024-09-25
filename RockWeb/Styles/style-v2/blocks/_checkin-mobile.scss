@@ -37,7 +37,7 @@
   }
 
   .checkin-header {
-    margin:     15px;
+    margin:     var(--spacing-medium);;
 
     h1 {
       margin:     0;
@@ -51,7 +51,7 @@
   }
 
   .scroller {
-    padding:    0 15px;
+    padding:    0 var(--spacing-medium);
   }
 
   .row-checkin-item,
@@ -88,8 +88,8 @@
       display:        flex;
       -ms-flex-flow:  row wrap;
       flex-flow:      row wrap;
-      padding-right:  15px;
-      padding-left:   15px;
+      padding-right:  var(--spacing-medium);
+      padding-left:   var(--spacing-medium);
       margin-right:   auto;
       margin-left:    auto;
 

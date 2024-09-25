@@ -46,12 +46,12 @@
     position:            sticky;
     top:                 0;
     z-index:             1;
-    background-color:    #fff;
+    background-color:    var(--color-interface-softest);
     border-bottom:       0;
   }
 
   .panel-toolbar-mobile {
-    padding:             4px 15px;
+    padding:             var(--spacing-tiny) var(--spacing-medium);
   }
 
   .panel-body {
@@ -59,7 +59,7 @@
   }
 
   .panel-body-alert {
-    padding:             16px 16px 0;
+    padding:             var(--spacing-medium) var(--spacing-medium) 0;
   }
 
   .snap-container {
@@ -67,7 +67,7 @@
     flex:                1 1 auto;
     width:               100%;
     min-height:          100%;
-    padding:             18px 0 24px;
+    padding:             var(--spacing-medium) 0 var(--spacing-large);
     overflow:            auto;
     scroll-snap-type:    x mandatory;
     scroll-behavior:     smooth;
@@ -117,7 +117,7 @@
   .schedule-column {
     scroll-snap-align:   start;
     width:               calc(100% / var(--schedule-count));
-    padding:             0 15px;
+    padding:             0 var(--spacing-column);
 
     @media (min-width: $screen-medium) {
       width:             360px;
@@ -178,7 +178,7 @@
       }
 
       .resource-role {
-        font-size:       12px;
+        font-size:       var(--font-size-xsmall);
       }
 
       .btn-overflow {
@@ -284,14 +284,14 @@
     height:              26px;
     padding:             0;
     margin-right:        12px;
-    font-size:           16px;
+    font-size:           var(--font-size-regular);
     color:               var(--color-interface-medium);
     background:          var(--color-interface-softest);
-    border:              1px solid #c7c7c7;
+    border:              1px solid var(--color-interface-soft);
     border-radius:       50%;
 
     &:hover {
-      color:             darken(#9e9ea0, 10%);
+      color:             color-mix(in srgb, var(--color-interface-medium) 100%,#000 10%);
     }
 
     &:active {
@@ -331,7 +331,7 @@
       display:           flex;
       flex-direction:    column;
       height:            100%;
-      min-height:        var(--block-min-height,calc(100vh - 290px));
+      min-height:        var(--block-min-height, calc(100vh - 290px)); // The --block-min-height var is defined in Rock Layout FullWorksurface.aspx
       overflow:          auto;
     }
   }
