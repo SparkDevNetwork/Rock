@@ -110,8 +110,6 @@
     }
 
     function getConfigurationModeText(configurationMode: ConfigurationMode): string {
-        const txt = ConfigurationModeDescription[configurationMode];
-        console.warn(txt, ConfigurationModeDescription, configurationMode);
         return ConfigurationModeDescription[configurationMode];
     }
 

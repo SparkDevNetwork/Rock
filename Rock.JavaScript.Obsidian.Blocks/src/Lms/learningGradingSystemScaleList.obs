@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid
+          :class="visibleCssClass"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Grading Scale"
@@ -50,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, textValueFilter, AttributeColumns, BooleanColumn, NumberColumn, Column, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -59,6 +61,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningGradingSystemScaleList/types.partial";
     import { reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningGradingSystemScaleListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -66,8 +69,24 @@
 
     // #region Values
 
+    const learningGradingSystemId = config.options?.learningGradingSystemIdKey ?? "0";
+
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref(learningGradingSystemId === "0" ? "hidden" : "show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
 
     // #endregion
 

@@ -50,6 +50,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+	import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
 
     const props = defineProps({
         modelValue: {
@@ -80,8 +81,8 @@
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
-    const isStudentCompleted = ref(completionBag.value.isStudentCompleted ?? false);
-    const isPastDue = ref(completionBag.value.isPastDue ?? false);
+    const requiresScoring = ref(completionBag.value?.requiresScoring ?? false);
+    const requiresFacilitatorCompletion = ref(completionBag.value?.requiresFacilitatorCompletion ?? false);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
@@ -103,12 +104,8 @@
 
     // #region Computed Values
 
-    const requiresScoring = computed(() =>
-        isStudentCompleted.value === true && isFacilitatorCompleted.value === false
-    );
-
     const screenToShow = computed(() => {
-        return [isPastDue.value, requiresScoring.value].includes(true) ?
+        return requiresScoring.value === true || requiresFacilitatorCompletion.value === true ?
             ComponentScreen.Scoring :
             ComponentScreen.Summary;
     });
@@ -121,8 +118,13 @@
 
     // #region Event Handlers
 
+    /**
+     *  The event handler for an activity that's completed by a Facilitator
+     *  This should apply only to the completion screen - when an activity
+     *  is assigned to a Facilitator rather than a student.
+     */
     function onFacilitatorCompleted(successful: boolean): void {
-        if (successful) {
+        if (successful && activityBag.value.assignTo === AssignTo.Facilitator) {
             isFacilitatorCompleted.value = true;
         }
     }
@@ -135,7 +137,6 @@
         const completedAsRockDate = RockDateTime.parseISO(completedDate.value ?? "");
 
         if (dueAsRockDate && completedAsRockDate) {
-            console.warn(dueAsRockDate.isLaterThan(completedAsRockDate));
             wasCompletedOnTime.value = dueAsRockDate.isLaterThan(completedAsRockDate);
         }
     });

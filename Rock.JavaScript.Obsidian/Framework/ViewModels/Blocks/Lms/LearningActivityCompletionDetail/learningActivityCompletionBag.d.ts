@@ -46,6 +46,9 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the binary file of the completion for use by the activity component. */
     binaryFile?: ListItemBag | null;
 
+    /** Gets or sets the security grant for the facilitator to view the binary file. */
+    binaryFileSecurityGrant?: string | null;
+
     /**
      * Gets or sets the date the individual
      * completed the related Rock.Model.LearningActivity.
@@ -57,6 +60,9 @@ export type LearningActivityCompletionBag = {
 
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
+
+    /** Gets or sets the PersonAlias of the Person who graded the activity. */
+    gradedByPersonAlias?: ListItemBag | null;
 
     /** Gets or sets the text of the grade earned by the student. */
     gradeName?: string | null;
@@ -90,6 +96,12 @@ export type LearningActivityCompletionBag = {
 
     /** Gets or sets the number of points the student earned by completing the activity. */
     pointsEarned: number;
+
+    /** Gets or sets whether the activity requires a facilitator to grade/score it. */
+    requiresScoring: boolean;
+
+    /** Gets or sets whether the facilitator must complete the activity. */
+    requiresFacilitatorCompletion: boolean;
 
     /** Gets or sets the student the activity is for. */
     student?: LearningActivityParticipantBag | null;

@@ -41,7 +41,7 @@
                                   rules="required"
                                   :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
                                   uploadButtonText="Upload"
-                                  :disabled="isFacilitatorCompleted || dueDateHasPassed"
+                                  :disabled="hasBeenGraded"
                                   :showDeleteButton="true" />
                 </div>
                 <div class="footer-section">
@@ -121,7 +121,6 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { FileUploadActivityCompletion, FileUploadActivityConfiguration, FileUploadActivityDefaults } from "./fileUploadLearningActivity.partial";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -141,6 +140,7 @@
         containerClasses,
         defaultAssigneeDescription,
         fileUrl,
+        hasBeenGraded,
         instructions,
         panelTitle,
         pointsPossibleAtCompletion,
@@ -154,13 +154,6 @@
         new FileUploadActivityDefaults()
     );
 
-    const dueDate =
-        (completionBag.value.dueDate ?? "").length === 0 ?
-            null :
-            RockDateTime.parseISO(completionBag.value.dueDate ?? "");
-
-    const dueDateHasPassed = ref(dueDate != null && dueDate < RockDateTime.now());
-    const isFacilitatorCompleted = ref(completionBag.value.isFacilitatorCompleted);
     const pointsEarned = ref(completionBag.value.pointsEarned);
     const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
 

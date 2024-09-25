@@ -12,14 +12,16 @@
                                   @reorderClick="onReorderActivity" />
             </div>
             <div v-else-if="item === 'Students'">
-                <StudentGrid :isAddEnabled="isEditable"
+                <StudentGrid v-if="!isRefreshingStudents"
+                             :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
                              @addClick="onAddStudentClick"
                              @rowClick="onParticipantClick"
                              @deleteClick="onDeleteParticipantClick" />
             </div>
             <div v-else-if="item === 'Facilitators'">
-                <FacilitatorGrid :isAddEnabled="isEditable"
+                <FacilitatorGrid v-if="!isRefreshingFacilitators"
+                                 :isAddEnabled="isEditable"
                                  :isDeleteEnabled="isEditable"
                                  @addClick="onAddFacilitatorClick"
                                  @rowClick="onParticipantClick"
@@ -43,7 +45,7 @@
         </template>
     </TabbedContent>
 
-    <Modal v-model="isParticipantModalOpen" :title="modalTitle" saveText="Save" @save="onSaveParticipant">
+    <Modal v-model="isParticipantModalOpen" :title="modalTitle" saveText="Save" @save="onSaveParticipant" :isSaveButtonDisabled="isModalSaveButtonDisabled">
         <NotificationBox v-show="participantModalError.length > 0" alertType="danger">
             {{ participantModalError }}
         </NotificationBox>
@@ -82,7 +84,7 @@
     import { useBlockBrowserBus, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
@@ -134,6 +136,10 @@
     const participantModalError = ref("");
     const isParticipantModalOpen = ref(false);
     const isAddingFacilitator = ref(false);
+    /** Used to force a refresh of the facilitators grid. */
+    const isRefreshingFacilitators = ref(false);
+    /** Used to force a refresh of the students grid. */
+    const isRefreshingStudents = ref(false);
     const modalTitle = ref("Add Student");
     const personAlias = ref<ListItemBag | undefined>();
     const participantNote = ref("");
@@ -143,6 +149,8 @@
     // #endregion
 
     // #region Computed Values
+
+    const isModalSaveButtonDisabled = computed(() => isRefreshingStudents.value === true || isRefreshingFacilitators.value === true);
 
     // #endregion
 
@@ -308,9 +316,31 @@
             isFacilitator: isAddingFacilitator.value
         };
 
+        // Force a refresh of the grid data by toggling
+        // the v-if condition for the appropriate grid.
+        if (isAddingFacilitator.value === true) {
+            isRefreshingFacilitators.value = true;
+        }
+        else {
+            isRefreshingStudents.value = true;
+        }
+
         const result = await invokeBlockAction<string>("SaveParticipant", {
             participantBag: participant
         });
+
+        if (result.isSuccess && result.data) {
+            // Remove the modal values in preparation for a subsequent selection.
+            personAlias.value = undefined;
+            participantNote.value = "";
+        }
+
+        if (isAddingFacilitator.value === true) {
+            isRefreshingFacilitators.value = false;
+        }
+        else {
+            isRefreshingStudents.value = false;
+        }
 
         if (result.isError && result.errorMessage){
             participantModalError.value = result.errorMessage;
@@ -318,7 +348,7 @@
         }
 
         if (!result.isSuccess){
-            participantModalError.value = "Unknown error while trying to save the participant.";
+            participantModalError.value = "Unknown error while trying to save the individual.";
             return;
         }
 

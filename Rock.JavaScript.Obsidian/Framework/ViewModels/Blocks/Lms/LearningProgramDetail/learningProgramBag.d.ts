@@ -68,6 +68,9 @@ export type LearningProgramBag = {
     /** Gets or sets the configuration mode of the LearningProgram. */
     configurationMode?: ConfigurationMode | null;
 
+    /** Gets or sets the default LearningGradingSystem for the program. */
+    defaultGradingSystem: ListItemBag | null;
+
     /** Gets or sets the Description of the LearningProgram. */
     description?: string | null;
 

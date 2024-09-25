@@ -1002,8 +1002,8 @@ namespace Rock.Blocks.Lms
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
                 .AddField( "points", a => a.Points )
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
-                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );
+                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
+                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var orderedItems = GetOrderedLearningPlan().AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
@@ -1173,7 +1173,7 @@ namespace Rock.Blocks.Lms
             {
                 IdKey = entity.IdKey,
                 CurrentGradePercent = participantDetails.LearningGradePercent,
-                CurrentGradeText = participantDetails.LearningGradingSystemScale.Name,
+                CurrentGradeText = participantDetails.LearningGradingSystemScale?.Name,
                 ParticipantRole = participantDetails.GroupRole.ToListItemBag(),
                 PersonAlias = participantDetails.Person.PrimaryAlias.ToListItemBag(),
                 IsFacilitator = participantDetails.GroupRole.IsLeader

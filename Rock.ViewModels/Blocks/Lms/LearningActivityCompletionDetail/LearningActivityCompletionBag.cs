@@ -17,7 +17,7 @@
 
 using System;
 
-using Rock.Enums.Lms;
+using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
@@ -50,6 +50,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public ListItemBag BinaryFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the security grant for the facilitator to view the binary file.
+        /// </summary>
+        public string BinaryFileSecurityGrant { get; set; }
+
+        /// <summary>
         /// Gets or sets the date the student
         /// completed the related Rock.Model.LearningActivity.
         /// </summary>
@@ -64,6 +69,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Gets or sets the facilitator's comment.
         /// </summary>
         public string FacilitatorComment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAlias of the Person who graded the activity.
+        /// </summary>
+        public ListItemBag GradedByPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the text of the grade earned by the student.
@@ -114,6 +124,16 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Gets or sets the number of points the student earned by completing the activity.
         /// </summary>
         public int PointsEarned { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the activity requires a facilitator to grade/score it.
+        /// </summary>
+        public bool RequiresScoring { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the facilitator must complete the activity.
+        /// </summary>
+        public bool RequiresFacilitatorCompletion { get; set; }
 
         /// <summary>
         /// Gets or sets the student's comment.

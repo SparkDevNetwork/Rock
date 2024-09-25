@@ -22,5 +22,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleList
     /// </summary>
     public class LearningGradingSystemScaleListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the IdKey of the LearningGradingSystem for the current page.
+        /// </summary>
+        public string LearningGradingSystemIdKey { get; set; }
     }
 }
