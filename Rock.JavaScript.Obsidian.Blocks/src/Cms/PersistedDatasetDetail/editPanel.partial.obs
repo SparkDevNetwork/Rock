@@ -46,6 +46,11 @@
                            label="Enabled Lava Commands"
                            :disabled="isSystem" />
 
+        <NotificationBox  v-if="isEntityCommandEnabled" alertType="info">
+            <strong>Tip:</strong> When using an entity command, ensure you consider the securityenabled parameter.
+                It is recommended to set its value to false, as the build script will run without a user context.
+        </NotificationBox>
+
         <Panel title="Persistence Schedule" class="mt-4">
             <div>
                 <!-- Toggle Switch for Persistence Schedule -->
@@ -243,6 +248,20 @@
     });
 
     const isSystem = computed(() => props.modelValue.isSystem ?? false);
+
+    /**
+     * Returns true the Rock Entity command (or All) is enabled.
+     */
+     const isEntityCommandEnabled = computed((): boolean => {
+        return enabledLavaCommands.value.some((obj) => {
+            if (obj.value ===  "All" || obj.value === "RockEntity") {
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    });
 
     // #endregion
 
