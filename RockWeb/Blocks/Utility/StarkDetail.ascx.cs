@@ -17,12 +17,15 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Utility
 {
-    [DisplayName( "Stark Detail" )]
+    [RockObsolete( "1.16.7" )]
+    [Obsolete( "This block type has been deprecated." )]
+    [DisplayName( "Stark Detail (Legacy)" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new detail block." )]
 
