@@ -1,0 +1,45 @@
+
+
+@mixin util-mix-display($breakpoint:"base") {
+  @if $breakpoint == "base" {
+    $infix: "";
+    @include display-breakpoints($infix);
+  } @else {
+    $infix: "-#{$breakpoint}";
+    @include display-breakpoints($infix);
+  }
+}
+
+@mixin display-breakpoints($infix) {
+  .d#{$infix}-none         { display: none !important; }
+  .d#{$infix}-inline       { display: inline !important; }
+  .d#{$infix}-inline-block { display: inline-block !important; }
+  .d#{$infix}-block        { display: block !important; }
+  .d#{$infix}-table        { display: table !important; }
+  .d#{$infix}-table-row    { display: table-row !important; }
+  .d#{$infix}-table-cell   { display: table-cell !important; }
+  .d#{$infix}-flex         { display: flex !important; }
+  .d#{$infix}-inline-flex  { display: inline-flex !important; }
+  .d#{$infix}-grid         { display: grid !important; }
+  .d#{$infix}-inline-grid  { display: inline-grid !important; }
+}
+
+
+// Call the mixin here
+@include util-mix-display;
+
+@media (min-width: $screen-small) {
+  @include util-mix-display("sm");
+}
+
+@media (min-width: $screen-medium) {
+  @include util-mix-display("md");
+}
+
+@media (min-width: $screen-large) {
+  @include util-mix-display("lg")
+}
+
+@media print {
+  @include util-mix-display("print");
+}

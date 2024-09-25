@@ -32,7 +32,7 @@
 
 /* ======================= CORE  ======================*/
 @import 'core/page-admin';                  // Fully Format. There are Some hard coded value.
-@import 'utilities/grid-layout';
+// @import 'utilities/grid-layout';
 @import 'core/print';                       // Fully Format.
 @import 'core/scroll';
 
@@ -55,6 +55,7 @@
 @import 'components/tables';                // Fully Format. Really hard to read. There are Some hard coded value. Have to be under forms.scss to override checkbox positioning.
 @import 'components/input-groups';          // Fully Format. There are Some hard coded value.
 @import 'components/bootstrap-chosen';
+@import 'components/jcrop.scss';
 @import 'components/breadcrumbs';           // Fully Format.
 @import 'components/thumbnails';            // Fully Format.
 @import 'components/scaffolding';           // Fully Format. There are Some hard coded value.
@@ -142,8 +143,6 @@
 @import 'utilities/spacing-utilities';      // FULLY COPY AND PAST FROM bootstrap _utilities.less.
 @import 'utilities/typography-utilities';   // Fully Format.
 @import 'utilities/color-utilities';        // Fully Format.
-@import 'utilities/flex-utilities';         // Fully Format.
-@import 'utilities/display-utilities';      // Fully Format.
 @import 'utilities/rounded-utilities';      // Fully Format.
 @import 'utilities/cursor';                 // Fully Format.
 @import 'utilities/borders';                // Fully Format.

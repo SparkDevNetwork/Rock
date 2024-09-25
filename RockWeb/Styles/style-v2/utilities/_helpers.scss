@@ -13,16 +13,16 @@
 @import "./borders";               //  Utilities for controlling the style of an element's borders.
 @import "./card";                  //  Utilities for controlling the cursor style when hovering over an element.
 @import "./colors";                //  Utilities for controlling an element's background color.
-// @import "./cssgrid";               //  Utilities for controlling CSS grid
+@import "./cssgrid";               //  Utilities for controlling CSS grid
 @import "./cursor";                //  Utilities for controlling the cursor style when hovering over an element.
-// @import "./display";               //  Utilities for controlling the display box type of an element.
-// @import "./flex";                  //  Utilities for controlling flex
+@import "./display";               //  Utilities for controlling the display box type of an element.
+@import "./flex";                  //  Utilities for controlling flex
 @import "./links";                 //  BS4 Stretched Link
 @import "./_object-fit";           //  Utilities for controlling how a replaced element's content should be resized.
 @import "./opacity";               //  Utilities for controlling the opacity of an element.
-// @import "./order";                 //  Utilities for controlling the order of flex items.
+@import "./order";                 //  Utilities for controlling the order of flex items.
 @import "./position";              //  Utilities for controlling how an element is positioned in the DOM.
-// @import "./ratios";                //  Utilities for controlling a fixed aspect ratio of an element.
+@import "./ratios";                //  Utilities for controlling a fixed aspect ratio of an element.
 @import "./shadows";               //  Utilities for controlling the box shadow of an element.
 @import "./sizing";                //  Utilities for setting the width and height of an element
 @import "./spacing";               //  Shorthand responsive margin and padding utility classes.

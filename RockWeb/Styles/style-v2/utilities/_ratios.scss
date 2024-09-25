@@ -1,0 +1,60 @@
+//
+// Utilities for common `css grid` values
+//
+
+@mixin util-mix-ratios($breakpoint:"base") {
+
+  @if $breakpoint == "base" {
+    $infix: "";
+    @include display-breakpoints($infix);
+  } @else {
+    $infix: "-#{$breakpoint}";
+    @include display-breakpoints($infix);
+  }
+}
+
+@mixin display-breakpoints($infix) {
+  .ratio#{$infix}-thin {
+    aspect-ratio: 3 / 1;
+  }
+  .ratio#{$infix}-film {
+    aspect-ratio: 2.35 / 1;
+  }
+  .ratio#{$infix}-landscape {
+    aspect-ratio: 2 / 1;
+  }
+  .ratio#{$infix}-video {
+    aspect-ratio: 16 / 9;
+  }
+  .ratio#{$infix}-short-square {
+    aspect-ratio: 1.25 / 1;
+  }
+  .ratio#{$infix}-square {
+    aspect-ratio: 1 / 1;
+  }
+  .ratio#{$infix}-portrait {
+    aspect-ratio: 1 / 1.25;
+  }
+  .ratio#{$infix}-tall {
+    aspect-ratio: 1 / 1.75;
+  }
+}
+
+
+
+// Call the mixin here
+@include util-mix-ratios;
+
+@media (min-width: $screen-small) {
+  @include util-mix-ratios("sm");
+}
+
+@media (min-width: $screen-medium) {
+  @include util-mix-ratios("md");
+}
+
+@media (min-width: $screen-large) {
+  @include util-mix-ratios("lg")
+}
+
+
