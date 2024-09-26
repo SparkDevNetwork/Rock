@@ -308,8 +308,6 @@ namespace Rock.Web.UI.Controls
                 _rblMatchingLogic.SetValue( ( int ) groupType.AlreadyEnrolledMatchingLogic );
                 _ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
 
-                _rblMatchingLogic.Visible = groupType.AttendanceRule == AttendanceRule.AlreadyEnrolledInGroup;
-
                 CreateGroupTypeAttributeControls( groupType, rockContext );
             }
         }
@@ -433,6 +431,14 @@ namespace Rock.Web.UI.Controls
             _gCheckinLabels.Columns.Add( deleteField );
 
             Controls.Add( _gCheckinLabels );
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPreRender( EventArgs e )
+        {
+            _rblMatchingLogic.Visible = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>() == AttendanceRule.AlreadyEnrolledInGroup;
+
+            base.OnPreRender( e );
         }
 
         /// <summary>

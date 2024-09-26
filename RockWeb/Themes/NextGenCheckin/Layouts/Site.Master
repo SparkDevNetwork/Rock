@@ -62,7 +62,7 @@
 
                     // Check if we have any achievements that happened with
                     // this check-in.
-                    if (true || message.data.achievements && message.data.achievements.length > 0) {
+                    if (message.data.achievements && message.data.achievements.length > 0) {
                         setTimeout(() => {
                             if (celebrateSound) {
                                 celebrateSound.play();
