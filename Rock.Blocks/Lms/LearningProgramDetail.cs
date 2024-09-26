@@ -375,7 +375,7 @@ namespace Rock.Blocks.Lms
                 () => entity.ConfigurationMode = box.Bag.ConfigurationMode.Value );
 
             box.IfValidProperty( nameof( box.Bag.DefaultGradingSystem ),
-                () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ).Value );
+                () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
@@ -517,9 +517,10 @@ namespace Rock.Blocks.Lms
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
+            var pageParams = pageReference.Parameters.Where( p => p.Key == PageParameterKey.LearningProgramId ).ToDictionary( p => p.Key, p => p.Value );
 
             var entityName = entityKey.Length > 0 ? new LearningProgramService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
-            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageParams );
             var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
 
             return new BreadCrumbResult

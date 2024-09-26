@@ -25,12 +25,6 @@
     </template>
 
     <template v-if="!isCompletionsTabSelected && !isSemestersTabSelected">
-        <div v-if="showKpis" class="row d-flex mb-3">
-            <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
-            <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
-            <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
-        </div>
-
         <DetailBlock
                      v-if="!blockError"
                      v-model:mode="panelMode"
@@ -54,6 +48,12 @@
                                :iconCssClass="iconCssClass" />
             </template>
             <template #view>
+                <div v-if="showKpis" class="row d-flex mb-3">
+                    <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
+                    <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
+                    <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
+                </div>
+
                 <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
 
                 <div>
