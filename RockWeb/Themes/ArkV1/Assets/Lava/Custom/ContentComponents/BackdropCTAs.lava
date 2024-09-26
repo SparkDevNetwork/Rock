@@ -1,0 +1,38 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/BackdropCTAs.lava' %} {% endcomment %}
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h3' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+
+<div class="cc-backdrop-ctas">
+    <div class="row d-flex flex-wrap">
+        {%- for item in Items -%}
+            {%- assign image = item | Attribute:'Image','RawValue' -%}
+            {%- assign imageUrl = image | ImageUrl | Append:'&w=800&h=450&mode=crop' -%}
+            {%- assign backdropColor = item | Attribute:'BackdropColor','Object' -%}
+            {%- assign backdropColorClass = backdropColor | Attribute:'Class' -%}
+            {%- assign showTitle = item | Attribute:'ShowTitle' | AsBoolean -%}
+            {%- assign url = item | Attribute:'Url','RawValue' -%}
+
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+                <div class="backdrop-cta">
+                    <div class="backdrop backdrop-right backdrop-{{ backdropColorClass }} rounded-sm js-backdrop{% if url and url != empty %} backdrop-linked{% endif %}">
+                        <img src="{{ imageUrl }}" alt="" class="img-responsive w-100">
+                        {% if url and url != empty %}
+                            <a href="{{ url }}" class="stretched-link"></a>
+                        {% endif %}
+                    </div>
+                    <div class="py-1"></div>
+                    {% if showTitle %}
+                        {% assign subTitle = item | Attribute:'Subtitle' %}
+                        <{{channelTitleSize}} style="color:{{ channelForegroundColor }}">{{ item.Title }}</{{channelTitleSize}}>
+                        <p class="m-0 lead o-90" style="color:{{ channelForegroundColor }}">{{ subTitle }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {%- endfor -%}
+    </div>
+</div>
+

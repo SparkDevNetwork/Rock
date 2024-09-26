@@ -1,0 +1,165 @@
+// out:false
+
+// Table of Contents
+// 1. Base
+// 2. Headings
+// 3. Non Headings
+
+//-------------------------
+// 1. Base
+//-------------------------
+
+body {
+  @media (min-width: 992px) {
+    font-size: 18px;
+  }
+}
+
+
+//-------------------------
+// 2. Headings
+//-------------------------
+
+// ----    heading fonts    ----
+h1, h2, h3,
+.h1, .h2, .h3 {
+  font-family: 'Isadora Alt';
+}
+
+h4, h5, h6,
+.h4, .h5, .h6 {
+  font-family: 'Visby CF';
+}
+
+h2.display,
+.h2.display {
+  font-style: italic;
+}
+
+
+// ----    heading sizes    ----
+h1.display, .h1.display {
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 600;
+
+  @media (min-width: 992px) {
+    font-size: 84px;
+  }
+}
+
+h2.display, .h2.display {
+  font-size: 44px;
+  line-height: 1;
+
+  @media (min-width: 992px) {
+    font-size: 64px;
+  }
+}
+
+h1, .h1 {
+  font-size: 32px;
+  line-height: 1;
+
+  @media (min-width: 992px) {
+    font-size: 48px;
+  }
+}
+
+h2, .h2 {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 500;
+
+  @media (min-width: 992px) {
+    font-size: 32px;
+  }
+}
+
+h3, .h3 {
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 600;
+
+  @media (min-width: 992px) {
+    font-size: 28px;
+  }
+}
+
+h4, .h4 {
+  font-size: 22px;
+  line-height: 1.2;
+
+  @media (min-width: 992px) {
+    font-size: 24px;
+  }
+}
+
+h5, .h5 {
+  font-size: 20px;
+  line-height: 1.2;
+
+  @media (min-width: 992px) {
+    font-size: 22px;
+  }
+}
+
+h6, .h6 {
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 700;
+
+  @media (min-width: 992px) {
+    font-size: 20px;
+  }
+}
+
+
+
+//-------------------------
+// 3. Non Headings
+//-------------------------
+.lead {
+  font-size: 18px;
+  line-height: 1.6;
+
+  @media (min-width: 992px) {
+    font-size: 20px;
+  }
+}
+
+.tall {
+  font-size: 18px;
+
+  @media (min-width: 992px) {
+    font-size: 20px;
+  }
+}
+
+.small {
+  font-size: 15px;
+  font-weight: 200;
+}
+
+.label {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+a:not(.btn) {
+  text-decoration: underline;
+
+  &:hover {
+    color: darken(@theme-1, 15%);
+    text-decoration: underline;
+  }
+
+  .text-white &,
+  &.text-white {
+    color: #fff;
+
+    &:hover {
+      color: darken(mix(@theme-1, #fff, 10%), 3%) !important;
+    }
+  }
+}

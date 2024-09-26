@@ -1,0 +1,152 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/LocationFinderMobileList.lava' %} {% endcomment %}
+
+{% stylesheet id:'location-finder-mobile' compile:'less' %}
+    .location-finder-mobile {
+        .mobile-list {
+            &-item {
+                min-height: 235px;
+                background-position: center;
+                background-size: cover;
+                //.rounded-md();
+                border-radius: 8px;
+                overflow: hidden;
+                position: relative;
+
+                &-name {
+                    font-size: 28px;
+                    font-weight: 900;
+                    margin-bottom: 9px;
+                }
+            }
+
+
+
+            &-active {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 35px 15px;
+                background-color: rgba(#6869ac, .85);
+                //background-color: rgba(@color-of-the-year, .85);
+                opacity: 0;
+                transform: translateY(100%);
+                transition: all .3s ease;
+                transition-delay: .15s;
+                border-radius: 8px;
+                //.transition();
+                //.rounded-md();
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+
+                &-icon {
+//                    position: absolute;
+//                    right: 15px;
+//                    bottom: 37px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 34px;
+                }
+            }
+
+            & .swiper-slide-active .mobile-list-active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .swiper {
+            &-container {
+                position: relative;
+                padding-bottom: 48px;
+            }
+
+            &-pagination {
+                bottom: 0;
+
+                &-bullet {
+                    width: 56px;
+                    height: 10px;
+                    border-radius: 5px;
+                    background-color: #ffffff;
+                    opacity: 1;
+
+                    &-active {
+                        background-color: #AFCA45;
+                        //background-color: @contribute;
+                    }
+                }
+            }
+        }
+    }
+{% endstylesheet %}
+
+<div class="mobile-list">
+    {[ swiper shownavigation:'false' slidesperview:'1' spacebetween:'30' containerclass:'js-location-swiper'   ]}
+        {% for campus in Campuses %}
+            {% if campus.IsActive and campus.IsActive == 'True' and campus.Id != 8 and campus.Id != 10 %}
+                [[ slide ]]
+                    {% assign postalCode = campus.Location.PostalCode | Split:'-' %}
+                    {%- capture campusAddress -%}{{ campus.Location.Street1 }}, {{ campus.Location.City }}, {{ campus.Location.State }} {{ postalCode.first }}{%- endcapture -%}
+                    {% assign HideFromWebsite = campus | Attribute:'HideFromWebsite' | AsString %}
+                    {% assign campusNameHyphenated = campus.Name | Remove:'Campus' | Downcase | Replace:' ','-' | ReplaceLast:'-','' %}
+                    {% assign imgGuid = campus | Attribute:'Image','RawValue' %}
+                    {% assign imgGuidURL = imgGuid | Prepend:'/GetImage.ashx?Guid=' %}
+                    {% assign address = campusAddress %}
+                    {% assign currentDay = '' %}
+                    {% assign currentDayTimes = '' %}
+                    {% assign status = campus.CampusStatusValueId %}
+                    {% assign interestPageGuid = campus |  Attribute:'InterestPage','Rawvalue' %}
+                    {% assign interestPageUrl = interestPageGuid | PageRoute %}
+                    {% assign leadPastor = campus | Attribute:'LeadPastor' %}
+                    {% assign leadPastorAliasId = campus.LeaderPersonAliasId %}
+                    {% if leadPastorAliasId and leadPastorAliasId != empty %}
+                        {% personalias where:'Id == {{ leadPastorAliasId }}' iterator:'people' %}
+                            {% for person in people %}
+                                {% capture leadPastorName %}{{ person.Person.NickName }} {{ person.Person.LastName }}{% endcapture %}
+                            {% endfor %}
+                        {% endpersonalias %}
+                    {% else %}
+                        {% capture leadPastorName %}{% endcapture %}
+                    {% endif %}
+
+                    {% capture campusServiceTimes %}{% include '~~/Assets/Lava/Custom/CampusServiceTimes.lava', campusId:campus.Id %}{% endcapture %}
+                    {% assign campusServiceTimesArray = campusServiceTimes | StripNewlines | Split:' ' %}
+                    {% assign campusServiceTimes = campusServiceTimesArray | Join:' ' %}
+
+                    <div class="mobile-list-item js-mobile-list-item" style="background-image:url('{{ imgGuidURL }}')" data-id="{{ campus.Id }}" data-name="{{ campus.Name }}" data-description="{{ campus.Description }}" data-times="{{ campusServiceTimes | Escape }}" data-address="{{ campusAddress | Escape }}" data-latitude="{{ campus.Location.Latitude }}" data-longitude="{{ campus.Location.Longitude }}">
+                        <div class="mobile-list-active text-white">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="mobile-list-item-info">
+                                    <span class="mobile-list-item-name">
+                                        {{ campus.Name }}
+                                    </span>
+                                    {% if leadPastorName and leadPastorName != empty %}
+                                        <div class="mobile-list-item-pastor">
+                                            <strong>Pastor:</strong> {{ leadPastorName }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <span class="mobile-list-active-icon">
+                                    <i class="far fa-arrow-alt-circle-down"></i>
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+                [[ endslide ]]
+            {% endif %}
+        {% endfor %}
+    {[ endswiper ]}
+
+</div>
+
+
+
+
+

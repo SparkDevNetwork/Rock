@@ -1,0 +1,161 @@
+@default-badge-border: #B3B3B1;
+@default-badge-bg: #D9D9D9;
+@default-badge-color: #C4C4C4;
+
+@invest-badge-border: @invest;
+@invest-badge-bg: mix(@invest, #ffffff, 20%);
+@invest-badge-color: mix(@invest, #000000, 60%);
+
+@impact-badge-border: @impress;
+@impact-badge-bg: mix(@impress, #ffffff, 20%);
+@impact-badge-color: mix(@impress, #000000, 60%);
+
+@invite-badge-border: @invite;
+@invite-badge-bg: mix(@invite, #ffffff, 20%);
+@invite-badge-color: mix(@invite, #000000, 60%);
+
+@ignite-badge-border: @ignite;
+@ignite-badge-bg: mix(@ignite, #ffffff, 20%);
+@ignite-badge-color: mix(@ignite, #000000, 60%);
+
+.user-dashboard {
+  &-contact {
+    .family-member {
+      .h6 {
+        color: @venture-onyx;
+      }
+
+      & + .family-member {
+        margin-top: 20px;
+
+      }
+    }
+  }
+
+  &-progress {
+    .progress-badge {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+
+      &-icon {
+        background-color: @default-badge-border;
+        position: relative;
+        width: 100px !important;
+        height: 100px !important;
+        border-radius: 999px;
+        border: 3px solid #fff;
+        z-index: 1;
+        padding: 3px;
+
+        &-inner {
+          border: 3px solid #fff !important;
+          background-color: #D9D9D9;
+          width: 91px !important;
+          height: 91px !important;
+          border-radius: 999px;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .icon-main {
+          font-size: 32px;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: @default-badge-color;
+        }
+
+        .fa.fa-check {
+          position: absolute;
+          bottom: 11px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 11px;
+          opacity: 0;
+          color: fadeout(@venture-onyx, 80%);
+        }
+      }
+
+      &-invest.active {
+        .progress-badge-icon {
+          background-color: @invest-badge-border;
+
+          &-inner {
+            background-color: @invest-badge-bg;
+          }
+
+          .icon-main {
+            color: @invest-badge-color;
+          }
+
+          .fa.fa-check {
+            opacity: 1;
+          }
+        }
+      }
+
+      &-impact.active {
+        .progress-badge-icon {
+          background-color: @impact-badge-border;
+
+          &-inner {
+            background-color: @impact-badge-bg;
+          }
+
+          .icon-main {
+            color: @impact-badge-color;
+          }
+
+          .fa.fa-check {
+            opacity: 1;
+          }
+        }
+      }
+
+      &-invite.active {
+        .progress-badge-icon {
+          background-color: @invite-badge-border;
+
+          &-inner {
+            background-color: @invite-badge-bg;
+          }
+
+          .icon-main {
+            color: @invite-badge-color;
+          }
+
+          .fa.fa-check {
+            opacity: 1;
+          }
+        }
+      }
+
+      &-ignite.active {
+        .progress-badge-icon {
+          background-color: @ignite-badge-border;
+
+          &-inner {
+            background-color: @ignite-badge-bg;
+          }
+
+          .icon-main {
+            color: @ignite-badge-color;
+          }
+
+          .fa.fa-check {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,61 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/buttons.lava' %}{%endcomment%}
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% comment %} ~ Capture Ordered List Section {% endcomment %}
+
+{% capture orderedList %}
+<ol>
+    <li>List Item One</li>
+    <li>List Item Two
+        <ol>
+            <li>Sub Item One</li>
+            <li>Sub Item Two</li>
+        </ol>
+    </li>
+    <li>List Item Three</li>
+    <li>List Item Four</li>
+</ol>
+{% endcapture %}
+
+{% capture orderedListEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Ordered List</blockquote>
+    {{ orderedList | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Unordered List Section {% endcomment %}
+
+{% capture unorderedList %}
+<ul>
+    <li>List Item One</li>
+    <li>List Item Two
+        <ul>
+            <li>Sub Item One</li>
+            <li>Sub Item Two</li>
+        </ul>
+    </li>
+    <li>List Item Three</li>
+    <li>List Item Four</li>
+</ul>
+{% endcapture %}
+
+{% capture unorderedListEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Unordered List</blockquote>
+    {{ unorderedList | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header">Ordered List</h3>
+{{ orderedList }}
+{{ orderedListEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Unordered List</h3>
+{{ unorderedList }}
+{{ unorderedListEscaped }}

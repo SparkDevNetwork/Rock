@@ -1,0 +1,17 @@
+{% if Page.DisplayChildPages and Page.Pages != empty %}
+    <ul class="nav navbar-nav">
+
+		{% for childPage in Page.Pages %}
+            <li{% if childPage.Current %} class="active"{% endif %}>
+				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+            </li>
+        {% endfor %}
+        {% for includedPage in IncludePageList %}
+            {% assign path = 'Global' | Page:'Path' %}
+            {% assign attributeParts = includedPage | PropertyToKeyValue %}
+            <li{% if path == attributeParts.Value %} class="active"{% endif %}>
+                <a href="{{ attributeParts.Value }}">{{ attributeParts.Key }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

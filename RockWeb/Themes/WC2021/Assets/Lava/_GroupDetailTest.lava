@@ -1,0 +1,176 @@
+{%- comment -%} {%- include '~~/Assets/Lava/_GroupDetailTest.lava' -%} {%- endcomment -%}
+{%- assign groupId = PageParameter.GroupId -%}
+{%- assign meetingLocationId = '96d540f5-071d-4bbd-9906-28f0a64d39c4' | FromCache:'DefinedValue' | Property:'Id' -%}
+
+
+{%- group id:'{{ groupId }}' securityenabled:'false' -%}
+    {%- assign siteName = 'Global' | Page:'SiteName' -%}
+    {%- assign groupName = group.Name -%}
+    {%- assign pageTitle = groupName | Append:' | ' | Append:siteName -%}
+    {{ pageTitle | SetPageTitle:'BrowserTitle' }}
+    {%- assign groupType = group | Attribute:'SmallGroupType','RawValue' | FromCache:'DefinedValue' -%}
+    {%- assign groupType = group | Attribute:'SmallGroupType' | AsString | Trim | Downcase -%}
+    {%- assign meetingLocations = group.GroupLocations | Where:'GroupLocationTypeValueId',meetingLocationId -%}
+    {% assign meetingLocationsFirst = meetingLocations | First %}
+    {%- assign groupImg = group | Attribute:'GroupImage','Guid' -%}
+    {% assign groupRhythm = group | Attribute:'MeetingRhythm' %}
+    {% assign groupGender = group | Attribute:'GroupTags' %}
+    {% assign groupExperience = group | Attribute:'GroupExperience' %}
+    {% assign groupType = group | Attribute:'SmallGroupType' %}
+    {% assign locationCity = meetingLocationsFirst.Location.City | Capitalize %}
+    {% assign locationState = meetingLocationsFirst.Location.State | Upcase %}
+
+    <div class="group-detail">
+        <section id="feature_secPageTitle" class="page-header detail" role="banner">
+            <div class="container">
+                <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start" style="gap:32px;">
+                    {%- if groupImg and groupImg != empty -%}
+                        {%- assign groupImg = groupImg | ImageUrl -%}
+                        <div class="group-img">
+                            <span class="group-icon bg-info overflow-hidden" title="Bible & Faith">
+                                <img src="{{ groupImg }}" alt="" class="w-100 h-100" style="object-fit: cover;">
+                            </span>
+                        </div>
+                    {%- else -%}
+                        {%- case groupType -%}
+                            {%- when 'bible & faith' -%}
+                                <span class="group-icon bg-info" title="Bible & Faith">
+                                    <i class="fa fa-bible"></i>
+                                </span>
+                            {%- when 'care & support' -%}
+                                <span class="group-icon bg-danger" title="Care & Support">
+                                    <i class="fa fa-heart"></i>
+                                </span>
+                            {%- when 'life stage' -%}
+                                <span class="group-icon bg-warning" title="Life Stage">
+                                    <img src="/Themes/WC2021/Assets/Images/icons/sun-haze-white.svg" alt="">
+                                </span>
+                            {%- when 'serving' -%}
+                                <span class="group-icon bg-primary" title="Serving">
+                                    <i class="fa fa-hand-holding-heart"></i>
+                                </span>
+                            {%- when 'shared interest' -%}
+                                <span class="group-icon bg-purple" title="Shared Interest">
+                                    <img src="/Themes/WC2021/Assets/Images/icons/circles-overlap-white.svg" alt="">
+                                </span>
+                            {%- when 'rooted' -%}
+                                <span class="group-icon bg-success" title="Rooted">
+                                    <img src="/Themes/WC2021/Assets/Images/icons/rooted-white.png" alt="">
+                                </span>
+                            {%- else -%}
+                                <span class="group-icon"></span>
+                        {%- endcase -%}
+                    {%- endif -%}
+                    <div class="d-flex flex-column w-md-50" style="gap:32px">
+                        <h1 id="page-title" class="page-title text-center text-sm-left">{{ groupName }}</h1>
+                        <div class="d-flex flex-wrap justify-content-center justify-content-sm-start" style="gap:16px">
+                            <a href="/page/2699?GroupId={{ groupId }}" class="btn btn-primary btn-lg js-launch-modal btn-grow">Join This Group</a>
+                            <a href="#" class="btn btn-primary btn-lg btn-grow" data-toggle="modal" data-target="#shareModal">Share</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="secBreadcrumb" class="header-breadcrumb">
+            <div class="container">
+                <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/styleguide/layouts" rel="rocknofollow">Group Finder</a></li>
+                <li class="breadcrumb-item">{{ groupName }}</li>
+                </ol>
+            </div>
+        </section>
+
+        <main class="container main">
+            <div class="row g">
+                <div class="col-xs-12 col-md-4 order-2 order-md-1 sidebar">
+                    <h4>Information</h4>
+                    <p class="info-item font-weight-bold"><i class="fa fa-clock" style="font-size: 24px;"></i>{% if groupRhythm and groupRhythm != empty %}{{ groupRhythm }}{% endif %}{% if groupRhythm and groupRhythm != empty and group.Schedule.FriendlyScheduleText and group.Schedule.FriendlyScheduleText != empty %} • {% endif %}{% if group.Schedule.FriendlyScheduleText and group.Schedule.FriendlyScheduleText != empty %}{{ group.Schedule.FriendlyScheduleText | Remove:':00' }}{% endif %}</p>
+
+                    <p class="info-item font-weight-bold"><i class="fa fa-map-marker" style="font-size: 24px;"></i>{% if locationCity and locationCity != empty %}{{ locationCity }}, {{ locationState }}{% endif %}{% if locationCity and locationCity != empty and groupExperience and groupExperience != empty %} • {% endif %}{% if groupExperience and groupExperience != empty %}{{ groupExperience }}{% endif %}</p>
+
+                    {% if groupGender and groupGender != empty %}
+                        <p class="info-item font-weight-bold"><i class="fa fa-user" style="font-size: 24px;"></i>{{ groupGender }}</p>
+                    {% endif %}
+
+                    {% if groupType and groupType != empty %}
+                        <p class="info-item font-weight-bold"><i class="fa fa-shapes" style="font-size: 24px;"></i>{{ groupType }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-xs-12 col-md-8 order-1 order-md-2">
+                    <h4>Description</h4>
+                    {{ group.Description }}
+                </div>
+
+                {%- for location in meetingLocations -%}
+                    {%- if location.GroupLocationTypeValue.IsActive == true -%}
+                        <div class="col-xs-12 my-4 py-3">
+                            {[ googlemap height:'300px' ]}
+                                [[ marker location:'{{ location.Location.Latitude }},{{ location.Location.Longitude }}' icon:'/Themes/WC2021/Assets/Images/icons/mapcircle.svg' ]] [[ endmarker ]]
+                                {%- comment -%} [[ style ]]
+                                    {{ 'b1b95fdc-bb41-429f-a5d0-04d4d8284e2c' | FromCache:'DefinedValue' | Attribute:'DynamicMapStyle','RawValue' }}
+                                [[ endstyle]] {%- endcomment -%}
+                            {[ endgooglemap ]}
+                        </div>
+                        {%- break -%}
+                    {%- endif -%}
+                {%- endfor -%}
+
+            </div>
+
+            <div class="text-center mb-5 mt-3">
+                <a href="/willow/smallgroups" class="btn btn-outline-primary btn-lg btn-grow">View More Groups</a>
+            </div>
+        </main>
+    </div>
+
+{%- endgroup -%}
+
+
+{% assign pageUrl = 'Global' | Page:'Url' | Split:'://' | Last %}
+{% assign pageUrlEscaped = 'Global' | Page:'Url' | EscapeDataString %}
+{% assign messageSubject = 'Global' | Page:'BrowserTitle' %}
+
+
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">×</a>
+                <h4 class="modal-title accent accent-invite accent-light text-center" id="shareModalLabel">Share This Group</h4>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex w-100 align-items-center justify-content-center mb-3">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ pageUrlEscaped }}" onclick="return fbs_click()" target="_blank" class="share-icon share-icon-facebook">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+                    </a>
+                    <a class="share-icon" href="mailto:?Subject={{ messageSubject }}&Body={{ pageUrl }}" target="_blank" data-component-name="Email">
+                        <i class="fa fa-envelope"></i>
+                    </a>
+                    <a href="sms:?&body=Check%20out%20this%20group!%20{{ pageUrlEscaped }}" class="share-icon">
+                        <i class="fa fa-comment-dots"></i>
+                    </a>
+                </div>
+
+                <div class="url-wrap">{{ pageUrl }}</div>
+            </div>
+            <div class="modal-footer text-center">
+                <a href="#" onclick="copyText('{{ pageUrl }}')" type="button" class="btn btn-link">Copy Link</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }
+</script>
+
+<script>
+    function copyText(copyText) {
+        /* Copy text into clipboard */
+        navigator.clipboard.writeText
+            (`${copyText}`);
+
+        alert('link copied to clipboard');
+    }
+</script>

@@ -1,0 +1,169 @@
+//- {% include '~~/Assets/Lava/Custom/Media/MediaArchive.lava' %}
+
+/-
+    content channel ids:
+        - Full Lengh Message Series:        11
+        - Full Lengh Messages:              14
+        - Backyard Buddies Series:          21
+        - Backyard Buddies Messages:        17
+        - Daily Devotionals:                10
+        - Message Notes:                    7
+        - Mini Message Series:              12
+        - Mini Messages:                    15
+        - MVMNT Series:                     20
+        - MVMNT Messages:                   19
+        - Scouts & Navigators Series:       13
+        - Scouts & Navigators Messages:     16
+-/
+
+{% assign firstItem = Items | First %}
+{% assign contentChannelId = firstItem.ContentChannelId %}
+{% assign count = 0 %}
+
+{% comment %} {% assign fallbackImageGuid = 'Global' | Attribute:'DefaultFallbackImage','RawValue' %} {% endcomment %}
+
+{%- case contentChannelId -%}
+    //- Full Lengh Messages (messages)
+    {%- when 14 -%}
+        {% assign type = 'video message' %}
+        {% assign contentChannelTitle = 'Full Length Messages' %}
+        {% assign archiveUrl = 'v1/series' %}
+
+
+
+    //- Backyard Buddies (series)
+    {%- when 21 -%}
+        {% assign type = 'series' %}
+        {% assign contentChannelTitle = 'Backyard Buddies' %}
+        {% assign archiveUrl = 'v1/backyard-buddies' %}
+        {% assign buttonText = 'View Series' %}
+
+
+
+    //- Scouts & Navigations (series)
+    {%- when 13 -%}
+        {% assign type = 'series' %}
+        {% assign contentChannelTitle = 'Scouts &amp; Navigations' %}
+        {% assign archiveUrl = 'v1/scouts-and-navigators' %}
+        {% assign buttonText = 'View Series' %}
+
+
+
+    //- MVMNT (series)
+    {%- when 20 -%}
+        {% assign type = 'series' %}
+        {% assign contentChannelTitle = 'MVMNT' %}
+        {% assign archiveUrl = 'v1/mvmnt' %}
+        {% assign buttonText = 'View Series' %}
+
+
+
+    //- Daily Devotions (messages)
+    {%- when 10 -%}
+        {% assign type = 'message' %}
+        {% assign contentChannelTitle = 'Daily Devotions' %}
+        {% assign archiveUrl = 'v1/daily-devotionals' %}
+        {% assign buttonText = 'View Devotion' %}
+
+
+
+    //- Stories (messages)
+    {%- when 37 -%}
+        {% assign type = 'message' %}
+        {% assign contentChannelTitle = 'Stories' %}
+        {% assign archiveUrl = 'v1/stories' %}
+        {% assign buttonText = 'View Story' %}
+
+
+
+{%- endcase -%}
+
+
+<div class="container container-lg">
+    <div class="row d-flex flex-wrap align-items-end mt-5 mb-4" data-aos="fade-up">
+        <div class="col-xs-12 col-sm-8">
+            <h2 class="m-0">{{ contentChannelTitle }}</h2>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+            <div class="text-sm-right">
+                <a href="/{{ archiveUrl }}" class="text-link font-weight-bold d-inline-block mt-3 ">View All</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        {% for item in Items %}
+
+            {%- case type -%}
+                {%- when 'video message' -%}
+                    {% assign video = item | Attribute:'Video','Object' %}
+                    {% assign image = video.DefaultThumbnailUrl %}
+                    {% assign speaker = item | Attribute:'Speaker' %}
+                    {% assign parentItem = item.ParentItems | First %}
+                    {% assign parentItemSlug = parentItem.ContentChannelItem.PrimarySlug %}
+                    {% assign slug = item.PrimarySlug %}
+                    {% assign detailsUrl = archiveUrl | Append:'/' | Append:parentItemSlug | Append:'/' | Append:slug %}
+
+                    {% if image and image != empty %}
+                        {% assign image = image | TriumphImgCdn:'w=400&fit=crop&auto=compress,format' %}
+                    {% else %}
+                        {% assign image = fallbackImageGuid | ImageUrl | TriumphImgCdn:'w=400&fit=crop&crop=faces,center&auto=compress,format' %}
+                    {% endif %}
+
+                {%- when 'series' -%}
+                    {% assign imageGuid = item | Attribute:'SeriesImage','Guid' | Default:fallbackImageGuid %}
+                    {% assign image = imageGuid | ImageUrl | TriumphImgCdn:'w=400&fit=crop&crop=faces,center&auto=compress,format' %}
+                    {% assign slug = item.PrimarySlug %}
+                    {% assign detailsUrl = archiveUrl | Append:'/' | Append:slug %}
+                    {% assign firstItem = item.ChildItems | First %}
+                    {% assign firstItemSlug = firstItem.ChildContentChannelItem.PrimarySlug %}
+
+                {%- when 'message' -%}
+                    {% assign imageGuid = item | Attribute:'Image','Guid' | Default:fallbackImageGuid %}
+                    {% assign image = imageGuid | ImageUrl | TriumphImgCdn:'w=400&fit=crop&crop=faces,center&auto=compress,format' %}
+                    {% assign slug = item.PrimarySlug %}
+                    {% assign detailsUrl = archiveUrl | Append:'/' | Append:slug %}
+
+                {%- else -%}
+
+            {%- endcase -%}
+
+
+            {% if type == 'video message' and count < 4 and parentItem %}
+                {% assign count = count | Plus:1 %}
+                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up">
+                    <div class="event-card" style="background-image:url({{ image }}); background-color: #414242;">
+                        <div class="event-card-body">
+                            <div class="event-card-info">
+                                <div class="event-card-date accent accent-white accent-light">
+                                    <span class="day">{{ item.StartDateTime | Date:'dd' }}</span>
+                                    <span class="month">{{ item.StartDateTime | Date:'MMM' }}</span>
+                                </div>
+                                <div class="event-card-title-wrap">
+                                    {% if speaker and speaker != empty %}<div class="event-card-subtitle mb-1">{{ speaker }}</div>{% endif %}
+                                    <h5 class="event-card-title">{{ item.Title }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/{{ detailsUrl }}" class="event-card-link"></a>
+                    </div>
+                </div>
+            {% elseif type == 'series' or type == 'message' and count < 4 %}
+                {% assign count = count | Plus:1 %}
+                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up">
+                    <div class="poster-card js-poster-card poster-card-dark {% unless image and image != empty %}bg-dark{% endunless %}"{% if image and image != empty %} style="background-image:url({{ image }}); background-color: #414242;"{% endif %}>
+                        <div class="poster-card-body js-poster-card-body">
+                            <h5 class="poster-card-title accent accent-white accent-light">{{ item.Title }}</h5>
+
+                            <div class="poster-card-hidden js-poster-card-hidden">
+                                <a href="/{{ detailsUrl }}" class="text-white">{{ buttonText }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+
+        {% endfor %}
+    </div>
+</div>

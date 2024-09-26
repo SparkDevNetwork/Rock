@@ -1,0 +1,107 @@
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+
+
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+    <!-- JumpStart Theme V1.1.1 -->
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<Rock:Lava ID="campuscontext" runat="server">
+    {% assign campusName = Context.Campus.Name %}
+    {% assign bodyClass = campusName | Downcase | Split:' ' | Join:'-' %}
+    <body id="body">
+    <div class="body-bg body-bg-{{ bodyClass }}"></div>
+
+</Rock:Lava>
+
+    <form id="form1" runat="server">
+        <!-- Page Header -->
+        <header class="site-header">
+            <!-- Brand Bar -->
+            <nav class="navbar navbar-static-top navbar-main">
+                <div class="container container-lg d-flex position-relative">
+                    <div class="navbar-start">
+                        <Rock:Lava ID="logo" runat="server">
+                        <div class="navbar-header">
+                            <a class="navbar-brand" href="/">
+                                {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId -%}
+                                    <img src="/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}">
+                                {%- else -%}
+                                    {{ 'Global' | Attribute:'OrganizationName' }}
+                                {%- endif -%}
+                            </a>
+                        </div>
+                        </Rock:Lava>
+                        <div class="navbar-navigation d-flex">
+                            <Rock:Zone Name="CampusContext" runat="server" />
+                            <Rock:Zone Name="Navigation" runat="server" />
+                        </div>
+                    </div>
+                    <div class="navbar-end">
+                        <div class="navbar-login">
+                            <Rock:Zone Name="Login" runat="server" />
+                        </div>
+			        </div>
+                </div>
+            </nav>
+
+        </header>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+	    <footer class="page-footer">
+            <Rock:Zone Name="Footer" runat="server" />
+	    </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </form>
+</body>
+</html>

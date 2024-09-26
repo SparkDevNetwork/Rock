@@ -1,0 +1,229 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/CampusArchive.lava' %} {% endcomment %}
+
+{% capture markerData %}
+    {% raw %}{[ googlemap height:'600px' ]}
+    {% endraw %}
+    {% for campus in Campuses  %}
+        {% assign campusSlug = campus.Name | ToCssClass | Append:'-campus' %}
+        {% assign streetAddress = campus.Location.Street1 %}
+
+        {% unless campus.Id == 5 %}
+            {% raw %}[[ marker location:'{% endraw %}{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}' title:'{{ campus.Name }} Campus' ]]
+                <div class="card">
+                    <img src="{{ campus | Attribute:'Image','Guid' | ImageUrl | Append:'&w=240&h=100&mode=crop'}}" alt="alt" class="card-img-top img-responsive">
+                    <div class="card-body">
+                        <h5>{{ campus.Name }} Campus</h5>
+                        {% if streetAddress and streetAddress != empty %}
+                            <p class="m-0">{{ streetAddress }}<br>
+                            {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="/v1/campuses/{{ campusSlug }}?CampusId={{ campus.Id }}" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+            {% raw %}[[ endmarker ]] {% endraw %}
+        {% endunless %}
+    {% endfor %}
+    {% raw %}
+    {[ endgooglemap ]}{% endraw %}
+{% endcapture %}
+
+
+<div class="campus-map mb-5">
+    {{ markerData | RunLava }}
+</div>
+
+<div class="container">
+    <div class="row d-flex flex-wrap">
+        {% for campus in Campuses %}
+            {% assign image = campus | Attribute:'Image','Guid' | ImageUrl | Append:'&w=300&h=180&mode=crop' %}
+            {% assign address = '' %}
+            {% assign streetAddress = campus.Location.Street1 %}
+            {% assign campusSlug = campus.Name | ToCssClass | Append:'-campus' %}
+
+            {% if streetAddress and streetAddress != empty %}
+                {%- capture address -%}
+                    <div class="mt-3">
+                        <span class="d-block tall font-weight-bold">
+                            <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5.38337 15.6772C0.842812 9.09472 0 8.41915 0 6C0 2.68628 2.68628 0 6 0C9.31372 0 12 2.68628 12 6C12 8.41915 11.1572 9.09472 6.61662 15.6772C6.31865 16.1076 5.68131 16.1076 5.38337 15.6772Z" fill="#414242"/>
+                            </svg>
+                            Location
+                        </span>
+                        <p class="m-0">{{ streetAddress }}<br>
+                        {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}</p>
+                    </div>
+                {%- endcapture -%}
+            {% endif %}
+
+            {%- capture serviceTimes -%}
+                <div class="mt-3">
+                    <span class="d-block tall font-weight-bold">
+                        <i class="fa fa-clock mr-2"></i>Service Times
+                    </span>
+                    {% for service in campus.ServiceTimes %}
+                        <div class="my-2">{{ service.Day }}: {{ service.Time }} {% unless forloop.last %}<br>{% endunless %}</div>
+                    {% endfor %}
+                </div>
+            {%- endcapture -%}
+
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="{{ image }}" alt="alt" class="card-img-top img-responsive">
+                    <div class="card-body">
+                        <h5>{{ campus.Name }}</h5>
+                        {{ address }}
+                        {{ serviceTimes }}
+                    </div>
+                    <div class="card-footer">
+                        {% comment %} todo: update url {% endcomment %}
+                        <a href="/v1/campuses/{{ campusSlug }}?CampusId={{ campus.Id }}" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+
+
+
+{% stylesheet id:'calendarpage' compile:'less' cacheduration:'14400' %}
+
+    // only for campus-detail page
+    .calendar-lava {
+
+        .calendar {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        table, tr {
+            border: 0;
+        }
+
+        .calendar-month {
+            //hide calendar days and header
+            & > tbody > tr:not(:first-child) {
+                display: none;
+            }
+        }
+    }
+{% endstylesheet %}
+
+<a href="#" class="btn btn-primary" id="calculate-distance">calculate distance</a>
+
+<script defer>
+
+    var googleApiKey = "{{ 'Global' | Attribute:'GoogleAPIKey' }}";
+
+    // REMOVE THIS STUFF
+    var zipCode = '85308';
+
+    $('#calculate-distance').on('click', (e) => {
+        e.preventDefault();
+
+        buttonAsync();
+    });
+
+    async function buttonAsync () {
+        let closestCampus = await getClosestCampus();
+
+        console.log(closestCampus);
+
+        let map = new google.maps.Map(document.querySelector('.map-container div[aria-label="Map"]'));
+        console.log(map);
+    }
+
+    async function getClosestCampus() {
+        let zipCoordinates = await getZipLatAndLng(zipCode);
+        var zipLat = zipCoordinates.latitude;
+        var zipLng = zipCoordinates.longitude;
+
+        let distanceData = getCampusDistances(zipLat, zipLng);
+
+        console.log(distanceData[0]);
+        return(distanceData[0]);
+    }
+
+
+
+    function getZipLatAndLng (zipCode) {
+
+        var url = `https://maps.googleapis.com/maps/api/geocode/json?address=${zipCode}&key=${googleApiKey}`;
+        var lat,lng = '';
+
+        return new Promise((resolve) => {
+            fetch(url)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    // if data status is OK, reorder campus cards
+                    if (data.status === 'OK') {
+                        lat = data.results[0].geometry.location.lat;
+                        lng = data.results[0].geometry.location.lng;
+
+                        resolve({latitude:lat, longitude:lng});
+                    }
+                });
+        });
+    }
+
+    function getDistanceFromLatLonInMiles (lat1, lon1, lat2, lon2) {
+        var R = 3958.8; // Radius of the earth in miles
+        var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+        var dLon = deg2rad(lon2 - lon1);
+        var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            ;
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c; // Distance in miles
+        return d;
+    }
+
+    function deg2rad (deg) {
+        return deg * (Math.PI / 180)
+    }
+
+
+    function getCampusDistances(zipLat, zipLng) {
+        let campusId,campusLat,campusLng,distance = '';
+
+        let campusObject = {};
+        let distanceData = [];
+
+
+        {% for campus in Campuses %}
+            campusObject = {};
+            campusId = '';
+            campusLat = '';
+            campusLng = '';
+            distance = '';
+
+            campusId = '{{ campus.Id }}';
+            campusLat = '{{ campus.Location.Latitude }}';
+            campusLng = '{{ campus.Location.Longitude }}';
+
+            if (campusId && campusLat && campusLng) {
+                distance = getDistanceFromLatLonInMiles(zipLat, zipLng, campusLat, campusLng);
+
+                campusObject.id = campusId;
+                campusObject.lat = campusLat;
+                campusObject.lng = campusLng;
+                campusObject.distance = distance;
+
+                distanceData.push(campusObject);
+            }
+
+        {% endfor %}
+
+        distanceData.sort((a, b) => (a.distance > b.distance) ? 1 : -1);
+        return distanceData;
+    }
+</script>

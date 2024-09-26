@@ -1,0 +1,191 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/LocationFinderMap.lava' %} {% endcomment %}
+
+{% stylesheet id:'location-map' compile:'less' %}
+    .location-map {
+//        div[aria-roledescription="map"] {
+//
+//            &::after {
+//                content: '';
+//                position: absolute;
+//                top: 0;
+//                left: 0;
+//                right: 0;
+//                bottom: 0;
+//                width: 100%;
+//                height: 100%;
+//                background-color: #6869ac;
+//                opacity: .5;
+//            }
+//
+//            &>div:first-child {
+//                filter: grayscale(1);
+//            }
+//
+//        }
+
+        border-radius: 8px;
+        //.rounded-md();
+
+        .map-container {
+            height: 100% !important;
+            //.rounded-md();
+            overflow: hidden;
+        }
+
+        .alert {
+            display: none;
+        }
+
+        & div.gm-style-iw.gm-style-iw-c {
+            padding: 35px 0 0 30px;
+
+            & > div {
+                padding: 0 14px 35px 0;
+            }
+        }
+
+        &-name {
+            font-size: 24px;
+
+            @media screen and (min-width: 992px) {
+                font-size: 32px;
+            }
+        }
+
+        h5 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        &-address, &-times {
+            font-size: 16px;
+        }
+
+        .gmnoprint, .gm-fullscreen-control {
+            display: none;
+        }
+    }
+
+{% endstylesheet %}
+
+{% assign mapIcon = CurrentPage.Layout.Site | Attribute:'GoogleMapIcon','RawValue' %}
+{% assign mapIconPath = '/GetImage.ashx?Guid=' | Append:mapIcon %}
+
+<div id="map" class="location-map h-100"></div>
+
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2O30vVAZemu_NJjEMM0t5a6Pu6ALKJnM&callback=initMap&v=weekly"
+  defer
+></script>
+
+
+<script>
+    function initMap() {
+        const locations = document.querySelectorAll('.js-location-list-item');
+        const locationsArray = [];
+        const infoWindowArray = [];
+        const markerArray = [];
+        let count = 0;
+        let startLat, startLong;
+
+        locations.forEach((location) => {
+            const latitude = parseFloat(location.dataset.latitude);
+            const longitude = parseFloat(location.dataset.longitude);
+            const name = location.dataset.name;
+            const times = location.dataset.times;
+            const id = location.dataset.id;
+            const description = location.dataset.description;
+            const address = location.dataset.address;
+            const addressStripped = address.replace(',','').replace('<br>','');
+
+
+            const contentString =
+                `<div class="location-map-info-window" data-id="${id}">` +
+                    `<h2 class="location-map-name">${name} Campus</h2>` +
+                    '<hr class="location-map-hr">' +
+                    '<h5 class="mb-0">WHERE WE MEET</h5>' +
+                    `<p class="location-map-address">Gold Creek Community Church<br>${address}</p>` +
+                    '<h5 class="mb-0">WHEN WE MEET</h5>' +
+                    `<p class="location-map-times">${times}</p>` +
+                    '<a href="#" class="btn btn-primary">Select Campus</a>' +
+                    `<a href="https://www.google.com/maps/place/${ addressStripped }" target="_blank" class="btn btn-default">Get Directions</a>` +
+                '</div>'
+                ;
+
+            locationsArray.push(
+                {
+                    position: { lat: latitude, lng: longitude },
+                    content: contentString,
+                    campusName: name,
+                },
+            )
+
+            if (count == 0) {
+                startLat = latitude;
+                startLong = longitude;
+            }
+            count++;
+        });
+
+
+        const campusOne = { lat: startLat, lng: startLong };
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 10,
+            center: campusOne,
+        });
+
+
+        for (let i = 0; i < locationsArray.length; i++) {
+            const marker = new google.maps.Marker({
+                position: locationsArray[i].position,
+                icon: "{{ mapIconPath }}",
+                map: map,
+            });
+
+            markerArray.push(marker);
+
+            const infowindow = new google.maps.InfoWindow({
+                content: locationsArray[i].content,
+                ariaLabel: locationsArray[i].campusName,
+            });
+
+            infoWindowArray.push(infowindow);
+
+            marker.addListener("click", () => {
+                const label = infowindow.ariaLabel;
+
+                infoWindowArray.forEach((infoItem) => {
+                    infoItem.close();
+                });
+
+                infowindow.open({
+                    anchor: marker,
+                    map,
+                });
+
+                $('.js-location-list-item').each((i, obj) => {$(obj).removeClass('active')});
+                $(`div[data-name="${label}"]`).addClass('active');
+            });
+        }
+
+        $(infoWindowArray).each((i, obj) => {
+            const label = obj.ariaLabel;
+
+            $(`div[data-name="${label}"]`).mouseenter((e) => {
+                infoWindowArray.forEach((infoItem) => {
+                    infoItem.close();
+                });
+
+                obj.open({
+                    anchor: markerArray[i],
+                    map
+                });
+            });
+        });
+
+    }
+
+    window.initMap = initMap;
+
+</script>
+

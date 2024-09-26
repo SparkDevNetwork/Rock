@@ -1,0 +1,22 @@
+{
+  "name": "wc2021",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cssfix": "npx stylelint --fix --cache --cache-location .cache/.stylelintcache --custom-syntax postcss-less \"Styles/**/*.less\" \"!**/{_rock-core,_variable-overrides,}.less\" ",
+    "lavafix": "npx prettier --write \"Assets/Lava/**/*.lava\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^2.8.8",
+    "prettier-plugin-lava": "^0.9.1",
+    "stylelint": "^14.2.0",
+    "stylelint-config-standard": "^24.0.0",
+    "stylelint-order": "^5.0.0",
+    "postcss": "^8.4.5",
+    "postcss-less": "^6.0.0"
+  }
+}

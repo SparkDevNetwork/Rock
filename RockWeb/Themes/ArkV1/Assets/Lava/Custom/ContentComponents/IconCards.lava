@@ -1,0 +1,49 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/IconCards.lava' %} {% endcomment %}
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h6' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+{%- assign channelBackgroundImage =  ContentChannel | Attribute:'BackgroundImage','RawValue' -%}
+{%- assign contentItemStyle = '' -%}
+
+<div class="swiper-primary js-primary-swiper pagination-dark px-3 px-sm-0">
+    {[ swiper spacebetween:'16' showpagination:'true' shownavigation:'false' breakpoints:'sm-2|16,lg-3|16' paginationclickable:'true' ]}
+        {%- for item in Items -%}
+
+            {% assign image = item | Attribute:'Image','RawValue' %}
+            {% assign imageUrl = image | ImageUrl %}
+            {% assign buttons = item | Attribute:'Buttons','Object' %}
+            {% assign buttons = buttons.AttributeMatrixItems %}
+            {% assign iconCardStyle = item | Attribute:'IconCardStyle','Object' %}
+            {% assign iconCardClasses = iconCardStyle | Attribute:'Classes' %}
+
+            [[ slide ]]
+                <div class="icon-card {{ iconCardClasses }} h-100">
+                    <span class="icon-btn dark icon-card-icon">
+                        <img src="{{ imageUrl }}" alt="" class="icon-primary img-responsive" style="object-fit: cover; object-position: cover; height: 24px !important;" height="24">
+                    </span>
+
+                    <div class="icon-card-body">
+                        <{{ channelTitleSize }} class="icon-card-title">{{ item.Title }}</{{ channelTitleSize }}>
+                        <div class="icon-card-text text-muted">{{ item.Content }}</div>
+                        <div class="icon-card-footer">
+                            {% for button in buttons %}
+                                {% assign url = button | Attribute:'Url','RawValue' %}
+                                {% assign text = button | Attribute:'Text' %}
+                                {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+                                {% assign style = button | Attribute:'Style','Object' %}
+                                {% assign styleClasses = style | Attribute:'Classes' %}
+                                <a href="{{ url }}" class="{{ styleClasses }}"{% if newTab %} target="_blank"{% endif %}>{{ text }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            [[ endslide ]]
+        {%- endfor -%}
+
+    {[ endswiper ]}
+</div>
+
+

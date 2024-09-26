@@ -1,0 +1,126 @@
+//
+// JumpStart Theme V1.1.1
+// _transaction-entry.less
+//
+
+.main-content .contribution-payment {
+  margin-bottom: 0;
+
+  > .panel-body {
+    padding: 0;
+    overflow: hidden;
+    background: #fff;
+
+    > .rockradiobuttonlist {
+      padding: 36px 36px 21px;
+      margin-bottom: 10px;
+      background-color: #f7f7f8;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+    }
+  }
+
+  .nav-pills {
+    display: -ms-flexbox !important;
+    display: flex !important;
+    padding: 0 40px;
+    > li {
+      -ms-flex: 1 !important;
+      flex: 1 !important;
+      float: none;
+      text-align: center;
+      > a {
+        border-bottom: 5px solid transparent;
+        border-radius: 0;
+      }
+      > a:hover,
+      > a:focus {
+        background-color: transparent;
+      }
+
+      &.active > a {
+        color: @text-color;
+        background: transparent;
+        border-color: #323333;
+      }
+
+      + li {
+        margin-left: 0;
+      }
+    }
+  }
+
+  @media (min-width: @screen-sm-min) {
+    .tab-pane {
+      .rock-text-box {
+        float: left;
+        width: 50%;
+        padding: 0 5px;
+      }
+
+      .rock-radio-button-list {
+        padding-left: 5px;
+      }
+
+    }
+
+    .tab-pane:first-child {
+      .rock-text-box:first-child {
+        display: inline-block;
+        float: none;
+        width: 60%;
+        padding: 0;
+      }
+
+      .card-logos {
+        display: inline-block;
+        float: none;
+        width: 38%;
+        height: 46px;
+        padding-left: 2%;
+        margin-top: 24px;
+
+        &::after {
+          clear: both;
+        }
+      }
+    }
+  }
+
+  .tab-content {
+    margin-top: 0;
+  }
+
+  .tab-pane {
+    padding: 15px;
+    background-color: #f7f7f8;
+    @media (min-width: @grid-float-breakpoint) {
+      padding: 36px;
+    }
+  }
+}
+
+.main-content .contribution-personal {
+  .panel-heading {
+    padding-right: 36px;
+    padding-left: 36px;
+  }
+
+  .panel-title {
+    text-align: left;
+  }
+}
+
+.transaction-entry {
+  .panel-block > .panel-default.no-border {
+    background-color: transparent;
+    box-shadow: none;
+
+    .panel-body {
+      padding-right: 0;
+      padding-left: 0;
+      background-color: transparent;
+      border-top: 0;
+    }
+  }
+}

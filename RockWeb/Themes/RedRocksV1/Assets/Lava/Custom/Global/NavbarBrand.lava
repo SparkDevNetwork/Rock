@@ -1,0 +1,8 @@
+<a href="/v1" class="d-inline-block">
+    <div class="site-logo d-md-none">
+        {% include '~~/Assets/Images/Logos/red-rocks-icon.svg' %}
+    </div>
+    <div class="site-logo d-none d-md-block">
+        {% include '~~/Assets/Images/Logos/red-rocks-logo.svg' %}
+    </div>
+</a>

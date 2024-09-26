@@ -1,0 +1,48 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/CardsSlider.lava' %} {% endcomment %}
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h5' -%}
+
+<div class="cards-slider">
+    {[ swiper containerclass:'gc-swiper-container' shownavigation:'true' showpagination:'true' slidesperview:'1' spacebetween:'16' breakpoints:'sm-2|30,md-3|30' ]}
+        {% for item in Items %}
+            {% assign campus = item | Attribute:'Campus' %}
+
+            {% if campus == empty or campus == null or campus == Context.Campus.Name %}
+                {% assign image = item | Attribute:'Image','RawValue' %}
+                {% assign imageUrl = '/GetImage.ashx?Guid=' | Append:image | Append:'&w=800&h=450&mode=crop' %}
+                {% assign title = item.Title %}
+                {% assign content = item.Content %}
+                {% assign url = item | Attribute:'Url','RawValue' %}
+                {% assign newTab = item | Attribute:'NewTab' %}
+                {% assign linkText = item | Attribute:'LinkText' | Default:'Learn More' %}
+                {% assign linkTwoUrl = item | Attribute:'LinkTwoUrl','RawValue' %}
+                {% assign linkTwoNewTab = item | Attribute:'LinkTwoNewTab' %}
+                {% assign linkTwoText = item | Attribute:'LinkTwoText' | Default:'Learn More' %}
+                {% assign accentColor = item | Attribute:'AccentColor' | Default:'goldcreek' %}
+
+                [[ slide ]]
+                    <div class="card {% if url and url != empty %}card-linked{% endif %} h-100">
+                        <img src="{{ imageUrl }}" class="card-img-top">
+                        <div class="card-body">
+                            <{{ channelTitleSize }} class="card-title">{{ title }}</{{ channelTitleSize }}>
+                            {{ content }}
+                        </div>
+                        {% if url != empty or linkTwoUrl != empty %}
+                            <div class="card-footer">
+                                {% if url and url != empty %}
+                                    <a href="{{ url }}" {% if newTab and newTab == 'Yes' %}target="_blank"{% endif %} class="btn{% if linkTwoUrl and linkTwoUrl != empty %} btn-primary btn-{{ accentColor }} {% else %} btn-default btn-{{ accentColor }} {% endif %} stretched-link">{{ linkText }}</a>
+                                {% endif %}
+
+                                {% if linkTwoUrl and linkTwoUrl != empty %}
+                                    <a href="{{ linkTwoUrl }}" {% if linkTwoNewTab and linkTwoNewTab == 'Yes' %}target="_blank"{% endif %} class="btn btn-default btn-{{ accentColor }} position-relative z-10">{{ linkTwoText }}</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                [[ endslide ]]
+            {% endif %}
+
+        {% endfor %}
+    {[ endswiper ]}
+</div>
+

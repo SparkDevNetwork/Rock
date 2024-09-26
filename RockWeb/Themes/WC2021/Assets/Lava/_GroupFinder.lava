@@ -1,0 +1,200 @@
+{% comment %} {% include '~~/Assets/Lava/_GroupFinder.lava' %} {% endcomment %}
+
+{%- assign meetingLocationId = '96d540f5-071d-4bbd-9906-28f0a64d39c4' | FromCache:'DefinedValue' | Property:'Id' -%}
+
+{% if Groups != empty %}
+
+    <div class="group-items js-filter-items">
+
+            {% for group in Groups %}
+
+
+                {% capture pageRoute %}GroupId={{ group.Id }}{% endcapture %}
+                {% assign registerPage = LinkedPages.RegisterPage | Remove:'/page/' %}
+                {% assign detailPage = LinkedPages.GroupDetailPage | Remove:'/page/' %}
+
+
+                {% assign groupType = group | Attribute:'SmallGroupType' | AsString | Trim | Downcase %}
+
+                {% assign groupName = group.Name | Replace:"'",'’' %}
+
+                {% comment %} {%- if group.Schedule.WeeklyDayOfWeek != null -%}
+                <span class="day">{{ group.Schedule.WeeklyDayOfWeek }}s</span>
+                <span class="time">{{ group.Schedule.WeeklyTimeOfDay | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+                {% endif %} {% endcomment %}
+
+                {% assign groupCapacity = group.GroupCapacity | AsInteger %}
+                {% assign groupMemberCount = group.Members | Size %}
+
+                {% if groupCapacity and groupCapacity != empty and groupMemberCount and groupMemberCount != empty %}
+                    {% if groupCapacity <= groupMemberCount %}
+                        {% assign groupDisabled = true %}
+                    {% else %}
+                        {% assign groupDisabled = false %}
+                    {% endif %}
+                {% else %}
+                    {% assign groupDisabled = false %}
+                {% endif %}
+
+                {% assign meetingLocation = group.GroupLocations | Where:'GroupLocationTypeValueId',meetingLocationId | Map:'Location' | Where:'IsActive',true | First %}
+
+                {% assign groupImg = group | Attribute:'GroupImage','Guid' %}
+                {% assign groupDay = group | Attribute:'DayOfWeek' %}
+                {% assign groupRhythm = group | Attribute:'MeetingRhythm' %}
+                {% assign groupExperience = group | Attribute:'GroupExperience' %}
+                {% assign groupGender = group | Attribute:'GroupTags' %}
+                {% assign groupSummary = group | Attribute:'Summary' %}
+                {% assign groupCustomRegistration = group | Attribute:'Registrationv' %}
+
+                <div class="group-item js-filter-item">
+                    <div class="card card-group  {% if groupDisabled %}disabled{% endif %}">
+                        <div class="card-sidebar">
+                            {% if groupImg and groupImg != empty %}
+                                {% assign groupImg = groupImg | ImageUrl %}
+                                <div class="group-img">
+                                    <img src="{{ groupImg }}" alt="">
+                                    {% case groupType %}
+                                        {% when 'bible & faith' %}
+                                            <span class="group-icon bg-info" title="Bible & Faith">
+                                                <i class="fa fa-bible"></i>
+                                            </span>
+                                        {% when 'care & support' %}
+                                            <span class="group-icon bg-danger" title="Care & Support">
+                                                <i class="fa fa-heart"></i>
+                                            </span>
+                                        {% when 'life stage' %}
+                                            <span class="group-icon bg-warning" title="Life Stage">
+                                                <img src="/Themes/WC2021/Assets/Images/icons/sun-haze-white.svg" alt="">
+                                            </span>
+                                        {% when 'serving' %}
+                                            <span class="group-icon bg-primary" title="Serving">
+                                                <i class="fa fa-hand-holding-heart"></i>
+                                            </span>
+                                        {% when 'shared interest' %}
+                                            <span class="group-icon bg-purple" title="Shared Interest">
+                                                <img src="/Themes/WC2021/Assets/Images/icons/circles-overlap-white.svg" alt="">
+                                            </span>
+                                        {% when 'rooted' %}
+                                            <span class="group-icon bg-success" title="Rooted">
+                                                <img src="/Themes/WC2021/Assets/Images/icons/rooted-white.png" alt="">
+                                            </span>
+                                        {% else %}
+                                            <span class="group-icon"></span>
+                                    {% endcase %}
+                                </div>
+                            {% else %}
+                                {% case groupType %}
+                                    {% when 'bible & faith' %}
+                                        <span class="group-icon bg-info" title="Bible & Faith">
+                                            <i class="fa fa-bible"></i>
+                                        </span>
+                                    {% when 'care & support' %}
+                                        <span class="group-icon bg-danger" title="Care & Support">
+                                            <i class="fa fa-heart"></i>
+                                        </span>
+                                    {% when 'life stage' %}
+                                        <span class="group-icon bg-warning" title="Life Stage">
+                                            <img src="/Themes/WC2021/Assets/Images/icons/sun-haze-white.svg" alt="">
+                                        </span>
+                                    {% when 'serving' %}
+                                        <span class="group-icon bg-primary" title="Serving">
+                                            <i class="fa fa-hand-holding-heart"></i>
+                                        </span>
+                                    {% when 'shared interest' %}
+                                        <span class="group-icon bg-purple" title="Shared Interest">
+                                            <img src="/Themes/WC2021/Assets/Images/icons/circles-overlap-white.svg" alt="">
+                                        </span>
+                                    {% when 'rooted' %}
+                                        <span class="group-icon bg-success" title="Rooted">
+                                            <img src="/Themes/WC2021/Assets/Images/icons/rooted-white.png" alt="">
+                                        </span>
+                                    {% else %}
+                                        <span class="group-icon"></span>
+                                {% endcase %}
+                            {% endif %}
+
+
+                            <div class="card-meta">
+                                <span class="day">{{ groupDay }}</span>
+                                <span class="text">{{ groupRhythm }}</span>
+                                <span class="text">{{ groupExperience }}</span>
+                            </div>
+                            <span class="text">{{ groupGender }}</span>
+                        </div>
+                        <div class="card-content">
+                            {% case groupType %}
+                                {% when 'bible & faith' %}
+                                    <span class="group-icon bg-info" title="Bible & Faith">
+                                        <i class="fa fa-bible"></i>
+                                    </span>
+                                {% when 'care & support' %}
+                                    <span class="group-icon bg-danger" title="Care & Support">
+                                        <i class="fa fa-heart"></i>
+                                    </span>
+                                {% when 'life stage' %}
+                                    <span class="group-icon bg-warning" title="Life Stage">
+                                        <img src="/Themes/WC2021/Assets/Images/icons/sun-haze-white.svg" alt="">
+                                    </span>
+                                {% when 'serving' %}
+                                    <span class="group-icon bg-primary" title="Serving">
+                                        <i class="fa fa-hand-holding-heart"></i>
+                                    </span>
+                                {% when 'shared interest' %}
+                                    <span class="group-icon bg-purple" title="Shared Interest">
+                                        <img src="/Themes/WC2021/Assets/Images/icons/circles-overlap-white.svg" alt="">
+                                    </span>
+                                {% when 'rooted' %}
+                                    <span class="group-icon bg-success" title="Rooted">
+                                        <img src="/Themes/WC2021/Assets/Images/icons/rooted-white.png" alt="">
+                                    </span>
+                                {% else %}
+                                    <span class="group-icon"></span>
+                            {% endcase %}
+
+                            <h4 class="card-title">{{ groupName }}</h4>
+                            {% if meetingLocation %}
+                                {%- if meetingLocation.Name -%}
+                                    <span class="card-subtitle text-muted">{{ meetingLocation.Name }}</span>
+                                {%- else -%}
+                                    {%- assign cityName = meetingLocation.City | Trim -%}
+                                    {%- if cityName != '' -%}
+                                    <span class="card-subtitle text-muted">{{ meetingLocation.City }}, {{ meetingLocation.State }}</span>
+                                    {%- endif -%}
+                                {%- endif -%}
+                            {% endif %}
+
+                            <p class="group-dates">{{ groupDay | Capitalize }} • {{ groupRhythm | Capitalize }}</p>
+
+                            <p class="group-gender">{{ groupGender }}</p>
+                            {% comment %} group.Description {% endcomment %}
+                            <p class="card-text">{{ groupSummary }}</p>
+
+                            {% unless groupDisabled %}
+                                <div class="actions">
+                                    {% if LinkedPages.RegisterPage or groupCustomRegistration and groupCustomRegistration != empty %}
+                                        {% if groupCustomRegistration and groupCustomRegistration != empty %}
+                                            {% assign registerUrl = groupCustomRegistration %}
+                                        {% else %}
+                                            {% assign registerUrl = registerPage | PageRoute:pageRoute %}
+                                        {% endif %}
+                                        <a href="{{ registerUrl }}" class="action js-launch-modal">Register</a>
+                                    {% endif %}
+                                    {% if LinkedPages.GroupDetailPage %}
+                                        {% assign detailUrl = detailPage | PageRoute:pageRoute %}
+                                        <a href="{{ detailUrl }}" class="action">Learn More</a>
+
+                                        <a href="{{ detailUrl }}" class="action-mobile stretched-link">Learn More</a>
+                                    {% endif %}
+                                </div>
+                            {% endunless %}
+
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info" style="margin:0 32px;">No Groups Currently Available</div>
+{% endif %}
+

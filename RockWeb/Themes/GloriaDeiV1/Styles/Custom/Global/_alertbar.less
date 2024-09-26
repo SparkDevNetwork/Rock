@@ -1,0 +1,92 @@
+// out: false
+
+.global-alert-bar {
+  z-index: 200;
+  position: relative;
+}
+
+.alert-bar {
+  background-color: @early-fawn;
+  padding: 16px 0;
+  color: @spirit-silk-light;
+  overflow: hidden;
+
+  a {
+    color: @spirit-silk-light;
+
+    &:hover {
+      color: darken(mix(@theme-1, #fff, 10%), 3%);
+    }
+  }
+
+  .heading {
+    margin-left: 40px;
+  }
+
+  .heading,
+  .icon {
+    margin-right: 10px;
+  }
+
+  .alert-text-repeat {
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 11px;
+      height: 11px;
+      background-color: rgba(0, 0, 0, .2);
+      border-radius: 999px;
+    }
+  }
+
+
+
+
+  // - alert bar animation
+  .alert-animator {
+    white-space: nowrap; // Important for the text to stay on one line
+
+    &:hover .alert-text {
+      animation-play-state: paused;
+    }
+
+    .alert-text {
+      position: relative;
+      display: inline-block;
+      animation: goLeft 120s linear infinite;
+
+      .alert-text-repeat {
+        position: absolute;
+        top: 0;
+
+        &-2 {
+          right: -100%;
+        }
+
+        &-3 {
+          right: -200%;
+        }
+
+        &-4 {
+          right: -300%;
+        }
+
+        &-5 {
+          right: -400%;
+        }
+      }
+    }
+  }
+}
+
+
+
+@keyframes goLeft {
+  to {
+    transform: translateX(-400%);
+  }
+}

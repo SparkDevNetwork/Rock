@@ -1,0 +1,10 @@
+﻿{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+{% for item in Items %}
+    {% assign detailImageGuid = item | Attribute:'DetailImage','RawValue' %}
+    {% if detailImageGuid != '' %}
+        <img alt="{{ item.Title }}" src="/GetImage.ashx?Guid={{ detailImageGuid }}" class="title-image img-responsive">
+    {% endif %}
+    <h1>{{ item.Title }}</h1>{{ item.Content }}
+{% endfor -%}

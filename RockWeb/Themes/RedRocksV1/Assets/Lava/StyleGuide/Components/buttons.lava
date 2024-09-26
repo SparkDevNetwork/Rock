@@ -1,0 +1,133 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/buttons.lava' %}{%endcomment%}
+
+<h1 class="mt-0">Buttons</h1>
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% comment %} ~ Capture Standard Buttons Section {% endcomment %}
+
+{% capture standardButtons %}
+
+<a href="#" class="btn btn-primary">Primary</a>
+<a href="#" class="btn btn-default">Default</a>
+<a href="#" class="btn btn-link">Btn Link</a>
+<a href="#" class="btn btn-secondary">Btn Secondary <span></span></a>
+<a href="#" class="btn btn-fancy">Fancy</a>
+<a href="#" class="btn btn-give">Give</a>
+
+<div class="bg-dark p-3 mt-3">
+    <a href="#" class="btn btn-default btn-light">Default</a>
+    <a href="#" class="btn btn-secondary btn-light">Btn Secondary <span></span></a>
+    <a href="#" class="btn btn-give">Give</a>
+</div>
+
+{% endcapture %}
+
+{% capture standardButtonsEscaped %}
+    {{ codeOpen }}
+    {{ standardButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Icon Buttons Section {% endcomment %}
+
+{% capture iconButtons %}
+<a href="#" class="btn btn-primary"><i class="fa fa-arrow-left"></i> Left</a>
+<a href="#" class="btn btn-default">Right <i class="fa fa-arrow-right"></i></a>
+<br><br>
+    <div class="d-flex" style="gap:1rem;">
+        <a href="#" class="btn btn-primary btn-icon"><i class="fa fa-arrow-left"></i></a>
+        <a href="#" class="btn btn-default btn-icon"><i class="fa fa-arrow-right"></i></a>
+    </div>
+<br>
+    <div class="d-flex" style="gap:1rem;">
+        <a href="#" class="btn btn-primary btn-sm btn-icon"><i class="fa fa-user"></i></a>
+        <a href="#" class="btn btn-default btn-sm btn-icon"><i class="fa fa-search"></i></a>
+    </div>
+{% endcapture %}
+
+{% capture iconButtonsEscaped %}
+    {{ codeOpen }}
+    {{ iconButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Large Buttons Section {% endcomment %}
+
+{% capture largeButtons %}
+<a href="#" class="btn btn-primary btn-lg">Primary</a>
+
+<a href="#" class="btn btn-default btn-lg">Default</a>
+
+<a href="#" class="btn btn-link btn-lg">Link</a>
+{% endcapture %}
+
+{% capture largeButtonsEscaped %}
+    {{ codeOpen }}
+    {{ largeButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Small Buttons Section {% endcomment %}
+
+{% capture smallButtons %}
+<a href="#" class="btn btn-primary btn-sm">Primary</a>
+
+<a href="#" class="btn btn-default btn-sm">Default</a>
+
+<a href="#" class="btn btn-link btn-sm">Link</a>
+{% endcapture %}
+
+{% capture smallButtonsEscaped %}
+    {{ codeOpen }}
+    {{ smallButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Capture Extra Small Buttons Section {% endcomment %}
+
+{% capture extraSmallButtons %}
+<a href="#" class="btn btn-primary btn-xs">Primary</a>
+
+<a href="#" class="btn btn-default btn-xs">Default</a>
+
+<a href="#" class="btn btn-link btn-xs">Link</a>
+{% endcapture %}
+
+{% capture extraSmallButtonsEscaped %}
+    {{ codeOpen }}
+    {{ extraSmallButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header mt-0">Standard Buttons</h3>
+{{ standardButtons }}<br>
+{{ standardButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Icon Buttons</h3>
+{{ iconButtons }}<br>
+{{ iconButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Large Buttons</h3>
+<div>{{ largeButtons }}</div><br>
+{{ largeButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Small Buttons</h3>
+<div>{{ smallButtons }}</div><br>
+{{ smallButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Extra Small Buttons</h3>
+<div>{{ extraSmallButtons }}</div><br>
+{{ extraSmallButtonsEscaped }}

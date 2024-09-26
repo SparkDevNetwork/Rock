@@ -1,0 +1,69 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/CampusDetail/CampusPastor.lava' %} {% endcomment %}
+
+{% comment %} * Campus Pastor {% endcomment %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% assign campus = campusId | FromCache:'Campus' %}
+{% assign campusLeaderAliasId = campus.LeaderPersonAliasId %}
+
+{% personalias where:'Id == "{{ campusLeaderAliasId }}"' limit:'1' iterator:'CampusLeaders' sort:'Order' securityenabled:'false' %}
+    {% assign campusPastor = CampusLeaders | First %}
+{% endpersonalias %}
+
+
+{% if campusPastor and campusPastor != empty %}
+
+    {% assign campusPastor = campusPastor.Person %}
+
+    {% assign pastorHeadshot = campusPastor | Attribute:'Headshot','Guid' | ImageUrl | TriumphImgCdn:'w=600&h=600&crop=faces&fit=crop&auto=compress,format' %}
+
+    <div class="bg-primary" data-aos="fade" data-aos-anchor-placement="top-bottom">
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+
+        <div class="container">
+            <h2 class="accent accent-white" data-aos="fade-up">Meet the {{ campus.Name }} Campus Pastor</h2>
+
+            <div class="py-3"></div>
+            <div class="py-md-3"></div>
+
+            <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-xs-12 col-sm-12 col-md-4 mb-5 mb-md-0" data-aos="fade-right">
+                    <img src="{{ pastorHeadshot }}" class="img-responsive rounded-md shadow-md" alt="{{ campusPastor.NickName }} {{ campusPastor.LastName }}">
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-8" data-aos="fade-left">
+                    <div class="ml-md-5">
+                        <h4 class="mb-4">
+                            {{ campusPastor.NickName }} {{ campusPastor.LastName }}
+                        </h4>
+                        <div class="lead leading-loose">
+                            {{ campusPastor | Attribute:'PersonalBio' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+    </div>
+
+{% endif %}

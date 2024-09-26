@@ -1,0 +1,147 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+
+<html >
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <!-- todo: delete after local dev is done -->
+    <!-- can use this to have less styles compuled automatically -->
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/working.css", true) %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+<span class="d-none js-page-title-text"><Rock:PageTitle ID="PageTitle" runat="server" /></span>
+
+    <form id="form1" runat="server">
+
+        <!-- Page Header -->
+        <header>
+
+            <div class="site-nav">
+                <!-- Top Nav Bar -->
+                <nav class="top-nav">
+                    <div class="container container-lg">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <Rock:Zone Name="Online" runat="server" />
+                            <Rock:Zone Name="Profile" runat="server" />
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Bottom Nav Bar -->
+                <Rock:Lava ID="MainNavBG" runat="server">
+                {% assign heroBgColor = CurrentPage | Attribute:'HeroSectionBGColor' %}
+                <nav class="main-nav" style="background-color: {{ heroBgColor }}">
+                </Rock:Lava>
+                    <div class="container container-lg">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="main-nav-left">
+                                <Rock:Zone Name="Brand" runat="server" />
+                            </div>
+                            <div class="main-nav-right d-flex align-items-center">
+                                <Rock:Zone Name="Navigation" runat="server" />
+                                <button class="navbar-toggle navbar-toggle-open" type="button" data-toggle="collapse"
+                                    data-target=".main-nav-collapse" data-label="navigation menu toggle">
+                                    <?xml version="1.0" encoding="UTF-8"?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 19" width="22" height="19">
+                                        <defs>
+                                            <style>.g{fill:#424343;}.h{fill:#5896ba;}</style>
+                                        </defs>
+                                        <g id="a"/>
+                                            <g id="b">
+                                                <g id="c">
+                                                    <rect id="d" class="h bar bar-three" x="0" y="16" width="14" height="3" rx="1" ry="1"/>
+                                                    <rect id="e" class="g bar bar-two" x="0" y="8" width="22" height="3" rx="1" ry="1"/>
+                                                    <rect id="f" class="g bar bar-one" x="0" y="0" width="22" height="3" rx="1" ry="1"/>
+                                                </g>
+                                            </g>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="collapse main-nav-collapse z-20">
+                            <button class="navbar-toggle navbar-toggle-close" type="button" data-toggle="collapse"
+                                data-target=".main-nav-collapse">
+                                <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2.91842 0.956194C2.37656 0.414342 1.49805 0.414342 0.956194 0.956194C0.414342 1.49805 0.414342 2.37656 0.956194 2.91842L11.5376 13.4998L0.956194 24.0812C0.414342 24.623 0.414342 25.5016 0.956194 26.0434C1.49805 26.5853 2.37656 26.5853 2.91842 26.0434L13.4998 15.462L24.0812 26.0434C24.623 26.5853 25.5016 26.5853 26.0434 26.0434C26.5853 25.5016 26.5853 24.623 26.0434 24.0812L15.462 13.4998L26.0434 2.91842C26.5853 2.37656 26.5853 1.49805 26.0434 0.956194C25.5016 0.414342 24.623 0.414342 24.0812 0.956194L13.4998 11.5376L2.91842 0.956194Z" fill="#0F172A"/>
+                                </svg>
+                            </button>
+
+                            <div class="sidebar-navigation-wrap">
+                                <Rock:Zone Name="Sidebar Navigation" runat="server" />
+                            </div>
+
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+
+        </header>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+	    <footer>
+
+            <Rock:Zone Name="Footer" runat="server" />
+
+
+            <Rock:Lava ID="themescripts" runat="server">
+                <script src="{{ "~~/Assets/Scripts/theme.js" | ResolveRockUrl }}" type="module"></script>
+            </Rock:Lava>
+	    </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+</body>
+
+</html>

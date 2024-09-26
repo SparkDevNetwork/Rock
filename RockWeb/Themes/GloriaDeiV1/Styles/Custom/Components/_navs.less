@@ -1,0 +1,96 @@
+// out:false
+
+// Table of Contents
+// 1. Nav Stacked
+// 2. Nav Tabs
+// 3. Nav Pills
+
+//-------------------------
+// 1. Nav Stacked
+//-------------------------
+
+.nav.nav-stacked {
+
+  & > li {
+    position: relative;
+
+    //&:not(.nav-heading)::before {
+    //  content: '';
+    //  position: absolute;
+    //  top: 0;
+    //  bottom: 0;
+    //  left: 0;
+    //  height: 100%;
+    //  width: 4px;
+    //  .rounded-sm();
+    //  background-color: @dolphin-gray;
+    //  .transition();
+    //}
+
+    //&:has(a:hover)::before {
+    //  width: 6px;
+    //}
+
+    &.nav-heading {
+      margin: 0;
+      padding: 10px 15px;
+      background-color: @nickel;
+      color: #fff;
+      .rounded-sm();
+    }
+
+    &.active {
+      background-color: @dolphin-gray;
+      color: #fff;
+      .rounded-sm();
+
+      a {
+        color: #fff;
+        pointer-events: none;
+      }
+    }
+
+    a {
+      background-color: transparent;
+      text-decoration: none;
+
+      &:hover {
+        background-color: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+
+//-------------------------
+// 2. Nav Tabs
+//-------------------------
+.nav.nav-tabs {
+  & > li {
+    a {
+      text-decoration: none;
+
+      &:hover {
+          text-decoration: none;
+      }
+    }
+  }
+}
+
+
+
+//-------------------------
+// 3. Nav Pills
+//-------------------------
+.nav.nav-pills {
+  & > li {
+    a {
+      text-decoration: none;
+
+      &:hover {
+          text-decoration: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,266 @@
+// Table of Contents
+// 1. Button base styles
+// 2. Button utilities
+// 3. Custom Buttons
+
+//-------------------------
+// 1. Button base styles
+//-------------------------
+.btn:not(.note-btn) {
+  // base styles
+  font-size: 24px;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 0;
+  border-width: 1px;
+  border-style: solid !important;
+
+  // sizes
+  &.btn-xs {
+    font-size: 16px;
+    padding: 4px 20px;
+  }
+
+  &.btn-sm {
+    font-size: 20px;
+    padding: 8px 24px;
+  }
+
+  &.btn-lg {
+    font-size: 28px;
+    padding: 14px 32px;
+  }
+
+  // styles
+  &.btn-primary {
+    background-color: @rocks-red;
+    border-color: @rocks-red;
+    color: @putty;
+
+    &:hover {
+      background-color: transparent;
+      border-color: @rocks-red;
+      color: @rocks-red;
+    }
+  }
+
+  &.btn-default {
+    background-color: @onyx;
+    border-color: @onyx;
+    color: @ultra-white;
+
+    &:hover {
+      background-color: transparent;
+      border-color: @onyx;
+      color: @onyx;
+    }
+
+    &.btn-light {
+      border-color: @ultra-white;
+      background-color: transparent;
+
+      &:hover {
+        background-color: @ultra-white;
+        color: @onyx;
+      }
+    }
+  }
+
+  &.btn-secondary {
+    position: relative;
+    border-color: @rocks-red;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    color: @onyx;
+    // overflow: hidden;
+
+    &:hover {
+      color: @onyx;
+    }
+
+    &.btn-light {
+      color: @ultra-white;
+
+      &:hover {
+        color: @ultra-white;
+      }
+    }
+
+    &::before,
+    &::after,
+    span::before,
+    span::after {
+      content: '';
+      position: absolute;
+      height: 1px;
+      width: 54%;
+      .transition();
+      background-color: @rocks-red;
+    }
+
+    &::before {
+      top: 0;
+      left: 0;
+    }
+
+    &::after {
+      bottom: 0;
+      left: 0;
+    }
+
+    span::before {
+      top: 0;
+      right: 0;
+    }
+
+    span::after {
+      bottom: 0;
+      right: 0;
+    }
+
+    &:hover&::before,
+    &:hover span::after {
+      width: 30%;
+    }
+
+    &:hover&::after,
+    &:hover span::before {
+      width: 20%;
+    }
+  }
+
+  &.btn-fancy,
+  .workflow-entry &.btn-primary {
+    background-color: @rocks-red;
+    border-color: @rocks-red;
+    color: @ultra-white;
+    .font-fancy();
+    font-weight: 400;
+
+    &:hover {
+      background-color: transparent;
+      border-color: @rocks-red;
+      color: @rocks-red;
+    }
+  }
+
+  &.btn-outline-white {
+    border-color: @ultra-white;
+    background-color: transparent;
+    color: @ultra-white;
+
+    &:hover {
+      border-color: @rocks-red;
+      background-color: @rocks-red;
+    }
+  }
+
+  &.btn-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 17px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+
+    @media (min-width: 992px) {
+      width: 88px;
+      height: 88px;
+      font-size: 35px;
+    }
+
+    &.btn-sm {
+      width: 48px;
+      height: 48px;
+
+      @media (min-width: 992px) {
+        width: 64px;
+        height: 64px;
+      }
+    }
+  }
+}
+
+
+
+//-------------------------
+// 2. Button utilities
+//-------------------------
+
+
+// Icon and text button spacing
+.btn span ~ i,
+.btn i ~ span {
+    margin-left: 0.5rem;
+}
+
+//-------------------------
+// 3. Custom Buttons
+//-------------------------
+.btn-give {
+  position: relative;
+  border-bottom: 0 !important;
+  display: inline-block;
+  // todo: replace
+  // .transition();
+  transition: all .3s ease;
+  z-index: 1;
+
+  span {
+    z-index: 1;
+    position: relative;
+  }
+
+  &::after,
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    // todo: replace
+    // .transition();
+    transition: all .3s ease;
+  }
+
+  &::after {
+    // todo: replace
+    // border: 1px solid @rocks-red;
+    border: 1px solid #e74724;
+  }
+
+  &::before {
+    // todo: replace
+    // background-color: @rocks-red;
+    background-color: #e74724;
+    transform: scaleX(0);
+    transform-origin: left;
+    z-index: -1;
+  }
+
+  &:hover,
+  &.hovered {
+    // todo: replace
+    // color: @ultra-white;
+    color: #ffffff !important;
+
+    &::before {
+      transform: scaleX(1);
+    }
+
+    span {
+      // todo: replace
+      // color: @ultra-white;
+      color: #ffffff !important;
+    }
+  }
+
+  &.paddingless::before,
+  &.paddingless::after {
+    left: -8px;
+    right: -8px;
+  }
+}

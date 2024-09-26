@@ -1,0 +1,96 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/CtaCards.lava' %} {% endcomment %}
+
+{% assign facebookUrl = 'Global' | Attribute:'FacebookUrl','RawValue' %}
+{% assign instagramUrl = 'Global' | Attribute:'InstagramUrl','RawValue' %}
+{% assign twitterUrl = 'Global' | Attribute:'TwitterUrl','RawValue' %}
+
+{%- capture needPrayer -%}
+    <div class="cta-card h-100 bg-invest" style="background-image:Url('')">
+        <div class="cta-card-body">
+            <i class="fa fa-comments cta-card-icon"></i>
+            <h3 class="cta-card-title">Need Prayer?</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="/prayer" class="btn btn-primary btn-light">Request Prayer</a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture dailyTools -%}
+    <div class="cta-card bg-invite h-100">
+        <div class="cta-card-body">
+            <i class="fa fa-bible cta-card-icon"></i>
+            <h3 class="cta-card-title">Daily Tools</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="/resources" class="btn btn-primary btn-light">View All Resources</a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture shareYourStory -%}
+    <div class="cta-card bg-invite h-100">
+        <div class="cta-card-body">
+            <i class="fa fa-book-open cta-card-icon"></i>
+            <h3 class="cta-card-title">Share Your Story</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="/shareyourstory" class="btn btn-primary btn-light">Share Your Story</a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture stayConnected -%}
+    <div class="cta-card bg-invite h-100">
+        <div class="cta-card-body">
+            <h3 class="cta-card-title">Stay Connected</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="{{ facebookUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-facebook"></i></a>
+            <a href="{{ instagramUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-twitter"></i></a>
+            <a href="{{ twitterUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-instagram"></i></a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture getApp -%}
+    <div class="cta-card bg-invite h-100">
+        <div class="cta-card-body">
+            <i class="fa fa-mobile cta-card-icon"></i>
+            <h3 class="cta-card-title">Get Our App</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="https://play.google.com/store/apps/details?id=org.venturechurch.app" target="_blank"><img src="/Themes/VentureV1/Assets/Images/google-play.png" alt="" width="150" height="49"></a>
+            <a href="https://apps.apple.com/us/app/id860827488?ign-mpt=uo%3D4" class="ml-2" target="_blank"><img src="/Themes/VentureV1/Assets/Images/apple-app-store.png" alt="" width="150" height="49"></a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+<div class="py-3"></div>
+<div class="py-3"></div>
+
+<div class="container container-lg">
+    <div class="row d-flex flex-wrap">
+        {% if CurrentPerson %}
+            <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+                {{ needPrayer }}
+            </div>
+            <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+                {{ shareYourStory }}
+            </div>
+            <div class="col-xs-12 col-sm-12 col-lg-4 mb-4" data-aos="fade-up">
+                {{ stayConnected }}
+            </div>
+        {% else %}
+            <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+                {{ needPrayer }}
+            </div>
+            <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+                {{ dailyTools }}
+            </div>
+            <div class="col-xs-12 col-sm-12 col-lg-4 mb-4" data-aos="fade-up">
+                {{ stayConnected }}
+            </div>
+        {% endif %}
+    </div>
+</div>

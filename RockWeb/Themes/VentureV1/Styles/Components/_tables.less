@@ -1,0 +1,27 @@
+table {
+  border: 1px solid #e6e6e6;
+
+  thead {
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  tr {
+    border-bottom: 1px solid #e6e6e6;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  th, td {
+    padding: 14px 24px;
+    font-weight: 400;
+    opacity: .8;
+  }
+
+  .panel > & {
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
+}

@@ -1,0 +1,92 @@
+// out:false
+
+.homepage-hero {
+  .img-wrap {
+    margin-right: 40px;
+    margin-left: 64px;
+
+    @media (min-width: 1200px) {
+      margin-right: 100px;
+    }
+  }
+
+  .animated-heading {
+    text-align: center;
+
+    @media (min-width: 992px) {
+      text-align: left;
+    }
+
+    @media (max-width: 991px) {
+      margin-bottom: 90px;
+    }
+
+    @media (max-width: 767px) {
+      margin-bottom: 80px;
+    }
+
+    h1 {
+      margin: 0;
+
+      &.display {
+        @media (min-width: 992px) and (max-width: 1199px) {
+          font-size: 48px;
+        }
+
+        @media (min-width: 1200px) and (max-width: 1499px) {
+          font-size: 64px;
+        }
+      }
+    }
+
+    .animated {
+      position: relative;
+
+      h1 {
+        display: inline-block;
+        padding: 12px 20px;
+        background-color: #1864EA;
+        border-radius: 999px;
+        margin-top: 4px;
+        white-space: nowrap;
+
+        @media (min-width: 1200px) {
+          padding: 16px 40px;
+        }
+      }
+
+      @media (max-width: 991px) {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      @media (min-width: 992px) {
+        margin-left: -20px;
+      }
+
+      @media (min-width: 1200px) {
+        margin-left: -40px;
+      }
+    }
+  }
+}
+
+@keyframes grow {
+  from {
+    width: 0;
+  }
+
+  15% {
+    width: 120%;
+  }
+
+  85% {
+    width: 120%;
+  }
+
+  to {
+    width: 0;
+  }
+}

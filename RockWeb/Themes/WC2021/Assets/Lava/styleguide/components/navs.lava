@@ -1,0 +1,58 @@
+/- {% include '~~/Assets/Lava/styleguide/components/tabs.lava' %} -/
+
+{% assign tabTypes = 'nav-wc-tabs,nav-tabs,nav-pills,nav-pills nav-stacked,nav-tabs nav-justified' | Split:',' %}
+
+<h1>Navs</h1>
+
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#wcstacked">wc-stacked</a></li>
+    {% for type in tabTypes %}
+        <li>
+            <a href="#{{ type }}">{{ type }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
+{% capture codeOutput %}
+<ul class="nav nav-wc nav-stacked">
+    <li class="nav-item"><a href="/my"><i class="fa fa-user-circle"></i>My Details</a></li>
+    <li class="nav-item active"><a href="/my/notifications"><i class="fa fa-bell"></i>Notifications</a></li>
+    <li class="nav-item"><a href="/my/schedule"><i class="fa fa-hands-helping"></i>My Volunteer Schedule</a></li>
+    <li class="nav-item"><a href="/my/favorites"><i class="fa fa-star"></i>My Favorites</a></li>
+    <li class="nav-item"><a href="/my/events"><i class="fa fa-calendar-day"></i>My Events</a></li>
+    <li class="nav-item"><a href="/my/groups"><i class="fa fa-users"></i>My Groups</a></li>
+    <li class="nav-item"><a href="/logout"><i class="fa fa-sign-out-alt"></i>Log Out</a></li>
+</ul>
+{% endcapture %}
+
+<div class="card mb-4" id="wcstacked">
+    <div class="card-header">
+        <h4 class="m-0">Willow Stacked Nav</h4>
+    </div>
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{% for type in tabTypes %}
+    <div class="card mb-4" id="{{ type }}">
+        <div class="card-header">
+            <h4 class="m-0">{{ type | Default:'nav' }}</h4>
+        </div>
+        {%- capture codeOutput -%}
+        <ul class="nav {{ type }}">
+            <li role="presentation" class="active"><a href="#">Home</a></li>
+            <li role="presentation"><a href="#">Profile</a></li>
+            <li role="presentation"><a href="#">Messages</a></li>
+        </ul>
+        {%- endcapture -%}
+        <div class="card-body">{{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+{% endfor %}

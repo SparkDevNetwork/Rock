@@ -1,0 +1,32 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/MyAccount/PublicProfile.lava' %} {% endcomment %}
+
+{% comment %}
+    Available Lava Fields:
+
+    ViewOnly - If this is true, the Edit button should not be visible
+    CurrentPerson - The Person that we are viewing (and the person that is logged in)
+    Family - (Rock.Model.Group) The family that is currently selected (the person could be in multiple families)
+    ShowFamilyMembers - If this is true, family members should be listed
+    FamilyMembers -  (List of Rock.Model.GroupMember) The family members (of the selected family), not including the currentperson
+    Families = (List of Rock.Model.Group) The families that this person is in
+
+    AddressTypeValueId - (DefinedValueCache Id) The address type defined value Id that is displayed
+    Address = (Rock.Model.GroupLocation) The address to be displayed
+
+    ShowPhoneNumbers - If this is true, phone numbers should be shown
+    DisplayedPhoneTypeValueIds - (List of DefinedValueCache Ids) - The Phone Type defined values ids that should be shown
+    PhoneNumbers (List of Rock.Model.PhoneNumber)) - The phone numbers that can be displayed
+
+    RequestChangesPageUrl - The URL to use when they press the Request Changes button
+    RequestChangesText - The text to shown on the Request Changes button
+
+    FamilyAttributes - (List of AttributeCache) - The family attributes that should be displayed
+    PersonAttributesAdults - (List of AttributeCache) - The person attributes that should be displayed for Adults
+    PersonAttributesChildren - (List of AttributeCache) - The person attributes that should be displayed for Children
+{% endcomment %}
+{%- assign childRoleGuid = 'c8b1814f-6aa7-4055-b2d7-48fe20429cb9' -%}
+{%- assign familyCount = Families | Size -%}
+
+
+{% include '~~/Assets/Lava/Custom/MyAccount/ProfileCard.lava' %}
+{% include '~~/Assets/Lava/Custom/MyAccount/UserDashboard.lava', familyCount:familyCount %}

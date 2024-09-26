@@ -1,0 +1,32 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_LatestMessage.lava' %} {% endcomment %}
+
+<div class="homepage-latest-message-bg">
+
+    //- mobile: 144px
+    //- desktop: 208px
+    <div class="py-5"></div>
+    <div class="py-4"></div>
+    <div class="py-md-3"></div>
+    <div class="py-md-3"></div>
+
+    <div class="container">
+        <h3 class="text-center text-white mb-2 mb-md-4 pb-md-3 o-80">
+            LIVE IN 01 : 01 : 02 : 50
+        </h3>
+        <h4 class="display text-center text-white mb-3 pb-3 pb-md-0">WATCH OUR<br>LATEST MESSAGE</h4>
+        <div class="text-center">
+            <a href="#" class="btn btn-lg btn-white">Watch Now</a>
+            <a href="#" class="btn btn-lg btn-outline-white">See All Messages</a>
+        </div>
+
+        <div class="row d-flex justify-content-center">
+            <div class="col-xs-12 col-sm-12 col-md-11 col-lg-9 mt-5 pt-2 pt-md-4">
+                <a href="#" class="backdrop backdrop-left backdrop-light rounded-md d-block">
+                    <img src="/Themes/ArkV1/Assets/Images/the-things-that-steal-your-peace.png" alt="" class="img-responsive w-100">
+                    <i class="fa fa-play text-white play-icon"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="bottom-bg"></div>
+</div>

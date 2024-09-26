@@ -1,0 +1,26 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Components/PageTransition.lava' startingbg:'#ffffff' endingbg:'gold' book:'true' %} {% endcomment %}
+
+{% assign randomId = 99999999 | RandomNumber %}
+
+{% if startingbg and startingbg != empty %}
+{% else %}
+    {% assign startingbg = '#f4f4f1' %}
+{% endif %}
+
+<div class="position-relative page-transition-curve">
+    <div class="position-absolute top-0 right-0 left-0 z-10 page-transition-curve-inner" style="clip-path:url(#mask-curve-{{ randomId }}); background-color: {{ startingbg }};">
+        <svg height="0" width="0">
+            <defs>
+                <clipPath id="mask-curve-{{ randomId }}"  clipPathUnits="objectBoundingBox">
+                    <path d="M 0,0 H 1, V .4, Q 0.50 0.85 0 .4"></path>
+                </clipPath>
+            </defs>
+        </svg>
+
+    </div>
+    {% if book and book == 'true' %}
+        <svg width="303" height="54" viewBox="0 0 303 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="page-dip">
+            <path d="M151.84 53.481C151.84 53.481 165.777 1.73138 303 -6.10352e-05L0.661647 -3.46039e-05C137.904 1.73139 151.84 53.481 151.84 53.481Z" fill="{{ startingbg }}"/>
+        </svg>
+    {% endif %}
+</div>

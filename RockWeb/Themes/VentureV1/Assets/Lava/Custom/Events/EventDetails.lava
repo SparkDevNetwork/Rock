@@ -1,0 +1,85 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Events/EventDetails.lava' %} {% endcomment %}
+
+{% assign eventId = PageParameter.EventId | AsInteger %}
+
+{% if CurrentPerson %}
+    <script>
+        var currentPersonCampusId = {{ CurrentPerson.PrimaryCampusId }};
+        // on load check if currentPersonCampusId is set
+        window.onload = function() {
+            if (currentPersonCampusId) {
+                // find .js-filter-item with data-campus-id that matches currentPersonCampusId and move it to the top of the list
+                // using vanilla JS
+                var filterItems = document.querySelectorAll('.js-filter-item');
+                for (var i = 0; i < filterItems.length; i++) {
+                    if (filterItems[i].dataset.campusId == currentPersonCampusId) {
+                        // var parent = filterItems[i].parentNode;
+                        // parent.insertBefore(filterItems[i], parent.firstChild);
+
+                        // add a star to the end of the card-title
+                        var cardTitle = filterItems[i].querySelector('.card-title');
+                        cardTitle.innerHTML = cardTitle.innerHTML + ' <i class="fa fa-star js-my-campus" data-toggle="tooltip" title="Your Campus"></i>';
+                    } else {
+                        // remove the star from the end of the card-title
+                        var cardTitle = filterItems[i].querySelector('.card-title');
+                        var star = cardTitle.querySelector('.js-my-campus');
+                        if (star) {
+                            star.parentNode.removeChild(star);
+                        }
+                    }
+                }
+                // reinitialize tooltips
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        }
+    </script>
+{% endif %}
+
+{% stylesheet id:'eventDetails' compile:'less' %}
+    .card-event {
+        .card-body {
+            i.fa {
+                width: 16px;
+                text-align: center;
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% if eventId > 0 %}
+    {% assign showEvent = false %}
+    {% eventitem where:'Id == {{ eventId }} && IsActive == true && IsApproved == true' include:'EventCalendarItems' iterator:'Events' securityenabled:'false' %}
+
+        {% assign eventItem = Events | First %}
+
+        {% if eventItem %}
+
+            {% assign eventCalendarItems = eventItem.EventCalendarItems | Map:'EventCalendarId' %}
+
+            {% for number in eventCalendarItems %}
+                {% if number == '1' %}
+                    {% assign showEvent = true %}
+                {% endif %}
+            {% endfor %}
+
+            {% if showEvent %}
+
+                {% assign featuredEvent = eventItem | Attribute:'FeaturedEvent','Object' %}
+
+                {% if featuredEvent and featuredEvent != empty %}
+                    {% include '~~/Assets/Lava/Custom/Events/EventDetailsFeatured.lava', featuredEvent:featuredEvent, eventItem:eventItem %}
+                {% else %}
+                    {% include '~~/Assets/Lava/Custom/Events/EventDetailsDefault.lava', eventItem:eventItem %}
+                {% endif %}
+
+            {% else %}
+                {{ 'noindex' | AddMetaTagToHead:'name','robots' }}
+                <section class="page-section">
+                    <div class="alert alert-info"><strong>404</strong> No Event Found</div>
+                </section>
+            {% endif  %}
+
+        {% endif %}
+    {% endeventitem %}
+
+{% endif %}

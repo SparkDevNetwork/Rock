@@ -1,0 +1,43 @@
+{% assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h5' %}
+
+<div class="row d-flex flex-wrap">
+    {% for item in Items %}
+        {% assign campus = item | Attribute:'Campus' %}
+
+        {% if campus == empty or campus == null or campus == Context.Campus.Name %}
+            {% assign imageGuid = item | Attribute:'Image','RawValue' %}
+            {% assign imageUrl = '/GetImage.ashx?Guid=' | Append:imageGuid | Append:'&w=800&h=450&mode=crop' %}
+            {% assign url = item | Attribute:'Url','RawValue' %}
+            {% assign newTab = item | Attribute:'NewTab' %}
+            {% assign linkText = item | Attribute:'LinkText' | Default:'Learn More' %}
+            {% assign linkTwoUrl = item | Attribute:'LinkTwoUrl','RawValue' %}
+            {% assign linkTwoNewTab = item | Attribute:'LinkTwoNewTab' %}
+            {% assign linkTwoText = item | Attribute:'LinkTwoText' | Default:'Learn More' %}
+            {% assign accentColor = item | Attribute:'AccentColor' | Default:'goldcreek' %}
+
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                <div class="card {% if url and url != empty %}card-linked{% endif %} h-100">
+                    {% if imageGuid != '' %}
+                        <img alt="{{ item.Title }}" src="{{ imageUrl }}" class="card-img-top img-responsive">
+                    {% endif %}
+                    <div class="card-body panel-body">
+                        <{{ channelTitleSize }} class="card-title">{{ item.Title }}</{{ channelTitleSize }}>
+                        {{ item.Content }}
+                    </div>
+                    {% if url != empty or linkTwoUrl != empty %}
+                        <div class="card-footer">
+                            {% if url and url != empty %}
+                                <a href="{{ url }}" {% if newTab and newTab == 'Yes' %}target="_blank"{% endif %} class="btn{% if linkTwoUrl and linkTwoUrl != empty %} btn-primary btn-{{ accentColor }} {% else %} btn-default btn-{{ accentColor }} {% endif %} stretched-link">{{ linkText }}</a>
+                            {% endif %}
+
+                            {% if linkTwoUrl and linkTwoUrl != empty %}
+                                <a href="{{ linkTwoUrl }}" {% if linkTwoNewTab and linkTwoNewTab == 'Yes' %}target="_blank"{% endif %} class="btn btn-default btn-{{ accentColor }} position-relative z-10">{{ linkTwoText }}</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+    {% endfor %}
+</div>

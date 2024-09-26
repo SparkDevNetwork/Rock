@@ -1,0 +1,186 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<section%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html >
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <!-- AOS JS Styles -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <%-- todo: for dev purposes. Remove when dev phase finished --%>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/working.css", true) %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+
+        <!-- Page Header -->
+        <Rock:Lava ID="announcementheader" runat="server">
+            {% include '/Themes/RedRocksV1/Assets/Lava/Custom/Global/AnnouncementHeader.lava' %}
+        </Rock:Lava>
+
+        <Rock:Lava ID="headerBackground" runat="server">
+        {% assign darkPrimaryNavigation = CurrentPage | Attribute:'DarkPrimaryNavigation' | AsBoolean %}
+
+        <header class="site-header js-site-header{% if darkPrimaryNavigation %} bg-dark{% endif %}">
+        </Rock:Lava>
+
+            <nav class="site-nav position-relative">
+
+                <div class="brand">
+                    <Rock:Lava ID="navbarbrand" runat="server">
+                        {% include '/Themes/RedRocksV1/Assets/Lava/Custom/Global/NavbarBrand.lava' %}
+                    </Rock:Lava>
+                </div>
+
+                <div class="primary-navigation">
+                    <Rock:Zone Name="PrimaryNavigation" runat="server" />
+                </div>
+
+                <div class="secondary-navigation">
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".site-nav .collapse">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                </div>
+
+                <div class="hamburger-menu collapse">
+                    <!-- Main Navigation -->
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".site-nav .collapse">
+                        <svg width="41" height="39" viewBox="0 0 41 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24.0786 19.5L23.968 19.4046L41 3.49633L37.7611 0L20.4921 16.1467L3.23892 0L0 3.49633L17.0162 19.4046L16.9214 19.5L17.0162 19.5954L0 35.5037L3.23892 39L20.4921 22.8533L37.7611 39L41 35.5037L23.9838 19.5954L24.0786 19.5Z" fill="#353535"/>
+                        </svg>
+                    </button>
+                    <Rock:Zone Name="HamburgerMenu" runat="server" />
+                </div>
+
+            </nav>
+
+        </header>
+
+        <Rock:Lava ID="subnavigation" runat="server">
+            {% assign subNavigationItems = CurrentPage | Attribute:'SubNavigationItems' %}
+            {% assign showHero = CurrentPage | Attribute:'ShowHero' | AsBoolean %}
+
+            {% if subNavigationItems and subNavigationItems != empty %}
+                <section id="primary-subnavigation" class="d-none d-md-block bg-white">
+                    {% include '/Themes/RedRocksV1/Assets/Lava/Custom/Global/SubNavigation.lava' %}
+                </section>
+            {% endif %}
+
+            {% if showHero %}
+                {% include '/Themes/RedRocksV1/Assets/Lava/Custom/Global/SiteHero.lava' %}
+            {% endif %}
+        </Rock:Lava>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+	    <footer>
+            <Rock:Zone Name="Footer" runat="server" />
+	    </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+    <script>
+        Sys.Application.add_load(HandleBackForwardCache);
+
+        // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+        function HandleBackForwardCache() {
+            // Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+            // Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
+            // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+            // (https://bugs.webkit.org/show_bug.cgi?id=156356)
+            window.addEventListener('pageshow', function (e) {
+                if ( e.persisted ) {
+                    document.querySelector('#updateProgress').style.display = 'none';
+                    // Check if the page is in postback, and if so, reset the PageRequestManager state.
+                    if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+                        // Reset the PageRequestManager state. & Manually clear the request object
+                        Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+                        Sys.WebForms.PageRequestManager.getInstance()._request = null;
+                    }
+                }
+            });
+        }
+
+    </script>
+
+    <!-- AOS JS Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            // Global settings:
+            disable: false, // accepts following values: 'phone', 'tablet', 'mobile', boolean, expression or function
+            startEvent: 'DOMContentLoaded', // name of the event dispatched on the document, that AOS should initialize on
+            initClassName: 'aos-init', // class applied after initialization
+            animatedClassName: 'aos-animate', // class applied on animation
+            useClassNames: false, // if true, will add content of `data-aos` as classes on scroll
+            disableMutationObserver: false, // disables automatic mutations' detections (advanced)
+            debounceDelay: 50, // the delay on debounce used while resizing window (advanced)
+            throttleDelay: 99, // the delay on throttle used while scrolling the page (advanced)
+
+
+            // Settings that can be overridden on per-element basis, by `data-aos-*` attributes:
+            offset: 120, // offset (in px) from the original trigger point
+            delay: 100, // values from 0 to 3000, with step 50ms
+            duration: 600, // values from 0 to 3000, with step 50ms
+            easing: 'ease', // default easing for AOS animations
+            once: true, // whether animation should happen only once - while scrolling down
+            mirror: false, // whether elements should animate out while scrolling past them
+            anchorPlacement: 'top-bottom', // defines which position of the element regarding to window should trigger the animation
+        });
+    </script>
+
+    <!-- WIP Scripts -->
+    <script defer src="/Themes/RedRocksV1/Assets/Scripts/Working.js"></script>
+
+</body>
+
+</html>

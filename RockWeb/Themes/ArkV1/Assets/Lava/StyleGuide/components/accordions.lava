@@ -1,0 +1,58 @@
+/- {% include '~~/Assets/Lava/styleguide/components/accordion.lava' %} -/
+<h1 class="mb-4">Accordions</h1>
+
+<div class="card mb-4" id="accordion">
+    <div class="card-header">
+        <h4 class="m-0">Accordion</h4>
+    </div>
+{%- capture codeOutput -%}
+{[ accordion paneltype:'accordion' ]}
+
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+
+{[ endaccordion ]}
+{%- endcapture -%}
+{%- capture codeOutputCode -%}{% raw %}{[ accordion paneltype:'accordion' ]}
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}{% endraw %}
+{%- endcapture -%}
+
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutputCode | Escape }}</code></pre>
+        </div>
+</div>
+
+
+
+</div>
+
+

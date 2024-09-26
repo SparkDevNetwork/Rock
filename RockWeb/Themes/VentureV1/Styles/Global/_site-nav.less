@@ -1,0 +1,262 @@
+.site-nav {
+
+  // upper nav bar (light gray)
+  .top-nav {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+    display: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .05);
+
+    @media (min-width: 768px) {
+      display: block;
+    }
+  }
+
+  // lower & mobile nav bar (white + sidebar)
+  .main-nav {
+    padding: 15px 0;
+
+    @media(min-width: 768px) {
+      padding: 30px 0;
+    }
+
+    @media(max-width: 767px) {
+      background-color: @venture-onyx !important;
+    }
+
+    .sidebar-navigation-wrap {
+      overflow-y: auto;
+      width: 100%;
+    }
+
+    .navbar-toggle {
+      display: block !important;
+      margin: 0;
+      float: none;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+
+      .bar {
+        @media (max-width: 768px) {
+          fill: #ffffff;
+        }
+
+        &-three {
+          .transition();
+        }
+      }
+
+      &-open {
+        &:hover {
+          .bar-three {
+            width: 22px;
+          }
+        }
+      }
+
+      &-close {
+        margin-bottom: 55px;
+      }
+    }
+
+    &-primary {
+      display: none;
+      margin-right: 12px;
+      text-align: right;
+
+      ul {
+        list-style: none;
+        margin-block-start: 0;
+        margin-block-end: 0;
+        padding-inline-start: 0;
+        margin: 0 24px;
+        display: inline-block;
+      }
+
+      li {
+        display: inline-block;
+        margin-right: 16px;
+        text-transform: uppercase;
+
+        &:last-child {
+          margin-right: 0px;
+        }
+      }
+
+      @media (min-width: 768px) {
+        display: block;
+      }
+
+      @media (min-width: 1200px) {
+        li {
+          margin-right: 40px;
+        }
+      }
+    }
+
+
+
+    &-collapse {
+      background-color: @venture-light-gray;
+      padding: 15px 24px;
+      height: 100vh;
+      max-height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 100%;
+      .transition();
+      width: 91%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      z-index: 10;
+
+      @media (min-width: 768px){
+        width: 391px;
+      }
+
+      &.in {
+        transform: translateX(-100%);
+      }
+
+      .page-menu {
+        float: none;
+      }
+
+      .main-nav-sidebar {
+        ul {
+          list-style: none;
+          margin-block-start: 0;
+          margin-block-end: 0;
+          padding-inline-start: 0;
+          margin-bottom: 62px;
+        }
+
+        li {
+          margin-bottom: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+
+          a {
+            color: #000000;
+          }
+
+          &:first-child {
+            font-weight: 700;
+            text-decoration: underline;
+          }
+        }
+
+      }
+    }
+  }
+
+  // church online
+  .church-online {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: right;
+
+    @media (max-width: 767px) {
+      margin-right: 13px;
+    }
+
+    @media (min-width: 768px) {
+      text-align: left;
+    }
+
+    &-heading {
+      color: #ffffff;
+      display: block;
+
+      @media (min-width: 768px) {
+        color: inherit;
+        display: inline-block;
+      }
+    }
+
+    &-indicator {
+      font-size: 10px;
+      color: @brand-info;
+      display: inline-block;
+      animation: 3s infinite normal liveNowPulse;
+
+      @media (min-width: 768px){
+        animation: 3s infinite normal liveNowPulse;
+      }
+    }
+
+    @keyframes liveNowPulse {
+      from {
+        opacity: .3;
+      }
+
+      15% {
+        opacity: 1;
+      }
+      30% {
+        opacity: .3;
+      }
+      45% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      to {
+        opacity: .3;
+      }
+    }
+
+    @keyframes liveNowPulseDesktop {
+      from {
+        text-shadow: 0px 0px 0px lighten(@brand-info,35%);
+        transform: scale(1);
+        color: lighten(@brand-info,15%);
+      }
+
+      75% {
+        text-shadow: 0px 0px 10px lighten(@brand-info, 15%);
+        transform: scale(1.03);
+        color: lighten(@brand-info,0%);
+      }
+
+      to {
+        text-shadow: 0px 0px 0px lighten(@brand-info,35%);
+        transform: scale(1);
+        color: lighten(@brand-info,15%);
+
+      }
+    }
+  }
+
+  .profile-nav {
+    display: flex;
+    align-items: center;
+
+    .contact-us, .dropdown-toggle {
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+
+    .search, .user-icon {
+      font-size: 20px;
+    }
+
+    .user-img {
+      width: 25px;
+      height: 25px;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 999px;
+      margin-right: 4px;
+    }
+  }
+}

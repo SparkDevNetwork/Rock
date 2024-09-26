@@ -1,0 +1,506 @@
+.btn:not(.note-btn) {
+  .transition();
+  border-radius: 999px;
+  width: 100%;
+  padding: 6px 16px;
+  font-weight: 400;
+  border-width: 2px;
+
+  & + & {
+    margin-top: 12px;
+    margin-left: 0;
+  }
+
+  @media (min-width: 768px) {
+    width: unset;
+
+    & + & {
+      margin-top: 0;
+      margin-left: 8px;
+    }
+  }
+
+  .btn-group & {
+    +.btn {
+      margin-left: 0;
+    }
+  }
+
+  &.btn-sm {
+    padding: 4px 12px;
+  }
+
+  &.btn-lg {
+    padding: 8px 24px;
+  }
+
+  &.btn-primary {
+    background-color: @theme-1;
+    border-color: @theme-1;
+    color: #fff;
+
+    &:hover {
+      background-color: mix(#000000, @theme-1, 10%);
+      border-color: mix(#000000, @theme-1, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @theme-1, 10%);
+      border-color: mix(#ffffff, @theme-1, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @theme-1, 40%);
+      border-color: mix(#000000, @theme-1, 40%);
+    }
+  }
+
+  &.btn-dark {
+    background-color: @gray-darker;
+    border-color: @gray-darker;
+    color: #fff;
+
+    &:hover {
+      background-color: mix(#000000, @gray-darker, 10%);
+      border-color: mix(#000000, @gray-darker, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @gray-darker, 10%);
+      border-color: mix(#ffffff, @gray-darker, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @gray-darker, 40%);
+      border-color: mix(#000000, @gray-darker, 40%);
+    }
+  }
+
+  &.btn-outline-dark {
+    background-color: transparent;
+    border-color: @gray-darker;
+    color: @gray-darker;
+
+    &:hover {
+      background-color: mix(#000000, @gray-darker, 10%);
+      border-color: mix(#000000, @gray-darker, 10%);
+      color: #fff;
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @gray-darker, 10%);
+      border-color: mix(#ffffff, @gray-darker, 10%);
+      color: #fff;
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @gray-darker, 40%);
+      border-color: mix(#000000, @gray-darker, 40%);
+      color: #fff;
+    }
+  }
+
+  &.btn-default, &.btn-outline-primary {
+    background-color: transparent;
+    border-color: @theme-1;
+    color: @theme-1;
+
+    &:hover {
+      background-color: @theme-1;
+      color: #fff
+    }
+
+    // mousedown
+    &:active {
+      background-color: transparent;
+      border-color: @theme-1;
+    }
+
+    &.active {
+      background-color: @theme-1;
+      border-color: @theme-1;
+      color: #fff;
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      border-color: #000000;
+    }
+  }
+
+  &.btn-white {
+    background-color: #fff;
+    border-color: #E9EAE8;
+    color: @text-color;
+
+    &:hover {
+      background-color: mix( @theme-1, #fff, 10%);
+      border-color: mix( @theme-1, #E9EAE8, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, #fff, 10%);
+      border-color: mix(#ffffff, #E9EAE8, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, #fff, 20%);
+      border-color: mix(#000000, #E9EAE8, 20%);
+    }
+  }
+
+  &.btn-outline-white {
+    background-color: transparent;
+    border-color: #fff;
+    color: #fff;
+
+    &:hover {
+      background-color: #fff;
+      border-color: #fff;
+      color: @theme-1;
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, #fff, 10%);
+      border-color: mix(#ffffff, #fff, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, #fff, 20%);
+      border-color: mix(#000000, #fff, 20%);
+    }
+  }
+
+  &.btn-success {
+    background-color: @brand-success;
+    border-color: @brand-success;
+    color: #fff;
+
+    &:hover {
+      background-color: mix(#000000, @brand-success, 10%);
+      border-color: mix(#000000, @brand-success, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-success, 10%);
+      border-color: mix(#ffffff, @brand-success, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-success, 40%);
+      border-color: mix(#000000, @brand-success, 40%);
+    }
+  }
+
+
+  &.btn-outline-success {
+    background-color: transparent;
+    border-color: @brand-success;
+    color: @brand-success;
+
+    &:hover {
+      background-color: mix(#000000, @brand-success, 10%);
+      border-color: mix(#000000, @brand-success, 10%);
+      color: #fff;
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-success, 10%);
+      border-color: mix(#ffffff, @brand-success, 10%);
+      color: #fff;
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-success, 40%);
+      border-color: mix(#000000, @brand-success, 40%);
+      color: #fff;
+    }
+  }
+
+  &.btn-info {
+    background-color: @brand-info;
+    border-color: @brand-info;
+    color: #fff;
+
+    &:hover {
+      background-color: mix(#000000, @brand-info, 10%);
+      border-color: mix(#000000, @brand-info, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-info, 10%);
+      border-color: mix(#ffffff, @brand-info, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-info, 40%);
+      border-color: mix(#000000, @brand-info, 40%);
+    }
+  }
+
+  &.btn-outline-info {
+    background-color: transparent;
+    border-color: @brand-info;
+    color: @brand-info;
+
+    &:hover {
+      background-color: mix(#000000, @brand-info, 10%);
+      border-color: mix(#000000, @brand-info, 10%);
+      color: #fff;
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-info, 10%);
+      border-color: mix(#ffffff, @brand-info, 10%);
+      color: #fff;
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-info, 40%);
+      border-color: mix(#000000, @brand-info, 40%);
+      color: #fff;
+    }
+  }
+
+  &.btn-warning {
+    background-color: @brand-warning;
+    border-color: @brand-warning;
+    color: #fff;
+
+    &:hover {
+      background-color: mix(#000000, @brand-warning, 10%);
+      border-color: mix(#000000, @brand-warning, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-warning, 10%);
+      border-color: mix(#ffffff, @brand-warning, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-warning, 40%);
+      border-color: mix(#000000, @brand-warning, 40%);
+    }
+  }
+
+  &.btn-outline-warning {
+    background-color: transparent;
+    border-color: @brand-warning;
+    color: @brand-warning;
+
+    &:hover {
+      background-color: mix(#000000, @brand-warning, 10%);
+      border-color: mix(#000000, @brand-warning, 10%);
+      color: #fff;
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-warning, 10%);
+      border-color: mix(#ffffff, @brand-warning, 10%);
+      color: #fff;
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-warning, 40%);
+      border-color: mix(#000000, @brand-warning, 40%);
+      color: #fff;
+    }
+  }
+
+  &.btn-danger {
+    background-color: @brand-danger;
+    border-color: @brand-danger;
+    color: #fff;
+
+    &:hover {
+      background-color: mix(#000000, @brand-danger, 10%);
+      border-color: mix(#000000, @brand-danger, 10%);
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-danger, 10%);
+      border-color: mix(#ffffff, @brand-danger, 10%);
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-danger, 40%);
+      border-color: mix(#000000, @brand-danger, 40%);
+    }
+  }
+
+  &.btn-outline-danger {
+    background-color: transparent;
+    border-color: @brand-danger;
+    color: @brand-danger;
+
+    &:hover {
+      background-color: mix(#000000, @brand-danger, 10%);
+      border-color: mix(#000000, @brand-danger, 10%);
+      color: #fff;
+    }
+
+    // mousedown
+    &:active {
+      background-color: mix(#ffffff, @brand-danger, 10%);
+      border-color: mix(#ffffff, @brand-danger, 10%);
+      color: #fff;
+    }
+
+    // focus within (tab)
+    &:focus-visible {
+      background-color: mix(#000000, @brand-danger, 40%);
+      border-color: mix(#000000, @brand-danger, 40%);
+      color: #fff;
+    }
+  }
+
+  &.disabled {
+    background-color: #F5F5F5 !important;
+    border-color: #F5F5F5 !important;
+    color: #C2C2C2 !important;
+  }
+}
+
+.text-link {
+  text-decoration: underline;
+
+  &.text-white {
+    &:hover {
+      color: darken(#fff, 10%) !important;
+    }
+  }
+}
+
+
+
+.icon-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border-width: 1px;
+  border-style: solid;
+
+  & + & {
+    margin-left: 8px;
+  }
+
+  .icon-primary {
+    font-size: 24px;
+  }
+
+  .icon-secondary {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    font-size: 12px;
+    font-weight: 900;
+    border-radius: 999px;
+  }
+
+  &.active {
+    background-color: @theme-1;
+    border-color: @theme-1;
+    color: #fff;
+
+    .icon-secondary {
+      &.active {
+        background-color: @gray-darker;
+        color: #fff;
+      }
+
+      &.inactive {
+        background-color: mix(#fff, @gray-darker, 75%);
+        color: #fff;
+      }
+    }
+  }
+
+  &.inactive {
+    background-color: #F1F2F4;
+    color: #B8BBC3;
+
+    .icon-secondary {
+      &.active {
+        background-color: @theme-1;
+        color: #fff;
+      }
+
+      &.inactive {
+        background-color: mix(#fff, @gray-darker, 75%);
+        color: #fff;
+      }
+    }
+  }
+
+  &.dark {
+    background-color: @gray-darker;
+    color: #fff;
+
+    .icon-secondary {
+      &.active {
+        background-color: @theme-1;
+        color: #fff;
+      }
+
+      &.inactive {
+        background-color: mix(#fff, @gray-darker, 75%);
+        color: #fff;
+      }
+    }
+  }
+
+  &.light {
+    background-color: #fff;
+    color: @gray-darker;
+    border-color: #fff;
+
+    .icon-secondary {
+      &.active {
+        background-color: @theme-1;
+        color: #fff;
+      }
+
+      &.inactive {
+        background-color: mix(#fff, @gray-darker, 75%);
+        color: #fff;
+      }
+    }
+  }
+}

@@ -1,0 +1,247 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Swiper Section {% endcomment %}
+
+{% capture swiper %}
+<div class="px-5 overflow-hidden">
+    <div class="px-4">
+        {[ swiper spacebetween:'30' shownavigation:'true' showpagination:'false' slidesperview:'1' ]}
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+        {[ endswiper ]}
+    </div>
+</div>
+
+{% endcapture %}
+
+{% capture swiperRaw %}
+{% raw %}<div class="px-5 overflow-hidden">
+    <div class="px-4">
+        {[ swiper spacebetween:'30' shownavigation:'true' showpagination:'false' slidesperview:'1' ]}
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+        {[ endswiper ]}
+    </div>
+</div>{% endraw %}
+{% endcapture %}
+
+
+{% capture swiperEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Default Swiper</blockquote>
+    {{ swiper | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture swiperRawEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Default Swiper</blockquote>
+    {{ swiperRaw | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Swiper Section Two {% endcomment %}
+
+{% capture primarySwiper %}
+<div class="position-relative">
+    {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-2|16' ]}
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+    {[ endswiper ]}
+</div>
+
+{% endcapture %}
+
+{% capture primarySwiperRaw %}
+{% raw %}<div class="position-relative">
+    {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-2|16' ]}
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="special-card hide-buttons-mobile" style="background-image:url(https://via.placeholder.com/850x400);">
+                <div class="special-card-content">
+                    <div class="special-card-details text-white">
+                        <span class="d-block special-card-subheading">Dec 25 ⬥ 9:00 AM</span>
+                        <h4 class="special-card-heading">Christmas at Venture</h4>
+                    </div>
+                    <div class="special-card-actions">
+                        <a href="#" class="btn btn-primary btn-opaque">View Details</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+    {[ endswiper ]}
+</div>{% endraw %}
+
+{% endcapture %}
+
+
+{% capture primarySwiperEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Primary Swiper</blockquote>
+    {{ primarySwiper | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture primarySwiperRawEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Primary Swiper</blockquote>
+    {{ primarySwiperRaw | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Offset Swiper Three {% endcomment %}
+
+{% capture offsetSwiper %}
+<div class="position-relative mb-4">
+    {[ imageslider campusid:'1' ]}
+</div>
+
+<div class="position-relative">
+    {[ imageslider galleryid:'2530' ]}
+</div>
+{% endcapture %}
+
+{% capture offsetSwiperRaw %}
+{% raw %}<div class="position-relative mb-4">
+    {[ imageslider campusid:'1' ]}
+</div>
+
+<div class="position-relative">
+    {[ imageslider galleryid:'2530' ]}
+</div>{% endraw %}
+{% endcapture %}
+
+
+{% capture offsetSwiperEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Offset Swiper (ShortCode)</blockquote>
+    {{ offsetSwiper | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture offsetSwiperRawEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Offset Swiper (ShortCode)</blockquote>
+    {{ offsetSwiperRaw | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+<h3 class="sg-section-header">Default Swiper</h3>
+{{ swiper }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ swiperRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ swiperEscaped }}
+
+<hr class="my-5">
+
+<h3  class="sg-section-header">Primary Swiper</h3>
+{{ primarySwiper }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ primarySwiperRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ primarySwiperEscaped }}
+
+<hr class="my-5">
+
+<h3  class="sg-section-header">Offset Swiper</h3>
+{{ offsetSwiper }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ offsetSwiperRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ offsetSwiperEscaped }}

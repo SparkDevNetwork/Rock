@@ -1,0 +1,37 @@
+.calendar-lava {
+  div[id*='pnlFilters'],
+  div[id*='pnlList'] {
+    width: 100% !important;
+  }
+
+  div[id*='pnlFilters'] {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .dropdown {
+    width: 100%;
+
+    @media (min-width: 768px) {
+      width: unset;
+    }
+
+    & + .dropdown {
+      margin-top: 16px;
+      margin-left: 0;
+
+      @media (min-width: 768px) {
+        margin-top: 0;
+        margin-left: 12px;
+      }
+    }
+
+    &-menu {
+      width: 100%;
+
+      @media (min-width: 768px) {
+        width: unset;
+      }
+    }
+  }
+}

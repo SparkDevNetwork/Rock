@@ -1,0 +1,56 @@
+{%- comment -%} {%- include '~~/Assets/Lava/Custom/ContentComponents/SideBySide.lava' -%} {%- endcomment -%}
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h5' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+{%- assign isOdd = true -%}
+
+<div class="cc-side-by-side">
+    {%- for item in Items -%}
+        <div class="row d-flex flex-wrap">
+            {%- assign image = item | Attribute:'Image','RawValue' -%}
+            {%- assign imageUrl = image | ImageUrl | Append:'&w=800&h=557&mode=crop' -%}
+            {%- assign backdropColor = item | Attribute:'BackdropColor','Object' -%}
+            {%- assign backdropColorClass = backdropColor | Attribute:'Class' -%}
+            {% assign resizeBreakpoint = item | Attribute:'ResizeBreakpoint' %}
+
+            {%- if isOdd -%}
+                {%- assign colOneClasses = 'col-xs-12 col-[ResizeBreakpoint]-7' | Replace:'[ResizeBreakpoint]',resizeBreakpoint -%}
+                {%- assign colTwoClasses = 'col-xs-12 col-[ResizeBreakpoint]-5' | Replace:'[ResizeBreakpoint]',resizeBreakpoint -%}
+                {% assign contentSpacing = 'ml-[ResizeBreakpoint]-3' | Replace:'[ResizeBreakpoint]',resizeBreakpoint %}
+            {%- else -%}
+                {%- assign colOneClasses = 'col-xs-12 col-[ResizeBreakpoint]-7 order-1 order-[ResizeBreakpoint]-2' | Replace:'[ResizeBreakpoint]',resizeBreakpoint -%}
+                {%- assign colTwoClasses = 'col-xs-12 col-[ResizeBreakpoint]-5 order-2 order-[ResizeBreakpoint]-1' | Replace:'[ResizeBreakpoint]',resizeBreakpoint -%}
+                {% assign contentSpacing = 'mr-[ResizeBreakpoint]-3' | Replace:'[ResizeBreakpoint]',resizeBreakpoint %}
+            {%- endif -%}
+
+            <div class="{{colOneClasses}}">
+                <div class="h-100 d-flex justify-content-center flex-column">
+                    <div class="js-backdrop backdrop backdrop-left backdrop-{{ backdropColorClass }} rounded-md">
+                        <img src="{{ imageUrl }}" alt="" class="img-responsive">
+                    </div>
+                </div>
+            </div>
+            <div class="{{colTwoClasses}}">
+                <div class="h-100 d-flex justify-content-center flex-column"{% if channelForegroundColor and channelForegroundColor != empty %} style="color: {{ channelForegroundColor }} !important;"{% endif %}>
+                    <div class="py-3 py-{{ resizeBreakpoint }}-0"></div>
+                    <div class="{{ contentSpacing }}">
+                        <{{ channelTitleSize }} class="mb-3">{{ item.Title }}</{{ channelTitleSize }}>
+                        {{ item.Content }}
+                    </div>
+                </div>
+            </div>
+
+            {%- if isOdd -%}
+                {%- assign isOdd = false -%}
+            {%- else -%}
+                {%- assign isOdd = true -%}
+            {%- endif -%}
+        </div>
+        {%- unless forloop.last -%}
+            <div class="py-3 py-md-5"></div> //- 32px -> 96px
+        {%- endunless -%}
+    {%- endfor -%}
+</div>

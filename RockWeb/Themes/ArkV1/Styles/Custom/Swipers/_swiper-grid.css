@@ -1,0 +1,11 @@
+@media (min-width: 992px) {
+  .swiper-md-grid .swiper-wrapper {
+    display: grid;
+    grid-gap: 15px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .swiper-md-grid .swiper-slide {
+    width: 100% !important;
+  }
+}

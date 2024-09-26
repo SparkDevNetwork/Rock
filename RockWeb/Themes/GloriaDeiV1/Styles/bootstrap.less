@@ -1,0 +1,45 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
+
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+
+// custom variable switchbox
+@navbar-inverse-link-color: @nav-color;
+@blockquote-small-color: lighten(@text-color, 20%);
+
+@grid-gutter-width: 16px;
+
+// ----------------------------
+// --- bootstrap containers ---
+// ----------------------------
+@container-desktop: 872px;
+@container-large-desktop: 1080px;
+// new breakpoint
+@screen-xl-min: 1400px; // Define your new breakpoint
+// new container-size
+@container-extra-large-desktop: 1280px; // Define your new container width
+
+.container {
+  // New breakpoint
+  @media (min-width: @screen-xl-min) {
+      max-width: @container-extra-large-desktop;
+      width: @container-extra-large-desktop;
+  }
+}
+
+.container {
+  padding: 0 16px;
+}
+
+.container-fluid {
+  padding: 0;
+
+  @media (min-width: @screen-md-min) {
+    padding: 0 16px;
+  }
+}

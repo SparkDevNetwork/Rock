@@ -1,0 +1,108 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNav/mobile-nav.lava' %} {% endcomment %}
+
+{% assign data = 'ArkPrimaryNavigation' | PersistedDataset %}
+
+{% assign imNewPageId = 0000 %}
+{% assign nextStepsPageId = 0000 %}
+{% assign loggedIn = false %}
+{% if CurrentPerson %}
+    {% assign loggedIn = true %}
+{% endif %}
+
+{% capture defaultCTA %}
+    <ul class="nav-level-1">
+        <li class="menu-item">
+            {% if loggedIn %}
+                <a href="#">Next Steps</a>
+            {% else %}
+                <a href="#">I'm New</a>
+            {% endif %}
+        </li>
+
+        <div class="mobile-nav-cta mobile-nav-cta-default">
+            <img src="/Themes/ArkV1/Assets/Images/mega-menu-cta-bg.png" alt="" class="mobile-nav-cta-bg">
+            <div class="mobile-nav-cta-overlay" style="background-color:rgba(24, 100, 234, .9)"></div>
+            <div class="position-relative w-100 h-100 d-flex flex-column justify-content-between">
+                <div class="top">
+                    {% if loggedIn %}
+                        <h6 class="text-white mb-2">Get Connected<br>Join a Group</h6>
+                    {% else %}
+                        <h6 class="text-white mb-2">New Here?<br>Start Here.</h6>
+                    {% endif %}
+                    {% if loggedIn %}
+                        <p class="text-white mb-5">Life is better with others. Find a group near you and connect with other near you.</p>
+                    {% else %}
+                        <p class="text-white mb-5">We are excited you are here! Learn more about The Ark and Plan a Visit Today!</p>
+                    {% endif %}
+                </div>
+                <div class="mobile-nav-cta-footer">
+                    {% if loggedIn %}
+                        <a href="#" class="text-white text-link">Find a Group</a>
+                    {% else %}
+                        <a href="#" class="text-white text-link">Plan a Visit</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </ul>
+{% endcapture %}
+
+<div class="js-mobile-nav mobile-nav">
+
+    {{ defaultCTA }}
+
+    {% for item in data %}
+        {% assign visibility = item.Visibility %}
+        {% assign showItem = false %}
+
+        {% if visibility == 'All' %}
+            {% assign showItem = true %}
+        {% elseif visibility == 'Logged In Users' and loggedIn %}
+            {% assign showItem = true %}
+        {% elseif visibility == 'Logged Out Users' and loggedIn == false %}
+            {% assign showItem = true %}
+        {% endif %}
+
+        {% if showItem %}
+            {% assign primaryPageTitle = item.PrimaryPage.Title %}
+            {% assign primaryPageId = item.PrimaryPage.Id %}
+            {% assign primaryPageRoute = item.PrimaryPage.Route %}
+            {% assign subNavs = item.SubNavs %}
+
+            <ul class="nav-level-1">
+                <li class="menu-item">
+                    <a href="{{ primaryPageRoute }}">{{ primaryPageTitle }}</a>
+                    {% for subNav in subNavs %}
+                        {% assign headerPageTitle = subNav.HeaderPage.Title %}
+                        {% assign headerPageId = subNav.HeaderPage.Id %}
+                        {% assign headerPageRoute = subNav.HeaderPage.Route %}
+                        {% assign subNavItems = subNav.SubNavigation %}
+
+                        <ul class="nav-level-2">
+                            <li class="menu-item">
+                                <a href="{{ headerPageRoute }}">{{ headerPageTitle }}</a>
+                                {% for subNavItem in subNavItems %}
+                                    {% assign title = subNavItem.Title %}
+                                    {% assign id = subNavItem.Id %}
+                                    {% assign route = subNavItem.Route %}
+
+                                    <ul class="nav-level-3">
+                                        <li class="menu-item">
+                                            <a href="{{ route }}">{{ title }}</a>
+                                        </li>
+                                    </ul>
+                                {% endfor %}
+                            </li>
+                        </ul>
+                    {% endfor %}
+                </li>
+            </ul>
+        {% endif %}
+    {% endfor %}
+
+
+
+
+</div>
+
+

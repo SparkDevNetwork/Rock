@@ -1,0 +1,45 @@
+.rock-modal {
+    .panel-heading {
+        background-color: rgba(@gc-grey, .5) !important;
+    }
+
+    .btn {
+        &.active {
+            background-color: @color-of-the-year !important;
+        }
+
+        &-primary {
+            color: #ffffff !important;
+            background-color: @color-of-the-year !important;
+            border-color: @color-of-the-year !important;
+
+            &:hover {
+                background-color: darken(@color-of-the-year, 10%) !important;
+                border-color: darken(@color-of-the-year, 10%) !important;
+            }
+        }
+
+        &-default {
+            color: @gc-black !important;
+            background-color: #ffffff !important;
+            border-color: @color-of-the-year !important;
+
+            &:hover {
+                background-color: darken(#ffffff, 10%) !important;
+                border-color: darken(#ffffff, 10%) !important;
+            }
+
+            &.active {
+              color: #ffffff !important;
+            }
+        }
+
+        &-link {
+            color: @color-of-the-year !important;
+
+            &:hover {
+                color: darken(@color-of-the-year, 10%) !important;
+            }
+        }
+    }
+}

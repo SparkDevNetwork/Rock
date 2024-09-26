@@ -1,0 +1,84 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_Dashboard.lava' %} {% endcomment %}
+
+<div class="homepage-dashboard gutterless-mobile">
+    <div class="dashboard">
+        <div class="dashboard-item dashboard-item-user">
+            <img src="{{ CurrentPerson.PhotoUrl }}" alt="{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}" class="user-img">
+            <div class="dashboard-item-body flex-fill">
+                <h3 class="text-center">Ted Decker</h3>
+            </div>
+            <div class="dashboard-item-footer">
+                <a href="#">View My Account</a>
+            </div>
+        </div>
+        <div class="dashboard-item dashboard-item-baptism">
+            <div class="dashboard-item-icon">
+                <span class="icon-btn active">
+                    <i class="icon-primary fa fa-tint"></i>
+                    <i class="icon-secondary fa fa-check active"></i>
+                </span>
+            </div>
+            <div class="dashboard-item-body flex-fill">
+                <span class="dashboard-item-title text-center font-weight-bold d-block">Baptized</span>
+                <p class="text-center">Apr 2020</p>
+            </div>
+            <div class="dashboard-item-footer">
+                <a href="#">Completed</a>
+            </div>
+        </div>
+        <div class="dashboard-item dashboard-item-groups">
+            <div class="dashboard-item-icon">
+                <span class="icon-btn active">
+                    <i class="icon-primary fa fa-users"></i>
+                    <i class="icon-secondary fa fa-check active"></i>
+                </span>
+            </div>
+            <div class="dashboard-item-body flex-fill">
+                <span class="dashboard-item-title text-center font-weight-bold d-block">Small Groups</span>
+                <p class="text-center">Connecting with Others</p>
+            </div>
+            <div class="dashboard-item-footer">
+                <a href="#">My Groups</a>
+            </div>
+        </div>
+        <div class="dashboard-item dashboard-item-serving">
+            <div class="dashboard-item-icon">
+                <span class="icon-btn inactive">
+                    <i class="icon-primary fa fa-clock"></i>
+                    <i class="icon-secondary fa fa-info active"></i>
+                </span>
+            </div>
+            <div class="dashboard-item-body flex-fill">
+                <span class="dashboard-item-title text-center font-weight-bold d-block">Serve</span>
+                <p class="text-center">Join a Serving Team</p>
+            </div>
+            <div class="dashboard-item-footer">
+                <a href="#">Start Serving</a>
+            </div>
+        </div>
+        <div class="dashboard-item dashboard-item-giving">
+            <div class="dashboard-item-icon">
+                <span class="icon-btn inactive">
+                    <i class="icon-primary fa fa-hand-holding-heart"></i>
+                    <i class="icon-secondary fa fa-info active"></i>
+                </span>
+            </div>
+            <div class="dashboard-item-body flex-fill">
+                <span class="dashboard-item-title text-center font-weight-bold d-block">Giving</span>
+                <p class="text-center">Make a Difference</p>
+            </div>
+            <div class="dashboard-item-footer">
+                <a href="#">Give Online</a>
+            </div>
+        </div>
+        <div class="dashboard-item dashboard-item-starting-point">
+            <div class="dashboard-item-icon">
+                <i class="fa fa-newspaper" style="font-size: 34px;"></i>
+            </div>
+            <div class="dashboard-item-body flex-fill">
+                <span class="dashboard-item-title text-center font-weight-bold d-block mb-3">Register for<br>Starting Point</span>
+                <a href="#" class="btn btn-white"><i>Register</i></a>
+            </div>
+        </div>
+    </div>
+</div>

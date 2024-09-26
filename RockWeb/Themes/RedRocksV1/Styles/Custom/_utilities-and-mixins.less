@@ -1,0 +1,313 @@
+// out: false
+
+// Table of Contents
+// 1. Fonts
+// 2. Transitions
+// 3. Backgrounds
+// 4. Animations
+// 5. Page Transitions
+// 5. Util
+
+//-------------------------
+// 1. Fonts
+//-------------------------
+.font-accent, .font-times {
+  font-family: 'Times' !important;
+}
+
+.font-fancy {
+  font-family: 'Times' !important;
+  font-style: italic;
+}
+
+.font-default {
+  font-family: @font-family-sans-serif;
+}
+
+
+
+//-------------------------
+// 2. Transitions
+//-------------------------
+.transition {
+  transition: all .3s ease;
+}
+
+
+//-------------------------
+// 3. Backgrounds
+//-------------------------
+.bg-paper {
+  background-image: url('/Themes/RedRocksV1/Assets/Images/m-paper-1.png');
+  background-size: cover;
+  backgroun-repeat: no-repeat;
+  background-position: bottom center;
+
+  @media (min-width: 992px) {
+    background-image: url('/Themes/RedRocksV1/Assets/Images/paper-1.png');
+  }
+}
+
+.bg-paper-2 {
+  background-image: url('/Themes/RedRocksV1/Assets/Images/m-paper-2.png');
+  background-size: cover;
+  backgroun-repeat: no-repeat;
+  background-position: top center;
+
+  @media (min-width: 992px) {
+    background-image: url('/Themes/RedRocksV1/Assets/Images/paper-2.png');
+  }
+}
+
+
+//-------------------------
+// 4. Animations
+//-------------------------
+@media (min-width: 768px) {
+  .js-animation-1 {
+    opacity: 0;
+    overflow: hidden;
+
+    .js-animation-1-body {
+      transform: translateY(-100%);
+    }
+
+    &.in {
+      opacity: 1;
+      animation-name: animationOneWidth;
+      animation-duration: 1s;
+      animation-iteration-count: 1;
+      animation-timing-function: ease-in;
+      animation-delay: .7s;
+
+      .js-animation-1-body {
+        animation-name: animationOneHeight;
+        animation-duration: 2s;
+        animation-iteration-count: 1;
+        animation-timing-function: ease;
+      }
+    }
+
+    @keyframes animationOneWidth {
+      from {
+        width: 12px;
+      }
+
+      to {
+        width: 100%;
+      }
+    }
+
+    @keyframes animationOneHeight {
+      from {
+        transform: TranslateY(-100%);
+      }
+
+      to {
+        transform: TranslateY(0);
+      }
+    }
+  }
+}
+
+.animation-box {
+  position: relative;
+  // todo: replace
+  transition: all .3s ease;
+  // .transition();
+  transform: scale(1);
+
+  &::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: '';
+    // todo: replace
+    background-color: #e74724;
+    // background-color: @rocks-red;
+    // todo: replace
+    transition: all .3s ease;
+    // .transition();
+  }
+
+  &:hover {
+    transform: scale(.95);
+
+    &::before {
+      transform: scale(1.052632);
+    }
+  }
+
+
+}
+
+
+//-------------------------
+// 4. Slide Up Item
+//-------------------------
+.slide-up-item {
+  overflow: hidden;
+  // padding-top: 4px;
+
+  & > * {
+    transform: translateY(120%);
+    display: inline-block;
+  }
+
+  *[class*="bg-"] {
+    padding: .8rem;
+
+    @media (min-width: 768px) {
+      padding: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      padding: 1.25rem;
+    }
+
+    @media (min-width: 1200px) {
+      padding: 1.5rem;
+    }
+  }
+
+  &:has(*[class*="bg-"]) + &:has(*[class*="bg-"]) {
+    margin-top: -.8rem !important;
+
+    @media (min-width: 768px) {
+      margin-top: -1rem !important;
+    }
+
+    @media (min-width: 768px) {
+      margin-top: -1.25rem !important;
+    }
+
+    @media (min-width: 1200px) {
+      margin-top: -1.5rem !important;
+    }
+  }
+
+  .scrolled-in & {
+    & > * {
+      animation-name: slideUp;
+      animation-duration: .6s;
+      animation-timing-function: ease-out;
+      animation-iteration-count: 1;
+    }
+
+    &:nth-child(1) > * {
+      animation-delay: .3s;
+    }
+
+    &:nth-child(2) > * {
+      animation-delay: .6s;
+    }
+
+    &:nth-child(3) > * {
+      animation-delay: .9s;
+    }
+
+    &:nth-child(4) > * {
+      animation-delay: 1.1s;
+    }
+
+    &:nth-child(5) > * {
+      animation-delay: 1.3s;
+    }
+
+    &:nth-child(6) > * {
+      animation-delay: 1.5s;
+    }
+
+    &:nth-child(7) > * {
+      animation-delay: 1.6s;
+    }
+
+    &:nth-child(8) > * {
+      animation-delay: 1.7s;
+    }
+
+    &:nth-child(9) > * {
+      animation-delay: 1.8s;
+    }
+
+    &:nth-child(10) > * {
+      animation-delay: 1.9s;
+    }
+  }
+}
+
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateX(0%);
+  }
+}
+
+
+
+
+//-------------------------
+// 5. Page Transitions
+//-------------------------
+
+.angled-transition {
+  position: relative;
+  width: 100%;
+  height: 30px;
+
+  .angled-transition-border {
+    position: absolute;
+    width: 0;
+    height: 0;
+    bottom: 0;
+    left: 0;
+    border-top-width: 30px;
+    border-top-color: transparent !important;
+    border-top-style: solid;
+    border-right-width: 100vw;
+    border-right-style: solid;
+    margin: -1px 0;
+  }
+
+  @media (min-width: 768px) {
+    height: 56px;
+
+    .angled-transition-border {
+      border-top-width: 56px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    height: 80px;
+
+    .angled-transition-border {
+      border-top-width: 80px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    height: 104px;
+
+    .angled-transition-border {
+      border-top-width: 104px;
+    }
+  }
+}
+
+
+
+
+//-------------------------
+// 6. Util
+//-------------------------
+.hide-until-md {
+  @media (max-width: 991px) {
+    display: none !important;
+  }
+}

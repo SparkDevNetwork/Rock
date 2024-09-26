@@ -1,0 +1,131 @@
+{% comment %} {% include '~~/Assets/Lava/_MegaMenu.lava' %} {% endcomment %}
+
+{% assign allCampuses = 'All' | FromCache:'Campus' %}
+{% assign contextCampus = Context.Campus.Id %}
+
+<div id="mega-menu" class="position-fixed top-0 right-0 bottom-0 left-0 collapse navbar-collapsed" aria-expanded="false" style="height: 0;">
+    <div class="mega-menu-content">
+        <div class="mega-menu-left">
+            <div class="sub-menus">
+                <div class="sub-menu">
+                    <h2 class="text-left"><a href="#" class="text-info">Get Involved</a></h2>
+                    <ul>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Groups</a></li>
+                        <li><a href="#">Kids &amp; Students</a></li>
+                        <ul class="ml-3">
+                            <li><a href="#">Willow Kids</a></li>
+                            <li><a href="#">Junior High Minitry</a></li>
+                            <li><a href="#">High School Ministry</a></li>
+                            <li><a href="#">Disability &amp; Inclusion</a></li>
+                        </ul>
+                        <li><a href="#">Camp Paradise</a></li>
+                        <li><a href="#">Baptism</a></li>
+                        <li><a href="#">Concerts</a></li>
+                    </ul>
+                </div>
+
+                <div class="sub-menu">
+                    <h2 class="text-left"><a href="#" class="text-info">Make a Difference</a></h2>
+                    <ul>
+                        <li><a href="#">Volunteer</a></li>
+                        <li><a href="#">Compassion &amp; Justice</a></li>
+                        <ul class="ml-3">
+                            <li><a href="#">Local Outreach</a></li>
+                            <li><a href="#">Global Outreach</a></li>
+                        </ul>
+                        <li><a href="#">Work at Willow</a></li>
+                    </ul>
+                </div>
+
+                <div class="sub-menu">
+                    <h2 class="text-left"><a href="#" class="text-info">Get Help</a></h2>
+                    <ul>
+                        <li><a href="#">Tangible Resources</a></li>
+                        <li><a href="#">Care Center</a></li>
+                        <li><a href="#">Pastoral Support</a></li>
+                        <li><a href="#">Prayer Support</a></li>
+                        <li><a href="#">Mental Health Resources</a></li>
+                        <li><a href="#">Grief</a></li>
+                    </ul>
+                </div>
+
+                <div class="sub-menu">
+                    <h2 class="text-left"><a href="#" class="text-info">About</a></h2>
+                    <ul>
+                        <li><a href="#">Beliefs &amp; Values</a></li>
+                        <li><a href="#">Meet the Team</a></li>
+                        <li><a href="#">Elders &amp; Governancee</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="sub-menu">
+                    <h2 class="text-left"><a href="#" class="text-info">Give</a></h2>
+                    <ul>
+                        <li><a href="#">Manage Recurring Giving</a></li>
+                        <li><a href="#">Access Contribution Statements</a></li>
+                        <li><a href="#">Dollar Club</a></li>
+                    </ul>
+                </div>
+
+                <div class="sub-menu">
+                    <h2 class="text-left"><a href="#" class="text-info">Watch &amp; Read</a></h2>
+                    <ul>
+                        <li><a href="#">Blogs</a></li>
+                        <li><a href="#">Devotionals</a></li>
+                        <li><a href="#">Message Archives</a></li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="campus-menu">
+                <a href="#" class="btn btn-primary btn-lg w-100 text-light mb-3">GIVE</a>
+                <ul>
+                    {% for campus in allCampuses %}
+                        {%- capture linkClasses -%}
+                            {%- if campus.Id == contextCampus -%}
+                                class="active"
+                            {%- endif -%}
+                        {%- endcapture -%}
+                        <li><a href="#" {{ linkClasses }}>{{ campus.Name }}</a></li>
+                    {% endfor %}
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="mega-menu-right">
+            <div class="account-links">
+                <div class="px-3 pl-lg-4">
+                    {% if CurrentPerson and CurrentPerson != empty %}
+                        <ul>
+                            <li>
+                                <a href="#">MY PROFILE</a>
+                            </li>
+                            <li>
+                                <a href="#">PREFERENCES</a>
+                            </li>
+                            <li>
+                                <a href="#">ACCOUNT SECURITY</a>
+                            </li>
+                            <li>
+                                <a href="/logout">LOG OUT</a>
+                            </li>
+                        </ul>
+                    {% else %}
+                        <ul>
+                            <li>
+                                <a href="/login">LOG IN</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+

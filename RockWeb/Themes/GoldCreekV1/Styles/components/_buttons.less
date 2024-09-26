@@ -1,0 +1,210 @@
+.btn {
+  padding: @padding-base-vertical @padding-base-horizontal;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  border-width: 3px;
+  width: 100%;
+  .transition();
+
+  &+& {
+    margin-top: 12px;
+  }
+
+  .btn-group & {
+    width: auto;
+
+    & + .btn {
+      margin: 0 0 0 -1px;
+    }
+  }
+
+  @media screen and (min-width: 768px) {
+    width: auto;
+
+    &+& {
+      margin-left: 10px;
+      margin-top: 0;
+    }
+  }
+
+  &:active,
+  &.active {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+  }
+
+  // ~ Sizes
+
+  &-xs,
+  &-group-xs>.btn {
+    // * See variable sizes in _bootstrap-overrides.less
+    padding: @padding-xs-vertical @padding-xs-horizontal;
+  }
+
+  &-sm,
+  &-group-sm>.btn {
+    padding: @padding-small-vertical @padding-small-horizontal;
+  }
+
+  &-lg,
+  &-group-lg>.btn {
+    padding: @padding-large-vertical @padding-large-horizontal;
+  }
+
+  // ~ Colors
+
+  &-primary {
+    color: #ffffff !important;
+    background-color: @gc-black !important;
+    border-color: @gc-black !important;
+
+    &:hover {
+      background-color: #000000 !important;
+      border-color: #000000 !important;
+    }
+
+    &.btn-dark {
+      color: #ffffff !important;
+      background-color: @gc-black !important;
+      border-color: @gc-black !important;
+
+      &:hover {
+        background-color: #000000 !important;
+        border-color: #000000 !important;
+      }
+    }
+
+    &.btn-light {
+      color: @gc-black !important;
+      background-color: @gc-grey !important;
+      border-color: @gc-grey !important;
+
+      &:hover {
+        background-color: darken(@gc-grey, 10%) !important;
+        border-color: darken(@gc-grey, 10%) !important;
+      }
+    }
+
+    &.btn-goldcreek {
+      color: #ffffff !important;
+      background-color: @color-of-the-year !important;
+      border-color: @color-of-the-year !important;
+
+      &:hover {
+        background-color: darken(@color-of-the-year, 10%) !important;
+        border-color: darken(@color-of-the-year, 10%) !important;
+      }
+    }
+
+    &.btn-contribute {
+      color: #ffffff !important;
+      background-color: @contribute !important;
+      border-color: @contribute !important;
+
+      &:hover {
+        background-color: darken(@contribute, 10%) !important;
+        border-color: darken(@contribute, 10%) !important;
+      }
+    }
+
+    &.btn-connect {
+      color: #ffffff !important;
+      background-color: @connect !important;
+      border-color: @connect !important;
+
+      &:hover {
+        background-color: darken(@connect, 10%) !important;
+        border-color: darken(@connect, 10%) !important;
+      }
+    }
+
+    &.btn-celebrate {
+      color: #ffffff !important;
+      background-color: @celebrate !important;
+      border-color: @celebrate !important;
+
+      &:hover {
+        background-color: darken(@celebrate, 10%) !important;
+        border-color: darken(@celebrate, 10%) !important;
+      }
+    }
+  }
+
+  &-default {
+    color: @gc-black !important;
+    background-color: transparent !important;
+    border-color: @gc-black !important;
+
+    &:hover {
+      color: #ffffff !important;
+      background-color: @gc-black !important;
+    }
+
+    &.btn-dark {
+      color: @gc-black !important;
+      background-color: transparent !important;
+      border-color: @gc-black !important;
+
+      &:hover {
+        background-color: @gc-black !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.btn-light {
+      color: @gc-grey !important;
+      background-color: transparent !important;
+      border-color: @gc-grey !important;
+
+      &:hover {
+        background-color: @gc-grey !important;
+        color: @gc-black !important;
+      }
+    }
+
+    &.btn-goldcreek {
+      color: @color-of-the-year !important;
+      background-color: transparent !important;
+      border-color: @color-of-the-year !important;
+
+      &:hover {
+        background-color: @color-of-the-year !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.btn-contribute {
+      color: @contribute !important;
+      background-color: transparent !important;
+      border-color: @contribute !important;
+
+      &:hover {
+        background-color: @contribute !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.btn-connect {
+      color: @connect !important;
+      background-color: transparent !important;
+      border-color: @connect !important;
+
+      &:hover {
+        background-color: @connect !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.btn-celebrate {
+      color: @celebrate !important;
+      background-color: transparent !important;
+      border-color: @celebrate !important;
+
+      &:hover {
+        background-color: @celebrate !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+}

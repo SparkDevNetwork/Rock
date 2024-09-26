@@ -1,0 +1,79 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/CampusDetail/CampusCards.lava' %} {% endcomment %}
+
+{% comment %} * Poster Cards {% endcomment %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% assign campus = campusId | FromCache:'Campus' %}
+
+{% assign posterCards = campus | Attribute:'PosterCards','Object' %}
+
+{% if posterCards and posterCards != empty %}
+    {% assign posterCards = posterCards.AttributeMatrixItems %}
+    {% assign nextGenHeading = campus | Attribute:'NextGenHeading' %}
+    {% assign nextGenContent = campus | Attribute:'NextGenContent' %}
+
+
+    <div class="bg-muted">
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+
+        <div class="container">
+
+            <h2 class="text-center accent accent-center accent-invite" data-aos="fade-up">{{ nextGenHeading }}</h2>
+
+            <div class="py-3"></div>
+
+            <div class="row d-flex justify-content-center">
+                <div class="col-xs-12 col-sm-12 col-md-10 col-lg-6">
+                    <p class="text-center lead leading-loose" data-aos="fade-up">
+                        {{ nextGenContent }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="py-3"></div>
+
+            <div class="row">
+                {% for card in posterCards %}
+                    {% assign cardImg = card | Attribute:'Image','Guid' | ImageUrl %}
+                    {% assign cardHeading = card | Attribute:'Heading' %}
+                    {% assign cardLinkText = card | Attribute:'LinkText' %}
+                    {% assign cardLinkUrl = card | Attribute:'LinkUrl','RawValue' %}
+
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3" data-aos="fade-up">
+                        <div class="poster-card js-poster-card" style="background-image:url({{ cardImg | TriumphImgCdn:'w=600&h=360&crop=faces&fit=crop&auto=compress,format' }});">
+                            <div class="poster-card-body js-poster-card-body">
+                                <h4 class="poster-card-title accent accent-invite accent-">{{ cardHeading }}</h4>
+                                <div class="poster-card-hidden js-poster-card-hidden">
+                                    <a href="{{ cardLinkUrl }}" class="text-white">{{ cardLinkText }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+    </div>
+{% endif %}

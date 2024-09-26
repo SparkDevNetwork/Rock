@@ -1,0 +1,152 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/_SiteFooter.lava' %} {% endcomment %}
+
+{%- capture displayLocation -%}
+    {% if Context.Campus.Location.Street1 and Context.Campus.Location.Street1 != empty %}
+        {{ Context.Campus.Location.Street1 }},<br> {{ Context.Campus.Location.City | Capitalize }}, {{ Context.Campus.Location.State | Upcase }} {{ Context.Campus.Location.PostalCode }}
+    {% else %}
+        {% assign campus = 1 | FromCache:'Campus' %}
+        {{ campus.Location.Street1 }},<br> {{ campus.Location.City | Capitalize }}, {{ campus.Location.State | Upcase }} {{ campus.Location.PostalCode }}
+    {% endif %}
+{%- endcapture -%}
+
+{% assign facebook = 'Global' | Attribute:'FacebookUrl','RawValue' %}
+{% assign twitter = 'Global' | Attribute:'TwitterUrl','RawValue' %}
+{% assign instagram = 'Global' | Attribute:'InstagramUrl','RawValue' %}
+{% assign youtube = 'Global' | Attribute:'YoutubeUrl','RawValue' %}
+
+<div class="bg-charcoal {% if Context.Campus == empty or Context.Campus == null %}py-4{% endif %}">
+    <div class="container ">
+        <a href="/" class="d-block d-sm-none text-center mb-30">
+            {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId -%}
+                {% assign logoUrl = '/GetImage.ashx?id=' | Append:CurrentPage.Layout.Site.SiteLogoBinaryFileId %}
+                <img src="{{ logoUrl | TriumphImgCdn:'w=54&h=54&fit=crop&auto=compress&auto=format' }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}" width="54" height="54">
+            {%- else -%}
+                {{ 'Global' | Attribute:'OrganizationName' }}
+            {%- endif -%}
+        </a>
+        {% if Context.Campus and Context.Campus != empty %}
+            <div class="row mb-30 mb-sm-4">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="meeting-times mb-4">
+                        <span class="tall font-weight-bold text-white text-center text-sm-left d-block mb-2">
+                            WHEN WE MEET
+                        </span>
+                        <span class="text-white text-center text-sm-left d-block o-80">
+                            Join us in Person or Online<br>
+                            {% include '~~/Assets/Lava/Custom/CampusServiceTimes.lava' %}
+                        </span>
+                    </div>
+                    <div class="meeting-location mb-4">
+                        <span class="tall font-weight-bold text-white text-center text-sm-left d-block mb-2">
+                            WHERE WE MEET
+                        </span>
+                        <span class="text-white text-center text-sm-left d-block o-80">
+                            <a href="https://www.google.com/maps/place/{{ displayLocation | Remove:',' | Remove:'<br>' | Trim }}" target="_blank" class="text-white">
+                                {{ displayLocation }}
+                            </a>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-sm-6">
+                    <nav class="footer-nav">
+                        <ul>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">REQUEST PRAYER</a>
+                            </li>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">CARE</a>
+                            </li>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">JOBS</a>
+                            </li>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">WEDDINGS</a>
+                            </li>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">MEMORIALS</a>
+                            </li>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">GC INTERNSHIP</a>
+                            </li>
+                            <li class="footer-nav-item text-center text-sm-right">
+                                <a href="#" class="text-white tall font-weight-bold">GIVING</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="row d-sm-flex align-items-center pt-sm-2">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="text-center text-sm-left px-5 px-sm-0">
+                    <a href="#" class="btn btn-primary btn-light">Give Online</a>
+                        {% if CurrentPerson %}
+                            <a href="#" class="btn btn-default btn-light">My Account</a>
+                        {% else %}
+                            <a href="#" class="btn btn-default btn-light">Login</a>
+                        {% endif %}
+                    </div>
+
+                    <hr class="o-50 d-sm-none my-30">
+                </div>
+
+                <div class="col-xs-12 col-sm-6 text-center text-sm-right">
+                    <div class="w-100 d-flex flex-wrap flex-sm-nowrap align-items-center justify-content-center justify-content-sm-end">
+                        <h4 class="text-white m-0 p-0 mr-sm-4 pr-sm-3 d-inline-block mb-3 mb-sm-0">FOLLOW US ONLINE</h4>
+                        <nav class="social-nav d-inline-block mb-4 pb-3 mb-sm-0 pb-sm-0">
+                            <ul class="d-flex justify-content-center m-0 p-0">
+                                {% if facebook and facebook != empty %}
+                                    <li class="social-nav-item">
+                                        <a href="{{ facebook }}" class="text-white"><i class="fa fa-facebook"></i></a>
+                                    </li>
+                                {% endif %}
+                                {% if youtube and youtube != empty %}
+                                    <li class="social-nav-item ml-4">
+                                        <a href="{{ youtube }}" class="text-white"><i class="fa fa-youtube"></i></a>
+                                    </li>
+                                {% endif %}
+                                {% if instagram and instagram != empty %}
+                                    <li class="social-nav-item ml-4">
+                                        <a href="{{ instagram }}" class="text-white"><i class="fa fa-instagram"></i></a>
+                                    </li>
+                                {% endif %}
+                                {% if twitter and twitter != empty %}
+                                    <li class="social-nav-item ml-4">
+                                        <a href="{{ twitter }}" class="text-white"><i class="fa fa-twitter"></i></a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="o-50 d-none d-sm-block mt-sm-5 pt-sm-1 mb-sm-4">
+        {% else %}
+            <hr class="o-50 my-30 d-sm-none">
+        {% endif %}
+
+        <div class="row d-sm-flex align-items-center">
+            <div class="col-xs-12 col-sm-4">
+                <div class="text-center text-sm-left small text-white o-80">
+                    <a href="#" class="text-white">Terms of Use</a> | <a href="#" class="text-white">Privacy</a> | <a href="#" class="text-white">Site Map</a>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-4">
+                <a href="/" class="d-none d-sm-block text-center">
+                    {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId -%}
+                        <img src="{{ logoUrl | TriumphImgCdn:'w=90&h=90&fit=crop&auto=compress&auto=format' }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}" width="54" height="54">
+                    {%- else -%}
+                        {{ 'Global' | Attribute:'OrganizationName' }}
+                    {%- endif -%}
+                </a>
+            </div>
+            <div class="col-xs-12 col-sm-4">
+                <div class="text-center text-sm-right text-white small o-80">
+                    <span class="font-weight-bold">&copy;</span> 2022 Gold Creek
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

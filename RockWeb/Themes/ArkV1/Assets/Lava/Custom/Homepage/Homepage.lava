@@ -1,0 +1,103 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/Homepage.lava' %} {% endcomment %}
+
+//- 24 px top spacing
+<div class="pt-4"></div>
+
+<div class="homepage-hero">
+    {% include '~~/Assets/Lava/Custom/Homepage/_Hero.lava' %}
+</div>
+
+//- 48px xs-md | 80px md+ top spacing
+<div class="py-4"></div>
+<div class="py-md-3"></div>
+
+<div class="container container-lg">
+    {% if CurrentPerson %}
+        {% include '~~/Assets/Lava/Custom/Homepage/_Dashboard.lava' %}
+    {% else %}
+        <div class="homepage-icon-cards">
+            //- mobile: 128px
+            //- desktop: 0px
+            <div class="py-5 py-md-0"></div>
+            <div class="py-3 py-md-0"></div>
+            {% include '~~/Assets/Lava/Custom/Homepage/_IconCards.lava' %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="homepage-latest-message">
+    {% include '/Themes/ArkV1/Assets/Lava/Custom/Components/wave-animation.lava' %}
+    {% include '~~/Assets/Lava/Custom/Homepage/_LatestMessage.lava' %}
+</div>
+
+<div class="bg-dark">
+    //- mobile: 80px
+    //- desktop: 192px
+    <div class="py-3 py-md-5"></div>
+    <div class="py-3 py-sm-5"></div>
+    {% include '~~/Assets/Lava/Custom/Components/UpcomingEvents.lava' %}
+    //- mobile: 64px
+    //- desktop: 128px
+    <div class="py-3"></div>
+    <div class="py-md-3"></div>
+    <div class="py-md-3"></div>
+
+</div>
+
+
+<div class="position-relative" style="transform:translateY(-1px);">
+    <div class="position-absolute top-0 right-0 left-0" style="clip-path:url(#mask-curve);">
+        <div class="bg-dark d-none d-sm-block d-md-none" style="height: 100px;"></div>
+        {% include '~~/Assets/Lava/Custom/Components/PageTransition.lava' startingbg:'#0c1a31' %}
+    </div>
+
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-xs-12 col-sm-12 col-md-11 col-lg-10">
+                <div class="gutterless-mobile">
+                    <div class="bg-primary bg-topograph cta-pill">
+                        <div class="row d-flex align-items-center flex-wrap">
+                            <div class="col-xs-12 col-sm-12 col-md-7">
+                                <h2 class="text-white text-center text-md-left mb-5 mb-md-0">Looking For More?<br>Discover Events at The Ark</h2>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-5">
+                                <div class="text-center text-md-right">
+                                    <a href="#" class="btn btn-white btn-lg font-weight-medium">View Calendar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+//- mobile: 80px
+//- desktop: 104px
+<div class="py-4 py-md-5"></div>
+<div class="py-3 py-md-1"></div>
+{% include '~~/Assets/Lava/Custom/Homepage/_Ministries.lava' %}
+
+//- 32px spacing
+<div class="py-3"></div>
+
+<div class="bg-gold position-relative">
+    {% include '~~/Assets/Lava/Custom/Components/PageTransition.lava' book:'true' %}
+
+    //- mobile: 64px
+    //- desktop: 96px
+    <div class="py-3 py-md-4"></div>
+    <div class="py-3 py-md-4"></div>
+
+    {% include '~~/Assets/Lava/Custom/Homepage/_Resources.lava' %}
+
+    //- mobile: 96px
+    //- desktop: 192px
+    <div class="py-5"></div>
+    <div class="py-md-5"></div>
+
+</div>
+

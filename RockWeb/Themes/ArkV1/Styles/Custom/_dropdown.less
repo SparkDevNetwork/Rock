@@ -1,0 +1,22 @@
+// out:false
+
+
+.dropdown.open .dropdown-menu {
+  margin: 16px 0 0 0;
+  padding: 24px;
+  background-color: #F2F3F5;
+  border: 1px solid mix(#fff, @text-color, 80%);
+  .rounded-sm();
+
+  a {
+    padding: 0;
+    line-height: 2.25em;
+    font-weight: 500;
+
+    &:hover {
+      background-color: transparent;
+      color: @brand-primary;
+
+    }
+  }
+}

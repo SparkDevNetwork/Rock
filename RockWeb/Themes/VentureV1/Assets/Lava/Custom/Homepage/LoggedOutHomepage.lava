@@ -1,0 +1,694 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/LoggedOutHomepage.lava' %} {% endcomment %}
+
+{% stylesheet id:'heroFeatureCards' compile:'less' %}
+    .hero-feature-cards {
+        @media (min-width: 992px) {
+            margin-top: -104px;
+        }
+
+        input[type="number"] {
+            height: 40px;
+        }
+    }
+
+    .homepage-swiper-gallery {
+        background: linear-gradient(0deg, #F8F9FA 64px, #ffffff 64px);
+    }
+
+    .swiper-section {
+        background: linear-gradient(180deg, #E9ECEF 50%, #F8F9FA 50.1%);
+
+        &-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            overflow: hidden;
+
+            padding: 30px 45px;
+
+            &-inner {
+                width: 100%;
+                margin: 0 auto;
+                position: relative;
+            }
+
+            @media (min-width: 768px) {
+                padding: 48px;
+                // todo: .rounded-md();
+                border-radius: 12px;
+                // todo: .shadow-lg();
+                box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
+            }
+
+            @media (min-width: 992px) {
+                padding: 60px 100px;
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' %}
+
+{% cache key:'homepage-logged-out-leadcontent' duration:'0'  %}
+    <div class="d-flex flex-column w-100 bg-white">
+
+        <div class="order-3 order-md-1 bg-xs-default bg-sm-default bg-md-venture-white">
+            <div class="py-3 py-md-0"></div>
+            <div class="container container-lg hero-feature-cards">
+                <div class="row d-flex flex-wrap">
+
+                    <div class="col-xs-12 col-sm-12 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-flag"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">First Time? Plan a Visit.</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <input type="number" class="form-control" id="inputPostalCode" placeholder="Find a campus by Zip code...">
+                                <a class="btn btn-primary ml-0 ml-sm-3 mt-2 mt-sm-0 btn-grow js-search-button" href="#">Search</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-play"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Watch on Demand</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a class="font-weight-bold" href="/ondemand">Watch Now</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-user-circle"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Login in for a Full Experience</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a class="font-weight-bold" href="/login">Log in or Register</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            /- ~ Welcome to Venture Church -/
+        <div class="order-1 order-md-2">
+            <div class="py-3"></div>
+            <div class="py-3"></div>
+            <div class="container container-lg">
+                <div class="row">
+                    <div class="col-md-5 col-lg-3">
+                        <h2 class="accent accent-invite">Welcome to Venture Church!</h2>
+                    </div>
+                    <div class="col-md-7 col-lg-6 pt-2 pt-md-0">
+                        <p class="m-0">Venture’s weekly worship experiences feature live music led by Venture Worship and a biblical message from one of Venture’s teaching pastors. Learn more about our 5 campuses across South Mississippi, what we believe, and who we are as a church.</p>
+                    </div>
+                </div>
+                <a href="/campuses" class="btn btn-primary btn-grow mt-4">Times & Locations</a>
+            </div>
+            <div class="py-3"></div>
+            <div class="py-3"></div>
+            <div class="pb-3"></div>
+        </div>
+
+        <div class="order-2 order-md-3 homepage-swiper-gallery" data-aos="fade-up">
+            <div class="py-3 py-md-0"></div>
+            <div class="position-relative overflow-hidden pb-5 pb-sm-0">
+                <div class="container container-lg">
+                    {[ imageslider galleryId:'2530' shownavigation:'true' ]}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endcache %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% contentchannelitem where:'ContentChannelId == 11 && StartDateTime < "{{now}}"' limit:'1' iterator:'LatestSeries' sort:'StartDateTime desc' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign latestSeries = LatestSeries | First %}
+
+{% assign latestSeriesChildItems = latestSeries.ChildItems %}
+{% for childItem in latestSeriesChildItems %}
+    {% assign startDate = childItem.ChildContentChannelItem.StartDateTime | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' %}
+
+    {% if startDate < now %}
+        {% assign latestMessageObj = childItem.ChildContentChannelItem %}
+    {% else %}
+        {% break %}
+    {% endif %}
+{% endfor %}
+
+{% assign seriesTitle = latestSeries.Title %}
+{% assign seriesImage = latestSeries | Attribute:'SeriesImage','RawValue' | ImageUrl %}
+{% assign seriesSlug = latestSeries.PrimarySlug %}
+{% assign messageDate = latestMessageObj.StartDateTime | Date:'MMM d' %}
+{% assign messageDateLong = latestMessageObj.StartDateTime | Date:'MMM d, yyyy' %}
+{% assign messageTitle = latestMessageObj.Title %}
+{% assign messageSlug = latestMessageObj.PrimarySlug %}
+{% assign messageDescription = latestMessageObj.Content | Truncate:200 %}
+{% assign messageVideo = latestMessageObj | Attribute:'Video','Object' %}
+{% assign messageImg = messageVideo.DefaultThumbnailUrl %}
+{% assign messageSpeaker = latestMessageObj | Attribute:'Speaker' %}
+
+
+{% if messageImg and messageImg != empty %}
+    {% assign messageImg = messageImg | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+{% else %}
+    {% assign messageImg = seriesImage | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+{% endif %}
+
+{%- capture latestMessage -%}
+    <div class="special-card special-card-5x3 hide-buttons-mobile bg-dark" style="background-image:url({{ messageImg }});">
+        <div class="special-card-content">
+            <div class="special-card-details text-white">
+                <span class="d-block special-card-subheading">{{ messageDate }} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ seriesTitle }}</span>
+                <h4 class="special-card-heading">{{ messageTitle }}</h4>
+            </div>
+            <div class="special-card-actions">
+                <a href="/series/{{ seriesSlug }}/{{ messageSlug }}" class="btn btn-primary btn-opaque">View Details</a>
+            </div>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture latestMessageStripped -%}
+    <div class="special-card special-card-5x3 hide-buttons-mobile special-card-no-overlay bg-dark" style="background-image:url({{ messageImg }}); box-shadow: 20px -15px 30px -10px rgba(12, 41, 57, 0.2);">
+        <div class="special-card-content">
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture latestMessageButtons -%}
+    <div class="mt-3 mt-md-5">
+        <a href="/series/{{ seriesSlug }}/{{ messageSlug }}" class="btn btn-primary btn-grow">Watch Now <i class="fa fa-play ml-2"></i></a>
+        <a href="/media" class="btn btn-default btn-grow">See all Messages</a>
+    </div>
+{%- endcapture -%}
+
+{%- capture latestMessageDetail -%}
+    <h4 class="text-primary accent accent-invite mb-2">Our Latest Message</h4>
+    <h2>{{ messageTitle }}</h2>
+    <div class="pb-4 pt-0 py-md-3"></div>
+    <p class="m-0">{{ messageDescription }}</p>
+    <div class="py-3"></div>
+    {% comment %} todo: update url (v1) {% endcomment %}
+    <p class="m-0">
+        <strong class="date">{{ messageDateLong }}</strong>
+        <span class="text-muted"> &nbsp; <i class="venture-diamond text-muted"></i> &nbsp; </span>
+        <a href="/series/{{ seriesSlug }}" class="font-weight-bold">{{ seriesTitle }}</a>
+        <span class="text-muted"> &nbsp; <i class="venture-diamond text-muted"></i> &nbsp; </span>
+        {% comment %} todo: add back when we can link this {% endcomment %}
+        {% comment %} <a href="#" class="font-weight-bold">{{ messageSpeaker }}</a> {% endcomment %}
+        <b>{{ messageSpeaker }}</b>
+    </p>
+{%- endcapture -%}
+
+<div class="py-5"></div>
+
+{%- capture colOneClasses -%}col-xs-12 col-sm-12 col-md-5 col-lg-4{%- endcapture -%}
+{%- capture colTwoClasses -%}col-xs-12 col-sm-12 col-md-6 col-lg-7 col-md-push-1{%- endcapture -%}
+
+<div class="container container-lg" id="latest-message-aos-anchor">
+    <div class="row d-flex flex-wrap">
+        <div class="{{ colOneClasses }} mb-4 mb-md-0" data-aos="fade-right" data-aos-anchor="#latest-message-aos-anchor">
+            {{ latestMessageDetail }}
+            <div class="d-none d-md-block">
+                {{ latestMessageButtons }}
+            </div>
+        </div>
+        <div class="{{ colTwoClasses }}" data-aos="fade-left" data-aos-delay="200" data-aos-anchor="#latest-message-aos-anchor">
+            {{ latestMessageStripped }}
+            <div class="d-block d-md-none">
+                {{ latestMessageButtons }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="py-3"></div>
+<div class="py-md-3"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% assign eventItemIds = '' %}
+{% assign upcomingEventsCount = 1 %}
+
+{% calendarevents calendarid:'1' maxoccurrences:'30' %}
+    {% for item in EventScheduledInstances %}
+        {% if forloop.first %}
+            {% assign nonUsersEventScheduledInstances = EventScheduledInstances %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endcalendarevents %}
+
+{%- capture upcomingEvents -%}
+    {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-1.5|16,1200-2|16' ]}
+        {% for item in nonUsersEventScheduledInstances %}
+
+            {% assign event = item.EventItemOccurrence %}
+            {% assign eventItemId = event.EventItemId | AsString %}
+            {% assign eventItemIdsArray = eventItemIds | Split:',' %}
+            {% assign isRepeatedEvent = eventItemIdsArray | Contains:eventItemId | AsBoolean %}
+
+            {% assign eventItem = event.EventItem %}
+            {% assign featuredEventShowTimes = eventItem | Attribute:'ShowTimeOnFeaturedCard' | AsBoolean %}
+
+
+            {% unless isRepeatedEvent or upcomingEventsCount > 8 %}
+                {% assign eventItemIds = eventItemIds | Append:eventItemId %}
+
+                {% unless forloop.last %}
+                    {% assign eventItemIds = eventItemIds | Append:',' %}
+                {% endunless %}
+
+                {% assign nextStartDate = event.NextStartDateTime | Date:'MMM d hh:mm tt' %}
+                {% assign photo = event.EventItem.PhotoId %}
+                {% if photo and photo != empty %}
+                    {% assign photo = photo | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+                {% endif %}
+
+                [[ slide ]]
+                    <div class="special-card special-card-5x3 hide-buttons-mobile bg-dark" style="background-image:url({{ photo }});">
+                        <div class="special-card-content">
+                            <div class="special-card-details text-white">
+                                {% if featuredEventShowTimes %}
+                                    <span class="d-block special-card-subheading">{{ event.NextStartDateTime | Date:'MMM d' }} &nbsp;<i class="venture-diamond"></i>&nbsp; {{ event.NextStartDateTime | Date:'hh:mm tt' }}</span>
+                                {% endif %}
+                                <h4 class="special-card-heading">{{ event.EventItem.Name }}</h4>
+                            </div>
+                            <div class="special-card-actions">
+                                <a href="/calendar/{{ eventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+
+                {% assign upcomingEventsCount = upcomingEventsCount | Plus:1 %}
+
+            {% endunless %}
+        {% endfor %}
+    {[ endswiper ]}
+{%- endcapture -%}
+
+{% contentchannelitem where:'ContentChannelId == 33 && StartDateTime < "{{now}}" && ExpireDateTime > "{{now}}"' sort:'ExpireDateTime' limit:'1' iterator:'FeaturedEvents' securityenabled:'false' %}
+    {% for item in FeaturedEvents %}
+        {% if forloop.first %}
+            {% assign featuredEventId = item | Attribute:'Event','Id' %}
+        {% else %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endcontentchannelitem %}
+
+{% if featuredEventId and featuredEventId != empty %}
+    {% eventitemoccurrence where:'EventItemId == {{ featuredEventId }}' expression:'NextStartDateTime > "{{ now }}"' sort:'NextStartDateTime' limit:'10' iterator:'FeaturedEventOccurrences' sort:'Order' securityenabled:'false' %}
+    {% endeventitemoccurrence %}
+
+    {% assign featuredEventObj = FeaturedEventOccurrences | First %}
+    {% assign featuredEventImage = featuredEventObj.EventItem.Photo.Guid %}
+    {% if featuredEventImage and featuredEventImage != empty %}
+        {% assign featuredEventImage = featuredEventImage | ImageUrl | TriumphImgCdn:'w=1600&h=900&fit=crop&crop=faces&auto=compress,format' %}
+    {% endif %}
+    {% assign featuredEventDate = featuredEventObj.NextStartDateTime | Date:'MMM d' | AsString %}
+    {% assign featuredEventTime = featuredEventObj.NextStartDateTime | Date:'hh:mm tt' | AsString %}
+    {% assign featuredEventItem = featuredEventObj.EventItem %}
+    {% assign featuredEventShowTimes = featuredEventItem | Attribute:'ShowTimeOnFeaturedCard' | AsBoolean %}
+
+    {% for eventOccurrence in FeaturedEventOccurrences %}
+        {% assign eventOccurrenceDate = eventOccurrence.NextStartDateTime | Date:'MMM d' | AsString %}
+        {% if eventOccurrenceDate == featuredEventDate %}
+            {% assign eventOccurrenceTime = eventOccurrence.NextStartDateTime | Date:'hh:mm tt' | AsString %}
+            {% unless eventOccurrenceTime == featuredEventTime %}
+                {% assign featuredEventTime = '' %}
+            {% endunless %}
+        {% endif %}
+
+    {% endfor %}
+
+    {% assign featuredEventName = featuredEventObj.EventItem.Name %}
+    {% assign featuredEventOccurrenceId = featuredEventObj.Id %}
+
+    {%- capture featuredEvent -%}
+        <div class="special-card special-card-5x3 hide-buttons-mobile bg-dark" style="background-image:url({{ featuredEventImage }});">
+            <div class="special-card-content">
+                <div class="special-card-details text-white">
+                    {% if featuredEventShowTimes %}
+                        <span class="d-block special-card-subheading">{{ featuredEventDate }}{% if featuredEventTime and featuredEventTime != empty %} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ featuredEventTime }}{% endif %}</span>
+                    {% endif %}
+                    <h2 class="special-card-heading d-none d-sm-block h1">{{ featuredEventName }}</h2>
+                    <h4 class="special-card-heading d-block d-sm-none">{{ featuredEventName }}</h4>
+                </div>
+                <div class="special-card-actions">
+                    {% comment %} todo: update url {% endcomment %}
+                    <a href="/calendar/{{ featuredEventObj.EventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                </div>
+            </div>
+        </div>
+    {%- endcapture -%}
+{% endif %}
+
+
+
+{% comment %} STORIES {% endcomment %}
+{% contentchannelitem where:'ContentChannelId == 37' limit:'10' iterator:'Stories' sort:'StartDateTime desc' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign stories = Stories | Shuffle %}
+{% assign storyCount = 0 %}
+
+
+{% capture stories %}
+    {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-2|16' ]}
+        {% for story in stories %}
+            {% assign image = story | Attribute:'Image','Guid' %}
+            {% if image and image != empty %}
+                {% assign image = image | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+            {% endif %}
+
+            {% if storyCount < 5 %}
+                {% assign storyCount = storyCount | Plus:1 %}
+
+                [[ slide ]]
+                    <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ image }});">
+                        <div class="special-card-content">
+                            <div class="special-card-details text-white">
+                                <span class="d-block special-card-subheading">{{ story.StartDateTime | Date:'MMM d' }}</span>
+                                <h4 class="special-card-heading">{{ story.Title }}</h4>
+                            </div>
+                            <div class="special-card-actions">
+                                {% comment %} todo: update route {% endcomment %}
+                                <a href="/stories/{{ story.PrimarySlug }}" class="btn btn-primary btn-opaque">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+            {% endif %}
+        {% endfor %}
+    {[ endswiper ]}
+{% endcapture %}
+
+<div class="py-3 py-md-5"></div>
+
+{% if featuredEventId and featuredEventId != empty %}
+    <div class="bg-muted">
+        <div class="py-3 py-md-5"></div>
+        <div class="container container-lg" data-aos="fade-up">
+            <h2 class="accent accent-invite accent-center text-center mb-4">Featured Event</h2>
+            {{ featuredEvent }}
+        </div>
+        <div class="py-3 py-md-5"></div>
+        <div class="py-3 py-md-0"></div>
+    </div>
+{% else %}
+    <div class="bg-muted">
+        <div class="py-3 py-md-5"></div>
+        <div class="py-3 py-md-0"></div>
+    </div>
+{% endif %}
+
+
+
+<div class="swiper-section">
+    <div class="container container-lg gutterless-mobile">
+        <div class="swiper-section-card" data-aos="fade-up">
+
+            <h2 class="accent accent-invite accent-center text-center mb-4 w-100">Upcoming Events</h2>
+
+            <div class="position-relative w-100">
+                <div class="swiper-section-card-inner">
+
+                    {{ upcomingEvents }}
+
+                </div>
+            </div>
+
+            <div class="text-center">
+                <div class="py-3"></div>
+                <a href="/calendar" class="btn btn-primary btn-grow">See all events</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="py-sm-3"></div>
+<div class="py-sm-3"></div>
+
+<div class="swiper-section" style="background:#f8f9fa !important;">
+    <div class="container container-lg gutterless-mobile">
+        <div class="swiper-section-card shadow-none" data-aos="fade-up" style="background-color: #e9ecef !important;">
+
+            <h2 class="accent accent-invite accent-lightest mb-4 w-100 text-center accent-center">Share Your Story</h2>
+
+            <div class="position-relative w-100">
+                <div class="swiper-section-card-inner">
+
+                    {{ stories }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% cache key:'homepage-ministries' duration:'14400' twopass:'false' %}
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    <div class="container container-lg">
+        <div class="row">
+            <div class="col-md-6 col-md-push-3">
+                <h2 class="accent accent-invite accent-light accent-center text-center mb-3" data-aos="fade-up">NextGen Ministries</h2>
+                <p class="text-center m-0" data-aos="fade-up">
+                    Partnering with families to raise a generation who knows, loves, and follows Jesus.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    <div class="container container-lg">
+        <div class="row d-flex flex-wrap">
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4" data-aos="fade-up">
+                <div class="poster-card js-poster-card h-100" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/kids.png' | TriumphImgCdn:'w=800&h=450&fit=crop&auto=compress,format' }});">
+                    <div class="poster-card-body js-poster-card-body">
+                        <h2 class="poster-card-title accent accent-white">Kids</h2>
+                        <div class="poster-card-hidden js-poster-card-hidden">
+                            <a href="/kids" class="text-white stretched-link">Birth-5<sup>th</sup> Grade</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4" data-aos="fade-up">
+                <div class="poster-card js-poster-card h-100" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/students.png' | TriumphImgCdn:'w=800&h=450&fit=crop&auto=compress,format' }});">
+                    <div class="poster-card-body js-poster-card-body">
+                        <h2 class="poster-card-title accent accent-white">Students</h2>
+                        <div class="poster-card-hidden js-poster-card-hidden">
+                            <a href="/students" class="text-white stretched-link">6<sup>th</sup>-12<sup>th</sup> Grade</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4" data-aos="fade-up">
+                <div class="poster-card js-poster-card h-100" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage---College-sized.jpg' | TriumphImgCdn:'w=800&h=450&fit=crop&auto=compress,format' }});">
+                    <div class="poster-card-body js-poster-card-body">
+                        <h2 class="poster-card-title accent accent-white">College</h2>
+                        <div class="poster-card-hidden js-poster-card-hidden">
+                            <a href="college" class="text-white stretched-link">College-aged 18-25</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="py-3"></div>
+
+{% endcache %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% assign facebookUrl = 'Global' | Attribute:'FacebookUrl','RawValue' %}
+{% assign instagramUrl = 'Global' | Attribute:'InstagramUrl','RawValue' %}
+{% assign twitterUrl = 'Global' | Attribute:'TwitterUrl','RawValue' %}
+
+{%- capture needPrayer -%}
+    <div class="cta-card h-100 bg-invest" style="background-image:Url('/Themes/VentureV1/Assets/Images/dark-bg.png')">
+        <div class="cta-card-body">
+            <i class="fa fa-comments cta-card-icon"></i>
+            <h3 class="cta-card-title">Need Prayer?</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="/prayer" class="btn btn-primary btn-light">Request Prayer</a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture dailyTools -%}
+    <div class="cta-card bg-invite h-100">
+        <div class="cta-card-body">
+            <i class="fa fa-bible cta-card-icon"></i>
+            <h3 class="cta-card-title">Daily Tools</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="/resources" class="btn btn-primary btn-light">View All Resources</a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+
+{%- capture stayConnected -%}
+    <div class="cta-card bg-invite h-100">
+        <div class="cta-card-body">
+            <h3 class="cta-card-title">Stay Connected</h3>
+        </div>
+        <div class="cta-card-footer">
+            <a href="{{ facebookUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-facebook"></i></a>
+            <a href="{{ twitterUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-twitter"></i></a>
+            <a href="{{ instagramUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-instagram"></i></a>
+        </div>
+    </div>
+{%- endcapture -%}
+
+<div class="py-3"></div>
+<div class="py-3"></div>
+
+<div class="container container-lg">
+    <div class="row d-flex flex-wrap">
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+            {{ needPrayer }}
+        </div>
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+            {{ dailyTools }}
+        </div>
+        <div class="col-xs-12 col-sm-12 col-lg-4 mb-4" data-aos="fade-up">
+            {{ stayConnected }}
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script>
+    $(document).ready(function() {
+        $('.js-search-button').on('click', function() {
+            if ($('#inputPostalCode').val() != '') { // enter
+                window.location.replace(`/campuses?location=${$('#inputPostalCode').val()}#locations`);
+            }
+        });
+
+        $('#inputPostalCode').keypress(function (e) {
+            var key = e.which;
+            if (key == 13 &&  $('#inputPostalCode').val() != '') { // enter
+                window.location.replace(`/campuses?location=${$('#inputPostalCode').val()}#locations`);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,48 @@
+// out:false
+
+.plyr--video {
+    .plyr__controls {
+        // todo: replace
+        transition: all .3s ease;
+        // .transition();
+    }
+
+    &.plyr--stopped,
+    &.plyr--paused {
+        .plyr__controls {
+            transform: translateY(100%);
+        }
+    }
+
+    &.plyr--playing {
+        .plyr__controls {
+            transform: translateY(0);
+        }
+
+        z-index: 100;
+    }
+
+    button[aria-label="Play"].plyr__control {
+        padding: 16px;
+        background-color: fadeout(#e74724, 20%);
+        opacity: 1;
+
+        @media (min-width: 992px) {
+            padding: 32px;
+        }
+
+        &:hover {
+            background-color: #e74724;
+        }
+
+        svg {
+            width: 32px;
+            height: 32px;
+
+            @media (min-width: 992px) {
+                width: 64px;
+                height: 64px;
+            }
+        }
+    }
+}

@@ -1,0 +1,80 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% capture accordion %}
+{[ accordion paneltype:'accordion' ]}
+    [[ item title:'Baptism' ]]
+        <p>
+            Located in and around auditorium.
+        </p>
+    [[ enditem ]]
+    [[ item title:'Milestones' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+    [[ item title:'Media' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+    [[ item title:'Serve' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+{[ endaccordion ]}
+{% endcapture %}
+
+{% capture accordionRaw %}
+{% raw %}
+{[ accordion paneltype:'accordion' ]}
+    [[ item title:'Baptism' ]]
+        <p>
+            Located in and around auditorium.
+        </p>
+    [[ enditem ]]
+    [[ item title:'Milestones' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+    [[ item title:'Media' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+    [[ item title:'Serve' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+{[ endaccordion ]}
+{% endraw %}
+{% endcapture %}
+
+{% capture accordionEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Accordion</blockquote>
+{{ accordion | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% capture accordionRawEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Accordion</blockquote>
+{{ accordionRaw | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3>Accordion</h3>
+{{ accordion }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ accordionRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ accordionEscaped }}
+

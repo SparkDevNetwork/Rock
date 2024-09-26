@@ -1,0 +1,51 @@
+﻿{% for item in Items %}
+  {%- assign itemPrimarySlug = item.PrimarySlug | Trim -%}
+  {%- if LinkedPages.DetailPage contains '{Slug}' and itemPrimarySlug != '' -%}
+    {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
+  {%- else -%}
+    {%- if LinkedPages.DetailPage contains '{Slug}' -%}
+      {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.Id | Prepend:'/' -%}
+    {%- else -%}
+      {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
+    {%- endif -%}
+  {%- endif -%}
+
+<article class="margin-b-lg">
+  <h3>{{ item.Title }}</h3>
+
+  <div>
+    {{ item | Attribute:'Summary' }}
+  </div>
+
+  <p class="margin-t-lg">
+    <a href="{{ itemLink }}" class="btn btn-default btn-xs">
+      Read more <i class="fa fa-chevron-right"></i>
+    </a>
+  </p>
+</article>
+{% endfor %}
+
+<div class="clearfix">
+  {% assign nextPageString = Pagination.NextPage | ToString %}
+  {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+  {% if Pagination.PreviousPage == -1 %}
+  <div class="btn btn-default pull-left">
+    <i class="fa fa-chevron-left"></i> Prev
+  </div>
+  {% else %}
+  <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
+    <i class="fa fa-chevron-left"></i> Prev
+  </a>
+  {% endif %}
+
+  {% if Pagination.NextPage == -1 %}
+  <div class="btn btn-default pull-right">
+    Next <i class="fa fa-chevron-right"></i>
+  </div>
+  {% else %}
+  <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
+    Next <i class="fa fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>

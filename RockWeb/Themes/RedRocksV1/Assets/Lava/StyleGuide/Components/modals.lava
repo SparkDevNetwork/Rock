@@ -1,0 +1,83 @@
+<h1 class="mt-0">Modals</h1>
+
+{% capture modals %}
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+    Launch demo modal
+</button>
+
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-close" aria-hidden="true"></i></button>
+          <h4 class="modal-title accent accent-invite accent-light" id="myModalLabel">Modal title</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc nec ex eu felis ullamcorper tempor. Quisque sit amet ante at purus condimentum iaculis. Morbi mollis porttitor tortor, at euismod mi vestibulum non. Suspendisse cursus nibh sed quam venenatis venenatis. Nulla interdum erat ante, vitae congue libero tristique vel. Cras pellentesque, nulla ut scelerisque rutrum, lorem urna dignissim nunc, sit amet egestas felis ligula non elit. Proin sagittis quam ac efficitur tempus. In faucibus ligula nisi, et feugiat elit ullamcorper in. Maecenas volutpat massa in libero maximus sagittis et non elit. Interdum et malesuada fames ac ante ipsum primis in faucibus.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endcapture %}
+
+{% capture modalsEscaped %}
+    {{ codeOpen }}
+    {{ modals | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture modalsLg %}
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myLargeModal">
+    Launch demo modal
+</button>
+
+  <div class="modal container fade" id="myLargeModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-close" aria-hidden="true"></i></button>
+          <h4 class="modal-title accent accent-invite accent-light" id="myLargeModalLabel">Modal title</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc nec ex eu felis ullamcorper tempor. Quisque sit amet ante at purus condimentum iaculis. Morbi mollis porttitor tortor, at euismod mi vestibulum non. Suspendisse cursus nibh sed quam venenatis venenatis. Nulla interdum erat ante, vitae congue libero tristique vel. Cras pellentesque, nulla ut scelerisque rutrum, lorem urna dignissim nunc, sit amet egestas felis ligula non elit. Proin sagittis quam ac efficitur tempus. In faucibus ligula nisi, et feugiat elit ullamcorper in. Maecenas volutpat massa in libero maximus sagittis et non elit. Interdum et malesuada fames ac ante ipsum primis in faucibus.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endcapture %}
+
+{% capture modalsLgEscaped %}
+    {{ codeOpen }}
+    {{ modalsLg | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+<h3 class="sg-section-header mt-0">Standard Modal</h3>
+
+<!-- Button trigger modal -->
+<div class="mb-5">
+{{ modals }}
+</div>
+{{ modalsEscaped }}
+
+<h3 class="sg-section-header">Large Modal</h3>
+
+<!-- Button trigger modal -->
+<div class="mb-5">
+{{ modalsLg }}
+</div>
+{{ modalsLgEscaped }}
+
+

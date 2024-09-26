@@ -1,0 +1,754 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/LoggedInHomepage.lava' %} {% endcomment %}
+
+{% stylesheet id:'heroFeatureCardsv2' compile:'less' %}
+    .hero-feature-cards {
+        @media (min-width: 992px) {
+            margin-top: -104px;
+        }
+
+        input[type="number"] {
+            height: 40px;
+        }
+    }
+
+    .homepage-swiper-gallery {
+        background: linear-gradient(0deg, #F8F9FA 64px, #ffffff 64px);
+    }
+
+    .swiper-section {
+        background: linear-gradient(180deg, #E9ECEF 50%, #F8F9FA 50.1%);
+
+        &-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            overflow: hidden;
+
+            padding: 30px 45px;
+
+            &-inner {
+                width: 100%;
+                margin: 0 auto;
+                position: relative;
+            }
+
+            @media (min-width: 768px) {
+                padding: 48px;
+                // todo: .rounded-md();
+                border-radius: 12px;
+                // todo: .shadow-lg();
+                box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
+            }
+
+            @media (min-width: 992px) {
+                padding: 60px 100px;
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' %}
+
+/- ~ Feature Cards -/
+{% assign userPersonalizationSegments = CurrentPerson | PersonalizationItems:'Segments' %}
+
+{% assign isBaptized = false %}
+{% assign isHouseChurchMember = false %}
+{% assign isServingTeamhMember = false %}
+
+{% for segment in userPersonalizationSegments %}
+    {% assign key = segment.Key %}
+    {% if key == 'BaptizedMembers' %}
+        {% assign isBaptized = true %}
+    {% elseif key == 'HouseChurchMembers' %}
+        {% assign isHouseChurchMember = true %}
+    {% elseif key == 'ServingTeamMembers' %}
+        {% assign isServingTeamhMember = true %}
+    {% endif %}
+{% endfor %}
+
+<div class="d-flex flex-column w-100 bg-white">
+    <div class="order-3 order-md-1 bg-xs-default bg-sm-default bg-md-venture-white">
+        <div class="py-3 py-md-0"></div>
+        <div class="container container-lg hero-feature-cards">
+            <div class="row d-flex flex-wrap">
+                {% comment %}
+                    BAPTISM
+                    user has a baptism date
+                {% endcomment %}
+                {% if isBaptized %}
+                    <div class="col-xs-12 col-sm-12 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-play"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Watch On Demand</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <a class="font-weight-bold" href="/ondemand">Watch Now</a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% comment %}
+                    BAPTISM
+                    user does NOT have baptism date
+                {% endcomment %}
+                {% else %}
+                    <div class="col-xs-12 col-sm-12 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-tint"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Get Baptized</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <a class="font-weight-bold" href="/baptism">Register Today</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+
+                {% comment %}
+                    HOUSE CHURCH
+                    user IS a member of a house church
+                {% endcomment %}
+                {% if isHouseChurchMember %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-bible"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Read Today’s Bible Reading Plan</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                {% comment %} todo: add href {% endcomment %}
+                                <a class="font-weight-bold" href="/biblereadingplan">View Bible Reading Plan</a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% comment %}
+                    HOUSE CHURCH
+                    user is NOT a member of a house church
+                {% endcomment %}
+                {% else %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-home"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Join a House Church</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <a class="font-weight-bold" href="/housechurch">Find a Group</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+
+                {% comment %}
+                    SERVING
+                    user IS a member of a serving team
+                {% endcomment %}
+                {% if isServingTeamhMember %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-book"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Today’s Daily Devotion</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                {% comment %} todo: add href {% endcomment %}
+                                <a class="font-weight-bold" href="/dailydevos">View Daily Devos</a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% comment %}
+                    SERVING
+                    user is NOT a member of a serving team
+                {% endcomment %}
+                {% else %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-users"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Find a Place to Serve</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a class="font-weight-bold" href="/serve">See Opportunities</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    /- ~ Welcome to Venture Church -/
+    <div class="order-1 order-md-2">
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="container container-lg">
+            <div class="row">
+                <div class="col-md-5 col-lg-3">
+                    <h2 class="accent accent-invite">Welcome to Venture Church!</h2>
+                </div>
+                <div class="col-md-7 col-lg-6 pt-2 pt-md-0">
+                    <p class="m-0">Venture’s weekly worship experiences feature live music led by Venture Worship and a biblical message from one of Venture’s teaching pastors. Learn more about our 5 campuses across South Mississippi, what we believe, and who we are as a church.</p>
+                </div>
+            </div>
+            <a href="/profile" class="btn btn-primary btn-grow mt-4">My Profile</a>
+        </div>
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="pb-3"></div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% contentchannelitem where:'ContentChannelId == 11 && StartDateTime < "{{now}}"' limit:'1' iterator:'LatestSeries' sort:'StartDateTime desc' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign latestSeries = LatestSeries | First %}
+
+{% assign latestSeriesChildItems = latestSeries.ChildItems %}
+{% for childItem in latestSeriesChildItems %}
+    {% assign startDate = childItem.ChildContentChannelItem.StartDateTime | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' %}
+    {% if startDate < now %}
+        {% assign latestMessageObj = childItem.ChildContentChannelItem %}
+    {% else %}
+        {% break %}
+    {% endif %}
+{% endfor %}
+
+{% assign seriesTitle = latestSeries.Title %}
+{% assign seriesImage = latestSeries | Attribute:'SeriesImage','RawValue' | ImageUrl %}
+{% assign seriesSlug = latestSeries.PrimarySlug %}
+{% assign messageDate = latestMessageObj.StartDateTime | Date:'MMM d' %}
+{% assign messageDateLong = latestMessageObj.StartDateTime | Date:'MMM d, yyyy' %}
+{% assign messageTitle = latestMessageObj.Title %}
+{% assign messageSlug = latestMessageObj.PrimarySlug %}
+{% assign messageDescription = latestMessageObj.Content | Truncate:200 %}
+{% assign messageVideo = latestMessageObj | Attribute:'Video','Object' %}
+{% assign messageImg = messageVideo.DefaultThumbnailUrl %}
+{% assign messageSpeaker = latestMessageObj | Attribute:'Speaker' %}
+
+
+{% if messageImg and messageImg != empty %}
+    {% assign messageImg = messageImg | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+{% else %}
+    {% assign messageImg = seriesImage | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+{% endif %}
+
+{% contentchannelitem where:'ContentChannelId == 33 && StartDateTime < "{{now}}" && ExpireDateTime > "{{now}}"' expression:'StartDateTime < "{{ now }}" && ExpireDateTime > "{{ now }}"' sort:'ExpireDateTime' limit:'1' iterator:'FeaturedEvents' securityenabled:'false' %}
+    {% for item in FeaturedEvents %}
+        {% if forloop.first %}
+            {% assign featuredEventId = item | Attribute:'Event','Id' %}
+        {% else %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endcontentchannelitem %}
+
+{% if featuredEventId and featuredEventId != empty %}
+    {% eventitemoccurrence where:'EventItemId == "{{ featuredEventId }}"' expression:'NextStartDateTime > "{{ now }}"' sort:'NextStartDateTime' limit:'10' iterator:'FeaturedEventOccurrences' sort:'Order' securityenabled:'false' %}
+    {% endeventitemoccurrence %}
+
+    {% assign featuredEventObj = FeaturedEventOccurrences | First %}
+    {% assign featuredEventImage = featuredEventObj.EventItem.Photo.Guid | ImageUrl | TriumphImgCdn:'w=1200&h=675&fit=crop&crop=faces&auto=compress,format' %}
+    {% assign featuredEventDate = featuredEventObj.NextStartDateTime | Date:'MMM d' | AsString %}
+    {% assign featuredEventTime = featuredEventObj.NextStartDateTime | Date:'hh:mm tt' | AsString %}
+    {% assign featuredEventItem = featuredEventObj.EventItem %}
+    {% assign featuredEventShowTimes = featuredEventItem | Attribute:'ShowTimeOnFeaturedCard' | AsBoolean %}
+
+    {% for eventOccurrence in FeaturedEventOccurrences %}
+        {% assign eventOccurrenceDate = eventOccurrence.NextStartDateTime | Date:'MMM d' | AsString %}
+        {% if eventOccurrenceDate == featuredEventDate %}
+            {% assign eventOccurrenceTime = eventOccurrence.NextStartDateTime | Date:'hh:mm tt' | AsString %}
+            {% unless eventOccurrenceTime == featuredEventTime %}
+                {% assign featuredEventTime = '' %}
+            {% endunless %}
+        {% endif %}
+
+    {% endfor %}
+
+    {% assign featuredEventName = featuredEventObj.EventItem.Name %}
+    {% assign featuredEventOccurrenceId = featuredEventObj.EventItemId %}
+{% endif %}
+
+{%- capture latestMessage -%}
+    <div class="special-card special-card-5x3 hide-buttons-mobile bg-dark" style="background-image:url({{ messageImg }});">
+        <div class="special-card-content">
+            <div class="special-card-details text-white">
+                <span class="d-block special-card-subheading">{{ messageDate }} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ seriesTitle }}</span>
+                <h4 class="special-card-heading">{{ messageTitle }}</h4>
+            </div>
+            <div class="special-card-actions">
+                <a href="/series/{{ seriesSlug }}/{{ messageSlug }}" class="btn btn-primary btn-opaque">View Details</a>
+            </div>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture latestMessageStripped -%}
+    <div class="special-card special-card-5x3 hide-buttons-mobile special-card-no-overlay bg-dark" style="background-image:url({{ messageImg }}); box-shadow: 20px -15px 30px -10px rgba(12, 41, 57, 0.2);">
+        <div class="special-card-content">
+        </div>
+    </div>
+{%- endcapture -%}
+
+{% if featuredEventName and featuredEventName != empty %}
+    {%- capture featuredEvent -%}
+        <div class="special-card special-card-5x3 hide-buttons-mobile bg-dark" style="background-image:url({{ featuredEventImage }});">
+            <div class="special-card-content">
+                <div class="special-card-details text-white">
+                    {% if featuredEventShowTimes %}
+                        <span class="d-block special-card-subheading">{{ featuredEventDate }}{% if featuredEventTime and featuredEventTime != empty %} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ featuredEventTime }}{% endif %}</span>
+                    {% endif %}
+                    <h4 class="special-card-heading">{{ featuredEventName }}</h4>
+                </div>
+                <div class="special-card-actions">
+                    <a href="/calendar/event/{{ featuredEventOccurrenceId }}" class="btn btn-primary btn-opaque">View Details</a>
+                </div>
+            </div>
+        </div>
+    {%- endcapture -%}
+
+{% else %}
+    {%- capture latestMessageButtons -%}
+        <div class="mt-3 mt-md-5">
+            <a href="/series/{{ seriesSlug }}/{{ messageSlug }}" class="btn btn-primary btn-grow">Watch Now <i class="fa fa-play ml-2"></i></a>
+            <a href="/media" class="btn btn-default btn-grow">See all Messages</a>
+        </div>
+    {%- endcapture -%}
+
+    {%- capture latestMessageDetail -%}
+        <h4 class="text-primary accent accent-invite mb-2">Our Latest Message</h4>
+        <h2>{{ messageTitle }}</h2>
+        <div class="pb-4 pt-0 py-md-3"></div>
+        <p class="m-0">{{ messageDescription }}</p>
+        <div class="py-3"></div>
+        {% comment %} todo: update url (v1) {% endcomment %}
+        <p class="m-0">
+            <strong class="date">{{ messageDateLong }}</strong>
+            <span class="text-muted"> &nbsp; <i class="venture-diamond text-muted"></i> &nbsp; </span>
+            <a href="/series/{{ seriesSlug }}" class="font-weight-bold">{{ seriesTitle }}</a>
+            <span class="text-muted"> &nbsp; <i class="venture-diamond text-muted"></i> &nbsp; </span>
+            {% comment %} todo: add back when we can link this {% endcomment %}
+            {% comment %} <a href="#" class="font-weight-bold">{{ messageSpeaker }}</a> {% endcomment %}
+            <b>{{ messageSpeaker }}</b>
+        </p>
+    {%- endcapture -%}
+{% endif %}
+
+
+<div class="py-3"></div>
+<div class="py-md-3"></div>
+
+
+{% if featuredEventName and featuredEventName != empty %}
+    {%- capture colOneClasses -%}col-xs-12 col-sm-12 col-md-6{%- endcapture -%}
+    {%- capture colTwoClasses -%}col-xs-12 col-sm-12 col-md-6{%- endcapture -%}
+{% else %}
+    {%- capture colOneClasses -%}col-xs-12 col-sm-12 col-md-5 col-lg-4{%- endcapture -%}
+    {%- capture colTwoClasses -%}col-xs-12 col-sm-12 col-md-6 col-lg-7 col-md-push-1{%- endcapture -%}
+{% endif %}
+
+<div class="container container-lg" id="latest-message-aos-anchor">
+    <div class="row d-flex flex-wrap">
+        <div class="{{ colOneClasses }} mb-4 mb-md-0" data-aos="fade-right" data-aos-anchor="#latest-message-aos-anchor">
+            {% if featuredEventName and featuredEventName != empty %}
+                <h3 class="accent accent-invite accent-lightest mb-3">Latest Message</h3>
+                {{ latestMessage }}
+            {% else %}
+                {{ latestMessageDetail }}
+                <div class="d-none d-md-block">
+                    {{ latestMessageButtons }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="{{ colTwoClasses }}" data-aos="fade-left" data-aos-delay="200" data-aos-anchor="#latest-message-aos-anchor">
+            {% if featuredEventName and featuredEventName != empty %}
+                <h3 class="accent accent-invite accent-lightest mb-3">Upcoming at Venture</h3>
+                {{ featuredEvent }}
+            {% else %}
+                {{ latestMessageStripped }}
+                <div class="d-block d-md-none">
+                    {{ latestMessageButtons }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="py-3"></div>
+<div class="py-md-3"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% assign eventItemIds = '' %}
+{% assign eventItemCount = 1 %}
+
+{% calendarevents calendarid:'1' maxoccurrences:'30' campusids:'{{ CurrentPerson.PrimaryCampusId }}' %}
+    {% for item in EventScheduledInstances %}
+        {% if forloop.first %}
+            {% assign usersEventScheduledInstances = EventScheduledInstances %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endcalendarevents %}
+
+{%- capture upcomingEvents -%}
+    {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-1.5|16,1200-2|16' ]}
+        {% for item in usersEventScheduledInstances %}
+
+            {% assign event = item.EventItemOccurrence %}
+            {% assign eventItemId = event.EventItemId | AsString %}
+            {% assign eventItemIdsArray = eventItemIds | Split:',' %}
+            {% assign isRepeatedEvent = eventItemIdsArray | Contains:eventItemId | AsBoolean %}
+
+            {% assign eventItem = event.EventItem %}
+            {% assign featuredEventShowTimes = eventItem | Attribute:'ShowTimeOnFeaturedCard' | AsBoolean %}
+
+
+            {% unless isRepeatedEvent or eventItemCount > 8 %}
+                {% if eventItemIdsArray %}{% endif %}
+                {% assign eventItemIds = eventItemIds | Append:eventItemId %}
+
+                {% unless forloop.last %}
+                    {% assign eventItemIds = eventItemIds | Append:',' %}
+                {% endunless %}
+
+                {% assign nextStartDate = event.NextStartDateTime | Date:'MMM d hh:mm tt' %}
+                {% assign photo = event.EventItem.PhotoId %}
+                {% if photo and photo != empty %}
+                    {% assign photo = photo | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+                {% endif %}
+                [[ slide ]]
+                    <div class="special-card special-card-5x3 hide-buttons-mobile bg-dark" style="background-image:url({{ photo }});">
+                        <div class="special-card-content">
+                            <div class="special-card-details text-white">
+                                {% if featuredEventShowTimes %}
+                                    <span class="d-block special-card-subheading">{{ event.NextStartDateTime | Date:'MMM d' }} &nbsp;<i class="venture-diamond"></i>&nbsp; {{ event.NextStartDateTime | Date:'hh:mm tt' }}</span>
+                                {% endif %}
+                                <h4 class="special-card-heading">{{ event.EventItem.Name }}</h4>
+                            </div>
+                            <div class="special-card-actions">
+                                <a href="/calendar/{{ eventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+
+                {% assign eventItemCount = eventItemCount | Plus:1 %}
+
+            {% endunless %}
+        {% endfor %}
+    {[ endswiper ]}
+{%- endcapture -%}
+
+
+{%- capture dailyResources -%}
+    <div class="row">
+        <div class="col-sm-6 col-lg-3 mb-3">
+            <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage---7-Marks.jpg' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                <div class="poster-card-body js-poster-card-body">
+                    <h4 class="poster-card-title accent accent-white">7 Marks</h4>
+                    <div class="poster-card-hidden js-poster-card-hidden">
+                        {% comment %} todo: update url {% endcomment %}
+                        <a href="/7marks" class="text-white">Take Assessments</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-3">
+            <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage_-_Bible_Reading_Plan.jpg' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                <div class="poster-card-body js-poster-card-body">
+                    <h4 class="poster-card-title accent accent-white">Bible Reading Plan</h4>
+                    <div class="poster-card-hidden js-poster-card-hidden">
+                        <a href="/Biblereadingplan" class="text-white">View All Plans</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-3">
+            <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/daily-devotional.png' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                <div class="poster-card-body js-poster-card-body">
+                    <h4 class="poster-card-title accent accent-white">Daily Devos</h4>
+                    <div class="poster-card-hidden js-poster-card-hidden">
+                        {% comment %} todo: update url {% endcomment %}
+                        <a href="/dailydevos" class="text-white">View All Devotionals</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-3">
+            <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage_-_Podcast.jpg' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                <div class="poster-card-body js-poster-card-body">
+                    <h4 class="poster-card-title accent accent-white">Podcast &amp; Study Guides</h4>
+                    <div class="poster-card-hidden js-poster-card-hidden">
+                        {% comment %} todo: update url {% endcomment %}
+                        <a href="/podcasts" class="text-white">View All Podcast &amp; Study Guides</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{% contentchannelitem where:'ContentChannelId == 37' limit:'10' iterator:'Stories' sort:'StartDateTime desc' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign stories = Stories | Shuffle %}
+{% assign storyCount = 0 %}
+
+
+{% capture stories %}
+    {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-2|16' ]}
+        {% for story in stories %}
+            {% assign image = story | Attribute:'Image','Guid' %}
+            {% if image and image != empty %}
+                {% assign image = image | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+            {% endif %}
+
+            {% if storyCount < 5 %}
+                {% assign storyCount = storyCount | Plus:1 %}
+
+                [[ slide ]]
+                    <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ image }});">
+                        <div class="special-card-content">
+                            <div class="special-card-details text-white">
+                                <span class="d-block special-card-subheading">{{ story.StartDateTime | Date:'MMM d' }}</span>
+                                <h4 class="special-card-heading">{{ story.Title }}</h4>
+                            </div>
+                            <div class="special-card-actions">
+                                {% comment %} todo: update route {% endcomment %}
+                                <a href="/stories/{{ story.PrimarySlug }}" class="btn btn-primary btn-opaque">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+            {% endif %}
+        {% endfor %}
+    {[ endswiper ]}
+{% endcapture %}
+
+
+<div class="py-3 py-md-5"></div>
+
+<div class="container container-lg" data-aos="fade-up">
+    <div class="d-flex flex-wrap flex-column flex-sm-row align-items-center align-items-sm-start justify-content-center justify-content-sm-between text-center text-sm-left">
+        <h2 class="accent accent-lightest mb-4 d-none d-sm-block">Campus Events</h2>
+        <h2 class="accent accent-lightest accent-center mb-4 d-block d-sm-none">Campus Events</h2>
+        {% comment %} todo: update url {% endcomment %}
+        <a href="/calendar" class="btn btn-primary">See all Events</a>
+        <div class="w-100 py-3 d-sm-none"></div>
+    </div>
+    <div class="position-relative">
+        {{ upcomingEvents }}
+    </div>
+</div>
+<div class="py-3"></div>
+<div class="py-md-3"></div>
+
+<div class="bg-muted">
+    <div class="py-3 py-md-5"></div>
+    <div class="container container-lg" data-aos="fade-up">
+        <div class="d-flex flex-wrap flex-column flex-sm-row align-items-center align-items-sm-start justify-content-center justify-content-sm-between text-center text-sm-left">
+            <h2 class="accent accent-lightest mb-4 d-none d-sm-block">Resources</h2>
+            <h2 class="accent accent-lightest accent-center mb-4 d-block d-sm-none">Resources</h2>
+            {% comment %} todo: update url {% endcomment %}
+            <a href="/resources" class="btn btn-primary">See all Resources</a>
+            <div class="w-100 py-3 d-sm-none"></div>
+        </div>
+        {% comment %} <h2 class="accent accent-lightest mb-4">Resources</h2> {% endcomment %}
+        {{ dailyResources }}
+    </div>
+    <div class="py-3 py-md-5"></div>
+    <div class="py-3 py-md-0"></div>
+</div>
+
+<div class="swiper-section">
+    <div class="container container-lg gutterless-mobile">
+        <div class="swiper-section-card" data-aos="fade-up">
+
+            <h2 class="accent accent-invite accent-lightest mb-4 w-100">Share Your Story</h2>
+
+            <div class="position-relative w-100">
+                <div class="swiper-section-card-inner">
+
+                    {{ stories }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% cache key:'logged-in-homepage-ctacards' duration:'3600' twopass:'true' %}
+
+
+    {% raw %}
+
+        {% assign facebookUrl = 'Global' | Attribute:'FacebookUrl','RawValue' %}
+        {% assign instagramUrl = 'Global' | Attribute:'InstagramUrl','RawValue' %}
+        {% assign twitterUrl = 'Global' | Attribute:'TwitterUrl','RawValue' %}
+
+        {%- capture needPrayer -%}
+            <div class="cta-card h-100 bg-invest" style="background-image:Url('/Themes/VentureV1/Assets/Images/dark-bg.png')">
+                <div class="cta-card-body">
+                    <i class="fa fa-comments cta-card-icon"></i>
+                    <h3 class="cta-card-title">Need Prayer?</h3>
+                </div>
+                <div class="cta-card-footer">
+                    <a href="/prayer" class="btn btn-primary btn-light">Request Prayer</a>
+                </div>
+            </div>
+        {%- endcapture -%}
+
+        {%- capture shareYourStory -%}
+            <div class="cta-card bg-invite h-100 overlay overlay-dark" style="background-image:Url('/Themes/VentureV1/Assets/Images/Share_Your_Story_3.jpg')">
+                <div class="cta-card-body position-relative z-10">
+                    <i class="fa fa-book-open cta-card-icon"></i>
+                    <h3 class="cta-card-title">Share Your Story</h3>
+                </div>
+                <div class="cta-card-footer position-relative z-10">
+                    <a href="/shareyourstory" class="btn btn-primary btn-light">Share Your Story</a>
+                </div>
+            </div>
+        {%- endcapture -%}
+
+        {%- capture stayConnected -%}
+            <div class="cta-card bg-invite h-100 overlay overlay-dark" style="background-image:Url('/Themes/VentureV1/Assets/Images/Facebook.jpg')">
+                <div class="cta-card-body position-relative z-10">
+                    <h3 class="cta-card-title">Stay Connected</h3>
+                </div>
+                <div class="cta-card-footer position-relative z-10">
+                    <a href="{{ facebookUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-facebook"></i></a>
+                    <a href="{{ twitterUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-twitter"></i></a>
+                    <a href="{{ instagramUrl }}" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-instagram"></i></a>
+                </div>
+            </div>
+        {%- endcapture -%}
+
+        {%- capture dailyTools -%}
+            <div class="cta-card bg-invite h-100">
+                <div class="cta-card-body">
+                    <i class="fa fa-bible cta-card-icon"></i>
+                    <h3 class="cta-card-title">Daily Tools</h3>
+                </div>
+                <div class="cta-card-footer">
+                    <a href="/resources" class="btn btn-primary btn-light">View All Resources</a>
+                </div>
+            </div>
+        {%- endcapture -%}
+
+        {%- capture getApp -%}
+            <div class="cta-card bg-invite h-100">
+                <div class="cta-card-body">
+                    <i class="fa fa-mobile cta-card-icon"></i>
+                    <h3 class="cta-card-title">Get Our App</h3>
+                </div>
+                <div class="cta-card-footer">
+                    <a href="https://play.google.com/store/apps/details?id=org.venturechurch.app" target="_blank"><img src="/Themes/VentureV1/Assets/Images/google-play.png" alt="" width="150" height="49"></a>
+                    <a href="https://apps.apple.com/us/app/id860827488?ign-mpt=uo%3D4" class="ml-2" target="_blank"><img src="/Themes/VentureV1/Assets/Images/apple-app-store.png" alt="" width="150" height="49"></a>
+                </div>
+            </div>
+        {%- endcapture -%}
+    {% endraw %}
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    <div class="container container-lg">
+        <div class="row d-flex flex-wrap">
+            <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+                {% raw %}{{ needPrayer }}{% endraw %}
+            </div>
+            <div class="col-xs-12 col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+                {% raw %}{{ shareYourStory }}{% endraw %}
+            </div>
+            <div class="col-xs-12 col-sm-12 col-lg-4 mb-4" data-aos="fade-up">
+                {% raw %}{{ stayConnected }}{% endraw %}
+            </div>
+        </div>
+    </div>
+{% endcache %}

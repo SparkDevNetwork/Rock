@@ -1,0 +1,56 @@
+.panel-group.panel-group-nav {
+
+    background-color: #ffffff;
+    border-radius: 10px;
+    border: 1px solid @gc-grey;
+    overflow: hidden;
+
+    .panel {
+        background-color: transparent;
+        position: relative;
+        padding: 12px 20px;
+        border-bottom: 1px solid @gc-grey;
+        margin: 0;
+        border-radius: 0;
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        &-heading {
+            font-size: 18px;
+            font-weight: 700;
+            padding: 0;
+            border-radius: 0;
+            border: none;
+            text-transform: uppercase;
+        }
+
+        a {
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+            }
+        }
+
+        i {
+            margin-right: 12px;
+        }
+
+        &.active {
+            background-color: @color-of-the-year;
+
+            a {
+                color: #ffffff !important;
+
+                .text-color {
+                    color: #ffffff !important;
+                }
+            }
+        }
+    }
+}

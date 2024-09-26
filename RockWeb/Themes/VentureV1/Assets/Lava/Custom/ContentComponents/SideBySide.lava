@@ -1,0 +1,52 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/SideBySide.lava' %} {% endcomment %}
+
+{% comment %} content channel attributes {% endcomment %}
+{%- assign channelTitleSize = ContentChannel | Attribute:'TitleSize' | Default:'h3' -%}
+
+{% assign count = 1 %}
+
+{% for item in Items %}
+    {% assign isOdd = count | Modulo:2 | AsBoolean %}
+    {% assign image = item | Attribute:'Image','RawValue' | ImageUrl | Append:'&w=1116&h=868&mode=crop' %}
+    {% assign accentColorObj = item | Attribute:'AccentColor','Object' %}
+    {% assign accentLightnessObj = item | Attribute:'AccentLightness','Object' %}
+    {% assign accentColor = accentColorObj | Attribute:'Class' %}
+    {% assign accentLightness = accentLightnessObj | Attribute:'Class' %}
+
+    {%- capture dataAosLeft -%}
+        data-aos="fade-left"
+    {%- endcapture -%}
+
+    {%- capture dataAosRight -%}
+        data-aos="fade-right"
+    {%- endcapture -%}
+
+    {% if isOdd %}
+        {% assign dataAosOne = dataAosLeft %}
+        {% assign dataAosTwo = dataAosRight %}
+    {% else %}
+        {% assign dataAosOne = dataAosRight %}
+        {% assign dataAosTwo = dataAosLeft %}
+    {% endif %}
+
+    <div class="row d-flex flex-wrap align-items-center">
+        <div class="col-xs-12 col-sm-12 col-md-6{% if isOdd %} order-1 order-md-2{% endif %}" {{ dataAosOne }} data-aos-delay="200">
+            <div class="h-100 mb-5 mb-md-0">
+                <img src="{{ image }}" alt="" class="rounded-md w-100 img-responsive">
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-6{% if isOdd %} order-2 order-md-1{% endif %}" {{ dataAosTwo }}>
+            <div class="h-100{% if isOdd %} pr-md-4{% else %} pl-md-4{% endif %}">
+                <{{ channelTitleSize }} class="accent accent-{{ accentColor }} accent-{{ accentLightness }} mb-3">{{ item.Title }}</{{ channelTitleSize }}>
+                <p>{{ item.Content }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% unless forloop.last %}
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+    {% endunless %}
+
+    {% assign count = count | Plus:1 %}
+{% endfor %}

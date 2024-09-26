@@ -1,0 +1,124 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Events/CalendarLavaV1.lava' %} {% endcomment %}
+
+<div class="bg-md-white">
+    <div class="container container-lg ">
+        <div class="row mb-3">
+            <div class="col-sm-12">
+                <div class="w-100 d-flex flex-wrap js-add-dropdowns">
+                    <div class="dropdown js-custom-dropdown js-custom-dropdown-campus">
+                        <button class="btn btn-primary btn-grow dropdown-toggle" type="button" id="dropdownMenuCampus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Select Campus
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuCampus">
+                            <li>
+                                <a href="#" name="All" value="All">Select Campus</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-md-white pb-3">
+    <div class="container container-lg mb-4">
+        <div class="row d-flex flex-wrap">
+            {% for eventItemOccurrence in EventItemOccurrences %}
+                {% assign event = eventItemOccurrence.EventItemOccurrence %}
+                {% assign campusId = event.CampusId %}
+                {% if campusId and campusId != empty %}
+                    {% assign campus = campusId | FromCache:'Campus' %}
+                {% endif %}
+                {%- capture eventDate -%}
+                    {% if eventOccurrenceSummary.Date != eventOccurrenceSummary.EndDate %}
+                        {{ eventOccurrenceSummary.Date | Date:'MMM dd' }} - {{ eventOccurrenceSummary.EndDate | Date:'MMM dd' }}
+                    {% else %}
+                        {{ eventOccurrenceSummary.DateTime | Date:'dddd, MMM dd' }} at {{ eventOccurrenceSummary.DateTime | Date:'htt' }}
+                    {% endif %}
+                {%- endcapture -%}
+
+                {% assign startDate = eventItemOccurrence.Date %}
+                {% assign startTime = eventItemOccurrence.Time %}
+                {% assign endDate = eventItemOccurrence.EndDate %}
+
+                {%- capture eventDate -%}
+                    {% if startDate == endDate %}
+                        {{ startDate | Date:'dddd, MMM dd' }} at {{ startTime | Date:'htt' }}
+                    {% else %}
+                        {{ startDate | Date:'MMM dd' }} - {{ endDate | Date:'MMM dd' }}
+                    {% endif %}
+                {%- endcapture -%}
+                {% assign contactPersonAliasId = event.ContactPersonAliasId %}
+                {% assign contactEmail = event.ContactEmail %}
+                {% assign contactPhone = event.ContactPhone %}
+
+                {% assign contactPersonNickName = '' %}
+                {% assign contactPersonLastName = '' %}
+
+                {% if contactPersonAliasId and contactPersonAliasId != empty %}
+                    {% personalias where:'Id == {{ contactPersonAliasId }}' limit:'1' iterator:'People' sort:'Order' securityenabled:'false' %}
+                        {% for person in People %}
+                            {% assign contactPersonNickName = person.Person.NickName %}
+                            {% assign contactPersonLastName = person.Person.LastName %}
+                        {% endfor %}
+                    {% endpersonalias %}
+                {% endif %}
+
+                {% if DetailsPage != empty %}
+                    {% capture eventLink %}{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}{% endcapture %}
+                {% endif %}
+
+                <div class="col-xs-12 col-sm-6 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="event-primary-info">
+                                {% if campusId and campusId != empty %}
+                                    <span class="text-muted d-block" aria-label="campus">{{ campus.Name }}</span>
+                                {% else %}
+                                    <span class="d-block" style="margin-top: 19px;"> </span>
+                                {% endif %}
+                                <h5 class="mb-1">{{ event.EventItem.Name }}</h5>
+                                <span class="d-block o-80 accent accent-invite accent-lighter mb-2 pb-1">{{ eventDate }}</span>
+                            </div>
+                            {% if event.Location and event.Location != empty %}
+                                <div class="event-location mb-2 pb-1">
+                                    <div class="mb-1">
+                                        <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M5.38337 15.6772C0.842812 9.09472 0 8.41915 0 6C0 2.68628 2.68628 0 6 0C9.31372 0 12 2.68628 12 6C12 8.41915 11.1572 9.09472 6.61662 15.6772C6.31865 16.1076 5.68131 16.1076 5.38337 15.6772Z" fill="#414242"/>
+                                        </svg>
+                                        <strong>Locations</strong>
+                                    </div>
+                                    <div class="o-80">
+                                        {{ event.Location }}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if contactPersonNickName != empty or contactPhone != empty or contactEmail != empty %}{% endif %}
+                            <div class="event-contact">
+                                <div class="mb-1"><i class="fa fa-comment"></i> <strong>Contact</strong></div>
+
+                                <div class="event-contact-person o-80">
+                                    {% if contactPersonNickName and contactPersonNickName != empty %}
+                                        <span class="d-block mb-1">{{ contactPersonNickname }} {{ contactPersonLastName }}</span>
+                                    {% endif %}
+                                    {% if contactEmail and contactEmail != empty %}
+                                        <span class="d-block mb-1">{{ contactEmail }}</span>
+                                    {% endif %}
+                                    {% if contactPhone and contactPhone != empty %}
+                                        <span class="d-block">{{ contactPhone }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ eventLink }}" class="btn btn-primary"> Register</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

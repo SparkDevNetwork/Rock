@@ -1,0 +1,284 @@
+// out:false
+
+// Table of Contents
+// 1. Colors
+//    1.1. Background + Text classes
+//    1.2. Card Accessory Classes
+// 2. Transitions
+// 3. Rounded
+// 4. Shadows
+// 5. Fonts
+// 6. Borders
+// 7. Utils
+
+
+//-------------------------
+// 1. Colors
+//-------------------------
+
+// ---- 1.1. Background + Text classes ----
+// create text and background class
+.color-classes(@variablename, @variable) {
+  .text-@{variablename} {
+    color: var(@variable) !important;
+  }
+
+  .bg-@{variablename} {
+    background-color: var(@variable) !important;
+  }
+
+  .border-@{variablename} {
+    border-color: var(@variable) !important;
+  }
+}
+
+// ---- 1.2. Card Accessory Classes ----
+// add color accessory class styles for each card style
+
+.card-hover {
+  .shadow-xl();
+  transform: translateY(-2px);
+}
+
+.card-colors(@variablename, @variable, @fontColor) {
+  .card:not(.card-minimal):not(.card-fancy):not(.card-mini-media):not(.card-icon):not(.card-overlay) {
+    &.@{variablename} {
+      background-color: var(@variable);
+      color: var(@fontColor);
+    }
+  }
+
+  .card-minimal {
+    &.@{variablename} {
+      .card-footer {
+        background-color: fadeout(@@variablename, 20%);
+
+        &:has(a:hover) {
+          background-color: var(@variable);
+        }
+
+        a {
+          color: var(@fontColor);
+        }
+      }
+    }
+  }
+
+  .card-horizontal {
+    &.@{variablename} {
+      .card-footer::after {
+        background-color: var(@fontColor) !important;
+        opacity: .3;
+      }
+
+      .card-footer .btn-icon + .btn:last-child::after {
+        background-color: var(@fontColor) !important;
+        opacity: .3;
+      }
+
+      @media (max-width: 767px) {
+        .card-body {
+          background-color: var(@variable) !important;
+        }
+      }
+    }
+  }
+
+  .card-fancy {
+    &.@{variablename} {
+      .card-body::before {
+        background-color: var(@variable) !important;
+      }
+
+      .card-body {
+        color: var(@fontColor);
+      }
+    }
+  }
+
+  .card-icon {
+    &.@{variablename} {
+      .icon {
+        background-color: var(@variable) !important;
+        color: var(@fontColor);
+
+        svg * {
+          fill: var(@fontColor);
+        }
+      }
+    }
+  }
+
+  .card-overlay {
+    &.@{variablename} {
+      .card-body {
+        color: var(@fontColor);
+      }
+
+      &::before {
+        background-color: var(@variable) !important;
+      }
+    }
+  }
+}
+
+
+
+
+
+// ---- 1.2. Swiper Accessory Classes ----
+// add color accessory class styles for each swiper style
+.swiper-colors(@variablename, @variable) {
+  .swiper-primary {
+    &.@{variablename} {
+      .swiper-button-next:not(.swiper-button-disabled),
+      .swiper-button-prev:not(.swiper-button-disabled) {
+        &::after {
+          color: var(@variable);
+        }
+      }
+
+      .swiper-pagination-bullet-active {
+        background-color: var(@variable);
+      }
+    }
+  }
+
+  .swiper-secondary {
+    &.@{variablename} {
+      .swiper-button-next,
+      .swiper-button-prev {
+        border-color: var(@variable);
+
+        &::after {
+          color: var(@variable);
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+//-------------------------
+// 2. Transitions
+//-------------------------
+.transition {
+  transition: all .3s ease;
+}
+
+
+
+
+//-------------------------
+// 3. Rounded
+//-------------------------
+.rounded-sm {
+  border-radius: @border-radius-base !important; // 4px
+}
+
+.rounded-md {
+  border-radius: calc(@border-radius-base * 2) !important; // 8px
+}
+
+.rounded-lg {
+  border-radius: calc(@border-radius-base * 4) !important; // 16px
+}
+
+
+
+
+//-------------------------
+// 4. Shadows
+//-------------------------
+.shadow {
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.10);
+
+  &-none {
+    box-shadow: none !important;
+  }
+
+  &-md {
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.10);
+  }
+
+  &-lg {
+    box-shadow: 0px 4px 6px -2px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.10);
+  }
+
+  &-xl {
+    box-shadow: 0px 10px 10px -5px rgba(0, 0, 0, 0.04), 0px 20px 25px -5px rgba(0, 0, 0, 0.10);
+  }
+
+  &-2xl {
+    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  &-inner {
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.06);
+  }
+
+  &-special {
+    box-shadow: 0px 10px 10px -5px rgba(0, 0, 0, 0.04), 0px 20px 25px -5px rgba(0, 0, 0, 0.10);
+  }
+}
+
+
+
+
+
+//-------------------------
+// 5. Fonts
+//-------------------------
+.font-accent {
+  font-family: 'Isadora Alt',"Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji" !important;
+}
+
+.font-default {
+  font-family: "Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji" !important;
+}
+
+.font-secondary {
+  font-family: "Visby CF","Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji" !important;
+}
+
+
+
+
+
+
+//-------------------------
+// 8. Utils
+//-------------------------
+.border-sm {
+  border-width: 1px !important;
+}
+
+.border-md {
+  border-width: 2px !important;
+}
+
+.border-lg {
+  border-width: 4px !important;
+}
+
+
+
+
+
+//-------------------------
+// 7. Utils
+//-------------------------
+.stretched-link {
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+  }
+}

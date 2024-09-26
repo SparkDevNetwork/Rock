@@ -1,0 +1,42 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Components/AngledTransition.lava', startingbg:'putty', endingbg:'ultra-white' %} {% endcomment %}
+
+{% if startingbg and startingbg != empty %}
+    {% if startingbg == 'rocks-red' %}
+        {% assign topHalfBg = '#e74724' %}
+    {% elseif startingbg == 'onyx' or startingbg == 'dark' %}
+        {% assign topHalfBg = '#353535' %}
+    {% elseif startingbg == 'imperfect-gray' %}
+        {% assign topHalfBg = '#aeaeae' %}
+    {% elseif startingbg == 'putty' %}
+        {% assign topHalfBg = '#dfded9' %}
+    {% elseif startingbg == 'ultra-white' or startingbg == 'white' %}
+        {% assign topHalfBg = '#ffffff' %}
+    {% else %}
+        {% assign topHalfBg = startingbg %}
+    {% endif %}
+{% else %}
+    {% assign topHalfBg = 'transparent' %}
+{% endif %}
+
+{% if endingbg and endingbg != empty %}
+    {% if endingbg == 'rocks-red' %}
+        {% assign bottomHalfBg = '#e74724' %}
+    {% elseif endingbg == 'onyx' or endingbg == 'dark' %}
+        {% assign bottomHalfBg = '#353535' %}
+    {% elseif endingbg == 'imperfect-gray' %}
+        {% assign bottomHalfBg = '#aeaeae' %}
+    {% elseif endingbg == 'putty' %}
+        {% assign bottomHalfBg = '#dfded9' %}
+    {% elseif endingbg == 'ultra-white' or endingbg == 'white' %}
+        {% assign bottomHalfBg = '#ffffff' %}
+    {% else %}
+        {% assign bottomHalfBg = endingbg %}
+    {% endif %}
+{% else %}
+    {% assign bottomHalfBg = '#ffffff' %}
+{% endif %}
+
+<div class="angled-transition d-flex align-items-center justify-content-center" style="background-color: {{ topHalfBg }};">
+    <div class="angled-transition-border" style="border-color: {{ bottomHalfBg }};"></div>
+</div>
+

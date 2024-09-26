@@ -1,0 +1,210 @@
+/*
+
+    1. Borders
+    2. Transitions
+    3. Ratios
+    4. Overlays
+    5. Links
+    6. Shadows
+
+*/
+
+// 1. Borders
+// -------------------------
+.border-standard {
+  border: 2px solid #e6e6e6;
+}
+
+
+// 2. Transitions
+// -------------------------
+.transition {
+    transition: all .3s ease;
+}
+
+
+// 3. Ratios
+// -------------------------
+.ratio {
+  overflow: hidden;
+  height: 0;
+  position: relative;
+
+  &-3x1 {
+    padding-bottom: 33% !important;
+  }
+
+  &-16x9 {
+    padding-bottom: 52.25%;
+  }
+
+  &-5x3 {
+    padding-bottom: 60%;
+  }
+
+  &-1x1 {
+    padding-bottom: 100%;
+  }
+}
+
+
+// 4. Overlays
+.overlay {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    .transition();
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &-bottom {
+    &::before {
+      height: 140%;
+      // background: linear-gradient(180deg,transparent 20%,rgba(0,0,0,1) 100%);
+      // background: linear-gradient(180deg, rgba(0, 0, 0, 0) 33%, rgba(0, 0, 0, 0.8) 100%);
+      // background: linear-gradient(180deg,transparent 0%, rgba(0,0,0,.1), rgba(0,0,0,.5),#000 80%);
+      background: linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.15),rgba(0,0,0,0.7),#000 100%);
+    }
+
+
+  }
+
+  &-bottom-dark {
+    &::before {
+      // background: linear-gradient(180deg,transparent -10%,rgba(0,0,0,1) 80%);
+      background: linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.25),rgba(0,0,0,0.85),#000 100%);
+    }
+  }
+
+  &-hero {
+    &::before {
+      background: rgba(0,0,0,0.25);
+    }
+  }
+
+  &-dark {
+    &::before {
+      background: rgba(0,0,0,.1);
+    }
+  }
+}
+
+
+// 5. Links
+.stretched-link() {
+  &::after{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+  }
+}
+
+// 6. Shadows
+// -------------------------
+@shadow-sm: 0px 2px 4px rgba(0, 0, 0, 0.12);
+@shadow-md: 0px 4px 8px rgba(0, 0, 0, 0.1);
+@shadow-lg: 0px 8px 16px rgba(0, 0, 0, 0.08);
+
+.shadow-sm {
+  box-shadow: @shadow-sm;
+}
+
+.shadow-md {
+  box-shadow: @shadow-md;
+}
+
+.shadow-lg {
+  box-shadow: @shadow-lg;
+}
+
+.shadow {
+  &-sm {
+    @media (min-width: 768px) {
+      &-sm {
+        box-shadow: @shadow-sm;
+      }
+
+      &-md {
+        box-shadow: @shadow-md;
+      }
+
+      &-lg {
+        box-shadow: @shadow-lg;
+      }
+    }
+  }
+
+  &-md {
+    @media (min-width: 992px) {
+      &-sm {
+        box-shadow: @shadow-sm;
+      }
+
+      &-md {
+        box-shadow: @shadow-md;
+      }
+
+      &-lg {
+        box-shadow: @shadow-lg;
+      }
+    }
+  }
+
+  &-lg {
+    @media (min-width: 1200px) {
+      &-sm {
+        box-shadow: @shadow-sm;
+      }
+
+      &-md {
+        box-shadow: @shadow-md;
+      }
+
+      &-lg {
+        box-shadow: @shadow-lg;
+      }
+    }
+  }
+}
+
+
+// 7. Gutters
+.gutterless {
+  &-mobile {
+    @media (max-width: 767px) {
+      &:not(.container,.container-fluid) {
+        margin-left: -24px;
+        margin-right: -24px;
+      }
+
+      &.container,&.container-fluid {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+
+  &-tablet {
+    @media (max-width: 991px) {
+      &:not(.container,.container-fluid) {
+        margin-left: -24px;
+        margin-right: -24px;
+      }
+
+      &.container,&.container-fluid {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+}

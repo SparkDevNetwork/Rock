@@ -1,0 +1,124 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Nav Tabs Section {% endcomment %}
+
+{% capture navTabs %}
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active"><a href="#">Home</a></li>
+    <li role="presentation"><a href="#">Profile</a></li>
+    <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+{% endcapture %}
+
+{% capture navTabsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Tabs</blockquote>
+{{ navTabs | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Pills Section {% endcomment %}
+
+{% capture navPills %}
+<ul class="nav nav-pills">
+    <li role="presentation" class="active"><a href="#">Home</a></li>
+    <li role="presentation"><a href="#">Profile</a></li>
+    <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+{% endcapture %}
+
+{% capture navPillsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Pills</blockquote>
+{{ navPills | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Tabs & Nav Stacked Section {% endcomment %}
+
+{% capture navPillsStacked %}
+<ul class="nav nav-pills nav-stacked">
+    <li role="presentation" class="active"><a href="#">Home</a></li>
+    <li role="presentation"><a href="#">Profile</a></li>
+    <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+{% endcapture %}
+
+{% capture navPillsStackedEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Pills and Nav Stacked</blockquote>
+{{ navPillsStacked | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Tabs & Nav Justified Section {% endcomment %}
+
+{% capture navTabsJustified %}
+<ul class="nav nav-tabs nav-justified">
+    <li role="presentation" class="active"><a href="#">Home</a></li>
+    <li role="presentation"><a href="#">Profile</a></li>
+    <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+{% endcapture %}
+
+{% capture navTabsJustifiedEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Tabs and Nav Justified</blockquote>
+{{ navTabsJustified | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Pills & Nav Justified Section {% endcomment %}
+
+{% capture navPillsJustified %}
+<ul class="nav nav-pills nav-justified">
+    <li role="presentation" class="active"><a href="#">Home</a></li>
+    <li role="presentation"><a href="#">Profile</a></li>
+    <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+{% endcapture %}
+
+{% capture navPillsJustifiedEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Pills and Nav Justified</blockquote>
+{{ navPillsJustified | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3>Nav Tabs</h3>
+
+{{ navTabs }}
+{{ navTabsEscaped }}
+
+<hr class="my-5">
+
+<h3>Nav Pills</h3>
+
+{{ navPills }}
+{{ navPillsEscaped }}
+
+<hr class="my-5">
+
+<h3>Nav Pills Stacked</h3>
+
+{{ navPillsStacked }}
+{{ navPillsStackedEscaped }}
+
+<hr class="my-5">
+
+<h3>Nav Tabs Justified</h3>
+
+{{ navTabsJustified }}
+{{ navTabsJustifiedEscaped }}
+
+<hr class="my-5">
+
+<h3>Nav Pills Justified</h3>
+
+{{ navPillsJustified }}
+{{ navPillsJustifiedEscaped }}

@@ -1,0 +1,55 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNav/profile.lava' %} {% endcomment %}
+
+<div class="navbar-profile">
+    {% if CurrentPerson %}
+        <div class="dropdown">
+            <button class="dropdown-toggle profile-toggle" type="button" id="profileDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="{{ CurrentPerson.PhotoUrl }}" alt="{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}" class="user-img">
+            </button>
+
+            <nav class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMeprofileDropdownMenuButtonnuButton">
+                <li role="presentation"><a href="#">My Account</a></li>
+                <li role="presentation"><a href="#">My Giving</a></li>
+                <li role="presentation"><a href="#">My Groups</a></li>
+                <li role="presentation"><a href="#">My Teams</a></li>
+                <li role="presentation"><a href="#">Subscription</a></li>
+            </nav>
+        </div>
+
+    {% else %}
+        <a href="/login" class="btn btn-dark btn-lg font-weight-bold login-btn"><i class="fa fa-user"></i> <span>LOGIN</span></a>
+    {% endif %}
+</div>
+
+
+
+{% comment %}
+
+
+<div class="profile-nav">
+    <a href="/ContactUs" class="text-color contact-us mr-4">Contact Us</a>
+    <a href="/Search" class="text-color search mr-4" aria-label="Search"><i class="fa fa-search"></i></a>
+
+    {% if CurrentPerson %}
+        <div class="d-inline-block position-relative">
+            <a href="#" class="dropdown-toggle text-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {% if CurrentPerson.PhotoUrl and CurrentPerson.PhotoUrl != empty %}
+                    {% assign currentPersonPhotoId = CurrentPerson.PhotoId %}
+                    {% assign imgUrl = '/GetImage.ashx?Id=' | Append:currentPersonPhotoId %}
+                    <img src="{{ CurrentPerson.PhotoUrl }}" alt="{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}" class="user-img">
+                {% else %}
+                    <span class="user-icon"><i class="fa fa-user-circle"></i></span>
+                {% endif %}
+                Hi, {{ CurrentPerson.NickName }} <i class="fa fa-caret-down"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="/v1/MyAccount">My Account</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="/logout">Log Out</a></li>
+            </ul>
+        </div>
+    {% else %}
+        <a href="/login" class="text-color user-icon" aria-label="Search"><i class="fa fa-user-circle"></i></a>
+    {% endif %}
+
+</div> {% endcomment %}

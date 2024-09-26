@@ -1,0 +1,774 @@
+{% comment %}{% include '~~/Assets/Lava/styleguide/components/cards.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Standard Cards {% endcomment %}
+{% capture standardCards %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6 mb-4 mb-sm-0">
+        <div class="card">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4 mb-sm-0">
+        <div class="card no-hover">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">No Hover</h5>
+                <p>append the <code>.no-hover</code> class to any card to remove the hover animation</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture standardCardsEscaped %}
+{{ codeOpen }}
+{{ standardCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Same Height Cards {% endcomment %}
+
+{% capture sameHeightCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quae corrupti sed amet qui fuga architecto reprehenderit distinctio tenetur! Similique, facilis!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card roman-silver h-100">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">roman-silver</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card isabelline h-100">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">isabelline</h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture sameHeightCardsEscaped %}
+{{ codeOpen }}
+{{ sameHeightCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Minimal Cards {% endcomment %}
+
+{% capture minimalCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card card-minimal">
+            <img src="https://via.placeholder.com/800x800" alt="alt" class="card-img-top img-responsive">
+            <div class="card-footer">
+                <a href="#">Default</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card card-minimal nickel">
+            <img src="https://via.placeholder.com/800x800" alt="alt" class="card-img-top img-responsive">
+            <div class="card-footer">
+                <a href="#">Nickel</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card card-minimal spirit-silk-light">
+            <img src="https://via.placeholder.com/800x800" alt="alt" class="card-img-top img-responsive">
+            <div class="card-footer">
+                <a href="#">Roman Silver</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture minimalCardsEscaped %}
+{{ codeOpen }}
+{{ minimalCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Short Cards {% endcomment %}
+
+{% capture shortCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card card-short early-fawn">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card card-short soft-nickel">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card card-short smoky-emerald">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture shortCardsEscaped %}
+{{ codeOpen }}
+{{ shortCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Horizontal Cards {% endcomment %}
+
+{% capture horizontalCards %}
+<div class="card card-horizontal mb-3">
+    <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+    <div class="card-body">
+        <div class="card-content">
+            <p class="small m-0 text-primary text-normal"><i class="fa fa-repeat"></i> Recurring Event</p>
+            <h3 class="card-title">Men's Bible Study</h3>
+            <p>Monday July, 15 2024 at 8:30pm</p>
+        </div>
+
+        <div class="card-footer">
+            <a href="#" class="btn btn-sm btn-primary btn-icon d-none d-sm-inline-flex active" title="Registration Required"><i class="fa fa-clipboard-list"></i></a>
+            <a href="#" class="btn btn-sm btn-default btn-icon" title="Follow Event"><i class="fa fa-star"></i></a>
+            <a href="#" class="btn btn-sm btn-default btn-icon d-none d-sm-inline-flex" title="Share Event"><i class="fa fa-share"></i></a>
+            <a href="#" class="btn btn-sm btn-default">See Event</a>
+        </div>
+    </div>
+</div>
+
+
+<div class="card card-horizontal mb-3 isabelline">
+    <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+    <div class="card-body">
+        <div class="card-content">
+            <h3 class="card-title m-0">isabelline</h3>
+        </div>
+
+        <div class="card-footer">
+            <a href="#" class="btn btn-sm btn-default">See Event</a>
+        </div>
+    </div>
+</div>
+
+
+<div class="card card-horizontal mb-3 nickel">
+    <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+    <div class="card-body">
+        <div class="card-content">
+            <h3 class="card-title m-0">nickel</h3>
+        </div>
+
+        <div class="card-footer">
+            <a href="#" class="btn btn-sm btn-outline-light btn-icon"><i class="fa fa-star"></i></a>
+            <a href="#" class="btn btn-sm btn-outline-light">See Event</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture horizontalCardsEscaped %}
+{{ codeOpen }}
+{{ horizontalCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Fancy Cards {% endcomment %}
+
+{% capture fancyCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card card-fancy">
+            <img src="https://via.placeholder.com/800x1400" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <p>Worship</p>
+                <h3 class="card-title">Default</h3>
+                <p>at 8:30am</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card card-fancy nickel">
+            <img src="https://via.placeholder.com/800x1400" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <p>Worship</p>
+                <h3 class="card-title">Nickel</h3>
+                <p>at 8:30am</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card card-fancy isabelline">
+            <img src="https://via.placeholder.com/800x1400" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <p>Worship</p>
+                <h3 class="card-title">Isabelline</h3>
+                <p>at 8:30am</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture fancyCardsEscaped %}
+{{ codeOpen }}
+{{ fancyCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Mini Media Cards {% endcomment %}
+
+{% capture miniMediaCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="card card-mini-media">
+            <img src="https://via.placeholder.com/800x1400" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h3 class="card-title">Traditional</h3>
+                <p>at 8:30am</p>
+            </div>
+            <div class="card-footer">
+                <a href="#">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture miniMediaCardsEscaped %}
+{{ codeOpen }}
+{{ miniMediaCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Poster Cards {% endcomment %}
+
+{% capture posterCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 mb-sm-4">
+        <div class="card card-poster h-100">
+            <div class="card-body">
+                <p class="text-sandstone">No Image</p>
+                <h3 class="card-title">Isabelline</h3>
+                <p>God has an incredible purpose for your life, and the Gloria Dei Way help you fulfill that purpose!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-light no-grow">Get Started</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-sm-4">
+        <div class="card card-poster isabelline h-100">
+            <div class="card-body">
+                <p class="text-misty-moss">No Image</p>
+                <h3 class="card-title">Isabelline</h3>
+                <p>God has an incredible purpose for your life.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-light no-grow">Get Started</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-sm-4">
+        <div class="card card-poster nickel h-100">
+            <img src="https://via.placeholder.com/800x800" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <p class="text-sandstone">With Image</p>
+                <h3 class="card-title">Nickel</h3>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-light no-grow">Get Started</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture posterCardsEscaped %}
+{{ codeOpen }}
+{{ posterCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Icon Cards {% endcomment %}
+
+{% capture iconCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-md-12 col-lg-6 mb-sm-3">
+        <div class="card card-icon">
+            <div class="icon"><i class="fa fa-box"></i></div>
+            <div class="card-body">
+                <h6 class="card-title mb-1">Serving</h6>
+                <div class="card-footer">
+                    <a href="#"><b>My Teams</b></a>
+                    <a href="#">Join a Team</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-12 col-lg-6 mb-sm-3">
+        <div class="card card-icon nickel">
+            <div class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                    <path d="M160 32c0-17.7 14.3-32 32-32l32 0c17.7 0 32 14.3 32 32c17.7 0 32 14.3 32 32l0 224c0 17.7-14.3 32-32 32c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32c-17.7 0-32-14.3-32-32l0-224c0-17.7 14.3-32 32-32zM32 448l288 0c70.7 0 128-57.3 128-128s-57.3-128-128-128l0-64c106 0 192 86 192 192c0 49.2-18.5 94-48.9 128l16.9 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-160 0L32 512c-17.7 0-32-14.3-32-32s14.3-32 32-32zm80-64l192 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-192 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z" />
+                </svg>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title mb-1">Nickel + SVG</h6>
+                <div class="card-footer">
+                    <a href="#"><b>My Teams</b></a>
+                    <a href="#">Join a Team</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-12 col-lg-6 mb-sm-3">
+        <div class="card card-icon isabelline">
+            <div class="icon"><i class="fa fa-users"></i></div>
+            <div class="card-body">
+                <h6 class="card-title mb-1">Isabelline</h6>
+                <div class="card-footer">
+                    <a href="#"><b>My Teams</b></a>
+                    <a href="#">Join a Team</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture iconCardsEscaped %}
+{{ codeOpen }}
+{{ iconCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+{% comment %} ~ Overlay Cards {% endcomment %}
+
+{% capture overlayCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-3">
+        <div class="card card-overlay">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h2 class="card-title"><b>Adults</b></h2>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-3">
+        <div class="card card-overlay nickel">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h2 class="card-title"><b>Nickel</b></h2>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-3">
+        <div class="card card-overlay isabelline">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h2 class="card-title"><b>Isabelline</b></h2>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture overlayCardsEscaped %}
+{{ codeOpen }}
+{{ overlayCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+{% comment %} ~ Side By Side Cards {% endcomment %}
+{% capture sideBySideCards %}
+<div class="card card-side-by-side mb-4">
+    <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+    <div class="card-body">
+        <h5 class="card-title">title</h5>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-primary">Learn More</a>
+    </div>
+</div>
+<div class="card card-side-by-side smoky-emerald">
+    <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+    <div class="card-body">
+        <h5 class="card-title">No Hover</h5>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-light">Learn More</a>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture sideBySideCardsEscaped %}
+{{ codeOpen }}
+{{ sideBySideCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} ------ Print sections ------ {% endcomment %}
+
+{% assign navItems = 'standard-cards,same-height-cards,minimal-cards,short-cards,horizontal-cards,fancy-cards,mini-media-cards,poster-cards,icon-cards,overlay-cards,side-by-side-cards' %}
+{% include '~~/Assets/Lava/StyleGuide/Components/component-heading.lava', heading:'Typography & Colors', navitems:navItems %}
+
+{% comment %} ~ Standard Cards {% endcomment %}
+<section id="standard-cards">
+    <h3 class="sg-section-header">Standard Cards</h3>
+
+    <div class="alert alert-info">
+        Notice the <code>.no-hover</code> class on the second card. This theme implements a hover effect on most card styles which can be easily removed by adding this class to any card element.
+    </div>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 16 / 9 <br>
+        <b>Recommended Size:</b> 800px x 450px
+    </div>
+
+    {{ standardCards }}
+    <br>
+    {{ standardCardsEscaped }}
+
+</section>
+
+
+
+{% comment %} ~ Same Height Standard Cards {% endcomment %}
+<section id="same-height-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Same Height Standard Cards + Colors</h3>
+
+    <p class="mb-4">The GloriaDeiV1 theme has many theme color options. Simply add the color name in css class syntax (Misty Moss => misty-moss) to the card element to apply the color as this card's background color. The default background is white (#fff)</p>
+
+
+    {{ sameHeightCards }}
+    <br>
+    {{ sameHeightCardsEscaped }}
+
+</section>
+
+
+
+{% comment %} ~ Minimal Cards {% endcomment %}
+<section id="minimal-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Minimal Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 1 / 1 <br>
+        <b>Recommended Size:</b> 800px x 800px
+    </div>
+
+    <p class="mb-4">The GloriaDeiV1 theme has many theme color options. Simply add the color name in css class syntax (Misty Moss => misty-moss) to the card element to apply the color as this card's footer background color. The default footer background is Misty Moss (#86A199)</p>
+
+    {{ minimalCards }}
+    <br>
+    {{ minimalCardsEscaped }}
+
+</section>
+
+
+{% comment %} ~ Short Cards {% endcomment %}
+<section id="short-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Short Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 21 / 10 <br>
+        <b>Recommended Size:</b> 800px x 380px
+    </div>
+
+    {{ shortCards }}
+    <br>
+    {{ shortCardsEscaped }}
+
+</section>
+
+
+{% comment %} ~ Horizontal Cards {% endcomment %}
+<section id="horizontal-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Horizontal Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 16 / 9 <br>
+        <b>Recommended Size:</b> 800px x 450px
+    </div>
+
+    {{ horizontalCards }}
+    <br>
+    {{ horizontalCardsEscaped }}
+
+</section>
+
+
+{% comment %} ~ Fancy Cards {% endcomment %}
+<section id="fancy-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Fancy Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 5 / 9 <br>
+        <b>Recommended Size:</b> 800px x 1440px
+    </div>
+
+    {{ fancyCards }}
+    <br>
+    {{ fancyCardsEscaped }}
+
+</section>
+
+
+{% comment %} ~ Mini Media Cards {% endcomment %}
+<section id="mini-media-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Mini Media Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 1 / 1 <br>
+        <b>Recommended Size:</b> 280px x 280px
+    </div>
+
+    {{ miniMediaCards }}
+    <br>
+    {{ miniMediaCardsEscaped }}
+
+</section>
+
+
+{% comment %} ~ Poster Cards {% endcomment %}
+<section id="poster-cards">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Poster Cards</h3>
+
+    {{ posterCards }}
+    <br>
+    {{ posterCardsEscaped }}
+
+    <hr class="my-5">
+</section>
+
+
+{% comment %} ~ Icon Cards {% endcomment %}
+<section id="icon-cards">
+    <h3 class="sg-section-header">Icon Cards</h3>
+
+    {{ iconCards }}
+    <br>
+    {{ iconCardsEscaped }}
+
+</section>
+
+
+{% comment %} ~ Overlay Cards {% endcomment %}
+<hr class="my-5">
+<section id="overlay-cards">
+    <h3 class="sg-section-header">Overlay Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 16 / 9 <br>
+        <b>Recommended Size:</b> 800px x 450px
+    </div>
+
+    {{ overlayCards }}
+    <br>
+    {{ overlayCardsEscaped }}
+</section>
+
+
+{% comment %} ~ Side By Side Cards {% endcomment %}
+<hr class="my-5">
+<section id="side-by-side-cards">
+    <h3 class="sg-section-header">Side By Side Cards</h3>
+
+    <div class="alert alert-info">
+        <b>Image Aspect Ratio:</b> 16 / 9 <br>
+        <b>Recommended Size:</b> 800px x 450px
+    </div>
+
+    {{ sideBySideCards }}
+    <br>
+    {{ sideBySideCardsEscaped }}
+</section>

@@ -1,0 +1,114 @@
+// out:false
+
+.homepage-dashboard {
+  position: relative;
+  z-index: 1;
+
+  .dashboard {
+    border-top: 1px solid #BBBFC6;
+    background-color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+    z-index: 1;
+
+    @media (min-width: 768px) {
+      border-radius: 16px;
+      border: 1px solid #BBBFC6;
+    }
+
+    @media (min-width: 992px) {
+      flex-wrap: nowrap;
+    }
+
+    &-item {
+      width: 50%;
+      border-bottom: 2px solid #E7E9EB;
+      padding: 32px 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      min-height: 220px;
+
+      &:first-child, &:last-child {
+        width: 100%;
+        background-color: #F2F3F5;
+      }
+
+      &:last-child {
+        border-bottom: 0;
+      }
+
+      @media (min-width: 992px) {
+        width: 100%;
+      }
+
+      & + .dashboard-item {
+        border-left: 2px solid #E7E9EB;
+      }
+
+      &-icon {
+        margin-bottom: 20px;
+
+        @media (min-width: 992px) {
+          margin-bottom: 28px;
+        }
+      }
+
+      &-title {
+        font-size: 18px;
+        text-transform: uppercase;
+      }
+
+      &-body {
+        text-align: center;
+
+        @media (min-width: 1200px) {
+          margin-bottom: 40px;
+        }
+      }
+
+      &-footer {
+        font-weight: 500;
+      }
+
+      p {
+        color: #6F6F6F;
+        font-size: 15px;
+        margin: 0;
+        margin-top: 10px;
+      }
+
+      .btn-white {
+        border: 2px solid #E9EAE8;
+        font-weight: 500;
+      }
+
+      &-user {
+        padding: 24px 12px;
+
+        @media (min-width: 1200px) {
+          padding: 48px 12px 24px;
+        }
+
+        .user-img {
+          width: 90px;
+          height: 90px;
+          border-radius: 999px;
+          // todo: replace
+          border: 3px solid #0C1A31;
+          //border: 3px solid @gray-darker;
+        }
+      }
+
+      &-starting-point {
+        padding: 40px 12px;
+
+        @media (min-width: 1200px) {
+          padding: 48px 12px 24px;
+        }
+      }
+    }
+  }
+}

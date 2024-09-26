@@ -1,0 +1,75 @@
+.hero {
+
+  @media (min-width: 992px) {
+    padding: 0 30px;
+  }
+
+  &-image {
+    padding: 64px 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    width:100%;
+    height: 487px;
+
+    @media (min-width: 992px) {
+      .rounded-lg();
+      padding: 40px 30px;
+      height: 465px;
+      transform: translateZ(0);
+
+    }
+  }
+
+  .page-meta {
+      color: @venture-white;
+      text-transform: uppercase;
+      z-index: 1;
+  }
+
+
+  // Homepage Hero
+  &-homepage {
+    .hero-image {
+      height: 95vh;
+      min-height: 600px;
+      max-height: 1000px;
+    }
+
+    &.hero-logged-in {
+      .hero-image {
+        height: 95vh;
+        min-height: 600px;
+        max-height: 1000px;
+
+        @media (min-width: 992px) {
+          min-height: unset;
+          max-height: unset;
+          height: 540px;
+        }
+      }
+    }
+  }
+
+
+  &-video {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &-vimeo {
+    min-width: 180vw !important;
+    height: 176% !important;
+    left: 50%;
+    top: 50%;
+    right: unset;
+    bottom: unset;
+    transform: translate(-50%, -50%);
+  }
+}

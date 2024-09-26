@@ -1,0 +1,68 @@
+
+<h1>Pagination</h1>
+<p class="lead">The pagination shortcode is used to show a list of pages with consistent logic and styling.</p>
+
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#pagination">Dwell Pagination</a></li>
+</ul>
+
+<div class="mb-4">
+    <h3>In Short</h3>
+    <p>To use the pagination shortcodem add the following code to a content channel view block: <br><code>{% raw %}{[ dwellpagination pagination:Pagination ]}{% endraw %}</code></p>
+    <p>This shortcode will show 5 pages of content as well as next/previous links, and first page/last page links when applicable.</p>
+
+    <h3>Parameters</h3>
+    <ul>
+        <li><strong>pagination</strong>: The pagination parameter is directly linked to the <code>Pagination</code> object returned by the Content Channel View Block. This parameter should not be modified.</li>
+    </ul>
+</div>
+
+
+
+{%- capture codeOutput -%}
+{% raw %}{[ dwellpagination pagination:Pagination ]}{% endraw %}
+{%- endcapture -%}
+
+<div id="pagination" class="card mb-4">
+    <div class="card-header">
+        <h4 class="m-0">Dwell Pagination</h4>
+    </div>
+    <div class="card-body">
+        <div class="p-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="active">
+                        <a href="#">1</a>
+                    </li>
+                    <li>
+                        <a href="#">2</a>
+                    </li>
+                    <li>
+                        <a href="#">3</a>
+                    </li>
+                    <li>
+                        <a href="#">4</a>
+                    </li>
+                    <li>
+                        <a href="#">5</a>
+                    </li>
+
+                    <li>
+                        <a href="#" aria-label="Next">
+                            <span aria-hidden="true">›</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" aria-label="Next">
+                            <span aria-hidden="true">»</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>

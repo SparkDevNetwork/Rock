@@ -1,0 +1,122 @@
+// out:false
+
+// Table of Contents
+// 1. Standard
+// 2. Primary
+// 3. Transparent
+
+
+//-------------------------
+// 1. Standard
+//-------------------------
+.panel-group[id^="accordion-"] {
+  & > .panel {
+    border-radius: 0 !important;
+    border: 0;
+    background-color: transparent;
+    box-shadow: none;
+
+    .panel-heading {
+      .rounded-md();
+      background-color: @white;
+      padding: 16px;
+      border: 0;
+      position: relative;
+    }
+
+    .panel-body {
+      border: 0;
+    }
+
+    h4.panel-title {
+      font-size: 24px;
+      font-weight: 600;
+      .font-accent();
+
+      a {
+        text-decoration: none;
+        color: @nickel;
+        .stretched-link();
+      }
+
+      &::before,
+      &::after {
+        content:'';
+        position: absolute;
+        right: 26px;
+        top: 50%;
+        transform: translateY(-50%) rotate(90deg);
+        transform-origin: center;
+        width: 4px;
+        height: 24px;
+        background-color: @theme-1;
+        border-radius: 1.5px;
+        .transition();
+      }
+
+      &::after {
+        transform: translateY(-50%);
+      }
+
+      &:has(a[aria-expanded="true"])::after {
+        transform: translateY(-50%) rotate(90deg);
+      }
+    }
+  }
+
+  .panel + .panel {
+    margin-top: 16px;
+
+    @media (min-width: @screen-md) {
+      margin-top: 28px;
+    }
+  }
+}
+
+
+
+
+
+
+//-------------------------
+// 2. Primary
+//-------------------------
+.panel-group[id^="accordion-"] > .panel-primary {
+  .panel-heading {
+    //todo
+    background-color: #758D87;
+    // background-color: @theme-1;
+
+    h4.panel-title {
+      &::before,
+      &::after {
+        // todo
+        background-color: #F9FEFE;
+        // background-color: @spirit-silk-light;
+      }
+
+      a {
+        //todo
+        color: #F9FEFE;
+        // color: @spirit-silk-light;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+//-------------------------
+// 3. Transparent
+//-------------------------
+.panel-group[id^="accordion-"] > .panel-transparent {
+  .panel-heading {
+    background-color: transparent;
+  }
+}

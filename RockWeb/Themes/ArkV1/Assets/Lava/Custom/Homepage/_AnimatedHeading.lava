@@ -1,0 +1,98 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_AnimatedHeading.lava' %} {% endcomment %}
+
+{% assign animatedTextPrefix = CurrentPage | Attribute:'AnimatedTextPrefix' %}
+{% assign animatedTextObj = CurrentPage | Attribute:'AnimatedTextItems','Object' %}
+{% assign animatedTextItems = animatedTextObj.AttributeMatrixItems %}
+{% assign count = 0 %}
+
+
+<div class="animated-heading js-animated-text" style="opacity: 0;">
+    <h1 class="display">{{ animatedTextPrefix }}</h1>
+    {% for item in animatedTextItems %}
+        {% assign count = count | Plus:1 %}
+        {% assign itemText = item | Attribute:'ItemText' %}
+        <div class="overflow-hidden animated js-animated-text-item js-animated-text-item-{{ count }}{% if forloop.last %} last-item{% endif %}">
+            <h1 class="display text-white">{{ itemText }}</h1>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    $(document).ready(function () {
+        var sizes = [];
+        var next;
+
+        setWidths();
+        shiftMargin();
+
+
+        $('.js-animated-text-item').each((i, obj) => {
+            var width = $(obj).find('h1').outerWidth();
+            sizes[i] = width;
+            obj.style.maxWidth = `${sizes[i]}px`;
+            obj.style.width = '0';
+
+            if (!$(obj).hasClass('js-animated-text-item-1')) {
+                obj.style.height = '0';
+            }
+        });
+
+        $('.js-animated-text-item').each((i, obj) => {
+            obj.addEventListener("animationiteration", () => {
+                obj.style.animation = '';
+
+                if ($(obj).hasClass('last-item')) {
+                    $('.js-animated-text-item-1').css('animation', '7s ease 0s infinite normal none running grow');
+
+                    obj.style.height = '0';
+                    $('.js-animated-text-item-1').css('height','unset');
+                } else {
+                    next = $(obj).next('.js-animated-text-item');
+                    $(next).css('animation', '7s ease 0s infinite normal none running grow');
+
+                    obj.style.height = '0';
+                    $(next).css('height','unset');
+                }
+
+            });
+        });
+
+        setTimeout(function() {
+            $('.js-animated-text-item-1').css('animation', '7s ease 0s infinite normal none running grow');
+        }, 500)
+
+        $('.js-animated-text').css('opacity', '1');
+
+        $(window).on('resize', () => {
+           setWidths();
+           shiftMargin();
+        });
+
+        function setWidths() {
+            $('.js-animated-text-item').each((i, obj) => {
+                var width = $(obj).find('h1').outerWidth();
+                sizes[i] = width;
+                obj.style.maxWidth = `${sizes[i]}px`;
+                obj.style.width = '0';
+            });
+        }
+
+        function shiftMargin() {
+            var viewportWidth = $("body").innerWidth();
+
+            if ( viewportWidth > 991 ) {
+                var leftOffset = $('.js-animated-text').offset().left;
+                var paddingLeft = parseInt($('.js-animated-text-item-1 h1').css('padding-left').replace('px',''));
+
+                if (leftOffset - paddingLeft <= 20) {
+                    $('.js-animated-text-item').css('margin-left','0');
+                } else {
+                    $('.js-animated-text-item').css('margin-left',`${ paddingLeft * -1 }px`);
+                }
+            } else {
+                $('.js-animated-text-item').css('margin-left',`0`);
+            }
+        }
+    });
+</script>
+

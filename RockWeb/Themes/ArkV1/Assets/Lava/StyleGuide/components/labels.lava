@@ -1,0 +1,53 @@
+
+{%- capture codeOutput -%}
+<span class="label label-default">Default</span>
+<span class="label label-primary">Primary</span>
+<span class="label label-success">Success</span>
+<span class="label label-info">Info</span>
+<span class="label label-warning">Warning</span>
+<span class="label label-danger">Danger</span>
+<span class="label label-event">Event</span>
+{%- endcapture -%}
+
+<h1 class="mb-4">Labels</h1>
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#standard">Standard</a></li>
+    <li><a href="#remove">Label Remove</a></li>
+</ul>
+
+
+    <div class="card mb-4" id="standard">
+        <div class="card-header">
+            <h4 class="m-0">Standard Markup</h4>
+        </div>
+        <div class="card-body">
+        {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+
+
+{%- capture codeOutput -%}
+<span class="label label-default">Default<a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+<span class="label label-primary">Primary<a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+<span class="label label-success">Success<a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+<span class="label label-info">Info<a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+<span class="label label-warning">Warning <a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+<span class="label label-danger">Danger<a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+<span class="label label-event">Event<a href="#" class="remove ml-2"><i class="fa fa-times"></i></a></span>
+{%- endcapture -%}
+
+    <div class="card mb-4" id="remove">
+        <div class="card-header">
+            <h4 class="m-0">Label Remove</h4>
+        </div>
+        <div class="card-body">
+        {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>

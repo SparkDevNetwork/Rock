@@ -1,0 +1,16 @@
+header .navbar .container {
+  display: flex;
+}
+header .navbar-brand {
+  height: auto;
+  width: 40px;
+}
+header .navbar-brand img {
+  width: 100%;
+  max-width: 100%;
+}
+@media screen and (min-width: 768px) {
+  header .navbar-brand {
+    width: 50px;
+  }
+}

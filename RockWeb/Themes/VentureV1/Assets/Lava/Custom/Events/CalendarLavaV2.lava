@@ -1,0 +1,77 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Events/CalendarLavaV2.lava' %} {% endcomment %}
+
+{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+<div class="row mb-3 pb-3">
+    <div class="col-sm-12">
+        <div class="w-100 d-flex flex-wrap justify-content-end js-add-dropdowns">
+
+            <div class="dropdown js-custom-dropdown js-custom-dropdown-campus">
+                <button class="btn btn-primary btn-grow dropdown-toggle" type="button" id="dropdownMenuCampus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Select Campus
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuCampus">
+                    <li>
+                        <a href="#" name="All" value="All">Select Campus</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="dropdown js-custom-dropdown js-custom-dropdown-audience">
+                <button class="btn btn-primary btn-grow dropdown-toggle" type="button" id="dropdownMenuAudience" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Audience
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuAudience">
+                    <li>
+                        <a href="#" name="All" value="All">Audience</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% if eventItemOccurrenceCount == 0 %}
+    <div class="panel panel-default margin-t-md">
+        <div class="margin-all-md"> There are no events in this time frame.</div>
+    </div>
+{% endif %}
+
+
+
+<div class="row d-flex flex-wrap">
+    {% for eventItemOccurrence in EventItemOccurrences %}
+        {% assign photoId = eventItemOccurrence.EventItemOccurrence.EventItem.PhotoId %}
+        {% assign imageUrl = photoId | Prepend:'/GetImage.ashx?Id=' | Append:'&w=500&h=300&mode=crop&crop=faces' %}
+        {% assign scheduledDatesSize = eventItemOccurrence.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' | Size %}
+        {% assign eventDetailsLink =  DetailsPage | Append:'?EventOccurrenceId=' | Append:eventItemOccurrence.EventItemOccurrence.Id %}
+        {% if eventItemOccurrence.DetailPage != null %}
+            {% assign eventDetailsLink =  eventItemOccurrence.DetailPage %}
+        {% endif %}
+
+        <div class="col-xs-12 col-sm-6 col-md-4 mb-3 ">
+            <div class="event-card h-100" style="background-image:url({{ imageUrl }});">
+                <div class="event-card-body">
+                    {% if scheduledDatesSize and scheduledDatesSize > 1 %}
+                        <div class="event-card-subtitle">Reoccurring</div>
+                    {% endif %}
+                    <div class="event-card-info">
+                        <div class="event-card-date accent accent-white accent-light">
+                            <span class="day">{{ eventItemOccurrence.Date | Date:'dd' }}</span>
+                            <span class="month">{{ eventItemOccurrence.Date | Date:'MMM' }}</span>
+                        </div>
+                        <div class="event-card-title-wrap">
+                            <div class="event-card-subtitle">{{ eventItemOccurrence.Location }}</div>
+                            <h5 class="event-card-title">{{ eventItemOccurrence.Name }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ eventDetailsLink }}" class="event-card-link"></a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+

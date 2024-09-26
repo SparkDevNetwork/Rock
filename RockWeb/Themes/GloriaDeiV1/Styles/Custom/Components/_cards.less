@@ -1,0 +1,883 @@
+// out: false
+
+// Table of Contents
+// 1. Base Card Styles
+// 2. Minimal Card Styles
+// 3. Short Card Styles
+// 4. Horizontal Card Styles
+// 5. Flashy Card Styles
+// 6. Mini Media Card Styles
+// 7. Overlay Card Styles
+// 8. Icon Card Styles
+// 9. Overlay Card Styles
+
+
+
+
+
+//-------------------------
+// 1. Base Card Styles
+//-------------------------
+
+.card {
+  border: 1px solid #D0D1D1;
+  overflow: hidden;
+  background-color: #fff;
+  padding-bottom: 16px;
+  .rounded-lg();
+
+  &:not(.card-horizontal):not(.card-fancy):not(.card-mini-media):not(.card-poster):not(.card-icon):not(.no-hover) {
+    .transition();
+
+    &:has(.card-footer a:hover) {
+      .card-hover();
+    }
+  }
+
+  .card-img-top {
+    border-bottom: 1px solid #D0D1D1;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+
+  .card-title {
+    margin-top: 0;
+    .font-accent();
+  }
+
+  .card-body {
+    background-color: transparent;
+    border: 0;
+    padding: 32px 32px 16px;
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+
+
+  &:not(.card-horizontal) .card-footer {
+    background-color: transparent;
+    border: 0;
+    padding: 0 32px 16px;
+    border-radius: 0;
+
+    a {
+      &:first-child {
+        .stretched-link();
+      }
+
+      &:nth-child(n+2) {
+        position: relative;
+        z-index: 2;
+      }
+    }
+  }
+}
+
+
+
+
+//-------------------------
+// 2. Minimal Card Styles
+//-------------------------
+.card.card-minimal {
+  padding: 0;
+  border: 0;
+  flex-direction: row;
+  background-color: transparent;
+
+
+  .card-img-top {
+    aspect-ratio: 1;
+    flex: 0 0 115px;
+    width: 115px;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .card-body {
+    display: none;
+  }
+
+  .card-footer {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    .transition();
+    background-color: fadeout(@misty-moss, 20%);
+    .font-secondary();
+
+    &:has(a:hover) {
+      background-color: @misty-moss;
+    }
+
+    a {
+      color: #fff;
+      font-size: 18px;
+      text-decoration: none;
+      font-weight: 700;
+
+      &::before {
+        content: '\f054';
+        font-family: 'FontAwesome';
+        font-weight: 900;
+        position: absolute;
+        top: 50%;
+        right: 16px;
+        transform: translateY(-50%);
+        .transition();
+      }
+
+      // adjust stretched link::after so that it covers the full card
+      &:first-child::after {
+        @media (max-width: @screen-xs-max) {
+
+          left: -200px;
+        }
+
+        @media (min-width: @screen-sm) {
+          top: -400px;
+        }
+      }
+
+      &:hover::before {
+        transform: translateY(-50%) translateX(3px);
+      }
+    }
+  }
+
+  @media (min-width: @screen-sm) {
+    aspect-ratio: 1;
+
+    .card-img-top {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: unset;
+      flex: unset;
+    }
+
+    .card-footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      a {
+        font-size: 22px;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+//-------------------------
+// 3. Short Card Styles
+//-------------------------
+.card.card-short {
+  padding: 0;
+  .rounded-md();
+  .shadow-lg();
+  .transition();
+  border-width: 0;
+
+  .card-img-top {
+    aspect-ratio: 2.1;
+    border-bottom-width: 0;
+  }
+
+  .card-body {
+    padding: 16px;
+    display: none;
+  }
+
+
+  .card-title {
+    .font-secondary();
+    margin-bottom: .25em;
+  }
+
+  .card-footer {
+    width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+  }
+
+  &:has(a:hover) {
+    .card-hover();
+  }
+
+  @media (min-width: @screen-sm) {
+    .card-body {
+      display: block;
+    }
+  }
+}
+
+
+
+
+
+//-------------------------
+// 4. Horizontal Card Styles
+//-------------------------
+.card.card-horizontal {
+  padding: 0;
+  border: 0;
+  min-height: 260px;
+  .rounded-md();
+
+  .card-img-top {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: unset;
+    border: 0;
+  }
+
+  .card-body {
+    padding: 16px;
+    margin-right: 16px;
+    background-color: #fff;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-weight: 700;
+    .font-secondary();
+  }
+
+  .card-footer {
+    padding: 16px 0 0;
+    display: flex;
+    border-top: 0;
+    position: relative;
+    background-color: transparent;
+
+    .btn-icon {
+      i {
+        font-weight: 100 !important;
+      }
+
+      &.active i,
+      &:hover i {
+        font-weight: 700 !important;
+      }
+    }
+
+    .btn {
+      margin-right: 8px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: fadeout(#A2A9AD, 75%);
+    }
+  }
+
+  @media (min-width: @screen-sm) {
+    padding: 16px;
+    flex-direction: row;
+    align-items: center;
+    min-height: unset;
+
+    .card-img-top {
+      position: static;
+      aspect-ratio: 16/9;
+      left: unset;
+      right: unset;
+      top: unset;
+      bottom: unset;
+      width: unset;
+      height: unset;
+      .rounded-md();
+      max-width: 160px;
+      margin-right: 32px;
+    }
+
+    .card-body {
+      padding: 0;
+      margin: 0;
+      background-color: transparent;
+    }
+
+    .card-footer {
+      padding: 16px 0 0;
+      margin-top: 16px;
+      margin-right: 0;
+
+      .btn-icon + .btn:last-child {
+        margin-left: 24px;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: -4px;
+          left: -16px;
+          bottom: -4px;
+          height: calc(~'100% + 8px');
+          width: 1px;
+          background-color: fadeout(@metallic-silver, 75%);
+        }
+      }
+    }
+  }
+
+  @media (min-width: @screen-lg) {
+    .card-body {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .card-content {
+      margin-right: 32px;
+    }
+
+    .card-footer {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+      align-items: center;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+
+
+
+
+//-------------------------
+// 5. Fancy Card Styles
+//-------------------------
+.card.card-fancy {
+  background-color: transparent;
+  padding: 0;
+  aspect-ratio: 9/4;
+  border: 0;
+  .rounded-md();
+  overflow: visible !important;
+
+  .card-img-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    filter: saturate(0);
+    z-index: -1;
+    object-fit: cover;
+    border: 0;
+    aspect-ratio: unset;
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    .transition();
+    .rounded-md();
+  }
+
+  .card-body {
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px;
+    .transition();
+    color: @spirit-silk-light;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      opacity: .8;
+      z-index: -1;
+      .transition();
+      .rounded-md();
+      background-color: @misty-moss;
+    }
+  }
+
+  .card-footer {
+    width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+  }
+
+  &:has(.card-footer a):hover .card-body::before {
+    opacity: 1;
+  }
+
+  @media (min-width: @screen-md) {
+    aspect-ratio: unset;
+    padding-bottom: 16px;
+
+    .card-img-top {
+      position: static;
+      top: unset;
+      right: unset;
+      left: unset;
+      bottom: unset;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 5/9;
+      filter: none;
+      .shadow-xl();
+    }
+
+    .card-body {
+      position: absolute;
+      bottom: 0;
+      left: 16px;
+      right: 16px;
+      margin: 0;
+      padding: 40px 8px;
+      height: unset;
+      width: unset;
+
+      &::before {
+        opacity: .95;
+        .shadow-2xl();
+      }
+    }
+
+    &:has(.card-footer a):hover {
+      .card-img-top {
+        .card-hover();
+      }
+
+      .card-body {
+        transform: scale(1.02);
+      }
+    }
+  }
+}
+
+
+
+
+//-------------------------
+// 6. Mini Media Card Styles
+//-------------------------
+
+.card.card-mini-media {
+  flex-direction: row;
+  padding: 0;
+  border: 0;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  align-items: center;
+  overflow: visible;
+  .transition();
+
+  &:has(.card-footer a:hover) {
+    transform: translateY(-2px);
+
+    .card-img-top {
+      .shadow-lg();
+    }
+  }
+
+  .card-img-top {
+    aspect-ratio: 1;
+    width: 100px;
+    height: 100px;
+    .rounded-md();
+    .transition();
+    border: 1px solid fadeout(#F9FEFE, 60%);
+
+    @media (min-width: @screen-sm) {
+      width: 128px;
+      height: 128px;
+    }
+  }
+
+  .card-body {
+    padding: 0 0 0 16px;
+  }
+
+  .card-footer {
+    width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+  }
+
+  *[class*='bg-']:not(.bg-isabelline):not(.bg-spirit-silk-light) {
+    color: @spirit-silk-light;
+  }
+}
+
+
+
+
+
+
+
+//-------------------------
+// 7. Poster Card Styles
+//-------------------------
+
+.card.card-poster {
+  border-radius: 0 !important;
+  margin: 0 -8px;
+  border: 0;
+  background-color: @dolphin-gray;
+  color: @spirit-silk-light;
+  min-height: 300px;
+
+  .card-img-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .1;
+    filter: saturate(0);
+  }
+
+  .card-body {
+    z-index: 1;
+  }
+
+  .card-footer {
+    z-index: 1;
+    margin-top: 32px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0);
+    z-index: 0;
+    .transition();
+  }
+
+  &:has(.card-img-top) {
+    &::before {
+      background-color: rgba(0, 0, 0, .4);
+    }
+  }
+
+  &:has(.card-footer a) {
+    .transition();
+
+    &:hover {
+
+      &::before {
+        background-color: rgba(0, 0, 0, .1);
+      }
+
+      @media (min-width: @screen-sm) {
+        .card-hover();
+      }
+    }
+  }
+
+  &:has(.card-img-top)&:has(.card-footer a):hover {
+    &::before {
+      background-color: rgba(0, 0, 0, .1);
+    }
+  }
+
+  @media (min-width: @screen-sm) {
+    margin: 0;
+    .rounded-md();
+  }
+}
+
+
+
+
+
+
+
+
+//-------------------------
+// 8. Icon Card Styles
+//-------------------------
+.card.card-icon {
+  background-color: @spirit-silk-light;
+  border: 1px solid @isabelline;
+
+  flex-direction: row;
+  padding: 16px;
+  margin: 0 -8px;
+  border-radius: 0 !important;
+
+  .card-img-top {
+    display: none;
+  }
+
+  .icon {
+    width: 72px;
+    height: 72px;
+    background-color: @metallic-silver;
+    border: 1px solid #968F74;
+    .rounded-sm();
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: #fff;
+    margin-right: 16px;
+
+    svg {
+      height: 36px;
+      width: auto;
+
+      * {
+        fill: #fff;
+      }
+    }
+  }
+
+  .card-body {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .card-footer {
+    padding: 0;
+
+    a:not(.btn) + a:not(.btn) {
+      margin-left: 20px;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -11px;
+        top: 0;
+        bottom: 0;
+        height: 100%;
+        width: 1px;
+        background-color: #000000;
+      }
+    }
+  }
+
+  @media (min-width: @screen-sm) {
+    padding: 16px 24px;
+    .rounded-md();
+    margin: 0;
+
+    &:has(.card-footer a) {
+      .transition();
+
+      &:hover {
+        .card-hover();
+      }
+    }
+  }
+}
+
+
+
+
+
+
+//-------------------------
+// 9. Overlay Card Styles
+//-------------------------
+
+.card.card-overlay {
+  background-color: transparent;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: #fff;
+  border: 1px solid rgba(0, 0, 0, .1);
+
+  .card-img-top {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: saturate(0);
+    opacity: .2;
+    z-index: -1;
+    .transition();
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: @misty-moss;
+    z-index: -1;
+  }
+
+  .card-body {
+    z-index: 1;
+    padding: 16px;
+    flex: none;
+  }
+
+  .card-title {
+    margin: 0;
+  }
+
+  .card-footer {
+    width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    z-index: 1;
+  }
+
+  &:has(.card-footer a):hover {
+    .card-img-top {
+      opacity: .4;
+    }
+  }
+}
+
+
+
+
+
+
+
+//-------------------------
+// 10. Side By Side Card Styles
+//-------------------------
+
+.card.card-side-by-side {
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-areas:
+      "body img"
+      "footer img";
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 0;
+    border: 0;
+
+    .card-img-top {
+      grid-area: img;
+      border-radius: 0;
+      aspect-ratio: unset;
+      height: 100%;
+      border: 0;
+    }
+
+    .card-body {
+      grid-area: body;
+      padding: 32px 32px;
+    }
+
+    .card-footer {
+      grid-area: footer;
+      padding: 0 32px 32px;
+    }
+  }
+
+  @media (min-width: 1344px) {
+    .card-body {
+      padding: 56px 48px 32px;
+    }
+
+    .card-footer {
+      padding: 0 48px 56px;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+.card-colors(metallic-silver, --metallic-silver, --isabelline);
+.card-colors(roman-silver, --roman-silver, --isabelline);
+.card-colors(nickel, --nickel, --isabelline);
+.card-colors(dolphin-gray, --dolphin-gray, --isabelline);
+.card-colors(spirit-silk-dark, --spirit-silk-dark, --isabelline);
+.card-colors(isabelline, --isabelline, --nickel);
+.card-colors(soft-nickel, --soft-nickel, --isabelline);
+.card-colors(sandstone, --sandstone, --isabelline);
+.card-colors(cinereous, --cinereous, --isabelline);
+.card-colors(spirit-silk-light, --spirit-silk-light, --nickel);
+.card-colors(early-fawn, --early-fawn, --isabelline);
+.card-colors(misty-moss, --misty-moss, --isabelline);
+.card-colors(smoky-emerald, --smoky-emerald, --isabelline);
+.card-colors(cavern, --cavern, --isabelline);

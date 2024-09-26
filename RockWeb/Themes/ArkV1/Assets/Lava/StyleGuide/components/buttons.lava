@@ -1,0 +1,180 @@
+/- {% include '~~/Assets/Lava/styleguide/components/buttons.lava' %} -/
+{% assign buttonTypes = 'default,primary,dark,success,info,warning,danger,link,outline-primary,outline-dark,outline-success,outline-info,outline-warning,outline-danger' | Split:',' %}
+{% assign buttonTypesDark = 'outline-white,white' | Split:',' %}
+{% assign buttonSizes = 'btn-lg, ,disabled,btn-sm' | Split:',' %}
+
+<h1 class="mb-4">Buttons</h1>
+
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    {% for size in buttonSizes %}
+        <li><a href="#{{ size | Default:'btn' }}">{{ size | Default:'btn' }}</a></li>
+    {% endfor %}
+    <li><a href="#icons">Icons</a></li>
+    <li><a href="#labels">Labels</a></li>
+    <li><a href="#splitbutton">Split Button</a></li>
+</ul>
+
+{% for size in buttonSizes %}
+    <div class="card mb-4" id="{{ size | Default:'btn' }}">
+        <div class="card-header">
+            <h4 class="m-0">{{ size | Default:'btn' }}</h4>
+        </div>
+{%- capture codeOutput -%}
+    <div class="d-block mb-2 example-gap">
+        {%- for button in buttonTypes -%}
+        <a href="#" class="btn {{ size }} btn-{{ button }} mb-2">{{ button | Capitalize }}</a>
+        {%- endfor -%}
+    </div>
+    <div class="d-block bg-black p-3 example-gap">
+        {%- for button in buttonTypesDark -%}
+            <a href="#" class="btn {{ size }} btn-{{ button }} mb-2">{{ button | Capitalize }}</a>
+        {%- endfor -%}
+    </div>
+{%- endcapture -%}
+        <div class="card-body">{{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+{% endfor %}
+
+
+<div class="card mb-4" id="icons">
+    <div class="card-header">
+        <h4 class="m-0">Icons</h4>
+    </div>
+{%- capture codeOutput -%}
+<button type="button" class="btn btn-default mb-2"><i class="fa fa-user"></i> Default</button>
+<button type="button" class="btn btn-primary mb-2"><i class="fa fa-user"></i> Primary</button>
+<button type="button" class="btn btn-action mb-2"><i class="fa fa-user"></i> Action</button>
+<button type="button" class="btn btn-gray mb-2"><i class="fa fa-user"></i> Gray</button>
+
+<button type="button" class="btn btn-default mb-2">Default <i class="fa fa-user"></i></button>
+<button type="button" class="btn btn-primary mb-2">Primary <i class="fa fa-user"></i></button>
+<button type="button" class="btn btn-action mb-2">Action <i class="fa fa-user"></i></button>
+<button type="button" class="btn btn-gray mb-2">Gray <i class="fa fa-user"></i></button>
+{%- endcapture -%}
+            <div class="card-body example-gap">{{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+</div>
+
+
+<div class="card mb-4" id="labels">
+    <div class="card-header">
+        <h4 class="m-0">Labels</h4>
+    </div>
+{%- capture codeOutput -%}
+<button type="button" class="btn btn-default mb-2"><span class="label label-primary">NEW</span> Default</button>
+<button type="button" class="btn btn-primary mb-2"><span class="label label-primary">NEW</span> Primary</button>
+<button type="button" class="btn btn-action mb-2"><span class="label label-primary">NEW</span> Action</button>
+<button type="button" class="btn btn-gray mb-2"><span class="label label-primary">NEW</span> Gray</button>
+
+<button type="button" class="btn btn-default mb-2">Default <span class="label label-primary">NEW</span></button>
+<button type="button" class="btn btn-primary mb-2">Primary <span class="label label-primary">NEW</span></button>
+<button type="button" class="btn btn-action mb-2">Action <span class="label label-primary">NEW</span></button>
+<button type="button" class="btn btn-gray mb-2">Gray <span class="label label-primary">NEW</span></button>
+{%- endcapture -%}
+            <div class="card-body example-gap">{{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+</div>
+
+
+<div class="card mb-4" id="splitbutton">
+    <div class="card-header">
+        <h4 class="m-0">Split Button</h4>
+    </div>
+    {% capture codeOutput %}
+        <div class="d-block mb-2 example-gap">
+            {%- for button in buttonTypes -%}
+            <div class="btn-group">
+                <a href="#" class="btn btn-{{ button }} mb-2">{{ button | Capitalize }}</a>
+                <a href="#" class="btn btn-{{ button }} dropdown-toggle mb-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a class="dropdown-item" href="#">Separated link</a></li>
+                </ul>
+            </div>
+            {%- endfor -%}
+        </div>
+
+        <div class="d-block mb-2 example-gap">
+            {%- for button in buttonTypes -%}
+            <div class="btn-group d-flex mb-2">
+                <a href="#" class="btn btn-{{ button }} mb-2">{{ button | Capitalize }}</a>
+                <a href="#" class="btn btn-{{ button }} dropdown-toggle mb-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a class="dropdown-item" href="#">Separated link</a></li>
+                </ul>
+            </div>
+            {%- endfor -%}
+        </div>
+    {% endcapture %}
+    <div class="card-body">{{ codeOutput }}</div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+//- icon buttons
+<div class="card mb-4" id="iconbutton">
+    <div class="card-header">
+        <h4 class="m-0">Icon Button</h4>
+    </div>
+    {% capture codeOutput %}
+        <div class="d-flex mb-2 flex-wrap">
+            <span class="icon-btn active">
+                <i class="icon-primary fa fa-tint"></i>
+            </span>
+            <span class="icon-btn active">
+                <i class="icon-primary fa fa-tint"></i>
+                <i class="icon-secondary fa fa-check active"></i>
+            </span>
+            <span class="icon-btn active">
+                <i class="icon-primary fa fa-tint"></i>
+                <i class="icon-secondary fa fa-check inactive"></i>
+            </span>
+            <span class="icon-btn inactive">
+                <i class="icon-primary fa fa-tint"></i>
+                <i class="icon-secondary fa fa-check active"></i>
+            </span>
+            <span class="icon-btn inactive">
+                <i class="icon-primary fa fa-tint"></i>
+                <i class="icon-secondary fa fa-check inactive"></i>
+            </span>
+            <span class="icon-btn dark">
+                <i class="icon-primary fa fa-tint"></i>
+                <i class="icon-secondary fa fa-check active"></i>
+            </span>
+            <span class="icon-btn dark">
+                <i class="icon-primary fa fa-tint"></i>
+                <i class="icon-secondary fa fa-check inactive"></i>
+            </span>
+            <div class="w-100 p-3 mt-3 bg-black d-flex">
+                <span class="icon-btn light">
+                    <i class="icon-primary fa fa-tint"></i>
+                    <i class="icon-secondary fa fa-check active"></i>
+                </span>
+                <span class="icon-btn light">
+                    <i class="icon-primary fa fa-tint"></i>
+                    <i class="icon-secondary fa fa-check inactive"></i>
+                </span>
+            </div>
+        </div>
+    {% endcapture %}
+    <div class="card-body">{{ codeOutput }}</div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>

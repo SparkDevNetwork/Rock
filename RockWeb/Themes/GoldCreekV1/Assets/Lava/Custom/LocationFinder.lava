@@ -1,0 +1,26 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/LocationFinder.lava' %} {% endcomment %}
+
+
+{% if CurrentBrowser.IsMobile == false %}
+    <div id="location-finder" class="container-fluid location-finder">
+        <div class="row d-flex flex-wrap my-3">
+            <div class="col-xs-12 col-sm-12 col-md-6">
+                {% include '~~/Assets/Lava/Custom/LocationFinderList.lava' %}
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6">
+                {% include '~~/Assets/Lava/Custom/LocationFinderMap.lava' %}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div id="location-finder-mobile" class="location-finder-mobile">
+        <div class="my-3">
+            <div class="container-fluid">
+                {% include '~~/Assets/Lava/Custom/LocationFinderMobileList.lava' %}
+            </div>
+            {% include '~~/Assets/Lava/Custom/LocationFinderMobileMap.lava' %}
+        </div>
+    </div>
+{% endif %}
+
+

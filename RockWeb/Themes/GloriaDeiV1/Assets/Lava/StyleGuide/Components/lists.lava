@@ -1,0 +1,122 @@
+/- {% include '~~/Assets/Lava/styleguide/components/lists.lava' %} -/
+
+{% assign navItems = 'ordered-lists,unordered-lists,nested-lists' %}
+{% include '~~/Assets/Lava/StyleGuide/Components/component-heading.lava', heading:'Lists', navitems:navItems %}
+
+
+
+{% comment %} - Ordered Lists {% endcomment %}
+{%- capture orderedLists -%}
+<ol>
+  <li>Fee</li>
+  <li>Fi</li>
+  <li>Fo</li>
+  <li>Fum</li>
+</ol>
+{%- endcapture -%}
+
+{% capture orderedListsEscaped %}
+{{ codeOpen }}
+{{ orderedLists | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} - Unordered Lists {% endcomment %}
+{%- capture unorderedLists -%}
+<ul>
+  <li>Fee</li>
+  <li>Fi</li>
+  <li>Fo</li>
+  <li>Fum</li>
+</ul>
+{%- endcapture -%}
+
+{% capture unorderedListsEscaped %}
+{{ codeOpen }}
+{{ unorderedLists | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} - Nested Lists {% endcomment %}
+{%- capture nestedLists -%}
+<ol>
+  <li>first item</li>
+  <li>second item
+    <ol>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ol>
+  </li>
+  <li>third item</li>
+</ol>
+
+
+<ul>
+  <li>first item</li>
+  <li>second item
+    <ul>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ul>
+  </li>
+  <li>third item</li>
+</ul>
+{%- endcapture -%}
+
+{% capture nestedListsEscaped %}
+{{ codeOpen }}
+{{ nestedLists | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Ordered Lists {% endcomment %}
+<section id="ordered-lists">
+    <h3 class="sg-section-header">Ordered Lists</h3>
+
+    {{ orderedLists }}
+    <br>
+    {{ orderedListsEscaped }}
+</section>
+
+
+
+
+{% comment %} ~ Unordered Lists {% endcomment %}
+<section id="unordered-lists">
+    <hr class="my-5">
+
+    <h3 class="sg-section-header">Unordered Lists</h3>
+
+    {{ unorderedLists }}
+    <br>
+    {{ unorderedListsEscaped }}
+</section>
+
+
+
+
+
+{% comment %} ~ Nested Lists {% endcomment %}
+<section id="nested-lists">
+    <hr class="my-5">
+
+    <h3 class="sg-section-header">Nested Lists</h3>
+
+    {{ nestedLists }}
+    <br>
+    {{ nestedListsEscaped }}
+</section>
+

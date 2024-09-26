@@ -1,0 +1,259 @@
+{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+{% comment %} {% include '~~/Assets/Lava/GroupFinder/GroupView.lava' %} {% endcomment %}
+{%- assign joinBtnText = 'Join this Group' -%}
+{%- assign waitlistBtnText = 'Join the Wait List' -%}
+{%- assign showLeaders = true -%}
+{%- assign showMembers = false -%}
+{%- assign groupId = PageParameter.GroupId -%}
+{%- assign isMember = false -%}
+{%- assign isLeader = false -%}
+
+
+{%- if groupId -%}
+  {%- group id:'{{ groupId }}' -%}{%- if group.IsPublic and group.IsActive and group.GroupTypeId == 25 -%}
+    {%- comment -%}Start URL and Page Title {%- endcomment -%}
+      {%- assign publicSite = '' -%}
+      {%- assign currentUrl = 'Global' | Page:'Path' | Split:'?' | First -%}
+      {%- assign groupName = group.Name | Replace:"'",'’' -%}
+      {%- assign nameUrl = groupName | ToCssClass | Remove:'’' -%}
+      {%- assign canonicalUrl = "/groups/" -%}
+      {%- assign canonicalUrl = canonicalUrl | Append:nameUrl | Append:"/" | Append:groupId -%}
+
+      {% comment %} {%- if currentUrl != canonicalUrl -%}
+        {{ canonicalUrl | PageRedirect }}
+      {%- else -%}
+        {%- assign canonicalUrl = canonicalUrl | Prepend:publicSite -%}
+      {%- endif -%} {% endcomment %}
+      {{ canonicalUrl | AddLinkTagToHead:'rel','canonical' }}
+
+      {%- assign pageTitle = group.Name -%}
+      {%- assign pageTitle = pageTitle-%}
+      {{ pageTitle | SetPageTitle }}
+      {%- assign headerImage = group | Attribute:'HeaderImage','Guid' -%}
+    {%- comment -%}End URL and Page Title {%- endcomment -%}
+
+{%- capture groupSchedule -%}
+  {%- if group.Schedule.WeeklyDayOfWeek != null -%}
+      <span class="day">{{ group.Schedule.WeeklyDayOfWeek }}s</span>
+      <span class="time">{{ group.Schedule.WeeklyTimeOfDay | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+  {%- else -%}
+    {%- if group.Schedule.iCalendarContent != null -%}
+      {% include '~~/Assets/Lava/Functions/iCalParse.lava' iCalendarContent:group.Schedule.iCalendarContent %}
+      {%- assign firstDate = group.Schedule.iCalendarContent | DatesFromICal:1 | First -%}
+      {% case iCalParse_rrfreq %}
+        {% when 'WEEKLY' %}
+
+          {%- if iCalParse_rrint == null -%}
+            {%- if iCalParse_rrbyday == "MO,TU,WE,TH,FR" -%}
+              <span class="day">Weekdays</span>
+              <span class="time">{{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {% elseif iCalParse_rrbyday == "SU,SA" %}
+              <span class="day">Weekends</span>
+              <span class="time">{{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {%- else -%}
+              {%- assign friendly = group.Schedule.FriendlyScheduleText | Split:' at ' | First | Replace:',',', ' -%}
+              {%- assign friendly = friendly | Replace:'day','days' -%}
+              {%- assign friendly = friendly | ReplaceLast:' ',' and ' -%}
+              <span class="day trim" title="{{ friendly }}">{{ friendly }}</span>
+              <span class="time">{{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {%- endif -%}
+          {% else %}
+            {{ firstDate | Date:'dddd\s' }}
+            <span class="time">
+              {{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }} |
+              {%- if iCalParse_rrint == 1 -%}
+                Weekly
+              {%- elseif iCalParse_rrint == 2 -%}
+                Bi-Weekly
+              {%- else -%}
+                Every {{ iCalParse_rrint }} Weeks
+              {% endif %}
+            </span>
+          {%- endif -%}
+        {% when 'MONTHLY' %}
+          {%- if iCalParse_rrint == null -%}
+            {%- if iCalParse_rrbyday != null -%}
+              <span class="day trim">{{ iCalParse_rrbyday | Slice:0,1 | NumberToOrdinal }} {{ firstDate | Date:'dddd' }}</span>
+              <span class="time">Monthly | {{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {%- else -%}
+              <span class="day trim">{{ group.Schedule.FriendlyScheduleText | Split:' of ' | First | Remove:'The' }}
+              of Every Month</span>
+            {%- endif -%}
+          {%- elseif iCalParse_rrint == 2 -%}
+            <span class="day trim" title="The {{ iCalParse_rrbymonthday | NumberToOrdinal }}">The {{ iCalParse_rrbymonthday | NumberToOrdinal }}</span>
+            <span class="time">Bi-Monthly | {{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+          {%- else -%}
+            {{ iCalParse_rrbymonthday | NumberToOrdinal }} of Every {{ iCalParse_rrint | NumberToOrdinal }} Month
+          {% endif %}
+      {% endcase %}
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+
+
+{%- if CurrentPerson -%}
+  {%- assign groupIdString = group.Id | AsString -%}
+  {%- assign memberDetails = CurrentPerson | Group: groupIdString,'Active' -%}
+  {%- assign memberSize = memberDetails | Size -%}
+  {%- if CurrentPerson and memberSize > 0 -%}
+  {%- assign isMember = true -%}
+  {% for groupMember in memberDetails %}
+    {%- if groupMember.GroupRole.IsLeader -%}
+      {%- assign isLeader = true -%}
+    {%- endif -%}
+  {% endfor%}
+  {%- endif -%}
+{%- endif -%}
+
+
+    {%- assign groupSize = group.Members | Size -%}
+
+    {% comment %} <section class="section section-hero">
+        <div class="hero has-img">
+            <div class="hero-image full-cover" id="hero-image">
+                <div class="gallery-image-scale gallery-round-corners full-cover">
+                    <div class="image-loader-wrapper full-cover">
+                      {%- if headerImage != '' -%}
+                        <img class="mediabox-img lazyload" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-lowsrc="/GetImage.ashx?Guid={{ headerImage }}&w=27&q=10" data-src="/GetImage.ashx?Guid={{ headerImage }}&w=1800" alt="">
+                      {%- else -%}
+                        <img class="mediabox-img lazyload" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-lowsrc="/GetImage.ashx?guid=8ed49f37-1cc7-40fe-86cb-3ad513a2ea07&w=27" data-src="/GetImage.ashx?guid=8ed49f37-1cc7-40fe-86cb-3ad513a2ea07&w=1800" alt="">
+                      {%- endif -%}
+                    </div>
+                </div>
+            </div>
+            <div class="hero-bounding-bottom"></div>
+        </div>
+    </section> {% endcomment %}
+
+    <main role="main">
+    <div class="container">
+{%- if isMember -%}
+  <div class="row my-5">
+    <div class="col">
+      <div class="alert alert-info">
+        <strong>Hey {{ CurrentPerson.NickName }}!</strong> You’re a {{ memberDetails | Select:'GroupRole' | Select:'Name' | Join:'and ' }} in {{ groupName }}.
+        {%- if isLeader -%}
+        <a href="/my/groups/{{ group.Id }}" class="btn btn-outline-black btn-xs pull-right">View Group Toolbox</a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+<div class="row">
+
+
+  <div class="col-md-5 col-md-offset-1">
+    <img src="https://source.unsplash.com/collection/2065253/720x405?sig={{ group.Id }}" class="img-responsive" alt="">
+  </div>
+
+  <div class="col-md-5 d-flex">
+
+    <div class="my-auto">
+        <h2 class="my-0">{{ groupName }}</h2>
+        <h4 class="mt-0">{{ groupSchedule }}</h4>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="row">
+  <div class="col-md-10 col-center">
+  <div class="well margin-t-lg">
+  <p>{{ group.Description | FromMarkdown | NewlineToBr }}</p>
+
+      <div class="alert my-5 d-flex clearfix">
+      <p class="my-auto mr-auto pull-left">This group is open to new members</p>
+
+          {%- if isMember -%}
+            <span class="btn btn-outline-primary pull-right">You’re in this Group</span>
+          {%- else -%}
+            {%- if group.GroupCapacity and group.GroupCapacity <= groupSize -%}
+              <a class="btn btn-outline-primary btn-sm pull-right" href="{{ canonicalUrl }}/join">{{ waitlistBtnText }}</a>
+            {%- else -%}
+              <a class="btn btn-outline-primary btn-sm pull-right" href="{{ canonicalUrl }}/join">{{joinBtnText}}</a>
+            {%- endif -%}
+          {%- endif -%}
+      </div>
+
+      <div class="row margin-t-lg">
+        <div class="col-md-4">
+        <h5 class="details-title mt-5">Schedule</h5>
+        {{ groupSchedule }}
+        </div>
+
+        <div class="col-md-4">
+          <h5 class="details-title mt-5">Meeting Location</h5>
+          {%- for location in group.GroupLocations -%}
+            {%- if location.GroupLocationTypeValue.DefinedTypeId == 15 and location.GroupLocationTypeValue.IsActive == true -%}
+                {%- if isMember -%}
+                  {{ location.Location.Street1 }}
+                  {{ location.Location.Street2 }}<br>
+                  {{ location.Location.City }} {{ location.Location.State }} {{ location.Location.PostalCode }}
+                  {%- capture googleAddress -%}{{ location.Location.Street1 }} {{ location.Location.Street2 }}, {{ location.Location.City }}, {{ location.Location.State }} {{ location.Location.PostalCode }}{%- endcapture -%}
+                  {%- assign googleAddress = googleAddress | Replace:'  ',' ' -%}
+                  {%- assign googleAddress = googleAddress | EscapeDataString | Replace:'%20','+' | Replace:'%2C',',' | Replace:'+,',',' -%}
+                  <a href="https://www.google.com/maps/place/{{ googleAddress }}/" target="_blank">Map</a>
+                  {%- if false -%}
+                    {% capture latLong %}{{ location.Location.Latitude }},{{ location.Location.Longitude }}{% endcapture %}
+                    {[ googlemap ]}
+                        [[ marker location:latLong ]] [[ endmarker ]]
+                    {[ endgooglemap ]}
+                  {%- endif -%}
+                {%- else -%}
+                  {%- if location.Location.Name -%}
+                    {{ location.Location.Name }}<br>
+                    {%- if location.Location.ParentLocation != null -%}
+                      {{ location.Location.ParentLocation.Name }}<br>
+                      {%- if location.Location.ParentLocation.Street1 != null or location.Location.ParentLocation.Street1 != '' -%}
+                        {{ location.Location.ParentLocation.ParentLocation.Name }}<br>
+                        {%- if location.Location.ParentLocation.ParentLocation.Street1 != null -%}
+                          {{ location.Location.ParentLocation.ParentLocation.Street1 }}<br>
+                          {{ location.Location.City }}, {{ location.Location.PostalCode }}
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- else -%}
+                    {%- if location.Location.PostalCode != null -%}
+                      {{ location.Location.City }}, {{ location.Location.PostalCode }}
+                    {%- endif -%}
+                  {% endif %}
+
+                {%- endif -%}
+              {% break %}
+            {%- endif -%}
+            </p>
+          {%- endfor -%}
+        </div>
+
+        <div class="col-md-4">
+          <h5 class="details-title mt-5">Leaders</h5>
+          <ul class="list-unstyled">
+            {%- for member in group.Members -%}
+            {% if member.GroupRole.IsLeader %}
+              <li class="mb-2"><strong>{{ member.Person.FullName }}</strong><br>{{ member.Person.Email }}</li>
+            {% endif %}
+            {%- endfor -%}
+            </ul>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+
+</div>
+
+    </div>
+
+
+    </main>
+
+  {%- endif -%}
+  {%- endgroup -%}
+
+{%- endif -%}

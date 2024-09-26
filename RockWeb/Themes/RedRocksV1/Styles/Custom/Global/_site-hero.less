@@ -1,0 +1,274 @@
+// out: false
+
+// Table of Contents
+// 1. Hero Slides Styles
+// 2. Extended Heading Hero Styles
+
+//-------------------------
+// - 1. Hero Slides Styles
+//-------------------------
+
+
+// * Hero Slides Styles
+#site-hero.site-hero-hero-slides {
+  position: relative;
+  z-index: 12;
+  min-height: 392px;
+  max-height: 1240px;
+  aspect-ratio: 48 / 31;
+  width: 100%;
+  height: fit-content;
+
+  @media (max-width: 767px) {
+    margin-bottom: -24px;
+  }
+  &.negative-margin {
+    margin-top: -65px;
+
+    @media (min-width: 992px) {
+      margin-top: -97px;
+    }
+  }
+
+  h1 {
+    max-width: 95%;
+
+    @media (min-width: 600px) {
+      max-width: 75%;
+    }
+
+    @media (min-width: 768px) {
+      max-width: 72%;
+    }
+
+    @media (min-width: 1200px) {
+      max-width: 80%;
+    }
+  }
+
+  .hero-buttons {
+    @media (max-width: 767px) {
+      position: absolute;
+      top: 100%;
+      transform: translateY(-50%);
+    }
+  }
+
+  #hero-swiper {
+    height: 100%;
+    min-height: 392px;
+    overflow: hidden;
+
+    @media (max-width: 767px) {
+      padding-bottom: 24px;
+    }
+
+    .swiper-wrapper {
+      height: 100% !important;
+    }
+
+    .swiper-slide {
+      position: relative;
+      background-size: cover;
+      transition: background-size .5s ease-out;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 27%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        // todo: replace
+        // background: linear-gradient(rgba(53, 53, 53, 0) 10%, rgba(53, 53, 53, .59) 40%, rgba(53, 53, 53, .93) 75%);
+        background: linear-gradient(fadeout(@onyx, 100%) 10%, fadeout(@onyx, 41%) 40%, fadeout(@onyx, 7%) 75%);
+
+        @media (min-width: 768px) {
+          top: 0;
+        }
+      }
+    }
+
+    .slide-content-wrapper {
+      position: relative;
+      z-index: 1;
+      padding-bottom: 112px;
+
+      @media (min-width: 768px) {
+        padding-bottom: 140px;
+      }
+
+      @media (min-width: 1200px) {
+        padding-bottom: 176px;
+      }
+
+      @media (min-width: 1600px) {
+        padding-bottom: 360px;
+      }
+    }
+
+    .swiper-pagination {
+      position: relative;
+      display: flex;
+
+      &-wrapper {
+        position: absolute;
+        bottom: 104px;
+        left: 0;
+        right: 0;
+
+        @media (min-width: 768px) {
+          bottom: 104px;
+        }
+
+        @media (min-width: 1200px) {
+          bottom: 140px;
+        }
+
+        @media (min-width: 1600px) {
+          bottom: 320px;
+        }
+      }
+
+      &-bullet {
+        width: 100%;
+        max-width: 72px;
+        height: 4px;
+        border-radius: 0;
+        background-color: rgba(174, 174, 174, .35);
+        opacity: 1;
+
+        @media (min-width: 768px) {
+          max-width: 120px;
+        }
+
+        @media (min-width: 992px) {
+          max-width: 200px;
+        }
+
+        @media (min-width: 1200px) {
+          max-width: 360px;
+          position: relative;
+        }
+
+        &:first-child {
+          margin-left: 0;
+        }
+
+        span {
+          .transition();
+          opacity: 0;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          color: @ultra-white;
+          text-align: left;
+          font-weight: 700;
+          font-size: 14px;
+          transform: translateY(100%);
+          margin-top: 8px;
+
+          @media (min-width: 992px) {
+            font-size: 16px;
+          }
+
+          @media (min-width: 1200px) {
+            font-size: 18px;
+            opacity: 1;
+            transform: translateY(0);
+            color: @imperfect-gray;
+          }
+        }
+
+        &-active {
+          background-color: rgba(255, 255, 255, .35);
+
+          span {
+            transform: translateY(0);
+            opacity: 1;
+            color: @ultra-white;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+//-------------------------
+// - 2. Extended Heading Hero Styles
+//-------------------------
+
+#site-hero.site-hero-extended-heading {
+  position: relative;
+
+  h1 {
+    font-size: 32px;
+
+    @media (min-width: 768px) {
+      font-size: 48px;
+    }
+
+    @media (min-width: 992px) {
+      font-size: 56px;
+    }
+
+    @media (min-width: 1200px) {
+      font-size: 64px;
+    }
+
+    @media (min-width: 1500px) {
+      font-size: 80px;
+    }
+  }
+
+  .site-hero-img {
+    position: relative;
+    background: linear-gradient(#fff 50%, fadeout(@putty,70%) 50%);
+
+    @media (max-width: 767px) {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
+
+
+    @media (min-width: 768px) {
+      height: 370px;
+      margin-top: -24px;
+    }
+
+    @media (min-width: 992px) {
+      height: 500px;
+      margin-top: -48px;
+    }
+
+    @media (min-width: 1200px) {
+      height: 630px;
+    }
+
+    @media (min-width: 1500px) {
+      height: 760px;
+    }
+
+    img {
+      @media (max-width: 767px) {
+        width: 90%;
+        aspect-ratio: 4/3;
+        margin-top: -24px;
+      }
+
+      @media (min-width: 768px) {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        aspect-ratio: 8/5;
+        max-width: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}
+

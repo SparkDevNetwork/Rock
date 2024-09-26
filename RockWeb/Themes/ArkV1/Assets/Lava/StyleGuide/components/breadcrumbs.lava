@@ -1,0 +1,33 @@
+
+{%- capture codeOutput -%}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Sample</a></li>
+    <li class="breadcrumb-item">Current Page</li>
+</ol>
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Sample</a></li>
+    <li class="breadcrumb-item"><a href="#">Another Sample</a></li>
+    <li class="breadcrumb-item">Current Page</li>
+</ol>
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Sample</a></li>
+    <li class="breadcrumb-item"><a href="#">Another Sample</a></li>
+    <li class="breadcrumb-item"><a href="#">Yet Another Sample</a></li>
+    <li class="breadcrumb-item">Current Page</li>
+</ol>
+{%- endcapture -%}
+
+<h1 class="mb-4">Breadcrumbs</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="m-0">Standard Markup</h4>
+        </div>
+        <div class="card-body">
+        <div class="p-4">{{ codeOutput | ReplaceLast:'"breadcrumb"','"breadcrumb mb-0"' }}</div>
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>

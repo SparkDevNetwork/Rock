@@ -1,0 +1,265 @@
+// out:false
+
+// Table of Contents
+// 1. Body
+// 2. Headings
+// 3. Color Modifiers (Text, Background, Border)
+// 4. Fonts
+
+//-------------------------
+// 1. Body
+//-------------------------
+
+body {
+    @media (max-width: 767px) {
+        font-size: 14px;
+        line-height: 1.57;
+    }
+}
+
+//-------------------------
+// 2. Headings
+//-------------------------
+
+// * headings size key: [fontsize] / [lineheight] : [ratio]
+// ~ desktop:  60px / 72px : 1.2      mobile:  40px / 42px : 1.05
+// ~ desktop:  40px / 48px : 1.2      mobile:  36px / 36px : 1
+// ~ desktop:  30px / 42px : 1.4      mobile:  30px / 32px : 1.067
+// ~ desktop:  30px / 36px : 1.2      mobile:  30px / 36px : 1.2
+// ~ desktop:  28px / 30px : 1.071    mobile:  24px / 30px : 1.25
+// ~ desktop:  20px / 30px : 1.5      mobile:  14px / 28px : 2
+
+// * color key
+// ~ @rocks-red:           #e74724;
+// ~ @onyx:                #353535;
+// ~ @imperfect-gray:      #aeaeae;
+// ~ @putty:               #dfded9;
+// ~ @ultra-white:         #ffffff;
+
+
+h1, .h1 {
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1.05;
+    letter-spacing: -2px;
+
+    @media (min-width: 992px) {
+        line-height: 1.2;
+        font-size: @font-size-h1;
+
+        &.display {
+            font-size: 90px;
+        }
+    }
+
+}
+
+h2, .h2 {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 36px;
+    line-height: 1;
+    letter-spacing: -2px;
+
+    @media (min-width: 992px) {
+        line-height: 1.2;
+        font-size: @font-size-h2;
+    }
+}
+
+h3, .h3 {
+    font-family: 'Times'; // ! need font files
+    font-weight: 400;
+    font-style: italic;
+    font-size: 30px;
+    line-height: 1.067;
+
+    @media (min-width: 992px) {
+        line-height: 1.4;
+        font-size: @font-size-h3;
+    }
+
+    &.display {
+      @media (min-width: 992px) {
+        font-size: 86px;
+      }
+    }
+}
+
+h4, .h4 {
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.2;
+
+    @media (min-width: 992px) {
+        font-size: @font-size-h4;
+    }
+}
+
+h5, .h5 {
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.25;
+
+    @media (min-width: 992px) {
+        line-height: 1.071;
+        font-size: @font-size-h5;
+    }
+}
+
+h6, .h6 {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 2;
+
+    @media (min-width: 992px) {
+        line-height: 1.5;
+        font-size: @font-size-h6;
+    }
+}
+
+.tall {
+    font-size: 20px !important;
+}
+
+.taller {
+    font-size: 24px !important;
+}
+
+.tallest {
+  font-size: 18px;
+
+  @media (min-width: 768px) {
+    font-size: 20px !important;
+  }
+
+  @media (min-width: 992px) {
+    font-size: 24px !important;
+  }
+
+  @media (min-width: 1200px) {
+    font-size: 32px !important;
+  }
+
+  @media (min-width: 1500px) {
+    font-size: 40px !important;
+  }
+}
+
+.lead {
+    font-size: 20px !important;
+    line-height: 2 !important;
+}
+
+a:not(.btn) {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &.text-white {
+      &:hover {
+        color: @rocks-red !important;
+      }
+    }
+
+    &.text-color {
+
+      &:hover {
+        color: @rocks-red !important;
+        text-decoration: none !important;
+      }
+    }
+}
+
+//-------------------------
+// 3. Color Modifiers (Text, Background)
+//-------------------------
+
+.text {
+    &-primary, &-rocks-red {
+        color: @rocks-red !important;
+    }
+
+    &-color, &-default, &-dark, &-onyx {
+        color: @onyx !important;
+    }
+
+    &-muted, &-imperfect-gray {
+        color: @imperfect-gray !important;
+    }
+
+    &-putty {
+        color: @putty !important;
+    }
+
+    &-white, &-ultra-white {
+        color: @ultra-white !important;
+    }
+}
+
+.bg {
+    &-primary, &-rocks-red {
+        background-color: @rocks-red !important;
+    }
+
+    &-dark, &-onyx {
+        background-color: @onyx !important;
+    }
+
+    &-muted, &-imperfect-gray {
+        background-color: @imperfect-gray !important;
+    }
+
+    &-putty {
+        background-color: @putty !important;
+    }
+
+    &-light, &-white, &-ultra-white, &-default, &-color {
+        background-color: @ultra-white !important;
+    }
+}
+
+
+// -------------------------
+// 5. Fonts
+// -------------------------
+@font-face {
+  font-display: auto;
+  font-family: nimbussans;
+  font-style: normal;
+  font-weight: 400;
+  src:  url(../../../../Assets/Fonts/NimbusSansStdRegular/font.woff2) format("woff2"),
+        url(../../../../Assets/Fonts/NimbusSansStdRegular/font.woff) format("woff");
+}
+
+@font-face {
+  font-display: auto;
+  font-family: nimbussans;
+  font-style: italic;
+  font-weight: 400;
+  src:  url(../../../../Assets/Fonts/NimbusSansStdTItalic/font.woff2) format("woff2"),
+        url(../../../../Assets/Fonts/NimbusSansStdTItalic/font.woff) format("woff");
+}
+
+@font-face {
+  font-display: auto;
+  font-family: nimbussans;
+  font-style: normal;
+  font-weight: 700;
+  src:  url(../../../../Assets/Fonts/NimbusSansStdBold/font.woff2) format("woff2"),
+        url(../../../../Assets/Fonts/NimbusSansStdBold/font.woff) format("woff");
+}
+
+@font-face {
+  font-display: auto;
+  font-family: nimbussans;
+  font-style: italic;
+  font-weight: 700;
+  src:  url(../../../../Assets/Fonts/NimbusSansStdTBoldItalic/font.woff2) format("woff2"),
+        url(../../../../Assets/Fonts/NimbusSansStdTBoldItalic/font.woff) format("woff");
+}
+
+
+

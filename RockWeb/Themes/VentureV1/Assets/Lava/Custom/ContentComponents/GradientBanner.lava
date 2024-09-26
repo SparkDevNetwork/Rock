@@ -1,0 +1,89 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/GradientBanner.lava' %} {% endcomment %}
+
+{% assign count = 0 %}
+
+<style>
+
+    {%- for item in Items -%}
+        {% assign isOdd = count | Modulo:2 | AsBoolean %}
+        {% assign image = item | Attribute:'Image','Guid' | ImageUrl | TriumphImgCdn:'w=1200&crop=faces&fit=crop&auto=compress,format' %}
+        {% assign accentColor = item | Attribute:'AccentColorPicker','RawValue' %}
+
+        .gradient-banner-{{ count }}::before {
+            background-image: Url('{{ image }}');
+        }
+
+        .gradient-banner-{{ count }}::after {
+            background: linear-gradient(transparent 0, {{ accentColor }} 430px);
+        }
+
+        {% if isOdd %}
+
+            @media (min-width: 992px) {
+                .gradient-banner-{{ count }}::after {
+                    background: linear-gradient(90deg, transparent 0, {{ accentColor }} 60% 100%);
+                }
+            }
+
+        {% else %}
+
+            @media (min-width: 992px) {
+                .gradient-banner-{{ count }}::after {
+                    background: linear-gradient(90deg, {{ accentColor }} 0 40%, {{ accentColor }} 40%, transparent 100%);
+                }
+            }
+
+        {% endif %}
+
+        {% assign count = count | Plus:1 %}
+    {% endfor %}
+
+</style>
+
+
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h4' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+{%- assign channelBackgroundImage =  ContentChannel | Attribute:'BackgroundImage','RawValue' -%}
+{%- assign contentItemStyle = '' -%}
+
+{% assign count = 0 %}
+
+{%- for item in Items -%}
+    {% assign isOdd = count | Modulo:2 | AsBoolean %}
+    {% assign linkText = item | Attribute:'LinkText' | Default:'Learn More' %}
+    {% assign linkUrl = item | Attribute:'LinkUrl','RawValue' %}
+
+    {% if isOdd %}
+        {% assign dataAos = 'fade-left' %}
+    {% else %}
+        {% assign dataAos = 'fade-right' %}
+    {% endif %}
+
+    <div class="gradient-banner gradient-banner-{{ count }} {% if isOdd %} gradient-banner-reverse{% endif %}" data-aos="fade" data-aos-anchor-placement="top-bottom">
+        <div class="container container-lg">
+            <div class="d-flex w-100{% if isOdd %} justify-content-end{% endif %}">
+                <div class="gradient-banner-content" data-aos="{{ dataAos }}">
+                    <{{ channelTitleSize }} class="text-white accent accent-light accent-white mb-5 display">{{ item.Title }}</{{ channelTitleSize }}>
+
+                    <div>
+                        {{ item.Content }}
+
+                        <div class="py-3"></div>
+                        <div class="py-md-3"></div>
+
+                        {% if linkUrl and linkUrl != empty %}
+                            <a href="{{ linkUrl }}" class="btn btn-primary btn-grow btn-light btn-lg">{{ linkText }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% assign count = count | Plus:1 %}
+{% endfor %}
+

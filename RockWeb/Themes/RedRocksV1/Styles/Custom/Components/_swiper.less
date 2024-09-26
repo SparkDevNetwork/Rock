@@ -1,0 +1,238 @@
+// out:false
+
+// Table of Contents
+// 1. General Swiper
+// 2. Swiper Primary
+// 3. Swiper Secondary
+
+//-------------------------
+// 1. General Swiper
+//-------------------------
+
+
+.swiper {
+  &-wrapper {
+    height: unset !important;
+  }
+
+  &-container {
+    position: relative;
+
+    .swiper-button-next,
+    .swiper-button-prev {
+      width: 35px;
+      height: 35px;
+      opacity: .8;
+      // todo: replace
+      // .transition();
+      transition: all .3s ease;
+
+      &::after {
+        height: 100%;
+        width: auto;
+        content: url(../../../../Assets/Images/rr-swiper-arrow.svg);
+        opacity: 1 !important;
+      }
+
+      &:not(.swiper-button-disabled):hover {
+        opacity: 1;
+      }
+    }
+
+    .swiper-button-prev {
+      &::after {
+        transform: rotate(180deg);
+      }
+    }
+
+    .swiper-button-disabled {
+      opacity: .2;
+    }
+  }
+}
+
+
+
+
+//-------------------------
+// 2. Swiper Primary
+//-------------------------
+
+.swiper-primary {
+  position: relative;
+
+  &-outer {
+    .transition();
+  }
+
+  &-inner {
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    position: relative;
+    padding: 24px;
+    background-size: cover;
+    background-position: right center;
+
+    .swiper-primary-title {
+      position: relative;
+      z-index: 10;
+      font-size: 32px;
+
+      @media (min-width: 992px) {
+        font-size: 64px;
+      }
+    }
+
+    .swiper-primary-subtitle {
+      font-size: 24px;
+      opacity: 1;
+      .transition();
+
+      @media (min-width: 992px) {
+        font-size: 32px;
+      }
+    }
+
+    .swiper-primary-content {
+      padding: 60px 24px 16px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      .transition();
+      transform: translateY(110%);
+      font-size: 20px;
+      font-weight: 700;
+
+      @media (min-width: 992px) {
+        padding: 96px 24px 16px;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background-color: @imperfect-gray;
+        opacity: 85%;
+        z-index: -1;
+      }
+
+    }
+
+
+    &:hover {
+      .swiper-primary-subtitle {
+        opacity: 0;
+      }
+
+      .swiper-primary-content {
+        transform: translateY(0);
+      }
+    }
+
+
+  }
+
+  .swiper {
+    &-button-next,
+    &-button-prev {
+      position: absolute;
+      bottom: unset;
+      top: -72px;
+
+      @media (min-width: 992px) {
+        top: -72px;
+      }
+    }
+
+    &-slide {
+      &:hover {
+        .swiper-primary-outer {
+          transform: scale(.95);
+        }
+      }
+    }
+  }
+
+  &-animation-box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    .transition();
+    background-color: @rocks-red;
+  }
+}
+
+
+
+
+
+//-------------------------
+// 3. Swiper Secondary
+//-------------------------
+.swiper-secondary {
+  margin-top: 56px;
+
+  @media (min-width: 992px) {
+    margin-top: 0;
+    margin-bottom: 64px;
+  }
+
+  img {
+    .transition();
+  }
+
+  .swiper-button {
+    &-next,
+    &-prev {
+      bottom: unset;
+      top: -32px;
+
+      @media (min-width: 992px) {
+        top: unset;
+        bottom: -64px;
+      }
+    }
+
+    &-next {
+      right: 0;
+    }
+
+    &-prev {
+      left: 0;
+    }
+  }
+
+  .swiper-secondary-content {
+    .transition();
+
+    .swiper-secondary-title-name {
+      @media (max-width: 449px) {
+        font-size: 28px;
+      }
+
+      @media (max-width: 369px) {
+        font-size: 24px;
+      }
+    }
+
+    &:hover {
+      .fa.fa-envelope {
+        color: @rocks-red !important;
+      }
+    }
+  }
+
+  .swiper-secondary-content:has(a.stretched-link:hover) {
+    img {
+      transform: scale(1.01);
+      box-shadow: 0 0 16px 4px rgba(0, 0, 0, .1);
+    }
+  }
+}

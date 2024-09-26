@@ -1,0 +1,32 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteFooter/MobileFixedFooter.lava' %} {% endcomment %}
+
+{% assign currentPagePath = 'Global' | Page:'Path' %}
+
+{% contentchannelitem where:'ContentChannelId == 34' limit:'10' iterator:'Items' sort:'Order' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+<div class="mobile-fixed-footer">
+    <div class="mobile-fixed-footer-colored-line"></div>
+    <nav class="mobile-fixed-footer-nav">
+        <ul>
+            {% for item in Items %}
+                {% assign iconCssClass = item | Attribute:'IconCssClass' %}
+                {% assign pageTitle = item.Title %}
+                {% assign page = item | Attribute:'Page' %}
+                {% assign pageUrl = page | Split:'(' | Last | Remove:')' | Prepend:'/' %}
+                {% assign isActive = false %}
+
+                {% if currentPagePath == pageUrl %}
+                    {% assign isActive = true %}
+                {% endif %}
+
+                <li{% if isActive %} class="active"{% endif %}>
+                    <i class="{{ iconCssClass }}"></i>
+                    <a href="{{ pageUrl }}" class="stretched-link text-white">{{ pageTitle }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+</div>
+
+

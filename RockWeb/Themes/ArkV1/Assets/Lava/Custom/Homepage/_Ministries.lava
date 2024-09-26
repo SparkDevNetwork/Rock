@@ -1,0 +1,92 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_Ministries.lava' %} {% endcomment %}
+
+
+
+<div class="container">
+    <h4 class="display text-center text-md-left mb-4">
+        HERE IS WHAT<br>
+        WE HAVE FOR...
+    </h4>
+
+    <div class="">
+        <div class="swiper-primary js-primary-swiper swiper-md-grid md-no-pagination px-3 px-sm-0">
+            {[ swiper spacebetween:'16' showpagination:'true' shownavigation:'false' breakpoints:'sm-2|32,md-4|0' paginationclickable:'true' ]}
+
+                [[ slide ]]
+                    <div class="cta-card">
+                        <img src="/Themes/ArkV1/Assets/Images/ark-kids-v2.png" alt="" class="cta-card-bg">
+                        <div class="overlay"></div>
+                        <div class="cta-card-body">
+                            <div class="cta-card-content">
+                                <h4 class="cta-card-subtitle text-white o-80">Kids Ministry</h4>
+                                <img src="/Themes/ArkV1/Assets/Images/ark-kids.svg" class="cta-card-title" alt="" width="312">
+                            </div>
+                            <div class="cta-card-footer">
+                                <a href="#" class="btn btn-lg btn-white">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+
+
+                [[ slide ]]
+                    <div class="cta-card">
+                        <img src="/Themes/ArkV1/Assets/Images/ark-youth.png" alt="" class="cta-card-bg">
+                        <div class="overlay overlay-danger"></div>
+                        <div class="cta-card-body">
+                            <div class="cta-card-content">
+                                <h4 class="cta-card-subtitle text-white o-80">Student Ministry</h4>
+                                <img src="/Themes/ArkV1/Assets/Images/ark-youth-logo-v2.png" class="cta-card-title" alt="" width="364">
+                            </div>
+                            <div class="cta-card-footer">
+                                <a href="#" class="btn btn-lg btn-white">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+
+
+                [[ slide ]]
+                    <div class="cta-card">
+                        <img src="/Themes/ArkV1/Assets/Images/groups-bg.png" alt="" class="cta-card-bg">
+                        <div class="cta-card-body">
+                            <div class="cta-card-content">
+                                <h4 class="cta-card-subtitle">Groups</h4>
+                                <img src="/Themes/ArkV1/Assets/Images/ark-groups.png" class="cta-card-title" alt="" width="247">
+                            </div>
+                            <div class="cta-card-footer">
+                                <a href="#" class="btn btn-lg btn-white">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+
+
+                [[ slide ]]
+                    <div class="cta-card">
+                        <img src="/Themes/ArkV1/Assets/Images/ministries.png" alt="" class="cta-card-bg">
+                        <div class="overlay overlay-primary"></div>
+                        <div class="cta-card-body">
+                            <div class="cta-card-content">
+                                <h4 class="cta-card-subtitle text-white o-80">Ministries</h4>
+                                <h4 class="cta-card-title display text-white">Discover More<br>At The Ark</h4>
+                            </div>
+                            <div class="cta-card-footer">
+                                <a href="#" class="btn btn-lg btn-white">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                [[ endslide ]]
+
+            {[ endswiper ]}
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+

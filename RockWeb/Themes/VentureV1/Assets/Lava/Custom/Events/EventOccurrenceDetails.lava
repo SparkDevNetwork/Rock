@@ -1,0 +1,147 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Events/EventOccurrenceDetails.lava' %} {% endcomment %}
+
+{% assign campusContextId = CampusContext.Id %}
+
+<div class="row">
+    <div class="col-md-8 col-md-push-4 margin-b-md">
+        {% if Event.Photo.Guid %}
+            {% assign imageUrl = Event.Photo.Guid | ImageUrl | TriumphImgCdn:'w=1600&h=900&fit=crop&auto=compress,format' %}
+            <center>
+                <img src="{{ imageUrl }}" class="title-image img-responsive rounded-md" />
+            </center>
+        {% endif %}
+
+        <h1 class="mt-4 mb-3">{{ Event.Name }}</h1>
+        {{ Event.Description }}
+
+        {% if Event.Summary != '' %}
+            {{ Event.Summary | AddMetaTagToHead:'name','description' }}
+        {% endif %}
+
+        {{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
+        {{ Event.Name | AddMetaTagToHead:'property','twitter:title' }}
+        {{ Event.Description | AddMetaTagToHead:'property','twitter:description' }}
+
+        {{ Event.Name | AddMetaTagToHead:'property','og:title' }}
+        {{ Event.Description | AddMetaTagToHead:'property','og:description' }}
+
+        {% assign facebookPhoto = Event | Attribute:'core_calendar_FacebookPhoto','Object' %}
+        {% if facebookPhoto %}
+            {{ facebookPhoto.Url | AddMetaTagToHead:'property','og:image' }}
+        {% endif %}
+
+        {% assign twitterPhoto = Event | Attribute:'core_calendar_TwitterPhoto','Object' %}
+        {% if twitterPhoto != '' %}
+            {{ twitterPhoto.Url | AddMetaTagToHead:'property','twitter:image' }}
+        {% endif %}
+
+        {{ Event.Name | SetPageTitle:'All' }}
+
+    </div>
+    <div class="col-md-4 col-md-pull-8">
+        <div class="well">
+
+            {% if EventItemOccurrence.Campus != null %}
+                <h4> {{ EventItemOccurrence.Campus.Name }} Campus</h4>
+            {% endif %}
+
+            {% if EventItemOccurrence.ContactPersonAliasId != null or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+                <p>
+                    <strong>Contact</strong><br />
+                    {% if EventItemOccurrence.ContactPersonAliasId != null %}
+                        {{ EventItemOccurrence.ContactPersonAlias.Person.FullName }} <br />
+                    {% endif %}
+
+                    {% if EventItemOccurrence.ContactEmail != '' %}
+                        {{ EventItemOccurrence.ContactEmail }} <br />
+                    {% endif %}
+
+                    {{ EventItemOccurrence.ContactPhone }}
+                </p>
+            {% endif %}
+
+            {% if EventItemOccurrence.Location != '' %}
+                <p>
+                    <strong> Location</strong> <br />
+                    {{ EventItemOccurrence.Location }}
+                </p>
+            {% endif %}
+
+            {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+            <strong>Date / Time</strong>
+            <ul class="list-unstyled">
+                {% for scheduledDate in scheduledDates %}
+                    <li>
+                        {{ scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            {% if EventItemOccurrence.Note != '' %}
+                <strong>Note</strong><br />
+                {{ EventItemOccurrence.Note }}
+            {% endif %}
+
+            {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
+
+            {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
+            {% if eventItemOccurrenceLinkagesCount > 0 %}
+                {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+                    {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
+                        {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+                        {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+                        {% assign showRegistration = true %}
+                        {% assign registrationMessage = '' %}
+
+                        {% if daysTillStartDate and daysTillStartDate > 0 %}
+                            {% assign showRegistration = false %}
+                            {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                            {% else %}
+                                {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if daysTillEndDate and daysTillEndDate < 0 %}
+                            {% assign showRegistration = false %}
+                            {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                            {% else %}
+                                {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if showRegistration == true %}
+                            {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
+                            {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                {% assign registrationButtonText = statusLabel %}
+                            {% else %}
+                                {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
+                            {% endif %}
+
+                            {% if statusLabel == 'Full' %}
+                                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                    {% assign registrationButtonText = 'Registration Full' %}
+                                {% else %}
+                                    {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Append:' (Registration Full) ' %}
+                                {% endif %}
+                                <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
+                            {% else %}
+                                {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                                    <a href='/{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+                                {% else %}
+                                    <a href="/{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <p>{{ registrationMessage }}</p>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        {% include '~~/Assets/Lava/Custom/SocialShare.lava', justify:'center', justifyMd:'start' %}
+
+    </div>
+</div>

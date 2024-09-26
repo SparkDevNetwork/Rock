@@ -1,0 +1,4 @@
+﻿{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+{% include '~/Assets/Lava/NoteViewItem.lava' %}

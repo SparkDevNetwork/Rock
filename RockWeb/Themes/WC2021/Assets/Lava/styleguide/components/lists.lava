@@ -1,0 +1,134 @@
+/- {% include '~~/Assets/Lava/styleguide/components/lists.lava' %} -/
+
+{%- capture codeOutput -%}
+<ol>
+    <li>Fee</li>
+    <li>Fi</li>
+    <li>Fo</li>
+    <li>Fum</li>
+</ol>
+
+<ol>
+    <li>first item</li>
+    <li>second item  <!-- closing </li> tag not here! -->
+        <ol>
+            <li>second item first subitem</li>
+            <li>second item second subitem</li>
+            <li>second item third subitem</li>
+        </ol>
+    </li>            <!-- Here's the closing </li> tag -->
+    <li>third item</li>
+</ol>
+
+
+<ol>
+    <li>first item</li>
+    <li>second item  <!-- closing </li> tag not here! -->
+        <ul>
+            <li>second item first subitem</li>
+            <li>second item second subitem</li>
+            <li>second item third subitem</li>
+        </ul>
+    </li>            <!-- Here's the closing </li> tag -->
+    <li>third item</li>
+</ol>
+{%- endcapture -%}
+
+<h1>Lists</h1>
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#standard">Standard</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+</ul>
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">Standard Markup</h4>
+    </div>
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{%- capture codeOutput -%}
+<ul class="list-arrows">
+    <li>Fee</li>
+    <li>Fi</li>
+    <li>Fo. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce lacus libero, rhoncus ac dui ut, semper tincidunt velit. Sed sit amet vestibulum diam. Aliquam eget lacus volutpat, eleifend dui in, maximus risus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse rhoncus mi nulla, vitae mollis est varius vel. Vivamus imperdiet elementum tortor, eget vestibulum neque auctor commodo.</li>
+    <li>Fum
+        <ul>
+            <li>second item first subitem</li>
+            <li>second item second subitem</li>
+            <li>second item third subitem</li>
+        </ul>
+    </li>
+    <li>Foo
+        <ol>
+            <li>second item first subitem</li>
+            <li>second item second subitem</li>
+            <li>second item third subitem</li>
+        </ol>
+    </li>
+    <li>Foo
+        <ul class="list-arrows">
+            <li>second item first subitem</li>
+            <li>second item second subitem</li>
+            <li>second item third subitem</li>
+        </ul>
+    </li>
+</ul>
+{%- endcapture -%}
+
+{% capture codeMarkup %}
+
+<div class="bg-blue-dark text-white p-3 rounded">
+    <ul class="list-schedule">
+        <li>11:00 AM
+            <ul>
+                <li>Identity as an Apologetic <i class="fa fa-info-circle text-lime"></i></li>
+                <li>Becoming Peacemakers <i class="fa fa-info-circle text-lime"></i></li>
+                <li class="text-danger">Developing Risk Takers (FULL) <i class="fa fa-info-circle"></i></li>
+                <li>People of Peace in an Anxious World <i class="fa fa-info-circle text-lime"></i></li>
+                <li>Smart Preaching for Students <i class="fa fa-info-circle text-lime"></i></li>
+                <li>Who You Really Are <i class="fa fa-info-circle text-lime"></i></li>
+            </ul>
+        </li>
+        <li>2:00 PM
+            <ul>
+                <li>You Matter <i class="fa fa-info-circle text-lime"></i></li>
+                <li>The Psycological Self <i class="fa fa-info-circle text-lime"></i></li>
+                <li class="text-danger">Teaching From Your New Identity (FULL) <i class="fa fa-info-circle"></i></li>
+                <li>Christian Culture or Christian Itentity <i class="fa fa-info-circle text-lime"></i></li>
+                <li>Conflict and Identiy <i class="fa fa-info-circle text-lime"></i></li>
+                <li>Identity and Transparency <i class="fa fa-info-circle text-lime"></i></li>
+            </ul>
+        </li>
+        <li>3:30 PM
+            <ul>
+                <li>Self Focus Self Awareness &amp; The New Self <i class="fa fa-info-circle text-lime"></i></li>
+                <li class="text-danger">Big God, Big Verdict (FULL) <i class="fa fa-info-circle"></i></li>
+                <li>What Does the Bible Say About Race <i class="fa fa-info-circle text-lime"></i></li>
+                <li class="text-danger">Love for the Lost (FULL) <i class="fa fa-info-circle"></i></li>
+                <li class="text-danger">Listening to Pauline Shame (FULL) <i class="fa fa-info-circle"></i></li>
+                <li class="text-danger">Freedom from the Fear of Man (FULL) <i class="fa fa-info-circle"></i></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+{% endcapture %}
+
+<div class="card mb-4" id="schedule">
+    <div class="card-header">
+        <h4 class="m-0">Schedule</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>

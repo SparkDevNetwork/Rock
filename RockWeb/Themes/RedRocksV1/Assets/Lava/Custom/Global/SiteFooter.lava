@@ -1,0 +1,114 @@
+{% assign campuses = 'CampusCategoriesAndTimes' | PersistedDataset | OrderBy:'PrimaryNavigationCategory' %}
+
+{% assign lastCategory = '' %}
+{% assign firstSingle = false %}
+
+<div class="site-footer bg-dark">
+    {% comment %} desktop: 48px {% endcomment %}
+    {% comment %} mobile: 48px {% endcomment %}
+
+    <div class="container">
+        <div class="row d-flex flex-wrap">
+
+            {% comment %} top spacing: 48px {% endcomment %}
+            <div class="pt-5 w-100"></div>
+
+            <div class="col-xs-12 col-sm-12 col-md-8 footer-col-main">
+                <h3 class="text-imperfect-gray display mt-0 mb-4 leading-tight">locations</h3>
+
+                {% for campus in campuses %}
+                    {% assign primaryNavigationCategory = campus.PrimaryNavigationCategory %}
+
+                    {% if primaryNavigationCategory and primaryNavigationCategory != lastCategory and primaryNavigationCategory != 'Online' %}
+                        {% assign categoryCampuses = campuses | Where:'PrimaryNavigationCategory',primaryNavigationCategory %}
+                        {% assign categoryCampusesSize = categoryCampuses | Size %}
+
+                        {% if categoryCampusesSize > 1 %}
+                            <h2 class="text-white m-0">{{ primaryNavigationCategory }}</h2>
+                            <div class="text-white">
+                                {% for categoryCampus in categoryCampuses %}
+                                    <span class="font-weight-bold m-0 campus-name"><a href="#" class="text-white">{{ categoryCampus.Name }}</a>{% unless forloop.last %} | {% endunless %}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    {% assign lastCategory = primaryNavigationCategory %}
+                {% endfor %}
+
+                <h2 class="text-white m-0">
+                    {% for campus in campuses %}
+                        {% assign primaryNavigationCategory = campus.PrimaryNavigationCategory %}
+
+                        {% if primaryNavigationCategory and primaryNavigationCategory != lastCategory and primaryNavigationCategory != 'Online' %}
+                            {% assign categoryCampuses = campuses | Where:'PrimaryNavigationCategory',primaryNavigationCategory %}
+                            {% assign categoryCampusesSize = categoryCampuses | Size %}
+
+                            {% if categoryCampusesSize == 1 %}
+                                {% for categoryCampus in categoryCampuses %}
+                                    {% if firstSingle %} <span class="d-none d-md-inline">|</span><br class="d-md-none"> {% endif %}<a href="#" class="h2 text-white mt-3 mb-0 d-inline-block">{{ categoryCampus.Name }}</a>
+                                    {% assign firstSingle = true %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                        {% assign lastCategory = primaryNavigationCategory %}
+                    {% endfor %}
+                </h2>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-4 footer-col-secondary">
+                <div class="social-icons w-100">
+                    <a href="#" class="btn btn-sm btn-outline-white btn-icon"><i class="fa fa-facebook"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-white btn-icon"><i class="fa fa-instagram"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-white btn-icon"><i class="fa fa-youtube"></i></a>
+                </div>
+                <div class="subscribe w-100">
+                    <div class="d-flex align-items-center d-md-block">
+                        <a href="#" class="btn btn-secondary btn-light">Subscribe <span></span></a>
+                        <h3 class="text-white mt-0 mb-2 ml-2 ml-md-0 text-center">to our email list</h3>
+                    </div>
+                </div>
+
+                <div class="py-3 py-md-0"></div>
+                <div class="py-1 py-md-0"></div>
+            </div>
+
+
+
+            <div class="col-xs-12 col-sm-12 footer-subnav footer-col-subnav mb-4 mb-md-0">
+
+                {% comment %} mobile: 32px {% endcomment %}
+                {% comment %} desktop: 128px {% endcomment %}
+                <div class="py-3"></div>
+                <div class="py-md-5"></div>
+
+
+                <div class="text-center m-0 text-putty">
+                    {% if CurrentPerson %}
+                        <a href="#">My Account</a> |
+                    {% else %}
+                        <a href="#">Login</a> |
+                    {% endif %}
+                    <a href="#">Ministries</a> |
+                    <a href="#">Español</a> |
+                    <a href="#">Resources</a> |
+                    <a href="#">Download App</a> |
+                    <a href="#">Store</a> |
+                    <a href="#">Contact Us</a>
+                </div>
+
+                <hr class="d-none d-md-block">
+            </div>
+            <div class="col-xs-12 col-sm-12 footer-brand text-center footer-col-brand">
+                <a href="/" class="d-inline-block mb-md-4">
+                    {% include '~~/Assets/Images/Logos/red-rocks-logo.svg' %}
+                </a>
+                <hr class="d-md-none">
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-black text-center py-4">
+        <p class="m-0 text-putty">Copyright {{ 'Now' | Date:'yyyy' }}</p>
+    </div>
+
+</div>
+

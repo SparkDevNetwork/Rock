@@ -1,0 +1,125 @@
+// out: false
+
+.site-footer {
+  a {
+    white-space: nowrap;
+  }
+
+  .footer-col-main {
+    .campus-name {
+      font-size: 16px;
+
+      @media (min-width: 768px) {
+        font-size: 20px;
+      }
+
+      @media (min-width: 992px) {
+        font-size: 24px;
+      }
+
+      @media (min-width: 1200px) {
+        font-size: 32px;
+      }
+    }
+  }
+
+  .social-icons {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+
+    @media (min-width: 992px) {
+      justify-content: flex-end;
+      gap: 24px;
+    }
+  }
+
+  .subscribe {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+
+    @media (min-width: 992px) {
+      justify-content: flex-end;
+      margin-top: 72px;
+    }
+
+    @media (max-width: 991px) {
+      .btn-secondary {
+        font-size: 20px;
+        padding: 6px 12px;
+      }
+    }
+  }
+
+  .footer-subnav {
+    font-size: 15px;
+
+    @media (min-width: 768px) {
+      font-size: 18px;
+    }
+
+    @media (min-width: 992px) {
+      font-size: 24px;
+    }
+
+    @media (min-width: 1200px) {
+      font-size: 30px;
+    }
+
+    .text-putty a {
+      // todo: replace
+      // color: @putty;
+      color: #dfded9;
+
+      &:hover {
+        // todo: replace
+        // color: @rocks-red;
+        color: #e74724;
+      }
+    }
+
+
+  }
+
+  hr {
+    border-color: #000000;
+  }
+
+
+
+  // footer col order
+  .footer-col {
+    &-main {
+      order: 2;
+
+      @media (min-width: 992px) {
+        order: 1;
+      }
+    }
+
+    &-secondary {
+      order: 4;
+
+      @media (min-width: 992px) {
+        order: 2
+      }
+    }
+
+    &-subnav {
+      order: 3;
+
+      @media (min-width: 992px) {
+        order: 3
+      }
+    }
+
+    &-brand {
+      order: 1;
+
+      @media (min-width: 992px) {
+        order: 4
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ImageBanner.lava', imageUrl:'/Themes/GoldCreekV1/Assets/Images/image-64-v2.jpg', destination:'#', minheight:'300px', maxheight:'554px', newtab:'false' %} {% endcomment %}
+
+{% capture image %}
+    <img src="{{ imageUrl }}" class="w-100 img-responsive img-banner" alt="" style="{% if minheight and minheight != empty %}min-height:{{ minheight }}{% endif %}; {% if maxheight and maxheight != empty %}max-height:{{ maxheight }}{% endif %}">
+{% endcapture %}
+
+{% if destination and destination != empty %}
+    <a href="{{ destination }}" {% if newtab == 'true' %}target="_blank"{% endif %}>
+        {{ image }}
+    </a>
+{% else %}
+    {{ image }}
+{% endif %}
+
+

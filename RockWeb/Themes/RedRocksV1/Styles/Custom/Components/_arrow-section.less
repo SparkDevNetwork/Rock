@@ -1,0 +1,96 @@
+// out:fasel
+
+.arrow-section {
+  position: relative;
+
+  &-content {
+    padding-top: 64px;
+    padding-bottom: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+
+    >*:not(.arrow) {
+      margin-left: 32px;
+
+      @media (min-width: 768px) {
+        margin-left: 48px;
+      }
+
+    }
+
+    @media (min-width: 1200px) {
+      padding-top: 158px;
+      padding-bottom: 64px;
+    }
+  }
+
+  .arrow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    @media (min-width: 768px) {
+      width: 42px;
+    }
+
+    svg {
+      width: 100%;
+    }
+  }
+
+
+  &.scrolled-in {
+    .slide-up-item {
+      &.arrow > * {
+        animation-delay: 0s !important;
+        animation-duration: 2.2s !important;
+      }
+    }
+  }
+
+
+  //-------------------------
+  // 4. Slide Up Item
+  //-------------------------
+  .arrow-section-content {
+    *:not(.arrow) {
+      overflow: hidden;
+      width: fit-content;
+      display: inline-block;
+
+      &[class*="bg-"] {
+        padding: .8rem;
+
+        @media (min-width: 768px) {
+          padding: 1rem;
+        }
+
+        @media (min-width: 768px) {
+          padding: 1.25rem;
+        }
+
+        @media (min-width: 1200px) {
+          padding: 1.5rem;
+        }
+      }
+
+      &[class*="bg-"] + *:not(.arrow)[class*="bg-"] {
+        margin-top: -.8rem !important;
+
+        @media (min-width: 768px) {
+          margin-top: -1rem !important;
+        }
+
+        @media (min-width: 768px) {
+          margin-top: -1.25rem !important;
+        }
+
+        @media (min-width: 1200px) {
+          margin-top: -1.5rem !important;
+        }
+      }
+    }
+  }
+}

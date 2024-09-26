@@ -1,0 +1,57 @@
+/- {% include '~~/Assets/Lava/styleguide/components/lists.lava' %} -/
+
+
+{%- capture codeOutput -%}
+<ol>
+  <li>Fee</li>
+  <li>Fi</li>
+  <li>Fo</li>
+  <li>Fum</li>
+</ol>
+
+<ol>
+  <li>first item</li>
+  <li>second item  <!-- closing </li> tag not here! -->
+    <ol>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ol>
+  </li>            <!-- Here's the closing </li> tag -->
+  <li>third item</li>
+</ol>
+
+
+<ol>
+  <li>first item</li>
+  <li>second item  <!-- closing </li> tag not here! -->
+    <ul>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ul>
+  </li>            <!-- Here's the closing </li> tag -->
+  <li>third item</li>
+</ol>
+{%- endcapture -%}
+
+<h1 class="mb-4">Lists</h1>
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#standard">Standard</a></li>
+</ul>
+
+
+    <div class="card mb-4" id="standard">
+        <div class="card-header">
+            <h4 class="m-0">Standard Markup</h4>
+        </div>
+        <div class="card-body">
+        {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+
+

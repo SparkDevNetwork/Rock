@@ -1,0 +1,71 @@
+/- {% include '~~/Assets/Lava/styleguide/components/lists.lava' %} -/
+
+{%- capture codeOutput -%}
+<ol>
+  <li>Fee</li>
+  <li>Fi</li>
+  <li>Fo</li>
+  <li>Fum</li>
+</ol>
+
+<ol>
+  <li>first item</li>
+  <li>second item
+    <ol>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ol>
+  </li>
+  <li>third item</li>
+</ol>
+
+
+<ol>
+  <li>first item</li>
+  <li>second item
+    <ul>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ul>
+  </li>
+  <li>third item</li>
+</ol>
+{%- endcapture -%}
+
+<h1 class="mt-0">Lists</h1>
+<h6>Table of Contents</h6>
+
+{{ codeOutput }}
+
+<pre><code>{{ codeOutput | Escape }}</code></pre>
+
+{%- capture codeOutput -%}
+<ul class="list-arrows">
+  <li>Fee</li>
+  <li>Fi</li>
+  <li>Fo. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce lacus libero, rhoncus ac dui ut, semper tincidunt velit. Sed sit amet vestibulum diam. Aliquam eget lacus volutpat, eleifend dui in, maximus risus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse rhoncus mi nulla, vitae mollis est varius vel. Vivamus imperdiet elementum tortor, eget vestibulum neque auctor commodo.</li>
+  <li>Fum
+        <ul>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ul>
+  </li>
+    <li>Foo
+        <ol>
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ol>
+  </li>
+      <li>Foo
+        <ul class="list-arrows">
+      <li>second item first subitem</li>
+      <li>second item second subitem</li>
+      <li>second item third subitem</li>
+    </ul>
+  </li>
+</ul>
+{%- endcapture -%}

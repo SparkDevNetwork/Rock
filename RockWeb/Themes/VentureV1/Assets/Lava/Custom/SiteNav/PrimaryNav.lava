@@ -1,0 +1,32 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNav/PrimaryNav.lava' %} {% endcomment %}
+
+{% assign userCampusId = CurrentPerson.PrimaryCampusId | AsInteger %}
+
+{% assign campusUrl = '/Campuses' %}
+
+{%- case userCampusId -%}
+    {%- when 1 -%}
+        {% assign campusUrl = '/LincolnRoad' %}
+    {%- when 2 -%}
+        {% assign campusUrl = '/HuntClub' %}
+    {%- when 3 -%}
+        {% assign campusUrl = '/StoneCounty' %}
+    {%- when 4 -%}
+        {% assign campusUrl = '/GulfCoast' %}
+    {%- when 6 -%}
+        {% assign campusUrl = '/JonesCounty' %}
+{%- endcase -%}
+
+<nav class="main-nav-primary">
+    <ul>
+        {% for item in Items %}
+            {% assign page = item | Attribute:'Page' %}
+            {% assign pageParts = page | Split:'(' %}
+            {% assign pageUrl = pageParts | Last | Remove:'(' | Remove:')' | Trim %}
+            <li><a href="/{{ pageUrl }}" class="text-color">{{ item.Title }}</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{{ campusUrl }}" class="btn btn-primary btn-sm text-uppercase">My Campus</a>
+</nav>
+
+{% comment %} page output: Events (venture/events) {% endcomment %}

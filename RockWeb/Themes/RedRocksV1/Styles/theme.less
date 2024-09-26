@@ -1,0 +1,188 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+// Load Custom Styles
+// --------------------------
+// ~ util
+@import "./Custom/_utilities-and-mixins.less";
+// ~ global
+@import "./Custom/Global/_site-header.less";
+@import "./Custom/Global/_site-hero.less";
+@import "./Custom/Global/_site-footer.less";
+// ~ components
+@import "./Custom/Components/_arrow-section.less";
+@import "./Custom/Components/_buttons.less";
+@import "./Custom/Components/_banner.less";
+@import "./Custom/Components/_forms.less";
+@import "./Custom/Components/_navs.less";
+@import "./Custom/Components/_plyr.less";
+@import "./Custom/Components/_sign-ups.less";
+@import "./Custom/Components/_swiper.less";
+@import "./Custom/Components/_text-rotator.less";
+@import "./Custom/Components/_typography-and-colors.less";
+// ~ individual pages
+@import "./Custom/Pages/_campus-details.less";
+@import "./Custom/Pages/_groups.less";
+@import "./Custom/Pages/_homepage.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+body {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+form#form1 {
+  margin: 0 !important;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.navbar {
+  position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+  // using fontawesome nav toggle button instead of the BS default
+  .navbar-toggle {
+    padding: 6px 10px;
+
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
+    }
+  }
+}
+
+a:hover i.fs {
+  text-decoration: none;
+}
+
+.container {
+  @media (min-width: 1500px) {
+    width: 1440px;
+  }
+
+  &-sm {
+    @media (min-width: 992px) {
+      width: 800px;
+      max-width: 800px;
+    }
+  }
+}
+
+// 3. Theme Styling
+// -------------------------
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+.page-icon {
+  display: none;
+}
+
+
+#splash.error {
+  background-color: @gray-lighter;
+
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+.panel {
+  background-color: transparent;
+}
+
+.panel-heading {
+  a {
+    border-bottom: 1px dotted @link-color;
+    &:hover {
+      text-decoration: none;
+      border-bottom-style: solid;
+    }
+  }
+
+  .panel-success & {
+    a {
+      color: @panel-success-text;
+      border-color: @panel-success-text;
+    }
+  }
+
+  .panel-warning & {
+    a {
+      color: @panel-warning-text;
+      border-color: @panel-warning-text;
+    }
+  }
+}
+
+
+
+
+@import "_css-overrides.less";
+
+

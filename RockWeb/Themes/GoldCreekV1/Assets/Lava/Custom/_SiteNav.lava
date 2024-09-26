@@ -1,0 +1,76 @@
+<!-- Collect the nav links, forms, and other content for toggling -->
+
+<div class="collapse navbar-collapse d-block">
+    {% if Context.Campus %}
+        <ul class="nav navbar-nav">
+            <li class="d-none d-lg-block"><a href="#" class="main-nav-item">I’m new</a></li>
+            <li class="dropdown d-none d-lg-block">
+                <a href="#" class="dropdown-toggle main-nav-item" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About Us <i class="fa fa-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">About Us</a></li>
+                    <li class="submenu-link">
+                        <a href="#">Ministries</i></a>
+                        <ul class="dropdown-menu dropdown-submenu">
+                            <li>
+                                <a href="#">Kids</a>
+                            </li>
+                            <li>
+                                <a href="#">Students</a>
+                            </li>
+                            <li>
+                                <a href="#">Care</a>
+                            </li>
+                            <li>
+                                <a href="#">GC Internship</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Beliefs</a></li>
+                    <li><a href="#">Staff</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Weddings</a></li>
+                    <li><a href="#">Memorials</a></li>
+                    <li><a href="#">Prayer</a></li>
+                    <li><a href="#">Jobs</a></li>
+                </ul>
+            </li>
+            <li class="d-none d-lg-block"><a href="#" class="main-nav-item">Media</a></li>
+            <li class="d-none d-lg-block"><a href="#" class="main-nav-item">Events</a></li>
+            <li class="dropdown d-none d-lg-block">
+                <a href="#" class="dropdown-toggle main-nav-item" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Next Steps <i class="fa fa-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Baptism</a></li>
+                    <li><a href="#">Connect</a></li>
+                    <li><a href="#">Serve</a></li>
+                    <li><a href="#">Give</a></li>
+                </ul>
+            </li>
+            <li class="d-none d-lg-block"><a href="#" class="main-nav-item">Online</a></li>
+        </ul>
+    {% else %}
+        <ul class="nav navbar-nav">
+            <li class="d-none d-lg-block"><a href="#" class="main-nav-item">I’m new</a></li>
+            <li class="d-none d-lg-block"><a href="#" class="main-nav-item">About</a></li>
+        </ul>
+    {% endif %}
+
+</div><!-- /.navbar-collapse -->
+
+{% include '~~/Assets/Lava/Custom/_SiteMobileNav.lava' %}
+
+<script>
+    $(document).ready(function () {
+        $('.contextsetter-campus li').each((i, obj) => {
+            var value = $(obj).find('a').html();
+            var campus = '{{ Context.Campus.Name }}';
+
+            if ( campus == '' && i == 1 ) {
+                $(obj).addClass('active');
+            } else if ( campus == value ) {
+                $(obj).addClass('active');
+            } else {
+                $(obj).removeClass('active');
+            }
+        });
+    });
+</script>

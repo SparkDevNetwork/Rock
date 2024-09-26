@@ -1,0 +1,110 @@
+
+
+
+.swiper-container.gc-swiper-container {
+  position: relative;
+
+  .swiper-button {
+    &-next,
+    &-prev {
+      &::after {
+        font-family: 'FontAwesome';
+        color: @gc-black;
+        font-weight: 500;
+      }
+    }
+
+    &-next {
+      right: unset;
+      left: calc(~'100% + 30px');
+
+      &::after {
+        content:"\f35a";
+      }
+    }
+
+    &-prev {
+      left: unset;
+      right: calc(~'100% + 30px');
+
+      &::after {
+        content:"\f359";
+      }
+    }
+  }
+}
+
+
+// cards slider content component styles
+.cards-slider {
+    padding: 0 16px;
+
+    @media screen and (min-width: 768px) {
+        padding: 0;
+    }
+
+    .swiper {
+        &-slide {
+            transition: opacity .3s ease;
+            height: unset;
+
+
+            &-prev {
+                @media screen and (min-width: 768px) {
+                    opacity: 0;
+                    pointer-events: none;
+                    cursor: default;
+                }
+            }
+
+            &-next + .swiper-slide {
+                @media screen and (min-width: 768px) and (max-width: 991px) {
+                    opacity: 0;
+                    pointer-events: none;
+                    cursor: default;
+                }
+
+                & + .swiper-slide {
+                    @media screen and (min-width: 992px) {
+                        opacity: 0;
+                        pointer-events: none;
+                        cursor: default;
+                    }
+                }
+            }
+        }
+
+        &-button-next,
+        &-button-prev {
+            @media screen and (max-width: 767px) {
+                display: none;
+            }
+        }
+
+        &-pagination {
+        bottom: -38px !important;
+
+            @media screen and (min-width: 1480px) {
+                display: none;
+            }
+
+            &-bullet {
+                width: 10px;
+                height: 10px;
+                border-radius: 0;
+                transform: rotate(45deg);
+                margin: 0 8px !important;
+                background-color: #000000;
+                opacity: .15;
+
+                &-active {
+                    //background-color: @color-of-the-year;
+                    background-color: #6869AC;
+                    opacity: 1;
+
+                }
+
+            }
+        }
+    }
+}

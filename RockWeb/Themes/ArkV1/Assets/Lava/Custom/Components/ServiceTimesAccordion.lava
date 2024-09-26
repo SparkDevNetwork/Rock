@@ -1,0 +1,55 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Components/ServiceTimesAccordion.lava' %} {% endcomment %}
+
+{% assign campus = Campuses | First %}
+{% assign serviceTimes = campus.ServiceTimes %}
+{% assign daysOfWeek = 'sunday,monday,tuesday,wednesday,thursday,friday,saturday' | Split:',' %}
+
+{% assign sundayServiceTimes = serviceTimes | Where:'Day','Sunday' %}
+
+{% capture dayTimes %}
+    {% for dayOfWeek in daysOfWeek %}
+        {% assign dayTimes = '' %}
+        {% case dayOfWeek %}
+            {% when 'sunday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Sunday' %}
+            {% when 'moday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Moday' %}
+            {% when 'tuesday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Tuesday' %}
+            {% when 'wednesday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Wednesday' %}
+            {% when 'thursday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Thursday' %}
+            {% when 'friday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Friday' %}
+            {% when 'saturday' %}
+                {% assign dayTimes = serviceTimes | Where:'Day','Saturday' %}
+        {% endcase %}
+        {% if dayTimes and dayTimes != empty %}
+            <div class="day-time">
+                {% for serviceTime in dayTimes %}
+                    {% if forloop.first %}
+                        <span class="day">{{ serviceTime.Day }}s</span> <span class="time">{{ serviceTime.Time | Replace:' ','' }}</span>
+                    {% else %}
+                        {% if forloop.last %}
+                            <span class="time">& {{ serviceTime.Time | Replace:' ','' }}</span>
+                        {% else %}
+                            <span class="time">, {{ serviceTime.Time | Replace:' ','' }}</span>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endcapture %}
+
+<div class="service-times-accordion">
+    {[ accordion paneltype:'service-times' firstopen:'false' ]}
+        [[ item title:'IN PERSON & ONLINE SERVICE TIMES' ]]
+            {{ dayTimes }}
+        [[ enditem ]]
+    {[ endaccordion ]}
+</div>
+
+
+

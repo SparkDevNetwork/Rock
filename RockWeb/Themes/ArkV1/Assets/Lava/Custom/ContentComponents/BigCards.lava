@@ -1,0 +1,57 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/BigCards.lava' %} {% endcomment %}
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h3' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+{%- assign channelBackgroundImage =  ContentChannel | Attribute:'BackgroundImage','RawValue' -%}
+{%- assign contentItemStyle = '' -%}
+{% assign isReverse = false %}
+
+{%- for item in Items -%}
+    {% assign imageGuid = item | Attribute:'Image','RawValue' %}
+    {% assign imageUrl = '' %}
+    {% if imageGuid and imageGuid != empty %}
+        {% assign imageUrl = imageGuid | ImageUrl | Append:'&w=1200&h=800&mode=crop' %}
+    {% endif %}
+    {% assign subtitle = item | Attribute:'CardSubtitle' %}
+    {% assign buttons = item | Attribute:'Buttons','Object' %}
+    {% assign buttons = buttons.AttributeMatrixItems %}
+    {% assign buttonsSize = buttons | Size %}
+
+    <div class="card card-giant-horizontal mb-sm-4{% if isReverse %} card-giant-horizontal-flipped{% endif %}{% if forloop.last %}{% else %} mb-sm-4{% endif %}">
+        <div class="card-img-header">
+            <img src="{{ imageUrl }}" alt="{{ item.Title }}" class="card-img-top img-responsive">
+        </div>
+        <div>
+            <div class="card-body">
+                <{{ channelTitleSize }} class="card-title">{{ item.Title }}</{{ channelTitleSize }}>
+                <h6 class="card-subtitle">{{ subtitle }}</h6>
+                <div class="card-text">{{ item.Content }}</div>
+            </div>
+            {% if buttonsSize > 0 %}
+                <div class="card-footer">
+                    {% for button in buttons %}
+                        {% assign url = button | Attribute:'Url','RawValue' %}
+                        {% assign text = button | Attribute:'Text' %}
+                        {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+                        {% assign style = button | Attribute:'Style','Object' %}
+                        {% assign styleClasses = style | Attribute:'Classes' %}
+                        <a href="{{ url }}" class="{{ styleClasses }}"{% if newTab %} target="_blank"{% endif %}>{{ text }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if isReverse %}
+        {% assign isReverse = false %}
+    {% else %}
+        {% assign isReverse = true %}
+    {% endif %}
+
+
+{%- endfor -%}
+
+

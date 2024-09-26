@@ -1,0 +1,8 @@
+<svg width="27" height="19" viewBox="0 0 27 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path class="arrow" d="M20 18.2588V8.74121C20 8.08218 20.7968 7.75215 21.2628 8.21814L26.0216 12.9769C26.3105 13.2658 26.3105 13.7342 26.0216 14.0231L21.2628 18.7818C20.7968 19.2479 20 18.9178 20 18.2588Z" fill="#86A199"/>
+<rect class="bar bar-one" width="26.25" height="3" rx="1.5" fill="#666F7A"/>
+<rect class="bar bar-two" y="8" width="18" height="3" rx="1.5" fill="#666F7A"/>
+<rect class="bar bar-three" y="16" width="18" height="3" rx="1.5" fill="#666F7A"/>
+</g>
+</svg>

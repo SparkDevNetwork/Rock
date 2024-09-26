@@ -1,0 +1,40 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/GroupFinder.lava' %} {% endcomment %}
+
+<div class="mt-4 pt-md-3 mt-md-5">
+    <div class="container container-lg">
+        <div class="group-cards">
+            <div class="row d-flex flex-wrap">
+                {% for group in Groups %}
+                    {% assign county = group | Attribute:'County' %}
+                    {% assign type = group | Attribute:'In-personorOnlineOnly' %}
+                    {% assign for = group | Attribute:'AnyoneorCollegeSpecific' %}
+                    {% assign leaders = group.Members | Where:'GroupRoleId == "66" || GroupRoleId == "24"' %}
+                    {%- capture leaderEmails -%}{%- for leader in leaders -%}{%- assign email = leader.Person.Email -%}{%- if email and email != empty -%}{{ email }};{%- endif -%}{%- endfor -%}{%- endcapture -%}
+
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                            <h5 class="card-title accent accent-invest accent-light mb-3">{{ group.Name }}</h5>
+                            {% comment %} todo: get county, type, & for data {% endcomment %}
+                            {% if county and county != empty %}
+                                <p class="o-80"><strong>Country:</strong> {{ county }}</p>
+                            {% endif %}
+                            {% if type and type != empty %}
+                                <p class="o-80"><strong>Type:</strong> {{ type }}</p>
+                            {% endif %}
+                            {% if for and for != empty %}
+                                <p class="o-80"><strong>For:</strong> {{ for }}</p>
+                            {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                <a href="/{{ LinkedPages.RegisterPage }}?GroupId={{ group.Id }}" class="btn btn-primary">Request to Join <i class="fa fa-arrow-right" style="font-size: 12px;"></i></a>
+                                <a href="/v1/small-group-contact?GroupId={{ group.Id }}" class="btn btn-link">Email the Leaders</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+

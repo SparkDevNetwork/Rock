@@ -1,0 +1,169 @@
+/*
+
+    1. Primary Footer
+    2. Mobile Fixed Footer
+
+*/
+
+// 1. Primary Footer
+// -------------------------
+.primary-footer {
+  margin-top: 80px;
+
+  @media (min-width: 992px) {
+    margin-top: 120px;
+  }
+
+  &-brand {
+    margin-bottom: 40px;
+
+    &-img {
+      display: block;
+
+      img {
+        max-width: 100%;
+      }
+
+      @media (max-width: 991px) {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+  }
+
+  &-address {
+    margin-bottom: 40px;
+    line-height: 27px;
+
+    address {
+      line-height: 27px;
+    }
+
+    @media (min-width: 992px) {
+      margin-bottom: 0;
+    }
+  }
+
+  &-nav {
+    display: flex;
+    justify-content: space-between;
+
+    a {
+      &:hover {
+        color: @venture-onyx !important;
+      }
+    }
+
+    nav {
+      @media (min-width: 992px) {
+        flex: 1 1 auto;
+      }
+    }
+
+    ul {
+      list-style: none;
+      margin-block-start: 0;
+      margin-block-end: 0;
+      padding-inline-start: 0;
+    }
+
+    li {
+      line-height: 27px;
+
+      &:first-child {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 9px;
+      }
+    }
+  }
+
+  hr {
+    margin: 40px 0;
+
+    @media (min-width: 768px) {
+      margin: 120px 0 32px;
+    }
+  }
+
+  &-subfooter {
+    text-align: center;
+    padding: 0 0 40px;
+
+    @media (min-width: 768px) {
+      padding: 0 0 32px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .copyright {
+      margin-bottom: 36px;
+
+      @media (min-width: 768px) {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+
+// 2. Mobile Fixed Footer
+// -------------------------
+
+.mobile-fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+
+  &-colored-line {
+    background: linear-gradient(90deg, @invest 0%, @invest 25%, @invite 25.01%,  @invite 50%, @impress 50.01%, @impress 75%, @ignite 75.01%, @ignite 100%);
+    height: 2px;
+  }
+
+  @media (min-width: 768px) {
+    display: none !important;
+  }
+
+  &-nav {
+    background-color: @venture-onyx;
+    padding: 8px;
+
+    ul {
+      display: flex;
+      list-style: none;
+      margin-block-start: 0;
+      margin-block-end: 0;
+      padding-inline-start: 0;
+    }
+
+    li {
+      position: relative;
+      color: #fff;
+      opacity: .75;
+      text-align: center;
+      .transition ();
+      font-size: 11px;
+      flex: 1;
+
+      i {
+        font-size: 24px;
+      }
+
+      a {
+        display: block;
+        margin-top: 4px;
+
+        &:hover {
+          text-decoration: none;
+        }
+      }
+
+      &:hover, &.active {
+        opacity: 1;
+      }
+    }
+  }
+}

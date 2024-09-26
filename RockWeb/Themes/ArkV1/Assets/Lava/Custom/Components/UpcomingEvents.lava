@@ -1,0 +1,55 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Components/UpcomingEvents.lava' %} {% endcomment %}
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+{% assign eventItemIds = '0' | Split:',' %}
+{% assign count = 0 %}
+
+{% eventitemoccurrence where:'NextStartDateTime >= "{{ now }}"' limit:'10' iterator:'EventItemOccurrences' sort:'Order' securityenabled:'false' sort:'NextStartDateTime' %}
+{% endeventitemoccurrence %}
+
+<div class="container upcoming-events">
+    <h4 class="display text-white text-center mb-5">UPCOMING EVENTS</h4>
+
+    <div class="swiper-primary js-primary-swiper sm-no-pagination">
+        {[ swiper spacebetween:'16' showpagination:'true' shownavigation:'true' breakpoints:'sm-2|32,md-3|64' paginationclickable:'true' ]}
+        {% for eventItemOccurrence in EventItemOccurrences %}
+            {% if count < 3 %}
+                {% assign eventItemId = eventItemOccurrence.EventItemId | AsString %}
+                {% assign isRepeatedEvent = eventItemIds | Contains:eventItemId %}
+
+                {% unless isRepeatedEvent %}
+                    {% assign count = count | Plus:1 %}
+                    {% assign eventItemName = eventItemOccurrence.EventItem.Name %}
+                    {% assign nextStartDateTime = eventItemOccurrence.NextStartDateTime %}
+                    {% assign photoId = eventItemOccurrence.EventItem.PhotoId %}
+                    {% assign photoUrl = photoId | ImageUrl %}
+                    {% assign eventItemIds = eventItemIds | AddToArray:eventItemId %}
+                    {% assign detailsUrl = eventItemOccurrence.EventItem.DetailsUrl %}
+
+                    {% unless detailsUrl and detailsUrl != empty %}
+                        {% assign detailsUrl = '/events/' | Append:eventItemName %}
+                    {% endunless %}
+
+                    [[ slide ]]
+                        <a href="#" class="position-relative">
+                            <div class="backdrop backdrop-primary backdrop-left rounded-sm js-backdrop">
+                                <img src="{{ photoUrl }}" alt="" class="img-responsive w-100">
+                            </div>
+                            <h3 class="text-white mt-4 line-clamp line-clamp-2">{{ eventItemName }}</h3>
+                            <p class="m-0 lead text-white font-weight-bold">{{ nextStartDateTime | Date:'ddd, MMM dd' }}</p>
+                        </a>
+                        <a href="{{ detailsUrl }}" class="d-sm-none btn btn-white font-weight-medium mt-3">View Details</a>
+                    [[ endslide ]]
+                {% endunless %}
+            {% else %}
+                {% break %}
+            {% endif %}
+
+            {% endfor %}
+        {[ endswiper ]}
+    </div>
+</div>
+
+
+
+

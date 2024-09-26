@@ -1,0 +1,47 @@
+// out: false
+
+.text-rotator {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+
+  &-item {
+    &:not(.active) {
+      animation-name: textrotatorout;
+      animation-duration: .3s;
+      top: 150%;
+
+    }
+
+    &.active {
+      animation-name: textrotatorin;
+      animation-duration: 1.2s;
+      top: 50%;
+
+    }
+
+    position: absolute;
+    transform: translateY(-50%);
+    width: 100%;
+  }
+}
+
+@keyframes textrotatorout {
+  from {
+    top: 50%;
+  }
+
+  to {
+    top: -150%;
+  }
+}
+
+@keyframes textrotatorin {
+  from {
+    top: 150%;
+  }
+
+  to {
+    top: 50%;
+  }
+}

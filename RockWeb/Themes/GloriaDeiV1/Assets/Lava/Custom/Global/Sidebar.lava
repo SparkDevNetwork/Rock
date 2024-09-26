@@ -1,0 +1,31 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Global/Sidebar.lava' %} {% endcomment %}
+
+{% assign facebookUrl = 'Global' | Attribute:'FacebookUrl','RawValue' %}
+{% assign instagramUrl = 'Global' | Attribute:'InstagramUrl','RawValue' %}
+{% assign vimeoUrl = 'Global' | Attribute:'VimeoUrl','RawValue' %}
+
+<div class="sidebar d-flex flex-column justify-content-between">
+    <div class="top d-flex flex-column align-items-center w-100">
+        {% if CurrentPage.Layout.Site.SiteLogoBinaryFileId and CurrentPage.Layout.Site.SiteLogoBinaryFileId != empty %}
+            <a href="/" title="home" class="d-block">
+                <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}" alt="Gloria Dei | Home" class="logo img-responsive">
+            </a>
+        {% endif %}
+
+        <a href="#" class="js-sidebar-toggle sidebar-toggle">{% include '~~/Assets/Images/Icons/custom-bars-v2.svg' %}</a>
+    </div>
+    <div class="bottom d-flex flex-column align-items-center w-100 social-media">
+        {% if facebookUrl and facebookUrl != empty %}
+            <a href="{{ facebookUrl }}"><i class="fa fa-facebook"></i></a>
+        {% endif %}
+        {% if instagramUrl and instagramUrl != empty %}
+            <a href="{{ instagramUrl }}"><i class="fa fa-instagram"></i></a>
+        {% endif %}
+        {% if vimeoUrl and vimeoUrl != empty %}
+            <a href="{{ vimeoUrl }}"><i class="fa fa-vimeo"></i></a>
+        {% endif %}
+    </div>
+</div>
+
+
+

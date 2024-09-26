@@ -1,0 +1,6 @@
+<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="accordion-icon">
+<rect id="bar-1" x="8" width="5" height="21" rx="1" fill="#86A199"/>
+<rect id="bar-2" x="21" y="8" width="5" height="21" rx="1" transform="rotate(90 21 8)" fill="#86A199"/>
+</g>
+</svg>

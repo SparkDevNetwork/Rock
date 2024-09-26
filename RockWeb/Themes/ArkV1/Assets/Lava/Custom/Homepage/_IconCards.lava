@@ -1,0 +1,87 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_IconCards.lava' %} {% endcomment %}
+<div class="swiper-primary js-primary-swiper lg-no-pagination pagination-dark px-3 px-sm-0">
+    {[ swiper spacebetween:'16' showpagination:'true' shownavigation:'false' breakpoints:'sm-2|16,lg-3|16' paginationclickable:'true' ]}
+        [[ slide ]]
+            <div class="icon-card icon-card-horizontal bg-white h-100">
+                <span class="icon-btn dark icon-card-icon">
+                    <i class="icon-primary fa fa-flag"></i>
+                </span>
+
+                <div class="icon-card-body">
+                    <h6 class="icon-card-title">New Here? Start Here.</h6>
+                    <p class="icon-card-text text-muted">We are excited you are here! Learn more about The Ark and Plan a Visit Today!</p>
+                    <div class="icon-card-footer">
+                        <a href="#" class="text-link">Plan a Visit</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="icon-card icon-card-horizontal bg-white h-100">
+                <span class="icon-btn dark icon-card-icon">
+                    <i class="icon-primary fa fa-calendar"></i>
+                </span>
+
+                <div class="icon-card-body">
+                    <h6 class="icon-card-title">What’s Happening.</h6>
+                    <p class="icon-card-text text-muted">Join us for an event near you.</p>
+                    <div class="icon-card-footer">
+                        <a href="#" class="text-link">See Upcoming Events</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+            <div class="icon-card icon-card-horizontal bg-white h-100">
+                <span class="icon-btn dark icon-card-icon">
+                    <i class="icon-primary fa fa-power-off"></i>
+                </span>
+
+                <div class="icon-card-body">
+                    <h6 class="icon-card-title">Login or Create an Account.</h6>
+                    <p class="icon-card-text text-muted">Login or register to access a a full personalized experience.</p>
+                    <div class="icon-card-footer">
+                        <a href="#" class="text-link">Login or Register</a>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+    {[ endswiper ]}
+</div>
+
+
+
+
+
+{% comment %}
+    shownavigation (false) – Set to true and slider will show arrows
+    showpagination (true) – Set to false to hide pagination bullets.
+    paginationtype (bullets) – Type of pagination, can be "bullets", "fraction", "progressbar" or "custom".
+    paginationclickable (false) – If paginationtype is "bullets", clicking on a bullet will cause transition to the appropriate slide.
+    paginationcolor (#007aff) – Set the color of the pagination.
+    navigationcolor (#007aff) – Set the color of the navigation arrows.
+    showscrollbar (false) – Set to true to allow a scrollbar.
+    speed (300) – Duration of transition between slides (in ms).
+    slidesperview (1) – Number of slides per view (slides visible at the same time on slider's container).
+    initialslide (0) – Index number of initial slide.
+    spacebetween (0) – Distance between slides in px.
+    effect (slide) – Transition effect. Options include: "slide", "fade", "cube", "coverflow", "flip", "creative" or "cards"
+    autoheight (false) – Set to true and slider wrapper will adopt its height to the height of the currently active slide.
+    autoplay (0) – Automatically advance to the next slide. Set to number of milliseconds.
+    loop (false) – Set to true to enable continuous loop mode.
+    centeredslides (false) – If true, then active slide will be centered, not always on the left side.
+    Advanced Options
+    id (blank) – Custom variable id for the swiper component. Swiper can be accessed via JS with the provided id, and uses the provided parameter as the container HTML Id. The Id should not contain spaces, dashes, or other special characters.
+    containerclass (blank) – Set an additional custom class for the Swiper container.
+    breakpoints (none) – Breakpoints are a comma separated list of responsive breakpoints where different behavior is desired. Markup format is: [Breakpoint Size]-[Slides Per View]|[Space Between]. Properly formatted examples: 320-2|20, sm-2|20,md-3|30, or xs-2|20,900-3|30
+        Breakpoint Size - Breakpoint size can use default bootstrap breakpoints [xs,sm,md,lg] or a number value 320.
+        Slides Per View- Number of slides visible at the same time on slider's container.
+        Space Between- Distance between slides in px.
+    gridrows (1) – Number of slide rows, for multirow layout.
+    gridfill (column) – When there are multiple grid rows, defines how slides should fill rows. Options are: "row" or "column"
+    hashnavigation (false) – Enables hash URL navigation to for slides.
+    hashnavigationwatch (false) – Set to true to enable also navigation through slides (when hashnav is enabled) by browser history or by setting directly hash on document location
+    parallax (false) – Set to true to enable parallax options on slide content.
+    touchangle (45) – Allowable angle (in degrees) to trigger touch move.
+    watchslidesprogress (false) – Enable this feature to calculate each slides progress and visibility (slides in viewport will have additional visible class)
+{% endcomment %}

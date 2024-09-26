@@ -1,0 +1,219 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/FeatureCards.lava' %} {% endcomment %}
+
+{% assign userPersonalizationSegments = CurrentPerson | PersonalizationItems:'Segments' %}
+
+{% assign isBaptized = false %}
+{% assign isHouseChurchMember = false %}
+{% assign isServingTeamhMember = false %}
+
+{% for segment in userPersonalizationSegments %}
+    {% assign key = segment.Key %}
+    {% if key == 'BaptizedMembers' %}
+        {% assign isBaptized = true %}
+    {% elseif key == 'HouseChurchMembers' %}
+        {% assign isHouseChurchMember = true %}
+    {% elseif key == 'ServingTeamMembers' %}
+        {% assign isServingTeamhMember = true %}
+    {% endif %}
+{% endfor %}
+
+
+<div class="order-3 order-md-1 bg-xs-default bg-sm-default bg-md-venture-white">
+    <div class="py-3 py-md-0"></div>
+    <div class="container container-lg hero-feature-cards">
+        <div class="row d-flex flex-wrap">
+
+            {% comment %} if user IS logged in {% endcomment %}
+            {% if CurrentPerson %}
+
+                {% comment %}
+                    BAPTISM
+                    user has a baptism date
+                {% endcomment %}
+                {% if isBaptized %}
+                    <div class="col-xs-12 col-sm-12 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-play"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Watch On Demand</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <a class="font-weight-bold" href="/ondemand">Watch Now</a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% comment %}
+                    BAPTISM
+                    user does NOT have baptism date
+                {% endcomment %}
+                {% else %}
+                    <div class="col-xs-12 col-sm-12 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-tint"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Get Baptized</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <a class="font-weight-bold" href="/baptism">Register Today</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+
+                {% comment %}
+                    HOUSE CHURCH
+                    user IS a member of a house church
+                {% endcomment %}
+                {% if isHouseChurchMember %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-bible"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Read Today’s Bible Reading Plan</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                {% comment %} todo: add href {% endcomment %}
+                                <a class="font-weight-bold" href="/biblereadingplan">View Bible Reading Plan</a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% comment %}
+                    HOUSE CHURCH
+                    user is NOT a member of a house church
+                {% endcomment %}
+                {% else %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-home"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Join a House Church</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer flex-wrap flex-sm-nowrap">
+                                <a class="font-weight-bold" href="/housechurch">Find a Group</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+
+                {% comment %}
+                    SERVING
+                    user IS a member of a serving team
+                {% endcomment %}
+                {% if isServingTeamhMember %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-book"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Today’s Daily Devotion</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                {% comment %} todo: add href {% endcomment %}
+                                <a class="font-weight-bold" href="/v1/dailydevos">View Daily Devos</a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% comment %}
+                    SERVING
+                    user is NOT a member of a serving team
+                {% endcomment %}
+                {% else %}
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                        <div class="card feature-card h-100" data-aos="fade-up">
+                            <div class="card-body">
+                                <div class="feature-card-title d-flex">
+                                    <div class="feature-card-icon"><i class="fa fa-users"></i></div>
+                                    <h5 class="card-title accent accent-invite accent-lightest">Find a Place to Serve</h5>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a class="font-weight-bold" href="/serve">See Opportunities</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% comment %} if user is NOT logged in {% endcomment %}
+            {% else %}
+                <div class="col-xs-12 col-sm-12 col-md-4 mb-3">
+                    <div class="card feature-card h-100" data-aos="fade-up">
+                        <div class="card-body">
+                            <div class="feature-card-title d-flex">
+                                <div class="feature-card-icon"><i class="fa fa-flag"></i></div>
+                                <h5 class="card-title accent accent-invite accent-lightest">First Time? Plan a Visit.</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer flex-wrap flex-sm-nowrap">
+                            <input type="number" class="form-control" id="inputPostalCode" placeholder="Find a campus by Zip code...">
+                            <a class="btn btn-primary ml-0 ml-sm-3 mt-2 mt-sm-0 btn-grow js-search-button" href="#">Search</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                    <div class="card feature-card h-100" data-aos="fade-up">
+                        <div class="card-body">
+                            <div class="feature-card-title d-flex">
+                                <div class="feature-card-icon"><i class="fa fa-play"></i></div>
+                                <h5 class="card-title accent accent-invite accent-lightest">Watch on Demand</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a class="font-weight-bold" href="/ondemand">Watch Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                    <div class="card feature-card h-100" data-aos="fade-up">
+                        <div class="card-body">
+                            <div class="feature-card-title d-flex">
+                                <div class="feature-card-icon"><i class="fa fa-user-circle"></i></div>
+                                <h5 class="card-title accent accent-invite accent-lightest">Login in for a Full Experience</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a class="font-weight-bold" href="/v1/login">Log in or Register</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+    $(document).ready(function() {
+        $('.js-search-button').on('click', function() {
+            if ($('#inputPostalCode').val() != '') { // enter
+                window.location.replace(`/campuses?location=${$('#inputPostalCode').val()}#locations`);
+            }
+        });
+
+        $('#inputPostalCode').keypress(function (e) {
+            var key = e.which;
+            if (key == 13 &&  $('#inputPostalCode').val() != '') { // enter
+                window.location.replace(`/campuses?location=${$('#inputPostalCode').val()}#locations`);
+            }
+        });
+    });
+</script>

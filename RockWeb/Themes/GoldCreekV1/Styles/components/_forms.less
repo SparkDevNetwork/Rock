@@ -1,0 +1,365 @@
+.rock-control-gallery .panel {
+  background-color: transparent;
+}
+
+fieldset,
+.form-section {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+fieldset:last-child {
+  margin-bottom: 0;
+}
+
+.form-control,
+.input-group {
+  box-shadow: none;
+}
+
+.form-row {
+  margin-right: -8px !important;
+  margin-left: -8px !important;
+  & > .col,
+  & > [class*="col-"] {
+    padding-right: 8px !important;
+    padding-left: 8px !important;
+  }
+
+  .form-control-group & {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+.picker .picker-label.active,
+.form-control:focus {
+  border-color: @input-border-focus;
+  box-shadow: @input-focus-box-shadow;
+}
+
+.form-control {
+  padding: 8px 12px;
+  height: 42px;
+  &::placeholder  { font-weight: 200; }
+}
+
+.control-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: @text-color;
+  margin-bottom: 7px;
+}
+
+.control-wrapper,
+.form-control {
+  font-weight: 500;
+}
+
+
+.has-error {
+  .form-control,
+  .input-group-addon {
+    box-shadow: none;
+  }
+
+  .form-control:focus {
+    border-color: @state-danger-text;
+    box-shadow: 0 0 0 1px @state-danger-text;
+  }
+
+  .validation-error {
+    margin: 8px 0 12px;
+    font-size: 16px;
+    font-weight: 400;
+  }
+}
+
+.input-group-addon {
+  color: @brand-primary;
+}
+
+.picker .picker-label {
+  padding: @input-padding-y @input-padding-x;
+}
+
+.address-control .form-group,
+fieldset > .form-group:last-child {
+  margin-bottom: 12px;
+}
+
+.address-control {
+  margin-bottom: @form-group-margin-bottom;
+}
+
+.form-control-static {
+  min-height: auto;
+  padding-bottom: 0;
+}
+
+
+.birthday-picker {
+  .control-wrapper {
+    display: flex;
+  }
+  .separator {
+    display: none;
+  }
+}
+
+.input-group-btn {
+  > .btn {
+    height: @input-height-base;
+    border-radius: 0 @input-border-radius @input-border-radius 0;
+  }
+
+  > .btn-square {
+    width: @input-height-base;
+    border: 1px solid @input-border !important;
+  }
+}
+
+.label.slidingdaterange-info {
+  padding: 1px 8px;
+  border-radius: 2px;
+}
+
+@input-addon-icon-width: 54px;
+
+.input-group-addon-inline {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  width: @input-addon-icon-width;
+  padding: 0;
+  pointer-events: none;
+  background-color: transparent;
+  border: 0;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.url-link-box,
+.phone-number-box,
+.email-box,
+.currency-box,
+.account-amount-single-entry {
+  .control-wrapper {
+    width: 100%;
+  }
+
+  .input-group,
+  &.input-group {
+    position: relative;
+    display: block;
+    .clearfix();
+
+    .input-group-addon {
+      &:extend(.input-group-addon-inline);
+      left: 0;
+
+    }
+    .form-control {
+      padding-left: @input-addon-icon-width;
+      border-radius: @input-border-radius;
+    }
+  }
+}
+
+.year-picker .input-group,
+.input-group.bootstrap-timepicker,
+.input-group.date {
+  position: relative;
+  display: block;
+  .clearfix();
+
+  .input-group-addon {
+    &:extend(.input-group-addon-inline);
+    right: 0;
+  }
+
+  .form-control {
+    padding-right: @input-addon-icon-width;
+    border-radius: @input-border-radius;
+  }
+}
+
+
+.datepicker {
+  font-weight: 400;
+}
+
+.custom-switch .custom-control-label {
+  &:before {
+    top: -3px !important;
+  }
+
+  &:after {
+    top: -1px !important;
+    box-shadow: 0 1px 3px rgba(194, 197, 204, 50%);
+  }
+}
+
+.chosen-container-multi .chosen-choices .search-choice {
+  padding: 9px 32px 9px 12px !important;
+  margin-top: 11px !important;
+  font-size: 15px !important;
+  font-weight: 600;
+  color: @white !important;
+  background-color: @brand-primary !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+
+  .search-choice-close:after {
+    top: 9px !important;
+    right: 8px !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+  }
+}
+
+.radio,
+.radio-inline,
+.checkbox,
+.checkbox-inline {
+  .label-text {
+    &:before {
+      border-color: @brand-primary !important;
+    }
+  }
+}
+
+.outlined-input {
+  .radio,
+  .radio-inline,
+  .checkbox,
+  .checkbox-inline {
+    position: relative;
+    padding: 15px 16px 13px 44px !important;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-radius: 4px;
+
+    &:hover {
+      background: #e6f4fe;
+    }
+
+    .label-text {
+      &:before,
+      &:after {
+        top: 50% !important;
+        left: 16px !important;
+        transform: translateY(-50%);
+      }
+
+      &:before {
+        border-color: @brand-primary !important;
+      }
+    }
+
+    input:checked + .label-text {
+      color: @brand-primary;
+    }
+  }
+
+  .outline-checked {
+    background: #e6f4fe;
+    border-color: @brand-primary;
+  }
+}
+
+.input-group-search {
+  position: relative;
+  width: 100%;
+
+  @media screen and (min-width: @screen-lg) {
+    width: @input-width-xl;
+  }
+
+  .form-control {
+    padding-right: 48px;
+  }
+
+  &:before {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    z-index: 10;
+    font-family: @fa-font-face;
+    font-size: 20px;
+    font-weight: 700;
+    color: @gray-light;
+    content: @fa-var-search;
+    transform: translateY(-50%);
+  }
+}
+
+.well {
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.progress {
+  height: 15px;
+}
+
+.progress,
+.progress-bar {
+  border-radius: @progress-border-radius;
+  box-shadow: none;
+}
+
+.transaction-entry .well .btn+.btn {
+    margin: 15px 0 0;
+}
+
+.transaction-entry div[id*="_pnlSuccess"] .well {
+    margin-top: 15px;
+}
+
+
+
+
+// Workflow Entries
+// ==========================
+.workflow-entry {
+  .panel {
+    background: transparent !important;
+
+    &-heading {
+      background: transparent !important;
+    }
+
+    &-body {
+      background: transparent !important;
+    }
+  }
+
+  .form-header {
+    background-color: @color-of-the-year;
+    color: #ffffff;
+    text-align: center;
+    padding: 30px;
+    border-radius: 8px;
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    @media screen and (min-width: 992px) {
+      padding: 30px 30px 40px;
+    }
+  }
+
+  .btn-primary {
+      color: #ffffff !important;
+      background-color: @color-of-the-year !important;
+      border-color: @color-of-the-year !important;
+
+      &:hover {
+          background-color: darken(@color-of-the-year, 10%) !important;
+          border-color: darken(@color-of-the-year, 10%) !important;
+      }
+  }
+}

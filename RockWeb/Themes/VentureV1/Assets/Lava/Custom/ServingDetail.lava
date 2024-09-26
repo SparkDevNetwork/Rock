@@ -1,0 +1,27 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ServingDetail.lava' %} {% endcomment %}
+
+<h2>{{ Opportunity.Name }}</h2>
+
+{% for attribute in Opportunity.AttributeValues %}
+    {% if forloop.first and attribute.ValueFormatted != '' and attribute.ValueFormatted != empty and attribute.ValueFormatted %}
+        <h4>Opportunity Details:</h4>
+        <ul class="list-unstyled">
+    {% endif %}
+        {% if attribute.ValueFormatted and attribute.ValueFormatted != '' and attribute.ValueFormatted != empty %}
+            <li><strong>{{ attribute.AttributeName }}: </strong> {{ attribute.ValueFormatted }}</li>
+        {% endif %}
+    {% if forloop.last and attribute.ValueFormatted %}
+        </ul>
+    {% endif %}
+{% endfor %}
+
+{% if LinkedPages.SignupPage != null %}
+    <div class="margin-t-lg">
+        {% if Opportunity.IsActive %}
+        <a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
+        {% else %}
+        <a href="#" class="btn btn-primary disabled">Connect</a>
+        <div class="alert alert-info">This opportunity is no longer available.</div>
+        {% endif %}
+    </div>
+{% endif %}

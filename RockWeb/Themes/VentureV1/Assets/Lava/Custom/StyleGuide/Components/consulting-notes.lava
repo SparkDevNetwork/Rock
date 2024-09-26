@@ -1,0 +1,101 @@
+<div class="pb-5">
+    <div class="row d-flex flex-wrap pb-md-4">
+
+        {% comment %} Primary Footer Nav Items – Content Channel {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Primary Footer Nav Items – Content Channel</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/primary-footer-nav-items--content-channel" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Mobile Fixed Footer Items – Content Channel {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Mobile Fixed Footer Items – Content Channel</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/mobile-fixed-footer-items--content-channel" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Primary Navigation _ Main Navigation Items Content Channel {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Primary Navigation _ Main Navigation Items Content Channel</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/primary-navigation--main-navigation-items-content-channel" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} History Swiper – Content Channel {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">History Swiper – Content Channel</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/venture-history-content-channel-and-history-swiper" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Campus Detail Page {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Campus Detail Page</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/campus-detail-page" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Gradient Banner – Content Component {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Gradient Banner – Content Component</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/gradient-banner-content-component" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Image Slider Lava Include {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Image Slider Lava Include</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/swiper-offset-shortcode" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Featured Events {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Featured Events</h5>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/7bfdb54a-df2b-43dc-92ca-c00e45171d50/notes/note/featured-events" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

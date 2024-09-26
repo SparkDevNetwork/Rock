@@ -1,0 +1,81 @@
+.backdrop {
+  position: relative;
+
+  &::before {
+    .transition();
+  }
+
+  &::before {
+    content:'';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: inherit;
+  }
+
+  &-left::before {
+    transform: rotate(-5deg);
+  }
+
+  &-right::before {
+    transform: rotate(5deg);
+  }
+
+  &-primary::before {
+    background-color: @theme-1;
+  }
+
+  &-dark::before {
+    background-color: @gray-darker;
+  }
+
+  &-white::before {
+    background-color: #fff;
+  }
+
+  &-light::before {
+    background-color: #F6F5E7;
+  }
+
+  &-muted::before {
+    background-color: @text-muted;
+  }
+
+  &-info::before {
+    background-color: @brand-info;
+  }
+
+  &-success::before {
+    background-color: @brand-success;
+  }
+
+  &-danger::before {
+    background-color: @brand-danger;
+  }
+
+  &-warning::before {
+    background-color: @brand-warning;
+  }
+
+  > img {
+    border-radius: inherit;
+    position: relative;
+  }
+}
+
+
+a.backdrop, .backdrop-linked {
+  &:hover {
+    &::before {
+      transform:rotate(0);
+    }
+  }
+}
+
+a:hover .backdrop {
+  &::before {
+    transform:rotate(0);
+  }
+}

@@ -1,0 +1,409 @@
+/- {% include '~~/Assets/Lava/styleguide/components/cards.lava' %} -/
+
+<h1 class="mb-4">Cards</h1>
+
+<h4>Formats</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#standard">Standard</a></li>
+    <li><a href="#horizontal">Horizontal</a></li>
+    <li><a href="#cta">CTA Cards</a></li>
+</ul>
+
+{% capture cardMarkup %}
+<div class="card h-100">
+    <div class="card-img-header">
+        <img src="https://via.placeholder.com/400x225" alt="" class="card-img-top img-responsive">
+    </div>
+    <div class="card-body">
+        <h3 class="card-title">Card Title</h3>
+        <p class="card-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum excepturi fuga hic, aut expedita molestias illo dolorum!</p>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="text-link">Learn About Our Beliefs</a>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">Standard</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            {% for i in (1..2) %}
+                <div class="col-xs-12 col-sm-6 mb-4">
+                    {{ cardMarkup }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture cardOneMarkup %}
+<div class="card h-100">
+    <div class="card-body">
+        <h3 class="card-title">Card Title</h3>
+        <p>County: Lamar</p>
+        <p>Type: In-Person</p>
+        <p>For: Anyone</p>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-primary">Request to Join</a>
+        <a href="#" class="btn btn-link text-link">Email the Leaders</a>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture cardTwoMarkup %}
+<div class="card h-100">
+    <div class="card-header">
+        <h3 class="card-title">Card Title</h3>
+    </div>
+    <div class="card-body">
+        <p class="card-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum excepturi fuga hic, aut expedita molestias illo dolorum!</p>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-primary">Request to Join</a>
+        <a href="#" class="btn btn-link text-link">Email the Leaders</a>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture cardThreeMarkup %}
+<div class="card h-100">
+    <div class="card-body">
+        <h3 class="card-title">Card Title</h3>
+        <p class="card-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum excepturi fuga hic, aut expedita molestias illo dolorum!</p>
+        <a href="#" class="text-link">Learn About Our Beliefs</a>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">Standard</h4>
+    </div>
+    <div class="card-body">
+        <div class="row d-flex flex-wrap g">
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ cardOneMarkup }}
+            </div>
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ cardTwoMarkup }}
+            </div>
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ cardThreeMarkup }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardOneMarkup | Trim | Escape }}
+
+{{ cardTwoMarkup | Trim | Escape }}
+
+{{ cardThreeMarkup | Trim | Escape }}
+
+        </code></pre>
+    </div>
+</div>
+
+{% capture cardMarkup %}
+<div class="card card-horizontal">
+    <div class="card-img-header">
+        <img src="https://via.placeholder.com/400x225" alt="" class="card-img-top img-responsive">
+    </div>
+    <div class="card-body">
+        <h3 class="card-title">Card Title</h3>
+        <p class="card-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum excepturi fuga hic, aut expedita molestias illo dolorum!</p>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-primary">Learn About Our Beliefs</a>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="horizontal">
+    <div class="card-header">
+        <h4 class="m-0">Horizontal</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            <div class="col-xs-12 col-sm-12 mb-4">
+                {{ cardMarkup }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture cardMarkup %}
+<div class="card card-giant-horizontal">
+    <div class="card-img-header">
+        <img src="https://via.placeholder.com/800x450" alt="" class="card-img-top img-responsive">
+    </div>
+    <div>
+        <div class="card-body">
+            <h3 class="card-title">Baby</h3>
+            <h6 class="card-subtitle">Birth - 23 Months</h6>
+            <p class="card-text">During House Church, the House Church Pastor will guide members through a deeper dive into the previous Sunday’s message, teaching, and scripture. The goal for anyone participating in a House Church...</p>
+        </div>
+        <div class="card-footer">
+            <a href="#" class="btn btn-primary">What to Bring</a>
+            <a href="#" class="btn btn-link text-link">Where to Go?</a>
+        </div>
+    </div>
+
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="giant-horizontal">
+    <div class="card-header">
+        <h4 class="m-0">Giant Horizontal</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            <div class="col-xs-12 col-sm-12 mb-4">
+                {{ cardMarkup }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+
+{% capture ctaCard %}
+<div class="cta-card">
+    <img src="https://via.placeholder.com/400x300" alt="" class="cta-card-bg">
+    <div class="cta-card-body">
+        <div class="cta-card-content">
+            <h4 class="cta-card-subtitle text-white o-80">Student Ministry</h4>
+            <h4 class="cta-card-title display text-white">ark k!ds</h4>
+        </div>
+        <div class="cta-card-footer">
+            <a href="#" class="btn btn-lg btn-white">Learn More</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture ctaCardKids %}
+<div class="cta-card">
+    <img src="/Themes/ArkV1/Assets/Images/groups-bg.png" alt="" class="cta-card-bg">
+    <div class="cta-card-body">
+        <div class="cta-card-content">
+            <h4 class="cta-card-subtitle">Groups</h4>
+            <img src="/Themes/ArkV1/Assets/Images/ark-groups.png" alt="" class="cta-card-title">
+            </img>
+        </div>
+        <div class="cta-card-footer">
+            <a href="#" class="btn btn-lg btn-white">Learn More</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+
+{% capture ctaCardMinistriesBlue %}
+<div class="cta-card">
+    <img src="/Themes/ArkV1/Assets/Images/ministries.png" alt="" class="cta-card-bg">
+    <div class="overlay overlay-primary"></div>
+    <div class="cta-card-body">
+        <div class="cta-card-content">
+            <h4 class="cta-card-subtitle text-white o-80">Ministries</h4>
+            <h4 class="cta-card-title h1 text-white">Discover More<br>At The Ark</h4>
+        </div>
+        <div class="cta-card-footer">
+            <a href="#" class="btn btn-lg btn-white">Learn More</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture ctaCardMinistriesRed %}
+<div class="cta-card">
+    <img src="/Themes/ArkV1/Assets/Images/ministries.png" alt="" class="cta-card-bg">
+    <div class="overlay overlay-danger"></div>
+    <div class="cta-card-body">
+        <div class="cta-card-content">
+            <h4 class="cta-card-subtitle text-white o-80">Ministries</h4>
+            <h4 class="cta-card-title h1 text-white">Discover More<br>At The Ark</h4>
+        </div>
+        <div class="cta-card-footer">
+            <a href="#" class="btn btn-lg btn-white">Learn More</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+
+{% capture ctaCardImgOnly %}
+<div class="cta-card">
+    <img src="/Themes/ArkV1/Assets/Images/hermanandrusty.png" alt="" class="cta-card-bg">
+    <div class="cta-card-body">
+        <div class="cta-card-footer">
+            <a href="#" class=""></a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">CTA Cards</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ ctaCard }}
+            </div>
+        </div>
+        <pre><code>{{ ctaCard | Trim | Escape }}</code></pre>
+
+        <h5 class="mt-4 mb-2">With Graphic</h5>
+        <div class="row g">
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ ctaCardKids }}
+            </div>
+        </div>
+        <pre><code>{{ ctaCardKids | Trim | Escape }}</code></pre>
+
+        <h5 class="mt-4 mb-2">With Overlay</h5>
+        <div class="row g">
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ ctaCardMinistriesBlue }}
+            </div>
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ ctaCardMinistriesRed }}
+            </div>
+        </div>
+        <pre><code>{{ ctaCardMinistriesBlue | Trim | Escape }}
+{{ ctaCardMinistriesRed | Trim | Escape }}
+        </code></pre>
+
+        <h5 class="mt-4 mb-2">Image Only</h5>
+        <div class="row g">
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ ctaCardImgOnly }}
+            </div>
+        </div>
+        <pre><code>{{ ctaCardImgOnly | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture cardMarkup %}
+<div class="giant-cta-card bg-primary">
+    <div class="giant-cta-card-img">
+        <img src="/Themes/ArkV1/Assets/Images/ark-smile-white.png" alt="" class="img-responsive">
+    </div>
+    <div class="giant-cta-card-body">
+        <h4 class="giant-cta-card-subtitle">Lorem ipsum</h4>
+        <h2 class="giant-cta-card-title">Lorem ipsum dolor</h2>
+        <p class="giant-cta-card-text">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Molestias, incidunt reiciendis? Molestiae deserunt cupiditate quisquam eos quibusdam, adipisci eius ad labore repellendus explicabo culpa voluptas in tenetur praesentium, error soluta!</p>
+        <div class="giant-cta-card-actions">
+            <a href="#" class="btn btn-white">Learn More</a>
+            <a href="#" class="btn btn-outline-white">Register Today</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="giant-cta">
+    <div class="card-header">
+        <h4 class="m-0">Giant CTA</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            <div class="col-xs-12 col-sm-12 mb-4">
+                {{ cardMarkup }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture iconCardMarkup %}
+<div class="icon-card h-100">
+    <span class="icon-btn dark icon-card-icon">
+        <i class="icon-primary fa fa-tint"></i>
+    </span>
+    {% comment %} <div class="icon-card-icon">
+        <i class="fa fa-flag"></i>
+    </div> {% endcomment %}
+    <div class="icon-card-body">
+        <h6 class="icon-card-title">New Here? Start Here.</h6>
+        <p class="icon-card-text text-muted">We are excited you are here!</p>
+        <div class="icon-card-footer">
+            <a href="#" class="text-link">Plan a Visit</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture iconCardTransparentMarkup %}
+<div class="icon-card icon-card-transparent h-100">
+    <span class="icon-btn dark icon-card-icon">
+        <i class="icon-primary fa fa-tint"></i>
+    </span>
+    <div class="icon-card-body">
+        <h6 class="icon-card-title">New Here? Start Here.</h6>
+        <p class="icon-card-text text-muted">We are excited you are here!</p>
+        <div class="icon-card-footer">
+            <a href="#" class="text-link">Plan a Visit</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture iconCardHorizontalMarkup %}
+<div class="icon-card icon-card-horizontal h-100">
+    <span class="icon-btn dark icon-card-icon">
+        <i class="icon-primary fa fa-tint"></i>
+    </span>
+    {% comment %} <div class="icon-card-icon">
+        <i class="fa fa-flag"></i>
+    </div> {% endcomment %}
+    <div class="icon-card-body">
+        <h6 class="icon-card-title">New Here? Start Here.</h6>
+        <p class="icon-card-text text-muted">We are excited you are here! Learn more about The Ark and Plan a Visit Today!</p>
+        <div class="icon-card-footer">
+            <a href="#" class="text-link">Plan a Visit</a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="horizontal">
+    <div class="card-header">
+        <h4 class="m-0">Icon Cards</h4>
+    </div>
+    <div class="card-body">
+        <div class="row d-flex flex-wrap">
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ iconCardMarkup }}
+            </div>
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ iconCardTransparentMarkup }}
+            </div>
+            <div class="col-xs-12 col-sm-6 mb-4">
+                {{ iconCardHorizontalMarkup }}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ iconCardMarkup | Trim | Escape }}
+{{ iconCardTransparentMarkup | Trim | Escape }}
+{{ iconCardHorizontalMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>

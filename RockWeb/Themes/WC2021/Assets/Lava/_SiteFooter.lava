@@ -1,0 +1,70 @@
+/- {% include '~~/Assets/Lava/_SiteFooter.lava' %} -/
+
+<footer class="site-footer pjs-footer">
+    <div class="container d-block main" style="padding: 70px 32px; max-width: unset !important;">
+
+        <div class="row d-flex flex-wrap">
+            <div class="col-xs-12 col-sm-12 col-lg-3">
+                <div class="logo text-center text-lg-left mb-4 mb-lg-0">
+                    <a href="/"><img src="https://eaqmp884dxd.exactdn.com/wp-content/themes/wc2021/images/logo-willow-creek-community-church-w-small.svg" alt="Willow Creek Community Church" width="253" height="195"></a>
+                </div>
+            </div>
+            <div class="col-xs-12 col-lg-3">
+                <div class="content text-center text-lg-left">
+                    <p>
+                        <a class="addy" href="https://www.google.com/maps/place/67+Algonquin+Rd,+South+Barrington,+IL+60010"
+                            >67 Algonquin Rd<br>
+                            South Barrington, IL 60010</a
+                        >
+                    </p>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-lg-3">
+                <div class="content mb-4 mb-lg-0">
+                    <ul class="text-center text-lg-left" style="padding-inline-start:0;">
+                        <li><a href="https://www.willowcreek.org/contact-us/">Contact Us</a></li>
+                        <li><a href="https://www.willowcreek.org/work-at-willow/">Work at Willow</a></li>
+                        <li><a href="https://www.willowcreek.org/privacy-policy/">Privacy Policy</a></li>
+                        <li><a href="https://www.willowcreek.org/sitemap/">Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-lg-3">
+                <div class="group">
+                    <div class="title footer-list-title">Stay Connected</div>
+                    <ul class="justify-content-center" style="padding-inline-start:0;">
+                        <li class="mr-3">
+                            <a href="https://www.facebook.com/willowcreekcc" target="_blank" rel="noopener noreferrer"
+                                ><span class="fab fa-facebook-f"><span class="sr-only">Follow us on Facebook</span></span></a
+                            >
+                        </li>
+                        <li class="mr-3">
+                            <a href="https://www.instagram.com/willowcreekcc" target="_blank" rel="noopener noreferrer"
+                                ><span class="fab fa-instagram"><span class="sr-only">Follow us on Instagram</span></span></a
+                            >
+                        </li>
+                        <li class="mr-3">
+                            <a href="https://www.youtube.com/willowcreek" target="_blank" rel="noopener noreferrer"
+                                ><span class="fab fa-youtube"><span class="sr-only">Follow us on YouTube</span></span></a
+                            >
+                        </li>
+                        <li>
+                            <a href="https://www.twitter.com/willowcreekcc" target="_blank" rel="noopener noreferrer"
+                                ><span class="fab fa-twitter"><span class="sr-only">Follow us on Twitter</span></span></a
+                            >
+                        </li>
+                    </ul>
+                </div>
+                <div class="group">
+                    <div class="title footer-list-title">Download the App</div>
+                    <div class="links d-flex w-100 justify-content-center">
+                        <a href="https://apps.apple.com/us/app/willow-creek-church-app/id1447664228?ls=1" target="_blank" rel="noopener noreferrer"><img src="https://eaqmp884dxd.exactdn.com/wp-content/themes/wc2021/images/btn-app-store.png?strip=all&amp;lossy=1&amp;ssl=1" alt="Download the App in the App Store" width="189" height="62"></a>
+                        <a href="https://play.google.com/store/apps/details?id=com.willowcreekapp" target="_blank" rel="noopener noreferrer"><img src="https://eaqmp884dxd.exactdn.com/wp-content/themes/wc2021/images/btn-google-play.png?strip=all&amp;lossy=1&amp;ssl=1" alt="Download the App on Google Play" width="189" height="62"></a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</footer>

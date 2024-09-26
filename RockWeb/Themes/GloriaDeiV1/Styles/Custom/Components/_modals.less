@@ -1,0 +1,59 @@
+// out:false
+
+button.close {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    // https://www.w3.org/WAI/WCAG21/Understanding/target-size.html
+
+    display: grid;
+    place-items: center flex-end;
+
+}
+
+.modal-header > .modal-title {
+    line-height: 1.25;
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+}
+
+.modal .workflow-entry .panel-block,
+.modal .workflow-entry .workflow-entry-panel,
+.modal .workflow-entry .panel.panel-block .panel-body {
+    background: none !important;
+}
+
+
+
+
+.modal ::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.modal ::-webkit-scrollbar-track {
+  border-radius: 15px;
+  background-color: #EBEBEB;
+}
+
+.modal ::-webkit-scrollbar-track:hover {
+  background-color: #DCDCDC;
+}
+
+.modal ::-webkit-scrollbar-track:active {
+  background-color: #DCDCDC;
+}
+
+.modal ::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: @theme-1;
+}
+
+.modal ::-webkit-scrollbar-thumb:hover {
+  background-color: darken(@theme-1, 10%);
+}
+
+.modal ::-webkit-scrollbar-thumb:active {
+  background-color: darken(@theme-1, 20%);
+}

@@ -1,0 +1,78 @@
+//- {% include '~~/Assets/Lava/StyleGuide/StyleGuideLayouts.lava' %}
+{% assign page = PageParameter.component | Default:'layout-intro' %}
+{% assign includePath = '~~/Assets/Lava/StyleGuide/Components/' | Append:page | Append:'.lava' %}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+{% assign index = '/style-guide' %}
+
+{% comment %}
+References nav panel
+    - example
+        [nav-item-ONE-title],[nav-item-ONE-url],[new-tab ? 'true' || 'false']|
+        [nav-item-TWO-title],[nav-item-TWO-url],[new-tab ? 'true' || 'false']
+        Homepage,/style-guide/layouts/homepage,false|
+{% endcomment %}
+{%- capture layouts -%}
+    Full Width,/style-guide/layouts/full-width,false|
+    Full Width Narrow,/style-guide/layouts/full-width-narrow,false|
+    Full Width Wide,/style-guide/layouts/full-width-wide,false|
+    Full Width Uncontained,/style-guide/layouts/full-width-uncontained,false|
+    Left Sidebar,/style-guide/layouts/left-sidebar,false|
+    Right Sidebar,/style-guide/layouts/right-sidebar,false|
+    Default Hero,/style-guide/hero/default,false|
+    Default with Video,/style-guide/hero/default-video,false|
+    Full Height Hero,/style-guide/hero/full-height,false|
+    Full Height with Video,/style-guide/hero/full-height-video,false
+{%- endcapture -%}
+{% assign layoutsArray = layouts | Split:'|' %}
+
+<div class="py-5">
+    <div class="py-md-4">
+        <div class="row">
+            <div class="col-md-4 col-lg-3">
+                <nav class="mb-3">
+                    <ul class="nav nav-stacked">
+                        <li class="nav-stacked-heading">General</li>
+                        <li class="nav-item"><a href="{{ index }}" class="nav-link">Consulting Notes</a></li>
+                    </ul>
+                </nav>
+
+                {% comment %} "LAYOUTS" Nav Items – Typography & Colors, Buttons, Lists, Navs, Breadcrumbs {% endcomment %}
+                <nav class="mb-3">
+                    <ul class="nav nav-stacked">
+                        <li class="nav-stacked-heading">Layouts &amp; Hero</li>
+                        {% for item in layoutsAndShortcodes %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="?component={{ item }}" class="nav-link">{{ item | Capitalize | Replace:'-',' ' }}</a></li>
+                        {% endfor %}
+
+                        {% for layouts in layoutsArray %}
+                            {% assign layoutsParts = layouts | Split:',' %}
+                            {% for part in layoutsParts %}
+                                {% if forloop.index == 1 %}
+                                    {% assign layoutsTitle = part %}
+                                {% elseif forloop.index == 2 %}
+                                    {% assign layoutsUrl = part %}
+                                {% else %}
+                                    {% assign layoutsNewTab = part %}
+                                {% endif %}
+                            {% endfor %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="{{ layoutsUrl }}" class="nav-link"{% if layoutsNewTab and layoutsNewTab == 'true' %} target="_blank"{% endif %}>{{ layoutsTitle | Capitalize }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="col-md-8 col-lg-9 pl-md-5">
+                {%- capture contentCheck -%}{% include includePath %}{%- endcapture -%}
+                {% if contentCheck == 'Liquid error: LavaFileSystem Template Not Found' %}
+                    <div class="text-center">
+                        <h1 class="display">404!</h1>
+                        <h4>Sorry! We couldn't find that component.</h4>
+                    </div>
+                {% else %}
+                    {{ contentCheck }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

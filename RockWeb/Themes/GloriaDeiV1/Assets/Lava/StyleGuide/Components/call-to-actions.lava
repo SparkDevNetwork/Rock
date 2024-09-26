@@ -1,0 +1,25 @@
+<div class="p-5 text-white position-relative overflow-hidden rounded-lg" style="background: linear-gradient(132deg, rgba(0, 105, 116, 0.90), #00697490), url('/Themes/VeritasChurchV1/Assets/Images/veritas-cta-startingpoint.png'); background-size: cover;background-position:center;">
+    <div class="row py-4">
+        <div class="col-md-6">
+            <h4 class="mb-3">Starting Point</h4>
+            <p class="mb-4">Offered several times each year, this gathering is hosted during a service on Sunday mornings. Church leaders will share the history, mission, and vision of Veritas Church, as well as give you the opportunity to ask questions.</p>
+            <a href="#" class="btn btn-primary btn-light"><span>Register Today</span><i class="fa fa-arrow-right"></i></a>
+        </div>
+    </div>
+    <h6 class="position-absolute py-3 px-4 my-0 text-black" style="top:0; left: 0; background: #b9cc48; border-bottom-right-radius: 22px;">YOUR NEXT STEP</h6>
+</div>
+
+{% stylesheet %}
+    pre{
+        margin-top: 30px;
+        padding: 2rem;
+        max-height: 500px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        background-color: #ffffff;
+    }
+
+    .sg-section-header {
+        margin-bottom: 16px;
+    }
+{% endstylesheet %}

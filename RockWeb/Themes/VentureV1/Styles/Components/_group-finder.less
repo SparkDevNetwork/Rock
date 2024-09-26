@@ -1,0 +1,27 @@
+.group-finder {
+  .panel {
+    background-color: @body-bg;
+  }
+
+  div[Id*="pnlSearch"] {
+    background-color: #fff;
+    padding: 24px 48px;
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+
+    @media (min-width: 768px) {
+      padding: 32px;
+      .rounded-md();
+    }
+
+    @media (min-width: 992px) {
+      .shadow-lg();
+      // 74px of negative margin is all that the block will allow
+      margin-bottom: -74px;
+    }
+  }
+
+}

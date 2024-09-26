@@ -1,0 +1,45 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/EventItemList.lava' %} {% endcomment %}
+
+<div class="bg-connect event-list">
+    <h3 class="text-white text-center mb-0">See What's Happending</h3>
+    <h4 class="text-white text-center display mb-3">Current Events</h4>
+    <div class="text-center mb-4 mb-md-0 pb-md-30"><a href="#" class="btn btn-primary btn-light">See All Events</a></div>
+    <div class="row gutters-sm d-flex flex-wrap event-list-items">
+
+        {% for eventItemOccurrence in EventOccurrenceSummaries limit:6 %}
+            {% assign eventItem = eventItemOccurrence.EventItem %}
+            {% assign audiences = eventItem.EventItemAudiences %}
+            {% assign month = eventItemOccurrence.DateTime | Date:'MMMM' %}
+            {% assign day = eventItemOccurrence.DateTime | Date:'dd' %}
+            {% if DetailsPage != empty %}
+                {% assign eventUrl = DetailsPage | Append:'?EventOccurrenceId=' | Append:eventItemOccurrence.EventItemOccurrence.Id %}
+            {% endif %}
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-3">
+                <a href="{{ eventUrl }}" class="event-list-item d-block p-3 d-flex flex-column justify-content-between h-100">
+                    <div class="d-flex mb-3">
+                        <div class="event-list-icon"><i class="far fa-calendar-alt text-white"></i></div>
+                        <div class="event-list-info flex-fill">
+                            <div class="event-list-audience text-white">
+                                {% for audience in audiences %}
+                                    {% assign audienceObj = audience.DefinedValueId | FromCache:'DefinedValue' %}
+                                    {% assign audienceName = audienceObj.Value %}
+                                    {{ audienceName }}{% unless forloop.last %}, {% endunless %}
+                                {% endfor %}
+                            </div>
+                            <div class="event-list-name text-white text-uppercase">
+                                {{ eventItem.Name }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-list-date d-flex align-items-center justify-content-end w-100">
+                        <span class="event-list-month text-white text-uppercase">{{ month }}</span>
+                        <span class="event-list-day text-white">{{ day }}</span>
+                    </div>
+                </a>
+            </div>
+
+        {% endfor %}
+
+    </div>
+</div>
+

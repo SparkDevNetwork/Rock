@@ -1,0 +1,51 @@
+.page-footer {
+    margin-top: auto; // Stick Footer to Bottom when content is short
+
+    .bg-charcoal {
+        padding: 36px 0 60px;
+
+        @media screen and (min-width: 768px) {
+            padding: 78px 0 21px;
+        }
+    }
+
+    .footer-nav {
+        ul {
+            margin: 0;
+            padding-inline-start: 0;
+            list-style: none;
+        }
+
+        &-item {
+            line-height: 30px;
+
+            &::marker {
+                content: '';
+                display: none;
+                opacity: 0;
+                height: 0;
+                width: 0;
+            }
+        }
+    }
+
+    .social-nav {
+        @media screen and (max-width: 767px) {
+            width: 100%;
+        }
+
+        ul {
+            padding-inline-start: 0;
+            list-style: none;
+        }
+
+        &-item {
+            font-size: 20px;
+        }
+    }
+
+    hr {
+        border-color: #4e4e4e;
+        border-width: 2px;
+    }
+}

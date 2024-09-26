@@ -1,0 +1,44 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/CampusInfoBanner.lava' %} {% endcomment %}
+
+<style>
+    .campus-info-banner {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 30px 0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .campus-info-banner-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom;
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), #3B3B3B;
+        opacity: .8;
+    }
+</style>
+<div class="campus-info-banner">
+    <div class="campus-info-banner-bg d-none d-md-block"></div>
+    <div class="container container-lg position-relative">
+        <h3 class="display text-white mb-30">{{ Context.Campus.Name }}</h3>
+        <div class="row d-flex flex-wrap align-items-end">
+            <div class="col-xs-12 col-sm-12 col-md-7">
+                <p class="text-white h5 mb-0">Join us in Person or Online</p>
+                <h3 class="text-white font-size-30 font-weight-ultra mb-0 mb-4 pb-3 mb-md-0 pb-md-0">
+                    {% include '~~/Assets/Lava/Custom/CampusServiceTimes.lava' %}
+                </h3>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-5 text-md-right">
+                <a href="#" class="btn btn-default btn-light">Watch a Sermon</a>
+                <a href="#" class="btn btn-primary btn-light">Meet Our Staff</a>
+            </div>
+        </div>
+    </div>
+</div>

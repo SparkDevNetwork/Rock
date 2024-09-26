@@ -1,0 +1,78 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/AnimatedText.lava', prefix:'', prefixcolor:'', item1:'', item1color:'', item2:'', item2color:'', item3:'', item3color:'', item4:'', item4color:'', item5:'', item5color:'', item6:'', item6color:'' %} {% endcomment %}
+
+{% assign animatedItemsOutput = '' %}
+
+{% if item1 and item1 != empty %}
+    {% assign animatedTextPrefix = prefix %}
+    {% unless prefixcolor and prefixcolor != empty %}
+        {% assign prefixColor = 'white' %}
+    {% endunless %}
+
+    {% if item1 and item1 != empty %}
+        {% assign animatedItemsOutput = animatedItemsOutput | Append:'<span class="animated-text-item animated-text-item-1 text-' | Append:item1color | Append:'">' | Append:item1 | Append:'</span>' %}
+    {% endif %}
+
+{% else %}
+    {% assign animatedTextPrefix = CurrentPage | Attribute:'AnimatedTextPrefix' %}
+    {% assign animatedTextMatrix = CurrentPage | Attribute:'AnimatedTextItems','Object' %}
+    {% assign animatedTextItems = animatedTextMatrix.AttributeMatrixItems %}
+    {% assign prefixcolor = 'white' %}
+    {% assign count = 0 %}
+
+    {% for item in animatedTextItems %}
+        {% assign count = count | Plus:1 %}
+        {% assign itemColor = item | Attribute:'ItemColor' %}
+        {% assign itemText = item | Attribute:'ItemText' %}
+        {% assign animatedItemsOutput = animatedItemsOutput | Append:'<div class="animated-text-item animated-text-item-' | Append:count | Append:' text-' | Append:itemColor %}
+        {% if forloop.last %}
+            {% assign animatedItemsOutput = animatedItemsOutput | Append:' last-item' %}
+        {% endif %}
+        {% assign animatedItemsOutput = animatedItemsOutput | Append:'">' | Append:itemText | Append:'</div>' %}
+
+    {% endfor %}
+{% endif %}
+
+<h1 class="h3 display text-white d-flex flex-wrap justify-content-center w-100 animated-text text-center text-sm-left" style="opacity: 0;">
+    <div class="animated-text-prefix">{{ animatedTextPrefix }}</div>
+    {{ animatedItemsOutput }}
+</h1>
+
+<script>
+
+
+
+    $(document).ready(function () {
+        var sizes = [];
+        var next;
+        $('.animated-text-item').each((i, obj) => {
+            var width = $(obj).width();
+            sizes[i] = width;
+            obj.style.maxWidth = `${sizes[i]}px`;
+            obj.style.width = '0';
+        });
+
+        $('.animated-text-item').each((i, obj) => {
+            obj.addEventListener("animationiteration", () => {
+                obj.style.animation = '';
+
+                if ($(obj).hasClass('last-item')) {
+                    $('.animated-text-item-1').css('animation', '4s ease 0s infinite normal none running grow');
+                } else {
+                    next = $(obj).next('.animated-text-item');
+                    $(next).css('animation', '4s ease 0s infinite normal none running grow');
+                }
+
+            });
+        });
+
+        setTimeout(function() {
+            $('.animated-text-item-1').css('animation', '4s ease 0s infinite normal none running grow');
+        }, 500)
+
+        $('.animated-text').css('opacity', '1');
+    });
+
+</script>
+
+
+

@@ -1,0 +1,52 @@
+/- {% include '~~/Assets/Lava/styleguide/typography.lava' %} -/
+
+<h1>Typography</h1>
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#standard">Standard</a></li>
+    <li><a href="#blockquote">Blockquote</a></li>
+</ul>
+
+{%- capture codeOutput -%}
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+
+<p>Paragraph</p>
+<p class="lead">Paragraph Oversized (.lead)</p>
+{%- endcapture -%}
+
+<div id="standard" class="card mb-4">
+    <div class="card-header">
+        <h4 class="m-0">Standard Classes</h4>
+    </div>
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture codeOutput %}
+<blockquote>
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+  <footer>Someone famous in <cite title="Source Title">Source Title</cite></footer>
+</blockquote>
+{% endcapture %}
+
+<div id="blockquote"class="card mb-4">
+    <div class="card-header">
+        <h4 class="m-0">Blockquote</h4>
+    </div>
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>

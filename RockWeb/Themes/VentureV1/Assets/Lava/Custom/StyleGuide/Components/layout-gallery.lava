@@ -1,0 +1,83 @@
+<div class="pb-5">
+    <div class="row d-flex flex-wrap pb-md-4">
+
+        {% comment %} Homepage {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Homepage</h5>
+                    <span>Homepage page example</span>
+                </div>
+                <div class="card-footer">
+                    <a href="/style-guide/layouts/homepage" class="btn btn-default stretched-link">View Page</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Full Width {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Full Width</h5>
+                    <span>Full Width page example</span>
+                </div>
+                <div class="card-footer">
+                    <a href="/style-guide/layouts/fullwidth" class="btn btn-default stretched-link">View Page</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Fullwidth Narrow {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Fullwidth Narrow</h5>
+                    <span>Fullwidth Narrow page example</span>
+                </div>
+                <div class="card-footer">
+                    <a href="/style-guide/layouts/fullwidth-narrow" class="btn btn-default stretched-link">View Page</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Fullwidth Uncontained {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Fullwidth Uncontained</h5>
+                    <span>Fullwidth Uncontained page example</span>
+                </div>
+                <div class="card-footer">
+                    <a href="/style-guide/layouts/fullwidth-uncontained" class="btn btn-default stretched-link">View Page</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Left Sidebar {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Left Sidebar</h5>
+                    <span>Left Sidebar page example</span>
+                </div>
+                <div class="card-footer">
+                    <a href="/style-guide/layouts/left-sidebar" class="btn btn-default stretched-link">View Page</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Right Sidebar {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Right Sidebar</h5>
+                    <span>Right Sidebar page example</span>
+                </div>
+                <div class="card-footer">
+                    <a href="/style-guide/layouts/right-sidebar" class="btn btn-default stretched-link">View Page</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

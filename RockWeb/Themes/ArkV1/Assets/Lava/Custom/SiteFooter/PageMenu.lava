@@ -1,0 +1,18 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteFooter/PageMenu.lava' %} {% endcomment %}
+
+
+<nav class="footer-nav d-none d-md-block">
+    <ul>
+        {% for includedPage in IncludePageList %}
+            {% assign path = 'Global' | Page:'Path' %}
+            {% assign attributeParts = includedPage | PropertyToKeyValue %}
+
+
+            <li class="nav-item {% if forloop.first %}nav-item-main{% else %}nav-item-sub{% endif %}">
+                <a href="{{ attributeParts.Value }}">{{ attributeParts.Key }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>
+
+

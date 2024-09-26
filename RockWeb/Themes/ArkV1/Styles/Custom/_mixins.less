@@ -1,0 +1,193 @@
+// out:false
+
+/*
+
+    1. Borders
+    2. Transitions
+    3. Ratios
+    4. Overlays
+    5. Links
+    6. Shadows
+
+*/
+
+// 1. Borders
+// -------------------------
+.border-standard {
+  border: 2px solid #e6e6e6;
+}
+
+.rounded-sm {
+  border-radius: 10px !important;
+}
+
+.rounded-md {
+  border-radius: 20px !important;
+}
+
+.rounded-lg {
+  border-radius: 40px !important;
+}
+
+
+// 2. Transitions
+// -------------------------
+.transition {
+  transition: all .3s ease;
+}
+
+.card-hover {
+  .transition();
+
+  &:hover {
+    transform: translateY(-2px);
+    .shadow-xl();
+  }
+}
+
+
+// 3. Ratios
+// -------------------------
+.ratio {
+  overflow: hidden;
+  height: 0;
+  position: relative;
+
+  &-3x1 {
+    padding-bottom: 33% !important;
+  }
+
+  &-16x9 {
+    padding-bottom: 52.25%;
+  }
+
+  &-5x3 {
+    padding-bottom: 60%;
+  }
+
+  &-1x1 {
+    padding-bottom: 100%;
+  }
+}
+
+
+// 4. Overlays
+.overlay {
+  position: absolute;
+  overflow: hidden;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+
+  &::before {
+    .transition();
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .4;
+    border-radius: inherit;
+    background-color: #000000;
+  }
+
+  &-primary::before {
+    background-color: @theme-1;
+    opacity: .8;
+  }
+
+  &-info::before {
+    background-color: @brand-info;
+    opacity: .8;
+  }
+
+  &-success::before {
+    background-color: @brand-success;
+    opacity: .8;
+  }
+
+  &-warning::before {
+    background-color: @brand-warning;
+    opacity: .8;
+  }
+
+  &-danger::before {
+    background-color: @brand-danger;
+    opacity: .8;
+  }
+}
+
+
+// 5. Links
+.stretched-link {
+  &::after{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+  }
+}
+
+.stretch-first-link {
+  a:first-child {
+    .stretched-link();
+  }
+
+  a:nth-child(n+2) {
+    position: relative;
+    z-index: 3;
+  }
+}
+
+// 6. Shadows
+// -------------------------
+@shadow-sm: 0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+@shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.10), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+@shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.10), 0px 4px 6px -2px rgba(0, 0, 0, 0.05);
+@shadow-xl: 0px 20px 25px -5px rgba(0, 0, 0, 0.10), 0px 10px 10px -5px rgba(0, 0, 0, 0.04);
+@shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+@shadow-inner: 0px 2px 4px 0px rgba(0, 0, 0, 0.06) inset;
+
+
+.shadow-sm {
+  box-shadow: @shadow-sm;
+}
+
+.shadow-md {
+  box-shadow: @shadow-md;
+}
+
+.shadow-lg {
+  box-shadow: @shadow-lg;
+}
+
+.shadow-xl {
+  box-shadow: @shadow-xl;
+}
+
+.shadow-2xl {
+  box-shadow: @shadow-2xl;
+}
+
+.shadow-inner {
+  box-shadow: @shadow-inner;
+}
+
+.shadow-none {
+  box-shadow: none !important;
+}
+
+.shadow-md-none {
+  @media (min-width: 992px) {
+    box-shadow: none !important;
+  }
+}
+

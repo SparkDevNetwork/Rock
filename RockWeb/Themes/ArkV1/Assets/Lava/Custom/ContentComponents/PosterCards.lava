@@ -1,0 +1,84 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/PosterCards.lava' %} {% endcomment %}
+
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h4' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+{%- assign channelBackgroundImage =  ContentChannel | Attribute:'BackgroundImage','RawValue' -%}
+{%- assign contentItemStyle = '' -%}
+
+<div class="swiper-primary js-primary-swiper swiper-md-grid md-no-pagination px-3 px-sm-0">
+    {[ swiper spacebetween:'16' showpagination:'true' shownavigation:'false' breakpoints:'sm-2|32,md-4|0' paginationclickable:'true' ]}
+
+        {% assign count = 0 %}
+        {%- for item in Items -%}
+            {% assign image = item | Attribute:'Image','RawValue' %}
+            {% assign imageUrl = image | ImageUrl %}
+            {% assign buttons = item | Attribute:'Buttons','Object' %}
+            {% assign buttons = buttons.AttributeMatrixItems | OrderBy:'Order' %}
+            {% assign buttonsSize = buttons | Size %}
+            {% assign overlayColor = item | Attribute:'OverlayColor' %}
+            {% assign subtitle = item | Attribute:'Subtitle' %}
+            {% assign titleGraphicGuid = item | Attribute:'TitleGraphic','RawValue' %}
+            {% if titleGraphicGuid and titleGraphicGuid != empty %}
+                {% assign titleGraphicUrl = titleGraphicGuid | ImageUrl %}
+            {% endif %}
+
+            [[ slide ]]
+                <div class="cta-card">
+                    <img src="{{ imageUrl }}" alt="" class="cta-card-bg">
+                    {% if overlayColor and overlayColor != empty %}
+                        <div id="cta-card-overlay-{{ count }}" class="overlay"></div>
+                        <style>
+                            #cta-card-overlay-{{ count }}::before {
+                                opacity: 1;
+                                background-color: {{overlayColor}};
+                            }
+                        </style>
+
+                    {% endif %}
+                    <div class="cta-card-body">
+                        <div class="cta-card-content">
+                            {% if subtitle and subtitle != empty %}
+                                <h4 class="cta-card-subtitle text-white o-80">{{ subtitle }}</h4>
+                            {% endif %}
+                            {% if titleGraphicGuid and titleGraphicGuid != empty %}
+                                <img src="{{ titleGraphicUrl }}" class="cta-card-title" alt="" width="312">
+                            {% else %}
+                                <{{ channelTitleSize }} class="cta-card-title display text-white">{{ item.Title }}</{{ channelTitleSize }}>
+                            {% endif %}
+                        </div>
+                        {% if buttonsSize and buttonsSize > 0 %}
+                            <div class="cta-card-footer">
+                                {% for button in buttons %}
+                                    {% assign url = button | Attribute:'Url','RawValue' %}
+                                    {% assign text = button | Attribute:'Text' %}
+                                    {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+                                    {% assign style = button | Attribute:'Style' %}
+
+                                    {% case style %}
+                                        {% when 'Primary' %}
+                                            {% assign styleClasses = 'btn btn-white' %}
+                                        {% when 'Default' %}
+                                            {% assign styleClasses = 'btn btn-outline-white' %}
+                                        {% else %}
+                                            {% assign styleObj = button | Attribute:'Style','Object' %}
+                                            {% assign styleClasses = style | Attribute:'Classes' %}
+                                    {% endcase %}
+
+                                    <a href="{{ url }}" class="{{ styleClasses }} btn-lg"{% if newTab %} target="_blank"{% endif %}>{{ text }}</a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            [[ endslide ]]
+
+
+            {% assign count = count | Plus:1 %}
+        {% endfor %}
+
+    {[ endswiper ]}
+</div>

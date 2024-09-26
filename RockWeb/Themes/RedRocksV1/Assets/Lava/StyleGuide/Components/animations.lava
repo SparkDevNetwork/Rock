@@ -1,0 +1,203 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/buttons.lava' %}{%endcomment%}
+
+{%- capture codeOneOutput -%}{% raw %}{[ arrowsection ]}
+    <h2 data-aos="fade-up">Heading</h2>
+    <p data-aos="fade-up">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Officia alias dolorem necessitatibus consequatur blanditiis! Quos sapiente, ad voluptates eius doloremque dicta nam ipsum facilis maiores tempora cumque, eaque ea odio.</p>
+{[ endarrowsection ]}{% endraw %}
+{%- endcapture -%}
+
+{%- capture codeTwoOutput -%}{% raw %}{[ slideupitems ]}
+    [[ item ]]
+        <h1>Here</h1>
+    [[ enditem ]]
+    [[ item ]]
+        <h2>Are</h2>
+    [[ enditem ]]
+    [[ item ]]
+        <h2>Some</h2>
+    [[ enditem ]]
+    [[ item ]]
+        <h3>Items</h3>
+    [[ enditem ]]
+{[ endslideupitems ]}{% endraw %}
+{%- endcapture -%}
+
+{%- capture codeThreeOutput -%}{% raw %}
+<img src="https://picsum.photos/seed/1/1600/900" class="w-100 img-responsive">
+
+<div style="margin-top: -200px;">
+    {[ arrowsection ]}
+        {[ slideupitems ]}
+            [[ item ]]
+                <h1 class="display mt-0 mb-0 leading-tight text-uppercase bg-primary">
+                    Preview One
+                </h1>
+            [[ enditem ]]
+            [[ item ]]
+                <h1 class="display mt-0 mb-0 leading-tight text-uppercase bg-putty">
+                    Of Our Messages
+                </h1>
+            [[ enditem ]]
+            [[ item ]]
+                <h3 class="mb-4 mt-md-0 ml-md-4">
+                    Find full services and sermon-only videos, along with Spanish and French-translated versions of our weekly services
+                </h3>
+            [[ enditem ]]
+            [[ item ]]
+                <div>
+                    <a href="#" class="btn btn-primary btn-xs ml-md-4">view all messages</a>
+                </div>
+            [[ enditem ]]
+        {[ endslideupitems ]}
+    {[ endarrowsection ]}
+</div>{% endraw %}
+{%- endcapture -%}
+
+{%- capture codeFourOutput -%}{% raw %}<div class="bg-putty">
+    {[ parallax image:'/Themes/RedRocksV1/Assets/Images/mountains-v2.png' position:'bototm center' speed:'30' ]}
+        <div class="py-5"></div>
+        <div class="py-5"></div>
+        <div class="d-flex w-100 flex-column align-items-center">
+            <div class="logo">
+                {% include '~~/Assets/Images/Logos/red-rocks-icon.svg' %}
+            </div>
+            <h3 class="heading text-color">what to expect</h3>
+            <a href="#" class="btn btn-sm btn-primary">plan your visit</a>
+        </div>
+        <div class="py-5"></div>
+        <div class="py-5"></div>
+    {[ endparallax ]}
+</div>{% endraw %}
+{%- endcapture -%}
+
+{%- capture codeFiveOutput -%}{% raw %}{[ animatedbanner ]}
+    <h6 class="text-uppercase mt-0 mb-2">Colorado</h6>
+    <a href="#" class="h1 d-block m-0 text-color">Arvada</a>
+    <a href="#" class="h1 d-block m-0 text-color">Lakewood</a>
+    <a href="#" class="h1 d-block m-0 text-color">Littleton</a>
+    <a href="#" class="h1 d-block m-0 text-color">Park Meadows</a>
+    <h3 class="mt-0 mb-2 leading-tight">Saturdays 5pm</h3>
+    <h3 class="m-0 leading-tight">Sundays 8:30am, 10:15am, 12pm</h3>
+{[ endanimatedbanner ]}{% endraw %}
+{%- endcapture -%}
+
+{%- capture codeSixOutput -%}{% raw %}<h1 class="text-center m-0 display">
+    {[ textrotator ]}
+        [[ item ]]
+            be authentic
+        [[ enditem ]]
+        [[ item ]]
+            be couragous
+        [[ enditem ]]
+        [[ item ]]
+            have fun
+        [[ enditem ]]
+    {[ endtextrotator ]}
+</h1>{% endraw %}
+{%- endcapture -%}
+
+
+
+
+<h1 class="mt-0">Animations</h1>
+
+<p>Easily create sleek animations without needing to write any JS with the power of Lava</p>
+
+
+{% comment %} ~ Arrow Section {% endcomment %}
+<div class="card mb-4" id="arrow-section">
+    <div class="card-header">
+        <h4 class="m-0">Arrow Section</h4>
+    </div>
+
+    <div class="card-body">
+        {{ codeOneOutput | RunLava }}
+    </div>
+
+    <div class="card-footer">
+        <pre><code>{{ codeOneOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{% comment %} ~ Slide Up Items {% endcomment %}
+<div class="card mb-4" id="arrow-section">
+    <div class="card-header">
+        <h4 class="m-0">Slide Up Items</h4>
+    </div>
+
+    <div class="card-body">
+        {{ codeTwoOutput | RunLava }}
+    </div>
+
+    <div class="card-footer">
+        <pre><code>{{ codeTwoOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{% comment %} ~ Arrow Section + Slide Up Items + Image {% endcomment %}
+<div class="card mb-4" id="arrow-section">
+    <div class="card-header">
+        <h4 class="m-0">Arrow Section + Slide Up Items + Image</h4>
+    </div>
+
+    <div class="card-body">
+        {{ codeThreeOutput | RunLava }}
+    </div>
+
+    <div class="card-footer">
+        <pre><code>{{ codeThreeOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{% comment %} ~ Mountain Parallax {% endcomment %}
+<div class="card mb-4" id="arrow-section">
+    <div class="card-header">
+        <h4 class="m-0">Mountain Parallax</h4>
+    </div>
+
+    <div class="card-body">
+        {{ codeFourOutput | RunLava }}
+    </div>
+
+    <div class="card-footer">
+        <pre><code>{{ codeFourOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{% comment %} ~ Animated Banner {% endcomment %}
+<div class="card mb-4" id="arrow-section">
+    <div class="card-header">
+        <h4 class="m-0">Animated Banner</h4>
+    </div>
+
+    <div class="card-body">
+        {{ codeFiveOutput | RunLava }}
+    </div>
+
+    <div class="card-footer">
+        <pre><code>{{ codeFiveOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+{% comment %} ~ Text Rotator {% endcomment %}
+<div class="card mb-4" id="arrow-section">
+    <div class="card-header">
+        <h4 class="m-0">Text Rotator</h4>
+    </div>
+
+    <div class="card-body">
+        {{ codeSixOutput | RunLava }}
+    </div>
+
+    <div class="card-footer">
+        <pre><code>{{ codeSixOutput | Escape }}</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+
+

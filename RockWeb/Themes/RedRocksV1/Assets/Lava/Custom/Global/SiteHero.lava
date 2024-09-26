@@ -1,0 +1,207 @@
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+{% assign campusDetailPageId = 1329 %}
+
+{% assign heroStyle = CurrentPage | Attribute:'HeroStyle' %}
+
+{% if CurrentPage.Id == campusDetailPageId %}
+    {% assign campusId = PageParameter.CampusId %}
+    {% assign campus = campusId | FromCache:'Campus' %}
+    {% assign slidesObj = campus | Attribute:'HeroSlides','Object' %}
+    {% assign slidesMatrix = slidesObj.AttributeMatrixItems %}
+{% else %}
+    {% assign slidesObj = CurrentPage | Attribute:'HeroSlides','Object' %}
+    {% assign slidesMatrix = slidesObj.AttributeMatrixItems %}
+{% endif %}
+
+{% if slidesMatrix and slidesMatrix != empty %}
+
+    {% comment %} - Hero Slides Hero Markup {% endcomment %}
+    {% if heroStyle == 'Hero Slides' %}
+        {% assign darkPrimaryNavigation = CurrentPage | Attribute:'DarkPrimaryNavigation' | AsBoolean %}
+
+        <section id="site-hero" class="site-hero-hero-slides{% if darkPrimaryNavigation %}{% else %} negative-margin{% endif %}">
+            <!-- Slider main container -->
+            <div id="hero-swiper" class="swiper">
+                <!-- Additional required wrapper -->
+                <div class="swiper-wrapper">
+                    <!-- Slides -->
+
+                    {% for item in slidesMatrix %}
+                        <!-- slide content channel item -->
+                        {% assign slide = item | Attribute:'HeroSlides','Object' %}
+
+                        {% assign startDateTime = slide.StartDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+                        {% assign expireDateTime = slide.ExpireDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+
+                        {% if startDateTime == empty or startDateTime == null or startDateTime <= now %}
+                            {% if expireDateTime == empty or expireDateTime == null or expireDateTime > now %}
+
+                                <!-- attributes -->
+                                {% assign heading = slide | Attribute:'Heading' %}
+                                {% assign caption = slide | Attribute:'Caption' %}
+                                {% assign imageGuid = slide | Attribute:'Image','RawValue' %}
+                                {% assign video = slide | Attribute:'Video','RawValue' %}
+                                {% assign buttonsObj = slide | Attribute:'Buttons','Object' %}
+                                {% assign buttons = buttonsObj.AttributeMatrixItems %}
+
+                                <!-- imageurl -->
+                                {% assign imageUrl = '' %}
+                                {% if imageGuid and imageGuid != empty %}
+                                    {% assign imageUrl = imageGuid | ImageUrl %}
+                                {% endif %}
+
+                                <!-- heading logic -->
+                                {% assign headingParts = heading | Split:'/' %}
+                                {%- capture headingJSON -%}
+                                    [
+                                        {%- for headingPart in headingParts -%}
+                                            {%- assign font = 'default' -%}
+                                            {%- assign firstCharacter = headingPart | Slice:0,1 -%}
+                                            {%- if firstCharacter == '*' -%}
+                                                {%- assign font = 'times' -%}
+                                            {%- endif -%}
+                                            {
+                                                "Text":"{{ headingPart | Remove:'*' | Trim }}",
+                                                "Font":"{{ font }}"
+                                            }{% unless forloop.last %},{% endunless %}
+                                        {%- endfor -%}
+                                    ]
+                                {%- endcapture -%}
+                                {% assign headingObj = headingJSON | FromJSON %}
+
+                                <!-- swiper slide -->
+                                <div class="swiper-slide bg-dark" style="background-image:url({{ imageUrl }}); background-repeat: no-repeat; background-position: center;">
+                                    <div class="container slide-content-wrapper d-flex flex-column justify-content-end h-100">
+                                        <span class="js-caption d-none">{{ caption }}</span>
+                                        <h1 class="text-white mb-0 mb-sm-4 mt-0 leading-tight display" data-aos="fade-down" data-aos-delay="150" data-aos-duration="600">
+                                            {% for part in headingObj %}
+                                                {% if part.Font == 'times' %}
+                                                    <i class="font-times text-light">{{ part.Text }}</i>
+                                                {% else %}
+                                                    <span>{{ part.Text }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </h1>
+
+                                        {% if buttons and buttons != empty %}
+                                            <div class="hero-buttons pl-3 pl-md-5" data-aos="fade-down" data-aos-delay="350" data-aos-duration="600">
+                                                {% for button in buttons %}
+                                                    {% assign text = button | Attribute:'Text' %}
+                                                    {% assign url = button | Attribute:'Url','RawValue' %}
+                                                    {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+                                                    {% assign style = button | Attribute:'Style' %}
+
+                                                    <a href="{{ url }}"{% if newTab %} target="_blank"{% endif %} class="btn btn-sm btn-{{ style }}">{{ text }}<span></span></a>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                    {% endfor %}
+                </div>
+
+                <div class="container swiper-pagination-wrapper">
+                    <!-- If we need pagination -->
+                    <div id="hero-siper-pagination" class="swiper-pagination" data-aos="fade-up" data-aos-delay="450" data-aos-duration="600"></div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+        <script>
+            let captions = document.querySelectorAll('.js-caption');
+
+            const swiper = new Swiper('#hero-swiper', {
+                // parameters
+                loop: true,
+                //autoplay: {
+                //    delay: 5000,
+                //},
+                allowTouchMove: false,
+
+                // If we need pagination
+                pagination: {
+                    el: "#hero-siper-pagination",
+                    clickable: true,
+                    renderBullet: function (index, className) {
+                        return `<span class="${ className }"><span>${ $(captions[index]).html() }</span></span>`;
+                    },
+                },
+            });
+
+        </script>
+
+    {% comment %} - Extended Heading Hero Markup {% endcomment %}
+    {% elseif heroStyle == 'Extended Heading' %}
+
+        <section id="site-hero" class="site-hero-extended-heading">
+
+            <!-- slide content channel item -->
+            {% assign slide = slidesMatrix | First | Attribute:'HeroSlides','Object' %}
+
+            {% assign startDateTime = slide.StartDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+            {% assign expireDateTime = slide.ExpireDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+
+            <!-- attributes -->
+            {% assign heading = slide | Attribute:'Heading' %}
+            {% assign imageGuid = slide | Attribute:'Image','RawValue' %}
+            {% assign video = slide | Attribute:'Video','RawValue' %}
+            {% assign buttonsObj = slide | Attribute:'Buttons','Object' %}
+            {% assign buttons = buttonsObj.AttributeMatrixItems %}
+
+            <!-- imageurl -->
+            {% assign imageUrl = '' %}
+            {% if imageGuid and imageGuid != empty %}
+                {% assign imageUrl = imageGuid | ImageUrl %}
+            {% endif %}
+
+            <!-- swiper slide -->
+            <div class="container position-relative z-10">
+                <div class="pt-5 py-md-5"></div>
+
+                <div class="row">
+                    <div class="col-xs-11 col-sm-10 col-md-9">
+                        <h1 class="mt-0 leading-tight display mb-4 mb-md-5" data-aos="fade-down" data-aos-delay="150" data-aos-duration="600">
+                            {{ heading }}
+                        </h1>
+
+                        {% if buttons and buttons != empty %}
+                            <div class="hero-buttons" data-aos="fade-down" data-aos-delay="350" data-aos-duration="600">
+                                {% for button in buttons %}
+                                    {% assign text = button | Attribute:'Text' %}
+                                    {% assign url = button | Attribute:'Url','RawValue' %}
+                                    {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+                                    {% assign style = button | Attribute:'Style' %}
+
+                                    <a href="{{ url }}"{% if newTab %} target="_blank"{% endif %} class="btn btn-xs btn-{{ style }}">{{ text }}<span></span></a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="pb-5"></div>
+                        {% endif %}
+
+
+                    </div>
+                </div>
+            </div>
+
+            {% if imageUrl and imageUrl != empty %}
+                <div class="site-hero-img">
+                    <img src="{{ imageUrl }}" alt="{{ heading }}" class="img-responsive" data-aos="fade-up" data-aos-delay="350" data-aos-duration="600">
+                </div>
+            {% endif %}
+
+        </section>
+    {% endif %}
+{% endif %}

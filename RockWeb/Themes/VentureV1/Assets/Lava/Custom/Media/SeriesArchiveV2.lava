@@ -1,0 +1,60 @@
+//- {% include '~~/Assets/Lava/Custom/Media/SeriesArchiveV2.lava', buttontext:'' %}
+
+{% unless buttontext and buttontext != empty %}
+    {% assign buttontext = 'View' %}
+{% endunless %}
+
+<div class="row mt-5 mt-sm-0">
+    {% for item in Items %}
+        {% assign title = item.Title %}
+        {% assign date = item.StartDateTime | Date:'MMM d' %}
+        {% assign imageGuid = item | Attribute:'SeriesImage','Guid' %}
+        {% unless imageGuid and imageGuid != empty %}
+            {% assign imageGuid = item | Attribute:'Image','Guid' %}
+        {% endunless %}
+        {% assign image = imageGuid | ImageUrl %}
+        {% assign seriesSlug = item.PrimarySlug %}
+        {% assign detailsUrl = LinkedPages.DetailPage | Replace:'{PrimarySlug}',seriesSlug %}
+
+
+
+        <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+            <div class="poster-card js-poster-card{% unless image and image != empty %} bg-dark{% endunless %}"{% if image and image != empty %} style="background-image:url({{ image | Append:'&w=400&mode=crop' }});"{% endif %}>
+                <div class="poster-card-body js-poster-card-body">
+                    <h4 class="poster-card-title accent accent-white accent-light">{{ title }}</h4>
+
+                    <div class="poster-card-hidden js-poster-card-hidden">
+                        <a href="/{{ detailsUrl }}" class="text-white">{{ buttontext }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if Pagination.TotalPages > 1 %}
+    <div class="mt-4">
+        {% assign nextPageString = Pagination.NextPage | ToString %}
+        {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+        {% if Pagination.PreviousPage == -1 %}
+            <div class="btn btn-default pull-left">
+                <i class="fa fa-chevron-left"></i> Prev
+            </div>
+        {% else %}
+            <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
+                <i class="fa fa-chevron-left"></i> Prev
+            </a>
+        {% endif %}
+
+        {% if Pagination.NextPage == -1 %}
+            <div class="btn btn-default pull-right">
+                Next <i class="fa fa-chevron-right"></i>
+            </div>
+        {% else %}
+            <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
+                Next <i class="fa fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+{% endif %}

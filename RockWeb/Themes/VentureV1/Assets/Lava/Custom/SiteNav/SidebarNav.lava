@@ -1,0 +1,20 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNav/SidebarNav.lava' %} {% endcomment %}
+{% if Page.DisplayChildPages and Page.Pages != empty %}
+    <nav class="main-nav-sidebar">
+		{% for childPage in Page.Pages %}
+            <ul>
+                <li{% if childPage.Current %} class="active"{% endif %}>
+                    <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                </li>
+
+                {% if childPage.DisplayChildPages and childPage.Pages != empty %}
+		            {% for childChildPage in childPage.Pages %}
+                        <li{% if childChildPage.Current %} class="active"{% endif %}>
+                            <a href="{{ childChildPage.Url }}">{{ childChildPage.Title }}</a>
+                        </li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        {% endfor %}
+    </nav>
+{% endif %}

@@ -1,0 +1,34 @@
+<h1>Search JS</h1>
+<p class="lead">A simple set of JS classes to implement search on a list of items.</p>
+
+/- <h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#examples">Link Examples</a></li>
+    <li><a href="#content">Modal HTML Content</a></li>
+</ul> -/
+
+
+<div class="mb-5">
+    <h3>In Short</h3>
+    <ul>
+        <li>To enable filtering, wrap your list of items in the class <code>js-filter-items</code> and each individual item with <code>js-filter-item</code>.</li>
+        <li>Then add the class <code>js-filter-items-search</code> to a search input</li>
+        <li>And add <code>js-filter-items-empty</code> to display an alert when all items have been filtered.</li>
+    </ul>
+
+    {% capture codeExample %}<input type="text" class="js-filter-items-search">
+    <div class="js-filter-items">
+        <div class="js-filter-item">...</div>
+        <div class="js-filter-item">...</div>
+        <div class="js-filter-item">...</div>
+    </div>
+
+    <div class="js-filter-items-empty" style="display: none;">
+        <div class="alert alert-default">Nothing matches your search.</div>
+    </div>{% endcapture %}
+
+    <pre><code>{{ codeExample | Escape }}</code></pre>
+
+</div>
+
+

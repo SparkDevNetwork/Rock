@@ -1,0 +1,34 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/PersonGiantCard.lava', personId:'', nameColor:'', destination:'', btnText:'', btnColor:'', subheading:'' %} {% endcomment %}
+
+{% assign useNameColor = nameColor %}
+{% unless nameColor and nameColor != empty %}
+    {% assign useNameColor = 'goldcreek' %}
+{% endunless %}
+
+{% assign useBtnColor = btnColor %}
+{% unless btnColor and btnColor != empty %}
+    {% assign useBtnColor = 'goldcreek' %}
+{% endunless %}
+
+{% person where:'Id == "{{ personId }}"' %}
+    {% for person in personItems %}
+        {% assign image = person.Photo.Guid %}
+        {% assign imageUrl = '/GetImage.ashx?Guid=' | Append:image | Append:'&w=800&h=800&mode=crop' %}
+        <div class="person-giant-card{% if destination and destination != empty %} card-linked{% endif %}">
+            <div class="person-giant-card-img-wrap">
+                <div class="person-giant-card-img">
+                    <img src="{{ imageUrl }}" alt="">
+                </div>
+            </div>
+            <div class="person-giant-card-body">
+                <div class="person-giant-card-meet">MEET</div>
+                <div class="h3 person-giant-card-title"><span class="text-{{ useNameColor }}">{{ person.FirstName }}</span> {{ person.LastName }}</div>
+                <div class="h5 person-giant-card-subtitle o-50">{{ subheading }}</div>
+                {% if destination and destination != empty %}
+                    <a href="{{ destination }}" class="btn btn-primary btn-{{ useBtnColor }} stretched-link">{{ btnText }}</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endperson %}
+

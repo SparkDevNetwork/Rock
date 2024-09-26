@@ -1,0 +1,358 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/FeaturedEvents.lava' %} {% endcomment %}
+
+{% assign now = 'Now' | Date %}
+
+{% stylesheet id:'featured-events-v1' compile:'less' cacheduration:'14400' %}
+    .swiper-section {
+        background: linear-gradient(180deg, #E9ECEF 50%, #F8F9FA 50.1%);
+
+        &-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            overflow: hidden;
+
+            padding: 30px 45px;
+
+            &-inner {
+                width: 100%;
+                margin: 0 auto;
+                position: relative;
+            }
+
+            @media (min-width: 768px) {
+                padding: 48px;
+                // todo: .rounded-md();
+                border-radius: 12px;
+                // todo: .shadow-lg();
+                box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
+            }
+
+            @media (min-width: 992px) {
+                padding: 60px 100px;
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% assign eventItemIds = '' %}
+
+{% cache key:'homepage-featuredevents' duration:'3600' twopass:'true' %}
+
+    {% calendarevents calendarid:'1' maxoccurrences:'10' campusids:'{{ CurrentPerson.PrimaryCampusId }}' %}
+        {% for item in EventScheduledInstances %}
+            {% if forloop.first %}
+                {% assign usersEventScheduledInstances = EventScheduledInstances %}
+                {% break %}
+            {% endif %}
+        {% endfor %}
+    {% endcalendarevents %}
+
+    {% calendarevents calendarid:'1' maxoccurrences:'10' %}
+        {% for item in EventScheduledInstances %}
+            {% if forloop.first %}
+                {% assign nonUsersEventScheduledInstances = EventScheduledInstances %}
+                {% break %}
+            {% endif %}
+        {% endfor %}
+    {% endcalendarevents %}
+
+
+
+    {%- capture upcomingEvents -%}
+        {% raw %}
+            {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-2|16' ]}
+
+                {% if CurrentPerson %}
+                    {% for item in usersEventScheduledInstances %}
+
+                        {% assign event = item.EventItemOccurrence %}
+                        {% assign eventItemId = event.EventItemId | AsString %}
+                        {% assign eventItemIdsArray = eventItemIds | Split:',' %}
+                        {% assign isRepeatedEvent = eventItemIdsArray | Contains:eventItemId | AsBoolean %}
+
+                        {% if eventItemIdsArray %}{% endif %}
+                        {% assign eventItemIds = eventItemIds | Append:eventItemId %}
+
+                        {% unless forloop.last %}
+                            {% assign eventItemIds = eventItemIds | Append:',' %}
+                        {% endunless %}
+
+                        {% assign nextStartDate = event.NextStartDateTime | Date:'MMM d hh:mm tt' %}
+                        {% assign photo = event.EventItem.PhotoId %}
+                        {% if photo and photo != empty %}
+                            {% assign photo = photo | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+                        {% endif %}
+
+                        {% unless isRepeatedEvent %}
+                            [[ slide ]]
+                                <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ photo }});">
+                                    <div class="special-card-content">
+                                        <div class="special-card-details text-white">
+                                            <span class="d-block special-card-subheading">{{ event.NextStartDateTime | Date:'MMM d' }} &nbsp;<i class="venture-diamond"></i>&nbsp; {{ event.NextStartDateTime | Date:'hh:mm tt' }}</span>
+                                            <h4 class="special-card-heading">{{ event.EventItem.Name }}</h4>
+                                        </div>
+                                        <div class="special-card-actions">
+                                            <a href="/v1/calendar/{{ eventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            [[ endslide ]]
+                        {% endunless %}
+                    {% endfor %}
+                {% else %}
+                    {% for item in nonUsersEventScheduledInstances %}
+
+                        {% assign event = item.EventItemOccurrence %}
+                        {% assign eventItemId = event.EventItemId | AsString %}
+                        {% assign eventItemIdsArray = eventItemIds | Split:',' %}
+                        {% assign isRepeatedEvent = eventItemIdsArray | Contains:eventItemId | AsBoolean %}
+
+                        {% if eventItemIdsArray %}{% endif %}
+                        {% assign eventItemIds = eventItemIds | Append:eventItemId %}
+
+                        {% unless forloop.last %}
+                            {% assign eventItemIds = eventItemIds | Append:',' %}
+                        {% endunless %}
+
+                        {% assign nextStartDate = event.NextStartDateTime | Date:'MMM d hh:mm tt' %}
+                        {% assign photo = event.EventItem.PhotoId %}
+                        {% if photo and photo != empty %}
+                            {% assign photo = photo | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+                        {% endif %}
+
+                        {% unless isRepeatedEvent %}
+                            [[ slide ]]
+                                <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ photo }});">
+                                    <div class="special-card-content">
+                                        <div class="special-card-details text-white">
+                                            <span class="d-block special-card-subheading">{{ event.NextStartDateTime | Date:'MMM d' }} &nbsp;<i class="venture-diamond"></i>&nbsp; {{ event.NextStartDateTime | Date:'hh:mm tt' }}</span>
+                                            <h4 class="special-card-heading">{{ event.EventItem.Name }}</h4>
+                                        </div>
+                                        <div class="special-card-actions">
+                                            <a href="/v1/calendar/{{ eventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            [[ endslide ]]
+                        {% endunless %}
+                    {% endfor %}
+                {% endif %}
+            {[ endswiper ]}
+        {% endraw %}
+
+    {%- endcapture -%}
+
+
+    {% comment %} {% if CurrentPerson %} {% endcomment %}
+        {%- capture dailyResources -%}
+            <div class="row">
+                <div class="col-sm-6 col-lg-3 mb-3">
+                    <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage---7-Marks.jpg' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                        <div class="poster-card-body js-poster-card-body">
+                            <h4 class="poster-card-title accent accent-white">7 Marks</h4>
+                            <div class="poster-card-hidden js-poster-card-hidden">
+                                {% comment %} todo: update url {% endcomment %}
+                                <a href="/v1/7marks" class="text-white">Take Assessments</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3 mb-3">
+                    <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage_-_Bible_Reading_Plan.jpg' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                        <div class="poster-card-body js-poster-card-body">
+                            <h4 class="poster-card-title accent accent-white">Bible Reading Plan</h4>
+                            <div class="poster-card-hidden js-poster-card-hidden">
+                                <a href="/Biblereadingplan" class="text-white">View All Plans</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3 mb-3">
+                    <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/daily-devotional.png' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                        <div class="poster-card-body js-poster-card-body">
+                            <h4 class="poster-card-title accent accent-white">Daily Devos</h4>
+                            <div class="poster-card-hidden js-poster-card-hidden">
+                                {% comment %} todo: update url {% endcomment %}
+                                <a href="/v1/dailydevos" class="text-white">View All Devotionals</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3 mb-3">
+                    <div class="poster-card js-poster-card bg-dark" style="background-image:url({{ '/Themes/VentureV1/Assets/Images/Homepage_-_Podcast.jpg' | TriumphImgCdn:'w=500&h=300&fit=crop&crop=faces&auto=compress,format' }});">
+                        <div class="poster-card-body js-poster-card-body">
+                            <h4 class="poster-card-title accent accent-white">Podcast &amp; Study Guides</h4>
+                            <div class="poster-card-hidden js-poster-card-hidden">
+                                {% comment %} todo: update url {% endcomment %}
+                                <a href="/podcasts" class="text-white">View All Podcast &amp; Study Guides</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {%- endcapture -%}
+
+
+        {% contentchannelitem where:'ContentChannelId == 37' limit:'10' iterator:'Stories' sort:'StartDateTime desc' securityenabled:'false' %}
+        {% endcontentchannelitem %}
+
+        {% assign stories = Stories | Shuffle %}
+        {% assign storyCount = 0 %}
+
+        {% capture stories %}
+            {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'1' breakpoints:'768-2|16' ]}
+                {% for story in stories %}
+                    {% assign image = story | Attribute:'Image','Guid' %}
+                    {% if image and image != empty %}
+                        {% assign image = image | ImageUrl | TriumphImgCdn:'w=600&h=338&fit=crop&crop=faces&auto=compress,format' %}
+                    {% endif %}
+
+                    {% if storyCount < 5 %}
+                        {% assign storyCount = storyCount | Plus:1 %}
+
+                        [[ slide ]]
+                            <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ image }});">
+                                <div class="special-card-content">
+                                    <div class="special-card-details text-white">
+                                        <span class="d-block special-card-subheading">{{ story.StartDateTime | Date:'MMM d' }}</span>
+                                        <h4 class="special-card-heading">{{ story.Title }}</h4>
+                                    </div>
+                                    <div class="special-card-actions">
+                                        {% comment %} todo: update route {% endcomment %}
+                                        <a href="/v1/stories/{{ story.PrimarySlug }}" class="btn btn-primary btn-opaque">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        [[ endslide ]]
+                    {% endif %}
+                {% endfor %}
+            {[ endswiper ]}
+        {% endcapture %}
+    {% comment %} {% else %} {% endcomment %}
+
+        {% contentchannelitem where:'ContentChannelId == 33 && StartDateTime < "{{now}}" && ExpireDateTime > "{{now}}"' sort:'ExpireDateTime' limit:'1' iterator:'FeaturedEvents' securityenabled:'false' %}
+            {% for item in FeaturedEvents %}
+                {% if forloop.first %}
+                    {% assign featuredEventId = item | Attribute:'Event','Id' %}
+                {% else %}
+                    {% break %}
+                {% endif %}
+            {% endfor %}
+        {% endcontentchannelitem %}
+
+        {% if featuredEventId and featuredEventId != empty %}
+            {% eventitemoccurrence where:'EventItemId == {{ featuredEventId }}' expression:'NextStartDateTime > "{{ now }}"' sort:'NextStartDateTime' limit:'1' iterator:'FeaturedEventOccurrences' sort:'Order' securityenabled:'false' %}
+            {% endeventitemoccurrence %}
+
+            {% assign featuredEventObj = FeaturedEventOccurrences | First %}
+            {% assign featuredEventImage = featuredEventObj.EventItem.Photo.Guid %}
+            {% if featuredEventImage and featuredEventImage != empty %}
+                {% assign featuredEventImage = featuredEventImage | ImageUrl | TriumphImgCdn:'w=800&h=450&fit=crop&crop=faces&auto=compress,format' %}
+            {% endif %}
+            {% assign featuredEventDate = featuredEventObj.NextStartDateTime | Date:'MMM d' %}
+            {% assign featuredEventTime = featuredEventObj.NextStartDateTime | Date:'hh:mm tt' %}
+            {% assign featuredEventName = featuredEventObj.EventItem.Name %}
+            {% assign featuredEventOccurrenceId = featuredEventObj.Id %}
+
+            {%- capture featuredEvent -%}
+                <div class="special-card special-card-16x9 hide-buttons-mobile bg-dark" style="background-image:url({{ featuredEventImage }});">
+                    <div class="special-card-content">
+                        <div class="special-card-details text-white">
+                            <span class="d-block special-card-subheading">{{ featuredEventDate }} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ featuredEventTime }}</span>
+                            <h2 class="special-card-heading d-none d-sm-block h1">{{ featuredEventName }}</h2>
+                            <h4 class="special-card-heading d-block d-sm-none">{{ featuredEventName }}</h4>
+                        </div>
+                        <div class="special-card-actions">
+                            {% comment %} todo: update url {% endcomment %}
+                            <a href="/v1/calendar/{{ featuredEventObj.EventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {%- endcapture -%}
+        {% endif %}
+    {% comment %} {% endif %} {% endcomment %}
+
+    <div class="py-3 py-md-5"></div>
+
+    {% raw %}
+        {% if CurrentPerson %}
+            <div class="container container-lg" data-aos="fade-up">
+                <div class="d-flex flex-wrap flex-column flex-sm-row align-items-center align-items-sm-start justify-content-center justify-content-sm-between text-center text-sm-left">
+                    <h2 class="accent accent-lightest mb-4 d-none d-sm-block">Campus Events</h2>
+                    <h2 class="accent accent-lightest accent-center mb-4 d-block d-sm-none">Campus Events</h2>
+                    {% comment %} todo: update url {% endcomment %}
+                    <a href="/v1/calendar" class="btn btn-primary">See all Events</a>
+                    <div class="w-100 py-3 d-sm-none"></div>
+                </div>
+                <div class="position-relative">
+                    {{ upcomingEvents }}
+                </div>
+            </div>
+            <div class="py-3"></div>
+            <div class="py-md-3"></div>
+        {% endif %}
+
+        {% if CurrentPerson %}
+            <div class="bg-muted">
+                <div class="py-3 py-md-5"></div>
+                <div class="container container-lg" data-aos="fade-up">
+                    <h2 class="accent accent-lightest mb-4">Resources</h2>
+                    {{ dailyResources }}
+                </div>
+                <div class="py-3 py-md-5"></div>
+                <div class="py-3 py-md-0"></div>
+            </div>
+        {% elseif featuredEventId and featuredEventId != empty %}
+            <div class="bg-muted">
+                <div class="py-3 py-md-5"></div>
+                <div class="container container-lg" data-aos="fade-up">
+                    <h2 class="accent accent-invite accent-center text-center mb-4">Featured Event</h2>
+                    {{ featuredEvent }}
+                </div>
+                <div class="py-3 py-md-5"></div>
+                <div class="py-3 py-md-0"></div>
+            </div>
+        {% else %}
+            <div class="bg-muted">
+                <div class="py-3 py-md-5"></div>
+                <div class="py-3 py-md-0"></div>
+            </div>
+        {% endif %}
+    {% endraw %}
+
+
+    <div class="swiper-section">
+        <div class="container container-lg gutterless-mobile">
+            <div class="swiper-section-card" data-aos="fade-up">
+                {% raw %}
+                    {% if CurrentPerson %}
+                        <h2 class="accent accent-invite accent-lightest mb-4 w-100">Share Your Story</h2>
+                    {% else %}
+                        <h2 class="accent accent-invite accent-center text-center mb-4 w-100">Upcoming Events</h2>
+                    {% endif %}
+                {% endraw %}
+                <div class="position-relative w-100">
+                    <div class="swiper-section-card-inner">
+                        {% raw %}
+                            {% if CurrentPerson %}
+                                {{ stories }}
+                            {% else %}
+                                {{ upcomingEvents }}
+                            {% endif %}
+                        {% endraw %}
+                    </div>
+                </div>
+                {% raw %}
+                    {% unless CurrentPerson %}
+                        <div class="text-center">
+                            <div class="py-3"></div>
+                            <a href="/v1/calendar" class="btn btn-primary btn-grow">See all events</a>
+                        </div>
+                    {% endunless %}
+                {% endraw %}
+            </div>
+        </div>
+    </div>
+{% endcache %}

@@ -1,0 +1,77 @@
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
+  &:focus {
+    border: 1px solid @input-border-focus;
+    outline: none;
+    box-shadow: @input-focus-box-shadow;
+  }
+}
+
+.form-control {
+  box-shadow: none;
+
+  &::placeholder {
+    color: #90949c;
+    transition: color 100ms ease-in-out;
+  }
+
+  &:focus {
+    &::placeholder {
+      color: #bec3c9;
+    }
+  }
+}
+
+.grid-actions {
+  padding: 0 !important;
+  text-align: right;
+  background-color: @grid-footer-bg;
+
+  .btn {
+    margin-left: 8px;
+  }
+
+  .btn-grid-action {
+    padding: 5px 7px;
+    color: @grid-footer-button-text-color;
+    background-color: @grid-footer-button-bg;
+    border-color: @grid-footer-button-border;
+    box-shadow: none;
+  }
+}
+
+.grid-filter .btn-filter-toggle {
+  margin: 4px 8px;
+}
+
+.grid-table {
+  font-size: @font-size-base;
+
+  td,
+  th {
+    &.grid-select-field {
+      width: @custom-control-indicator-size * 2;
+      padding: 0 !important;
+
+      + tr,
+      + td {
+        padding-left: 12px;
+      }
+    }
+  }
+
+  td.grid-select-field > div {
+    opacity: .2;
+    &:extend(.transition);
+  }
+
+  tr:hover td.grid-select-field > div {
+    opacity: 1;
+  }
+}
+
+.actions {
+  .clearfix();
+}

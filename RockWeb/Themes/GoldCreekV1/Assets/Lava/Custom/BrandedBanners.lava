@@ -1,0 +1,38 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/BrandedBanners.lava' %} {% endcomment %}
+
+{% assign count = 0 %}
+
+{% for item in Items %}
+    {% assign campus = item | Attribute:'Campus' %}
+    {% assign countCheck = count | Modulo:2 %}
+
+    {% if campus == empty or campus == null or campus == Context.Campus.Name %}
+        {% assign title = item.Title %}
+        {% assign content = item.Content %}
+        {% assign image = item | Attribute:'Image','RawValue' %}
+        {% assign imageUrl = '/GetImage.ashx?Guid=' | Append:image %}
+        {% assign variable = Item | Attribute:'variable' %}
+        {% assign accentColor = item | Attribute:'AccentColor' %}
+
+        <div class="branded-banner-bg bg-{{ accentColor }}{% if forloop.last != true %} mb-3{% endif %}">
+            <div class="container container-lg">
+                <div class="branded-banner{% if countCheck == 1 %} branded-banner-right{% else %} branded-banner-left{% endif %} ">
+                    <div class="branded-banner-img-wrap{% if hideImageOnMobile and hideImageOnMobile == 'Yes' %} hide-on-mobile{% endif %}">
+                        <div class="branded-banner-img">
+                            <img src="{{ imageUrl | TriumphImgCdn:'w=800&h=800&fit=crop&auto=compress&auto=format' }}" alt="{{ title }}">
+                            <div class="position-absolute z-10 w-100 h-100 top-0 left-0">
+                                <div class="bg-{{ accentColor }} branded-banner-accent-block"></div>
+                                <h3 class="display text-white branded-banner-title m-0">{{ title }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="branded-banner-body">
+                        {{ content }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% assign count = count | Plus:1 %}
+    {% endif %}
+{% endfor %}

@@ -1,0 +1,206 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Global/MegaMenu.lava' %} {% endcomment %}
+
+{% assign locationsPageId = 1328 %}
+{% assign givingPageId = 1280 %}
+
+{% assign campuses = 'CampusCategoriesAndTimes' | PersistedDataset %}
+{% assign denverCampuses = campuses | Where:'PrimaryNavigationCategory','Denver' %}
+{% assign texasCampuses = campuses | Where:'PrimaryNavigationCategory','Texas' %}
+{% assign belgiumCampuses = campuses | Where:'PrimaryNavigationCategory','Belgium' %}
+{% assign onlineCampuses = campuses | Where:'PrimaryNavigationCategory','Online' %}
+
+{% if Page.DisplayChildPages and Page.Pages != empty %}
+    <ul class="nav navbar-nav">
+		{% for page in Page.Pages %}
+            <li class="nav-item-level-one js-primary-nav-item{% if page.Current %} active{% endif %}">
+
+				<a class="position-relative{% if page.Id == givingPageId %} btn-give{% endif %}" href="{{ page.Url }}" data-page="{{ page.Id }}"><span>{{ page.Title }}</span></a>
+            </li>
+            {% if page.DisplayChildPages and page.Pages != empty %}
+                <div class="mega-menu-section js-mega-menu-section" data-page="{{ page.Id }}">
+                    <div class="container">
+                        {% if page.Id != locationsPageId %}
+                            <div class="d-flex justify-content-start">
+                                {% capture childPageData %}
+                                [
+                                {% for childPage in page.Pages %}
+                                    {%- assign pageObject = childPage.Id | FromCache:'Page' -%}
+                                    {%- assign megaMenuCategory = pageObject | Attribute:'MegaMenuCategory' -%}
+                                    {%- assign megaMenuDescription = pageObject | Attribute:'MegaMenuDescription' -%}
+                                    {
+                                        "Name":{{ childPage.Title | ToJSON }},
+                                        "Id":{{ childPage.Id | ToJSON }},
+                                        "Url":{{ childPage.Url | ToJSON }},
+                                        "Current":{{ childPage.Current | ToJSON }},
+                                        "MegaMenuCategory":{{ megaMenuCategory | ToJSON }},
+                                        "MegaMenuDescription":{{ megaMenuDescription | ToJSON }}
+                                    }{% unless forloop.last %},{% endunless %}
+                                {% endfor %}
+                                ]
+                                {% endcapture %}
+
+                                {% assign childPageObj = childPageData | FromJSON | OrderBy:'MegaMenuCategory' %}
+                                {% assign lastCategory = '' %}
+
+                                {% for childPage in childPageObj %}
+                                    {% assign current = childPage.Current | AsBoolean %}
+
+                                    {% if childPage.MegaMenuCategory and childPage.MegaMenuCategory != empty %} //- childPage has category
+                                        {% if childPage.MegaMenuCategory == lastCategory %} //- childPage has same category as last category
+                                            <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                                <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                    <span class="h2 d-block m-0">{{ childPage.Name }}</span>
+                                                    {% if childPage.MegaMenuDescription and childPage.MegaMenuDescription != empty %}
+                                                        <p>
+                                                            {{ childPage.MegaMenuDescription }}
+                                                        </p>
+                                                    {% endif %}
+                                                </a>
+                                            </li>
+                                        {% elseif lastCategory and lastCategory != empty %}
+                                            </ul>
+                                            <ul class="list-unstyled categorized">
+                                                <li class="h3 mt-0 mb-3">{{ childPage.MegaMenuCategory }}</li>
+                                                <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                                    <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                        <span class="h2 d-block m-0">{{ childPage.Name }}</span>
+                                                        {% if childPage.MegaMenuDescription and childPage.MegaMenuDescription != empty %}
+                                                            <p>
+                                                                {{ childPage.MegaMenuDescription }}
+                                                            </p>
+                                                        {% endif %}
+                                                    </a>
+                                                </li>
+                                        {% else %}
+                                            <ul class="list-unstyled categorized">
+                                                <li class="h3 mt-0 mb-3">{{ childPage.MegaMenuCategory }}</li>
+                                                <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                                    <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                        <span class="h2 d-block m-0">{{ childPage.Name }}</span>
+                                                        {% if childPage.MegaMenuDescription and childPage.MegaMenuDescription != empty %}
+                                                            <p>
+                                                                {{ childPage.MegaMenuDescription }}
+                                                            </p>
+                                                        {% endif %}
+                                                    </a>
+                                                </li>
+                                        {% endif %}
+
+                                        {% assign lastCategory = childPage.MegaMenuCategory %}
+                                    {% elseif lastCategory == 'uncategorized' %} //- last item was 'uncategorized'
+                                        <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                            <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                <span class="h2 d-block m-0">{{ childPage.Name }}</span>
+                                                {% if childPage.MegaMenuDescription and childPage.MegaMenuDescription != empty %}
+                                                    <p>
+                                                        {{ childPage.MegaMenuDescription }}
+                                                    </p>
+                                                {% endif %}
+                                            </a>
+                                        </li>
+                                    {% else %} //- childPage has no category and it is the first one
+                                        <ul class="list-unstyled uncategorized">
+                                            <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                                <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                    <span class="h2 d-block m-0">{{ childPage.Name }}</span>
+                                                    {% if childPage.MegaMenuDescription and childPage.MegaMenuDescription != empty %}
+                                                        <p>
+                                                            {{ childPage.MegaMenuDescription }}
+                                                        </p>
+                                                    {% endif %}
+                                                </a>
+                                            </li>
+                                            {% assign lastCategory = 'uncategorized' %}
+                                    {% endif %}
+
+                                    {% if forloop.last %}
+                                        </ul>
+                                    {% endif %}
+                                {% endfor %}
+
+                            </div>
+
+
+                        {% else %}
+                            <div class="d-flex">
+                                <div class="mr-5 pr-5">
+                                    <h3 class="mt-0 mb-3">Denver</h3>
+                                    <ul class="list-unstyled">
+                                        {% for campus in denverCampuses %}
+                                            <li class="nav-item-level-two">
+                                                {% comment %} todo: set details page {% endcomment %}
+                                                <a href="#">
+                                                    <span class="h2 d-block m-0">{{ campus.Name }}</span>
+                                                    <p>
+                                                        {%- assign previousDay = '' -%}
+                                                        {%- for serviceTime in campus.ServiceTimes -%}
+                                                            {%- assign day = serviceTime.Day -%}{%- assign time = serviceTime.Time -%}{%- if previousDay and previousDay != empty -%}{%- if previousDay == day -%}, {{ time }}{%- else -%}<br>{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- else -%}{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- assign previousDay = day -%}
+                                                        {%- endfor -%}
+                                                    </p>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 class="mt-0 mb-3">Texas</h3>
+                                    <ul class="list-unstyled">
+                                        {% for campus in texasCampuses %}
+                                            <li class="nav-item-level-two">
+                                                {% comment %} todo: set details page {% endcomment %}
+                                                <a href="#">
+                                                    <span class="h2 d-block m-0">{{ campus.Name }}</span>
+                                                    <p>
+                                                        {%- assign previousDay = '' -%}
+                                                        {%- for serviceTime in campus.ServiceTimes -%}
+                                                            {%- assign day = serviceTime.Day -%}{%- assign time = serviceTime.Time -%}{%- if previousDay and previousDay != empty -%}{%- if previousDay == day -%}, {{ time }}{%- else -%}<br>{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- else -%}{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- assign previousDay = day -%}
+                                                        {%- endfor -%}
+                                                    </p>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <h3 class="mt-0 mb-3">Belgium</h3>
+                                    <ul class="list-unstyled">
+                                        {% for campus in belgiumCampuses %}
+                                            <li class="nav-item-level-two">
+                                                {% comment %} todo: set details page {% endcomment %}
+                                                <a href="#">
+                                                    <span class="h2 d-block m-0">{{ campus.Name }}</span>
+                                                    <p>
+                                                        {%- assign previousDay = '' -%}
+                                                        {%- for serviceTime in campus.ServiceTimes -%}
+                                                            {%- assign day = serviceTime.Day -%}{%- assign time = serviceTime.Time -%}{%- if previousDay and previousDay != empty -%}{%- if previousDay == day -%}, {{ time }}{%- else -%}<br>{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- else -%}{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- assign previousDay = day -%}
+                                                        {%- endfor -%}
+                                                    </p>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <h3 class="mt-0 mb-3">Not near a campus?</h3>
+                                    <ul class="list-unstyled">
+                                        {% for campus in onlineCampuses %}
+                                            <li class="nav-item-level-two">
+                                                {% comment %} todo: set details page {% endcomment %}
+                                                <a href="#">
+                                                    <span class="h2 d-block m-0">Join Online!</span>
+                                                    <p>
+                                                        {%- assign previousDay = '' -%}
+                                                        {%- for serviceTime in campus.ServiceTimes -%}
+                                                            {%- assign day = serviceTime.Day -%}{%- assign time = serviceTime.Time -%}{%- if previousDay and previousDay != empty -%}{%- if previousDay == day -%}, {{ time }}{%- else -%}<br>{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- else -%}{{ day | Capitalize | Pluralize }} {{ time }}{%- endif -%}{%- assign previousDay = day -%}
+                                                        {%- endfor -%}
+                                                    </p>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endif %}
+

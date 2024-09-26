@@ -1,0 +1,11 @@
+.swiper-container.gc-swiper-container {
+  position: relative;
+}
+.swiper-container.gc-swiper-container .swiper-button-next {
+  right: unset;
+  left: calc(100% + 30px);
+}
+.swiper-container.gc-swiper-container .swiper-button-prev {
+  left: unset;
+  right: calc(100% + 30px);
+}

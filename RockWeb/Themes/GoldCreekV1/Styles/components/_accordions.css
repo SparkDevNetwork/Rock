@@ -1,0 +1,15 @@
+.panel-group {
+  border-radius: 5px !important;
+}
+.panel-group .panel-accordion {
+  border-radius: 0;
+}
+.panel-group .panel-accordion:first-child {
+  border-radius: 5px 5px 0 0;
+}
+.panel-group .panel-accordion:last-child {
+  border-radius: 0 0 5px 5px;
+}
+.panel-group .panel-accordion + .panel-accordion {
+  margin-top: 0;
+}

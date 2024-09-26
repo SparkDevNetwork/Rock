@@ -1,0 +1,52 @@
+//
+// JumpStart Theme V1.1.1
+// _group-scheduler.less
+//
+
+.group-scheduler {
+  .panel-block {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .resource-list .panel-body {
+    position: relative;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    flex: 0 1 auto !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .panel.panel-block > .panel-heading,
+  .panel.panel-block > .rock-panel-drawer {
+    display: block;
+  }
+
+  .panel.panel-block > .panel-body {
+    padding: 0 15px;
+  }
+
+  .location > .panel > .panel-body {
+    padding: 0;
+  }
+
+  .panel.panel-block {
+    border: 1px solid @panel-border;
+    box-shadow: none;
+  }
+
+  @media (min-width: 992px) {
+    .resource-list {
+      top: 16px;
+      max-height: calc(100vh - 112px);
+    }
+  }
+}
+

@@ -1,0 +1,314 @@
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% assign navItems = 'default,primary,secondary' %}
+{%- capture description -%}
+    Easily create carousels and slideshows with the Swiper JS shortcode from Triumph Tech. Swiper is the most modern free mobile touch slider with hardware accelerated transitions and amazing native behavior.
+{%- endcapture -%}
+{% include '~~/Assets/Lava/StyleGuide/Components/component-heading.lava', heading:'Triumph Swiper', navitems:navItems, description:description %}
+
+
+{% comment %} ~ Default Swiper {% endcomment %}
+{% capture defaultSwiperRaw %}{% raw %}
+{[ swiper shownavigation:'true' ]}
+    [[ slide ]]
+        <img src="https://picsum.photos/seed/1/1600/500" class="w-100 img-responsive">
+    [[ endslide ]]
+    [[ slide ]]
+        <img src="https://picsum.photos/seed/1/1600/500" class="w-100 img-responsive">
+    [[ endslide ]]
+    [[ slide ]]
+        <img src="https://picsum.photos/seed/1/1600/500" class="w-100 img-responsive">
+    [[ endslide ]]
+{[ endswiper ]}
+{% endraw %}{% endcapture %}
+
+{% capture defaultSwiperEscaped %}
+    {{ defaultSwiper | Escape }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+{% comment %} ~ Primary Swiper {% endcomment %}
+{% capture primarySwiperRaw %}{% raw %}
+{[ swiper shownavigation:'true' showpagination:'true' containerclass:'primary' breakpoints:'768-2|16,992-1|16,1200-2|16' spacebetween:'16' ]}
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+
+{[ endswiper ]}
+
+
+<h3 class="mt-5">Primary – Smoky Emerald</h3>
+
+{[ swiper shownavigation:'true' showpagination:'true' containerclass:'primary smoky-emerald' breakpoints:'768-2|16,992-1|16,1200-2|16' spacebetween:'16' ]}
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="card card-short">
+            <img src="https://via.placeholder.com/800x380" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title">title</h5>
+                <p>From October 25 to November 2, 2024</p>
+            </div>
+            <div class="card-footer">
+                <a href="#"></a>
+            </div>
+        </div>
+    [[ endslide ]]
+
+{[ endswiper ]}
+{% endraw %}{% endcapture %}
+
+{% capture primarySwiperEscaped %}
+    {{ primarySwiper | Escape }}
+{% endcapture %}
+
+
+
+
+
+{% comment %} ~ Secondary Swiper {% endcomment %}
+{% capture secondarySwiperRaw %}{% raw %}
+{[ swiper shownavigation:'true' showpagination:'false' containerclass:'secondary' slidesperview:'2' breakpoints:'768-3|16,1200-4|16' spacebetween:'16' ]}
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/300/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/300/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/800/800" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+{[ endswiper ]}
+
+<h3 class="mt-5">Secondary – Cavern</h3>
+
+{[ swiper shownavigation:'true' showpagination:'false' containerclass:'secondary cavern' slidesperview:'2' breakpoints:'768-3|16,1200-4|16' spacebetween:'16' ]}
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/300/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/300/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/800/800" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+    [[ slide ]]
+        <div class="content">
+            <img src="https://picsum.photos/seed/1/400/600" class="w-100 img-responsive">
+        </div>
+    [[ endslide ]]
+{[ endswiper ]}
+
+{% endraw %}{% endcapture %}
+
+{% capture secondarySwiperEscaped %}
+    {{ secondarySwiper | Escape }}
+{% endcapture %}
+
+
+
+
+
+
+
+
+
+{% comment %} ~ Default {% endcomment %}
+<div class="card no-hover" id="default">
+    <div class="card-body">
+        <div class="overflow-hidden">
+            <h3 class="sg-section-header">Default</h3>
+
+            {{ defaultSwiperRaw | RunLava }}
+            <br>
+
+            {{ codeOpen }}
+            {{ defaultSwiperRaw | Escape }}
+            {{ codeClose }}
+        </div>
+    </div>
+</div>
+
+
+{% comment %} ~ Primary {% endcomment %}
+<hr class="my-5" id="primary">
+<div class="card no-hover">
+    <div class="card-body">
+        <h3 class="sg-section-header">Primary</h3>
+
+        {{ primarySwiperRaw | RunLava }}
+        <br>
+
+        <div class="alert alert-info">
+            <p class="m-0">The GloriaDeiV1 theme has many theme color options. Simply add the color name in css class syntax (Misty Moss => misty-moss) to the containerclass shortcode attribute to apply the color as this swipers accent color.</p>
+        </div>
+
+        {{ codeOpen }}
+        {{ primarySwiperRaw | Escape }}
+        {{ codeClose }}
+    </div>
+</div>
+
+
+{% comment %} ~ Secondary {% endcomment %}
+<hr class="my-5" id="secondary">
+<div class="card no-hover">
+    <div class="card-body">
+        <h3 class="sg-section-header">Secondary</h3>
+
+        {{ secondarySwiperRaw | RunLava }}
+        <br>
+
+        <div class="alert alert-info">
+            <p class="m-0">The GloriaDeiV1 theme has many theme color options. Simply add the color name in css class syntax (Misty Moss => misty-moss) to the containerclass shortcode attribute to apply the color as this swipers accent color.</p>
+        </div>
+
+        {{ codeOpen }}
+        {{ secondarySwiperRaw | Escape }}
+        {{ codeClose }}
+    </div>
+</div>

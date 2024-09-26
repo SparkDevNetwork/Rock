@@ -1,0 +1,310 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/working.lava' %} {% endcomment %}
+
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+<script>
+    AOS.init({
+        once: true,
+    });
+</script>
+
+<style>
+    .complete .dashboard-byline {
+        color: #fff !important;
+    }
+
+    .dashboard-icon:after {
+        font-weight: 900;
+    }
+
+    .dashboard-profile ul.dashboard-menu .list-group-item i.fa {
+        width: 20px !important;
+    }
+
+    .btn-link:after{
+        content: '\f30b';
+        font-family: 'FontAwesome';
+        font-weight: 900;
+    }
+
+    .complete .dasboard-linkage {
+        opacity: .5;
+    }
+
+    .listitem span{
+        color: #fff;
+    }
+
+    @media screen and (min-width: 768px) and (max-width: 991px) {
+        .intro-left {
+            min-height: 1645px;
+        }
+    }
+
+    @media screen and (min-width: 768px) and (max-width: 1199px) {
+        .intro-left > div.position-absolute {
+            top: 120px;
+        }
+    }
+
+    @media screen and (min-width: 992px) and (max-width: 1199px) {
+        .intro {
+            height: unset !important;
+        }
+
+        .intro-right {
+            min-height: 300px !important;
+            height: 300px !important;
+        }
+
+        .intro-left {
+            min-height: 1095px;
+        }
+    }
+
+    @media screen and (max-width: 991px){
+        .intro-right>div {
+            position: relative !important;
+        }
+    }
+</style>
+
+
+
+{% assign aosGroup = 'data-aos="fade-up" data-aos-delay="0" data-aos-easing="ease-in"' %}
+{% assign watchPage = '/online/latest-service' %}
+{[ scheduledcontent scheduleid:'1556,1557,2107,2101,2397,3198' showwhen:'live' ]}
+    {% assign watchPage = 'https://online.cotr.org' %}
+ {[ endscheduledcontent ]}
+
+{% assign isGroupsActive = 'Global' | Attribute:"SmallGroupsInSession" | AsBoolean %}
+{% if CurrentPerson %}
+    {% comment %} Check Filter for Baptism {% endcomment %}
+        {% assign isBaptized = false %}
+        {% assign baptizedDate = CurrentPerson | Attribute:'BaptismDate' %}
+        {% assign baptismIcon = 'fa-tint' %}
+        {% assign baptismTitle = '' %}
+        {% assign baptismLink = '' %}
+        {% assign baptismLinkText = '' %}
+        {% if baptizedDate and baptizedDate != '' %}
+            {% assign isBaptized = true %}
+        {% endif %}
+        {% if isBaptized == true %}
+            {% assign baptismTitle = 'Baptized' %}
+            {% assign baptismLinkText = baptizedDate | Date:'MMM dd, yyyy' %}
+            {% assign baptismActiveClass = 'complete ' %}
+        {% else %}
+            {% assign baptismTitle = 'Get Baptized' %}
+            {% assign baptismLink = '/Baptism' %}
+            {% assign baptismLinkText = 'Register' %}
+        {% endif %}
+
+    {% comment %} Check Filter for Growth Track {% endcomment %}
+        {% assign isGTCompleted = false %}
+        {% assign firstClass = '' %}
+        {% assign secondClass = '' %}
+        {% assign thirdClass = '' %}
+        {% assign forthClass = '' %}
+
+        {% assign firstClassGT = CurrentPerson | Attribute:'GrowthTrack101' %}
+        {% assign firstClassGIFY = CurrentPerson | Attribute:'GodisforYouClassStep1' %}
+        {% if firstClassGT != empty or firstClassGIFY != empty %}
+            {% assign firstClass = '' | Append:firstClassGIFY | Append:firstClassGT %}
+        {% endif %}
+
+        {% assign secondClassOriginal = CurrentPerson | Attribute:'GrowthTrack201'  %}
+        {% assign secondClassNew = CurrentPerson | Attribute:'GrowthTrackStep2_New'  %}
+        {% assign secondClassGIFY = CurrentPerson | Attribute:'GodisforYouClassStep2' %}
+        {% if secondClassOriginal != empty or secondClassNew != empty or secondClassGIFY != empty %}
+            {% assign secondClass = '' | Append:secondClassOriginal | Append:secondClassNew | Append:secondClassGIFY  %}
+        {% endif %}
+
+        {% assign thirdClassOriginal = CurrentPerson | Attribute:'GrowthTrack301' %}
+        {% assign thirdClassNew = CurrentPerson | Attribute:'GrowthTrackStep3_New' %}
+        {% assign thirdClassGify = CurrentPerson | Attribute:'GodisforYouClassStep3' %}
+        {% if thirdClassOriginal != empty or thirdClassNew != empty or thirdClassGify != empty %}
+            {% assign thirdClass = '' | Append:thirdClassOriginal | Append:thirdClassNew | Append:thirdClassGify  %}
+        {% endif %}
+
+        {% assign forthClassGT = CurrentPerson | Attribute:'GrowthTrack401' %}
+        {% assign forthClassGIFY = CurrentPerson | Attribute:'GodisforYouClassStep4' %}
+        {% if forthClassGT != empty or forthClassGIFY != empty %}
+            {% assign forthClass = '' | Append:forthClassGT | Append:forthClassGIFY %}
+        {% endif %}
+
+        {% assign classIcon = 'fa-chart-line' %}
+        {% assign classTitle = 'God is for You Classes' %}
+        {% assign classCount = '' %}
+        {% assign classLink = '' %}
+        {% assign classLinkText = 'Sign Up' %}
+
+        {% if firstClass != '' and secondClass != '' and thirdClass != '' and forthClass != '' %}
+            {% assign isGTCompleted = true %}
+        {% endif %}
+        {% if isGTCompleted == true %}
+            {% assign classLinkText = 'Complete' %}
+            {% assign classCount = '4' %}
+            {% assign classActiveClass = 'complete ' %}
+        {% else %}
+            {% if firstClass == '' %}
+                {% assign classLink = '/my/god-is-for-you-classes/step-1' %}
+                {% assign classLinkText = 'Sign Up' %}
+                {% assign classCount = '0' %}
+            {% elseif secondClass == '' %}
+                {% assign classLink = '/my/god-is-for-you-classes/step-2' %}
+                {% assign classCount = '1' %}
+                {% assign classLinkText = 'Take Next Class' %}
+            {% elseif thirdClass == ''  %}
+                {% assign classLink = '/my/god-is-for-you-classes/step-3' %}
+                {% assign classLinkText = 'Take Next Class' %}
+                {% assign classCount = '2' %}
+            {% elseif forthClass == ''  %}
+                {% assign classLink = '/my/god-is-for-you-classes/step-4' %}
+                {% assign classCount = '3' %}
+                {% assign classLinkText = 'Take Final Class' %}
+            {% endif %}
+        {% endif %}
+    {% comment %} Check Filter for Serving - Group Type: Dream Team  {% endcomment %}
+        {% assign dreamTeams = CurrentPerson | Groups: "23",'All' %}
+        {% assign inDreamTeam = dreamTeams | Size %}
+        {% assign isServing = false %}
+        {% assign servingIcon = 'fa-clock' %}
+        {% assign servingTitle = 'Dream Team' %}
+        {% assign servingLink = '' %}
+        {% assign servingLinkText = '' %}
+        {% if inDreamTeam > 0 %}
+            {% assign isServing = true %}
+        {% endif %}
+        {% if isServing == true %}
+            {% assign servingLinkText = 'Currently Serving' %}
+            {% assign servingActiveClass = 'complete ' %}
+        {% else %}
+            {% assign servingLink = '/growthtrack' %}
+            {% assign servingLinkText = 'Join a Dream Team' %}
+        {% endif %}
+
+    {% comment %} Check Filter for Group - Group Type: Small Group {% endcomment %}
+        {% assign smallGroups = CurrentPerson | Groups: "25",'All' %}
+        {% assign inSmallGroup = smallGroups | Size %}
+        {% assign isGroup = false %}
+        {% assign groupIcon = 'fa-users' %}
+        {% assign groupTitle = 'Small Groups' %}
+        {% assign groupLink = '/groups' %}
+        {% assign groupLinkText = '' %}
+        {% if isGroupsActive == 'true' %}
+            {% if inSmallGroup > 0 %}
+                {% assign isGroup = true %}
+            {% endif %}
+            {% if isGroup == true %}
+                {% assign groupLinkText = 'Join a Small Group' %}
+                {% assign groupActiveClass = 'complete ' %}
+            {% else %}
+                {% assign groupLinkText = 'Find a Group' %}
+            {% endif %}
+        {% else %}
+            {% assign groupLinkText = 'Learn More' %}
+        {% endif %}
+{% endif %}
+
+<div class="intro container-fluid d-block p-3" style="overflow:hidden;background-color:#2D2D2D;">
+    <div class="row m-0"{% if CurrentPerson %} style="min-height:1050px"{% endif %}>
+        <div class="intro-left col-xs-12 col-md-12 col-lg-8 p-5 h-100 position-relative z-10 texture texture-light" style="background-color:#F6F8FA" data-aos="fade-right" data-aos-delay="100" data-aos-duration="500" data-aos-easing="ease-in">
+            <div class="position-absolute left-0 bottom-0 z-10 w-100" data-aos="fade" data-aos-delay="600">
+                <div class="mx-3 mb-3 ml-sm-5 mb-sm-5" style="background-color:#F6F8FA;max-width: 600px;">
+                    <h1 class="display embellishment font-weight-bolder">God is<br> for <span class="bg-primary py-2 px-4" >{% if CurrentPerson%}Me{% else %}You{% endif %}</span></h1>
+                    {% unless CurrentPerson %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="lead mb-4">We exist to lead people to a God who is for them and help them discover His purpose for their life.</p>
+                            </div>
+                        </div>
+                        <a href="/New" class="btn btn-primary">Plan A Visit</a>
+                        <a href="/About" class="btn btn-default btn-outline-dark">About COTR</a>
+                    {% endunless %}
+                </div>
+                {% if CurrentPerson %}
+                    <div class="dashboard row bg-white mx-0" data-aos="fade-up" data-aos-delay="1200" data-duration="2000">
+                        <div class="col-md-3 border-right border-light">
+                            <div class="dashboard-profile d-none d-sm-block py-4">
+                                <div class="text-center">
+                                    <a href="/my" class="d-block mb-3"><img src="{{ CurrentPerson.PhotoUrl | Append:'&w=85&h=85' }}" alt="{{ CurrentPerson }}" class="rounded-circle" style="max-width:85px"/></a>
+                                    <p class="tall">{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}</p>
+                                </div>
+                                {% page where:'ParentPageId == 2341 && DisplayInNavWhen == 0'  iterator:'ChildPages' sort:'Order' securityenabled:'false' %}
+                                    <ul class="dashboard-menu list-style-none no-border pl-0 mx-auto">
+                                        {% for item in ChildPages %}
+                                            {% assign pageIcon = '' %}
+                                            {% if item.IconCssClass and item.IconCssClass != empty %}
+                                                {% assign pageIcon = item.IconCssClass %}
+                                            {% else %}
+                                                {% assign pageIcon = 'fa fa-link' %}
+                                            {% endif %}
+                                            <li class="list-group-item no-border">
+                                                <a href="{{ item.PageRoutes }}">
+                                                    <i class="{{ pageIcon }} o-50 mr-2"></i>
+                                                    <span class="text-body o-60">{{ item.PageTitle | Trim }}</span>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endpage %}
+                            </div>
+                        </div>
+                        <div class="col-md-9 px-5">
+                            <div class="dashboard-steps">
+                                <h5 class="font-weight-bold text-center text-md-left my-5 px-3">Your Purpose</h5>
+                                <div class="d-flex flex-wrap flex-row">
+
+                                    <div class="dashboard-col col-xs-6 col-sm-6 col-md-6 col-lg-3 px-2 mb-3 mb-lg-0">
+                                        <a href="{{ baptismLink }}" class="dashboard-card shadow-lg text-center h-100 {{ baptismActiveClass }}">
+                                            <i class="dashboard-icon fa {{ baptismIcon }} fa-3x mb-4 position-relative"></i>
+                                            <p class="lead mb-3 mb-lg-5">{{ baptismTitle }}</p>
+                                            <span class="dasboard-linkage mt-auto">{{ baptismLinkText }}</span>
+                                        </a>
+                                    </div>
+
+                                    <div class="dashboard-col col-xs-6 col-sm-6 col-md-6 col-lg-3 px-2 mb-3 mb-lg-0">
+                                        <a href="{{ classLink }}" class="dashboard-card shadow-lg text-center h-100 {{ classActiveClass }}">
+                                            <i class="dashboard-icon fa {{ classIcon }} fa-3x mb-4 position-relative"></i>
+                                            <p class="lead mb-3 mb-lg-5">{{ classTitle }}
+                                                <span class="dashboard-byline d-block font-default font-weight-normal small text-body o-50 text-center">{{ classCount }}/4 Classes</span>
+                                            </p>
+                                            <span class="dasboard-linkage mt-auto">{{ classLinkText }}</span>
+                                        </a>
+                                    </div>
+
+                                    <div class="dashboard-col col-xs-6 col-sm-6 col-md-6 col-lg-3 px-2 mb-3 mb-lg-0">
+                                        <a href="{{ servingLink }}" class="dashboard-card shadow-lg text-center h-100 {{ servingActiveClass }}">
+                                            <i class="dashboard-icon fa {{ servingIcon }} fa-3x font-weight-light mb-4 position-relative"></i>
+                                            <p class="lead mb-3 mb-lg-5">{{ servingTitle }}</p>
+                                            <span class="dasboard-linkage mt-auto">{{ servingLinkText }}</span>
+                                        </a>
+                                    </div>
+
+                                    <div class="{{ groupActiveClass }} dashboard-col col-xs-6 col-sm-6 col-md-6 col-lg-3 px-2 mb-3 mb-lg-0">
+                                        <a href="{{ groupLink }}" class="dashboard-card shadow-lg text-center h-100 {{ groupActiveClass }}">
+                                            <i class="dashboard-icon fa {{ groupIcon }} fa-3x mb-4 position-relative"></i>
+                                            <p class="lead mb-3 mb-lg-5">{{ groupTitle }}</p>
+                                            <span class="dasboard-linkage mt-auto">{{ groupLinkText }}</span>
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="intro-right col-xs-12 col-md-12 col-lg-4 h-100 position-relative" style="z-index:5;background-image:url({{ '/Themes/ChurchontheRockV1/Assets/Images/user-dashboard.jpg' | TriumphImgCdn:'fit=crop&auto=compress,format' }});background-size: cover;background-position: center;" data-aos="fade-left" data-aos-delay="600" data-aos-duration="500" data-aos-easing="ease-in">
+            <div class="position-absolute left-0 bottom-0 ml-4 mb-4 text-white" data-aos="fade-right" data-aos-delay="1200" data-aos-easing="ease-in">
+                <h3>Join Us  Every Sunday</h3>
+                <p>Services at 9am, &amp; 11am <br>
+                Español at 2pm<br>
+                900 Birdie Hills Rd St. Peters, MO 63376</p>
+                <a href="{{ watchPage }}" class="btn btn-sm btn-link text-white px-0">Watch online</a>
+            </div>
+        </div>
+    </div>
+</div>

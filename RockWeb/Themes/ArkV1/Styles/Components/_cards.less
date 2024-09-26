@@ -1,0 +1,483 @@
+.card {
+  .rounded-md();
+  border: 2px solid #e6e6e6;
+  overflow: hidden;
+
+  &-footer {
+    background-color: #F8F9FA;
+    border-top: 2px solid #E6E6E6;
+    padding: 16px;
+    .stretch-first-link();
+
+    a:first-child.btn-link {
+      padding-left: 0;
+    }
+  }
+
+  .card-img-header {
+    img {
+      border-top-right-radius: 8px;
+      border-top-left-radius: 8px;
+    }
+  }
+
+  &-horizontal {
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+
+      .card-img-header {
+        flex-basis: 20%;
+        flex-shrink: 0;
+
+        img {
+          border-top-left-radius: 8px;
+          border-bottom-left-radius: 8px;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+      }
+
+      .card-img-top {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+      }
+
+      .card-footer {
+        background-color: transparent;
+        border-top: 0;
+
+        @media (min-width: 768px) {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+
+// 2. Giant Horizontal Card
+.card-giant-horizontal {
+  overflow: hidden;
+  align-items: center;
+  border: 0;
+  padding: 56px 15px;
+  border-radius: 0 !important;
+  margin: 0 -15px;
+
+  @media (min-width: 768px) {
+    .rounded-md();
+    margin: 0;
+  }
+
+  @media (min-width: 992px) {
+    .shadow-xl();
+    flex-direction: row;
+    padding: 56px 25px;
+  }
+
+  .card {
+    &-img-header {
+      width: 100%;
+      min-width: 100%;
+      margin-bottom: 15px;
+
+      &, * {
+        .rounded-md();
+      }
+
+      @media (min-width: 992px) {
+        order: 2;
+        width: 50%;
+        min-width: 50%;
+        margin-bottom: 0;
+      }
+    }
+
+    &-body {
+      padding: 0;
+      margin-bottom: 30px;
+
+      @media (min-width: 992px) {
+        margin-bottom: 48px;
+        margin-right: 40px;
+      }
+    }
+
+    &-footer {
+      padding: 0;
+      text-align: center;
+      background: transparent;
+      display: block;
+      border-top: 0;
+
+      @media (min-width: 768px) {
+        text-align: left;
+      }
+    }
+
+    &-title {
+      margin-bottom: 8px;
+
+      @media (min-width: 992px) {
+        margin-bottom: 30px;
+      }
+    }
+
+    &-subtitle {
+      font-size: 16px;
+      margin-bottom: 28px;
+    }
+  }
+
+  &-flipped {
+    .card {
+      &-img-header {
+        order: 0;
+      }
+
+      &-body {
+        @media (min-width: 992px) {
+          margin-right: 0;
+          margin-left: 40px;
+        }
+      }
+
+      &-footer {
+        @media (min-width: 992px) {
+          margin-left: 40px;
+        }
+      }
+    }
+  }
+}
+
+
+// 2. giant cta cards
+.giant-cta-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  .card-hover();
+  .rounded-md();
+
+  &-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 24px 24px;
+
+    img {
+      width: 33%;
+      min-width: 112px;
+    }
+  }
+
+  &-body {
+    background-color: #00000040;
+    color: #fff;
+    padding: 40px 24px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+
+  &-subtitle {
+    opacity: .8;
+    margin-bottom: 8px;
+  }
+
+  &-title {
+    margin-bottom: 16px;
+
+    @media (min-width: 992px) {
+      margin-right: 50%;
+      margin-bottom: 24px;
+    }
+  }
+
+  &-actions {
+    margin-top: 24px;
+    .stretch-first-link();
+  }
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    .rounded-lg();
+
+    &-img {
+      padding: 24px;
+      width: 32%;
+      min-width: 32%;
+      height: unset;
+
+      img {
+        width: 44%;
+        min-width: 140px;
+      }
+    }
+
+    &-body {
+      padding: 64px 40px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 40px;
+      border-top-right-radius: 40px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    &-img {
+      width: 40%;
+      min-width: 40%;
+    }
+  }
+}
+
+
+// 3. cta cards
+.cta-card {
+  display: block;
+  position: relative;
+  height: 0 !important;
+  padding-bottom: 75%;
+  .card-hover();
+  .rounded-md();
+
+  @media (min-width: 768px) {
+    .rounded-lg();
+  }
+
+  &-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  &-body {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 80px 16px;
+  }
+
+  &-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    height: 100%;
+  }
+
+  &-footer {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+
+    .stretch-first-link();
+  }
+
+  &-subtitle {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  &-title {
+    text-align: center;
+  }
+
+  img.cta-card-title {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+  }
+
+}
+
+
+// 4. Icon Card
+.icon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  .rounded-sm();
+
+  @media (min-width: 768px) {
+    .rounded-md();
+  }
+
+  .shadow-xl();
+
+  &-icon {
+    .shadow-xl();
+  }
+
+  &-body {
+    text-align: center;
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  &-title {
+    margin-bottom: 8px;
+
+    @media (max-width: 767px) {
+      font-size: 18px;
+    }
+  }
+
+  &-text {
+    flex: 1 1 auto;
+    margin-bottom: 0;
+  }
+
+  &-footer {
+    margin-top: 18px;
+
+    @media (min-width: 768px) {
+      margin-top: 24px;
+    }
+
+    .stretch-first-link();
+  }
+
+  &-transparent {
+    padding: 0;
+    border-radius: 0 !important;
+    background-color: transparent;
+    box-shadow: none !important;
+  }
+
+  &-horizontal {
+
+    @media (min-width: 992px) {
+      border: 1px solid #e6e6e6;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: flex-start;
+
+      .icon-card-icon {
+        margin-right: 24px;
+      }
+
+      .icon-card-body {
+        text-align: left;
+        margin: 0;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .icon-card-footer a:first-child.btn-link {
+        padding-left: 0;
+      }
+    }
+  }
+
+  &:not(.icon-card-horizontal) {
+    .icon-card-body {
+      max-width: 80%;
+    }
+  }
+}
+
+
+// 5. CTA Pill
+.cta-pill {
+  padding: 56px 16px 32px;
+
+  @media (min-width: 768px) {
+    padding: 56px 64px;
+    border-radius: 999px;
+  }
+
+  h2 {
+    @media (max-width: 768px) {
+      font-size: 24px;
+      line-height: 36px;
+    }
+  }
+}
+
+
+// 5. Testimonial Card
+.testimonial-card {
+  // todo: replace
+  background-color: #0C1A31;
+  // background-color: @gray-darker;
+  // todo: replace
+  border-radius: 20px;
+  // .rounded-md();
+
+  padding: 40px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 992px) {
+    padding: 32px;
+  }
+
+  &-content {
+    width: 100%;
+    max-width: 768px;
+
+    @media (max-width: 767px) {
+      font-size: 18px;
+    }
+  }
+
+  &-person {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+    }
+
+    img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 5px;
+
+      @media (min-width: 768px) {
+        margin-bottom: 0;
+        margin-right: 16px;
+      }
+    }
+  }
+}

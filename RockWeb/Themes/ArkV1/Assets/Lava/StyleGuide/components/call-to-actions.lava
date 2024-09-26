@@ -1,0 +1,73 @@
+
+<h1 class="mb-4">CTAs</h1>
+
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#positions">Button Positions</a></li>
+    <li><a href="#ctagray">CTA Gray</a></li>
+</ul>
+
+<div class="alert alert-warning">
+    <h4 class="m-0">Headsup!</h4>
+    CTA's should be placed inside a flexbox row i.e. <code>.row.g</code>, since buttons will have a width and height of 100%.</div>
+
+<div class="card mb-4" id="positions">
+    <div class="card-header">
+        <h4 class="m-0">Button Positions</h4>
+    </div>
+{%- capture codeOutput -%}
+<div class="row g g-4">
+    <div class="col-md-6 col-xs-12">
+
+    </div>
+    <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-cta-center btn-gray">Center</button></div>
+</div>
+{%- endcapture -%}
+            <div class="card-body">
+
+            {{ codeOutput }}
+            </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+</div>
+
+
+
+<div class="card mb-4" id="ctagray">
+    <div class="card-header">
+        <h4 class="m-0">CTA Gray</h4>
+    </div>
+{%- capture codeOutput -%}
+<div class="row g g-4">
+    <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-gray"><span>Lead a <span class="underline">Group</span></span> <span class="microcopy">Start your own group today!</span></button></div>
+    <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-cta-bottom btn-gray"><span>Got <span class="underline">Questions</span>?</span> <span class="microcopy">A place for giving microcopy can go here</span></button></div>
+</div>
+{%- endcapture -%}
+            <div class="card-body">
+            {{ codeOutput }}
+            </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+</div>
+
+
+
+<div class="card mb-4" id="ctagray">
+    <div class="card-header">
+        <h4 class="m-0">CTA Callout</h4>
+    </div>
+{%- capture codeOutput -%}
+<div class="row g g-4">
+    <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-callout"><span>Join a Group</span> <span class="microcopy">Collide (5-8th)</span></button></div>
+    <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-callout">Join a Group <span class="microcopy">hsm (9-12th)</span></button></div>
+</div>
+{%- endcapture -%}
+            <div class="card-body">
+            {{ codeOutput }}
+            </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+</div>

@@ -1,0 +1,26 @@
+.modal:not(.rock-modal) {
+    box-shadow: none;
+    border-radius: 8px;
+
+    .modal-header {
+        border-bottom: none;
+    }
+    .modal-footer {
+        border-top: none;
+    }
+    .modal-content {
+        padding: 24px;
+        p {
+            font-weight: 325;
+        }
+    }
+    .modal-body {
+        padding: 0 15px 15px 15px;
+    }
+
+    &.fade.in {
+        width: 600px;
+        margin-left: -300px;
+        top: 40%;
+    }
+}

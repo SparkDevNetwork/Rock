@@ -1,0 +1,172 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/LatestMessage.lava' %} {% endcomment %}
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' %}
+
+{% contentchannelitem where:'ContentChannelId == 11 && StartDateTime < "{{now}}"' limit:'1' iterator:'LatestSeries' sort:'StartDateTime desc' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign latestSeries = LatestSeries | First %}
+
+{% assign latestSeriesChildItems = latestSeries.ChildItems %}
+{% for childItem in latestSeriesChildItems %}
+    {% assign startDate = childItem.ChildContentChannelItem.StartDateTime | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' %}
+
+    {% if startDate < now %}
+        {% assign latestMessageObj = childItem.ChildContentChannelItem %}
+    {% else %}
+        {% break %}
+    {% endif %}
+{% endfor %}
+
+{% assign seriesTitle = latestSeries.Title %}
+{% assign seriesImage = latestSeries | Attribute:'SeriesImage','RawValue' | ImageUrl %}
+{% assign seriesSlug = latestSeries.PrimarySlug %}
+{% assign messageDate = latestMessageObj.StartDateTime | Date:'MMM d' %}
+{% assign messageDateLong = latestMessageObj.StartDateTime | Date:'MMM d, yyyy' %}
+{% assign messageTitle = latestMessageObj.Title %}
+{% assign messageSlug = latestMessageObj.PrimarySlug %}
+{% assign messageDescription = latestMessageObj.Content | Truncate:200 %}
+{% assign messageVideo = latestMessageObj | Attribute:'Video','Object' %}
+{% assign messageImg = messageVideo.DefaultThumbnailUrl %}
+{% assign messageSpeaker = latestMessageObj | Attribute:'Speaker' %}
+
+
+{% if messageImg and messageImg != empty %}
+    {% assign messageImg = messageImg | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+{% else %}
+    {% assign messageImg = seriesImage | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+{% endif %}
+
+{% if CurrentPerson %}
+    {% contentchannelitem where:'ContentChannelId == 33 && StartDateTime < "{{now}}" && ExpireDateTime > "{{now}}"' expression:'StartDateTime < "{{ now }}" && ExpireDateTime > "{{ now }}"' sort:'ExpireDateTime' limit:'1' iterator:'FeaturedEvents' securityenabled:'false' %}
+        {% for item in FeaturedEvents %}
+            {% if forloop.first %}
+                {% assign featuredEventId = item | Attribute:'Event','Id' %}
+            {% else %}
+                {% break %}
+            {% endif %}
+        {% endfor %}
+    {% endcontentchannelitem %}
+
+    {% if featuredEventId and featuredEventId != empty %}
+        {% eventitemoccurrence where:'EventItemId == "{{ featuredEventId }}"' expression:'NextStartDateTime > "{{ now }}"' sort:'NextStartDateTime' limit:'1' iterator:'FeaturedEventOccurrences' sort:'Order' securityenabled:'false' %}
+        {% endeventitemoccurrence %}
+
+        {% assign featuredEventObj = FeaturedEventOccurrences | First %}
+        {% assign featuredEventImage = featuredEventObj.EventItem.Photo.Guid | ImageUrl | TriumphImgCdn:'w=1200&h=675&fit=crop&auto=compress,format' %}
+        {% assign featuredEventDate = featuredEventObj.NextStartDateTime | Date:'MMM d' %}
+        {% assign featuredEventTime = featuredEventObj.NextStartDateTime | Date:'H:mm tt' %}
+        {% assign featuredEventName = featuredEventObj.EventItem.Name %}
+        {% assign featuredEventOccurrenceId = featuredEventObj.EventItemId %}
+    {% endif %}
+
+{% endif %}
+
+{%- capture latestMessage -%}
+    <div class="special-card special-card-16x9 hide-buttons-mobile bg-dark" style="background-image:url({{ messageImg }});">
+        <div class="special-card-content">
+            <div class="special-card-details text-white">
+                <span class="d-block special-card-subheading">{{ messageDate }} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ seriesTitle }}</span>
+                <h4 class="special-card-heading">{{ messageTitle }}</h4>
+            </div>
+            <div class="special-card-actions">
+                <a href="/v1/series/{{ seriesSlug }}/{{ messageSlug }}" class="btn btn-primary btn-opaque">View Details</a>
+            </div>
+        </div>
+    </div>
+{%- endcapture -%}
+
+{%- capture latestMessageStripped -%}
+    <div class="special-card special-card-16x9 hide-buttons-mobile special-card-no-overlay bg-dark" style="background-image:url({{ messageImg }}); box-shadow: 20px -15px 30px -10px rgba(12, 41, 57, 0.2);">
+        <div class="special-card-content">
+        </div>
+    </div>
+{%- endcapture -%}
+
+{% if CurrentPerson and featuredEventName and featuredEventName != empty %}
+    {%- capture featuredEvent -%}
+        <div class="special-card special-card-16x9 hide-buttons-mobile bg-dark" style="background-image:url({{ featuredEventImage }});">
+            <div class="special-card-content">
+                <div class="special-card-details text-white">
+                    <span class="d-block special-card-subheading">{{ featuredEventDate }} &nbsp; <i class="venture-diamond"></i> &nbsp; {{ featuredEventTime }}</span>
+                    <h4 class="special-card-heading">{{ featuredEventName }}</h4>
+                </div>
+                <div class="special-card-actions">
+                    <a href="/v1/calendar/event/{{ featuredEventOccurrenceId }}" class="btn btn-primary btn-opaque">View Details</a>
+                </div>
+            </div>
+        </div>
+    {%- endcapture -%}
+
+{% else %}
+    {%- capture latestMessageButtons -%}
+        <div class="mt-3 mt-md-5">
+            <a href="/v1/series/{{ seriesSlug }}/{{ messageSlug }}" class="btn btn-primary btn-grow">Watch Now <i class="fa fa-play ml-2"></i></a>
+            <a href="/v1/media" class="btn btn-default btn-grow">See all Messages</a>
+        </div>
+    {%- endcapture -%}
+
+    {%- capture latestMessageDetail -%}
+        <h4 class="text-primary accent accent-invite mb-2">Our Latest Message</h4>
+        <h2>{{ messageTitle }}</h2>
+        <div class="pb-4 pt-0 py-md-3"></div>
+        <p class="m-0">{{ messageDescription }}</p>
+        <div class="py-3"></div>
+        {% comment %} todo: update url (v1) {% endcomment %}
+        <p class="m-0">
+            <strong class="date">{{ messageDateLong }}</strong>
+            <span class="text-muted"> &nbsp; <i class="venture-diamond text-muted"></i> &nbsp; </span>
+            <a href="/v1/series/{{ seriesSlug }}" class="font-weight-bold">{{ seriesTitle }}</a>
+            <span class="text-muted"> &nbsp; <i class="venture-diamond text-muted"></i> &nbsp; </span>
+            {% comment %} todo: add back when we can link this {% endcomment %}
+            {% comment %} <a href="#" class="font-weight-bold">{{ messageSpeaker }}</a> {% endcomment %}
+            <b>{{ messageSpeaker }}</b>
+        </p>
+    {%- endcapture -%}
+{% endif %}
+
+{% if CurrentPerson %}
+    <div class="py-3"></div>
+    <div class="py-md-3"></div>
+{% else %}
+    <div class="py-5"></div>
+{% endif %}
+
+
+{% if CurrentPerson and featuredEventName and featuredEventName != empty %}
+    {%- capture colOneClasses -%}col-xs-12 col-sm-12 col-md-6{%- endcapture -%}
+    {%- capture colTwoClasses -%}col-xs-12 col-sm-12 col-md-6{%- endcapture -%}
+{% else %}
+    {%- capture colOneClasses -%}col-xs-12 col-sm-12 col-md-5 col-lg-4{%- endcapture -%}
+    {%- capture colTwoClasses -%}col-xs-12 col-sm-12 col-md-6 col-lg-7 col-md-push-1{%- endcapture -%}
+{% endif %}
+
+<div class="container container-lg" id="latest-message-aos-anchor">
+    <div class="row d-flex flex-wrap">
+        <div class="{{ colOneClasses }} mb-4 mb-md-0" data-aos="fade-right" data-aos-anchor="#latest-message-aos-anchor">
+            {% if CurrentPerson and featuredEventName and featuredEventName != empty %}
+                <h3 class="accent accent-invite accent-lightest mb-3">Latest Message</h3>
+                {{ latestMessage }}
+            {% else %}
+                {{ latestMessageDetail }}
+                <div class="d-none d-md-block">
+                    {{ latestMessageButtons }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="{{ colTwoClasses }}" data-aos="fade-left" data-aos-delay="200" data-aos-anchor="#latest-message-aos-anchor">
+            {% if CurrentPerson and featuredEventName and featuredEventName != empty %}
+                <h3 class="accent accent-invite accent-lightest mb-3">Upcoming at Venture</h3>
+                {{ featuredEvent }}
+            {% else %}
+                {{ latestMessageStripped }}
+                <div class="d-block d-md-none">
+                    {{ latestMessageButtons }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="py-3"></div>
+<div class="py-md-3"></div>

@@ -1,0 +1,52 @@
+// out:false
+
+
+.page-transition-curve {
+  z-index: 10;
+  transform: translateY(-1px);
+
+  &, &-inner {
+    height: 100px;
+
+    @media (min-width: 992px) {
+      height: 200px;
+    }
+  }
+
+  .page-dip {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 180px;
+    top: 46%;
+
+    @media (min-width: 500px) {
+      top: 48%;
+    }
+
+    @media (min-width: 768px) {
+      top: 50%;
+    }
+
+    @media (min-width: 768px) {
+      top: 50%;
+    }
+
+    @media (min-width: 992px) {
+      top: 60%;
+      width: 303px;
+    }
+
+    @media (min-width: 1500px) {
+      top: 61%;
+    }
+  }
+}
+
+
+
+
+
+
+

@@ -1,0 +1,147 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/typography-and-colors.lava' %}{%endcomment%}
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% assign colors = 'color,metallic-silver,roman-silver,nickel,dolphin-gray,spirit-silk-dark,isabelline,soft-nickel,sandstone,cinereous,spirit-silk,early-fawn,misty-moss,smoky-emerald,cavern' %}
+{% assign colorsArray = colors | Split:',' %}
+
+{% assign navItems = 'headers-and-subheaders,body-text-and-blockquotes,text-colors,background-colors' %}
+{% include '~~/Assets/Lava/StyleGuide/Components/component-heading.lava', heading:'Typography & Colors', navitems:navItems %}
+
+
+{% comment %} ~ Capture Headers and Subheaders Section {% endcomment %}
+
+{% capture headersAndSubheaders %}
+<h1 class="display">This is an H1 Display</h1>
+
+<h2 class="display">This is an H2 Display</h2>
+
+<h1>H1 - This is a Header</h1>
+
+<h2>H2 - This is a Header</h2>
+
+<h3>H3 - This is a Header</h3>
+
+<h4>H4 - This is a SubHeader</h4>
+
+<h5>H5 - This is a SubHeader</h5>
+
+<h6>H6 - This is a SubHeader</h6>
+{% endcapture %}
+
+{% capture headersAndSubheadersEscaped %}
+{{ codeOpen }}
+{{ headersAndSubheaders | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Capture Body and Blockquotes Section {% endcomment %}
+
+{% capture bodyAndBlockquotes %}
+<p class="lead"><strong>Lead: 20px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<p><strong>Body 18px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<p class="small"><strong>Small 15px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<blockquote>
+  <i class="fa fa-quote-left"></i>
+  <span>Source Name - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+  <footer class="mb-0">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+</blockquote>
+
+{% endcapture %}
+
+{% capture bodyAndBlockquotesEscaped %}
+  {{ codeOpen }}
+  {{ bodyAndBlockquotes | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Text Colors Section {% endcomment %}
+
+{%- capture textColors -%}
+{% for color in colorsArray %}
+<div class="text-{{ color }} mb-3">This is an example of the <code>.text-{{ color }}</code> class</div>
+{% endfor %}
+{%- endcapture -%}
+
+{% comment %} {% capture textColors %}
+<div class="text-green mb-3">This is an example of the <code>.text-green</code> class</div>
+<div class="text-magenta mb-3">This is an example of the <code>.text-magenta</code> class</div>
+<div class="text-pink mb-3">This is an example of the <code>.text-pink</code> class</div>
+<div class="text-seagreen mb-3">This is an example of the <code>.text-seagreen</code> class</div>
+<div class="text-teal mb-3">This is an example of the <code>.text-teal</code> class</div>
+<div class="text-orange mb-3">This is an example of the <code>.text-orange</code> class</div>
+<div class="text-gold mb-3">This is an example of the <code>.text-gold</code> class</div>
+<div class="text-muted mb-3">This is an example of the <code>.text-muted</code> class</div>
+<div class="bg-seagreen p-3">
+  <div class="text-white">This is an example of the <code>.text-white</code> class</div>
+</div>
+{% endcapture %} {% endcomment %}
+
+{% capture textColorsEscaped %}
+  {{ codeOpen }}
+  {{ textColors | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+{% comment %} ~ Capture Background Colors Section {% endcomment %}
+
+{%- capture backgroundColors -%}
+<div class="row d-flex flex-wrap">
+{% for color in colorsArray %}
+  <div class="col-xs-12 col-sm-6">
+    <div class="h-100 d-flex flex-column">
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-{{ color }}</code> class</div>
+      <div class="bg-{{ color }}" style="height: 64px;"></div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{%- endcapture -%}
+
+{% capture backgroundColorsEscaped %}
+  {{codeOpen}}
+  {{ backgroundColors | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<section id="headers-and-subheaders">
+  <h3 class="sg-section-header">Headers and Subheaders</h3>
+  {{ headersAndSubheaders }}
+  {{ headersAndSubheadersEscaped }}
+
+</section>
+
+<section id="body-text-and-blockquotes">
+  <hr class="my-5">
+  <h3 class="sg-section-header">Body Text and Blockquotes</h3>
+  {{ bodyAndBlockquotes }}
+  {{ bodyAndBlockquotesEscaped }}
+
+</section>
+
+<section id="text-colors">
+  <hr class="my-5">
+  <h3 class="sg-section-header">Text Colors</h3>
+  {{ textColors }}<br>
+  {{ textColorsEscaped }}
+
+</section>
+
+<section id="background-colors">
+  <hr class="my-5">
+  <h3 class="sg-section-header">Background Colors</h3>
+  {{ backgroundColors }}<br>
+  {{ backgroundColorsEscaped }}
+</section>

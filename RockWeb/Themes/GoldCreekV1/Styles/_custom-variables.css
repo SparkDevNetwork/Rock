@@ -1,0 +1,22 @@
+/*
+    Rock Theme Styles
+
+    1. Colors
+    2. Utilities
+
+*/
+.transition {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  transform: scale(1.01);
+}
+.shadow-sm {
+  box-shadow: 0px 4px 12px 1px rgba(21, 21, 21, 0.15) !important;
+}
+.shadow-md {
+  box-shadow: 0px 25px 30px -15px rgba(0, 0, 0, 0.25) !important;
+}
+.shadow-lg {
+  box-shadow: 0px 45px 60px -30px rgba(0, 0, 0, 0.5) !important;
+}

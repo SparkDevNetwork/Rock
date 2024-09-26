@@ -1,0 +1,26 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SocialShare.lava' %} {% endcomment %}
+
+{%- capture justifyClasses -%}
+    {% if justify and justify != empty %}justify-content-{{ justify }}{% endif %}{% if justifyMd and justifyMd != empty %} justify-content-md-{{ justifyMd }}{% endif %}
+{%- endcapture -%}
+
+<div class="d-flex flex-wrap align-items-center {{ justifyClasses }} w-100">
+    <script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+    <ul class="social-share">
+    	<li class="mr-2">
+    		<a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" target="_blank" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook bg-inkwell" title="" data-original-title="Share via Facebook">
+    			<i class="fa fa-fw fa-facebook"></i>
+    		</a>
+    	</li>
+    	<li class="mr-2">
+    		<a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" target="_blank" class="socialicon socialicon-twitter bg-inkwell" title="" data-original-title="Share via Twitter">
+    			<i class="fa fa-fw fa-twitter"></i>
+    		</a>
+    	</li>
+    	<li>
+    		<a href="mailto:?Subject={{ 'Global' | Page:'Url' | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}" target="_blank"  class="socialicon socialicon-email bg-inkwell" title="" data-original-title="Share via Email">
+    			<i class="fa fa-fw fa-envelope-o"></i>
+    		</a>
+    	</li>
+    </ul>
+</div>

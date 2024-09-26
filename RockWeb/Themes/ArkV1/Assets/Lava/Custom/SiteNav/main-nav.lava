@@ -1,0 +1,151 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNav/main-nav.lava' %} {% endcomment %}
+
+{% assign data = 'ArkPrimaryNavigation' | PersistedDataset %}
+{% assign loggedIn = false %}
+{% if CurrentPerson %}
+    {% assign loggedIn = true %}
+{% endif %}
+
+<div class="js-main-nav main-nav">
+    <ul class="nav navbar-nav d-none d-sm-block main-menu">
+        {% for item in data %}
+            {% assign visibility = item.Visibility %}
+            {% assign showItem = false %}
+
+            {% if visibility == 'All' %}
+                {% assign showItem = true %}
+            {% elseif visibility == 'Logged In Users' and loggedIn %}
+                {% assign showItem = true %}
+            {% elseif visibility == 'Logged Out Users' and loggedIn == false %}
+                {% assign showItem = true %}
+            {% endif %}
+
+            {% if showItem %}
+                {% assign primaryPageTitle = item.PrimaryPage.Title %}
+                {% assign primaryPageRoute = item.PrimaryPage.Route %}
+                {% assign primaryPageClass = item.PrimaryPage.Class %}
+
+                <li>
+                    <a href="/{{ primaryPageRoute }}" data-mega="{{ primaryPageClass }}" class="js-mega-super">{{ primaryPageTitle | Upcase }}</a>
+                </li>
+            {% endif %}
+
+        {% endfor %}
+    </ul>
+
+    <div id="mega-menu" class="mega-menu js-mega-menu">
+        <div class="mega-menu-cta-section">
+            {% comment %} todo add non logged in default {% endcomment %}
+            <div class="mega-menu-cta-item mega-menu-cta-item-default" data-mega="default">
+                <img src="/Themes/ArkV1/Assets/Images/mega-menu-cta-bg.png" alt="" class="mega-menu-cta-item-bg">
+                <div class="mega-menu-cta-item-overlay" style="background-color:rgba(24, 100, 234, .9)"></div>
+                <div class="position-relative w-100 h-100 d-flex flex-column justify-content-between">
+                    <div class="top">
+                        <h6 class="text-white mb-2">New Here? Start Here.</h6>
+                        <p class="text-white">We are excited you are here! Learn more about The Ark and Plan a Visit Today!</p>
+                    </div>
+                    <div class="mega-menu-cta-item-footer">
+                        <a href="#" class="text-white text-link">Plan a Visit</a>
+                    </div>
+                </div>
+            </div>
+
+            {% for item in data %}
+                {% assign visibility = item.Visibility %}
+                {% assign showItem = false %}
+
+                {% if visibility == 'All' %}
+                    {% assign showItem = true %}
+                {% elseif visibility == 'Logged In Users' and loggedIn %}
+                    {% assign showItem = true %}
+                {% elseif visibility == 'Logged Out Users' and loggedIn == false %}
+                    {% assign showItem = true %}
+                {% endif %}
+
+                {% if showItem %}
+
+                    {% assign showCustomCTA = item.CTA.ShowCustomCTA | AsBoolean %}
+
+                    {% if showCustomCTA %}
+                        {% assign primaryPageClass = item.PrimaryPage.Class %}
+                        {% assign customCTAHeading = item.CTA.Heading %}
+                        {% assign customCTAContent = item.CTA.Content %}
+                        {% assign customCTALinkText = item.CTA.LinkText %}
+                        {% assign customCTALinkUrl = item.CTA.LinkUrl %}
+                        {% assign customCTALinkNewTab = item.CTA.LinkNewTab | AsBoolean %}
+                        {% assign customCTAOverlayColor = item.CTA.OverlayColor %}
+
+                        <div class="mega-menu-cta-item mega-menu-cta-item-custom js-mega-menu-cta-item-custom" data-mega="{{ primaryPageClass }}">
+                            <img src="/Themes/ArkV1/Assets/Images/mega-menu-cta-bg.png" alt="" class="mega-menu-cta-item-bg">
+                            <div class="mega-menu-cta-item-overlay o-90" style="background-color:{{ customCTAOverlayColor }};"></div>
+
+                            <div class="position-relative w-100 h-100 d-flex flex-column justify-content-between">
+                                <div class="top">
+                                    <h6 class="text-white mb-2">{{ customCTAHeading }}</h6>
+                                    <p class="text-white">{{ customCTAContent }}</p>
+                                </div>
+                                <div class="mega-menu-cta-item-footer">
+                                    <a href="{{ customCTALinkUrl }}" class="text-white text-link"{% if customCTALinkNewTab %} target="_blank"{% endif %}>{{ customCTALinkText }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+            {% endfor %}
+        </div>
+
+        <div class="mega-menu-subnav-section js-mega-menu-subnav-section">
+
+            {% for item in data %}
+                {% assign visibility = item.Visibility %}
+                {% assign showItem = false %}
+
+                {% if visibility == 'All' %}
+                    {% assign showItem = true %}
+                {% elseif visibility == 'Logged In Users' and loggedIn %}
+                    {% assign showItem = true %}
+                {% elseif visibility == 'Logged Out Users' and loggedIn == false %}
+                    {% assign showItem = true %}
+                {% endif %}
+
+                {% if showItem %}
+
+                    {% assign primaryPageTitle = item.PrimaryPage.Title %}
+                    {% assign primaryPageRoute = item.PrimaryPage.Route %}
+                    {% assign primaryPageClass = item.PrimaryPage.Class %}
+                    {% assign subNavs = item.SubNavs %}
+
+                    <nav class="mega-menu-subnav-item js-mega-menu-subnav-item" data-mega="{{ primaryPageClass }}">
+                        {% for subNav in subNavs %}
+                            {% assign subSubNavs = subNav.SubNavigation %}
+                            {% assign count = 0 %}
+                            {% assign subSubNavsSize = subSubNavs | Size %}
+                            {% assign subSubNavsHalf = subSubNavsSize | DividedBy:2 | Ceiling %}
+
+                            <div>
+                                <a href="/{{ subNav.HeaderPage.Route }}" class="mega-menu-subnav-heading">{{ subNav.HeaderPage.Title }}</a>
+                                <div class="d-flex">
+                                    <ul>
+                                        {% for subSubNav in subSubNavs %}
+                                            <li><a href="/{{ subSubNav.Route }}" class="text-white text-link">{{ subSubNav.Title }}</a></li>
+
+                                            {% assign count = count | Plus:1 %}
+                                            {% if subSubNavsSize > 6 and count == subSubNavsHalf %}
+                                                </ul>
+                                                <ul>
+                                            {% endif %}
+
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </nav>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+    </div>
+
+</div>

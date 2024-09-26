@@ -1,0 +1,26 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/_SiteLogin.lava' %} {% endcomment %}
+<div class="d-flex align-items-center">
+    <a href="/give" class="btn btn-primary btn-contribute rounded-sm d-none d-sm-block">GIVE</a>
+    {% if Context.Campus and Context.Campus != empty %}
+        <div class="site-search-wrapper d-none d-lg-flex align-items-center">
+            <input type="text" autocomplete="off" tabindex="-1" class="search-input" aria-label="Site wide search input" id="mobile-search-input" placeholder="Search" value="">
+        </div>
+    {% endif %}
+    {% if CurrentPerson %}
+        <div class="dropdown user-menu">
+            {% if CurrentPerson.PhotoId and CurrentPerson.PhotoId != empty %}
+                <button type="button" class="btn btn-default btn-nav btn-user has-photo" data-toggle="dropdown" aria-haspopup="menu" aria-label="View profile and more" aria-expanded="false">
+                    <img src="/GetImage.ashx?Id={{ CurrentPerson.PhotoId }}&w=128&h=128" alt="">
+                </button>
+            {% else %}
+                <button type="button" class="btn btn-default btn-nav btn-user" data-toggle="dropdown" aria-haspopup="menu" aria-label="View profile and more" aria-expanded="false">
+                    <i class="fa fa-user text-white" style="font-size: 24px;"></i>
+                </button>
+            {% endif %}
+            {% include '~~/Assets/Lava/Custom/SiteNavDropdown.lava', rootPageId:'819', orientation:'right' %}
+        </div>
+    {% else %}
+        <div class="d-none d-lg-block"><a href="/login" class="btn btn-default btn-light">Login</a></div>
+        <a href="/login" class="d-lg-none btn-user btn-nav text-white"><i class="fa fa-user-circle" style="font-size: 36px; margin-right: 30px;"></i></a>
+    {% endif %}
+</div>

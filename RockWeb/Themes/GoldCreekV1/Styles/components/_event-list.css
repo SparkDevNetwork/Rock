@@ -1,0 +1,47 @@
+.event-list {
+  padding: 53px 15px 15px;
+}
+@media screen and (min-width: 992px) {
+  .event-list {
+    padding: 60px 30px 45px;
+    border-radius: 8px;
+  }
+}
+.event-list-item {
+  background: rgba(0, 0, 0, 0.5);
+  min-height: 178px;
+  box-shadow: 0px 25px 30px -15px rgba(0, 0, 0, 0.25) !important;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+}
+.event-list-item:hover {
+  transform: scale(1.01);
+}
+@media screen and (min-width: 992px) {
+  .event-list-item {
+    border-radius: 0;
+  }
+}
+.event-list-info {
+  margin-left: 7px;
+}
+.event-list-icon {
+  opacity: 25%;
+}
+.event-list-icon i {
+  font-size: 43px;
+}
+.event-list-name {
+  font-weight: 500;
+  font-size: 20px;
+}
+.event-list-month {
+  font-size: 20px;
+  font-weight: 500;
+  margin-right: 4px;
+}
+.event-list-day {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 40px;
+}

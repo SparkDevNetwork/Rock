@@ -1,0 +1,169 @@
+{% comment %}{% include '~~/Assets/Lava/styleguide/components/cards.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Standard Cards {% endcomment %}
+{% capture standardCards %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6">
+        <div class="card">
+            <img src="https://via.placeholder.com/800x450" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture standardCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Standard Cards</blockquote>
+{{ standardCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Linked Cards {% endcomment %}
+
+{% capture linkedCards %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6">
+        <div class="card card-linked">
+            <img src="https://via.placeholder.com/800x450" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-default btn-dark stretched-link">Subscribe</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture linkedCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Linked Cards</blockquote>
+{{ linkedCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Same Height Cards {% endcomment %}
+
+{% capture sameHeightCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">Card Title</h5>
+                <p>Lorem ipsum ipsum dolor sit amet consectetur qui itaque, ea m minus ut ipsum dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">Card Title</h5>
+                <p>Lorem ipsum dolor ipsum dolor sit amet consectetur qui itaque, ea m minus ut sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture sameHeightCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Same Height Cards Cards</blockquote>
+{{ sameHeightCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Giant Cards {% endcomment %}
+
+{% capture giantCards %}
+<div class="giant-card mb-3">
+    <div class="giant-card-img-wrap">
+        <div class="giant-card-img">
+            <img src="https://via.placeholder.com/800x800" alt="">
+        </div>
+    </div>
+    <div class="giant-card-body">
+        <div class="text-uppercase giant-card-subtitle">Giant Card Sub Title</div>
+        <div class="text-uppercase giant-card-title">Giant Card</div>
+        <div class="giant-card-content">
+            Lorem ipsum ipsum dolor dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!
+        </div>
+    </div>
+</div>
+
+<div class="giant-card giant-card-right mb-3 card-linked card-hover">
+    <div class="giant-card-img-wrap">
+        <div class="giant-card-img">
+            <img src="https://via.placeholder.com/800x800" alt="">
+        </div>
+    </div>
+    <div class="giant-card-body">
+        <div class="text-uppercase giant-card-subtitle">Giant Card Sub Title</div>
+        <div class="text-uppercase giant-card-title">Giant Card</div>
+        <div class="giant-card-content">
+            Lorem ipsum ipsum dolor dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!
+        </div>
+        <a href="#" class="btn btn-primary btn-celebrate stretched-link">Celebrate</a>
+        <a href="#" class="btn btn-default btn-celebrate position-relative z-10">Celebrate Again</a>
+    </div>
+</div>
+
+{% endcapture %}
+
+{% capture giantCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Giant Cards Cards</blockquote>
+{{ giantCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3>Standard Cards</h3>
+
+{{ standardCards }}
+
+{{ standardCardsEscaped }}
+
+<hr class="my-5">
+
+<h3>Linked Cards</h3>
+
+{{ linkedCards }}
+
+{{ linkedCardsEscaped }}
+
+<hr class="my-5">
+
+<h3>Same Height Cards</h3>
+
+{{ sameHeightCards }}
+
+{{ sameHeightCardsEscaped }}
+
+<hr class="my-5">
+
+<h3>Giant Cards</h3>
+
+{{ giantCards }}
+
+{{ giantCardsEscaped }}

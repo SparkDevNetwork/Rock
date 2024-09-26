@@ -1,0 +1,19 @@
+{% assign subNavigationItemsObj = CurrentPage | Attribute:'SubNavigationItems','Object' %}
+{% assign subNavigationItems = subNavigationItemsObj.AttributeMatrixItems %}
+
+{% if subNavigationItems and subNavigationItems != empty %}
+    <nav class="primary-subnavigation" data-aos="fade-down">
+        <ul class="list-unstyled">
+            {% for subNavigationItem in subNavigationItems %}
+                {% assign title = subNavigationItem | Attribute:'Title' %}
+                {% assign url = subNavigationItem | Attribute:'Url' %}
+                {% assign newTab = subNavigationItem | Attribute:'NewTab' | AsBoolean %}
+
+                <li class="primary-subnavigation-item">
+                    <a href="{{ url }}"{% if newTab %} target="_blank"{% endif %}>{{ title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    <hr class="d-md-none">
+{% endif %}

@@ -1,0 +1,342 @@
+/*
+    Rock Theme Styles
+
+    1. Card
+    2. Billboard Cards
+    3. Giant Cards
+    4. Person Giant Cards
+
+*/
+
+// 1. Card
+// -------------------------
+.card {
+  border-radius: 8px !important;
+  padding: 0 0 15px 0;
+  border: 0;
+  .shadow-sm();
+
+  &-linked {
+    .transition();
+    .card-hover();
+    position: relative;
+  }
+
+  &-img-top {
+    border-radius: 8px 8px 0 0 !important;
+  }
+
+  &-body {
+    padding: 20px 20px 30px;
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &-title {
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &-footer {
+    background-color: transparent;
+    border-top: 0;
+    padding: 0 20px;
+
+  }
+}
+
+
+// 2. Billboard Cards
+// -------------------------
+.billboard-cards-component {
+    .billboard {
+
+        &-banner {
+            padding:60px 15px 190px;
+            margin-bottom: -130px;
+
+            h4.display {
+                @media screen and (max-width: 991px) {
+                    font-size: 36px;
+                }
+            }
+
+            @media screen and (min-width: 992px) {
+                padding:93px 15px 190px;
+                margin-bottom: -104px;
+            }
+        }
+
+        &-cards {
+            padding: 0 25px;
+
+            @media screen and (min-width: 992px) {
+                padding: 0 54px;
+            }
+        }
+
+        &-card {
+            text-decoration: none !important;
+            position: relative;
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            .shadow-lg();
+            .rounded-md();
+            overflow: hidden !important;
+
+            &-content {
+                position: absolute;
+                padding: 0 15px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                .transition();
+
+                &.has-subtitle {
+                  transform: translate(-50%, calc(~'-50% + 19px'));
+                }
+            }
+
+            &-title {
+                border-bottom: 4px solid @gc-grey;
+            }
+
+            &-subtitle {
+              margin-top: 14px;
+              overflow: hidden;
+              font-size: 16px;
+
+
+              &-inner {
+                .transition();
+                transition-delay: .2s;
+                transform-origin: top;
+                transform: translateY(-110%);
+                display: block;
+                position: relative;
+
+                &::after {
+                  font-family: 'FontAwesome';
+                  content: '\f35a';
+                  position: absolute;
+                  left: calc(~'100% + 10px');
+                  top: 50%;
+                  transform: translateY(-50%);
+                  font-size: 12px;
+                  font-weight: 100;
+                }
+
+              }
+            }
+
+            img {
+                .transition();
+                .rounded-md();
+            }
+
+            &:hover {
+              img {
+                filter: blur(25px);
+              }
+
+              .billboard-card-content.has-subtitle {
+                transform: translate(-50%, -50%);
+              }
+
+             .billboard-card-subtitle {
+                &-inner {
+                  transform: translateY(0);
+                }
+              }
+            }
+        }
+    }
+}
+
+
+// 3. Giant Cards
+// -------------------------
+.giant-card {
+    padding: 20px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: #ffffff;
+    .rounded-md();
+
+    &-img-wrap {
+        width: 100%;
+        margin-bottom: 24px;
+
+        @media screen and (min-width: 992px) {
+            width: 45%;
+            margin-bottom: 0;
+        }
+    }
+
+    &-img {
+        height: 0;
+        padding-bottom: 100%;
+        position: relative;
+
+        img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            .rounded-md();
+        }
+    }
+
+    &-body {
+        width: 100%;
+
+        @media screen and (min-width: 992px) {
+            width: 55%;
+            padding: 0 16px 0;
+        }
+    }
+
+    &-title {
+        font-weight: 900;
+        font-size: 36px;
+        margin-bottom: 15px;
+        line-height: 1;
+
+
+        @media screen and (min-width: 992px) {
+            font-size: 56px;
+            margin-bottom: 30px;
+            margin-right: 60px;
+
+        }
+    }
+
+    &-subtitle {
+        font-weight: 500;
+        font-size: 16px;
+        margin-bottom: 8px;
+        line-height: 1;
+
+        @media screen and (min-width: 992px) {
+            font-weight: 700;
+            font-size: 28px;
+        }
+    }
+
+    &-content {
+        margin-bottom: 40px;
+
+        @media screen and (min-width: 992px) {
+            margin-bottom: 30px;
+            margin-right: 64px;
+        }
+    }
+
+    &-right {
+        .giant-card-img-wrap {
+            @media screen and (min-width: 992px) {
+                order: 2;
+            }
+        }
+
+        .giant-card-body {
+            @media screen and (min-width: 992px) {
+                padding-left: 0;
+                order: 1;
+            }
+        }
+    }
+}
+
+
+// 4. Person Giant Cards
+// -------------------------
+
+.person-giant-card {
+    padding: 15px 15px 23px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: #ffffff;
+    .rounded-md();
+
+    @media screen and (min-width: 768px) {
+        padding: 44px 30px;
+    }
+
+    &-img-wrap {
+        width: 100%;
+        margin-bottom: 24px;
+
+        @media screen and (min-width: 768px) {
+            width: 45%;
+            margin-bottom: 0;
+        }
+    }
+
+    &-img {
+        height: 0;
+        padding-bottom: 100%;
+        position: relative;
+
+        img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            .rounded-md();
+            .shadow-lg();
+        }
+    }
+
+    &-body {
+        width: 100%;
+
+        @media screen and (min-width: 768px) {
+            width: 55%;
+            padding: 0 16px 0;
+        }
+    }
+
+    &-meet {
+        font-size: 32px;
+        font-weight: 900;
+    }
+
+    &-title {
+        font-weight: 900;
+        font-size: 36px;
+        margin-bottom: 15px;
+        line-height: 1;
+
+
+        @media screen and (min-width: 768px) {
+            font-size: 56px;
+            margin-right: 60px;
+
+        }
+    }
+
+    &-subtitle {
+        font-weight: 700;
+        font-size: 24px;
+        margin-bottom: 30px;
+        line-height: 1;
+
+        @media screen and (min-width: 768px) {
+            margin-bottom: 44px;
+        }
+    }
+}

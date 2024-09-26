@@ -1,0 +1,23 @@
+ul.nav.nav-tabs,
+ul.nav.nav-pills {
+    li {
+        &:not(.active) {
+            a:hover {
+                background-color: #ffffff;
+            }
+        }
+
+        &.active {
+            a {
+                background-color: @color-of-the-year;
+                color: #ffffff;
+                cursor: default;
+
+                &:hover {
+                    background-color: @color-of-the-year;
+                    color: #ffffff;
+                }
+            }
+        }
+    }
+}

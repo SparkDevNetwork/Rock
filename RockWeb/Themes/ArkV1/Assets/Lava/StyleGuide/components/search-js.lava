@@ -1,0 +1,80 @@
+<h1 class="mb-4">Search JS</h1>
+<p class="lead">A simple set of JS classes to implement search on a list of items.</p>
+
+/- <h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#examples">Link Examples</a></li>
+    <li><a href="#content">Modal HTML Content</a></li>
+</ul> -/
+
+
+<div class="mb-5">
+    <h3>In Short</h3>
+    <ul>
+        <li>To enable filtering, wrap your list of items in the class <code>js-filter-items</code> and each individual item with <code>js-filter-item</code>.</li>
+        <li>Then add the class <code>js-filter-items-search</code> to a search input</li>
+        <li>And add <code>js-filter-items-empty</code> to display an alert when all items have been filtered.</li>
+    </ul>
+
+    {% capture codeExample %}<input type="text" class="js-filter-items-search">
+    <div class="js-filter-items">
+        <div class="js-filter-item">...</div>
+        <div class="js-filter-item">...</div>
+        <div class="js-filter-item">...</div>
+    </div>
+
+    <div class="js-filter-items-empty" style="display: none;">
+        <div class="alert alert-default">Nothing matches your search.</div>
+    </div>{% endcapture %}
+
+    <pre><code>{{ codeExample | Escape }}</code></pre>
+
+</div>
+
+<h3>Example</h3>
+{% assign locations = 'Berks,BranchCreek,Clarks Summit' | Split:',' %}
+<hr>
+
+<section class="py-4 bg-gray-100">
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <input type="text" class="form-control js-filter-items-search" placeholder="Search events">
+            </div>
+        </div>
+
+        <div class="row d-flex flex-wrap js-filter-items">
+            {% for i in (1..3) %}
+                <div class="js-filter-item col-md-4 col-sm-6 col-xs-12 mb-5">
+                    <div class="card card-event h-100">
+                        <div class="card-header">
+                            <h4 class="card-title">{{ locations[forloop.index0] }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <span class="d-block h4 mt-0">Contact Details</span>
+
+                            <div class="text-sm">
+                                Ted Decker
+                            </div>
+                        </div>
+
+                        <div class="card-cell">
+                            <div><i class="fa fa-map-marker"></i> Atrium</div>
+                            <div><i class="fa fa-calendar"></i> 12/4/2022 9:00AM</div>
+                            <div><i class="fa fa-child"></i> kidCare</div>
+                        </div>
+
+                        {% if true %}
+                            <div class="card-footer">
+                                <a href="#" class="btn btn-primary btn-block">Register</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="col-xs-12 js-filter-items-empty" style="display: none;">
+                <div class="alert alert-default">No events match your query. Try erasing and try again.</div>
+            </div>
+        </div>
+    </div>
+</section>

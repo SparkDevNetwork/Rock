@@ -1,0 +1,162 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Nav Sub Section {% endcomment %}
+
+{% capture navSub %}
+<nav>
+    <ul class="nav nav-stacked">
+        <li class="nav-stacked-heading">Nav Stacked Heading</li>
+        <li class="nav-item active"><a href="#" class="nav-link">Nav Item Two</a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa fa-user"></i>Nav Item Three</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Nav Item Four</a></li>
+    </ul>
+</nav>
+{% endcapture %}
+
+{% capture navSubEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Stacked</blockquote>
+{{ navSub | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Nav Tabs Section {% endcomment %}
+
+{% capture navTabs %}
+<nav>
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Profile</a></li>
+        <li role="presentation"><a href="#">Messages</a></li>
+    </ul>
+</nav>
+{% endcapture %}
+
+{% capture navTabsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Tabs</blockquote>
+{{ navTabs | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Pills Section {% endcomment %}
+
+{% capture navPills %}
+<nav>
+    <ul class="nav nav-pills">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Profile</a></li>
+        <li role="presentation"><a href="#">Messages</a></li>
+    </ul>
+</nav>
+{% endcapture %}
+
+{% capture navPillsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Pills</blockquote>
+{{ navPills | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Tabs & Nav Stacked Section {% endcomment %}
+
+{% capture navPillsStacked %}
+<nav>
+    <ul class="nav nav-pills nav-stacked">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Profile</a></li>
+        <li role="presentation"><a href="#">Messages</a></li>
+    </ul>
+</nav>
+{% endcapture %}
+
+{% capture navPillsStackedEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Pills and Nav Stacked</blockquote>
+{{ navPillsStacked | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Tabs & Nav Justified Section {% endcomment %}
+
+{% capture navTabsJustified %}
+<nav>
+    <ul class="nav nav-tabs nav-justified">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Profile</a></li>
+        <li role="presentation"><a href="#">Messages</a></li>
+    </ul>
+</nav>
+{% endcapture %}
+
+{% capture navTabsJustifiedEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Tabs and Nav Justified</blockquote>
+{{ navTabsJustified | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Nav Pills & Nav Justified Section {% endcomment %}
+
+{% capture navPillsJustified %}
+<nav>
+    <ul class="nav nav-pills nav-justified">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Profile</a></li>
+        <li role="presentation"><a href="#">Messages</a></li>
+    </ul>
+</nav>
+{% endcapture %}
+
+{% capture navPillsJustifiedEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Nav Pills and Nav Justified</blockquote>
+{{ navPillsJustified | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header">Nav Stacked (Main Sub Nav Component)</h3>
+
+{{ navSub }}
+{{ navSubEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Nav Tabs</h3>
+
+{{ navTabs }}
+{{ navTabsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Nav Pills</h3>
+
+{{ navPills }}
+{{ navPillsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Nav Pills Stacked</h3>
+
+{{ navPillsStacked }}
+{{ navPillsStackedEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Nav Tabs Justified</h3>
+
+{{ navTabsJustified }}
+{{ navTabsJustifiedEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Nav Pills Justified</h3>
+
+{{ navPillsJustified }}
+{{ navPillsJustifiedEscaped }}

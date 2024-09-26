@@ -1,0 +1,238 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/MyAccount/UserDashboardProgress.lava' %} {% endcomment %}
+
+/-
+    Dataviews:
+        ** Ignite **
+        - 553: People who have given in the past 6 months
+
+        ** Impact **
+        - 544: People who are in an active serving team
+        - 557: People who have served on a serving team in the past 12 weeks
+
+        ** Invite **
+        - :
+        - :
+
+        ** Invest **
+        - 552: People who are active members in an active group of type: 'house church'
+        - :
+-/
+
+{% assign personId = CurrentPerson.Id | AsString %}
+
+{% assign isIgnite = personId | IsInDataView:'553' | AsBoolean %}
+{% assign isImpact = personId | IsInDataView:'544' | AsBoolean %}
+{% assign isImpactLastTwelve = personId | IsInDataView:'557' | AsBoolean %}
+{% assign isInvest = personId | IsInDataView:'552' | AsBoolean %}
+{% assign isInviting = personId | IsInDataView:'611' | AsBoolean %}
+
+{% if isIgnite %}
+    {% assign recurringGiftSize = 'FinancialScheduledTransactionPeople' | PersistedDataset | Where:"PersonId","{{ CurrentPerson.Id }}" | Size %}
+    {%- capture igniteMessage -%}You are<br><b> {{ 'igniting' | Upcase }}</b>{%- endcapture -%}
+    {%- capture igniteTooltip -%}Thank you {{ CurrentPerson.NickName }} for being generous.{% if recurringGiftSize < 1 %} View the Give page to set up your recurring gift today!{% endif %}{%- endcapture -%}
+{% else %}
+    {%- capture igniteMessage -%}Begin to<br><b> <a href="/give">{{ 'ignite' | Upcase }}</a></b>{%- endcapture -%}
+    {%- capture igniteTooltip -%}<b>IGNITE.</b> We ignite ministry through our generosity.{%- endcapture -%}
+{% endif %}
+
+{% if isImpact %}
+    {%- capture impactMessage -%}You are<br><b> {{ 'Impacting' | Upcase }}</b>{%- endcapture -%}
+    {%- capture impactTooltip -%}{{ CurrentPerson.NickName }}, you are making an IMPACT and a difference in the community. Thank You! {% if isImpactLastTwelve %}We are always looking for help on Sunday. Please consider inviting a friend to volunteer with you next week!{% else %}We are always looking for help on Sunday. We hope to see you again next week!{% endif %}{%- endcapture -%}
+{% else %}
+    {%- capture impactMessage -%}Make an<br><b> <a href="/connect/serve">{{ 'Impact' | Upcase }}</a></b>{%- endcapture -%}
+    {%- capture impactTooltip -%}<b>IMPACT.</b> We make an impact on our world through serving others.{%- endcapture -%}
+{% endif %}
+
+{% if isInvest %}
+    {%- capture investMessage -%}You are<br><b> {{ 'Investing' | Upcase }}</b>{%- endcapture -%}
+    {%- capture investTooltip -%}{{ CurrentPerson.NickName }}, you are investing. Great job.{%- endcapture -%}
+{% else %}
+    {%- capture investMessage -%}Begin to <br><b> <a href="">{{ 'Invest' | Upcase }}</a></b>{%- endcapture -%}
+    {%- capture investTooltip -%}<b>INVEST.</b> We invest in relationship with others through House Churches. Join one today!{%- endcapture -%}
+{% endif %}
+
+{% if isInviting %}
+    {%- capture inviteMessage -%}You are<br><b> {{ 'inviting' | Upcase }}</b>{%- endcapture -%}
+    {%- capture inviteTooltip -%}{{ CurrentPerson.NickName }}, great job INVITING others to Jesus and Venture Church.{%- endcapture -%}
+{% else %}
+    {%- capture inviteMessage -%}Begin to <br><b> <a href="">{{ 'invite' | Upcase }}</a></b>{%- endcapture -%}
+    {%- capture inviteTooltip -%}<b>INVITE.</b> We invite people into a relationship with Jesus and with Venture Church.{%- endcapture -%}
+{% endif %}
+
+<div class="card-body py-md-5">
+    <h4 class="mb-4">Your Venture</h4>
+    <p>{{ CurrentPerson.NickName }}, great job Investing and Igniting. Interested in making an <a href="/serve">Impact</a>?</p>
+    <hr class="my-4 my-md-5">
+
+    <div class="row d-flex flex-wrap">
+        <div class="col-xs-6 col-sm-3 mb-sm-0 mb-5 mb-sm-0">
+            <div class="progress-badge progress-badge-invest {% if isInvest %}active{% endif %}">
+                <div class="progress-badge-icon mb-4">
+                    <div class="progress-badge-icon-inner">
+                        <a href="#" data-toggle="modal" data-target="#invest-modal" class="stretched-link">
+                            <i class="icon-main fa fa-home"></i>
+                        </a>
+                        <i class="fa fa-check"></i>
+                    </div>
+                </div>
+                <div class="progress-badge-content flex-fill o-80 text-center">
+                    {{ investMessage }}
+                </div>
+                {% comment %} <span data-toggle="tooltip" data-html="true" title="<em>{{ investTooltip }}</em>" class="tooltip-icon">
+                    <i class="fa fa-info"></i>
+                </span> {% endcomment %}
+                <a href="#" data-toggle="modal" data-target="#invest-modal" class="tooltip-icon p-3">
+                    <i class="fa fa-info text-color"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-xs-6 col-sm-3 mb-sm-0 mb-5 mb-sm-0">
+            <div class="progress-badge progress-badge-impact {% if isImpact %}active{% endif %}">
+                <div class="progress-badge-icon mb-4">
+                    <div class="progress-badge-icon-inner">
+                        <a href="#" data-toggle="modal" data-target="#impact-modal" class="stretched-link">
+                            <i class="icon-main fa fa-clock-o"></i>
+                        </a>
+                        <i class="fa fa-check"></i>
+                    </div>
+                </div>
+                <div class="progress-badge-content flex-fill o-80 text-center">
+                    {{ impactMessage }}
+                </div>
+                <a href="#" data-toggle="modal" data-target="#impact-modal" class="tooltip-icon p-3">
+                    <i class="fa fa-info text-color"></i>
+                </a>
+                {% comment %} <span data-toggle="tooltip" data-html="true" title="<em>{{ impactTooltip }}</em>" class="tooltip-icon">
+                    <i class="fa fa-info"></i>
+                </span> {% endcomment %}
+            </div>
+        </div>
+            <div class="col-xs-6 col-sm-3">
+            <div class="progress-badge progress-badge-invite {% if isInviting %}active{% endif %}">
+                <div class="progress-badge-icon mb-4">
+                    <div class="progress-badge-icon-inner">
+                        <a href="#" data-toggle="modal" data-target="#invite-modal" class="stretched-link">
+                            <i class="icon-main fa fa-door-open"></i>
+                        </a>
+                        <i class="fa fa-check"></i>
+                    </div>
+                </div>
+                <div class="progress-badge-content flex-fill o-80 text-center">
+                    {{ inviteMessage }}
+                </div>
+                <a href="#" data-toggle="modal" data-target="#invite-modal" class="tooltip-icon p-3">
+                    <i class="fa fa-info text-color"></i>
+                </a>
+                {% comment %} <span data-toggle="tooltip" data-html="true" title="<em>Tooltip</em>" class="tooltip-icon">
+                    <i class="fa fa-info"></i>
+                </span> {% endcomment %}
+            </div>
+        </div>
+        <div class="col-xs-6 col-sm-3">
+            <div class="progress-badge progress-badge-ignite {% if isIgnite %}active{% endif %}">
+                <div class="progress-badge-icon mb-4">
+                    <div class="progress-badge-icon-inner">
+                        <a href="#" data-toggle="modal" data-target="#ignite-modal" class="stretched-link">
+                            <i class="icon-main fa fa-fire-alt"></i>
+                        </a>
+                        <i class="fa fa-check"></i>
+                    </div>
+                </div>
+                <div class="progress-badge-content flex-fill o-80 text-center">
+                    {{ igniteMessage }}
+                </div>
+                <a href="#" data-toggle="modal" data-target="#ignite-modal" class="tooltip-icon p-3">
+                    <i class="fa fa-info text-color"></i>
+                </a>
+                {% comment %} <span data-toggle="tooltip" data-html="true" title="<em>{{ igniteTooltip }}</em>" class="tooltip-icon">
+                    <i class="fa fa-info"></i>
+                </span> {% endcomment %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="invest-modal" tabindex="-1" role="dialog" aria-labelledby="invest-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-close" aria-hidden="true"></i></button>
+                <h4 class="modal-title accent accent-invest accent-light" id="invest-modal-label">Invest</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {{ investTooltip }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="impact-modal" tabindex="-1" role="dialog" aria-labelledby="impact-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-close" aria-hidden="true"></i></button>
+                <h4 class="modal-title accent accent-impress accent-light" id="impact-modal-label">Impact</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {{ impactTooltip }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="invite-modal" tabindex="-1" role="dialog" aria-labelledby="invite-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-close" aria-hidden="true"></i></button>
+                <h4 class="modal-title accent accent-invite accent-light" id="invite-modal-label">Invite</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {{ inviteTooltip }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="ignite-modal" tabindex="-1" role="dialog" aria-labelledby="ignite-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-close" aria-hidden="true"></i></button>
+                <h4 class="modal-title accent accent-ignite accent-light" id="ignite-modal-label">Ignite</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {{ igniteTooltip }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+

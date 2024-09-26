@@ -1,0 +1,114 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/CampusDetail/CampusEvents.lava' %} {% endcomment %}
+
+{% comment %} * Featured Events {% endcomment %}
+<style>
+    .split-bg {
+        background: linear-gradient(180deg, #E9ECEF 50%, #F8F9FA 50%);
+    }
+
+    .swiper-section-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #fff;
+        overflow: hidden;
+        padding: 30px 45px;
+    }
+
+    .swiper-section-card-inner {
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .swiper-section-card {
+            padding: 48px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
+        }
+    }
+
+    @media (min-width: 992px) {
+        .swiper-section-card {
+            padding: 60px 100px;
+        }
+    }
+</style>
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% calendarevents calendarid:'1' maxoccurrences:'20' campusids:'{{ campusId }}' %}
+    {% for item in EventScheduledInstances %}
+        {% if forloop.first %}
+            {% assign eventScheduledInstances = EventScheduledInstances %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endcalendarevents %}
+
+{% if eventScheduledInstances and eventScheduledInstances != empty %}
+    <div class="split-bg">
+        <div class="container container-lg gutterless-mobile">
+            <div class="swiper-section-card" data-aos="fade-up">
+
+                <h2 class="text-center accent accent-center accent-invite mb-5">Upcoming Events</h2>
+
+                <div class="position-relative w-100">
+                    <div class="swiper-section-card-inner">
+                        {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'0' breakpoints:'768-2|16' ]}
+                            {% for item in eventScheduledInstances %}
+
+                                {% assign event = item.EventItemOccurrence %}
+                                {% assign eventItemId = event.EventItemId | AsString %}
+                                {% assign eventItemIdsArray = eventItemIds | Split:',' %}
+                                {% assign isRepeatedEvent = eventItemIdsArray | Contains:eventItemId | AsBoolean %}
+
+                                {% unless isRepeatedEvent %}
+                                    {% assign eventItemIds = eventItemIds | Append:eventItemId %}
+
+                                    {% unless forloop.last %}
+                                        {% assign eventItemIds = eventItemIds | Append:',' %}
+                                    {% endunless %}
+
+                                    {% assign nextStartDate = event.NextStartDateTime | Date:'MMM d hh:mm tt' %}
+                                    {% assign photo = event.EventItem.PhotoId %}
+                                    {% if photo and photo != empty %}
+                                        {% assign photo = photo | ImageUrl | TriumphImgCdn:'w=800&h=450&fit=crop&crop=faces&auto=compress,format' %}
+                                    {% endif %}
+
+                                    [[ slide ]]
+                                        <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ photo }});">
+                                            <div class="special-card-content">
+                                                <div class="special-card-details text-white">
+                                                    <span class="d-block special-card-subheading">{{ event.NextStartDateTime | Date:'MMM d' }} &nbsp;<i class="venture-diamond"></i>&nbsp; {{ event.NextStartDateTime | Date:'hh:mm tt' }}</span>
+                                                    <h4 class="special-card-heading">{{ event.EventItem.Name }}</h4>
+                                                </div>
+                                                <div class="special-card-actions">
+                                                    <a href="/v1/calendar/{{ eventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    [[ endslide ]]
+                                {% endunless %}
+                            {% endfor %}
+                        {[ endswiper ]}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

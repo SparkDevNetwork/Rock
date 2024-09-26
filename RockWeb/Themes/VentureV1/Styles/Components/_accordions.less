@@ -1,0 +1,45 @@
+.panel-accordion {
+  + .panel-accordion {
+    margin-top: 24px !important;
+  }
+
+  .panel {
+    &-heading {
+      position: relative;
+      padding-right: 48px;
+
+      a {
+        border-bottom: 0;
+        text-decoration: none;
+        .stretched-link();
+
+        &:hover, &:active, &:focus, &:focus-within, &:target, &:hover, &:visited, &:focus-visible {
+          border-bottom: 0;
+          text-decoration: none;
+        }
+
+        &::before {
+          position: absolute;
+          right: 24px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 21px;
+          height: 21px;
+        }
+
+        &::before {
+          content: url('/Themes/VentureV1/Assets/SVG/plus-solid-1.svg');
+        }
+
+        &[aria-expanded="true"] {
+          &::before {
+            content: url('/Themes/VentureV1/Assets/SVG/minus-solid-1.svg');
+            height: 30px;
+          }
+        }
+      }
+    }
+  }
+}
+
+

@@ -1,0 +1,99 @@
+//- {% include '~~/Assets/Lava/Custom/Media/SeriesArchiveGrid.lava', buttontext:'' %}
+
+{% stylesheet id:'seriesgrid' compile:'less' %}
+    .series-archive-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        grid-gap: 16px;
+
+        @media (min-width: 772px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 992px) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .poster-card.featured {
+
+            @media (min-width: 768px) {
+                grid-column: ~'1 / 3';
+            }
+
+            @media (min-width: 992px) {
+                grid-column: ~'1 / 3';
+                grid-row: ~'1 / 3';
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% unless buttontext and buttontext != empty %}
+    {% assign buttontext = 'View' %}
+{% endunless %}
+
+{% assign currentPage = Pagination.CurrentPage %}
+
+<div class="mt-5 mt-sm-0 series-archive-grid">
+    {% for item in Items %}
+        {% assign title = item.Title %}
+        {% assign date = item.StartDateTime | Date:'MMM d' %}
+        {% assign image = item | Attribute:'SeriesImage','RawValue' %}
+
+        {% unless image and image != empty %}
+            {% assign image = item | Attribute:'Image','RawValue' %}
+        {% endunless %}
+
+        {% assign image = image | ImageUrl %}
+
+        {% assign seriesSlug = item.PrimarySlug %}
+        {% assign detailsUrl = LinkedPages.DetailPage | Replace:'{PrimarySlug}',seriesSlug %}
+
+        {% if forloop.first and currentPage == 1 %}
+            {% assign image = image | TriumphImgCdn:'w=1200&h=675&fit=crop&crop=faces,center&auto=compress,format' %}
+        {% else %}
+            {% assign image = image | TriumphImgCdn:'w=800&h=450&fit=crop&crop=faces,center&auto=compress,format' %}
+        {% endif %}
+
+        <div class="poster-card js-poster-card{% if forloop.first and currentPage == 1 %} featured h-100{% endif %}" style="background-image:url({{ image }});" data-aos="fade-up">
+            <div class="poster-card-body js-poster-card-body">
+                {% if forloop.first and currentPage == 1 %}
+                    <div class="d-none d-sm-block">
+                        <span class="label label-primary mb-3 tall d-inline-block">Latest</span>
+                    </div>
+                {% endif %}
+                <h4 class="poster-card-title accent accent-white accent-light">{{ title }}</h4>
+                <div class="poster-card-hidden js-poster-card-hidden">
+                    <a href="/{{ detailsUrl }}" class="text-white">{{ buttontext }}</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if Pagination.TotalPages > 1 %}
+    <div class="mt-4">
+        {% assign nextPageString = Pagination.NextPage | ToString %}
+        {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+        {% if Pagination.PreviousPage == -1 %}
+            <div class="btn btn-default pull-left">
+                <i class="fa fa-chevron-left"></i> Prev
+            </div>
+        {% else %}
+            <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
+                <i class="fa fa-chevron-left"></i> Prev
+            </a>
+        {% endif %}
+
+        {% if Pagination.NextPage == -1 %}
+            <div class="btn btn-default pull-right">
+                Next <i class="fa fa-chevron-right"></i>
+            </div>
+        {% else %}
+            <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
+                Next <i class="fa fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+{% endif %}

@@ -1,0 +1,23 @@
+table {
+  border: 1px solid #e6e6e6;
+}
+table thead {
+  border-bottom: 1px solid #e6e6e6;
+}
+table tr {
+  border-bottom: 1px solid #e6e6e6;
+}
+table tr:last-child {
+  border-bottom: none;
+}
+table th,
+table td {
+  padding: 14px 24px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+.panel > table {
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+}

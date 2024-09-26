@@ -1,0 +1,94 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_Resources.lava' %} {% endcomment %}
+
+
+
+
+    <div class="position-relative z-10">
+        <div class="container">
+
+            <div class="giant-cta-card" style="background-color: #7300FE;">
+                <div class="giant-cta-card-img">
+                    <img src="/Themes/ArkV1/Assets/Images/bible-365.svg" alt="" class="img-responsive">
+                </div>
+                <div class="giant-cta-card-body">
+                    <h4 class="giant-cta-card-subtitle">Bible Reading</h4>
+                    <h2 class="giant-cta-card-title">Enroll in Bible Reading Plan</h2>
+                    <p class="giant-cta-card-text tall font-weight-medium italic">Bible 365 is a reading plan that makes it easy to read the Bible everyday! Plus, Pastor Alan has created a devotional for each reading. Start today!</p>
+                    <div class="giant-cta-card-actions">
+                        <a href="#" class="btn btn-white">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            //- mobile: 64px
+            //- desktop: 128px
+            <div class="py-3"></div>
+            <div class="py-3"></div>
+            <div class="py-md-3"></div>
+            <div class="py-md-3"></div>
+
+            <div class="row d-flex flex-wrap">
+
+                <div class="col-xs-6 col-sm-6 col-md-3 mb-5">
+                    <div class="icon-card icon-card-transparent h-100 justify-content-start">
+                        <span class="icon-btn dark icon-card-icon">
+                            <i class="icon-primary fa fa-play"></i>
+                        </span>
+                        <div class="icon-card-body">
+                            <h2 class="icon-card-title">Watch</h2>
+                            <p class="icon-card-text text-muted">Messages & Series</p>
+                            <div class="icon-card-footer">
+                                <a href="#" class="text-link">Watch now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 col-sm-6 col-md-3 mb-5">
+                    <div class="icon-card icon-card-transparent h-100 justify-content-start">
+                        <span class="icon-btn dark icon-card-icon">
+                            <i class="icon-primary fa fa-calendar"></i>
+                        </span>
+                        <div class="icon-card-body">
+                            <h2 class="icon-card-title">Join</h2>
+                            <p class="icon-card-text text-muted">Upcoming Events</p>
+                            <div class="icon-card-footer">
+                                <a href="#" class="text-link">View Calendar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 col-sm-6 col-md-3 mb-5">
+                    <div class="icon-card icon-card-transparent h-100 justify-content-start">
+                        <span class="icon-btn dark icon-card-icon">
+                            <i class="icon-primary fa fa-mobile"></i>
+                        </span>
+                        <div class="icon-card-body">
+                            <h2 class="icon-card-title">Download</h2>
+                            <p class="icon-card-text text-muted">Our Mobile App</p>
+                            <div class="icon-card-footer">
+                                <a href="#" class="text-link">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 col-sm-6 col-md-3 mb-5">
+                    <div class="icon-card icon-card-transparent h-100 justify-content-start">
+                        <span class="icon-btn dark icon-card-icon">
+                            <i class="icon-primary fa fa-heart"></i>
+                        </span>
+                        <div class="icon-card-body">
+                            <h2 class="icon-card-title">Need Prayer?</h2>
+                            <p class="icon-card-text text-muted">We are Here for You</p>
+                            <div class="icon-card-footer">
+                                <a href="#" class="text-link">Request Prayer</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,81 @@
+// out:false
+
+/*
+
+    1. Underline
+    2. Gutters
+    3. Typography
+    4. Line Clamp
+
+
+*/
+
+// 1. Underline
+// -------------------------
+
+.underline {
+  text-decoration: underline;
+}
+
+
+// 2. Gutters
+// -------------------------
+.gutterless {
+  &-mobile {
+    @media (max-width: 767px) {
+      margin-left: -15px;
+      margin-right: -15px;
+    }
+  }
+
+  &-tablet {
+    @media (max-width: 991px) {
+      margin-left: -15px;
+      margin-right: -15px;
+    }
+  }
+
+}
+
+
+
+// 3. Typography
+// -------------------------
+.font-weight-medium {
+  font-weight: 500 !important;
+}
+
+
+
+
+// 4. Line Clamp
+// -------------------------
+.line-clamp {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+
+  &-1 {
+    -webkit-line-clamp: 1;
+  }
+
+  &-2 {
+    -webkit-line-clamp: 2;
+  }
+
+  &-3 {
+    -webkit-line-clamp: 3;
+  }
+
+  &-4 {
+    -webkit-line-clamp: 4;
+  }
+
+  &-5 {
+    -webkit-line-clamp: 5;
+  }
+}
+
+
+
+

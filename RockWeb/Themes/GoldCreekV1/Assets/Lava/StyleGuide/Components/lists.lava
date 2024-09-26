@@ -1,0 +1,103 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/buttons.lava' %}{%endcomment%}
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% comment %} ~ Capture Ordered List Section {% endcomment %}
+
+{% capture orderedList %}
+<ol>
+    <li>List Item One</li>
+    <li>List Item Two
+        <ol>
+            <li>Sub Item One</li>
+            <li>Sub Item Two</li>
+        </ol>
+    </li>
+    <li>List Item Three</li>
+    <li>List Item Four</li>
+</ol>
+{% endcapture %}
+
+{% capture orderedListEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Ordered List</blockquote>
+    {{ orderedList | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Unordered List Section {% endcomment %}
+
+{% capture unorderedList %}
+<ul>
+    <li>List Item One</li>
+    <li>List Item Two
+        <ul>
+            <li>Sub Item One</li>
+            <li>Sub Item Two</li>
+        </ul>
+    </li>
+    <li>List Item Three</li>
+    <li>List Item Four</li>
+</ul>
+{% endcapture %}
+
+{% capture unorderedListEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Unordered List</blockquote>
+    {{ unorderedList | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Panel Lists Section {% endcomment %}
+
+{% capture panelList %}
+<div class="panel-group panel-group-nav">
+    <div class="panel">
+        <div class="panel-heading">
+            <span>NEXT STEPS</span>
+        </div>
+    </div>
+    <div class="panel">
+        <a href="#" class=""><i class="fa fa-arrow-circle-right"></i><span class="text-color">Baptism</span></a>
+    </div>
+    <div class="panel">
+        <a href="#" class=""><i class="fa fa-arrow-circle-right"></i><span class="text-color">Milestones</span></a>
+    </div>
+    <div class="panel">
+        <a href="#" class=""><i class="fa fa-arrow-circle-right"></i><span class="text-color">Media</span></a>
+    </div>
+    <div class="panel">
+        <a href="#" class=""><i class="fa fa-arrow-circle-right"></i><span class="text-color">Serve</span></a>
+    </div>
+    <div class="panel">
+        <a href="#" class=""><i class="fa fa-arrow-circle-right"></i><span class="text-color">Parent Resources</span></a>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture panelListEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Unordered List</blockquote>
+    {{ panelList | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3>Ordered List</h3>
+{{ orderedList }}
+{{ orderedListEscaped }}
+
+<hr class="my-5">
+
+<h3>Unordered List</h3>
+{{ unorderedList }}
+{{ unorderedListEscaped }}
+
+<hr class="my-5">
+
+<h3>Panel List</h3>
+{{ panelList }}
+{{ panelListEscaped }}
+
+
+

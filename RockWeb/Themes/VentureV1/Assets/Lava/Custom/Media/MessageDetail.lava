@@ -1,0 +1,61 @@
+//- {% include '~~/Assets/Lava/Custom/Media/MessageDetail.lava' %}
+
+{% assign messageSlug = Item.PrimarySlug %}
+{% assign video = Item | Attribute:'Video','Id' %}
+{% assign childItem = Item.ChildItems | First %}
+{% assign childItemSlug = childItem.ChildContentChannelItem.PrimarySlug %}
+{% assign notesUrl = 'v1/notes/' | Append:childItem.ChildContentChannelItem.Id %}
+{% assign speakers = Item | Attribute:'Speaker' %}
+
+{% assign imageGuid = Item | Attribute:'Image','Guid' %}
+{% assign image = imageGuid | ImageUrl | TriumphImgCdn:'w=1600&h=900&fit=crop&crop=faces&auto=compress,format' %}
+
+{% assign contentChannelId = Item.ContentChannelId | AsInteger %}
+{% if contentChannelId and contentChannelId == 14 %}
+    {% assign isFullLengthMessage = true %}
+{% else %}
+    {% assign isFullLengthMessage = false %}
+{% endif %}
+
+<div class="mt-5 mt-sm-0">
+    <div class="rounded-lg overflow-hidden" data-aos="fade-up">
+        {% if video and video != empty %}
+            {[ mediaplayer media:'{{ video }}' controls:'play-large,play,progress,current-time,volume,settings,pip,airplay,fullscreen' ]}{[ endmediaplayer ]}
+        {% elseif imageGuid and imageGuid != empty %}
+            <div class="ratio ratio-16x9">
+                <img src="{{ image }}" alt="{{ Item.Title }}" class="w-100 h-100 position-absolute top-0 left-0 bottom-0 right-0" style="object-fit:cover; object-position:center; object-repeat: no-repeat;">
+            </div>
+        {% endif %}
+    </div>
+    <div class="my-4" data-aos="fade-up" data-aos-delay="50">
+
+        <h2>{{ Item.Title }}</h2>
+        <span class="tall">{{ Item.StartDateTime | Date:'MMM d, yyyy' }}</span>
+        {% if speakers and speakers != empty %}
+            &nbsp;&nbsp;–&nbsp;&nbsp;
+            {% assign speakersArray = speakers | Split:',' %}
+            {% for speaker in speakersArray %}
+                {{ speaker }}{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+        {% endif %}
+
+        {% if isFullLengthMessage %}
+            <h5 class="mt-4 mb-2">Listen to Podcast</h5>
+            <div class="d-flex w-100">
+                <a href="https://open.spotify.com/show/2AYPQIJ0oSFsCH9kw4Sera?si=1da71fc263664bc2" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank" style="width: 48px; height: 48px;"><i class="fa fa-spotify"></i></a>
+                <a href="https://podcasts.apple.com/us/podcast/venture-church/id1504305896" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank" style="width: 48px; height: 48px;"><i class="fa fa-apple"></i></a>
+            </div>
+        {% endif %}
+
+    </div>
+    <div class="mb-5" data-aos="fade-up" data-aos-delay="100">
+        <p>{{ Item.Content }}</p>
+    </div>
+
+    {% if childItemSlug and childItemSlug != empty %}
+        <div data-aos="fade-up" data-aos-delay="150">
+            <a href="/{{ notesUrl }}" target="_blank" class="btn btn-primary"><i class="fa fa-document"></i> Message Notes</a>
+        </div>
+    {% endif %}
+
+</div>

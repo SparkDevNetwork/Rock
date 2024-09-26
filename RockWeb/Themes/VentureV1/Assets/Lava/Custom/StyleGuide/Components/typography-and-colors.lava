@@ -1,0 +1,458 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/typography-and-colors.lava' %}{%endcomment%}
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% comment %} ~ Capture Headers and Subheaders Section {% endcomment %}
+
+{% capture headersAndSubheaders %}
+<h1 class="display mb-3">This is an H1 Display</h1>
+
+<h2 class="display mb-3">This is an H2 Display</h2>
+
+<h3 class="display mb-3">This is an H3 Display</h3>
+
+<h4 class="display mb-3">This is an H4 Display</h4>
+
+<h1 class="mb-3">H1 - This is a Header</h1>
+
+<h2 class="mb-3">H2 - This is a Header</h2>
+
+<h3 class="mb-3">H3 - This is a Header</h3>
+
+<h4 class="mb-3">H4 - This is a SubHeader</h4>
+
+<h5 class="mb-3">H5 - This is a SubHeader</h5>
+
+<h6>H6 - This is a SubHeader</h6>
+{% endcapture %}
+
+{% capture headersAndSubheadersEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Header and Subheader Text</blockquote>
+{{ headersAndSubheaders | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Capture Body and Blockquotes Section {% endcomment %}
+
+{% capture bodyAndBlockquotes %}
+<p class="tall"><strong>Tall 18px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<p class="lead"><strong>Lead: 18px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<p><strong>Body 16px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<p class="small"><strong>Small 14px</strong> - Lorem ipsum dolor sit amet, incididunt <strong>ut labore et</strong> dolore magna aliqua. Ut enim ad <a href="#">minim veniam</a>, quis nostrud exercitation.</p>
+
+<blockquote>
+  <span>Source Name - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+  <footer class="mb-0">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+</blockquote>
+
+<blockquote>
+  <p>We believe the Bible teaches that the church and the family are called to work together to see our kids come to faith </p>
+</blockquote>
+{% endcapture %}
+
+{% capture bodyAndBlockquotesEscaped %}
+  {{ codeOpen }}<blockquote class="mb-0">Body Text and Blockquotes</blockquote>
+  {{ bodyAndBlockquotes | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Capture Text Colors Section {% endcomment %}
+
+{% capture textColors %}
+<div class="text-color mb-3">This is an example of the <code>.text-color / .text-venture-onyx</code> class</div>
+
+<div class="text-invite mb-3">This is an example of the <code>.text-invite</code> class</div>
+
+<div class="text-invest mb-3">This is an example of the <code>.text-invest</code> class</div>
+
+<div class="text-impress mb-3">This is an example of the <code>.text-impress</code> class</div>
+
+<div class="text-ignite mb-3">This is an example of the <code>.text-ignite</code> class</div>
+
+<div class="text-venture-black mb-3">This is an example of the <code>.text-venture-black</code> class</div>
+
+<div class="text-muted mb-3">This is an example of the <code>.text-muted / .text-venture-light-gray</code> class</div>
+
+<div class="bg-dark p-3">
+
+  <div class="text-white mb-3">This is an example of the <code>.text-white / .text-venture-white</code> class</div>
+
+</div>
+{% endcapture %}
+
+{% capture textColorsEscaped %}
+  {{ codeOpen }}<blockquote class="mb-0">Text Colors</blockquote>
+  {{ textColors | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Capture Background Colors Section {% endcomment %}
+
+{% capture backgroundColors %}
+<div class="row d-flex flex-wrap">
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-primary / .bg-invite</code> class</div>
+
+      <div class="bg-primary" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-invest</code> class</div>
+
+      <div class="bg-invest" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-impress</code> class</div>
+
+      <div class="bg-impress" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-ignite</code> class</div>
+
+      <div class="bg-ignite" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-dark / .bg-venture-onyx</code> class</div>
+
+      <div class="bg-dark" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-light / .bg-venture-white</code> class</div>
+
+      <div class="bg-light" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+
+    <div class="h-100 d-flex flex-column">
+
+      <div class="flex-fill mt-3">This is an example of the <code>.bg-muted / .bg-light-gray</code> class</div>
+
+      <div class="bg-muted" style="height: 64px;"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endcapture %}
+
+{% capture backgroundColorsEscaped %}
+  {{codeOpen}}<blockquote class="mb-0">Background Colors</blockquote>
+  {{ backgroundColors | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Capture Text Accents Section {% endcomment %}
+
+{% capture textAccents %}
+
+    <div class="card mb-3">
+
+      <div class="card-body">
+
+        <h5 class="card-title">Standard Accent</h5>
+
+        <p>the <code>.accent</code> class adds the accent to a heading</p>
+
+        <hr>
+
+        <p>see example of the <code>.accent</code> class below</p>
+
+        <h6 class="accent">Sample Text</h6>
+
+      </div>
+
+    </div>
+
+    <div class="card mb-3">
+
+      <div class="card-body">
+
+        <h5 class="card-title">Customize Width</h5>
+
+        <p>add <code>.accent-[width]</code> to change the accent width.</p>
+
+        <p><b>Options:</b>
+
+          <ul>
+
+            <li><code>.accent</code>: 30px wide (default)</li>
+
+            <li><code>.accent-narrow</code>: 22px wide</li>
+
+          </ul>
+
+        </p>
+
+        <hr>
+
+        <p>see example of the <code>.accent</code> class below</p>
+
+        <h6 class="accent">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-narrow</code> class below</p>
+
+        <p class="accent accent-narrow">Sample Text</p>
+
+      </div>
+
+    </div>
+
+    <div class="card mb-3">
+
+      <div class="card-body">
+
+        <h5 class="card-title">Customize Colors</h5>
+
+        <p>add <code>.accent-[color]</code> to change the accent color.</p>
+
+        <p><b>Options:</b>
+
+          <ul>
+
+            <li><code>.accent</code>: onyx (default)</li>
+
+            <li><code>.accent-invite</code>: blue</li>
+
+            <li><code>.accent-ignite</code>: orange</li>
+
+            <li><code>.accent-invest</code>: green</li>
+
+            <li><code>.accent-impress</code>: yellow</li>
+
+            <li><code>.accent-white</code>: white</li>
+
+          </ul>
+
+        </p>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-ignite</code> class below</p>
+
+        <h6 class="accent accent-ignite">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-invite</code> class below</p>
+
+        <h6 class="accent accent-invite">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-invest</code> class below</p>
+
+        <h6 class="accent accent-invest">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-impress</code> class below</p>
+
+        <h6 class="accent accent-impress">Sample Text</h6>
+
+        <hr>
+
+        <div class="p-3 bg-dark">
+          <p class="text-white">see example of the <code>.accent + .accent-white</code> class below</p>
+
+          <h6 class="accent accent-white text-white">Sample Text</h6>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card mb-3">
+
+      <div class="card-body">
+
+        <h5 class="card-title">Customize Opacity</h5>
+
+        <p>add <code>.accent-[lightness]</code> to change the accent opacity.</p>
+
+        <p><b>Options:</b>
+
+          <ul>
+
+            <li><code>.accent</code>: 50% opacity (default)</li>
+
+            <li><code>.accent-light</code>: 40% opacity</li>
+
+            <li><code>.accent-lighter</code>: 25% opacity</li>
+
+            <li><code>.accent-lightest</code>: 15% opacity</li>
+
+          </ul>
+
+        </p>
+
+        <hr>
+
+        <p>see example of the <code>.accent</code> class below</p>
+
+        <h6 class="accent">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + accent-invite + .accent-light</code> class below</p>
+
+        <h6 class="accent accent-invite accent-light">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + accent-ignite + .accent-lighter</code> class below</p>
+
+        <h6 class="accent accent-ignite accent-lighter">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + accent-invest + .accent-lightest</code> class below</p>
+
+        <h6 class="accent accent-invest accent-lightest">Sample Text</h6>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <div class="card-body">
+
+        <h5 class="card-title">Customize Alignment</h5>
+
+        <p>add <code>.accent-[justify]</code> to change the accent opacity.</p>
+
+        <p><b>Options:</b>
+
+          <ul>
+
+            <li><code>.accent</code>: left justified (default)</li>
+
+            <li><code>.accent-right</code>: right justified</li>
+
+            <li><code>.accent-center</code>: center justified</li>
+
+          </ul>
+
+        </p>
+
+        <hr>
+
+        <p>see example of the <code>.accent</code> class below</p>
+
+        <h6 class="accent">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-right</code> class below</p>
+
+        <h6 class="accent accent-right text-right">Sample Text</h6>
+
+        <hr>
+
+        <p>see example of the <code>.accent + .accent-center</code> class below</p>
+
+        <h6 class="accent accent-center text-center">Sample Text</h6>
+
+      </div>
+
+    </div>
+
+{% endcapture %}
+
+{% capture textAccentsEscaped %}
+  {{ codeOpen }}<blockquote class="mb-0">Text Accents</blockquote>
+  {{ textAccents | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header">Headers and Subheaders</h3>
+{{ headersAndSubheaders }}
+{{ headersAndSubheadersEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Body Text and Blockquotes</h3>
+{{ bodyAndBlockquotes }}
+{{ bodyAndBlockquotesEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Text Colors</h3>
+{{ textColors }}
+{{ textColorsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Background Colors</h3>
+{{ backgroundColors }}
+{{ backgroundColorsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Text Accents</h3>
+<p>The <code>.accent</code> class is a utility class set up to make it quick and easy to add our tasteful heading accents to any text with ease. See bolow to learn the classes necessary to control the accent, it's color, and it's opacity.</p>
+{{ textAccents }}
+
+{{ textAccentsEscaped }}
+
+

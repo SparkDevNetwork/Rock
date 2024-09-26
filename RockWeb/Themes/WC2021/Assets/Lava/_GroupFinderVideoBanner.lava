@@ -1,0 +1,38 @@
+{% comment %} {% include '~~/Assets/Lava/_GroupFinderVideoBanner.lava' %} {% endcomment %}
+
+
+
+<div class="group-finder-video-banner">
+    <div class="container">
+        <h1 class="text-center display">Group Finder</h1>
+        <h1 class="text-center"><i>Life is better together!</i></h1>
+        <div class="d-flex justify-content-center w-100">
+            <a href="#" class="play-button" data-toggle="modal" data-target="#videoModal">
+                <i class="fa fa-play"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal container fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="videoModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <a href="#" type="button" class="close" data-dismiss="modal" aria-label="Close">×</a>
+                <h4 class="modal-title accent accent-invite accent-light" id="videoModalLabel">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc nec ex eu felis ullamcorper tempor. Quisque sit amet ante at purus condimentum iaculis. Morbi mollis porttitor tortor, at euismod mi vestibulum non. Suspendisse cursus nibh sed quam venenatis venenatis. Nulla interdum erat ante, vitae congue libero tristique vel. Cras pellentesque, nulla ut scelerisque rutrum, lorem urna dignissim nunc, sit amet egestas felis ligula non elit. Proin sagittis quam ac efficitur tempus. In faucibus ligula nisi, et feugiat elit ullamcorper in. Maecenas volutpat massa in libero maximus sagittis et non elit. Interdum et malesuada fames ac ante ipsum primis in faucibus.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">×</button>
+            </div>
+        </div>
+    </div>
+</div>
+

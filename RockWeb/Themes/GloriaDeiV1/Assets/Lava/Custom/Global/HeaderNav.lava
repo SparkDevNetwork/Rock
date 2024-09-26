@@ -1,0 +1,53 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Global/HeaderNav.lava' %} {% endcomment %}
+
+{% assign headerNavItemsType = 125 | FromCache:'DefinedType' %}
+{% assign headerNavItems = headerNavItemsType.DefinedValues %}
+
+{% if CurrentPerson %}
+    {% assign isLoggedIn = true %}
+{% else %}
+    {% assign isLoggedIn = false %}
+{% endif %}
+
+<div class="bg-white rounded-md header-nav d-flex align-items-center justify-content-between">
+    {% if CurrentPage.Layout.Site.SiteLogoBinaryFileId and CurrentPage.Layout.Site.SiteLogoBinaryFileId != empty %}
+        <a href="/" title="home" class="d-md-none brand">
+            <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}" alt="Gloria Dei | Home" class="logo img-responsive">
+        </a>
+    {% endif %}
+    <nav class="d-none d-md-block">
+        <ul class="list-unstyled m-0">
+            {% for item in headerNavItems %}
+                {% assign visibility = item | Attribute:'Visibility' %}
+                {% assign isVisible = false %}
+
+                {% if visibility == 'All' %}
+                    {% assign isVisible = true %}
+                {% elseif visibility == 'Logged In' and isLoggedIn %}
+                    {% assign isVisible = true %}
+                {% elseif visibility == 'Logged Out' and isLoggedIn == false %}
+                    {% assign isVisible = true %}
+                {% endif %}
+
+                {% if isVisible %}
+                    <li><a href="{{ item | Attribute:'Url','RawValue' }}">{{ item.Value }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+
+    <div class="account-nav d-flex align-items-center">
+        {% comment %} todo: update urls {% endcomment %}
+        <div>
+            <a href="#" class="give-link d-none d-md-inline-block text-white px-md-3">Give</a>
+            <a href="#" class="js-sidebar-toggle sidebar-toggle d-md-none p-3">{% include '~~/Assets/Images/Icons/custom-bars-v2.svg' %}</a>
+        </div>
+        <div class="">
+            {% if isLoggedIn %}
+                <a href="#" class="profile-link logged-in btn"><img src="{{ CurrentPerson.PhotoUrl }}&maxwidth=35&maxheight=35" class="user-img mr-md-2" alt="Gloria Dei | {{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}"><span class="d-none d-md-inline">Hi, {{ CurrentPerson.NickName }}</span></a>
+            {% else %}
+                <a href="/login" class="profile-link logged-out btn"><span class="d-none d-md-inline">Login</span><i class="fa fa-user d-md-none m-0"></i></a>
+            {% endif %}
+        </div>
+    </div>
+</div>

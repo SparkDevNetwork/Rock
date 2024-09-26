@@ -1,0 +1,238 @@
+// Load Master Styles
+// -------------------------
+@import "./components/_spacing.less";
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_bootstrap-overrides.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_custom-variables.less";
+@import "_print.less";
+@import "_fonts.less";
+@import "./components/_rock-modal.less";
+@import "./components/_colors.less";
+@import "./components/_navbar.less";
+@import "./components/_site-footer.less";
+@import "./components/_hero.less";
+@import "./components/_panels.less";
+@import "./components/_transaction-entry.less";
+@import "./components/_public-profile.less";
+@import "./components/_group-scheduler.less";
+@import "./components/_typography.less";
+@import "./components/_lists.less";
+@import "./components/_navs.less";
+@import "./components/_buttons.less";
+@import "./components/_accordions.less";
+@import "./components/_animated-text.less";
+@import "./components/_cards.less";
+@import "./components/_banners.less";
+@import "./components/_swiper.less";
+@import "./components/_event-list.less";
+@import "./components/_location-finder.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Social Share
+    4. Utilities
+
+*/
+
+.panel-groupscheduler {
+    .panel-heading {
+        display: block !important;
+    }
+
+    .panel-title {
+        display: none !important;
+    }
+}
+
+#cms-admin-footer .btn {
+    padding: 6px 12px;
+}
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  background-color: @body-background;
+}
+
+
+body {
+    // height: 100%;
+    background: @theme-background;
+    scroll-behavior: smooth;
+}
+
+.body-bg {
+  position: fixed;
+  opacity: .02;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background-size: 200px 400px;
+
+  &-mill-creek {
+    background-image: url('/Themes/GoldCreekV1/Assets/Images/mill-creek-bg-pattern.png');
+  }
+
+  &-lake-stevens {
+    background-image: url('/Themes/GoldCreekV1/Assets/Images/lake-stevens-bg-pattern.png');
+  }
+
+  &-woodinville {
+    background-image: url('/Themes/GoldCreekV1/Assets/Images/woodinville-bg-pattern.png');
+  }
+
+  &-gold-creek-online {
+    background-image: url('/Themes/GoldCreekV1/Assets/Images/gc-online-bg-pattern.png');
+  }
+}
+
+main {
+    display: block;
+    overflow: hidden;
+
+    flex-shrink: 0 !important;
+    -ms-flex-negative: 0 !important;
+
+    &.container-fluid {
+        width: 100%;
+    }
+
+    &.container {
+        max-width: 100%;
+    }
+}
+
+.main.container-fluid {
+    @media (min-width: @screen-lg-min) {
+        max-width: 90%;
+    }
+}
+
+#form1 {
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+
+.card:hover {
+    text-decoration: none;
+
+    .text-muted {
+        color: @text-muted;
+    }
+}
+
+
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.well {
+    box-shadow: none;
+}
+
+.breadcrumb {
+    padding-right: 0;
+    padding-left: 0;
+    margin: 0;
+    text-transform: uppercase;
+    color: #ffffff;
+
+    a {
+        color: #ffffff;
+    }
+
+    >li+li::before {
+        padding: 0 3px 0 5px;
+        color: #ffffff;
+    }
+}
+
+a:focus {
+    color: inherit;
+}
+
+
+
+
+// 3. Social Share
+.social-share {
+    margin: 0 !important;
+    padding-inline-start: 0;
+
+    li {
+        display: inline-block;
+
+        .socialicon {
+            height: 43px;
+            width: 43px;
+            font-family: 'FontAwesome';
+            font-weight: 900;
+            font-size: 20px;
+            color: @gc-grey;
+            border-radius: 999px;
+            background-color: @color-of-the-year;
+            .transition();
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background-color: darken(@color-of-the-year, 10%);
+            }
+        }
+    }
+}
+
+
+
+// -------------------------
+// 4. Utilities
+// -------------------------
+
+.rounded-sm{
+  border-radius: @border-radius-base;
+}
+
+.rounded-md{
+  border-radius: 8px;
+}
+
+.hide-on-mobile {
+    @media screen and (max-width: 767px) {
+        display: none !important;
+    }
+}
+
+.hide-on-tablet {
+    @media screen and (min-width: 768px) and (max-width: 991px) {
+        display: none !important;
+    }
+}
+
+.hide-on-desktop {
+    @media screen and (min-width: 1200px) {
+        display: none !important;
+    }
+}
+
+
+
+
+
+
+@import "_css-overrides.less";

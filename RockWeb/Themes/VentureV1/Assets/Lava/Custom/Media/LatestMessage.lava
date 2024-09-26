@@ -1,0 +1,46 @@
+//- {% include '~~/Assets/Lava/Custom/Media/LatestMessage.lava' %}
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+{% contentchannelitem where:'ContentChannelId == 14 && StartDateTime < "{{ now }}"' limit:'1' iterator:'FullMessages' sort:'StartDateTime desc' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign latestFullMessage = FullMessages | First %}
+{% assign messageVideo = latestFullMessage | Attribute:'Video','Object' %}
+
+{% if messageVideo and messageVideo != empty %}
+
+    {% assign latestFullMessageParent = latestFullMessage.ParentItems | First %}
+    {% assign latestFullMessageParentSlug = latestFullMessageParent.ContentChannelItem.PrimarySlug | Default:'parent' %}
+    {% comment %} todo: update url {% endcomment %}
+    {% assign latestFullMessageUrl = 'v1/series/' | Append:latestFullMessageParentSlug | Append:'/' | Append:latestFullMessage.PrimarySlug %}
+    {% assign latestFullMessageSpeaker = latestFullMessage | Attribute:'Speaker' %}
+
+    {% assign messageImg = messageVideo.DefaultThumbnailUrl | TriumphImgCdn:'w=800&h=450&fit=crop&auto=compress,format' %}
+
+
+    <div class="bg-muted">
+        <div class="container container-lg py-5">
+            <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-xs-12 col-sm-12 col-md-6" data-aos="fade-right">
+                    <div class="h-100 mb-4 mb-md-0">
+                        <img src="{{ messageImg }}" alt="" class="rounded-md w-100 img-responsive">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-6" data-aos="fade-left" data-aos-delay="200">
+                    <div class="h-100 pl-md-4">
+                        <h4 class="mb-3 accent accent-invite accent-light text-primary">Latest Message</h4>
+                        <h3 class="mb-2">{{ latestFullMessage.Title }}</h3>
+
+                        <p class="mb-4 mb-md-5 d-block font-weight-bold text-muted">{{ latestFullMessage.StartDateTime | Date:'MMM d, yyyy' }} {% if latestFullMessageSpeaker and latestFullMessageSpeaker != empty %}&nbsp;<i class="venture-diamond "></i>&nbsp; {{ latestFullMessageSpeaker }}{% endif %}</p>
+
+                        <a href="/{{ latestFullMessageUrl }}" class="btn btn-grow btn-primary mb-3">Watch Full Message</a>
+                        <div class="d-flex w-100 justify-content-center justify-content-sm-start">
+                            <a href="https://open.spotify.com/show/2AYPQIJ0oSFsCH9kw4Sera?si=1da71fc263664bc2" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-spotify"></i></a>
+                            <a href="https://podcasts.apple.com/us/podcast/venture-church/id1504305896" class="btn btn-light btn-primary icon-btn icon-btn-circle" target="_blank"><i class="fa fa-apple"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,58 @@
+// out: false
+
+.banner {
+  &-body {
+    position: relative;
+    background-color: transparent;
+
+    a {
+      .transition();
+    }
+
+
+    @media (min-width: 768px) {
+      padding: 40px;
+      // todo: replace
+      // background-color: @ultra-white;
+      background-color: #ffffff;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 12px;
+        // todo replace
+        background-color: #e74724;
+        // background-color: @rocks-red;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      padding: 80px;
+    }
+  }
+
+  &.basic {
+    .banner-body {
+      background-color: transparent;
+      padding-top: 0;
+      padding-bottom: 0;
+
+      @media (max-width: 767px) {
+        padding-left: 16px;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -15px;
+          bottom: 0;
+          width: 12px;
+          background-color: #e74724;
+        }
+      }
+    }
+  }
+}

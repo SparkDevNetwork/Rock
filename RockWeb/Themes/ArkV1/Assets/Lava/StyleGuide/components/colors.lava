@@ -1,0 +1,55 @@
+/- {% include '~~/Assets/Lava/styleguide/components/colors.lava' %} -/
+
+<h1 class="mb-4">Colors</h1>
+
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#background">Background Colors</a></li>
+    <li><a href="#text">Text Colors</a></li>
+</ul>
+
+<div class="card mb-4" id="background">
+    <div class="card-header">
+        <h4 class="m-0">Background Colors</h4>
+    </div>
+    {%- capture codeOutput -%}
+<pre class="bg-primary">bg-primary</pre>
+<pre class="bg-success text-white">bg-success</pre>
+<pre class="bg-info text-white">bg-info</pre>
+<pre class="bg-warning text-white">bg-warning</pre>
+<pre class="bg-danger text-white">bg-danger</pre>
+<pre class="bg-gray">bg-gray</pre>
+<pre class="bg-light-gray">bg-light-gray</pre>
+<pre class="bg-dark text-white">bg-dark</pre>
+<pre class="bg-gold"><span class="position-relative z-10">bg-gold</span></pre>
+{%- endcapture -%}
+
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Replace:'pre','div' | Escape }}</code></pre>
+    </div>
+</div>
+
+<div class="card mb-4" id="text">
+    <div class="card-header">
+        <h4 class="m-0">Text Colors</h4>
+    </div>
+    {%- capture codeOutput -%}
+<pre class="text-color bg-white">text-color</pre>
+<pre class="text-muted bg-white">text-muted</pre>
+<pre class="text-primary bg-white">text-primary</pre>
+<pre class="text-success bg-white">text-success</pre>
+<pre class="text-info bg-white">text-info</pre>
+<pre class="text-warning bg-white">text-warning</pre>
+<pre class="text-danger bg-white">text-danger</pre>
+{%- endcapture -%}
+
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Replace:' bg-white','' | Replace:'pre','div' | Escape }}</code></pre>
+    </div>
+</div>

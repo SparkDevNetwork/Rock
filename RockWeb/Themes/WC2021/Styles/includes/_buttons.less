@@ -1,0 +1,33 @@
+
+  .btn {
+      text-transform: uppercase;
+      border-radius: 200px;
+
+      &:not(.btn-link):hover {
+          box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.50);
+      }
+  }
+
+  .btn:not(.btn-sm):not(.btn-lg):not(.btn-xs) {
+      font-size: 15px;
+      padding: @padding-base-vertical 36px;
+  }
+
+
+
+// .btn-lg, .btn-group-lg > .btn {
+//     @btn-vertical-offset: 3px;
+//     padding: (@padding-large-vertical + @btn-vertical-offset) @padding-large-horizontal (@padding-large-vertical - @btn-vertical-offset);
+//   }
+
+//   .btn-sm, .btn-group-sm > .btn {
+//     @btn-vertical-offset: 2px;
+//     padding: (@padding-small-vertical + @btn-vertical-offset) @padding-small-horizontal (@padding-small-vertical - @btn-vertical-offset);
+//   }
+
+//   .btn-xs, .btn-group-xs > .btn {
+//     @btn-vertical-offset: 2px;
+//     padding: (@padding-xs-vertical + @btn-vertical-offset) @padding-xs-horizontal (@padding-xs-vertical - @btn-vertical-offset);
+//   }
+
+

@@ -1,0 +1,36 @@
+.animated-text {
+  font-size: 36px;
+  font-weight: 900;
+}
+@media screen and (min-width: 992px) {
+  .animated-text {
+    font-size: 76px;
+  }
+}
+@media screen and (max-width: 767px) {
+  .animated-text-prefix {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 768px) {
+  .animated-text-prefix {
+    margin-right: 10px;
+  }
+}
+.animated-text-item {
+  overflow: hidden;
+}
+@keyframes grow {
+  from {
+    width: 1px;
+  }
+  30% {
+    width: 100%;
+  }
+  70% {
+    width: 100%;
+  }
+  to {
+    width: 1px;
+  }
+}

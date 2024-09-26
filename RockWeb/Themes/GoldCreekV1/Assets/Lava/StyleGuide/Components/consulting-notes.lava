@@ -1,0 +1,144 @@
+<div class="bg-white rounded-md py-5 px-3 px-md-5 shadow-md mb-5 position-relative card-linked">
+    <h2 class="display"><span class="text-goldcreek">Consulting</span> Notes</h2>
+    <p class="tall">On this page you will find a list of consulting notes created for Gold Creek based on the GoldCreekV1 site theme.</p>
+    <div><a class="btn btn-primary btn-goldcreek btn-lg stretched-link" href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes" target="_blank">View All Notes</a></div>
+</div>
+
+<div class="pb-5">
+    <h5>Content Components</h5>
+    <div class="row d-flex flex-wrap pb-md-4">
+
+        {% comment %} Card {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-card.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Card</h4>
+                    <span>Three column card layout</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/card-content-component" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Billboard Cards {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-billboard-cards.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Billboard Cards</h4>
+                    <span>Small Card Layout featuring a large colored billboard</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/billboard-cards-content-component" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Cards Slider {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-cards-slider.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Cards Slider</h4>
+                    <span>three colum card layout featuring a slider</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/cards-slider-content-component" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Giant Cards {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-giant-cards.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Giant Cards</h4>
+                    <span>Large horizontal card layout suited for large content</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/giant-cards-content-component" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Branded Banners {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-branded-banner.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Branded Banners</h4>
+                    <span>full width banner featuring a branded bg color and large content area</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/branded-banners-content-component" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <h5>Lava Includes</h5>
+    <div class="row d-flex flex-wrap pb-md-4">
+
+        {% comment %} Campus Service Times {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-campus-service-times.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Campus Service Times</h4>
+                    <span>Outputs a string of campus service times</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/campus-service-times-lava-include" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Image Banner {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-image-banner.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Image Banner</h4>
+                    <span>Outputs a full width banner image that can be linked</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/image-banner" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Overlay Banner {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-overlay-banner.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Overlay Banner</h4>
+                    <span>Outputs a full width banner with a bg image and overlay.</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/overlay-banner-lava-include" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Person Giant Card {% endcomment %}
+        <div class="col-xs-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card card-linked h-100">
+                <img class="card-img-top" alt="" src="/Themes/GoldCreekV1/Assets/Images/gold-creek-person-giant-card.jpg" class="card-img-top img-responsive">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Person Giant Card</h4>
+                    <span>Takes in a personId and outputs a card to feature the corresponding person</span>
+                </div>
+                <div class="card-footer">
+                    <a href="https://www.triumph.tech/partner-portal/4c9e3e59-7c49-41d4-868f-b6b7531c8dab/notes/note/person-giant-card-lava-include" target="_blank" class="btn btn-default stretched-link">View Note</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

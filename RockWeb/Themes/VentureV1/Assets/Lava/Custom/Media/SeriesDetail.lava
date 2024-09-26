@@ -1,0 +1,84 @@
+//- {% include '~~/Assets/Lava/Custom/Media/SeriesDetail.lava', buttontext %}
+
+{% assign image = Item | Attribute:'SeriesImage','Guid' | ImageUrl | TriumphImgCdn:'w=1600&h=900&fit=crop&auto=compress,format' %}
+{% assign seriesSlug = Item.PrimarySlug %}
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+{% assign contentChannelId = Item.ContentChannelId %}
+
+/-
+    content channel ids
+        - 21: Back Yard Buddies Series
+        - 11: Full Length Message Series:
+        - 12: Mini-Message Series
+        - 20: MVMNT Series
+        - 13: Scouts & Navigations Series
+-/
+
+{%- case contentChannelId -%}
+    {%- when 21 -%}
+        //- Back Yard Buddies
+        {% assign detailsPage = 'v1/backyard-buddies/{Parent.Slug}/{PrimarySlug}' %}
+    {%- when 11 -%}
+        //- Full Length Messages
+        {% assign detailsPage = 'v1/series/{Parent.Slug}/{PrimarySlug}' %}
+    {%- when 12 -%}
+        //- Mini-Messages
+        {% assign detailsPage = 'v1/mini-messages/{Parent.Slug}/{PrimarySlug}' %}
+    {%- when 20 -%}
+        //- MVMNT
+        {% assign detailsPage = 'v1/mvmnt/{Parent.Slug}/{PrimarySlug}' %}
+    {%- when 13 -%}
+        //- Scouts & Navigations
+        {% assign detailsPage = 'v1/scouts-and-navigations/{Parent.Slug}/{PrimarySlug}' %}
+{%- endcase -%}
+
+{% unless buttontext and buttontext != empty %}
+    {% assign buttontext = 'Watch' %}
+{% endunless %}
+
+<div class="mt-5 mt-sm-0">
+    <div class="ratio ratio-5x3 rounded-lg series-img overflow-hidden mb-4 shadow-lg" data-aos="fade-up">
+        <img src="{{ image }}" alt="{{ Item.Title }}" class="w-100 h-100 img-reponsive position-absolute top-0 left-0 right-0 bottom-0" style="object-fit: cover; object-position: center;">
+    </div>
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+    <h3 class="accent accent-invite mb-4">Messages in this Series</h3>
+
+    <div class="row">
+        {% for item in Item.ChildItems %}
+
+            {% assign message = item.ChildContentChannelItem %}
+            {% assign messageStart = message.StartDateTime %}
+
+            {% if messageStart < now %}
+                {% assign messageVideo = message | Attribute:'Video','Object' %}
+                {% assign defaultThumbnailUrl = messageVideo.DefaultThumbnailUrl %}
+                {% assign messageSlug = message.PrimarySlug %}
+                {% assign detailsUrl = detailsPage | Replace:'{Parent.Slug}',seriesSlug | Replace:'{PrimarySlug}',messageSlug %}
+
+                {% if defaultThumbnailUrl and defaultThumbnailUrl != empty %}
+                    {% assign messageImage = defaultThumbnailUrl | TriumphImgCdn:'w=800&h=450&fit=crop&auto=compress,format' %}
+                {% else %}
+                    {% assign messageImage = image %}
+                {% endif %}
+
+                <div class="col-xs-12 col-sm-6 col-md-4 mb-4" data-aos="fade-up">
+                    <div class="poster-card js-poster-card poster-card-dark" style="background-image:url({{ messageImage }});">
+                        <div class="poster-card-body js-poster-card-body">
+                            <span class="d-block tall">{{ message.StartDateTime | Date:'MMM d' }}</span>
+                            <h5 class="poster-card-title accent accent-invite accent-">{{ message.Title }}</h5>
+
+                            <div class="poster-card-hidden js-poster-card-hidden">
+                                <a href="/{{ detailsUrl }}" class="text-white">{{ buttontext }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            {% endif %}
+
+        {% endfor %}
+    </div>
+</div>

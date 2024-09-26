@@ -1,0 +1,28 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Homepage/_Hero.lava' %} {% endcomment %}
+
+{% assign heroImgGuid = CurrentPage | Attribute:'HeroImage','RawValue' %}
+{% assign heroImgUrl = heroImgGuid | ImageUrl %}
+{% assign heroImgSetObj = CurrentPage | Attribute:'HeroImages','Object' %}
+{% assign heroImgSetItems = heroImgSetObj.AttributeMatrixItems %}
+
+<div class="container container-lg">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-6">
+            {% include '~~/Assets/Lava/Custom/Components/ServiceTimesAccordion.lava' %}
+            <div class="pb-5 pb-md-0"></div>
+            {% include '~~/Assets/Lava/Custom/Homepage/_AnimatedHeading.lava' %}
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-6 mt-5 mt-md-0{% if CurrentPerson %} d-none d-md-block{% endif %}">
+            <div class="backdrop backdrop-primary backdrop-left rounded-md img-wrap">
+                {[ swiper autoplay:'5000' speed:'1000' effect:'flip' loop:'true' shownavigation:'false' showpagination:'false' ]}
+                    {% for item in heroImgSetItems %}
+                        {% assign imgUrl = item | Attribute:'Image','RawValue' | ImageUrl %}
+                        [[ slide ]]
+                            <img src="{{ imgUrl }}" alt="" class="w-100 rounded-md" style="aspect-ratio: 1; object-fit: cover;">
+                        [[ endslide ]]
+                    {% endfor %}
+                {[ endswiper ]}
+            </div>
+        </div>
+    </div>
+</div>

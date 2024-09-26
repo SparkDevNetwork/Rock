@@ -1,0 +1,406 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Events/EventDetailsFeatured.lava', featuredEvent:featuredEvent, eventItem:eventItem %} {% endcomment %}
+
+{% stylesheet id:'eventDetailsFeatured' compile:'less' %}
+    .split-bg {
+        background: linear-gradient(180deg, #F8F9FA 50%, #E9ECEF 50%);
+    }
+{% endstylesheet %}
+
+{{ eventItem.Name | Append:' | Venture Church' | SetPageTitle:'All' }}
+{{ eventItem.Name | AddMetaTagToHead:'name','title' }}
+{{ eventItem.Name | AddMetaTagToHead:'property','og:title' }}
+
+{% assign featuredEventPhoto = featuredEvent | Attribute:'HeroImage','Guid' %}
+{% assign shareMessage = featuredEvent | Attribute:'ShareMessage' %}
+
+{% if featuredEventPhoto and featuredEventPhoto != empty %}
+    {% assign photoId = featuredEventPhoto %}
+{% else %}
+    {% assign photoId = eventItem.PhotoId %}
+{% endif %}
+
+//- Lead Variables
+{% assign showLeadSection = featuredEvent | Attribute:'ShowLeadSection' | AsBoolean %}
+{% if showLeadSection %}
+    {% assign leadContentHeading = featuredEvent | Attribute:'LeadContentHeading' %}
+    {% assign leadContentContent = featuredEvent | Attribute:'LeadContentContent1' %}
+    {% assign leadContentPhoto = featuredEvent | Attribute:'LeadContentPhoto','Guid' %}
+    {% assign leadContentVideoUpload = featuredEvent | Attribute:'LeadContentVideoUpload','Guid' %}
+    {% assign leadContentMediaElement = featuredEvent | Attribute:'LeadContentMediaElement','Id' %}
+{% endif %}
+
+//- Image Gallery
+{% assign showGallery = featuredEvent | Attribute:'ShowImageGallery' | AsBoolean %}
+{% if showGallery %}
+    {% assign galleryId = featuredEvent | Attribute:'ImageGalleryId' %}
+{% endif %}
+
+
+//- FAQ Variables
+{% assign showFAQs = featuredEvent | Attribute:'ShowFAQs' | AsBoolean %}
+{% if showFAQs %}
+    {% assign faqs = featuredEvent | Attribute:'FAQs','Object' %}
+{% endif %}
+
+//- DownloadGraphics Variables
+{% assign showDownloadGraphicsSection = featuredEvent | Attribute:'ShowDownloadGraphicsSection' | AsBoolean %}
+{% if showDownloadGraphicsSection %}
+    {% assign downloadGraphics = featuredEvent | Attribute:'DownloadGraphics','Object' %}
+{% endif %}
+
+//- Image Gallery Variables
+{% assign showImageGallery = featuredEvent | Attribute:'ShowImageGallery' | AsBoolean %}
+{% if showImageGallery %}
+    {% assign imageGalleryId = featuredEvent | Attribute:'ImageGalleryId' %}
+{% endif %}
+
+
+
+{% if photoId != '' %}
+    {% assign photoUrl = photoId | ImageUrl | TriumphImgCdn:'w=1600&h=900&fit=crop&auto=compress,format' %}
+    {{ photoUrl | AddMetaTagToHead:'property','og:image' }}
+    <div class="container container-lg mt-5">
+        <section id="main_secPageTitle" class="has-image" role="banner">
+            <img src="{{ photoUrl }}" sizes="100vw" class="img-responsive rounded-md" alt="" width="{{ eventItem.Photo.Width }}" height="{{ eventItem.Photo.Height }}" itemprop="image" data-aos="fade-up">
+        </section>
+    </div>
+
+{% endif %}
+
+<div class="py-3"></div>
+<div class="py-3"></div>
+<div class="py-md-3"></div>
+<div class="py-md-3"></div>
+
+{% if showLeadSection %}
+    {% if leadContentMediaElement != empty or leadContentPhoto != empty %}
+        {% assign colOneClasses = 'col-xs-12 col-sm-12 col-md-6 order-2 order-md-1' %}
+        {% assign colTwoClasses = 'col-xs-12 col-sm-12 col-md-6 mb-4 mb-md-0 order-1 order-md-2' %}
+    {% else %}
+        {% assign colOneClasses = 'col-xs-12 col-sm-12 col-md-12' %}
+    {% endif %}
+
+    <div class="container container-lg">
+        <section class="page-section lead-section">
+            <div class="row d-flex flex-wrap">
+                <div class="{{ colOneClasses }}" data-aos="fade-right">
+
+                    <div class="mr-md-5">
+                        <h2 class="accent accent-invite accent-lighter mb-4">{{leadContentHeading}}</h2>
+                        {{ leadContentContent }}
+
+                        <div class="py-3"></div>
+                        {% include '~~/Assets/Lava/Custom/SocialShare.lava', justify:'start', justifyMd:'start' %}
+                    </div>
+
+                </div>
+                {% if leadContentMediaElement != empty or leadContentPhoto != empty %}
+                    <div class="{{ colTwoClasses }}" data-aos="fade-left" data-aos-delay="200">
+                        {% if leadContentMediaElement and leadContentMediaElement != empty %}
+                            <div class="rounded-md shadow-md">
+                                {[ mediaplayer media:'{{ leadContentMediaElement }}' ]}{[ endmediaplayer ]}
+                            </div>
+                        {% elseif leadContentPhoto and leadContentPhoto != empty %}
+                            <img src="{{ leadContentPhoto | ImageUrl | TriumphImgCdn:'w=800&h=450&fit=crop&auto=compress,format' }}" alt="" class="rounded-md shadow-md img-responsive">
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+{% endif %}
+
+
+
+
+
+{% comment %} !===================================== {% endcomment %}
+
+
+
+
+
+{% if showGallery %}
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    <div class="container container-lg">
+        <div class="position-relative mb-4">
+            {[ imageslider galleryId:'{{ galleryId }}' ]}
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+{% comment %} !===================================== {% endcomment %}
+
+
+
+
+{% eventscheduledinstance eventid:'{{eventId}}' maxoccurrences:'100' %}
+    {% assign EventScheduledInstances = EventScheduledInstances | Sort:'DateTime' %}
+
+    {% if EventScheduledInstances.size > 0 %}
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+
+        <section class="page-section split-bg">
+
+            <div class="container container-lg">
+                <div class="rounded-md bg-primary p-3 px-md-5 py-md-5" data-aos="fade-up">
+                    <div class="p-0 py-4 py-md-5">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h2 class="accent accent-white mb-4 mb-md-0 text-center accent-center text-md-left accent-md-left">Find A Time<br>And Location</h2>
+                            </div>
+                            <div class="col-md-6 text-color">
+                                {% for item in EventScheduledInstances %}
+                                    {% assign kidCare = item.EventItemOccurrence | Attribute:'kidCareAvailable','RawValue' | AsBoolean %}
+
+                                    {% assign itemTitle = item.Campus %}
+                                    {% if item.EventItemOccurrence.CampusId == CurrentPerson.PrimaryCampusId %}
+                                        {% assign itemTitle = item.Campus | Append:' <i class="fa fa-star"></i>' %}
+                                    {% endif %}
+
+                                    {[ accordion paneltype:'accordion' firstopen:'false' ]}
+                                        [[ item title:'{{ itemTitle }}' ]]
+                                            <div class="mb-3"><i class="fa fa-map-marker"></i> {{ item.LocationDescription | Default:item.Location }}</div>
+                                            <div class="mb-3"><i class="fa fa-calendar"></i> {{ item.DateTime | Date:'M/d/yyyy h:mmtt' }}</div>
+                                            {% if kidCare %}
+                                                <div><i class="fa fa-child"></i> Child Care Available</div>
+                                            {% else %}
+                                                <div class="o-40"><i class="fa fa-child"></i> No Child Care</div>
+                                            {% endif %}
+
+
+
+                                            {% assign eventItemOccurrenceLinkages = item.EventItemOccurrence.Linkages %}
+                                            {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
+
+                                            <div class="mt-4">
+                                                {% if eventItemOccurrenceLinkagesCount > 0 %}
+                                                    {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+                                                        {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
+                                                            {% assign minutesTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+                                                            {% assign minutesTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+                                                            {% assign showRegistration = true %}
+                                                            {% assign registrationMessage = '' %}
+
+                                                            {% if minutesTillStartDate and minutesTillStartDate > 0 %}
+                                                                {% assign showRegistration = false %}
+                                                                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                                                    {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                                {% else %}
+                                                                    {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                                {% endif %}
+                                                            {% endif %}
+
+                                                            {% if minutesTillEndDate and minutesTillEndDate < 0 %}
+                                                                {% assign showRegistration = false %}
+                                                                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                                                    {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                                {% else %}
+                                                                    {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                                {% endif %}
+                                                            {% endif %}
+
+                                                            {% if showRegistration == true %}
+                                                                {% assign statusLabel = 'Register' %}
+                                                                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                                                    {% assign registrationButtonText = statusLabel %}
+                                                                {% else %}
+                                                                    {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
+                                                                {% endif %}
+
+                                                                {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                                                                    <a href="/v1/registration?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{ eventItemOccurrenceLinkage.UrlSlug }}" class="btn btn-primary btn-grow">{{ registrationButtonText }}</a>
+                                                                {% else %}
+                                                                    <a href="/v1/registration?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-grow">{{ registrationButtonText }}</a>
+                                                                {% endif %}
+                                                            {% else %}
+                                                                <p>{{ registrationMessage }}</p>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                        <a href="/v1/calendar/event-occurrence/{{ item.EventItemOccurrence.Id }}" class="btn btn-outline-primary btn-grow">View Details</a>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <a href="/v1/calendar/event-occurrence/{{ item.EventItemOccurrence.Id }}" class="btn btn-primary btn-grow">View Details</a>
+                                                {% endif %}
+                                            </div>
+
+
+                                        [[ enditem ]]
+                                    {[ endaccordion ]}
+
+
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    {% endif %}
+{% endeventscheduledinstance %}
+
+
+
+{% if showFAQs %}
+    {% assign faqs = faqs.AttributeMatrixItems %}
+
+    <div class="bg-muted">
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+
+        <h2 class="text-center accent accent-invite accent-light accent-center m-0 display" data-aos="fade-up">FAQs</h2>
+        <div class="py-3"></div>
+
+        <div class="container container-sm" data-aos="fade-up">
+            {[ accordion paneltype:'accordion' firstopen:'true' ]}
+                {% for faq in faqs %}
+                    {% assign question = faq | Attribute:'Text' %}
+                    {% assign answer = faq | Attribute:'Content' %}
+
+                        [[ item title:'{{ question }}' ]]
+                            {{ answer }}
+                        [[ enditem ]]
+                {% endfor %}
+            {[ endaccordion ]}
+        </div>
+
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+    </div>
+
+{% endif %}
+
+
+
+
+
+//- the body of the text message for the shareCard
+{%- capture shareMessageFinal -%}
+{{ shareMessage }}
+
+{{ 'Global' | Page:'Url' }}
+{%- endcapture -%}
+
+//- check if we are mobile
+{% assign isMobile = CurrentBrowser.IsMobile | AsBoolean %}
+
+//- caprure the html for the share card
+//- if mobile – we want to send a text
+//- if NOT mobile – we want to send an email
+{% capture shareCard %}
+    {% if isMobile %}
+        <div class="cta-card bg-invite h-100">
+            <div class="cta-card-body">
+                <h3 class="cta-card-title text-white mb-4">Send a Text</h3>
+                <p>Hey! You're Invited!</p>
+            </div>
+            <div class="cta-card-footer">
+                <a href="sms:&body={{ shareMessageFinal | EscapeDataString }}" class="btn btn-primary btn-light" rel="noopener noreferrer">Click to Share</a>
+            </div>
+        </div>
+    {% else %}
+        {% capture emailSubject %}Venture Church – {{ eventItem.Name }}{% endcapture %}
+        <div class="cta-card bg-invite h-100">
+            <div class="cta-card-body">
+                <h3 class="cta-card-title text-white mb-4">Send an Email</h3>
+                <p class="tall">Hey! You're Invited!</p>
+            </div>
+            <div class="cta-card-footer">
+                <a href="mailto:?body={{ shareMessageFinal | EscapeDataString }}&subject={{ emailSubject | EscapeDataString }}" class="btn btn-primary btn-light" rel="noopener noreferrer">Click to Share</a>
+            </div>
+        </div>
+    {% endif %}
+{% endcapture %}
+
+<div class="bg-white">
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+    <div class="py-md-3"></div>
+    <div class="py-md-3"></div>
+
+    <div class="container container-lg">
+        <h2 id="aos-trigger-one" class="text-center accent accent-invite accent-light accent-center m-0 display" data-aos="fade-up">Invite Someone</h2>
+        <div class="py-3"></div>
+
+        <div class="row d-flex flex-wrap">
+            {% if downloadGraphics and downloadGraphics != empty %}
+                {% assign downloadGraphics = downloadGraphics.AttributeMatrixItems %}
+                <div class="col-xs-12 col-sm-12 col-md-6 mb-3 mb-md-0" data-aos="fade-right" data-aos-anchor="#aos-trigger-one">
+                    {{ shareCard }}
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-6" data-aos="fade-left" data-aos-delay="200" data-aos-anchor="#aos-trigger-one">
+                    <div class="cta-card bg-muted h-100">
+                        <div class="cta-card-body text-color">
+                            <h3 class="cta-card-title">Download Graphics</h3>
+
+                            <div class="row d-flex flex-wrap w-100 mt-4">
+                                {% for graphic in downloadGraphics %}
+                                    {% comment %} {% assign graphicTitle = graphic | Attribute:'Text' %} {% endcomment %}
+                                    {% assign graphicTitle = graphic | Attribute:'Text' %}
+                                    {% assign graphicImage = graphic | Attribute:'Image','Guid' | ImageUrl %}
+                                    {% assign graphicImageSm = graphicImage | TriumphImgCdn:'w=304&h=171&fit=crop&auto=compress,format' %}
+                                    {% assign graphicImageLg = graphicImage | TriumphImgCdn:'fit=crop&auto=compress,format' %}
+                                    <div class="col-xs-12 col-sm-4 col-md-6 col-lg-4 mb-3">
+                                        <p class="small font-weight-bold text-primary">{{ graphicTitle }}</p>
+                                        <div class="poster-card js-poster-card text-left" style="background-image:url({{ graphicImageSm }});">
+                                            <div class="poster-card-body js-poster-card-body">
+                                                {% comment %} <h5 class="poster-card-title accent accent-invite">{{ graphicTitle }}</h5> {% endcomment %}
+
+                                                <div class="poster-card-hidden js-poster-card-hidden">
+                                                    <a href="{{ graphicImageLg }}" target="_blank" class="text-white">Open Image</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                {% endfor %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-xs-12 col-sm-12 col-md-6" data-aos="fade-up">
+                    {{ shareCard }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+    <div class="py-md-3"></div>
+    <div class="py-md-3"></div>
+</div>
+
+<div class="bg-muted">
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    <div class="container container-sm">
+        <h2 class="accent accent-invite accent-light mb-4 text-center accent-center" data-aos="fade-up">Have Questions?</h2>
+        <p class="text-center mb-5 tall" data-aos="fade-up">If you need more info, please contact us!</p>
+        <div class="text-center" data-aos="fade-up">
+            <a href="/contactus" class="btn btn-primary btn-light btn-grow">Contact Us</a>
+        </div>
+    </div>
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+</div>

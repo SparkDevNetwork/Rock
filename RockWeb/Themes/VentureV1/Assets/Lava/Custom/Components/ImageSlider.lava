@@ -1,0 +1,74 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Components/ImageSlider.lava', id:'[contentChannelItemId]' %} {% endcomment %}
+
+{% contentchannelitem where:'Id == "{{ id }}"' limit:'1' iterator:'Galleries' sort:'Order' securityenabled:'false' %}
+{% endcontentchannelitem %}
+
+{% assign imagesMatrix = Galleries | First | Attribute:'Images','Object' %}
+{% assign images = imagesMatrix.AttributeMatrixItems %}
+
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+
+<div class="overflow-hidden">
+    <div class="row">
+        <div class="col-sm-8 col-md-6 col-lg-5">
+
+            <div class="position-relative">
+                <!-- Slider main container -->
+                <div class="swiper swiper-offset swiper-id-{{ id }}">
+                    <!-- Additional required wrapper -->
+                    <div class="swiper-wrapper">
+                        {% for image in images %}
+                            {% assign imageUrl = image | Attribute:'Image','Guid' | ImageUrl %}
+                            <div class="swiper-slide">
+                                <img src="{{ imageUrl | Append:'&w=600&mode=crop' }}" alt="img-responsive">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div> <!-- If we need pagination -->
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var swiper_{{ id }}_thumbs = new Swiper('.swiper-id-{{id}}-thumbs',
+        {
+            loop: false,
+            spaceBetween: 10,
+            slidesPerView: 4,
+            freeMode: true,
+            watchSlidesProgress: true,
+        });
+
+    var swiper_{{ id }} = new Swiper('.swiper-id-{{id}}',
+        {
+            breakpoints: {
+                768: {
+                    slidesPerView: 1,
+                    spaceBetween: 20
+                },
+                992: {
+                    slidesPerView: 1,
+                    spaceBetween: 24
+                }
+            },
+            // Optional parameters
+            initialSlide: 0,
+            centeredSlides: false,
+            slidesPerView: 1,
+            spaceBetween: 16,
+            speed: 300,
+            loop: false,
+            autoHeight: false,
+            effect: 'slide',
+            touchAngle: 45,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            grid: { rows: 1, },
+        });
+</script>
+

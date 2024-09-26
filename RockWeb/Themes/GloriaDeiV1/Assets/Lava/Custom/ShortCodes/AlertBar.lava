@@ -1,0 +1,68 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ShortCodes/AlertBar.lava', contentchannelid:'1044', backgroundcolor:'early-fawn', textcolor:'spirit-silk-light' %} {% endcomment %}
+
+
+{% if contentchannelid and contentchannelid != empty %}
+    {% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+    {% contentchannelitem where:'ContentChannelId == {{ contentchannelid }} && StartDateTime <= "{{ now }}" && ExpireDateTime > "{{ now }}"' iterator:'Items' sort:'Order' securityenabled:'false' disableattributeprefetch:'false' %}
+    {% endcontentchannelitem %}
+
+    <div class="alert-bar{% if backgroundcolor and backgroundcolor != empty %} bg-{{ backgroundcolor }}{% endif %}">
+        <div class="alert-animator">
+            <div class="alert-text{% if textcolor and textcolor != empty %} text-{{ textcolor }}{% endif %}">
+                {% for i in (1..5) %}
+                    {% if forloop.first %}
+                        {% for item in Items %}
+                            {% assign heading = item | Attribute:'Heading' %}
+                            {% assign iconCSSClasses = item | Attribute:'IconCSSClasses' %}
+                            {% assign message = item | Attribute:'Message' %}
+                            {% assign linkText = item | Attribute:'LinkText' %}
+                            {% assign linkUrl = item | Attribute:'LinkUrl','RawValue' %}
+                            {% assign newTab = item | Attribute:'NewTab' | AsBoolean %}
+
+                            {% if heading and heading != empty %}
+                                <b class="heading">{{ item | Attribute:'Heading' }}</b>
+                            {% endif %}
+                            {% if iconCSSClasses and iconCSSClasses != empty %}
+                                <i class="{{ item | Attribute:'IconCSSClasses' }} icon o-50"></i>
+                            {% endif %}
+                            {% if message and message != empty %}
+                                <span class="message">{{ item | Attribute:'Message' }}</span>
+                            {% endif %}
+                            {% if linkText and linkText != empty and linkUrl and linkUrl != empty %}
+                                <a href="{{ linkUrl }}"{% if newTab %} target="_blank"{% endif %} class="stretched-link">{{ linkText }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="alert-text-repeat alert-text-repeat-{{ i }}">
+                            {% for item in Items %}
+                                {% assign heading = item | Attribute:'Heading' %}
+                                {% assign iconCSSClasses = item | Attribute:'IconCSSClasses' %}
+                                {% assign message = item | Attribute:'Message' %}
+                                {% assign linkText = item | Attribute:'LinkText' %}
+                                {% assign linkUrl = item | Attribute:'LinkUrl','RawValue' %}
+                                {% assign newTab = item | Attribute:'NewTab' | AsBoolean %}
+
+                                {% if heading and heading != empty %}
+                                    <b class="heading">{{ item | Attribute:'Heading' }}</b>
+                                {% endif %}
+                                {% if iconCSSClasses and iconCSSClasses != empty %}
+                                    <i class="{{ item | Attribute:'IconCSSClasses' }} icon o-50"></i>
+                                {% endif %}
+                                {% if message and message != empty %}
+                                    <span class="message">{{ item | Attribute:'Message' }}</span>
+                                {% endif %}
+                                {% if linkText and linkText != empty and linkUrl and linkUrl != empty %}
+                                    <a href="{{ linkUrl }}"{% if newTab %} target="_blank"{% endif %} class="stretched-link">{{ linkText }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    {% endif %}
+
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% endif %}
+
+

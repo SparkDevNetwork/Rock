@@ -1,0 +1,122 @@
+@font-face {
+  font-family: 'Architects Daughter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/architectsdaughter/v18/KtkxAKiDZI_td1Lkx62xHZHDtgO_Y-bvfY4.ttf) format('truetype');
+}
+.font-accent {
+  font-family: 'Architects Daughter', cursive;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Thin_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Thin_Web.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-ThinItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-ThinItalic_Web.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-XLight_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-XLight_Web.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-XLightItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-XLightItalic_Web.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Light_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Light_Web.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-LightItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-LightItalic_Web.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Book_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Book_Web.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-BookItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-BookItalic_Web.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Medium_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Medium_Web.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-MediumItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-MediumItalic_Web.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Bold_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Bold_Web.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-BoldItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-BoldItalic_Web.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Ultra_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Ultra_Web.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-UltraItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-UltraItalic_Web.woff2') format('woff2');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-Black_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-Black_Web.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF/Gotham-BlackItalic_Web.woff') format('woff'), url('/Themes/VentureV1/Assets/Fonts/Gotham/WOFF2/Gotham-BlackItalic_Web.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}

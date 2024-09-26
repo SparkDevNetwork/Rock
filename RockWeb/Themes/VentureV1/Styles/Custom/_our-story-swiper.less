@@ -1,0 +1,56 @@
+.our-story {
+    &-content {
+        position: relative;
+
+        &-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(64px);
+            transition: all .5s ease;
+
+            .swiper-slide-active & {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    }
+
+    &-year, &-text {
+        position: absolute;
+        opacity: 0;
+        transition: all .5s ease;
+
+        .swiper-slide-active & {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    &-year {
+        bottom: 15px;
+        left: 15px;
+        transform: translateY(-64px);
+    }
+
+    &-text {
+        background-color: #ffffff;
+        padding: 24px 15px 15px;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+        top: calc(~'100% - 8px');
+        z-index: -1;
+        width: 100%;
+        left: 0;
+        transform: translateY(-64px);
+        transition-delay: 0s;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.12);
+
+        .swiper-slide-active & {
+            transition-delay: .25s;
+        }
+    }
+}

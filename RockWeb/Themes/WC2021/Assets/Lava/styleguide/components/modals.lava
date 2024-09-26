@@ -1,0 +1,150 @@
+{%- capture codeOutput -%}
+<a href="/calendar/6" class="btn btn-primary js-launch-modal">Launch Modal</a>
+<br><br>
+<a href="/calendar/6" class="btn btn-primary js-launch-modal" data-modal-close-confirmation="true">Launch Modal with Close Confirmation</a>
+<br><br>
+<a href="/calendar/6" class="btn btn-primary js-launch-modal" data-modal-title="Get Prayer">Launch Modal with Title</a>
+{%- endcapture -%}
+
+<h1>Modals (with iframes)</h1>
+<p class="lead">The theme provides options for displaying forms and other Rock content via modals in addition to the standard modal functionality provided by Rock.</p>
+
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#examples">Link Examples</a></li>
+    <li><a href="#content">Modal HTML Content</a></li>
+</ul>
+
+<div class="mb-5">
+    <h3>In Short</h3>
+    <p>Launch any link within a modal by adding the class <code>js-launch-modal</code>. Use the data attribute <code>data-modal-close-confirmation="true"</code> on the link to prevent the user from accidentally closing the modal. <a href="#examples">See examples</a></p>
+    <div class="alert alert-info">Keep in mind: All links contained within the modal <strong>will launch inside the modal</strong> unless <a href="#modallinks">target attributes</a> are used to open the link on the parent page.</div>
+
+    <hr>
+
+    <h3 class="mt-5">Working with iFrames</h3>
+    <p>To launch a modal from a URL add <code>js-launch-modal</code> to any link. Pages with forms should use the "Full Width Narrow" layout to automatically hide the header, footer, and other page elements when displayed in a modal.</p>
+
+    <h4 id="modallinks" class="tall mt-4">Working with Links</h4>
+    <p>All links found within the modal will launch within the iframe. To cause links to update the parent page either use:</p>
+    <ul>
+        <li>
+            <code>{{ '<a href="#" target="_top"></a>' | Escape }}</code> to replace the parent page.
+        </li>
+        <li>
+            <code>{{ '<a href="#" target="_blank"></a>' | Escape }}</code> to open content in a new page.
+        </li>
+    </ul>
+
+    <h4 class="tall mt-4">Closing Modal from within Iframe</h4>
+    <p>To close the modal from within the iframe use the <code>js-modal-close</code> class on a link:</p>
+    <pre class="language-html"><code>{{ '<a href="#" class="js-modal-close">Close</a>' |  Escape }}</code></pre>
+    <p>It's recommended to include a link as a fallback for users that have opened the page outside of a modal.</p>
+
+    <h4 class="tall mt-4">Close Confirmations</h4>
+    <p>When using with longer, or multi-page forms it's recommended to enable <code>modal-close-confirmation</code> to prevent users from accidentally closing the modal. This will display an additional confirmation message before allowing the user to close the modal.</p>
+    <p>The close confirmation is not displayed when an element is displayed on the page with one of the following classes:</p>
+    <ul>
+        <li><code>.js-workflow-entry-message-notification-box.alert-success</code> displayed as a workflow success element</li>
+        <li><code>.js-allow-modal-close</code> can be added to any element on a page to allow the page to load.</li>
+    </ul>
+
+    <h3 class="tall mt-5">Options</h3>
+    <p>Options are added via <code>data-</code> attributes, allowing for additional customization of modal behavior.</p>
+    <table class="table">
+        <thead>
+            <th style="width:180px;">Name (<code>data-</code>)</th>
+            <th style="width:50px;">Type</th>
+            <th style="width:50px;">Default</th>
+            <th>Description</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>modal-title</code></td>
+                <td>string</td>
+                <td><code>null</code></td>
+                <td>When provided the modal will display with the provided string inside the <code>modal-header</code> before the iframe.</td>
+            </tr>
+
+            <tr>
+                <td><code>modal-close-confirmation</code></td>
+                <td>boolean</td>
+                <td><code>false</code></td>
+                <td>When <code>true</code> modal will display a confirmation message before closing. The message is not displayed when a workflow success alert is displayed or an element with <code>js-allow-modal-close</code> is found.</td>
+            </tr>
+
+            <tr>
+                <td><code>modal-close-message</code></td>
+                <td>string</td>
+                <td><code>null</code></td>
+                <td>When provided the modal will display the provided string as the modal close confirmation message. Otherwise, "Are you sure you want to exit the form? Your data will be lost if you haven't submitted it." is displayed.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="tall mt-4">Methods</h3>
+    <p>The following javascript methods are available for use within the iframe to interact with the parent page:</p>
+    <hr>
+    <h4 class="tall">window.parent.closeModal();</h4>
+    <p>Closes the modal.</p>
+    <hr>
+    <h4 class="tall">window.parent.allowCloseModal();</h4>
+    <p>If <code>modal-close-confirmation</code> is enabled, this will provide</p>
+    <hr>
+
+    <h4 class="tall">window.parent.resizeDynamicModal();</h4>
+    <p>Force the modal to resize.</p>
+</div>
+
+<h3 class="tall mt-4">Examples</h3>
+<div id="examples" class="card mb-4">
+    <div class="card-header">
+        <h4 class="m-0">Standard Examples</h4>
+    </div>
+    <div class="card-body">
+        <div class="bg-gray-800 p-4">{{ codeOutput }}</div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Remove:'<br>' | Escape }}</code></pre>
+    </div>
+</div>
+
+{%- capture codeOutput -%}
+<a href="/calendar/6" class="btn btn-primary js-launch-modal" data-modal-close-confirmation="true" data-modal-title="Contact Us">Launch Contact Form with Close Confirmation</a>
+
+{%- endcapture -%}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="m-0">Launch Modal Markup</h4>
+    </div>
+    <div class="card-body">
+        <div class="bg-gray-800 p-4">{{ codeOutput }}</div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Remove:'<br>' | Escape }}</code></pre>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<h1 id="content">Modal HTML Content</h1>
+<p>Example elements used by forms inside of iFrames.</p>
+
+{%- capture codeOutput -%}
+<div class="well modal-success-well">
+    <h1 class="success-check">Thank you!</h1>
+    <p>Line of copy about how much it means to contribute to Willow.</p>
+
+    <a href="#" class="btn btn-primary btn-block js-modal-close">Done</a>
+</div>{%- endcapture -%}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="m-0">Confirmation Messages</h4>
+    </div>
+    <div class="card-body">
+        <div class="bg-gray-100 p-4">{{ codeOutput }}</div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Escape }}</code></pre>
+    </div>
+</div>

@@ -1,0 +1,166 @@
+/- {% include '~~/Assets/Lava/styleguide/components/accordion.lava' %} -/
+{% assign accordionTypes = 'standard,primary,transparent' | Split:',' %}
+<h1 class="mt-0">Accordions</h1>
+
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    {% for type in accordionTypes %}
+        <li><a href="#{{ type }}">{{ type | Replace:'-',' ' | Capitalize }}</a></li>
+    {% endfor %}
+</ul>
+
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">Standard</h4>
+    </div>
+{%- capture codeOutput -%}
+{[ accordion ]}
+
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+
+{[ endaccordion ]}
+{%- endcapture -%}
+{%- capture codeOutputCode -%}{% raw %}{[ accordion ]}
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}{% endraw %}
+{%- endcapture -%}
+
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutputCode | Escape }}</code></pre>
+        </div>
+</div>
+
+
+
+<div class="card mb-4" id="primary">
+    <div class="card-header">
+        <h4 class="m-0">Primary</h4>
+    </div>
+{%- capture codeOutput -%}
+{[ accordion paneltype:'primary']}
+
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+
+{[ endaccordion ]}
+{%- endcapture -%}
+{%- capture codeOutputCode -%}{% raw %}{[ accordion paneltype:'primary' ]}
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}{% endraw %}
+{%- endcapture -%}
+
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutputCode | Escape }}</code></pre>
+        </div>
+</div>
+
+<div class="card mb-4" id="transparent">
+    <div class="card-header">
+        <h4 class="m-0">Transparent</h4>
+    </div>
+{%- capture codeOutput -%}
+{[ accordion paneltype:'transparent']}
+
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+
+{[ endaccordion ]}
+{%- endcapture -%}
+
+{%- capture codeOutputCode -%}{% raw %}{[ accordion paneltype:'transparent ']}
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}{% endraw %}
+{%- endcapture -%}
+
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutputCode | Escape }}</code></pre>
+        </div>
+</div>
+
+

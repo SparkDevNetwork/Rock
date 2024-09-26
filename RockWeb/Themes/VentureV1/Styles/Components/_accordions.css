@@ -1,0 +1,45 @@
+.panel-accordion + .panel-accordion {
+  margin-top: 24px !important;
+}
+.panel-accordion .panel-heading {
+  position: relative;
+  padding-right: 48px;
+}
+.panel-accordion .panel-heading a {
+  border-bottom: 0;
+  text-decoration: none;
+}
+.panel-accordion .panel-heading a:hover,
+.panel-accordion .panel-heading a:active,
+.panel-accordion .panel-heading a:focus,
+.panel-accordion .panel-heading a:focus-within,
+.panel-accordion .panel-heading a:target,
+.panel-accordion .panel-heading a:hover,
+.panel-accordion .panel-heading a:visited,
+.panel-accordion .panel-heading a:focus-visible {
+  border-bottom: 0;
+  text-decoration: none;
+}
+.panel-accordion .panel-heading a::after,
+.panel-accordion .panel-heading a::before {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 21px;
+  height: 21px;
+  opacity: 0;
+}
+.panel-accordion .panel-heading a::after {
+  content: url('/Themes/VentureV1/Assets/SVG/plus-solid-1.svg');
+}
+.panel-accordion .panel-heading a::before {
+  content: url('/Themes/VentureV1/Assets/SVG/minus-solid-1.svg');
+  height: 25px;
+}
+.panel-accordion .panel-heading a[aria-expanded="true"]::before {
+  opacity: 1;
+}
+.panel-accordion .panel-heading a[aria-expanded="false"]::after {
+  opacity: 1;
+}

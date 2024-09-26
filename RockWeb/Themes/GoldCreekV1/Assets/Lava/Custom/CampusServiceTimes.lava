@@ -1,0 +1,38 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/CampusServiceTimes.lava', campusId:'', spanish:'true|false' %} {% endcomment %}
+
+{% if campusId and campusId != empty %}
+    {% assign campus = campusId | FromCache:'Campus' %}
+    {% assign serviceTimesString = campus.RawServiceTimes | Trim %}
+{% elseif Context.Campus %}
+    {% assign campus = Context.Campus %}
+    {% assign serviceTimesString = campus.ServiceTimes | Trim %}
+{% else %}
+    {% assign campus = 1 | FromCache:'Campus' %}
+    {% assign serviceTimesString = campus.RawServiceTimes | Trim %}
+{% endif %}
+
+{% assign spanishServiceTimesObject = campus | Attribute:'SpanishServiceTimes' %}
+{% assign spanishSize = spanishServiceTimesObject | Size %}
+
+{% if spanishSize and spanishSize > 0 %}
+    {% assign spanishServiceTimesString = spanishServiceTimesObject | Join:'|' | Remove:'[' | Remove:']' %}
+    {% assign spanishServiceTimesString = spanishServiceTimesString | Replace:',','^' %}
+{% endif %}
+
+{% if serviceTimesString and serviceTimesString != empty %}
+    {% capture formattedServiceTimesString %}
+        {% include '~~/Assets/Lava/Custom/FormattedServiceTimes.lava', timesString:serviceTimesString %}
+    {% endcapture %}
+{% endif %}
+{% if spanishServiceTimesString and spanishServiceTimesString != empty %}
+    {% capture formattedSpanishServiceTimesString %}
+        {% include '~~/Assets/Lava/Custom/FormattedServiceTimes.lava', timesString:spanishServiceTimesString %}
+    {% endcapture %}
+{% endif %}
+
+{% if formattedServiceTimesString and formattedServiceTimesString != empty %}
+    {{ formattedServiceTimesString }}
+{% endif %}
+{% if formattedSpanishServiceTimesString and formattedSpanishServiceTimesString != empty and spanish != 'false' %}
+    <br class="d-none d-sm-block">{% if formattedServiceTimesString and formattedServiceTimesString != empty %}&amp; {% endif %}en Español {{ formattedSpanishServiceTimesString }}
+{% endif %}

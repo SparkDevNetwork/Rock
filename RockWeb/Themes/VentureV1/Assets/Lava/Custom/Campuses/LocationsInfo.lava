@@ -1,0 +1,441 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/LocationsInfo.lava' %} {% endcomment %}
+
+{% stylesheet id:'mapsStuff' compile:'less' %}
+    .locations-map {
+        height: 600px;
+
+        @media(min-width: 992px) {
+            height: 800px;
+        }
+    }
+
+    #map {
+        height: 100%;
+    }
+
+    .campus-cards {
+        .card .card-body i,
+        .card .card-body svg {
+            width: 18px;
+        }
+    }
+{% endstylesheet %}
+
+
+<div class="locations-map" data-maplocations data-aos="fade" data-aos-delay="150" data-aos-easing="ease-in-out" data-aos-once="true">
+    <div id="map"></div>
+</div>
+
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-sm-10 col-md-8 col-lg-6 col-sm-offset-1 col-md-offset-2 col-lg-offset-3">
+            <div class="find-a-location d-flex flex-column align-items-center position-relative z-10 cta-card bg-white pz-sm-5" data-aos="fade-up" data-aos-delay="150" data-aos-easing="ease-in-out" data-aos-once="true" style="margin-top: -100px;">
+                <div class="cta-card-body">
+                    <h2 class="h1 mb-1 text-color">Find a Location</h2>
+                    <h5 class="my-4 text-primary">Venture Church is one church with five campuses across South Mississippi.</h5>
+                    <input type="text" class="mb-2 text-center form-control w-100" id="location-query" name="location-query" placeholder="Enter Your Zip Code">
+                    <button type="button" name="location-search" id="location-search" class="btn btn-primary w-100" value="Search" onclick="location.href='?location=' + document.getElementById('location-query').value + '#locations'">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var input = document.getElementById("location-query");
+    input.addEventListener("keyup", function(event) {
+        if (event.code === 'Enter') {
+            location.href='?location=' + document.getElementById('location-query').value + '#locations';
+        }
+    });
+</script>
+
+
+<div class="campus-cards container" id="ourLocations">
+    <div class="d-flex flex-wrap flex-row row" data-locations>
+        {% for campus in Campuses %}
+            {% assign image = campus | Attribute:'Image','Guid' | ImageUrl | Append:'&w=300&h=180&mode=crop' %}
+            {% assign address = '' %}
+            {% assign streetAddress = campus.Location.Street1 %}
+            {% assign campusSlug = campus.Name | ToCssClass | Append:'-campus' %}
+
+            {% assign campusId = campus.Id %}
+
+            {%- case campusId -%}
+                {%- when 1 -%}
+                    {% assign detailsUrl = '/LincolnRoad' %}
+                {%- when 2 -%}
+                    {% assign detailsUrl = '/HuntClub' %}
+                {%- when 3 -%}
+                    {% assign detailsUrl = '/StoneCounty' %}
+                {%- when 4 -%}
+                    {% assign detailsUrl = '/GulfCoast' %}
+                {%- when 6 -%}
+                    {% assign detailsUrl = '/JonesCounty' %}
+            {%- endcase -%}
+
+            {% if streetAddress and streetAddress != empty %}
+                {%- capture address -%}
+                    <div class="mt-3">
+                        <span class="d-block tall font-weight-bold">
+                            <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                                <path d="M5.38337 15.6772C0.842812 9.09472 0 8.41915 0 6C0 2.68628 2.68628 0 6 0C9.31372 0 12 2.68628 12 6C12 8.41915 11.1572 9.09472 6.61662 15.6772C6.31865 16.1076 5.68131 16.1076 5.38337 15.6772Z" fill="#414242"/>
+                            </svg>Location
+                        </span>
+                        <p class="m-0">{{ streetAddress }}<br>
+                        {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}</p>
+                    </div>
+                {%- endcapture -%}
+            {% endif %}
+
+            {%- capture serviceTimes -%}
+                <div class="mt-3">
+                    <span class="d-block tall font-weight-bold">
+                        <i class="fa fa-clock mr-2"></i>Experience Times
+                    </span>
+                    {% for service in campus.ServiceTimes %}
+                        <div class="my-2">{{ service.Day }}: {{ service.Time }} {% unless forloop.last %}<br>{% endunless %}</div>
+                    {% endfor %}
+                </div>
+            {%- endcapture -%}
+
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4 js-campus-card" aria-label="{{ campus.Name }}" data-latlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}" data-cid="{{ campus.Id }}">
+                <div class="card h-100" data-aos="fade-up">
+                    <img src="{{ image }}" alt="alt" class="card-img-top img-responsive">
+                    <div class="card-body">
+                        <h5>{{ campus.Name }}</h5>
+                        {{ address }}
+                        {{ serviceTimes }}
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            {% comment %} todo: update url {% endcomment %}
+                            <a href="{{ detailsUrl }}" class="btn btn-primary">Learn More</a>
+                            <p class="text-right mt-auto display-miles font-weight-semibold small"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+<script>
+    let map;
+
+    // create javascript array of marker info
+    var markersmap = [
+        {%- for campus in Campuses -%}
+            {%- capture campusAddress -%}{{ campus.Location.Street1 }}{% if campus.Location.Street2 and campus.Location.Street2 != empty %}<br>{{ campus.Location.Street2 }}{% endif %}, <br>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{%- endcapture -%}
+            {% assign imgGuid = campus | Attribute:'Image','RawValue' %}
+            {% assign imgGuidURL = imgGuid | Prepend:'/GetImage.ashx?Guid=' %}
+            {% assign campusDirections = campus | Attribute:'GoogleDirections' %}
+            {% assign campusNameHyphenated = campus.Name | Downcase | Replace:' ','-' %}
+            {% assign status = campus.CampusStatusValueId %}
+            {% assign streetAddress = campus.Location.Street1 %}
+
+            {% assign campusId = campus.Id %}
+
+            {%- case campusId -%}
+                {%- when 1 -%}
+                    {% assign detailsUrl = '/LincolnRoad' %}
+                {%- when 2 -%}
+                    {% assign detailsUrl = '/HuntClub' %}
+                {%- when 3 -%}
+                    {% assign detailsUrl = '/StoneCounty' %}
+                {%- when 4 -%}
+                    {% assign detailsUrl = '/GulfCoast' %}
+                {%- when 6 -%}
+                    {% assign detailsUrl = '/JonesCounty' %}
+            {%- endcase -%}
+
+
+            {%- if campus.Location.Latitude and campus.Id != 5 -%}
+                {%- capture campusCard -%}
+
+                    <div class="card" data-maplatlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}" data-mapcid="{{ campus.Id }}">
+                        <img src="{{ campus | Attribute:'Image','Guid' | ImageUrl | Append:'&w=240&h=100&mode=crop'}}" alt="alt" class="card-img-top img-responsive">
+                        <div class="card-body">
+                            <h5>{{ campus.Name }} Campus</h5>
+                            {% if streetAddress and streetAddress != empty %}
+                                <p class="m-0">{{ streetAddress }}<br>
+                                {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ detailsUrl }}" class="btn btn-primary">Learn More</a>
+                        </div>
+                    </div>
+
+                {%- endcapture -%}
+
+                [{{ campus.Location.Latitude }}, {{ campus.Location.Longitude }},'{{ campus.Name }}','{{ campusCard | StripNewlines | Trim }}','https://summitchurch.com/Themes/SummitV1/Assets/Images/map-black.png']{% unless forloop.last %},{% endunless %}
+            {%- endif -%}
+        {%- endfor -%}
+    ];
+
+    //Set Map
+    function initMap() {
+        var bounds = new google.maps.LatLngBounds();
+    	var mapOptions = {
+            scrollwheel: false,
+    		draggable: true,
+            mapTypeId: 'roadmap',
+    		zoomControl: true,
+            mapTypeControl: false,
+            gestureHandling: 'cooperative',
+            streetViewControl: false,
+            fullscreenControl: true,
+
+            styles: [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#c9e8c9"}]},{"featureType":"landscape","elementType":"geometry.fill","stylers":[{"color":"#c9e8c9"}]},{"featureType":"landscape.man_made","elementType":"geometry.fill","stylers":[{"color":"#dbe8db"}]},{"featureType":"landscape.natural","elementType":"geometry.fill","stylers":[{"color":"#e8e8e8"}]},{"featureType":"landscape.natural.landcover","elementType":"geometry.fill","stylers":[{"color":"#c9e8c9"}]},{"featureType":"landscape.natural.terrain","elementType":"geometry.fill","stylers":[{"color":"#c9e8c9"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"poi.attraction","elementType":"geometry.fill","stylers":[{"color":"#c9e8c9"}]},{"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#c9e8c9"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#ffffff"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"road.local","elementType":"geometry.fill","stylers":[{"color":"#eeeeee"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#dde6e8"},{"visibility":"on"}]},{"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#a9d9fd"}]}]
+
+	    }
+
+		var map = new google.maps.Map(document.getElementById('map'), mapOptions, {
+		    zoom: 4
+		});
+		var infoWindow = new google.maps.InfoWindow(), marker, i;
+
+        // place each marker on the map
+        for( i = 0; i < markersmap.length; i++ ) {
+            var position = new google.maps.LatLng(markersmap[i][0], markersmap[i][1]);
+            bounds.extend(position);
+            marker = new google.maps.Marker({
+                position: position,
+                map: map,
+                animation: null,
+                title: markersmap[i][2],
+                icon: markersmap[i][4]
+            });
+
+            // Add info window to marker
+            google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                return function() {
+                    if (markersmap[i][3] != ''){
+                        infoWindow.setContent(markersmap[i][3]);
+                        infoWindow.open(map, marker);
+                    }
+                }
+            })(marker, i));
+
+        }
+
+        // Center the map to fit all markers on the screen
+        map.fitBounds(bounds);
+
+
+		//Resize Function
+		google.maps.event.addDomListener(window, "resize", function() {
+			var center = map.getCenter();
+			google.maps.event.trigger(map, "resize");
+			map.setCenter(center);
+		});
+
+
+
+
+
+
+
+
+
+
+
+
+        // Get query string value by key
+        var getQueryString = function ( field, url ) {
+            var href = url ? url : window.location.href;
+            var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+            var string = reg.exec(href);
+            return string ? string[1] : null;
+        };
+
+        // Used for inserting distance indicators on location cards
+        function insertAfter(el, referenceNode) {
+            referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
+        }
+
+        function distance(lat1, lon1, lat2, lon2, unit) {
+            var radlat1 = Math.PI * lat1/180
+            var radlat2 = Math.PI * lat2/180
+            var theta = lon1-lon2
+            var radtheta = Math.PI * theta/180
+            var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+            if (dist > 1) {
+                dist = 1;
+            }
+            dist = Math.acos(dist)
+            dist = dist * 180/Math.PI
+            dist = dist * 60 * 1.1515
+            if (unit=="K") { dist = dist * 1.609344 }
+            if (unit=="N") { dist = dist * 0.8684 }
+            return dist
+        }
+
+        function reorderLocations(origin) {
+
+            // Define geocoder
+            var geocoder = new google.maps.Geocoder();
+            var originLatitude;
+            var originLongitude;
+
+            // Get lat/lon of origin
+            geocoder.geocode( { 'address': origin }, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    originLatitude = results[0].geometry.location.lat();
+                    originLongitude = results[0].geometry.location.lng();
+                }
+
+                // Loop through locations to get distances
+                for (var i = 0; i < locationsCount; i++) {
+
+                    // Setup Card
+                    var locationCard = locations[i];
+
+                    // Get lat/lon values from data attribute
+                    var latlon = locationCard.dataset.latlon;
+                    latlon = latlon.split(',');
+                    lat = latlon[0];
+                    lon = latlon[1];
+                    var locationId = locationCard.dataset.cid;
+
+                    // Calculate distance from query location to campus
+                    var locationDistance = distance(originLatitude, originLongitude, lat, lon, 'M');
+                    if(locationId == 8) {
+                        if(locationDistance > 50){
+                            locationDistance = 0;
+                        } else {
+                            locationDistance = 50;
+                        }
+                    }
+                    // Round to nearest tenth
+                    locationDistance = Math.round(10*locationDistance)/10;
+
+                    // Send distance back to card in new data attribute
+                    locationCard.setAttribute('data-distance', locationDistance);
+
+                    // Get the element where the "XX.X miles away" will be displayed
+                    var locationCardDisplayMiles = locationCard.querySelector(".display-miles");
+                    // Add/augment element's text
+                    if(isFinite(locationDistance)){
+                        if(lat && lon) {
+                            locationCardDisplayMiles.innerHTML = locationDistance + ' miles away';
+                        }
+                    }
+                }
+
+
+                var items = distanceSearchLocations.childNodes;
+
+                var itemsArr = [];
+
+                for (var i in items) {
+                    if (items[i].nodeType == 1) { // get rid of the whitespace text nodes
+                        itemsArr.push(items[i]);
+                    }
+                }
+
+                itemsArr.sort(function(a, b) {
+                return a.dataset.distance == b.dataset.distance
+                        ? 0
+                        : (Number(a.dataset.distance) > Number(b.dataset.distance) ? 1 : -1);
+                });
+
+                for (i = 0; i < itemsArr.length; ++i) {
+                    distanceSearchLocations.appendChild(itemsArr[i]);
+                }
+
+            });
+        }
+
+        // Get location query string value
+        var origin = decodeURI(getQueryString('location')).trim();
+
+        // If origin exists as query string, go ahead and reorder locations
+        if ((origin !== 'null') && (origin !== '')) {
+            // Reorder location cards
+            reorderLocations(origin);
+        }
+
+        // Get distance finder instances
+        // var distanceSearchForm = document.querySelector("[data-locations-search]");
+        var distanceSearchLocations = document.querySelector("[data-locations]");
+        var locations = distanceSearchLocations.children;
+        var locationsCount = locations.length;
+
+
+
+    }
+
+
+    $(document).ready(function() {
+        // Scroll to locations card slider after sorting
+
+        var anchor = document.querySelector('#locations');
+
+        var input = document.getElementById("location-query");
+        input.addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById("location-search").click();
+            }
+        });
+
+        {% if PageParameter.location and PageParameter.location != '' %}
+            $(window).load(function() {
+                var x =  $(".js-campus-card:first-of-type:eq(0)");
+                var y = x.attr("aria-label");
+                var z = x.data("cid");
+
+                var firstCardContent = document.querySelector('.js-campus-card:first-of-type[data-cid="'+z+'"] .display-miles').innerText;
+
+                $('div[aria-label="'+y+'"]').click();
+
+                //console.log('last');
+
+                $('div[title*="Campus"]').click(function() {
+                    var mapdata =  $(".me:first-of-type:eq(0)");
+                    var mapdataid = mapdata.data("mapcid");
+                    var firstDivContent = document.querySelector('.js-campus-card[data-cid="'+mapdataid+'"] .display-miles').innerText;
+
+                    $(".map-display-miles").html(firstDivContent);
+                });
+
+            })
+        {% endif %}
+    });
+
+
+</script>
+
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key={{ 'Global' | Attribute:'GoogleAPIKey' | Trim }}&callback=initMap&libraries=&v=weekly">
+</script>
+
+
+
+
+

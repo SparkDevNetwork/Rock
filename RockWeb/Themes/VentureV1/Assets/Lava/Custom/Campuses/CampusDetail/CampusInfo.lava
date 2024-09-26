@@ -1,0 +1,317 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/CampusDetail/CampusInfo.lava' %} {% endcomment %}
+
+{% comment %} * Campus Info {% endcomment %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% assign campus = campusId | FromCache:'Campus' %}
+
+//- set page title
+{% assign campusName = campus.Name %}
+{{ campusName | SetPageTitle:'All' }}
+
+//- set hero bg
+{% assign campusImage = campus | Attribute:'Image','Guid' | ImageUrl %}
+<style>
+    .hero-image {
+        background-image: Url({{ campusImage }});
+        background-size: cover;
+        background-position: center;
+
+    }
+
+    @media (min-width: 768px) {
+        .plan-your-visit-poster {
+            padding-bottom: 33%;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .hero-image {
+            height: 600px;
+        }
+
+        .plan-your-visit-poster {
+            padding-bottom: 25%;
+        }
+    }
+</style>
+
+{% assign googleDirections = campus | Attribute:'GoogleDirections' | Trim %}
+{% assign readableScheduleText = campus | Attribute:'ReadableScheduleText' %}
+{% assign planYourVisitImage = campus | Attribute:'PlanYourVisitImage','Guid' | ImageUrl %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% assign campusServiceTimes = campus.RawServiceTimes | Split:'|' %}
+{% assign pastDay = '' %}
+{% assign pastMeridian = '' %}
+
+{%- capture serviceTimesJSON -%}
+[
+{%- for serviceTime in campusServiceTimes -%}
+{%- assign serviceTimeParts = serviceTime | Downcase | Split:'^' -%}
+{%- assign serviceTimeDay = serviceTimeParts | First | AsString | Trim | Capitalize -%}
+{%- assign serviceMilitaryTime = serviceTimeParts | Last | Date:'HH' -%}
+{%- assign serviceTimeTimeParts = serviceTimeParts | Last | Split:' ' -%}
+{%- assign serviceTimeTime = serviceTimeTimeParts | First -%}
+{%- assign serviceTimeMeridian = serviceTimeTimeParts | Last -%}
+    {
+        "Day":"{{ serviceTimeDay }}",
+        "Time":"{{ serviceTimeTime }}",
+        "MilitaryTime":"{{ serviceMilitaryTime }}",
+        "Meridian":"{{ serviceTimeMeridian }}"
+    }{% unless forloop.last %},{% endunless %}
+{%- endfor -%}
+]
+{%- endcapture -%}
+
+{% assign serviceTimesJSON = serviceTimesJSON | FromJSON %}
+{% assign serviceTimesJSON = serviceTimesJSON | OrderBy:'Day,MilitaryTime asc' %}
+{% assign pastDay = '' %}
+{% assign pastMeridian = '' %}
+
+
+{%- capture serviceTimesByDayJSON -%}
+[
+{%- for serviceTime in serviceTimesJSON -%}
+{%- assign day = serviceTime.Day -%}
+{%- assign time = serviceTime.Time -%}
+{%- assign meridian = serviceTime.Meridian -%}
+    {% if pastDay and pastDay != empty %}
+        {% if pastDay == day %}
+            {
+                "Time":"{{ time }}",
+                "Meridian":"{{ meridian }}"
+            },
+        {% else %}
+            ]
+        },
+        {
+            "Day":"{{ day }}",
+            "Times":[
+                {
+                    "Time":"{{ time }}",
+                    "Meridian":"{{ meridian }}"
+                },
+        {% endif %}
+    {% else %}
+        {
+            "Day":"{{ day }}",
+            "Times":[
+                {
+                    "Time":"{{ time }}",
+                    "Meridian":"{{ meridian }}"
+                },
+    {% endif %}
+    {% if forloop.last %}
+            ]
+        }
+    {% endif %}
+
+{%- assign pastDay = day -%}
+{%- endfor -%}
+]
+{%- endcapture -%}
+
+{% assign serviceTimesByDayJSON = serviceTimesByDayJSON | FromJSON %}
+
+{%- capture serviceTimes -%}
+    {%- for serviceTime in serviceTimesByDayJSON -%}
+        {% assign pastDay = '' %}
+        {% assign pastMeridian = '' %}
+
+        {% assign day = serviceTime.Day %}
+        {% assign times = serviceTime.Times %}
+        {% assign timesSize = times | Size %}
+
+        {% unless forloop.first %}
+            <br>
+        {% endunless %}
+        Every {{ day }} at
+        {% for time in times %}
+            {% assign timeTime = time.Time %}
+            {% assign timeMeridian = time.Meridian %}
+
+            {% if pastMeridian and pastMeridian != empty %}
+                {% if pastMeridian == timeMeridian %}
+                    {% if forloop.last %}&{% endif %} {{ timeTime }}{% if forloop.last %} {{ timeMeridian }}{% else %},{% endif %}
+                {% else %}
+                    {{ pastMeridian }} {% if forloop.last %}&{% endif %} {{ timeTime }}{% if forloop.last %} {{ timeMeridian }}{% else %},{% endif %}
+                {% endif %}
+            {% else %}
+                {{ timeTime }}{% if forloop.last %} {{ timeMeridian }}{% elseif timesSize > 2 %},{% endif %}
+            {% endif %}
+            {% assign pastMeridian = time.Meridian %}
+        {% endfor %}
+    {%- endfor -%}
+{%- endcapture -%}
+
+
+
+
+
+
+
+
+
+
+//- get campus address
+{%- capture campusAddress -%}{{ campus.Location.Street1 | Split:' ' | Join:'+' }}+{{ campus.Location.City | Split:' ' | Join:'+' }}+{{ campus.Location.State }}+{{ campus.Location.PostalCode | Split:'-' | First }}{%- endcapture -%}
+
+
+<div class="container container">
+
+    //- 64 px spacing
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    //- add campus Image Gallery
+    <div data-aos="fade-up">
+        {[ imageslider campusid:'{{ campusId }}' ]}
+    </div>
+
+    //- 64 px spacing
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    //- add story and mini map
+    <div class="row">
+        <div class="col-md-5 col-lg-4 mb-5 mb-md-0">
+            <h2 class="mb-4 accent accent-invite accent-light" data-aos="fade-up">Find Us</h2>
+
+            <div class="card" data-aos="fade-up">
+                <div class="card-img-top">
+                    {[ googlemap height:'240px' markeranimation:'drop'  ]}
+                        [[ marker location:'{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}' title:'{{ campus.Name }} Campus' ]] [[ endmarker ]]
+                    {[ endgooglemap ]}
+                </div>
+                <div class="card-body">
+                    {% if campus.Location.Street1 and campus.Location.Street1 != empty %}
+                        <div class="campus-info-item d-flex align-items-center mb-4">
+                            <div class="mr-3" style="width: 24px;">
+                                <i class="mr-3 fa fa-map-marker" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                            </div>
+                            <div>
+                                <a href="{{ googleDirections }}" target="_blank">
+                                    {{ campus.Location.Street1 }} <br>
+                                    {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if campus.PhoneNumber and campus.PhoneNumber != empty %}
+                        <div class="campus-info-item d-flex align-items-center mb-4">
+                            <div class="mr-3" style="width: 24px;">
+                                <i class="mr-3 fa fa-phone" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                            </div>
+                            <div>
+                                <a href="tel:{{ campus.PhoneNumber }}" target="_blank">
+                                    {{ campus.PhoneNumber |  Format:'(###) ###-####' }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% comment %} todo: add back in when we have campus contact form {% endcomment %}
+                    {% comment %}
+
+                    <div class="campus-info-item d-flex align-items-center mb-4">
+                        <div class="mr-3" style="width: 24px;">
+                            <i class="mr-3 fa fa-envelope" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                        </div>
+                        <div>
+                            <a href="#" target="_blank">
+                                Contact Campus
+                            </a>
+                        </div>
+                    </div>
+
+                    {% endcomment %}
+
+                    {% if serviceTimes and serviceTimes != empty %}
+                        <div class="campus-info-item d-flex align-items-center">
+                            <div class="mr-3" style="width: 24px;">
+                                <i class="mr-3 fa fa-clock" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                            </div>
+                            <div>
+                                {{ serviceTimes }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="mt-4">
+                {% include '~~/Assets/Lava/Custom/SocialShare.lava', justify:'center', justifySm:'start' %}
+            </div>
+            <div class="mt-4">
+                    <a href="/prayer" class="btn btn-default btn-block">Request Prayer</a>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-7 col-md-push-1">
+            <h2 class="mb-4 accent accent-invite accent-light" data-aos="fade-up">Our Story</h2>
+            <div data-aos="fade-up">
+                {{ campus | Attribute:'CampusStory' }}
+            </div>
+
+        </div>
+    </div>
+
+    {% assign primaryCampusId = CurrentPerson.PrimaryCampusId %}
+
+
+    {% unless CurrentPerson %}
+        <div class="py-3"></div>
+
+        <div class="poster-card js-poster-card plan-your-visit-poster" style="background-image:url({{ planYourVisitImage | TriumphImgCdn:'w=1600&h=900&crop=faces&fit=crop&auto=compress,format' }});" data-aos="fade-up">
+            <div class="poster-card-body js-poster-card-body">
+                <h4 class="poster-card-title accent accent-white">Plan Your Visit</h4>
+
+                <div class="poster-card-hidden js-poster-card-hidden">
+                    <a href="/visit" class="text-white">Learn More</a>
+                </div>
+            </div>
+        </div>
+    {% endunless %}
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+    <div class="py-md-3"></div>
+    <div class="py-md-3"></div>
+</div>
+
+
+
+

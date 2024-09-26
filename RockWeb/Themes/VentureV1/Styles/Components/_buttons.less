@@ -1,0 +1,351 @@
+.btn {
+    padding: 8px 16px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 4px;
+    white-space: normal;
+
+    .btn-group & {
+      margin: 0 !important;
+    }
+
+    &-grow {
+
+      @media screen and (max-width: 767px) {
+        width: 100%;
+      }
+
+      +.btn {
+        @media screen and (max-width: 767px) {
+          margin-top: 15px;
+        }
+      }
+    }
+
+    &:not(.btn-grow) + &:not(.btn-grow) {
+      margin-left: 12px;
+    }
+
+    i {
+      font-size: 12px;
+    }
+
+    .transition();
+
+
+    &.btn-default {
+      &:hover {
+        background-color: darken(@invite, 10%);
+        color: @venture-white;
+        border-color: darken(@invite, 10%);
+      }
+    }
+
+    // invest
+    &.btn-invest {
+      &.btn-primary{
+        background-color: @invest;
+        border-color: @invest;
+        color: @venture-white;
+
+        &:hover {
+          background-color: darken(@invest, 10%);
+          border-color: darken(@invest, 10%);
+        }
+      }
+
+      &.btn-default{
+        border-color: @invest;
+        color: @invest;
+
+        &:hover {
+          background-color: darken(@invest, 10%);
+          border-color: darken(@invest, 10%);
+          color: @venture-white;
+        }
+      }
+    }
+
+    // impress
+    &.btn-impress {
+      &.btn-primary{
+        background-color: @impress;
+        border-color: @impress;
+        color: @venture-white;
+
+        &:hover {
+          background-color: darken(@impress, 10%);
+          border-color: darken(@impress, 10%);
+        }
+      }
+
+      &.btn-default{
+        border-color: @impress;
+        color: @impress;
+
+        &:hover {
+          background-color: darken(@impress, 10%);
+          border-color: darken(@impress, 10%);
+          color: @venture-white;
+        }
+      }
+    }
+
+    // ignite
+    &.btn-ignite {
+      &.btn-primary{
+        background-color: @ignite;
+        border-color: @ignite;
+        color: @venture-white;
+
+        &:hover {
+          background-color: darken(@ignite, 10%);
+          border-color: darken(@ignite, 10%);
+        }
+      }
+
+      &.btn-default{
+        border-color: @ignite;
+        color: @ignite;
+
+        &:hover {
+          background-color: darken(@ignite, 10%);
+          border-color: darken(@ignite, 10%);
+          color: @venture-white;
+        }
+      }
+    }
+
+    // onyx
+    &.btn-onyx {
+      &.btn-primary{
+        background-color: @venture-onyx;
+        border-color: @venture-onyx;
+        color: @venture-white;
+
+        &:hover {
+          background-color: darken(@venture-onyx, 10%);
+          border-color: darken(@venture-onyx, 10%);
+        }
+      }
+
+      &.btn-default{
+        border-color: @venture-onyx;
+        color: @venture-onyx;
+
+        &:hover {
+          background-color: darken(@venture-onyx, 10%);
+          border-color: darken(@venture-onyx, 10%);
+          color: @venture-white;
+        }
+      }
+    }
+
+    // venture-white
+    &.btn-light {
+      &.btn-primary{
+        background-color: @venture-white;
+        border-color: @venture-white;
+        color: @venture-onyx;
+
+        &:hover {
+          background-color: darken(@venture-white, 10%);
+          border-color: darken(@venture-white, 10%);
+        }
+      }
+
+      &.btn-default{
+        border-color: @venture-white;
+        color: @venture-white;
+
+        &:hover {
+          background-color: darken(@venture-white, 10%);
+          border-color: darken(@venture-white, 10%);
+          color: @venture-onyx;
+        }
+      }
+    }
+
+    // venture-light-gray
+    &.btn-light-gray {
+      &.btn-primary{
+        background-color: @venture-light-gray;
+        border-color: @venture-light-gray;
+        color: @venture-onyx;
+
+        &:hover {
+          background-color: lighten(@venture-light-gray, 10%);
+          border-color: lighten(@venture-light-gray, 10%);
+        }
+      }
+
+      &.btn-default{
+        border-color: @venture-light-gray;
+        color: @venture-white;
+
+        &:hover {
+          background-color: lighten(@venture-light-gray, 10%);
+          border-color: lighten(@venture-light-gray, 10%);
+          color: @venture-onyx;
+        }
+      }
+    }
+
+    // opaque
+    &.btn-opaque {
+      &.btn-primary{
+        background-color: rgba(255, 255, 255, .4);
+        border-color: transparent;
+        color: #fff;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, .6);
+          color: #fff;
+        }
+      }
+
+      &.text-color {
+        &:hover {
+          color: inherit !important;
+        }
+      }
+    }
+
+    &.icon-btn {
+      padding: 8px !important;
+      font-size: 12px;
+      line-height: 12px;
+
+      i {
+        min-width: 12px;
+      }
+
+      &.btn-sm {
+        padding: 4px !important;
+      }
+
+      &.btn-lg {
+        padding: 12px !important;
+      }
+
+      &.icon-btn-circle {
+        width: 68px;
+        height: 68px;
+        border-radius: 999px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        i {
+          font-size: 27px;
+          line-height: 27px;
+        }
+      }
+    }
+}
+
+.btn-sm, .btn-group-sm>.btn {
+    padding: 4px 12px;
+}
+
+.btn-lg, .btn-group-lg>.btn {
+    padding: 8px 20px;
+    font-size: 18px;
+}
+
+.btn .fa + span {
+    padding-left: 6px;
+}
+
+.btn span + .fa {
+    padding-left: 6px;
+}
+
+.text-link {
+  background: transparent;
+  border: none;
+  font-weight: 400;
+  position: relative;
+  padding-right: 20px;
+
+  &-light {
+    color: @venture-white;
+
+    &:hover {
+      color: darken(@venture-white, 10%);
+    }
+  }
+
+  &::after {
+    font-family: 'FontAwesome';
+    content: '\f061';
+    font-weight: 900;
+    font-size: 12px;
+    position: absolute;
+    top:50%;
+    right: 0;
+    transform: translate(0, -50%);
+    .transition();
+  }
+
+  &:hover {
+    text-decoration: none;
+
+    &::after {
+      transform: translate(3px, -50%);
+    }
+  }
+
+  &-sm {
+    font-size: 14px;
+
+    &::after {
+      font-size: 12px
+    }
+  }
+
+  &-lg {
+    font-size: 18px;
+
+    &::after {
+      font-size: 16px
+    }
+  }
+}
+
+.btn-link {
+  border: transparent !important;
+  padding: 8px 6px;
+
+  &.btn-sm {
+    padding: 8px 4px;
+  }
+
+  &.btn-light {
+  color: @venture-white;
+
+    &:hover {
+      color: darken(@venture-white, 10%);
+    }
+  }
+}
+
+
+
+// 2.2. Context Setter
+// -------------------------
+.contextsetter {
+  .dropdown-toggle {
+    .btn();
+    background-color: @invite;
+    color: #fff;
+    border-color: @invite;
+    border-radius: 4px;
+
+    &:hover,&:focus {
+      background-color: darken(@invite, 10%) !important;
+      border-color: darken(@invite, 10%) !important;
+      color: #fff !important;
+    }
+  }
+}

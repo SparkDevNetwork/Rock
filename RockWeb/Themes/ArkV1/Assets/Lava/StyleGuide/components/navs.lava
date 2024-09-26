@@ -1,0 +1,34 @@
+/- {% include '~~/Assets/Lava/styleguide/components/tabs.lava' %} -/
+
+{% assign tabTypes = 'nav-tabs,nav-pills, nav-pills justify-content-center,nav-pills nav-stacked,nav-tabs nav-justified' | Split:',' %}
+
+
+<h1 class="mb-4">Navs</h1>
+
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    {% for type in tabTypes %}
+        <li><a href="#{{ type }}">{{ type }}</a></li>
+    {% endfor %}
+</ul>
+
+
+{% for type in tabTypes %}
+    <div class="card mb-4" id="{{ type }}">
+        <div class="card-header">
+            <h4 class="m-0">{{ type | Default:'nav' }}</h4>
+        </div>
+{%- capture codeOutput -%}
+<ul class="nav {{ type }}">
+  <li role="presentation" class="active"><a href="#">Home</a></li>
+  <li role="presentation"><a href="#">Profile</a></li>
+  <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+{%- endcapture -%}
+        <div class="card-body">{{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+{% endfor %}
+

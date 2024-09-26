@@ -1,0 +1,468 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Campuses/CampusDetail.lava' %} {% endcomment %}
+
+{% comment %} * Campus Info {% endcomment %}
+{% stylesheet id:'campusDetail' compile:'less' %}
+    .plan-your-visit-poster {
+        @media (min-width: 768px) {
+            padding-bottom: 33%;
+        }
+
+        @media (min-width: 1200px) {
+            padding-bottom: 25%;
+        }
+    }
+{% endstylesheet %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% assign campus = campusId | FromCache:'Campus' %}
+
+//- set page title
+{% assign campusName = campus.Name %}
+{{ campusName | SetPageTitle:'All' }}
+
+//- set hero bg
+{% assign campusImage = campus | Attribute:'Image','Guid' | ImageUrl %}
+<style>
+    .hero-image {
+        background-image: Url({{ campusImage }});
+        background-size: cover;
+        background-position: center;
+
+    }
+
+    @media (min-width: 1200px) {
+        .hero-image {
+            height: 600px;
+        }
+    }
+</style>
+
+
+{% assign googleDirections = campus | Attribute:'GoogleDirections' | Trim %}
+{% assign readableScheduleText = campus | Attribute:'ReadableScheduleText' %}
+{% assign planYourVisitImage = campus | Attribute:'PlanYourVisitImage','Guid' | ImageUrl %}
+
+
+//- get campus address
+{%- capture campusAddress -%}{{ campus.Location.Street1 | Split:' ' | Join:'+' }}+{{ campus.Location.City | Split:' ' | Join:'+' }}+{{ campus.Location.State }}+{{ campus.Location.PostalCode | Split:'-' | First }}{%- endcapture -%}
+
+
+<div class="container container">
+
+    //- 64 px spacing
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    //- add campus Image Gallery
+    <div data-aos="fade-up">
+        {[ imageslider campusid:'{{ campusId }}' ]}
+    </div>
+
+    //- 64 px spacing
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+    //- add story and mini map
+    <div class="row">
+        <div class="col-md-5 col-lg-4 mb-5">
+            <h2 class="mb-4 accent accent-invite accent-light" data-aos="fade-up">Find Us</h2>
+
+            <div class="card" data-aos="fade-up">
+                <div class="card-img-top">
+                    {[ googlemap height:'240px' markeranimation:'drop'  ]}
+                        [[ marker location:'{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}' title:'{{ campus.Name }} Campus' ]] [[ endmarker ]]
+                    {[ endgooglemap ]}
+                </div>
+                <div class="card-body">
+                    {% if campus.Location.Street1 and campus.Location.Street1 != empty %}
+                        <div class="campus-info-item d-flex align-items-center mb-4">
+                            <div class="mr-3" style="width: 24px;">
+                                <i class="mr-3 fa fa-map-marker" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                            </div>
+                            <div>
+                                <a href="{{ googleDirections }}" target="_blank">
+                                    {{ campus.Location.Street1 }} <br>
+                                    {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if campus.PhoneNumber and campus.PhoneNumber != empty %}
+                        <div class="campus-info-item d-flex align-items-center mb-4">
+                            <div class="mr-3" style="width: 24px;">
+                                <i class="mr-3 fa fa-phone" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                            </div>
+                            <div>
+                                <a href="tel:{{ campus.PhoneNumber }}" target="_blank">
+                                    {{ campus.PhoneNumber |  Format:'(###) ###-####' }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% comment %} todo: add back in when we have campus contact form {% endcomment %}
+                    {% comment %}
+
+                    <div class="campus-info-item d-flex align-items-center mb-4">
+                        <div class="mr-3" style="width: 24px;">
+                            <i class="mr-3 fa fa-envelope" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                        </div>
+                        <div>
+                            <a href="#" target="_blank">
+                                Contact Campus
+                            </a>
+                        </div>
+                    </div>
+
+                    {% endcomment %}
+
+                    {% if readableScheduleText and readableScheduleText != empty %}
+                        <div class="campus-info-item d-flex align-items-center">
+                            <div class="mr-3" style="width: 24px;">
+                                <i class="mr-3 fa fa-clock" style="font-size: 24px; font-weight: 100; width: 24px;"></i>
+                            </div>
+                            <div>
+                                {{ readableScheduleText }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="mt-4">
+                {% include '~~/Assets/Lava/Custom/SocialShare.lava', justify:'center' justifySm:'start' %}
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-7 col-md-push-1">
+            <h2 class="mb-4 accent accent-invite accent-light" data-aos="fade-up">Our Story</h2>
+            <div data-aos="fade-up">
+                {{ campus | Attribute:'CampusStory' }}
+            </div>
+
+        </div>
+    </div>
+
+    <div class="py-3"></div>
+
+    <div class="poster-card js-poster-card plan-your-visit-poster" style="background-image:url({{ planYourVisitImage | TriumphImgCdn:'w=1600&h=900&crop=faces&fit=crop&auto=compress,format' }});" data-aos="fade-up">
+        <div class="poster-card-body js-poster-card-body">
+            <h4 class="poster-card-title accent accent-white">Plan Your Visit</h4>
+
+            <div class="poster-card-hidden js-poster-card-hidden">
+                <a href="/visit" class="text-white">Learn More</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+    <div class="py-md-3"></div>
+    <div class="py-md-3"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} * Campus Pastor {% endcomment %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+{% assign campusLeaderAliasId = campus.LeaderPersonAliasId %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% assign campus = campusId | FromCache:'Campus' %}
+
+{% personalias where:'Id == "{{ campusLeaderAliasId }}"' limit:'1' iterator:'CampusLeaders' sort:'Order' securityenabled:'false' %}
+    {% assign campusPastor = CampusLeaders | First %}
+{% endpersonalias %}
+
+
+{% if campusPastor and campusPastor != empty %}
+
+    {% assign campusPastor = campusPastor.Person %}
+
+    {% assign pastorHeadshot = campusPastor | Attribute:'Headshot','Guid' | ImageUrl | TriumphImgCdn:'w=600&h=600&crop=faces&fit=crop&auto=compress,format' %}
+
+    <div class="bg-primary" data-aos="fade" data-aos-anchor-placement="top-bottom">
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+
+        <div class="container">
+            <h2 class="accent accent-white" data-aos="fade-up">Meet the {{ campus.Name }} Campus Pastor</h2>
+
+            <div class="py-3"></div>
+            <div class="py-md-3"></div>
+
+            <div class="row d-flex flex-wrap align-items-center">
+                <div class="col-xs-12 col-sm-12 col-md-4 mb-5 mb-md-0" data-aos="fade-right">
+                    <img src="{{ pastorHeadshot }}" class="img-responsive rounded-md shadow-md" alt="{{ campusPastor.NickName }} {{ campusPastor.LastName }}">
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-8" data-aos="fade-left">
+                    <div class="ml-md-5">
+                        <h4 class="mb-4">
+                            {{ campusPastor.NickName }} {{ campusPastor.LastName }}
+                        </h4>
+                        <div class="lead leading-loose">
+                            {{ campusPastor | Attribute:'PersonalBio' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+    </div>
+
+{% endif %}
+
+
+
+
+
+
+
+{% comment %} * Poster Cards {% endcomment %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% assign campus = campusId | FromCache:'Campus' %}
+
+{% assign posterCards = campus | Attribute:'PosterCards','Object' %}
+
+{% if posterCards and posterCards != empty %}
+    {% assign posterCards = posterCards.AttributeMatrixItems %}
+    {% assign nextGenHeading = campus | Attribute:'NextGenHeading' %}
+    {% assign nextGenContent = campus | Attribute:'NextGenContent' %}
+
+
+    <div class="bg-muted">
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+        <div class="py-md-3"></div>
+
+        <div class="container">
+
+            <h2 class="text-center accent accent-center accent-invite" data-aos="fade-up">{{ nextGenHeading }}</h2>
+
+            <div class="py-3"></div>
+
+            <div class="row d-flex justify-content-center">
+                <div class="col-xs-12 col-sm-12 col-md-10 col-lg-6">
+                    <p class="text-center lead leading-loose" data-aos="fade-up">
+                        {{ nextGenContent }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="py-3"></div>
+
+            <div class="row">
+                {% for card in posterCards %}
+                    {% assign cardImg = card | Attribute:'Image','Guid' | ImageUrl %}
+                    {% assign cardHeading = card | Attribute:'Heading' %}
+                    {% assign cardLinkText = card | Attribute:'LinkText' %}
+                    {% assign cardLinkUrl = card | Attribute:'LinkUrl','RawValue' %}
+
+                    <div class="col-xs-12 col-sm-6 col-md-4 mb-3" data-aos="fade-up">
+                        <div class="poster-card js-poster-card" style="background-image:url({{ cardImg | TriumphImgCdn:'w=600&h=360&crop=faces&fit=crop&auto=compress,format' }});">
+                            <div class="poster-card-body js-poster-card-body">
+                                <h4 class="poster-card-title accent accent-invite accent-">{{ cardHeading }}</h4>
+                                <div class="poster-card-hidden js-poster-card-hidden">
+                                    <a href="{{ cardLinkUrl }}" class="text-white">{{ cardLinkText }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+
+        <div class="py-3"></div>
+        <div class="py-3"></div>
+        <div class="py-md-3"></div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} * Featured Events {% endcomment %}
+{% stylesheet id:'campusDetail' compile:'less' %}
+    .split-bg {
+        background: linear-gradient(180deg, #E9ECEF 50%, #F8F9FA 50%);
+    }
+
+    .swiper-section {
+        &-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            overflow: hidden;
+
+            padding: 30px 45px;
+
+            &-inner {
+                width: 100%;
+                margin: 0 auto;
+                position: relative;
+            }
+
+            @media (min-width: 768px) {
+                padding: 48px;
+                // todo: .rounded-md();
+                border-radius: 12px;
+                // todo: .shadow-lg();
+                box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
+            }
+
+            @media (min-width: 992px) {
+                padding: 60px 100px;
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% assign campusName = 'Global' | Page:'Path' | Remove:'/' | Trim | Downcase %}
+
+{%- case campusName -%}
+    {%- when 'lincolnroad' -%}
+        {% assign campusId = 1 %}
+    {%- when 'huntclub' -%}
+        {% assign campusId = 2 %}
+    {%- when 'stonecounty' -%}
+        {% assign campusId = 3 %}
+    {%- when 'gulfcoast' -%}
+        {% assign campusId = 4 %}
+    {%- when 'jonescounty' -%}
+        {% assign campusId = 6 %}
+{%- endcase -%}
+
+{% calendarevents calendarid:'1' maxoccurrences:'20' campusids:'{{ campusId }}' %}
+    {% for item in EventScheduledInstances %}
+        {% if forloop.first %}
+            {% assign eventScheduledInstances = EventScheduledInstances %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endcalendarevents %}
+
+{% if eventScheduledInstances and eventScheduledInstances != empty %}
+    <div class="split-bg">
+        <div class="container container-lg gutterless-mobile">
+            <div class="swiper-section-card" data-aos="fade-up">
+
+                <h2 class="text-center accent accent-center accent-invite mb-5">Upcoming Events</h2>
+
+                <div class="position-relative w-100">
+                    <div class="swiper-section-card-inner">
+                        {[ swiper spacebetween:'16' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1' containerclass:'swiper-primary' initialslide:'0' breakpoints:'768-2|16' ]}
+                            {% for item in eventScheduledInstances %}
+
+                                {% assign event = item.EventItemOccurrence %}
+                                {% assign eventItemId = event.EventItemId | AsString %}
+                                {% assign eventItemIdsArray = eventItemIds | Split:',' %}
+                                {% assign isRepeatedEvent = eventItemIdsArray | Contains:eventItemId | AsBoolean %}
+
+                                {% unless isRepeatedEvent %}
+                                    {% assign eventItemIds = eventItemIds | Append:eventItemId %}
+
+                                    {% unless forloop.last %}
+                                        {% assign eventItemIds = eventItemIds | Append:',' %}
+                                    {% endunless %}
+
+                                    {% assign nextStartDate = event.NextStartDateTime | Date:'MMM d hh:mm tt' %}
+                                    {% assign photo = event.EventItem.PhotoId %}
+                                    {% if photo and photo != empty %}
+                                        {% assign photo = photo | ImageUrl | TriumphImgCdn:'w=800&h=450&fit=crop&crop=faces&auto=compress,format' %}
+                                    {% endif %}
+
+                                    [[ slide ]]
+                                        <div class="special-card hide-buttons-mobile bg-dark" style="background-image:url({{ photo }});">
+                                            <div class="special-card-content">
+                                                <div class="special-card-details text-white">
+                                                    <span class="d-block special-card-subheading">{{ nextStartDate | Date:'MMM d' }} &nbsp;<span class="venture-diamond"></span>&nbsp; {{ nextStartDate | Date:'hh:mm tt' }}</span>
+                                                    <h4 class="special-card-heading">{{ event.EventItem.Name }}</h4>
+                                                </div>
+                                                <div class="special-card-actions">
+                                                    <a href="/v1/calendar/{{ eventItemId }}" class="btn btn-primary btn-opaque">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    [[ endslide ]]
+                                {% endunless %}
+                            {% endfor %}
+                        {[ endswiper ]}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

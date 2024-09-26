@@ -1,0 +1,53 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/TestingLava.lava' %} {% endcomment %}
+
+<div class="py-3"></div>
+<div class="py-3"></div>
+
+<div class="row d-flex flex-wrap">
+    {% for campus in Campuses %}
+        {% assign image = campus | Attribute:'Image','Guid' | ImageUrl | Append:'&w=300&h=180&mode=crop' %}
+        {% assign address = '' %}
+        {% assign streetAddress = campus.Location.Street1 %}
+
+        {% if streetAddress and streetAddress != empty %}
+            {%- capture address -%}
+                <div class="mt-3">
+                    <span class="d-block tall font-weight-bold">
+                        <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.38337 15.6772C0.842812 9.09472 0 8.41915 0 6C0 2.68628 2.68628 0 6 0C9.31372 0 12 2.68628 12 6C12 8.41915 11.1572 9.09472 6.61662 15.6772C6.31865 16.1076 5.68131 16.1076 5.38337 15.6772Z" fill="#414242"/>
+                        </svg>
+                        Location
+                    </span>
+                    <p class="m-0">{{ streetAddress }}<br>
+                    {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode | Split:'-' | First }}</p>
+                </div>
+            {%- endcapture -%}
+        {% endif %}
+
+        {%- capture serviceTimes -%}
+            <div class="mt-3">
+                <span class="d-block tall font-weight-bold">
+                    <i class="fa fa-clock mr-2"></i>Service Times
+                </span>
+                {% for service in campus.ServiceTimes %}
+                    <div class="my-2">{{ service.Day }}: {{ service.Time }} {% unless forloop.last %}<br>{% endunless %}</div>
+                {% endfor %}
+            </div>
+        {%- endcapture -%}
+
+        <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="{{ image }}" alt="alt" class="card-img-top img-responsive">
+                <div class="card-body">
+                    <h5>{{ campus.Name }}</h5>
+                    {{ address }}
+                    {{ serviceTimes }}
+                </div>
+                <div class="card-footer">
+                    {% comment %} todo: update url {% endcomment %}
+                    <a href="/v1/campuses/{{ campus.Id }}" class="btn btn-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

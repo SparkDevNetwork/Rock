@@ -1,0 +1,29 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNavDropdown.lava' %} {% endcomment %}
+<ul class="dropdown-menu dropdown-menu-{{ orientation }}">
+    {% page where:'Id == {{ rootPageId }} && DisplayInNavWhen != 2' limit:'1' iterator:'NavPages' sort:'Order' securityenabled:'false' %}
+        {% for navpage in NavPages %}
+            {% assign pageRoute = navpage.PageRoutes | First | Property:'Route' %}
+            {% if pageRoute == '' %}{% assign pageRoute = 'page/' | Append:navpage.Id %}{% endif %}
+            <li data-page-id="{{ rootPageId }}" class="js-dropdown-item"><a href="/{{ pageRoute }}">{{ navpage.PageTitle }}</a></li>
+        {% endfor %}
+    {% endpage %}
+    {% page where:'ParentPageId == {{ rootPageId }} && DisplayInNavWhen != 2' limit:'50' iterator:'NavPages' sort:'Order' securityenabled:'false' %}
+        {% for navpage in NavPages %}
+            {% assign pageRoute = navpage.PageRoutes | First | Property:'Route' %}
+            {% if pageRoute == '' %}{% assign pageRoute = 'page/' | Append:navpage.Id %}{% endif %}
+            <li data-page-id="{{ navpage.Id }}" class="js-dropdown-item"><a href="/{{ pageRoute }}">{{ navpage.PageTitle }}</a></li>
+        {% endfor %}
+    {% endpage %}
+</ul>
+
+<script>
+    $(document).ready(function () {
+        var pageId = {{ CurrentPage.Id }};
+
+        $('.js-dropdown-item').each(function () {
+            if ($(this).data('page-id') == pageId) {
+                $(this).addClass('active');
+            }
+        });
+    });
+</script>

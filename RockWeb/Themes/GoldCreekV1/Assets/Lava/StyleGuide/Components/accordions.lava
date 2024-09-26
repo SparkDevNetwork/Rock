@@ -1,0 +1,47 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Breadcrumbs Section {% endcomment %}
+
+{% capture accordion %}
+{[ accordion paneltype:'accordion' ]}
+    [[ item title:'Baptism' ]]
+        <p>
+            Located in and around auditorium.
+        </p>
+    [[ enditem ]]
+    [[ item title:'Milestones' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+    [[ item title:'Media' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+    [[ item title:'Serve' ]]
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo et voluptatem reiciendis, iusto harum illum. Tenetur at sint earum eveniet architecto unde. Error et placeat labore ducimus pariatur animi sed..
+        </p>
+    [[ enditem ]]
+{[ endaccordion ]}
+
+{% endcapture %}
+
+{% capture accordionEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Accordion</blockquote>
+{{ accordion | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3>Accordion</h3>
+
+{{ accordion }}
+
+{{ accordionEscaped }}

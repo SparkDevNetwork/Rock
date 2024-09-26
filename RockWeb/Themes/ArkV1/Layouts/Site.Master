@@ -1,0 +1,186 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html >
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <!-- todo: delete after local dev is done -->
+    <!-- can use this to have less styles compuled automatically -->
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/working.css", true) %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+
+        <!-- Page Header -->
+        <header>
+
+            <!-- Brand Bar -->
+            <nav class="navbar navbar-inverse navbar-static-top site-nav position-relative">
+                <div class="container container-lg js-mega-menu-container">
+			        <div class="navbar-header m-0 w-100 d-flex align-items-center">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <Rock:Zone Name="Branding" runat="server" />
+
+                            <Rock:Zone Name="Navigation" runat="server" />
+
+                            <Rock:Zone Name="Login" runat="server" />
+                        </div>
+                        <button class="navbar-toggle mr-0 js-mobile-nav-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="37" height="47" viewBox="0 0 37 47">
+                                <defs>
+                                    <style>
+                                        .j {
+                                            fill: #0c1a31;
+                                        }
+                                    </style>
+                                </defs>
+                                <g id="b">
+                                    <g id="c" class="texts">
+                                        <g id="d" class="text-menu">
+                                            <path class="j"
+                                                d="M8.76,47v-5.76l-2.25,5.76h-.74l-2.25-5.76v5.76H1.8v-8h2.39l1.94,4.99,1.94-4.99h2.4v8h-1.72Z" />
+                                            <path class="j" d="M12.06,47v-8h5.66v1.46h-3.96v1.74h3.87v1.46h-3.87v1.86h3.96v1.48h-5.66Z" />
+                                            <path class="j" d="M24.57,47l-3.81-5.37v5.37h-1.7v-8h1.75l3.71,5.18v-5.18h1.7v8h-1.64Z" />
+                                            <path class="j"
+                                                d="M27.8,39h1.73v4.75c0,1.12,.61,1.88,1.86,1.88s1.83-.77,1.83-1.88v-4.75h1.73v4.8c0,1.99-1.14,3.35-3.56,3.35s-3.59-1.37-3.59-3.33v-4.81Z" />
+                                        </g>
+                                        <g id="e" class="text-close">
+                                            <path class="j"
+                                                d="M0,43.01c0-2.46,1.86-4.14,4.2-4.14,1.82,0,2.84,.96,3.41,1.95l-1.46,.72c-.34-.65-1.06-1.16-1.94-1.16-1.39,0-2.45,1.12-2.45,2.63s1.06,2.63,2.45,2.63c.89,0,1.61-.5,1.94-1.16l1.46,.71c-.58,1-1.58,1.97-3.41,1.97-2.34,0-4.2-1.68-4.2-4.14Z" />
+                                            <path class="j" d="M8.63,47v-8h1.7v6.5h3.38v1.5h-5.09Z" />
+                                            <path class="j"
+                                                d="M18.37,38.87c2.42,0,4.19,1.73,4.19,4.14s-1.76,4.14-4.19,4.14-4.17-1.73-4.17-4.14,1.76-4.14,4.17-4.14Zm0,1.51c-1.48,0-2.42,1.13-2.42,2.63s.95,2.63,2.42,2.63,2.43-1.14,2.43-2.63-.96-2.63-2.43-2.63Z" />
+                                            <path class="j"
+                                                d="M24.14,44.58c.56,.59,1.44,1.08,2.54,1.08,.94,0,1.39-.44,1.39-.9,0-.6-.7-.8-1.62-1.02-1.31-.3-2.99-.66-2.99-2.45,0-1.33,1.15-2.41,3.03-2.41,1.27,0,2.33,.38,3.12,1.12l-.95,1.25c-.65-.6-1.51-.88-2.29-.88s-1.18,.34-1.18,.82c0,.54,.67,.71,1.6,.92,1.32,.3,3,.7,3,2.47,0,1.46-1.04,2.57-3.2,2.57-1.54,0-2.64-.52-3.39-1.27l.94-1.3Z" />
+                                            <path class="j" d="M30.96,47v-8h5.66v1.46h-3.96v1.74h3.87v1.46h-3.87v1.86h3.96v1.48h-5.66Z" />
+                                        </g>
+                                        <g id="f" class="lines">
+                                            <path id="g" class="j line-3"
+                                                d="M1.44,30.62H35.32c.72,0,1.3-.56,1.3-1.25v-3.12c0-.69-.58-1.25-1.3-1.25H1.44c-.72,0-1.3,.56-1.3,1.25v3.12c0,.69,.58,1.25,1.3,1.25Z" />
+                                            <path id="h" class="j line-2"
+                                                d="M1.44,18.12H35.32c.72,0,1.3-.56,1.3-1.25v-3.12c0-.69-.58-1.25-1.3-1.25H1.44c-.72,0-1.3,.56-1.3,1.25v3.12c0,.69,.58,1.25,1.3,1.25Z" />
+                                            <path id="i" class="j line-1"
+                                                d="M1.44,5.62H35.32c.72,0,1.3-.56,1.3-1.25V1.25c0-.69-.58-1.25-1.3-1.25H1.44C.72,0,.13,.56,.13,1.25v3.12c0,.69,.58,1.25,1.3,1.25Z" />
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </button>
+			        </div>
+                    <div class="navbar-collapse collapse mobile-nav-collapse">
+                        <Rock:Zone Name="MobileNavigation" runat="server" />
+			        </div>
+                </div>
+            </nav>
+
+        </header>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        <Rock:Lava ID="footerwaves" runat="server">
+        {% include '/Themes/ArkV1/Assets/Lava/Custom/Components/wave-animation.lava' dark:'true' footer:'true' %}
+        </Rock:Lava>
+	    <footer class="site-footer">
+
+            <div class="container container-lg">
+                <div class="row d-flex flex-wrap footer-top">
+                    <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3">
+                        <Rock:Zone Name="FooterStart" runat="server" />
+                    </div>
+
+
+
+                    <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9">
+                        <Rock:Zone Name="FooterEnd" runat="server" />
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <Rock:Zone Name="FooterBottom" runat="server" />
+                </div>
+            </div>
+
+
+            <Rock:Lava ID="themescripts" runat="server">
+                <script src="{{ "~~/Assets/Scripts/theme.js" | ResolveRockUrl }}" type="module"></script>
+            </Rock:Lava>
+	    </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+    <script>
+        Sys.Application.add_load(HandleBackForwardCache);
+
+        // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+        function HandleBackForwardCache() {
+            // Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+            // Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
+            // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+            // (https://bugs.webkit.org/show_bug.cgi?id=156356)
+            window.addEventListener('pageshow', function (e) {
+                if ( e.persisted ) {
+                    document.querySelector('#updateProgress').style.display = 'none';
+                    // Check if the page is in postback, and if so, reset the PageRequestManager state.
+                    if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+                        // Reset the PageRequestManager state. & Manually clear the request object
+                        Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+                        Sys.WebForms.PageRequestManager.getInstance()._request = null;
+                    }
+                }
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>

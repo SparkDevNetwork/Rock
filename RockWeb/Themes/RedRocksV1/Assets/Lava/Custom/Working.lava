@@ -1,0 +1,157 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Working.lava' %} {% endcomment %}
+
+
+{% assign projectCount = Projects | Size %}
+{% assign data = 'signupgroups' | PersistedDataset %}
+
+
+
+{% if projectCount > 0 %}
+    <div class="row d-flex flex-wrap">
+        {% for project in Projects %}
+            {% assign groupData = data | Where:'GroupId',project.GroupId | First %}
+
+            {% assign groupImage = groupData.Image | Default:'' %}
+            {% assign groupCampusName = groupData.CampusName | Default:'' %}
+            {% assign kidsFriendly = groupData.KidsFriendly | AsBoolean %}
+
+            {% comment %} ~ Card {% endcomment %}
+            <div class="col-xs-6 col-sm-6 col-md-4 mb-4">
+                <div class="card h-100 card-group-item">
+
+                    {% if groupImage and groupImage != empty %}
+                        <img src="{{ groupImage | ImageUrl | Append:'&width=400&height=400&mode=crop' }}" alt="" class="card-img-top img-responsive bg-gray-100"{% if forloop.index0 > 9 %} loading="lazy"{% endif %} width="400" height="400">
+                    {% else %}
+                        <img src="/Content/ExternalSite/group-default.png" alt="" class="card-img-top img-responsive bg-gray-100"{% if forloop.index0 > 9 %} loading="lazy"{% endif %} width="400" height="400">
+                    {% endif %}
+
+
+                    <div class="card-header">
+                        <h6 class="card-title d-inline m-0" title="{{ project.ScheduleName }}">
+                            {{ project.ScheduleName }}
+                        </h6>
+                    </div>
+                    <script>console.log({{ project.MapCenter }});</script>
+
+                    <div class="card-body">
+                        {% if groupCampusName and groupCampusName != empty %}
+                            <span class="d-block my-1">
+                                <i class="group-icon fa fa-map-marker"></i> {{ groupCampusName }}
+                            </span>
+                        {% endif %}
+                        {% if kidsFriendly %}
+                            <span class="d-block my-1">
+                                <i class="group-icon fa fa-baby"></i> Kids Friendly
+                            </span>
+                        {% endif %}
+                        {% if project.FriendlySchedule and project.FriendlySchedule != empty %}
+                            <span class="d-block my-1">
+                                <i class="group-icon fa fa-clock"></i> {{ project.FriendlySchedule }}
+                            </span>
+                        {% endif %}
+                        {% if project.AvailableSpots and project.AvailableSpots > 0 %}
+                            <span class="d-block my-1">
+                                <i class="group-icon fa fa-group"></i> Available Spots: {{ project.AvailableSpots }}
+                            </span>
+                        {% else %}
+                            <span class="d-block my-1 text-danger">
+                                <i class="group-icon fa fa-group text-danger"></i> Available Spots: None Remaining
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer p-0">
+                        <div class="d-flex m-0">
+                            <div class="flex-eq">
+                                <a href="" class="btn btn-sm btn-lined btn-block border-0 rounded-0" data-toggle="modal" data-target="#modal-{{ project.ScheduleId }}">More Info</a>
+                            </div>
+                        </div>
+                        {% if project.AvailableSpots >= 1 %}
+                            <a href="{{ project.RegisterPageUrl }}" class="btn btn-primary btn-block rounded-0">Register</a>
+                        {% else %}
+                            <button class="btn btn-primary btn-block rounded-0" disabled>Register</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            {% comment %} ~ Modal {% endcomment %}
+            <div class="modal modal-sign-up-detail modal-description modal-{{ project.ScheduleId }}" id="modal-{{ project.ScheduleId }}" tabindex="-1" role="dialog" aria-labelledby="more-info-{{ project.ScheduleId }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header justify-content-between">
+                            <h5 class="modal-title">
+                                {{ project.ScheduleName }}
+                            </h5>
+                            <button type="button" class="close ml-auto" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <div class="p-3 bg-gray-100 font-md">
+                                <div class="row d-flex flex-wrap align-items-center">
+                                    <div class="col-xs-5 col-sm-4">
+                                        {% if groupImage and groupImage != empty %}
+                                            <img src="{{ groupImage | ImageUrl | Append:'&width=400&height=400&mode=crop' }}" alt="" class="img-responsive modal-img bg-gray-100"{% if forloop.index0 > 9 %} loading="lazy"{% endif %} width="400" height="400">
+                                        {% else %}
+                                            <img src="/Content/ExternalSite/group-default.png" alt="" class="img-responsive modal-img bg-gray-100"{% if forloop.index0 > 9 %} loading="lazy"{% endif %} width="400" height="400">
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-xs-7 col-sm-8">
+                                        {% if groupCampusName and groupCampusName != empty %}
+                                            <span class="d-block my-1">
+                                                <i class="group-icon fa fa-map-marker"></i> {{ groupCampusName }}
+                                            </span>
+                                        {% endif %}
+                                        {% if kidsFriendly %}
+                                            <span class="d-block my-1">
+                                                <i class="group-icon fa fa-baby"></i> Kids Friendly
+                                            </span>
+                                        {% endif %}
+                                        {% if project.FriendlySchedule and project.FriendlySchedule != empty %}
+                                            <span class="d-block my-1">
+                                                <i class="group-icon fa fa-clock"></i> {{ project.FriendlySchedule }}
+                                            </span>
+                                        {% endif %}
+                                        {% if project.AvailableSpots and project.AvailableSpots > 0 %}
+                                            <span class="d-block my-1">
+                                                <i class="group-icon fa fa-group"></i> Available Spots: {{ project.AvailableSpots }}
+                                            </span>
+                                        {% else %}
+                                            <span class="d-block my-1 text-danger">
+                                                <i class="group-icon fa fa-group text-danger"></i> Available Spots: None Remaining
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="bg-white p-3">
+                                {% if project.Description and project.Description != empty %}
+                                    <span class="d-block mb-2">Project Description</span>
+                                    <div class="text-muted leading-relaxed">
+                                        {{ project.Description }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="modal-footer-border d-flex m-0 bg-white">
+                            <div class="flex-eq">
+                                <a href="{{ project.RegisterPageUrl }}" class="btn btn-primary btn-block rounded-0">Register</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+
+{% else %}
+    <div>
+        No projects found.
+    </div>
+{% endif %}

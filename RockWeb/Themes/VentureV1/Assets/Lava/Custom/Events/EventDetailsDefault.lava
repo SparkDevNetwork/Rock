@@ -1,0 +1,199 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Events/EventDetailsDefault.lava', eventItem:eventItem %} {% endcomment %}
+
+<div class="bg-white">
+    <div class="container">
+
+        {{ eventItem.Name | Append:' | Venture Church' | SetPageTitle:'All' }}
+        {{ eventItem.Name | AddMetaTagToHead:'name','title' }}
+        {{ eventItem.Name | AddMetaTagToHead:'property','og:title' }}
+
+        {% assign photoId = eventItem.PhotoId %}
+
+        {% if photoId and photoId != empty %}
+            {% assign photoUrl = photoId | ImageUrl | TriumphImgCdn:'w=1600&h=900&fit=crop&auto=compress,format' %}
+            {{ photoUrl | AddMetaTagToHead:'property','og:image' }}
+            <section id="main_secPageTitle" class="page-header has-image" role="banner">
+                <img src="{{ photoUrl }}" sizes="100vw" class="img-responsive rounded-md" alt="" width="{{ eventItem.Photo.Width }}" height="{{ eventItem.Photo.Height }}" itemprop="image">
+            </section>
+        {% else %}
+
+            <div class="py-3"></div>
+            <div class="py-3"></div>
+
+        {% endif %}
+
+        <section class="page-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 class="mt-0 mb-3 accent accent-invite">{{ eventItem.Name }}</h1>
+                    <p class="m-0">{{ eventItem.Description | Default:eventItem.Summary }}</p>
+
+                    <div class="py-3 d-md-none"></div>
+                </div>
+                <div class="col-md-6 d-flex">
+                    {% include '~~/Assets/Lava/Custom/SocialShare.lava', justify:'center', justifyMd:'end' %}
+                </div>
+            </div>
+        </section>
+
+        {% eventscheduledinstance eventid:'{{eventId}}' maxoccurrences:'100' %}
+            {% assign EventScheduledInstances = EventScheduledInstances | Sort:'DateTime' %}
+
+            <section class="page-section mt-5">
+
+                {% if EventScheduledInstances.size > 0 %}
+                    <div class="row d-flex flex-wrap js-filter-items">
+                        {% for item in EventScheduledInstances %}
+                            {% assign kidCare = item.EventItemOccurrence | Attribute:'kidCareAvailable','RawValue' | AsBoolean %}
+                            <div class="js-filter-item col-lg-4 col-md-4 col-sm-6 col-xs-12 mb-3" data-campus-id="{{ item.EventItemOccurrence.CampusId }}">
+
+                                {% assign startDate = item.Date %}
+                                {% assign startTime = item.Time %}
+                                {% assign endDate = item.EndDate %}
+
+                                {% assign contactPersonAliasId = item.EventItemOccurrence.ContactPersonAliasId %}
+                                {% assign contactEmail = item.EventItemOccurrence.ContactEmail %}
+                                {% assign contactPhone = item.EventItemOccurrence.ContactPhone %}
+
+                                {% assign contactPersonNickName = '' %}
+                                {% assign contactPersonLastName = '' %}
+
+                                {% if contactPersonAliasId and contactPersonAliasId != empty %}
+                                    {% personalias where:'Id == {{ contactPersonAliasId }}' limit:'1' iterator:'People' sort:'Order' securityenabled:'false' %}
+                                        {% for person in People %}
+                                            {% assign contactPersonNickName = person.Person.NickName %}
+                                            {% assign contactPersonLastName = person.Person.LastName %}
+                                        {% endfor %}
+                                    {% endpersonalias %}
+                                {% endif %}
+
+                                {%- capture eventDate -%}
+                                    {% if startDate == endDate %}
+                                        {{ startDate | Date:'dddd, MMM dd' }} at {{ startTime | Date:'htt' }}
+                                    {% else %}
+                                        {{ startDate | Date:'MMM dd' }} - {{ endDate | Date:'MMM dd' }}
+                                    {% endif %}
+                                {%- endcapture -%}
+
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="event-primary-info">
+                                            {% if item.Campus and item.Campus != empty %}
+                                                <span class="text-muted d-block" aria-label="campus">{{ item.Campus }}</span>
+                                            {% else %}
+                                                <span class="d-block" style="margin-top: 19px;"> </span>
+                                            {% endif %}
+                                            <h5 class="mb-1">{{ item.Name }}</h5>
+                                            <span class="d-block o-80 accent accent-invite accent-lighter mb-3 pb-1">{{ eventDate }}</span>
+                                        </div>
+                                        {% if item.Location and item.Location != empty %}
+                                            <div class="event-location mb-2 pb-1">
+                                                <div class="mb-1">
+                                                    <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M5.38337 15.6772C0.842812 9.09472 0 8.41915 0 6C0 2.68628 2.68628 0 6 0C9.31372 0 12 2.68628 12 6C12 8.41915 11.1572 9.09472 6.61662 15.6772C6.31865 16.1076 5.68131 16.1076 5.38337 15.6772Z" fill="#414242"/>
+                                                    </svg>
+                                                    <strong>Locations</strong>
+                                                </div>
+                                                <div class="o-80">
+                                                    {% if item.LocationDescription and item.LocationDescription != empty %}
+                                                        {{ item.LocationDescription }}
+                                                    {% else %}
+                                                        {{ item.Location }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if contactPersonNickName != empty or contactPhone != empty or contactEmail != empty %}
+                                            <div class="event-contact">
+                                                <div class="mb-1"><i class="fa fa-comment"></i> <strong>Contact</strong></div>
+
+                                                <div class="event-contact-person o-80">
+                                                    {% if contactPersonNickName and contactPersonNickName != empty %}
+                                                        <span class="d-block mb-1">{{ contactPersonNickName }} {{ contactPersonLastName }}</span>
+                                                    {% endif %}
+                                                    {% if contactEmail and contactEmail != empty %}
+                                                        <span class="d-block mb-1">{{ contactEmail }}</span>
+                                                    {% endif %}
+                                                    {% if contactPhone and contactPhone != empty %}
+                                                        <span class="d-block">{{ contactPhone }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    {% if eventItemOccurrenceLinkagesCount > 0 %}
+                                        {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+                                            {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
+                                                {% assign minutesTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+                                                {% assign minutesTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+                                                {% assign showRegistration = true %}
+                                                {% assign registrationMessage = '' %}
+
+                                                {% if minutesTillStartDate and minutesTillStartDate > 0 %}
+                                                    {% assign showRegistration = false %}
+                                                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                                        {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                    {% else %}
+                                                        {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                    {% endif %}
+                                                {% endif %}
+
+                                                {% if minutesTillEndDate and minutesTillEndDate < 0 %}
+                                                    {% assign showRegistration = false %}
+                                                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                                        {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                    {% else %}
+                                                        {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                                                    {% endif %}
+                                                {% endif %}
+
+                                                {% if showRegistration == true %}
+                                                    {% assign statusLabel = 'Register' %}
+                                                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                                                        {% assign registrationButtonText = statusLabel %}
+                                                    {% else %}
+                                                        {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
+                                                    {% endif %}
+
+                                                    {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                                                        <div class="card-footer">
+                                                            <a href="/v1/registration?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{ eventItemOccurrenceLinkage.UrlSlug }}" class="btn btn-primary btn-grow">{{ registrationButtonText }}</a>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="card-footer">
+                                                            <a href="/v1/registration?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-grow">{{ registrationButtonText }}</a>
+                                                        </div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% comment %} <div class="card-footer">
+                                                        <p>{{ registrationMessage }}</p>
+                                                    </div> {% endcomment %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="col-xs-12 js-filter-items-empty" style="display: none;">
+                            <div class="alert alert-default">No events match your query. Try erasing and try again.</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="my-4">
+                        <p class="lead text-muted text-center">No upcoming occurrences exist for this event.</p>
+                    </div>
+                {% endif %}
+            </section>
+        {% endeventscheduledinstance %}
+
+    </div>
+
+    <div class="py-3"></div>
+    <div class="py-3"></div>
+
+</div>

@@ -1,0 +1,92 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/_SiteMobileNav.lava' %} {% endcomment %}
+<div class="d-lg-none">
+    <div class="site-mobile-nav">
+        <button class="navbar-toggler navbar-toggler-open" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent1" aria-controls="navbarToggleExternalContent1" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="collapse mobile-menu" id="navbarToggleExternalContent1">
+        <div class="mega-menu position-relative">
+            <a class="navbar-brand navbar-brand-mobile" href="/">
+                {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId -%}
+                    <img src="/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}">
+                {%- else -%}
+                    {{ 'Global' | Attribute:'OrganizationName' }}
+                {%- endif -%}
+            </a>
+            <button class="navbar-toggler navbar-toggler-close" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent1" aria-controls="navbarToggleExternalContent1" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="sr-only">Toggle navigation</span>
+                <i class="fa fa-close"></i>
+            </button>
+            <div class="container">
+                <nav class="mobile-nav">
+                    {% if Context.Campus %}
+                        <ul id="mobile-nav-one" class="nav flex-column">
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" class="nav-link mobile-nav-link"><span class="link-text">I’m New </span></a>
+                            </li>
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" id="headingOne" class="nav-link mobile-nav-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne" data-parent="#mobile-nav-one"><span class="link-text">
+                                    About Us
+                                </span></a>
+
+                                <ul id="collapseOne" class="nav collapse nav-level-two" aria-labelledby="headingOne">
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">About Us </span></a></li>
+                                    <li class="nav-item mobile-nav-item">
+                                        <a href="#" id="headingTwo" class="nav-link mobile-nav-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" data-parent="#collapseOne">
+                                            <span class="link-text">Ministries
+                                        </span></a>
+
+                                        <ul id="collapseTwo" class="nav collapse nav-level-three" aria-labelledby="headingTwo">
+                                            <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Kids </span></a></li>
+                                            <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Students </span></a></li>
+                                            <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Care </span></a></li>
+                                            <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">GC Internship </span></a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Beliefs </span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Staff </span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Careers </span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Weddings </span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Memorials </span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Prayer </span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Jobs </span></a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" class="nav-link mobile-nav-link"><span class="link-text">Media </span></a>
+                            </li>
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" class="nav-link mobile-nav-link"><span class="link-text">Events </span></a>
+                            </li>
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" id="headingThree" class="nav-link mobile-nav-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" data-parent="#mobile-nav-one">
+                                    <span class="link-text">Next Steps
+                                </span></a>
+
+                                <ul id="collapseThree" class="nav collapse nav-level-two" aria-labelledby="headingThree">
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Baptism</span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Connect</span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Serve</span></a></li>
+                                    <li><a href="#" class="nav-link mobile-nav-link"><span class="link-text">Give</span></a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    {% else %}
+                        <ul id="mobile-nav-one" class="nav flex-column">
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" class="nav-link mobile-nav-link"><span class="link-text">I’m New</span></a>
+                            </li>
+                            <li class="nav-item mobile-nav-item">
+                                <a href="#" class="nav-link mobile-nav-link"><span class="link-text">About</span></a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+

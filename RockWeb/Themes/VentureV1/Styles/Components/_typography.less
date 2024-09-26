@@ -1,0 +1,120 @@
+/*
+
+    1. Headings
+    2. Body Text
+    3. Blockquotes
+
+*/
+
+
+// 1. Headings
+// -------------------------
+h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5,h6,.h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1,.h1 {
+  font-size: 36px;
+
+  &.display {
+      font-size: 60px;
+  }
+
+  @media screen and (min-width: 992px) {
+    font-size: 48px;
+
+    &.display {
+      font-size: 80px;
+    }
+  }
+}
+
+h2,.h2 {
+  font-size: 30px;
+
+  &.display {
+    font-size: 52px;
+  }
+
+  @media screen and (min-width: 992px) {
+    font-size: 38px;
+
+    &.display {
+      font-size: 72px;
+    }
+  }
+}
+
+h3,.h3 {
+  font-size: 26px;
+
+  &.display {
+    font-size: 44px;
+  }
+
+  @media screen and (min-width: 992px) {
+    font-size: 32px;
+
+    &.display {
+      font-size: 64px;
+    }
+  }
+}
+
+h4,.h4 {
+  font-size: 22px;
+
+  &.display {
+    font-size: 40px;
+  }
+
+  @media screen and (min-width: 992px) {
+    font-size: 24px;
+
+    &.display {
+      font-size: 56px;
+    }
+  }
+}
+
+h5,.h5 {
+  font-size: 20px;
+}
+
+h6,.h6 {
+  font-size: 16px;
+}
+
+
+// 2. Body Text
+// -------------------------
+.tall,
+.lead,
+.tall p,
+.lead p {
+  font-size: 18px;
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+.leading-loose * {
+  line-height: 2 !important;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.small {
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+// 3. Block Quotes
+// -------------------------
+blockquote {
+  border-color: fade(@invite, 50%);
+}

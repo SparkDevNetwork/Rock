@@ -1,0 +1,213 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Components/Hero.lava' %} {% endcomment %}
+
+{% assign showHero = CurrentPage | Attribute:'ShowHero' | AsBoolean %}
+
+{% if showHero %}
+    {% assign pageDisplayTitle = CurrentPage.PageDisplayTitle | AsBoolean %}
+    {% assign titleGraphicGuid = CurrentPage | Attribute:'TitleGraphic','RawValue' %}
+    {% assign overlayColor = CurrentPage | Attribute:'OverlayColor' %}
+    {% assign titleOverrideText = CurrentPage | Attribute:'TitleOverrideText' %}
+    {% assign heroStyle = CurrentPage | Attribute:'HeroStyle' | Downcase %}
+    {% assign angledCTAContent = CurrentPage | Attribute:'AngledCTAContent' %}
+    {% assign angledCTABackground = CurrentPage | Attribute:'AngledCTABackground' |  | Default:'#0C1A31' %}
+    {% assign buttons = CurrentPage | Attribute:'Buttons','Object' %}
+    {% assign buttons = buttons.AttributeMatrixItems %}
+    {% assign heroImages = CurrentPage | Attribute:'HeroImages','Object' %}
+    {% assign heroImages = heroImages.AttributeMatrixItems | OrderBy:'Order' %}
+    {% assign subNavigationItems = CurrentPage | Attribute:'SubNavigationItems','Object' %}
+    {% assign subNavigationItems = subNavigationItems.AttributeMatrixItems %}
+    {% assign subNavigationSize = subNavigationItems.size %}
+    {% assign heroVideoGuid = CurrentPage | Attribute:'HeroVideo','RawValue' %}
+
+    <style>
+        .overlay-custom::before {
+            background-color: {{ overlayColor }};
+            opacity: 1;
+        }
+    </style>
+
+    {% capture buttonsMarkup %}
+        {% for button in buttons %}
+
+            {% assign text = button | Attribute:'Text' %}
+            {% assign url = button | Attribute:'Url' %}
+            {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+            {% assign type = button | Attribute:'Type','Object' %}
+            {% assign classes = type | Attribute:'Classes' %}
+
+            {% if text and text != empty and url and url != empty %}
+                <a href="{{ url }}" class="{{ classes }}"{% if newTab %} target="_blank"{% endif %}>{{ text }}</a>
+            {% endif %}
+
+        {% endfor %}
+    {% endcapture %}
+
+    {% capture titleText %}
+        {% if titleGraphicGuid and titleGraphicGuid != empty %}
+            {% assign titleGraphicUrl = titleGraphicGuid | ImageUrl %}
+            <img src="{{ titleGraphicUrl }}" alt="" class="site-hero-title w-100 img-responsive">
+        {% elseif titleOverrideText and titleOverrideText != empty %}
+            {% assign titleOverrideText = titleOverrideText | Replace:'|','<br>' %}
+            <h1 class="h2 display text-white{% if heroStyle == 'standard' %} text-center{% endif %} site-hero-title">{{ titleOverrideText }}</h1>
+        {% else %}
+            {% if pageDisplayTitle %}
+                <h1 class="h2 display text-white{% if heroStyle == 'standard' %} text-center{% endif %} site-hero-title">{{ CurrentPage.PageTitle }}</h1>
+            {% endif %}
+        {% endif %}
+    {% endcapture %}
+
+
+    {% if heroStyle == 'featured' %}
+        {% assign count = 0 %}
+
+        {% capture heroImagesMarkup %}
+            <div class="featured-images">
+                {% for heroImage in heroImages %}
+                    {% if count < 3 %}
+                        {% assign imageGuid = heroImage | Attribute:'Image','RawValue' %}
+                        {% assign imageUrl = imageGuid | ImageUrl %}
+                        {% assign svgId = 'svg-' | Append:count %}
+                        <div class="featured-image position-relative rounded-md">
+                            <img src="{{ imageUrl }}" alt="" class="img-responsive rounded-md">
+                            {% if overlayColor and overlayColor != empty %}
+                                <div class="overlay overlay-custom rounded-md"></div>
+                            {% endif %}
+                        </div>
+
+                        {% assign count = count | Plus:1 %}
+                    {% else %}
+                        {% break %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+        {% endcapture %}
+    {% endif %}
+
+    {% if subNavigationSize and subNavigationSize > 0 %}
+        {% assign pageRoutes = CurrentPage.PageRoutes | ToJSON | FromJSON %}
+
+        {% capture subNavigationItems %}
+            {% for subNavigationItem in subNavigationItems %}
+                {% assign itemText = subNavigationItem | Attribute:'Text' %}
+                {% assign itemUrl = subNavigationItem | Attribute:'Url','RawValue' | AsString %}
+                {% assign itemNewTab = subNavigationItem | Attribute:'NewTab' | AsBoolean %}
+
+                {% assign itemUrlCheck = itemUrl | RemoveFirst:'/' | AsString %}
+                {% assign isActive = false %}
+
+                //- /page/199?id=4
+                {% assign currentPageId = CurrentPage.Id %}
+                {% assign itemPageParts = itemUrl | Split:'?' %}
+                {% assign itemPagePartsSize = itemPageParts.size %}
+
+                {% for pageRoute in pageRoutes %}
+                    {% assign pageRouteRoute = pageRoute.Route %}
+                    {% if pageRouteRoute == itemUrlCheck %}
+                        {% assign isActive = true %}
+                        {% break %}
+                    {% endif %}
+                {% endfor %}
+
+                <li role="presentation"{% if isActive %} class="active"{% endif %}><a href="{{ itemUrl }}"{% if itemNewTab %} target="_blank"{% endif %}>{{ itemText }}</a></li>
+            {% endfor %}
+        {% endcapture %}
+    {% endif %}
+
+
+    <div class="site-hero site-hero-{{ heroStyle }} position-relative bg-dark">
+        {% if heroStyle == 'standard' and overlayColor and overlayColor != empty %}
+            <div class="overlay overlay-custom"></div>
+        {% endif %}
+
+        {% if heroStyle == 'standard' and heroVideoGuid and heroVideoGuid != empty %}
+            {% assign heroVideo = heroVideoGuid | ImageUrl %}
+            <video class="hero-video" autoplay loop autoplay="autoplay" muted muted="true" defaultmuted loop="true" playsinline class="hero-video" preload="auto" style="pointer-events: none;">
+                <source src="{{ heroVideo }}" type="video/mp4">
+            </video>
+        {% endif %}
+
+        <div class="container container-lg position-relative z-10">
+            {% if heroStyle == 'featured' %}
+                <div class="py-3 py-md-5"></div> //- 96
+                <div class="py-3 py-md-3"></div> //- 32
+                <div class="site-hero-content">
+                    <div class="site-hero-content-left">
+                        <div class="py-md-4"></div>
+                        {{ titleText }}
+                        <div class="py-3"></div>
+                        {{ buttonsMarkup }}
+                        <div class="py-4 py-md-0"></div>
+                    </div>
+                    <div class="site-hero-content-right">
+                        {{ heroImagesMarkup }}
+                    </div>
+                </div>
+            {% elseif heroStyle == 'standard' %}
+                {% assign heroBGImgGuid = heroImages | First | Attribute:'Image','RawValue' %}
+                {% assign heroBGImgUrl = heroBGImgGuid | ImageUrl %}
+
+
+
+                <style>
+                    .site-hero {
+                        background-image: url({{ heroBGImgUrl }});
+                    }
+                </style>
+
+
+                <div class="d-flex align-items-center justify-content-center w-100">
+                    <div class="site-hero-content">
+                        {{ titleText }}
+                        <div class="py-3"></div>
+                        <div>
+                            {{ buttonsMarkup }}
+                        </div>
+                    </div>
+                </div>
+
+            {% endif %}
+        </div>
+
+        {% if angledCTAContent and angledCTAContent != empty %}
+            <div class="angled-cta">
+                <div class="angled-cta-bg" style="background-color:{{ angledCTABackground }};"></div>
+                <div class="container position-relative">
+                    <div class="py-3"></div>
+                    <div class="py-3"></div>
+                    {{ angledCTAContent }}
+                    <div class="py-3"></div>
+                    <div class="py-3"></div>
+                </div>
+            </div>
+        {% elseif heroStyle == 'featured' %}
+            <div class="py-3 py-md-5"></div> //- 96
+            <div class="py-3 py-md-3"></div> //- 32
+        {% endif %}
+
+    </div>
+
+    {% if subNavigationSize and subNavigationSize > 0 %}
+        <nav class="hero-subnav">
+            <div class="container conteainer-lg">
+                <div class="d-none d-md-block">
+                    <ul class="nav nav-tabs">
+                        {{ subNavigationItems }}
+                    </ul>
+                </div>
+            </div>
+            <div class="d-block d-md-none">
+                {[ accordion paneltype:'hero-accordion' firstopen:'false' ]}
+                    [[ item title:'Browse' ]]
+                        <ul class="nav nav-pills nav-stacked">
+                            {{ subNavigationItems }}
+                        </ul>
+                    [[ enditem ]]
+                {[ endaccordion ]}
+            </div>
+        </nav>
+    {% endif %}
+
+{% endif %}
+
+

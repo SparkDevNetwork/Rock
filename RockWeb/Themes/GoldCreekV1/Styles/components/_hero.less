@@ -1,0 +1,50 @@
+.hero {
+  padding: 156px 0;
+  position: relative;
+
+  &-has-img {
+    @media screen and(min-width: 768px) {
+      padding: 250px 0;
+    }
+
+
+  }
+
+  &.homepage-hero {
+    padding: 246px 0 483px;
+
+    @media screen and(min-width: 768px) {
+      padding: 246px 0 483px;
+    }
+
+    @media screen and(min-width: 992px) {
+      padding: 331px 0 483px;
+    }
+
+
+    &-tall {
+      display: flex;
+      align-items: center;
+      width: 100% !important;
+      height: 100vh;
+      padding: 0;
+    }
+
+    .by-line {
+      font-size: 20px;
+      font-weight: 500;
+
+      @media screen and (min-width: 768px) {
+        font-size: 28px;
+      }
+    }
+  }
+
+  &-no-img {
+    background-color: @gc-black;
+
+    @media screen and(min-width: 768px) {
+      padding: 250px 0 120px;
+    }
+  }
+}

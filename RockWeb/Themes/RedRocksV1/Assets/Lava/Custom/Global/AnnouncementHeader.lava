@@ -1,0 +1,32 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/AnnouncementHeader.lava' %} {% endcomment %}
+
+{% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+
+{% contentchannelitem where:'ContentChannelId == 42' iterator:'Items' sort:'Order' securityenabled:'false' disableattributeprefetch:'false' %}
+{% endcontentchannelitem %}
+
+
+<div class="bg-dark announcement-header overflow-hidden position-relative">
+    {[ swiper showpagination:'false' shownavigation:'true' spacebetween:'30' breakpoints:'sm-2|30,md-3|30' autoplay:'7000' ]}
+        {% for item in Items %}
+            {% assign startDateTime = item.StartDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+            {% assign expireDateTime = item.ExpireDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' %}
+
+            {% if startDateTime > now or expireDateTime <= now %}
+                {% continue %}
+            {% endif %}
+
+            {% assign title = item.Title %}
+            {% assign url = item | Attribute:'Url','RawValue' %}
+            {% assign cta = item | Attribute:'CTA' %}
+            {% assign newTab = item | Attribute:'NewTab' | AsBoolean %}
+
+            [[ slide ]]
+                <a href="{{ url }}"{% if newTab %} target="_blank"{% endif %} class="announcement">
+                    <h6 class="announcement-title d-block text-center m-0">{{ title | Upcase }}</h6>
+                    <h6 class="announcement-cta d-none d-md-block text-center m-0">{{ cta }}</h6>
+                </a>
+            [[ endslide ]]
+        {% endfor %}
+    {[ endswiper ]}
+</div>

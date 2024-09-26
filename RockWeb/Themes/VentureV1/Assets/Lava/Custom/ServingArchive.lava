@@ -1,0 +1,70 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ServingArchive.lava' %} {% endcomment %}
+
+{% assign opportunityCount = Opportunities | Size %}
+
+{% if opportunityCount == 0 %}
+<div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no opportunities that match the criteria</div>
+</div>
+{% endif %}
+
+<div class="row mb-3">
+    <div class="col-sm-12">
+        <div class="w-100 d-flex flex-wrap js-add-dropdowns">
+            <div class="dropdown js-custom-dropdown js-custom-dropdown-campus">
+                <button class="btn btn-primary btn-grow dropdown-toggle" type="button" id="dropdownMenuCampus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Select Campus
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuCampus">
+                    <li>
+                        <a href="#" name="All" value="All">Select Campus</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for opportunity in Opportunities %}
+    {% assign opportunityId = opportunity.Id %}
+    {% assign opportunityDetailPage = DetailPage | Append: '?OpportunityId=' | Append:opportunityId %}
+
+    {% assign preferenceArea = opportunity | Attribute:'PreferenceArea' %}
+    {% assign daysOfTheWeek = opportunity | Attribute:'DaysoftheWeek' %}
+    {% assign role = opportunity | Attribute:'Role' %}
+
+    {% capture serveAttributes %}
+        <ul>
+        {% if preferenceArea and preferenceArea != empty and preferenceArea != '' %}
+            <li><strong>Preference Area: </strong>{{ preferenceArea }}</li>
+            {% endif %}
+        {% if daysOfTheWeek and daysOfTheWeek != empty and daysOfTheWeek != '' %}
+            <li><strong>Days of the Week: </strong>{{ daysOfTheWeek }}</li>
+            {% endif %}
+        {% if role and role != empty and role != '' %}
+            <li><strong>Role: </strong>{{ role }}</li>
+        {% endif %}
+        </ul>
+    {% endcapture %}
+
+    {% if forloop.first %}
+        <div class="row d-flex flex-wrap">
+    {% endif %}
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title accent accent-invest accent-light">{{ opportunity.PublicName }}</h5>
+                        {{ serveAttributes }}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ opportunityDetailPage }}" class="btn btn-primary">More Info</a>
+                    </div>
+                </div>
+            </div>
+    {% if forloop.last %}
+        </div>
+    {% endif %}
+{% endfor %}
+
+

@@ -1,0 +1,47 @@
+{% assign count = 0 %}
+
+{% for item in Items %}
+    {% assign campus = item | Attribute:'Campus' %}
+    {% assign countCheck = count | Modulo:2 %}
+
+    {% if campus == empty or campus == null or campus == Context.Campus.Name %}
+        {% assign title = item.Title %}
+        {% assign content = item.Content %}
+        {% assign image = item | Attribute:'Image','RawValue' %}
+        {% assign imageUrl = '/GetImage.ashx?Guid=' | Append:image | Append:'&w=800&h=800&mode=crop' %}
+
+        {% assign cardSubtitle = item | Attribute:'CardSubtitle' %}
+        {% assign accentColor = item | Attribute:'AccentColor' %}
+        {% assign url = item | Attribute:'Url' %}
+        {% assign linkText = item | Attribute:'LinkText' %}
+        {% assign newTab = item | Attribute:'NewTab' %}
+        {% assign linkTwoUrl = item | Attribute:'LinkTwoUrl','RawValue' %}
+        {% assign linkTwoNewTab = item | Attribute:'LinkTwoNewTab' %}
+        {% assign linkTwoText = item | Attribute:'LinkTwoText' | Default:'Learn More' %}
+        {% assign hideImageOnMobile = item | Attribute:'HideImageOnMobile' %}
+
+        <div class="giant-card{% if forloop.last != true %} mb-3{% endif %}{% if countCheck == 1 %} giant-card-right{% else %} giant-card-left{% endif %}{% if url and url != empty %} card-linked card-hover{% endif %}">
+            <div class="giant-card-img-wrap{% if hideImageOnMobile and hideImageOnMobile == 'Yes' %} hide-on-mobile{% endif %}">
+                <div class="giant-card-img">
+                    <img src="{{ imageUrl }}" alt="{{ title }}">
+                </div>
+            </div>
+            <div class="giant-card-body">
+                {% if cardSubtitle and cardSubtitle != empty %}
+                    <div class="h5 giant-card-subtitle">{{ cardSubtitle }}</div>
+                {% endif %}
+                <div class="h3 giant-card-title">{{ title }}</div>
+                <div class="giant-card-content">
+                    {{ content }}
+                </div>
+                {% if url and url != empty %}
+                    <a href="{{ url }}" class="btn btn-primary btn-{{ accentColor }} stretched-link" {% if newTab and newTab == 'Yes' %}target="_blank"{% endif %}>{{ linkText }}</a>
+                {% endif %}
+                {% if linkTwoUrl and linkTwoUrl != empty %}
+                    <a href="{{ linkTwoUrl }}" class="btn btn-default btn-{{ accentColor }} position-relative z-10" {% if linkTwoNewTab and linkTwoNewTab == 'Yes' %}target="_blank"{% endif %}>{{ linkTwoText }}</a>
+                {% endif %}
+            </div>
+        </div>
+        {% assign count = count | Plus:1 %}
+    {% endif %}
+{% endfor %}

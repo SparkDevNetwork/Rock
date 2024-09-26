@@ -1,0 +1,27 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteFooter/FooterCustomNav.lava' %} {% endcomment %}
+
+<nav class="footer-nav w-100 text-center text-md-left">
+    <ul>
+        <li class="nav-item nav-item-main">
+            <a href="#">Messages</a>
+        </li>
+        <li class="nav-item nav-item-main">
+            <a href="#">What's Happening</a>
+        </li>
+        <li class="nav-item nav-item-main">
+            <a href="#">Bible 365</a>
+        </li>
+        <li class="nav-item nav-item-main">
+            <a href="#">Give</a>
+        </li>
+        <li class="nav-item nav-item-main">
+            <a href="#">Volunteer</a>
+        </li>
+        <li class="nav-item nav-item-main">
+            <a href="#">Yes to Jesus</a>
+        </li>
+        <li class="nav-item nav-item-main">
+            <a href="#">Prayer</a>
+        </li>
+    </ul>
+</nav>

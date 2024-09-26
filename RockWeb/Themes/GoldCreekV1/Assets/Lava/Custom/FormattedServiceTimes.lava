@@ -1,0 +1,57 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/FormattedServiceTimes.lava', timesString:'Sunday^ 1:30 p.m.|Saturday^ 2 p.m.' %} {% endcomment %}
+{% assign serviceTimesObject = timesString | Split:'|' %}
+{% assign modifiedTimesString = '' %}
+{% assign serviceDays = '' %}
+
+{% assign serviceTimesObjectSize = serviceTimesObject | Size %}
+
+{% if serviceTimesObjectSize and serviceTimesObjectSize > 0 %}
+    {% for time in serviceTimesObject %}
+        {% assign timeParts = time | Split:'^' %}
+        {% assign timeDay = timeParts[0] | Downcase | Trim %}
+        {% unless serviceDays contains timeDay %}
+            {% assign serviceDays = serviceDays | Append:timeDay | Append:',' %}
+        {% endunless %}
+    {% endfor %}
+
+    {% assign serviceDaysObj = serviceDays | Split:',' %}
+    {% for day in serviceDaysObj %}
+        {% assign dayCapitalized = day | Capitalize %}
+        {% assign modifiedTimesString = modifiedTimesString | Append:dayCapitalized | Append:'s' %}
+        {% for time in serviceTimesObject %}
+            {% assign timeParts = time | Split:'^' %}
+            {% assign timeDay = timeParts[0] | Downcase | Trim %}
+            {% assign timeTime = timeParts[1] | Downcase | Remove:'.' | Trim %}
+
+            {% if day == timeDay %}
+                {% assign modifiedTimesString = modifiedTimesString | Append:',' | Append:timeTime %}
+            {% endif %}
+        {% endfor %}
+        {% assign modifiedTimesString = modifiedTimesString | Append:'|' %}
+    {% endfor %}
+{% endif %}
+
+{% assign modifiedTimesObj = modifiedTimesString | Split:'|' %}
+
+{% assign timesObjSize = modifiedTimesObj | Size %}
+
+{% if timesObjSize and timesObjSize > 0 %}
+    {%- capture outputString -%}
+        {% for time in modifiedTimesObj %}
+            {% assign timeParts = time | Split:',' %}
+            {% assign timePartsSize = timeParts | Size %}
+            {% for timePart in timeParts %}
+                {% if forloop.first %}
+                    {{ timePart }} at
+                {% elseif forloop.index == 2 %}
+                    {{ timePart }}{% if timePartsSize > 3 %},{% endif %}
+                {% elseif forloop.last %}
+                    &amp; {{ timePart }}
+                {% endif %}
+            {% endfor %}
+            {% unless forloop.last %}<br class="d-none d-sm-block">{% endunless %}
+        {% endfor %}
+    {%- endcapture -%}
+{% endif %}
+
+{{ outputString }}

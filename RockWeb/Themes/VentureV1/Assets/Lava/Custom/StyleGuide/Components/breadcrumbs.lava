@@ -1,0 +1,44 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Breadcrumbs Section {% endcomment %}
+
+{% capture breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Sample</a></li>
+    <li class="breadcrumb-item">Current Page</li>
+</ol>
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Sample</a></li>
+    <li class="breadcrumb-item"><a href="#">Another Sample</a></li>
+    <li class="breadcrumb-item">Current Page</li>
+</ol>
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Sample</a></li>
+    <li class="breadcrumb-item"><a href="#">Another Sample</a></li>
+    <li class="breadcrumb-item"><a href="#">Yet Another Sample</a></li>
+    <li class="breadcrumb-item">Current Page</li>
+</ol>
+{% endcapture %}
+
+{% capture breadcrumbsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Breadcrumbs</blockquote>
+{{ breadcrumbs | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header">Breadcrumbs</h3>
+
+<div class="bg-dark p-3">
+    {{ breadcrumbs }}
+</div>
+
+{{ breadcrumbsEscaped }}
+

@@ -1,0 +1,65 @@
+body {
+  background: #e3b245 linear-gradient(180deg,rgba(199,121,71,0) 30%,#c77947 100%) fixed;
+}
+
+.welcome div .checkin-active {
+  .start-button-container {
+    .checkin-search-actions {
+
+      &.checkin-start {
+        a.btn-primary {
+          background-color: #fff;
+          color: #638182;
+          border: 0;
+        }
+      }
+
+      &:has(.btn) {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .btn {
+          height: 100%;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 991px) {
+    &::before {
+      width: 100%;
+      bottom: 320px;
+    }
+
+    .welcome-banner {
+      right: unset;
+      top: 120px;
+      left: 4%;
+      right: 4%;
+      bottom: unset;
+    }
+
+    .start-button-container {
+      width: 100%;
+      top: unset;
+      height: 300px;
+      justify-content: flex-end;
+      background-color: transparent;
+      bottom: 0;
+    }
+  }
+
+
+  @media (min-width: 992px) {
+    .welcome-banner {
+      top: 15%;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .welcome-banner {
+      font-size: 24px !important;
+    }
+  }
+}

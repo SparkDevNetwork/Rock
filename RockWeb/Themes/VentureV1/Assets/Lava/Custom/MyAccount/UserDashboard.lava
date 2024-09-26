@@ -1,0 +1,22 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/MyAccount/UserDashboard.lava' %} {% endcomment %}
+
+
+{% comment %} 16 / 32 {% endcomment %}
+<div class="pt-3 py-md-3"></div>
+
+<div class="user-dashboard">
+  <div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-12 col-lg-4 mb-3 mb-lg-0">
+      {% include '~~/Assets/Lava/Custom/MyAccount/UserDashboardContact.lava', familyCount:familyCount %}
+    </div>
+    <div class="col-xs-12 col-sm-12 col-lg-8 mb-3 mb-lg-0">
+      <div class="user-dashboard-progress h-100 card">
+        {% include '~~/Assets/Lava/Custom/MyAccount/UserDashboardProgress.lava' %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+

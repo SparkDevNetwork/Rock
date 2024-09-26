@@ -1,0 +1,66 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/ContentComponents/Cards.lava' %} {% endcomment %}
+
+{%- assign channelTitleSize  =  ContentChannel | Attribute:'TitleSize' | Default:'h3' -%}
+{%- assign channelContentAlignment  =  ContentChannel | Attribute:'ContentAlignment' | Default:'left' -%}
+{%- assign textAlignment = channelContentAlignment | Downcase | Prepend:'text-' -%}
+{%- assign channelForegroundColor  =  ContentChannel | Attribute:'ForegroundColor' -%}
+{%- assign channelBackgroundColor =  ContentChannel | Attribute:'BackgroundColor' -%}
+{%- assign channelBackgroundImage =  ContentChannel | Attribute:'BackgroundImage','RawValue' -%}
+{%- assign contentItemStyle = '' -%}
+
+<div class="position-relative">
+    <div class="swiper-primary js-primary-swiper px-3 px-sm-0">
+        {[ swiper spacebetween:'16' showpagination:'true' shownavigation:'false' paginationclickable:'true' breakpoints:'sm-2|16,md-3|32' ]}
+            {%- for item in Items -%}
+                {% assign imageGuid = item | Attribute:'Image','RawValue' %}
+                {% assign imageUrl = '' %}
+                {% if imageGuid and imageGuid != empty %}
+                    {% assign imageUrl = imageGuid | ImageUrl | Append:'&w=1200&h=800&mode=crop' %}
+                {% endif %}
+
+
+                {% assign buttons = item | Attribute:'Buttons','Object' %}
+                {% assign buttons = buttons.AttributeMatrixItems %}
+                {% assign buttonsSize = buttons | Size %}
+
+
+                {% assign url = item | Attribute:'Url' %}
+                {% assign linkText = item | Attribute:'LinkText' | Default:'Learn More' %}
+                {% assign newTab = item | Attribute:'NewTab' | AsBoolean %}
+                {% assign linkTwoUrl = item | Attribute:'LinkTwoUrl' %}
+                {% assign linkTwoText = item | Attribute:'LinkTwoText' | Default:'Learn More' %}
+                {% assign linkTwoNewTab = item | Attribute:'LinkTwoNewTab' | AsBoolean %}
+
+                [[ slide ]]
+                    <div class="card h-100">
+                        {% if imageUrl and imageUrl != empty %}
+                            <div class="card-img-header">
+                                <img src="{{ imageUrl }}" alt="" class="card-img-top img-responsive">
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <{{ channelTitleSize }} class="card-title">{{ item.Title }}</{{ channelTitleSize }}>
+                            <div class="card-text mb-4">
+                                {{ item.Content }}
+                            </div>
+                        </div>
+
+                        {% if buttonsSize and buttonsSize > 0 %}
+                            <div class="card-footer">
+                                {% for button in buttons %}
+                                    {% assign url = button | Attribute:'Url','RawValue' %}
+                                    {% assign text = button | Attribute:'Text' %}
+                                    {% assign newTab = button | Attribute:'NewTab' | AsBoolean %}
+                                    {% assign style = button | Attribute:'Style','Object' %}
+                                    {% assign styleClasses = style | Attribute:'Classes' %}
+                                    <a href="{{ url }}" class="{{ styleClasses }}"{% if newTab %} target="_blank"{% endif %}>{{ text }}</a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                [[ endslide ]]
+
+            {%- endfor -%}
+        {[ endswiper ]}
+    </div>
+</div>

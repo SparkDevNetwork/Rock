@@ -1,0 +1,84 @@
+//- {% include '~~/Assets/Lava/Custom/Media/SeriesArchive.lava', buttontext:'' %}
+
+{% unless buttontext and buttontext != empty %}
+    {% assign buttontext = 'View' %}
+{% endunless %}
+
+{% assign currentPage = Pagination.CurrentPage %}
+
+<div class="row mt-5 mt-sm-0">
+    {% for item in Items %}
+        {% assign title = item.Title %}
+        {% assign date = item.StartDateTime | Date:'MMM d' %}
+        {% assign image = item | Attribute:'SeriesImage','Guid' | ImageUrl %}
+        {% assign seriesSlug = item.PrimarySlug %}
+        {% assign detailsUrl = LinkedPages.DetailPage | Replace:'{PrimarySlug}',seriesSlug %}
+
+        {% if forloop.first and currentPage == 1 %}
+            <div class="col-xs-12 col-sm-12 col-md-12 mb-4 d-none d-md-block">
+                <div class="special-card special-card-16x9 hide-buttons-mobile shadow-lg" style="background-image:url({{ image | Append:'&w=1600&mode=crop' }});">
+                    <div class="special-card-content">
+                        <div class="special-card-details text-white">
+                            <span class="label label-primary mb-3 tall d-inline-block">Latest</span>
+                            <h1 class="special-card-heading">{{ title }}</h1>
+                        </div>
+                        <div class="special-card-actions">
+                            <a href="/{{ detailsUrl }}" class="btn btn-primary btn-opaque">{{ buttontext }}</a>
+                        </div>
+                    </div><img src="/GetImage.ashx?Guid={{ item }}&w=width&h=height&mode=crop" alt="">
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 mb-4 d-block d-md-none">
+                <div class="poster-card js-poster-card" style="background-image:url({{ image | Append:'&w=400&mode=crop' }});">
+                    <div class="poster-card-body js-poster-card-body">
+                        <h4 class="poster-card-title accent accent-white accent-light">{{ title }}</h4>
+
+                        <div class="poster-card-hidden js-poster-card-hidden">
+                            <a href="/{{ detailsUrl }}" class="text-white">{{ buttontext }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-xs-12 col-sm-6 col-md-4 mb-4">
+                <div class="poster-card js-poster-card" style="background-image:url({{ image | Append:'&w=400&mode=crop' }});">
+                    <div class="poster-card-body js-poster-card-body">
+                        <h4 class="poster-card-title accent accent-white accent-light">{{ title }}</h4>
+
+                        <div class="poster-card-hidden js-poster-card-hidden">
+                            <a href="/{{ detailsUrl }}" class="text-white">{{ buttontext }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+{% if Pagination.TotalPages > 1 %}
+    <div class="mt-4">
+        {% assign nextPageString = Pagination.NextPage | ToString %}
+        {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+        {% if Pagination.PreviousPage == -1 %}
+            <div class="btn btn-default pull-left">
+                <i class="fa fa-chevron-left"></i> Prev
+            </div>
+        {% else %}
+            <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
+                <i class="fa fa-chevron-left"></i> Prev
+            </a>
+        {% endif %}
+
+        {% if Pagination.NextPage == -1 %}
+            <div class="btn btn-default pull-right">
+                Next <i class="fa fa-chevron-right"></i>
+            </div>
+        {% else %}
+            <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
+                Next <i class="fa fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+{% endif %}

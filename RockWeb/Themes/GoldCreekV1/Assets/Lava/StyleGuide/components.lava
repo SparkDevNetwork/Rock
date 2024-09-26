@@ -1,0 +1,123 @@
+{% comment %} {% include '~~/Assets/Lava/styleguide/components.lava' %} {% endcomment %}
+
+{% assign componentMain = 'intro,layout-gallery,image-sizes,typography-and-colors,buttons,lists,navs,breadcrumbs' | Split:',' %}
+{% assign components = 'accordions,cards,triumph-swiper' | Split:',' %}
+{% assign page = PageParameter.component | Default:'intro' %}
+{% assign includePath = '~~/Assets/Lava/styleguide/components/' | Append:page | Append:'.lava' %}
+{% assign controlGalleryPageId = 3039 %} //-
+{% assign layoutsPageId = 3029 %}
+
+
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% stylesheet %}
+    pre{
+        margin-top: 30px;
+        padding: 2rem;
+        max-height: 500px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        background-color: #ffffff;
+    }
+{% endstylesheet %}
+
+{% assign page = PageParameter.component %}
+{% if page == empty or page == null %}
+    {% assign page = 'intro' %}
+{% endif %}
+
+
+<div class="py-5">
+    <div class="py-md-4">
+        <div class="row">
+            <div class="col-md-4 col-lg-3">
+
+                <div class="panel-group panel-group-nav">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <span>Intro</span>
+                        </div>
+                    </div>
+
+                    {% assign count = 0 %}
+                    {% for item in componentMain %}
+                        {% if count < 3 %}
+                            <div class="panel {% if item == page %}active{% endif %}">
+                                <a href="?component={{ item }}"><i class="fa fa-arrow-circle-right mr-2"></i>{{ item | Capitalize | Replace:'-',' ' }}</a>
+                            </div>
+                        {% endif %}
+                        {% assign count = count | Plus:1 %}
+                    {% endfor %}
+                </div>
+
+                <div class="panel-group panel-group-nav">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <span>Componenets</span>
+                        </div>
+                    </div>
+
+                    {% assign count = 0 %}
+                    {% for item in componentMain %}
+                        {% if count >= 3 %}
+                            <div class="panel {% if item == page %}active{% endif %}">
+                                <a href="?component={{ item }}"><i class="fa fa-arrow-circle-right mr-2"></i>{{ item | Capitalize | Replace:'-',' ' }}</a>
+                            </div>
+                        {% endif %}
+                        {% assign count = count | Plus:1 %}
+                    {% endfor %}
+                </div>
+
+                <div class="panel-group panel-group-nav">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <span>Components & Shortcodes</span>
+                        </div>
+                    </div>
+
+                    {% for item in components %}
+                        <div class="panel {% if item == page %}active{% endif %}">
+                            <a href="?component={{ item }}"><i class="fa fa-arrow-circle-right mr-2"></i>{{ item | Capitalize | Replace:'-',' ' }}</a>
+                        </div>
+                    {% endfor %}
+                    <div class="panel">
+                        <div>
+                            <a href="/style-guide/control-gallery"><i class="fa fa-arrow-circle-right mr-2"></i>Control Gallery</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group panel-group-nav">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <span>External Reference</span>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div>
+                            <a href="https://community.rockrms.com/styling" target="_blank"><i class="fa fa-arrow-circle-right mr-2"></i>Rock Core Style Guide</a>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div>
+                            <a href="?component=consulting-notes"><i class="fa fa-arrow-circle-right mr-2"></i>Consulting Notes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 col-lg-9">
+                {%- capture contentCheck -%}{% include includePath %}{%- endcapture -%}
+                {% if contentCheck == 'Liquid error: LavaFileSystem Template Not Found' %}
+                <div class="text-center">
+                    <h1 class="display">404!</h1>
+                    <h4>Sorry! We couldn't find that component.</h4>
+                </div>
+                {% else %}
+                    {{ contentCheck }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

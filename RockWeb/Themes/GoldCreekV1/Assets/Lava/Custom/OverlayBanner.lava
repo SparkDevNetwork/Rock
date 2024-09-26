@@ -1,0 +1,17 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/OverlayBanner.lava', bgimage:'', overlaycolor:'', color:'', text:'' %} {% endcomment %}
+{% assign useOverlayColor = overlaycolor %}
+{% assign useColor = color %}
+{% if overlaycolor == empty or overlaycolor == null %}
+    {% assign useOverlayColor = 'goldcreek' %}
+{% endif %}
+{% unless color and color != empty %}
+    {% assign useColor = 'white' %}
+{% endunless %}
+<div class="overlay-banner position-relative">
+    <div class="overlay-banner-bg overlay-banner-bg-img" style="background-image:url({{ bgimage }})"></div>
+    <div class="overlay-banner-bg bg-{{ useOverlayColor }} o-90"></div>
+    <div class="container position-relative">
+        <h3 class="overlay-banner-heading display text-{{ useColor }} text-center my-0 py-0">{{ text }}</h3>
+    </div>
+</div>
+

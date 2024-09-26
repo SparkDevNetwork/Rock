@@ -1,0 +1,83 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/LocationFinderList.lava' %} {% endcomment %}
+
+<div class="location-list d-flex flex-column w-100 h-100">
+    {% for campus in Campuses %}
+        {% if campus.IsActive and campus.IsActive == 'True' and campus.Id != 8 and campus.Id != 10 %}
+            {% assign postalCode = campus.Location.PostalCode | Split:'-' %}
+            {%- capture campusAddress -%}{{ campus.Location.Street1 }}, {{ campus.Location.City }}, {{ campus.Location.State }} {{ postalCode.first }}{%- endcapture -%}
+            {% assign HideFromWebsite = campus | Attribute:'HideFromWebsite' | AsString %}
+            {% assign campusNameHyphenated = campus.Name | Remove:'Campus' | Downcase | Replace:' ','-' | ReplaceLast:'-','' %}
+            {% assign imgGuid = campus | Attribute:'Image','RawValue' %}
+            {% assign imgGuidURL = imgGuid | Prepend:'/GetImage.ashx?Guid=' %}
+            {% assign address = campusAddress %}
+            {% assign currentDay = '' %}
+            {% assign currentDayTimes = '' %}
+            {% assign status = campus.CampusStatusValueId %}
+            {% assign interestPageGuid = campus |  Attribute:'InterestPage','Rawvalue' %}
+            {% assign interestPageUrl = interestPageGuid | PageRoute %}
+            {% assign leadPastor = campus | Attribute:'LeadPastor' %}
+            {% capture campusServiceTimes %}{% include '~~/Assets/Lava/Custom/CampusServiceTimes.lava', campusId:campus.Id %}{% endcapture %}
+            {% assign campusServiceTimesArray = campusServiceTimes | StripNewlines | Split:' ' %}
+            {% assign campusServiceTimes = campusServiceTimesArray | Join:' ' %}
+
+            <div class="location-list-item js-location-list-item" style="background-image:url('{{ imgGuidURL }}')" data-id="{{ campus.Id }}" data-name="{{ campus.Name }}" data-description="{{ campus.Description }}" data-times="{{ campusServiceTimes | Escape }}" data-address="{{ campusAddress | Escape }}" data-latitude="{{ campus.Location.Latitude }}" data-longitude="{{ campus.Location.Longitude }}">
+                <div class="location-list-inactive text-white">
+                    <span class="location-list-item-name">
+                        {{ campus.Name }}
+                    </span>
+                    <span class="location-list-inactive-icon">
+                        <i class="fa fa-info"></i>
+                    </span>
+                </div>
+
+                <div class="location-list-active text-white">
+                    <span class="location-list-item-name">
+                        {{ campus.Name }}
+                    </span>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 col-lg-6">
+                            <div class="mr-4">
+                                <h5 class="text-white mb-0">WHEN WE MEET</h5>
+                                <div class="text-white mb-4 mb-lg-0">
+                                    {{ campusServiceTimes }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-6">
+                            <div class="mr-4">
+                                <h5 class="text-white mb-0">WHERE WE MEET</h5>
+                                <div class="text-white mb-4 mb-lg-0">
+                                    Gold Creek Community Church<br>
+                                    {{ campusAddress }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="location-list-active-icon">
+                        <i class="far fa-arrow-alt-circle-right"></i>
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('.js-location-list-item').each((i, obj) => {
+            $(obj).mouseenter((e)=>{
+                $('.js-location-list-item').each((i, obj) => {
+                    $(obj).removeClass('active');
+                });
+                $(obj).addClass('active');
+            });
+            $(obj).mouseleave((e)=>{
+                console.log('mouseout');
+                $(obj).removeClass('active');
+            });
+        });
+    });
+</script>

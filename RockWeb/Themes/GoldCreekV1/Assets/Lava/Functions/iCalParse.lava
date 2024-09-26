@@ -1,0 +1,122 @@
+{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+{% capture __ %}
+
+    {% comment %}
+
+        iCalParse.lava
+
+        Parses iCal data from a Rock Schedule and returns the Start/End times as well as any
+        specificly-set recurring dates (Does not handle auto-recurrences like 'every monday').
+        Note: This is not for generic iCal data - It's only designed to handle Rock Schedules.
+
+        @example
+            {% include '~/Plugins/org_newpointe/Lava/Functions/iCalParse' iCalendarContent:EventItemOccurrence.Schedule.iCalendarContent %}
+
+            The event starts at {{ iCalParse_eventStart | Date:'h:mm tt' }}, ends at {{ iCalParse_eventEnd | Date:'h:mm tt' }},
+            and reoccurs on {% for date in iCalParse_recurringDates %}{{ date | Date:'MMMM d, yyyy' }},{% endfor %}
+
+        @param {string} iCalendarContent - The iCalendar content to parse.
+        @returns {datestring} iCalParse_eventStart - The date/time that the scheduled event starts
+        @returns {datestring} iCalParse_eventEnd - The date/time that the scheduled event ends.
+        @returns {array<datestring>} iCalParse_recurringDates - A list of dates that the scheduled event recurs on.
+        @returns {datestring} iCalParse_recurrenceEnd
+
+    {% endcomment %}
+
+    {% comment %} Clear return variables {% endcomment %}
+    {% assign __output = '' %}
+    {% assign iCalParse_eventStart = null %}
+    {% assign iCalParse_eventEnd = null %}
+    {% assign iCalParse_recurringDates = null %}
+
+    {%- assign iCalParse_rrfreq = null -%}
+    {%- assign iCalParse_rrint = null -%}
+    {%- assign iCalParse_rrbymonthday = null -%}
+
+    {% comment %} Find parameters {% endcomment %}
+    {% assign __iCalInput = iCalParse | Default:null %}
+    {% if __iCalInput == null %}{% assign __iCalInput = iCalendarContent | Default:null %}{% endif %}
+
+    {% if __iCalInput == null %}
+        {% assign __output = 'Error: <code>iCalendarContent</code> parameter is null.' %}
+    {% else %}
+
+        {% comment %} iCal fields are seperated by a Windows-style newline (CR/LF)  {% endcomment %}
+        {% assign __newline = '&#013;&#010;' | HtmlDecode %}
+
+        {% comment %} iCal fields can be "folded" by using the newline followed by a space {% endcomment %}
+        {% assign __foldingSequence = __newline | Append:' ' %}
+
+        {% comment %} First, unfold any fields to their full length {% endcomment %}
+        {% assign __iCalUnfolded = __iCalInput | Replace:__foldingSequence,'' %}
+
+        {% comment %} Then, split it up into an array of individual fields {% endcomment %}
+        {% assign __iCalUnfoldedSplit = __iCalUnfolded | Split:__newline %}
+
+        {% comment %} Go through each field, looking for the start (DTSTART), end (DTEND), and recuring date (RDATE) fields {% endcomment %}
+        {% comment %} Since this is from a Rock Schedule, we'll assume there's only one event and we can ignore the heirarchy and any duplicate properties.{% endcomment %}
+        {% for __line in __iCalUnfoldedSplit %}
+
+            {% comment %} Generaly, properties and their values are seperated by a `:`. (It's actually more complicated than that but we don't need to worry about it for the properties we're looking at.) {% endcomment %}
+            {% assign __propVal = __line | Split:':' %}
+
+            {% case __propVal[0] %}
+                {% when 'DTSTART' or 'DTEND' or 'RDATE' %}
+
+                    {% comment %} The Value part of these fields is a date/time or list of date/times. {% endcomment %}
+                    {% comment %} We need to split them apart and rebuild them in a format the `| Date` lava filter can understand. {% endcomment %}
+                    {% assign __lavaDates = '' %}
+                    {% assign __iCalDates = __propVal[1] | Split:',' %}
+                    {% for __iCalDate in __iCalDates %}
+                        {% assign __yyyy = __iCalDate | Slice:0,4 %}
+                        {% assign __M = __iCalDate | Slice:4,2 %}
+                        {% assign __d = __iCalDate | Slice:6,2 %}
+                        {% assign __H = __iCalDate | Slice:9,2 %}
+                        {% assign __m = __iCalDate | Slice:11,2 %}
+                        {% assign __s = __iCalDate | Slice:13,2 %}
+                        {% capture __lavaDates %}{{ __lavaDates }},{{ __yyyy }}-{{ __M }}-{{ __d }} {{ __H }}:{{ __m }}:{{ __s }}{% endcapture %}
+                    {% endfor %}
+                    {% assign __lavaDates = __lavaDates | Split:','%}
+
+                {% when 'DTSTART' %}{% assign __eventStart = __lavaDates[0] %}
+                {% when 'DTEND' %}{% assign __eventEnd = __lavaDates[0] %}
+                {% when 'RDATE' %}{% assign __recurringDates = __lavaDates %}
+            {% when 'RRULE' %}
+                {%- assign __freq = __propVal[1] | Split:';' -%}
+
+                {%- for __freqline in __freq -%}
+                    {%- assign __propVal =  __freqline | Split:'=' -%}
+                    {% case __propVal[0] %}
+                    {% when 'UNTIL' %}
+                    {%- assign __iCalDate = __propVal[1] -%}
+                    {% assign __yyyy = __iCalDate | Slice:0,4 %}
+                    {% assign __M = __iCalDate | Slice:4,2 %}
+                    {% assign __d = __iCalDate | Slice:6,2 %}
+                    {% assign __H = __iCalDate | Slice:9,2 %}
+                    {% assign __m = __iCalDate | Slice:11,2 %}
+                    {% assign __s = __iCalDate | Slice:13,2 %}
+                    {%- capture __recurrenceEnd -%}{{ __yyyy }}-{{ __M }}-{{ __d }} {{ __H }}:{{ __m }}:{{ __s }}{%- endcapture -%}
+                    {% when 'FREQ' %}
+                    {%- assign iCalParse_rrfreq = __propVal[1] -%}
+                    {% when 'INTERVAL' %}
+                    {%- assign iCalParse_rrint = __propVal[1] -%}
+                    {% when 'BYDAY' %}
+                    {%- assign iCalParse_rrbyday = __propVal[1] -%}
+                    {% when 'BYMONTHDAY' %}
+                    {%- assign iCalParse_rrbymonthday = __propVal[1] -%}
+                    {% endcase %}
+                {%- endfor -%}
+
+            {% endcase %}
+        {% endfor %}
+
+        {% comment %} Save our return variables {% endcomment %}
+        {% assign iCalParse_eventStart = __eventStart %}
+        {% assign iCalParse_eventEnd = __eventEnd %}
+        {% assign iCalParse_recurringDates = __recurringDates %}
+        {% assign iCalParse_recurrenceEnd = __recurrenceEnd %}
+
+    {% endif %}
+{% endcapture %}{{ __output }}

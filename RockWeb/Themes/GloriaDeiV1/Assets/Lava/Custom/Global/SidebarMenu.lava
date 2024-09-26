@@ -1,0 +1,37 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Global/SidebarMenu.lava' %} {% endcomment %}
+
+{% if Page.DisplayChildPages and Page.Pages != empty %}
+    <nav>
+        <ul class="list-unstyled">
+            <li class="nav-level-one">
+                <a href="/">Home</a>
+            </li>
+            {% for childPage in Page.Pages %}
+                {% if childPage.DisplayChildPages and childPage.Pages != empty %}
+                    <li class="nav-level-one{% if childPage.Current %} active{% endif %} js-nav-level-one">
+                        <a href="{{ childPage.Url }}">{{ childPage.Title }} <i class="fa fa-arrow-right"></i><i class="fa fa-minus"></i></a>
+                {% else %}
+                    <li class="nav-level-one{% if childPage.Current %} active{% endif %}">
+                        <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                {% endif %}
+
+                {% if childPage.DisplayChildPages and childPage.Pages != empty %}
+                    <ul class="list-unstyled">
+                        {% for childChildPage in childPage.Pages %}
+                            <li class="nav-level-two{% if childChildPage.Current %} active{% endif %}">
+                                <a href="{{ childChildPage.Url }}">{{ childChildPage.Title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endif %}
+
+
+<script>
+    {% include '~~/Assets/Scripts/Working.js' %}
+</script>

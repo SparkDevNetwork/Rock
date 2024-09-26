@@ -1,0 +1,137 @@
+/- {% include '~~/Assets/Lava/styleguide/components/accordion.lava' %} -/
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% assign navItems = 'standard,primary,transparent' %}
+{% include '~~/Assets/Lava/StyleGuide/Components/component-heading.lava', heading:'Accordions', navitems:navItems %}
+
+
+
+{% comment %} ~ Standard Accordion {% endcomment %}
+{% capture standardAccordion %}
+{%- raw -%}
+{[ accordion ]}
+    [[ item title:'People' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'Serving' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Relationships' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}
+{%- endraw -%}
+{% endcapture %}
+
+{% capture standardAccordionEscaped %}
+{{ codeOpen }}
+{{ standardAccordion }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Primary Accordion {% endcomment %}
+{% capture primaryAccordion %}
+{%- raw -%}
+{[ accordion paneltype:'primary' ]}
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}
+{%- endraw -%}
+{% endcapture %}
+
+{% capture primaryAccordionEscaped %}
+{{ codeOpen }}
+{{ primaryAccordion }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+{% comment %} ~ Transparent Accordion {% endcomment %}
+{% capture transparentAccordion %}
+{%- raw -%}
+{[ accordion paneltype:'transparent' ]}
+    [[ item title:'Lorem Ipsum' ]]
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+    [[ enditem ]]
+
+    [[ item title:'In Commodo Dolor' ]]
+        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+        elementum diam ullamcorper et.
+    [[ enditem ]]
+
+    [[ item title:'Vivamus Sollicitudin' ]]
+        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+    [[ enditem ]]
+{[ endaccordion ]}
+{%- endraw -%}
+{% endcapture %}
+
+{% capture transparentAccordionEscaped %}
+{{ codeOpen }}
+{{ transparentAccordion }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+
+
+{% comment %} ~ Standard {% endcomment %}
+<section id="standard">
+    <h3 class="sg-section-header">Standard Accordion</h3>
+
+    {{ standardAccordion | RunLava }}
+    <br>
+    {{ standardAccordionEscaped }}
+
+</section>
+
+
+{% comment %} ~ Primary {% endcomment %}
+<section id="primary">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Primary Accordion</h3>
+
+    {{ primaryAccordion | RunLava }}
+    <br>
+    {{ primaryAccordionEscaped }}
+
+</section>
+
+
+{% comment %} ~ Transparent {% endcomment %}
+<section id="transparent">
+    <hr class="my-5">
+    <h3 class="sg-section-header">Transparent Accordion</h3>
+
+    {{ transparentAccordion | RunLava }}
+    <br>
+    {{ transparentAccordionEscaped }}
+
+</section>

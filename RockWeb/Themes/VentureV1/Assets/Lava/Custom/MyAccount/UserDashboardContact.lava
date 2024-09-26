@@ -1,0 +1,70 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/MyAccount/UserDashboardContact.lava' %} {% endcomment %}
+
+{% assign familyMembersSize = FamilyMembers | Size %}
+
+<div class="user-dashboard-contact h-100 card">
+    <div class="card-body py-md-5">
+        <div class="mb-5">
+            <h6 class="mb-3">Contact Information</h6>
+            {% if Address %}
+                <div class="address{% if email and email != empty %} mb-3{% endif %}">
+                    <span class="d-block">{{ addressTypeValue.Value }} Address</span>
+                    <address class="text-muted d-block mb-0">
+                        {{ Address.Location.FormattedHtmlAddress | TitleCase }}
+                    </address>
+                </div>
+            {% endif %}
+            {% if address and address != empty %}
+                <div class="address{% if email and email != empty %} mb-3{% endif %}">
+                    <span class="d-block">Home Address</span>
+                    <address class="text-muted d-block mb-0">
+                        {{ address | TitleCase }}
+                    </address>
+                </div>
+            {% endif %}
+            {% if email and email != empty %}
+                <div class="email">
+                    <span class="d-block">Email</span>
+                    <span class="d-block text-muted">
+                        {{ email }}
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+        {% if ShowFamilyMembers and familyMembersSize > 0 %}
+            <div class="user-dashboard-family">
+                <h6 class="mb-3">Family</h6>
+                {% for member in FamilyMembers %}
+                    {% assign nickName = member.Person.NickName %}
+                    {% assign lastName = member.Person.LastName %}
+                    {% assign photoId = member.Person.PhotoId %}
+
+                    {% if nickName == 'Leader' %}
+                        {% assign testingMember = member %}
+                    {% endif %}
+
+                    {% if photoId and photoId != empty %}
+                        {% assign photoUrl = photoId | ImageUrl | Append:'&w=43&h=43&mode=crop' %}
+                    {% else %}
+                        {% assign ageClassification = member.Person.AgeClassification %}
+                        {% assign gender = member.Person.Gender %}
+                        {% assign recordTypeId = member.Person.RecordTypeValueId %}
+                        {% assign firstInitial = nickName | Slice:0,1 %}
+                        {% assign lastInitial = lastName | Slice:0,1 %}
+
+                        {% assign photoUrl = '/GetAvatar.ashx?AgeClassification=' | Append:ageClassification | Append:'&Gender=' | Append:gender | Append:'&RecordTypeId=' | Apppend:recordTypeId | Append:'&Text=' | Append:firstInitial | Append:lastInitial %}
+                    {% endif %}
+                    <a class="family-member d-flex w-100 align-items-center" href="#" onclick="{{ member.Person.Guid | Postback:'EditPerson' }}" title="Edit {{ member.Person.FullName | Escape }}">
+                        <img src="{{ photoUrl }}" width="43" height="43" alt="{{ nickName }} {{ lastname }}" class="rounded-circle d-inline-block mr-2">
+                        <span class="h6">{{ nickName }} {{ lastName }}</span>
+                    </a>
+                {% endfor %}
+                {% unless ViewOnly %}
+                    <a class="btn btn-sm btn-primary d-inline-block mt-4" onclick="{{ Family.Guid | Postback:'AddGroupMember' }}">+ Add New Family Member</a>
+                {% endunless %}
+            </div>
+
+        {% endif %}
+    </div>
+</div>
+

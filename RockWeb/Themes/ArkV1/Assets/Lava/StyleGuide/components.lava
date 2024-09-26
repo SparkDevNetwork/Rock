@@ -1,0 +1,62 @@
+/- {% include '~~/Assets/Lava/styleguide/components.lava' %} -/
+
+{% assign componentMain = 'intro,typography,colors,buttons,labels,lists,navs,breadcrumbs,utilities' | Split:',' %}
+{% assign components = 'accordions,cards,modals' | Split:',' %}
+
+{% assign page = PageParameter.component | Default:'intro' %}
+{% assign includePath = '~~/Assets/Lava/StyleGuide/components/' | Append:page | Append:'.lava' %}
+{% assign controlGalleryPageId = 1234 %}
+{% assign layoutsPageId = 1218 %}
+{% assign contentComponentsPageId = 1217 %}
+
+<style>.card-footer pre {max-height:400px;overflow-y: auto;}</style>
+
+<div class="py-5"></div>
+
+<div class="row g gx-lg-5 block-pad-top block-pad-bottom">
+    <div class="col-xs-12 col-md-3">
+
+
+        <nav class="page-nav mb-4">
+            <ul>
+                <li class="nav-heading">Componenets</li>
+                {% for item in componentMain %}
+                    <li class="nav-item{% if item == page %} active{% endif %}"><a href="?component={{ item }}">{{ item | Capitalize | Replace:'-',' ' }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <nav class="page-nav mb-4">
+            <ul>
+                <li class="nav-heading">Components &amp; Shortcodes</li>
+                {% for item in components %}
+                    <li class="nav-item{% if item == page %} active{% endif %}"><a href="?component={{ item }}">{{ item | Capitalize | Replace:'-',' ' }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <nav class="page-nav">
+            <ul>
+                <li class="nav-heading">External Reference</li>
+                <li class="nav-item"><a href="/page/{{ contentComponentsPageId }}" target="_blank">Content Components</a></li>
+                <li class="nav-item"><a href="/page/{{ controlGalleryPageId }}" target="_blank">Control Gallery</a></li>
+                <li class="nav-item"><a href="/page/{{ layoutsPageId }}" target="_blank">Layouts Gallery</a></li>
+                <li class="nav-item"><a href="https://community.rockrms.com/styling" target="_blank">Rock Core Style Guide</a></li>
+            </ul>
+        </nav>
+
+    </div>
+    <div class="col-xs-12 col-md-9">
+        {%- capture contentCheck -%}{% include includePath %}{%- endcapture -%}
+        {% if contentCheck == 'Liquid error: LavaFileSystem Template Not Found' %}
+        <div class="text-center">
+            <h1 class="display">404!</h1>
+            <h4>Sorry! We couldn't find that component.</h4>
+        </div>
+        {% else %}
+            {{ contentCheck }}
+        {% endif %}
+    </div>
+</div>
+
+<div class="py-5"></div>

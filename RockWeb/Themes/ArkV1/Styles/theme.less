@@ -1,0 +1,239 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_bootstrap-overrides.less";
+@import "_print.less";
+@import "./Components/_buttons.less";
+@import "./Components/_wave-animation.less";
+@import "./Components/_backdrops.less";
+@import "./Components/_cards.less";
+@import "./Components/_navs.less";
+@import "./Components/_page-transition.less";
+@import "./Components/_panels.less";
+@import "./Components/_modals.less";
+@import "./Custom/_mixins.less";
+@import "./Custom/_util.less";
+@import "./Custom/_typography.less";
+@import "./Custom/_primary-navigation.less";
+@import "./Custom/_site-footer.less";
+@import "./Custom/_dropdown.less";
+@import "./Custom/_backgrounds.less";
+@import "./Custom/_service-times-accordion.less";
+@import "./Custom/_site-hero.less";
+@import "./Custom/Swipers/_swiper-primary.less";
+@import "./Custom/Swipers/_swiper-grid.less";
+@import "./Custom/Homepage/_hero.less";
+@import "./Custom/Homepage/_dashboard.less";
+@import "./Custom/Homepage/_latest-message.less";
+@import "./Custom/Homepage/_icon-cards.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+// Temporary Fix for Safari 13 Select Rendering Bug
+select {
+  text-rendering: auto;
+  -webkit-font-smoothing: none;
+}
+// End Temporary Fix
+
+main {
+  display: block;
+  overflow-x: hidden;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.navbar {
+  position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+  // using fontawesome nav toggle button instead of the BS default
+  .navbar-toggle {
+    padding: 6px 10px;
+
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
+    }
+  }
+}
+
+a:hover i.fs {
+  text-decoration: none;
+}
+
+// 3. Theme Styling
+// -------------------------
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+.page-icon {
+  display: none;
+}
+
+header {
+  .page-menu,
+  .login-status {
+    float: right;
+  }
+
+  .navbar {
+    background-color: @header-bg;
+    border: 0;
+  }
+}
+
+// homepage items
+#announcement-rotator {
+  margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
+
+  .item {
+    img {
+      width: 100%;
+    }
+  }
+}
+
+.announcement-list {
+  .announcement {
+    max-width: 390px;
+    margin: 0 auto @spacing-lg-px;
+  }
+
+  .announcement-title {
+    margin: @spacing-sm-px 0;
+  }
+
+  img {
+    width: 100%;
+  }
+}
+
+.announcement-detail {
+  img {
+    width: 100%;
+  }
+}
+
+.nav-sub {
+  li {
+    border: 1px solid @gray-lighter;
+    border-radius: @border-radius-base;
+  }
+}
+
+footer {
+  margin-bottom: 50px;
+
+  .footer-message {
+    float: left;
+  }
+
+  .footer-address {
+    float: right;
+  }
+}
+
+#splash.error {
+  background-color: @gray-lighter;
+
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+
+.panel-heading {
+  a {
+    border-bottom: 1px dotted @link-color;
+    &:hover {
+      text-decoration: none;
+      border-bottom-style: solid;
+    }
+  }
+
+  .panel-success & {
+    a {
+      color: @panel-success-text;
+      border-color: @panel-success-text;
+    }
+  }
+
+  .panel-warning & {
+    a {
+      color: @panel-warning-text;
+      border-color: @panel-warning-text;
+    }
+  }
+}
+
+
+// 4. Responsive Overrides
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+  #announcement-rotator {
+    margin: @spacing-lg-px 0;
+  }
+}
+
+@import "_css-overrides.less";

@@ -1,0 +1,13 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteFooter/FooterBottom.lava' %} {% endcomment %}
+
+<div class="d-flex justify-content-center justify-content-sm-between align-items-center footer-bottom">
+    <div class="social-icons d-none d-sm-block">
+        <a href="#" class="text-white"><i class="fa fa-facebook"></i></a>
+        <a href="#" class="text-white"><i class="fa fa-instagram"></i></a>
+        <a href="#" class="text-white"><i class="fa fa-youtube"></i></a>
+    </div>
+
+    <div class="copyright text-white">
+        Copyright 2024 | <a href="#" class="text-medium">Privacy Policy</a>
+    </div>
+</div>

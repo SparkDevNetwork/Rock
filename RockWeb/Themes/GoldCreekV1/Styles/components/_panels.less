@@ -1,0 +1,95 @@
+//
+// JumpStart Theme V1.1.1
+// _panels.less
+//
+
+.panel {
+  box-shadow: none;
+}
+
+.col-center,
+.narrow-content {
+  float: none;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading > .panel-title,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  > .panel-heading {
+    padding: 0 15px;
+    border: 0;
+
+    &.panel-follow {
+      position: relative;
+      padding-right: 50px;
+    }
+
+    > .panel-labels {
+      padding: 12px 0;
+    }
+  }
+
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+.rock-fullscreen-toggle {
+  width: 40px;
+  padding: 0;
+}
+
+.panel-default {
+  box-shadow: rgba(0, 0, 0, .06) 0 2px 4px 0;
+
+  .main-content & {
+
+    .panel-heading {
+      padding-top: 26px;
+      padding-bottom: 26px;
+      background-color: transparent;
+      border-color: transparent;
+    }
+
+    .panel-title {
+      text-align: center;
+    }
+
+    .panel-body {
+      padding: 15px;
+      padding-bottom: 21px;
+      background-color: #f7f7f8;
+      border: 0;
+      border-top: 1px solid #ccc;
+
+      @media (min-width: @grid-float-breakpoint) {
+        padding: 36px;
+      }
+
+      .row {
+        margin-right: -5px;
+        margin-left: -5px;
+      }
+
+      .row > .col,
+      .row > [class*="col-"] {
+        padding-right: 5px;
+        padding-left: 5px;
+      }
+    }
+  }
+}

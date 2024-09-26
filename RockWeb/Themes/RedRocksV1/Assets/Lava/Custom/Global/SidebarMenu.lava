@@ -1,0 +1,259 @@
+{% assign locationsPageId = 1328 %}
+{% assign campuses = 'CampusCategoriesAndTimes' | PersistedDataset %}
+{% assign denverCampuses = campuses | Where:'PrimaryNavigationCategory','Denver' %}
+{% assign texasCampuses = campuses | Where:'PrimaryNavigationCategory','Texas' %}
+{% assign belgiumCampuses = campuses | Where:'PrimaryNavigationCategory','Belgium' %}
+{% assign onlineCampuses = campuses | Where:'PrimaryNavigationCategory','Online' %}
+
+{% assign subNavObject = CurrentPage | Attribute:'SubNavigationItems','Object' %}
+{% assign subNav = subNavObject.AttributeMatrixItems %}
+
+{% if subNav and subNav != empty %}
+    {% capture subNavMarkup %}
+        {% for navItem in subNav %}
+            {% assign url = navItem | Attribute:'Url','RawValue' %}
+            {% assign title = navItem | Attribute:'Title' %}
+            {% assign newTab = navItem | Attribute:'NewTab' | AsBoolean %}
+
+            <li class="nav-item-level-one page-subnav{% if forloop.first %} h4{% else %} taller{% endif %}">
+                <a href="{{ url }}"{% if newTab %} target="_blank"{% endif %} class="position-relative p-0">{{ title }}</a>
+            </li>
+        {% endfor %}
+        <hr>
+    {% endcapture %}
+{% endif %}
+
+{% if Page.DisplayChildPages and Page.Pages != empty %}
+    <ul class="nav list-unstyled">
+
+        {{ subNavMarkup }}
+
+        {% for page in Page.Pages %}
+
+            <li class="nav-item-level-one h4 d-md-none {% if page.DisplayChildPages and page.Pages != empty %} js-sidebar-nav-item{% endif %}{% if page.Current %} active{% endif %}">
+				<a class="position-relative d-flex align-items-center justify-content-start{% if page.Id == 1280 %} btn-give paddingless{% endif %}" href="{{ page.Url }}" data-page="{{ page.Id }}"><span>{{ page.Title }}</span>{% if page.DisplayChildPages and page.Pages != empty %} <i class="fa fa-chevron-right"></i>{% endif %}</a>
+            </li>
+            {% if page.DisplayChildPages and page.Pages != empty %}
+                <ul class="sidebar-menu-section js-sidebar-menu-section list-unstyled d-md-none" data-page="{{ page.Id }}">
+                    <li class="nav-item-level-one js-sidebar-menu-back sidebar-menu-back">
+                        <a class="position-relative" href="#"><span><i class="fa fa-chevron-left"></i></span></a>
+                    </li>
+                    <li class="nav-item-level-one h4{% if page.Current %} active{% endif %}">
+                        <a class="position-relative" href="{{ page.Url }}"><span>{{ page.Title }}</span></a>
+                    </li>
+                    {% if page.Id != locationsPageId %} {% comment %} not locations page {% endcomment %}
+
+                        {% comment %} build childpage data in order to gather MegaMenuCategory and order items by MegaMenuCategory {% endcomment %}
+                        {% capture childPageData %}
+                        [
+                        {% for childPage in page.Pages %}
+                            {%- assign pageObject = childPage.Id | FromCache:'Page' -%}
+                            {%- assign megaMenuCategory = pageObject | Attribute:'MegaMenuCategory' -%}
+                            {%- assign megaMenuDescription = pageObject | Attribute:'MegaMenuDescription' -%}
+                            {
+                                "Name":{{ childPage.Title | ToJSON }},
+                                "Id":{{ childPage.Id | ToJSON }},
+                                "Url":{{ childPage.Url | ToJSON }},
+                                "Current":{{ childPage.Current | ToJSON }},
+                                "MegaMenuCategory":{{ megaMenuCategory | ToJSON }},
+                                "MegaMenuDescription":{{ megaMenuDescription | ToJSON }}
+                            }{% unless forloop.last %},{% endunless %}
+                        {% endfor %}
+                        ]
+                        {% endcapture %}
+
+                        {% assign childPageObj = childPageData | FromJSON | OrderBy:'MegaMenuCategory' %}
+                        {% assign lastCategory = '' %}
+
+                        {% for childPage in childPageObj %}
+                            {% assign current = childPage.Current | AsBoolean %}
+                            {% if childPage.MegaMenuCategory and childPage.MegaMenuCategory != empty %} //- childPage has category
+                                {% if childPage.MegaMenuCategory == lastCategory %} //- childPage has same category as last category
+                                    <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                        <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                            <span class="taller d-block m-0">{{ childPage.Name }}</span>
+                                        </a>
+                                    </li>
+                                {% elseif lastCategory and lastCategory != empty %}
+                                    </ul>
+                                    <h3 class="text-imperfect-gray">{{ childPage.MegaMenuCategory }}</h3>
+                                    <ul class="list-unstyled categorized">
+                                        <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                            <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                <span class="taller d-block m-0">{{ childPage.Name }}</span>
+                                            </a>
+                                        </li>
+                                {% else %}
+                                    <h3 class="text-imperfect-gray">{{ childPage.MegaMenuCategory }}</h3>
+                                    <ul class="list-unstyled categorized">
+                                        <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                            <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                                <span class="taller d-block m-0">{{ childPage.Name }}</span>
+                                            </a>
+                                        </li>
+                                {% endif %}
+
+                                {% assign lastCategory = childPage.MegaMenuCategory %}
+                            {% elseif lastCategory == 'uncategorized' %} //- last item was 'uncategorized'
+                                <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                    <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                        <span class="taller d-block m-0">{{ childPage.Name }}</span>
+                                    </a>
+                                </li>
+                            {% else %} //- childPage has no category and it is the first one
+                                <ul class="list-unstyled uncategorized">
+                                    <li class="nav-item-level-two{% if current %} active{% endif %}">
+                                        <a {% if childPage.Id == 1281 %}class="btn-give paddingless"{% endif %} href="{{ childPage.Url }}">
+                                            <span class="taller d-block m-0">{{ childPage.Name }}</span>
+                                        </a>
+                                    </li>
+                                    {% assign lastCategory = 'uncategorized' %}
+                            {% endif %}
+
+                            {% if forloop.last %}
+                                </ul>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% else %} {% comment %} locations page {% endcomment %}
+                        <h3 class="text-imperfect-gray">Denver</h3>
+                        <ul class="list-unstyled">
+                            {% for campus in denverCampuses %}
+                                <li class="nav-item-level-two">
+                                    {% comment %} todo: set details page {% endcomment %}
+                                    <a href="#">
+                                        <span class="taller d-block m-0">{{ campus.Name }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <h3 class="text-imperfect-gray">Texas</h3>
+                        <ul class="list-unstyled">
+                            {% for campus in texasCampuses %}
+                                <li class="nav-item-level-two">
+                                    {% comment %} todo: set details page {% endcomment %}
+                                    <a href="#">
+                                        <span class="taller d-block m-0">{{ campus.Name }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <h3 class="text-imperfect-gray">Belgium</h3>
+                        <ul class="list-unstyled">
+                            {% for campus in belgiumCampuses %}
+                                <li class="nav-item-level-two">
+                                    {% comment %} todo: set details page {% endcomment %}
+                                    <a href="#">
+                                        <span class="taller d-block m-0">{{ campus.Name }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <h3 class="text-imperfect-gray">Not near a campus?</h3>
+                        <ul class="list-unstyled">
+                            {% for campus in onlineCampuses %}
+                                <li class="nav-item-level-two">
+                                    {% comment %} todo: set details page {% endcomment %}
+                                    <a href="#">
+                                        <span class="taller d-block m-0">Join Online!</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </ul>
+            {% endif %}
+        {% endfor %}
+
+        {% comment %} static nav {% endcomment %}
+        <hr>
+        <li class="nav-item-level-one h4 js-sidebar-nav-item">
+            <a class="position-relative d-inline-block" href="#" data-page="more">
+                <span>More <i class="fa fa-chevron-right"></i></span>
+            </a>
+        </li>
+        <ul class="sidebar-menu-section js-sidebar-menu-section list-unstyled" data-page="more">
+            <li class="nav-item-level-one js-sidebar-menu-back sidebar-menu-back d-md-none">
+                <a class="position-relative" href="#"><span><i class="fa fa-chevron-left"></i></span></a>
+            </li>
+            <li class="h5 nav-item-level-two text-uppercase">
+                {% if CurrentPerson %}
+                    <a href="#"><span>My Profile</span></a>
+                {% else %}
+                    <a href="/login"><span>Login</span></a>
+                {% endif %}
+            </li>
+            <li class="h3">Need Help?</li>
+            <ul class="list-unstyled ml-0">
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Resources</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Prayer</span>
+                    </a>
+                </li>
+            </ul>
+            <li class="h3">Learning Resources</li>
+            <ul class="list-unstyled ml-0">
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">New Believers</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Study Guide</span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="list-unstyled mt-5">
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Ministries</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Store</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Music</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Articles</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Prayer</span>
+                    </a>
+                </li>
+                <li class="nav-item-level-two">
+                    {% comment %} todo: set url {% endcomment %}
+                    <a href="#">
+                        <span class="h4 d-block m-0">Download App</span>
+                    </a>
+                </li>
+            </ul>
+
+            <input class="search js-search" type="text" placeholder="Search...">
+        </ul>
+    </ul>
+
+{% endif %}

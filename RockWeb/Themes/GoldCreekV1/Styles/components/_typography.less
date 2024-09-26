@@ -1,0 +1,187 @@
+/*
+    Rock Theme Styles
+
+    2. Headings
+    3. Sizing
+    4. Links
+    5. Line Clamps
+    6. Utilities
+
+*/
+
+
+// 2. Headings
+// -------------------------
+
+.display,
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+    margin-top: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+h1,
+.h1 {
+    font-weight: 800;
+
+    &.display {
+        font-size: 43px;
+
+        @media screen and (min-width: 768px) {
+            font-size: 96px;
+        }
+    }
+}
+
+h2,
+.h2 {
+    font-weight: 800;
+
+    &.display {
+        font-size: 39px;
+
+        @media screen and (min-width: 768px) {
+            font-size: 88px;
+        }
+    }
+}
+
+h3,
+.h3 {
+    font-weight: 700;
+
+    &.display {
+        font-size: 32px;
+
+        @media screen and (min-width: 768px) {
+            font-size: 72px;
+        }
+    }
+}
+
+h4,
+.h4 {
+    font-weight: 700;
+
+    &.display {
+        font-size: 25px;
+
+        @media screen and (min-width: 768px) {
+            font-size: 56px;
+        }
+    }
+}
+
+h5,
+.h5 {
+    font-weight: 500;
+}
+
+h6,
+.h6 {
+    font-weight: 500;
+}
+
+.display {
+    font-weight: 900;
+}
+
+// 3. Sizing
+// -------------------------
+
+.taller {
+    font-size: 20px;
+}
+
+.tall,
+.lead {
+    font-size: 18px;
+}
+
+.lead {
+    line-height: 1.75;
+    margin-bottom: 27px;
+}
+
+.small {
+    font-size: 14px;
+}
+
+.smaller {
+    font-size: 12px;
+}
+
+// 4. Links
+// -------------------------
+a:not(.btn) {
+    color: @color-of-the-year;
+    text-decoration: none;
+    &:hover {
+        color: darken(@color-of-the-year, 10%);
+    }
+
+    &.text-white {
+        &:hover {
+          color: darken(#ffffff, 15%) !important;
+        }
+    }
+}
+
+// 5. line clamps
+// -------------------------
+.line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+
+    &-1 {
+        -webkit-line-clamp: 1;
+    }
+
+    &-2 {
+        -webkit-line-clamp: 2;
+    }
+
+    &-3 {
+        -webkit-line-clamp: 3;
+    }
+
+    &-4 {
+        -webkit-line-clamp: 4;
+    }
+
+    &-5 {
+        -webkit-line-clamp: 5;
+    }
+}
+
+
+// 6. Utilities
+// -------------------------
+.font-size-30 {
+    font-size: 30px !important;
+}
+
+.font-size-40 {
+    font-size: 40px !important;
+}
+
+.font-weight-ultra {
+    font-weight: 900 !important;
+}
+
+.text-transform-none {
+    text-transform: none;
+}

@@ -1,0 +1,31 @@
+.alert {
+  padding: 24px 48px 24px 24px;
+}
+.alert-success button.close {
+  color: #72B840;
+  opacity: 1;
+}
+.alert-success button.close:hover {
+  opacity: 1;
+}
+.alert-warning button.close {
+  color: #B6B840;
+  opacity: 1;
+}
+.alert-warning button.close:hover {
+  opacity: 1;
+}
+.alert-danger button.close {
+  color: #B84040;
+  opacity: 1;
+}
+.alert-danger button.close:hover {
+  opacity: 1;
+}
+.alert-info button.close {
+  color: #4086B8;
+  opacity: 1;
+}
+.alert-info button.close:hover {
+  opacity: 1;
+}

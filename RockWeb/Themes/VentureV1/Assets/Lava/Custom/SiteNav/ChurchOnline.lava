@@ -1,0 +1,16 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SiteNav/ChurchOnline.lava' %} {% endcomment %}
+
+<div class="church-online">
+    <span class="church-online-heading">Church Online</span>
+    {[ scheduledcontent scheduleid:'3,397,4,398,5,2' ]}
+        <span class="church-online-indicator">
+            Live Now
+        </span>
+    {[ endscheduledcontent ]}
+
+</div>
+
+
+{[ scheduledcontent scheduleid:'398' ]}
+    here
+{[ endscheduledcontent ]}

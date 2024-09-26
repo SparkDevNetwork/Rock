@@ -1,0 +1,289 @@
+/- {% include '~~/Assets/Lava/styleguide/components/cards.lava' %} -/
+
+{% capture cardMarkup %}
+<div class="card h-100">
+    <div class="card-img-header">
+        <img src="https://via.placeholder.com/491x180" alt="" class="card-img-top img-responsive">
+    </div>
+    <div class="card-body">
+        <h4 class="card-title">Card Title</h4>
+        <div class="card-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum excepturi fuga hic, aut expedita molestias illo dolorum!</div>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-primary">More Info</a>
+        <a href="#" class="btn btn-action">Register</a>
+    </div>
+</div>
+{% endcapture %}
+
+<h1>Cards</h1>
+<h6>Styles</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#standard">Standard</a></li>
+    <li><a href="#transparent">Transparent</a></li>
+    <li><a href="#hover">Hover</a></li>
+    <li><a href="#filled">Filled</a></li>
+</ul>
+
+<h6>Formats</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#card-horizontal">Card Horizontal</a></li>
+</ul>
+
+<h6>Use Cases</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#group-item">Group Item</a></li>
+</ul>
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">Standard</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            {% for i in (1..2) %}
+                <div class="col-xs-12 col-sm-6 mb-4">
+                    {{ cardMarkup }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-transparent h-100">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Card Title</h4>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Card Title</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6"></div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="transparent">
+    <div class="card-header">
+        <h4 class="m-0">Transparent</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-hover h-100">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title"><a href="#" class="stretched-link">Card Title</a></h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6"></div>
+
+
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="hover">
+    <div class="card-header">
+        <h4 class="m-0">Hover</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-filled h-100">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Card Title</h4>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Card Title</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6"></div>
+
+
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="filled">
+    <div class="card-header">
+        <h4 class="m-0">Filled</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12">
+        <div class="card card-horizontal">
+            <div class="card-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Card Title</h4>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Card Title</a>
+                <a href="#" class="btn btn-action">M</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Card Title</h4>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Card Title</a>
+                <a href="#" class="btn btn-action">M</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="card-horizontal">
+    <div class="card-header">
+        <h4 class="m-0">Card Horizontal</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12">
+        <div class="card card-transparent card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Card Title</h4>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-transparent card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Card Title</h4>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="card-horizontal-transparent">
+    <div class="card-header">
+        <h4 class="m-0">Card Horizontal Transparent</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+
+<div class="row">
+    {% for i in (1..4) %}
+        <div class="col-xs-6">
+            <div class="card card-group  {% if forloop.last %}disabled{% endif %}">
+
+                <div class="card-sidebar">
+                    <span class="icon"></span>
+
+                    <div class="card-meta">
+                        <span class="day">THU</span>
+                        <span class="text">Monthly</span>
+                        <span class="text">In Person</span>
+                    </div>
+                    <span class="text">Women</span>
+                </div>
+                <div class="card-content">
+                    <h4 class="card-title">Brave Book Club</h4>
+                    <p class="card-subtitle text-muted">South Barrington, IL</p>
+
+                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nullam non nisi est sit. Eu scelerisque felis imperdiet proin fermentum leo vel orci porta. Ut lectus arcu bibendum at varius vel pharetra vel turpis. Sem nulla pharetra diam sit amet.</p>
+
+                    <div class="actions">
+                        <a href="#" class="action">Register</a>
+                        <a href="#" class="action">Learn More</a>
+
+                        <a href="#" class="mobile-action stretched-link">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+{% endcapture %}
+
+<div class="card mb-4" id="group-item">
+    <div class="card-header">
+        <h4 class="m-0">Group Items</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>

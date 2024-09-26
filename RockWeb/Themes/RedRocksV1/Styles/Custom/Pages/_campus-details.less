@@ -1,0 +1,442 @@
+//out: false
+
+.campus-details {
+  section#campus-banner {
+    .campus-banner {
+      .lead-content {
+        @media (max-width: 767px) {
+          font-size: 32px;
+        }
+      }
+
+      .service-time, .location-description, .location-url {
+        @media (max-width: 767px) {
+          font-size: 20px;
+        }
+      }
+
+      .location {
+        @media (max-width: 767px) {
+          font-size: 24px;
+        }
+      }
+    }
+
+    .pb-custom {
+        padding-bottom: 80px;
+
+        @media (min-width: 768px) {
+            padding-bottom: 160px;
+        }
+
+        @media (min-width: 992px) {
+            padding-bottom: 240px;
+        }
+
+        @media (min-width: 1200px) {
+            padding-bottom: 360px;
+        }
+    }
+
+    .negative-margin {
+        @media (min-width: 768px) {
+            margin-top: -48px;
+        }
+
+        @media (min-width: 1600px) {
+            margin-top: -224px;
+        }
+    }
+
+  }
+
+
+  section#check-out-our-campus {
+    .check-out-our-campus-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 0;
+
+      @media (min-width: 768px) {
+        height: 330px;
+      }
+
+      @media (min-width: 992px) {
+        height: 450px;
+      }
+
+      @media (min-width: 1200px) {
+        height: 530px;
+      }
+
+      .angled-transition {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+      }
+    }
+
+    .check-out-our-campus-video {
+      margin-left: 15%;
+    }
+
+    *[data-hide-on-play="#check-out-our-campus-video"] {
+      transition: all .3s ease-in-out;
+
+      &.out {
+        transform: translateY(120%) !important;
+      }
+    }
+
+    .arrow-section-content {
+      margin-top: -100px;
+
+      @media (min-width: 768px) {
+        margin-top: -160px;
+      }
+
+      @media (min-width: 992px) {
+        margin-top: -220px;
+      }
+
+      @media (min-width: 1200px) {
+        margin-top: -330px;
+      }
+
+      .animated-banner-fade-up-item {
+        .slide-up-item();
+      }
+    }
+  }
+
+
+  section#campus-join-us {
+      .parallax-content {
+          height: 368px;
+
+          @media (min-width: 768px) {
+            height: 560px;
+          }
+
+          @media (min-width: 992px) {
+            height: 640px;
+          }
+
+          @media (min-width: 1200px) {
+            height: 744px;
+          }
+      }
+
+      h3.heading {
+          font-size: 36px;
+
+          @media (min-width: 768px) {
+              font-size: 48px;
+          }
+
+          @media (min-width: 992px) {
+              font-size: 56px;
+          }
+
+          @media (min-width: 1200px) {
+              font-size: 72px;
+          }
+
+          @media (min-width: 1500px) {
+              font-size: 96px;
+          }
+      }
+  }
+
+
+
+
+  section#campus-static-events {
+    .campus-events-heading-2 {
+      font-size: 48px;
+
+
+      @media (min-width: 768px) {
+        font-size: 96px;
+      }
+
+      @media (min-width: 992px) {
+        font-size: 112px;
+      }
+
+      @media (min-width: 1200px) {
+        font-size: 144px;
+      }
+    }
+
+    .campus-events-heading-3 {
+      font-size: 32px;
+
+
+      @media (min-width: 992px) {
+        font-size: 48px;
+      }
+
+      @media (min-width: 1200px) {
+        font-size: 56px;
+      }
+    }
+
+    .campus-events-swiper {
+      position: relative;
+
+
+      .swiper {
+        &-wrapper {
+          height: unset;
+        }
+
+        &-button-next,
+        &-button-prev {
+          position: absolute;
+          top: unset;
+          bottom: 6px;
+        }
+      }
+    }
+  }
+
+
+
+  section#campus-dynamic-events {
+    padding-top: 160px;
+
+    @media (min-width: 400px) {
+      padding-top: 206px;
+    }
+
+    @media (min-width: 500px) {
+      padding-top: 296px;
+    }
+
+    @media (min-width: 600px) {
+      padding-top: 344px;
+    }
+
+    @media (min-width: 700px) {
+      padding-top: 400px;
+    }
+
+    @media (min-width: 768px) {
+      padding-top: 160px;
+    }
+
+    @media (min-width: 880px) {
+      padding-top: 220px;
+    }
+
+    @media (min-width: 992px) {
+      padding-top: 16px;
+    }
+
+
+    .baptism-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: -1;
+      aspect-ratio: 3/2;
+      object-fit: cover;
+
+      @media (min-width: 768px) {
+        right: unset;
+        width: 70%;
+      }
+
+      @media (min-width: 992px) {
+        aspect-ratio: 1/1;
+        width: 30%;
+        max-width: 600px;
+      }
+    }
+
+    .dynamic-event {
+      position: relative;
+      // todo: replace
+      // .transition();
+      transition: all .3s ease;
+
+      @media (min-width: 992px) {
+        padding-bottom: 40px;
+        padding-top: 40px;
+      }
+
+      @media (min-width: 1200px) {
+        padding-bottom: 56px;
+        padding-top: 56px;
+      }
+
+      &:first-child {
+        padding-top: 0 !important;
+      }
+
+      &:last-child {
+        padding-bottom: 0 !important;
+      }
+
+      & + .dynamic-event {
+        padding-top: 40px;
+
+        @media (min-width: 992px) {
+          // todo: replace
+          // border-top: 1px solid @putty;
+          border-top: 1px solid #dfded9;
+        }
+      }
+
+      &-title {
+        font-size: 32px;
+        margin-bottom: 8px;
+
+        @media (min-width: 992px) {
+          font-size: 64px;
+        }
+      }
+
+      &-date,
+      &-time {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      &-time {
+        // todo: replace
+        color: #aeaeae;
+        // color: @imperfect-gray;
+      }
+
+      &-actions {
+        margin-top: 16px;
+      }
+
+      &:hover {
+        scale: 1.02;
+      }
+    }
+  }
+
+
+
+
+
+  section#ministries {
+    padding: 56px 0 200px;
+
+    @media (min-width: 992px) {
+      padding: 160px 0 200px;
+    }
+
+    h3.heading {
+      font-size: 32px;
+
+      @media (min-width: 768px) {
+        font-size: 64px;
+      }
+    }
+  }
+
+
+
+
+  section#staff {
+    margin-top: -200px;
+    padding: 288px 0 0;
+    position: relative;
+
+    @media (min-width: 500px) {
+      padding: 304px 0 0;
+    }
+
+    @media (min-width: 768px) {
+      padding: 320px 0 0;
+    }
+
+    @media (min-width: 992px) {
+      padding: 220px 0 0;
+    }
+
+    .bg-paper {
+      @media (max-width: 991px) {
+        max-height: 856px;
+      }
+    }
+
+    .volunteer {
+      height: 48px;
+      width: auto;
+      position: absolute;
+      top: -48px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      object-fit: contain;
+      // todo: replace
+      // .transition();
+      transition: all .1s ease;
+
+      @media (min-width: 500px) {
+        height: 64px;
+        top: -64px;
+      }
+
+      @media (min-width: 768px) {
+        height: 80px;
+        top: -80px;
+      }
+    }
+
+    .campus-name {
+      font-size: 36px;
+
+      @media (min-width: 768px) {
+          font-size: 48px;
+      }
+
+      @media (min-width: 992px) {
+          font-size: 56px;
+      }
+
+      @media (min-width: 1200px) {
+          font-size: 72px;
+      }
+
+      @media (min-width: 1500px) {
+          font-size: 96px;
+      }
+    }
+  }
+
+  section#be-authentic {
+    padding: 96px 0 136px;
+
+    h4.display {
+      font-size: 40px;
+
+      @media (min-width: 500px) {
+        font-size: 64px;
+      }
+
+      @media (min-width: 768px) {
+        font-size: 96px;
+      }
+
+      @media (min-width: 992px) {
+        font-size: 136px;
+      }
+
+      @media (min-width: 1200px) {
+        font-size: 168px;
+      }
+    }
+  }
+}

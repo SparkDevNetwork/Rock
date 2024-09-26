@@ -1,0 +1,86 @@
+{% assign toc = 'tag-buttons,tag-list,tag-list-small,tag-list-circular' | Split:',' %}
+{% assign navItems = 'View All,Care,Sending,Production,Music,Connections,Worship,Home Groups, Senior Adults,Family,Marriage,Groups,Kids,Young Adults,Students,Churchwide' | Split:',' %}
+{% assign tabTypes = 'type' | Split:',' %}
+
+<h1 class="mb-4">Filter Tags</h1>
+
+<h4 class="mb-3">Table of Contents</h4>
+<ul class="nav nav-pills mb-4">
+    {% for item in toc %}
+        <li><a href="#{{ item }}">{{ item | Replace:'-',' ' | Capitalize }}</a></li>
+    {% endfor %}
+</ul>
+
+    <div class="card mb-4" id="tag-buttons">
+        <div class="card-header">
+            <h4 class="m-0">Tag Buttons</h4>
+        </div>
+{%- capture codeOutput -%}
+<a href="#" class="btn btn-tag">Tag Text</a>
+<a href="#" class="btn btn-tag btn-sm">Tag Text</a>
+<a href="#" class="btn btn-tag btn-xs">Tag Text</a>
+{%- endcapture -%}
+        <div class="card-body">
+        {{ codeOutput }}
+        <div class="alert alert-warning mt-4 mb-0"><h4 class="m-0">Need to show multiple tags?</h4> Filter tag lists should use the <code>nav-pills</code> markup patterns shown below.</div>
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+
+
+    <div class="card mb-4" id="tag-list">
+        <div class="card-header">
+            <h4 class="m-0">Tag List</h4>
+        </div>
+{%- capture codeOutput -%}
+<ul class="nav nav-pills">
+{%- for item in navItems -%}
+    <li {% if forloop.first %}class="active"{% endif %}><a href="#">{{ item }}</a></li>
+{%- endfor -%}
+</ul>
+{%- endcapture -%}
+        <div class="card-body">
+        {{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+
+    <div class="card mb-4" id="tag-list-small">
+        <div class="card-header">
+            <h4 class="m-0">Tag List Small</h4>
+        </div>
+{%- capture codeOutput -%}
+<ul class="nav nav-pills nav-pills-sm">
+{%- for item in navItems -%}
+    <li {% if forloop.first %}class="active"{% endif %}><a href="#">{{ item }}</a></li>
+{%- endfor -%}
+</ul>
+{%- endcapture -%}
+        <div class="card-body">
+        {{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>
+
+
+    <div class="card mb-4" id="tag-list-circular">
+        <div class="card-header">
+            <h4 class="m-0">Tag List Circular</h4>
+        </div>
+{%- capture codeOutput -%}
+<ul class="nav nav-pills nav-pills-circular">
+{%- for item in navItems -%}
+    <li {% if forloop.first %}class="active"{% endif %}><a href="#">{{ item }}</a></li>
+{%- endfor -%}
+</ul>
+{%- endcapture -%}
+        <div class="card-body">
+        {{ codeOutput }}</div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>

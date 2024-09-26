@@ -1,0 +1,141 @@
+{% comment %}{% include '~~/Assets/Lava/StyleGuide/Components/buttons.lava' %}{%endcomment%}
+
+{% stylesheet id:'uniqueid' %}
+    @media screen and (min-width: 768px) {
+        .buttons-with-margin .btn {margin-bottom:8px;}
+    }
+{% endstylesheet %}
+
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% comment %} ~ Capture Standard Buttons Section {% endcomment %}
+
+{% capture standardButtons %}
+
+<button type="button" class="btn btn-primary">Primary</button>
+
+<button type="button" class="btn btn-default">Default</button>
+
+<button type="button" class="btn btn-primary btn-goldcreek">Primary GoldCreek</button>
+
+<button type="button" class="btn btn-default btn-goldcreek">Default GoldCreek</button>
+
+<button type="button" class="btn btn-primary btn-contribute">Primary Contribute</button>
+
+<button type="button" class="btn btn-default btn-contribute">Default Contribute</button>
+
+<button type="button" class="btn btn-primary btn-connect">Primary Connect</button>
+
+<button type="button" class="btn btn-default btn-connect">Default Connect</button>
+
+<button type="button" class="btn btn-primary btn-celebrate">Primary Celebrate</button>
+
+<button type="button" class="btn btn-default btn-celebrate">Default Celebrate</button>
+
+<button type="button" class="btn btn-primary btn-dark">Primary Dark</button>
+
+<button type="button" class="btn btn-default btn-dark">Default Dark</button>
+
+<div class="bg-dark p-3">
+    <button type="button" class="btn btn-primary btn-light">Primary Light</button>
+
+    <button type="button" class="btn btn-default btn-light">Default Light</button>
+</div>
+
+{% endcapture %}
+
+{% capture standardButtonsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Standard Buttons</blockquote>
+    {{ standardButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Icon Buttons Section {% endcomment %}
+
+{% capture iconButtons %}
+<button type="button" class="btn btn-primary btn-goldcreek"><span class="fa fa-heart"></span> Giving</button>
+
+<button type="button" class="btn btn-default btn-goldcreek">Giving <span class="fa fa-heart"></span></button>
+{% endcapture %}
+
+{% capture iconButtonsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Icon Buttons</blockquote>
+    {{ iconButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Large Buttons Section {% endcomment %}
+
+{% capture largeButtons %}
+<button type="button" class="btn btn-primary btn-lg btn-goldcreek">Primary</button>
+
+<button type="button" class="btn btn-default btn-lg btn-goldcreek">Default</button>
+{% endcapture %}
+
+{% capture largeButtonsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Large Buttons</blockquote>
+    {{ largeButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Small Buttons Section {% endcomment %}
+
+{% capture smallButtons %}
+<button type="button" class="btn btn-primary btn-sm btn-goldcreek">Primary</button>
+
+<button type="button" class="btn btn-default btn-sm btn-goldcreek">Default</button>
+{% endcapture %}
+
+{% capture smallButtonsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Small Buttons</blockquote>
+    {{ smallButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% comment %} ~ Capture Extra Small Buttons Section {% endcomment %}
+
+{% capture xsButtons %}
+<button type="button" class="btn btn-primary btn-xs btn-goldcreek">Primary</button>
+
+<button type="button" class="btn btn-default btn-xs btn-goldcreek">Default</button>
+{% endcapture %}
+
+{% capture xsButtonsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Extra Small Buttons</blockquote>
+    {{ xsButtons | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3>Standard Buttons</h3>
+<div class="buttons-with-margin">
+    {{ standardButtons }}
+</div>
+{{ standardButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3>Icon Buttons</h3>
+{{ iconButtons }}
+{{ iconButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3>Large Buttons</h3>
+{{ largeButtons }}
+{{ largeButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3>Small Buttons</h3>
+{{ smallButtons }}
+{{ smallButtonsEscaped }}
+
+<hr class="my-5">
+
+<h3>Extra Small Buttons</h3>
+{{ xsButtons }}
+{{ xsButtonsEscaped }}

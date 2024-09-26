@@ -1,0 +1,63 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Hero.lava' %} {% endcomment %}
+
+{% assign heroImgGuid = CurrentPage | Attribute:'HeroImage','RawValue' %}
+{% assign hideHero = CurrentPage | Attribute:'HideHero' %}
+{% assign heroBgColor = CurrentPage | Attribute:'HeroSectionBGColor' %}
+{% assign pageTitleOverride = CurrentPage | Attribute:'PageTitleOverride' %}
+{% assign heroImg = heroImgGuid | ImageUrl | TriumphImgCdn:'w=2000&h=800&fit=crop&auto=compress,format' %}
+{% assign PageTitle = CurrentPage.PageTitle %}
+{% assign showPageTitle = CurrentPage.PageDisplayTitle | AsBoolean %}
+{% assign hasOverlay = CurrentPage | Attribute:'HeroImageHasOverlay' | AsBoolean %}
+{% assign isHomepage = false %}
+
+{% assign heroVideo = CurrentPage | Attribute:'HeroVideo','Guid' %}
+{% assign heroVimeo = CurrentPage | Attribute:'VimeoId' %}
+
+{% if CurrentPage.LayoutId == 98 %}
+    {% assign isHomepage = true %}
+{% endif %}
+{% if pageTitleOverride and pageTitleOverride != empty %}
+    {% assign hasOverride = true %}
+{% else %}
+    {% assign hasOverride = false %}
+{% endif %}
+
+{% if hideHero == 'No' %}
+    <div id="hero" class="hero{% if heroImgGuid and heroImgGuid != empty %} hero-has-image{% endif %}{% if isHomepage %} hero-homepage{% endif %}{% if CurrentPerson %} hero-logged-in{% endif %}" style="background-color:{{ heroBgColor }};">
+
+        {% comment %} todo: TriumphImgCDN {% endcomment %}
+        <div class="hero-image d-flex bg-dark position-relative overflow-hidden{% if hasOverlay %} overlay overlay-bottom{%endif%}{% if isHomepage %} align-items-center{% else %} align-items-end{% endif %}" style="{% if heroImgGuid and heroImgGuid != empty %}background-image: url({{ heroImg }});{% endif %}">
+            {% if heroVideo and heroVideo != empty %}
+                {% assign heroVideo = heroVideo | Prepend:'/GetFile.ashx?Guid=' %}
+                <video autoplay loop autoplay="autoplay" muted muted="true" defaultmuted loop="true" playsinline class="hero-video js-hero-video d-none d-md-block" preload="auto" style="pointer-events: none;">
+                    <source src="{{ heroVideo }}" type="video/mp4">
+                </video>
+            {% elseif heroVimeo and heroVimeo != empty %}
+                {% assign videoPath = 'https://player.vimeo.com/video/' | Append:heroVimeo | Append:'?background=1&muted=1&autoplay=1&dnt=1' %}
+                <iframe src='{{ videoPath }}' frameborder='0' allow='autoplay; encrypted-media;' class="hero-video hero-vimeo js-hero-video d-none d-md-block"></iframe>
+            {% endif %}
+            <div class="w-100 position-relative z-10">
+                <div class="container page-meta{% if isHomepage %} container-lg text-center{% endif %}" style="max-width: 100%;">
+                    {% if showPageTitle %}
+                        {% if pageTitleOverride and pageTitleOverride != empty %}
+                            {{ pageTitleOverride }}
+                        {% else %}
+                            <h1 class="h4 display js-set-page-title">{{ PageTitle }}</h1>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    $(document).ready(()=> {
+        if ({{ hasOverride }} == false) {
+            let titleText = $('.js-page-title-text').html();
+            $('.js-set-page-title').html(titleText);
+        }
+
+    });
+</script>
+

@@ -1,0 +1,176 @@
+// out:false
+
+
+// Table of Contents
+// 1. Base Styles
+// 2. Primary Swiper Styles
+
+//-------------------------
+// 1. Base Styles
+//-------------------------
+
+.swiper {
+  //-------------------------
+  // 1. Base Swiper Styles
+  //-------------------------
+
+
+
+  //-------------------------
+  // 2. Primary Swiper Styles
+  //-------------------------
+  &-primary {
+    .swiper-container {
+      margin: 32px 0 48px;
+
+      @media (min-width: 992px) {
+        margin: 48px 0;
+      }
+    }
+
+    .swiper-button {
+      &-next,
+      &-prev {
+        position: absolute;
+        top: -48px;
+        bottom: unset;
+        left: unset;
+
+        @media (min-width: 992px) {
+          top: -64px;
+        }
+
+        &::after {
+          line-height: 0;
+          font-family: 'FontAwesome';
+          font-size: 24px;
+          font-weight: 900;
+          color: @metallic-silver;
+        }
+      }
+
+      &-next {
+        bottom: 0;
+        right: 0;
+
+        &::after {
+          content: '\f054';
+        }
+      }
+
+      &-prev {
+        bottom: 60px;
+        right: 40px;
+
+        &::after {
+          content: '\f053';
+        }
+      }
+    }
+
+    .swiper-pagination {
+      top: unset !important;
+      bottom: -48px !important;
+
+      &-bullet {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background-color: #000;
+        opacity: .2;
+
+        &-active {
+          background-color: #fff;
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+
+
+
+
+  //-------------------------
+  // 3. Secondary Swiper Styles
+  //-------------------------
+  &-secondary {
+
+    .swiper-container {
+      margin-left: 100px;
+      overflow: hidden;
+      .rounded-md();
+    }
+
+    .swiper-slide {
+      height: unset;
+      .rounded-md();
+      overflow: hidden;
+    }
+
+    .content {
+      height: 100%;
+
+      & > img {
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .swiper-button {
+      &-next,
+      &-prev {
+        position: absolute;
+        left: 0;
+        top: unset;
+        right: unset;
+        width: 50px;
+        height: 50px;
+        display: grid;
+        place-items: center;
+        border: 2px solid @metallic-silver;
+        border-radius: 999px;
+
+        &::after {
+          line-height: 0;
+          font-family: 'FontAwesome';
+          font-size: 21px;
+          font-weight: 900;
+          color: @nickel;
+        }
+      }
+
+      &-next {
+        bottom: 0;
+
+        &::after {
+          content: '\f061';
+        }
+      }
+
+      &-prev {
+        bottom: 60px;
+
+        &::after {
+          content: '\f060';
+        }
+      }
+    }
+  }
+}
+
+
+.swiper-colors(metallic-silver, --metallic-silver);
+.swiper-colors(roman-silver, --roman-silver);
+.swiper-colors(nickel, --nickel);
+.swiper-colors(dolphin-gray, --dolphin-gray);
+.swiper-colors(spirit-silk-dark, --spirit-silk-dark);
+.swiper-colors(isabelline, --isabelline);
+.swiper-colors(soft-nickel, --soft-nickel);
+.swiper-colors(sandstone, --sandstone);
+.swiper-colors(cinereous, --cinereous);
+.swiper-colors(spirit-silk-light, --spirit-silk-light);
+.swiper-colors(early-fawn, --early-fawn);
+.swiper-colors(misty-moss, --misty-moss);
+.swiper-colors(smoky-emerald, --smoky-emerald);
+.swiper-colors(cavern, --cavern);

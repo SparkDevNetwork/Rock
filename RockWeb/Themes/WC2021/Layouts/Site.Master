@@ -1,0 +1,111 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Rock" %>
+<%@ Import Namespace="Rock.Web.UI" %>
+<%@ Import Namespace="Rock.Web.Cache" %><!DOCTYPE html>
+<script runat="server">
+    // keep code below to call base class init method
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+    protected void Page_Load( object sender, EventArgs e )
+    {
+        var page = ( RockPage ) this.Page;
+        var pageCache = Rock.Web.Cache.PageCache.Get( page.PageId );
+
+        if (pageCache != null) {
+            if (pageCache.PageDisplayBreadCrumb == false) {
+                secBreadcrumb.Visible = false;
+            }
+        }
+
+        if ( body != null )
+        {
+            // if page parameter modal=true, then set the page to be modal
+            if ( page.Request.QueryString["modal"] == "true" )
+            {
+                body.Attributes["class"] += " is-modal";
+            }
+
+
+            if ( body.Attributes["class"] != null )
+            {
+                body.Attributes["class"] += " page-id-" + page.PageId.ToString();
+            }
+            else
+            {
+                body.Attributes.Add( "class", "page-id-" + page.PageId.ToString() );
+            }
+
+            if (pageCache != null )
+            {
+                var layoutName = pageCache.Layout.Name.ToLower().Replace(" ", "");
+                body.Attributes["class"] += " page-layout-" + layoutName;
+
+                if (pageCache.PageDisplayTitle == true || string.IsNullOrWhiteSpace( pageCache.PageTitle ) )
+                {
+                    body.Attributes["class"] += " has-page-header" ;
+                }
+
+                if ( page.Layout.Site.DefaultPageId == page.PageId ) {
+                    body.Attributes["class"] += " home" ;
+                }
+
+            }
+        }
+    }
+</script><html lang="en">
+<head runat="server">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Source+Serif+Pro:wght@300;400;500;600;700:800;900&display=swap" rel="stylesheet">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+    <asp:ContentPlaceHolder ID="head" runat="server" />
+</head>
+<body runat="server" id="body">
+    <form id="form1" class="pjs-main-container" runat="server">
+        <header class="site-header">
+            <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
+        </header>
+        <div class="page-content">
+            <asp:ContentPlaceHolder ID="feature" runat="server" />
+            <section id="secBreadcrumb" class="header-breadcrumb" runat="server">
+                <div class="container">
+                    <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                </div>
+            </section>
+
+            <asp:ContentPlaceHolder ID="main" runat="server" />
+        </div>
+        <Rock:Zone Name="Footer" CssClass="zone-footer no-index" runat="server" />
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </form>
+</body>
+</html>

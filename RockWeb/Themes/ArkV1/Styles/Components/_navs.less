@@ -1,0 +1,136 @@
+// out:false
+
+.nav {
+  &.nav-pills {
+
+    li {
+
+      a, button {
+        text-align: center;
+
+        .transition();
+        background-color: #D9D9D9;
+        color: @text-color;
+
+        &:hover {
+          background-color: @gray-darker;
+          color: #fff;
+        }
+      }
+
+      &.active {
+        a, button {
+          background-color: @gray-darker;
+          color: #fff;
+
+          &:hover {
+            background-color: @gray-darker;
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    &:not(.nav-stacked) {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+
+      li + li {
+        margin-left: 24px;
+      }
+
+      li {
+        min-width: calc(~'50% - 8px');
+        margin: 0 !important;
+        float: none !important;
+        flex-grow: 1;
+
+        @media (min-width: 992px) {
+          min-width: unset;
+          flex-grow: unset;
+
+          a, button {
+            min-width: 152px;
+            font-size: 20px;
+          }
+        }
+
+        a, button {
+          text-align: center;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    &::before, &::after {
+      display: none;
+    }
+  }
+
+  &.nav-tabs {
+    li {
+      a, button {
+        .transition();
+      }
+
+      &.active {
+        a, button {
+          background-color: @gray-darker;
+          color: #fff;
+
+          &:hover {
+            background-color: @gray-darker;
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+.page-nav {
+  background-color: #fff;
+  border: 2px solid #e6e6e6;
+  .rounded-md();
+  overflow: hidden;
+
+  ul {
+    list-style: none;
+    padding-inline-start: 0;
+    margin: 0;
+  }
+
+  li {
+    .transition();
+
+    & + li {
+      border-top: 2px solid #e6e6e6;
+    }
+
+    &.nav-heading {
+      font-weight: 700;
+      padding: 24px;
+      background-color: #F8F9FA;
+
+    }
+
+    &.active {
+      a {
+        background-color: @theme-1;
+        color: #fff;
+        pointer-events: none;
+      }
+    }
+
+    a {
+      padding: 10px 24px;
+      display: block;
+      color: #27272E;
+
+    }
+  }
+}

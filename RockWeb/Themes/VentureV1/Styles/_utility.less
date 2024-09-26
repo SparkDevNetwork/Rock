@@ -1,0 +1,204 @@
+/*
+
+    1. Accent
+    2. Border Radius
+    3. Responsive Background Colors
+    4. Venture Diamond
+
+*/
+
+
+// 1. Accent
+// -------------------------
+.accent {
+
+  &::after {
+    .transition();
+    content:'';
+    display: block;
+    background-color: @venture-onyx;
+    opacity: .5;
+    width: 30px;
+    height: 5px;
+    border-radius: 50px;
+    margin-top: 12px;
+  }
+
+  // change alignment
+  &-center::after {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &-md-center::after {
+    @media (min-width: 992px) {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  &-md-left::after {
+    @media (min-width: 992px) {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &-right::after {
+    margin-left: auto;
+    margin-right: unset;
+  }
+
+  // change colors
+  &-invite::after {
+    background-color: @invite;
+  }
+
+  &-impress::after {
+    background-color: @impress;
+  }
+
+  &-invest::after {
+    background-color: @invest;
+  }
+
+  &-ignite::after {
+    background-color: @ignite;
+  }
+
+  &-white::after {
+    background-color: #ffffff;
+  }
+
+  // change opacity
+  &-light::after {
+    opacity: .4;
+  }
+
+  &-lighter::after {
+    opacity: .25;
+  }
+
+  &-lightest::after {
+    opacity: .15;
+  }
+
+  // change width
+  &-narrow::after {
+    width: 22px;
+    margin-top: 4px;
+  }
+
+}
+
+
+
+// 2. Border Radius
+// -------------------------
+@rounded-sm: 8px;
+@rounded-md: 12px;
+@rounded-lg: 20px;
+
+.rounded-sm {
+  border-radius: @rounded-sm !important;
+  overflow: hidden;
+}
+
+.rounded-md {
+  border-radius: @rounded-md !important;
+  overflow: hidden;
+}
+
+.rounded-lg {
+  border-radius: @rounded-lg !important;
+  overflow: hidden;
+}
+
+.rounded {
+  &-sm {
+    @media (min-width: 768px) {
+      &-sm {
+        border-radius: @rounded-sm !important;
+        overflow: hidden;
+      }
+
+      &-md {
+        border-radius: @rounded-md !important;
+        overflow: hidden;
+      }
+
+      &-lg {
+        border-radius: @rounded-lg !important;
+        overflow: hidden;
+      }
+    }
+  }
+
+  &md {
+    @media (min-width: 992px) {
+      &-sm {
+        border-radius: @rounded-sm !important;
+        overflow: hidden;
+      }
+
+      &-md {
+        border-radius: @rounded-md !important;
+        overflow: hidden;
+      }
+
+      &-lg {
+        border-radius: @rounded-lg !important;
+        overflow: hidden;
+      }
+    }
+  }
+
+  &-lg {
+    @media (min-width: 1200px) {
+      &-sm {
+        border-radius: @rounded-sm !important;
+        overflow: hidden;
+      }
+
+      &-md {
+        border-radius: @rounded-md !important;
+        overflow: hidden;
+      }
+
+      &-lg {
+        border-radius: @rounded-lg !important;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
+
+// 3. Responsive Background Colors
+// -------------------------
+.bg-md-white {
+  @media (min-width: 992px) {
+    background-color: #ffffff;
+  }
+}
+
+
+
+// 4. Venture Diamond
+// -------------------------
+i.venture-diamond {
+  position: relative;
+  margin: 0 5px;
+
+  &::after {
+    content: '\f219';
+    font-family: 'FontAwesome';
+    font-weight: 900;
+    font-style: normal;
+    font-size: 8px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}

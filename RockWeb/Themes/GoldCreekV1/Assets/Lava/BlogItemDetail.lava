@@ -1,0 +1,16 @@
+﻿{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+{% for item in Items %}
+    {% if item.Id == PageParameter.Item %}
+        <article class="margin-b-lg">
+            <h3>{{ item.Title }}</h3>
+
+            <div>
+                {{ item | Attribute:'Image' }}
+            </div>
+
+            {{ item.Content }}
+        </article>
+    {% endif %}
+{% endfor %}

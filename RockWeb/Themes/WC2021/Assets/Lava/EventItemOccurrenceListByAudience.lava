@@ -1,0 +1,22 @@
+<div class="module">
+    <header class="clearfix">
+        <h1>Upcoming Events</h1>
+    </header>
+
+    <ul class="list-unstyled">
+        {% for occurrence in EventItemOccurrences %}
+            <li>
+                <a
+                    {% if occurrence.EventItem.DetailsUrl != '' %}
+                        href="{{ occurrence.EventItem.DetailsUrl }}"
+                    {% else %}
+                        href="{{ EventDetailPage }}?EventOccurrenceId={{ occurrence.Id }}"
+                    {% endif %}
+                >
+                    {{ occurrence.EventItem.Name }}
+                    <small>({{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date:'M/d ' }})</small>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

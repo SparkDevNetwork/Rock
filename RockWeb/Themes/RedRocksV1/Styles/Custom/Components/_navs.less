@@ -1,0 +1,187 @@
+// Table of Contents
+// 1. Stacked
+// 2. Tabs
+// 3. Link List
+// 4.
+// 5.
+
+
+.nav {
+
+  //-------------------------
+  // 1. Stacked
+  //-------------------------
+
+  &-stacked {
+    &-heading {
+      background-color: @onyx;
+      color: @ultra-white;
+      font-weight: 700;
+      padding: 8px 16px;
+    }
+
+    li{
+      a {
+        span ~ i,
+        i ~ span {
+            margin-left: 0.5rem;
+        }
+      }
+    }
+  }
+
+  li {
+    a {
+
+      &:hover {
+        background-color: lighten(@imperfect-gray, 25%);
+      }
+    }
+
+    &.active>a {
+      background-color: @rocks-red;
+      color: @ultra-white;
+    }
+  }
+
+
+
+  //-------------------------
+  // 2. Tabs
+  //-------------------------
+
+  &-tabs {
+    border-bottom: 0;
+
+    li {
+      &:first-child {
+        a {
+          padding-left: 0;
+        }
+      }
+
+      a {
+        font-weight: 700;
+        text-transform: uppercase;
+        // todo: replace
+        color: #353535;
+        // color: @onyx;
+        border: 0;
+        padding: 10px;
+        margin: 0;
+
+        &:hover {
+          // todo: replace
+          color: #e74724;
+          // color: @rocks-red;
+          background-color: transparent;
+          border: 0;
+        }
+
+        &:focus {
+          background-color: transparent;
+        }
+
+
+
+      }
+
+      &.active a{
+        &,
+        &:hover,
+        &:focus {
+          // todo: replace
+          color: #e74724;
+          // color: @rocks-red;
+          cursor: pointer;
+          background-color: transparent;
+          border: 0;
+        }
+      }
+
+
+      &.active {
+        a {
+          background-color: transparent;
+          // todo: replace
+          color: #e74724;
+          // color: @rocks-red;
+          border: 0;
+
+
+          &:hover {
+            // todo: replace
+            color: #e74724;
+            // color: @rocks-red;
+            background-color: transparent;
+            border: 0;
+          }
+        }
+      }
+    }
+  }
+
+}
+
+//-------------------------
+// 3. Link List
+//-------------------------
+nav.link-list ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  li {
+    font-weight: 700;
+    font-size: 24px;
+    position: relative;
+    padding: 0 12px;
+    line-height: 1;
+    margin-bottom: 12px;
+
+    @media (min-width: 992px) {
+      font-size: 32px;
+      padding: 0 28px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 1200px) {
+      font-size: 40px;
+      padding: 0 28px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 1500px) {
+      font-size: 56px;
+    }
+
+
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: #353535;
+
+      @media (min-width: 992px) {
+        width: 4px;
+      }
+    }
+
+    &:last-child {
+      padding-right: 0;
+
+      &::after {
+        display: none;
+      }
+    }
+
+    &:first-child {
+      padding-left: 0;
+    }
+  }
+}
+

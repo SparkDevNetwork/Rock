@@ -1,0 +1,70 @@
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% capture shadows %}
+<div class="row">
+    <div class="col-md-4">
+        <article class="card mb-3 shadow">
+            <div class="card-header">
+                .shadow
+            </div>
+            <div class="card-body">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tristique dui egestas dolor pulvinar, venenatis placerat arcu egestas. Suspendisse vitae pretium quam.
+            </div>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="card mb-3 shadow-md">
+            <div class="card-header">
+                .shadow-md
+            </div>
+            <div class="card-body">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tristique dui egestas dolor pulvinar, venenatis placerat arcu egestas. Suspendisse vitae pretium quam.
+            </div>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="card mb-3 shadow-lg">
+            <div class="card-header">
+                .shadow-lg
+            </div>
+            <div class="card-body">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tristique dui egestas dolor pulvinar, venenatis placerat arcu egestas. Suspendisse vitae pretium quam.
+            </div>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="card mb-3 shadow-xl">
+            <div class="card-header">
+                .shadow-xl
+            </div>
+            <div class="card-body">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tristique dui egestas dolor pulvinar, venenatis placerat arcu egestas. Suspendisse vitae pretium quam.
+            </div>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="card mb-3 shadow-2xl">
+            <div class="card-header">
+                .shadow-2xl
+            </div>
+            <div class="card-body">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tristique dui egestas dolor pulvinar, venenatis placerat arcu egestas. Suspendisse vitae pretium quam.
+            </div>
+        </article>
+    </div>
+</div>
+
+{% endcapture %}
+
+{% capture shadowsEscaped %}
+    {{ codeOpen }}
+    {{ shadows | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+<h1 class="mt-0">Shadows</h1>
+
+{{ shadows }}
+{{ shadowsEscaped }}

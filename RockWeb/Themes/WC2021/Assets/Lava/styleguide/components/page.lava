@@ -1,0 +1,190 @@
+{% assign accordionTypes = 'gutters,page-classes,onpage-menu' | Split:',' %}
+<h1>Page</h1>
+
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    {% for type in accordionTypes %}
+        <li>
+            <a href="#{{ type }}">{{ type | Replace:'-',' ' | Capitalize }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
+<div class="card mb-4" id="gutters">
+    <div class="card-header">
+        <h4 class="m-0">Gutters</h4>
+    </div>
+
+    <div class="card-body">
+        <p>Gutters are the padding between your columns, used to responsively space and align content in the grid system.</p>
+        <h5>How it Works</h5>
+        <ul>
+            <li>Gutters are the gaps between column content, created by horizontal padding.</li>
+            <li>By adding the class <code>.g</code> to a <code>.row</code> a row becomes flexbox enabled and can use the gutter utility classes. The <code>.g</code> class is then paired with either <code>.g-*</code> to control gutters in all directions, <code>.gx-*</code> to control horizontal gutters, and <code>.gy-*</code> to control vertical gutters.</li>
+            <li>Gutters can be responsively adjusted. Use breakpoint-specific gutter classes to modify horizontal gutters, vertical gutters, and all gutters.</li>
+        </ul>
+
+        <div class="alert alert-info">
+            <h5 class="mt-0">Two Important Notes</h5>
+            <ol>
+                <li>Using <code>.g-*</code> or <code>.gx-*</code> classes can overflow the parent container. (See <a href="#horizontal-gutters">Horizontal Gutters</a>)</li>
+                <li>Adding <code>.g</code> to a <code>.row</code>, requires child columns to include a <code>.col-xs-*</code> class.</li>
+            </ol>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-nowrap">Class</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>.g</code> <code>.g-0 / .gx-0 / .gy-0</code></td>
+                    <td><code>0</code></td>
+                </tr>
+                <tr>
+                    <td><code>.g</code> <code>.g-1 / .gx-1 / .gy-1</code></td>
+                    <td><code>4px</code></td>
+                </tr>
+                <tr>
+                    <td><code>.g</code> <code>.g-2 / .gx-2 / .gy-2</code></td>
+                    <td><code>8px</code></td>
+                </tr>
+                <tr>
+                    <td><code>.g</code> <code>.g-3 / .gx-3 / .gy-3</code></td>
+                    <td><code>20px</code></td>
+                </tr>
+                <tr>
+                    <td><code>.g</code> <code>.g-4 / .gx-4 / .gy-4</code></td>
+                    <td><code>40px</code></td>
+                </tr>
+                <tr>
+                    <td><code>.g</code> <code>.g-5 / .gx-5 / .gy-5</code></td>
+                    <td><code>64px</code></td>
+                </tr>
+                <tr>
+                    <td><code>.g</code> <code>.g-6 / .gx-6 / .gy-6</code></td>
+                    <td><code>80px</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h4 id="horizontal-gutters">Horizontal Gutters</h4>
+        <p><code>.gx-*</code> classes can be used to control the horizontal gutter widths. The <code>.container</code> or <code>.container-fluid</code> parent may need to be adjusted if larger gutters are used too to avoid unwanted overflow, using a matching padding utility. For example, in the following example we’ve increased the padding with <code>.px-4</code>:</p>
+
+        {% capture codeOutput %}<div class="container px-4 text-center">
+    <div class="row g gx-5">
+        <div class="col">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+        <div class="col">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+        <p>An alternative solution is to add a wrapper around the <code>.row</code> with the <code>.overflow-hidden</code> class:</p>
+{% capture codeOutput %}<div class="container overflow-hidden text-center">
+    <div class="row g gx-5">
+        <div class="col">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+        <div class="col">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+    </div>
+</div>{% endcapture %}
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+
+        <h4>Vertical Gutters</h4>
+        <p><code>.gy-*</code> classes can be used to control the vertical gutter widths within a row when columns wrap to new lines. Like the horizontal gutters, the vertical gutters can cause some overflow below the <code>.row</code> at the end of a page. If this occurs, you add a wrapper around <code>.row</code> with the <code>.overflow-hidden</code> class:</p>
+
+        {% capture codeOutput %}<div class="container overflow-hidden text-center">
+    <div class="row g gy-5">
+        <div class="col-xs-6">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+        <div class="col-xs-6">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+        <div class="col-xs-6">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+        <div class="col-xs-6">
+            <div class="p-3 bg-gray-200">Custom column padding</div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+        <div class="card-body">
+            {{ codeOutput }}
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+
+        <h4>Responsive Classes</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-nowrap">Class</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>.g-* .g-sm-* .g-md-* .g-lg-*</code></td>
+                    <td>Horizontal Padding</td>
+                </tr>
+                <tr>
+                    <td><code>.gx-* .gx-sm-* .gx-md-* .gx-lg-*</code></td>
+                    <td>Horizontal Padding</td>
+                </tr>
+                <tr>
+                    <td><code>.gy-* .gy-sm-* .gy-md-* .gy-lg-*</code></td>
+                    <td>Vertical Padding</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mb-4" id="page-classes">
+    <div class="card-header">
+        <h4 class="m-0">Page Classes</h4>
+    </div>
+
+    <div class="card-body">
+        <h3 class="mt-0">Page Sections</h3>
+        <p>Page sections are large, padded sections that are added to a section of content with a shared background.</p>
+        <pre><code>&lt;!-- Page Section --&gt;
+&lt;div class="page-section"&gt;&lt;/div&gt;
+
+&lt;!-- Page Section: Centered. Matches Homepage behavior --&gt;
+&lt;div class="page-section-centered"&gt;&lt;/div&gt;</code></pre>
+
+        <h3 class="mt-0">Block Spacing Classes</h3>
+        <p>Use the following classes to add additional spacing to blocks on a page by using the block "Advanced Settings" section and CSS Class input.</p>
+    </div>
+    <div class="card-footer">
+        <pre><code>block-pad-top
+
+block-pad-bottom</code></pre>
+    </div>
+</div>

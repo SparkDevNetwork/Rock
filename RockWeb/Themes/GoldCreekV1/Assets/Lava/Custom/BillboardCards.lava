@@ -1,0 +1,78 @@
+{% assign channelNameParts = ContentChannel.Name | Split:'|' %}
+{% assign accentColor = ContentChannel | Attribute:'AccentColor' %}
+{% assign foregroundColor = ContentChannel | Attribute:'ForegroundColor' %}
+{% assign channelNamePartsSize = channelNameParts | Size %}
+{% assign mainTitle = channelNameParts[0] | Trim %}
+{% if channelNamePartsSize > 1 %}
+    {% assign mainSubtitle = channelNameParts[1] | Trim %}
+{% endif %}
+
+{% assign size = 0 %}
+{% for item in Items %}
+    {% assign campus = item | Attribute:'Campus' %}
+    {% if campus == empty or campus == null or campus == Context.Campus.Name %}
+        {% assign size = size | Plus:1 %}
+    {% endif %}
+{% endfor %}
+
+{%- capture columns -%}
+    {%- case size -%}
+        {%- when 1 -%}
+            col-sm-12
+        {%- when 2 -%}
+            col-sm-6
+        {%- else -%}
+            col-sm-6 col-md-4
+    {%- endcase -%}
+{%- endcapture -%}
+
+{% assign columns = columns | Trim %}
+
+
+<div class="billboard-cards-component">
+    <div class="bg-{{ accentColor }} rounded-md text-center billboard-banner">
+        {% if mainSubtitle and mainSubtitle != empty %}
+            <h3 class="text-gc-grey text-transform-none">{{ mainSubtitle }}</h3>
+        {% endif %}
+        <h4 class="display text-white mb-0">{{ mainTitle }}</h4>
+    </div>
+    <div class="row billboard-cards d-flex justify-content-center">
+        {% assign count = 0 %}
+
+        {% for item in Items %}
+            {% assign campus = item | Attribute:'Campus' %}
+            {% assign hideOnMobile = item | Attribute:'HideOnMobile' %}
+            {% assign hideOnTablet = item | Attribute:'HideOnTablet' %}
+            {%- capture hideClasses -%}{% if hideOnMobile and hideOnMobile == 'Yes' %} hide-on-mobile{% endif %}{% if hideOnTablet and hideOnTablet == 'Yes' %} hide-on-tablet{% endif %}{%- endcapture -%}
+
+
+            {% if campus == empty or campus == null or campus == Context.Campus.Name %}
+                {% assign count = count | Plus:1 %}
+
+                {% if count < 4 %}
+                    {% assign title = item.Title %}
+                    {% assign subtitle = item | Attribute:'CardSubtitle' %}
+                    {% assign url = item | Attribute:'Url','RawValue' %}
+                    {% assign image = item | Attribute:'Image','RawValue' %}
+                    {% assign imageUrl = '/GetImage.ashx?Guid=' | Append:image | Append:'&w=800&h=545&mode=crop' %}
+
+                    <div class="{{ columns }} {{ hideClasses }} billboard-item-{{ count }}">
+                        <a href="{{ url }}" class="billboard-card bg-{{ accentColor }}" >
+                            <img src="/GetImage.ashx?Guid={{ image }}&w=800&h=545&mode=crop" class="w-100" alt="{{ title }}">
+                            <div class="billboard-card-content{% if subtitle and subtitle != empty %} has-subtitle{% endif %} w-100 text-center">
+                                {% if title and title != empty %}
+                                    <span class="h2 text-white text-center billboard-card-title">{{ title }}</span>
+                                {% endif %}
+                                {% if subtitle and subtitle != empty %}
+                                    <span class="h5 text-white text-center billboard-card-subtitle d-flex justify-content-center"><span class="billboard-card-subtitle-inner">{{ subtitle }}</span></span>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+        {% endfor %}
+    </div>
+</div>
+

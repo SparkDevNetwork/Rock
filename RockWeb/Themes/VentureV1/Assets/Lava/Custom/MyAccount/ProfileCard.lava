@@ -1,0 +1,36 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/MyAccount/ProfileCard.lava' %} {% endcomment %}
+
+{% assign photoId = CurrentPerson.PhotoId %}
+{% assign photoUrl = photoId | Prepend:'/GetImage.ashx?Id=' | Append:'&w=158&h=158&mode=crop&crop=faces' %}
+{% assign primaryCampusId = CurrentPerson.PrimaryCampusId | AsInteger %}
+{% assign primaryCampus = primaryCampusId | FromCache:'Campus' %}
+{% assign primaryCampusImg = primaryCampus | Attribute:'Image','RawValue' | ImageUrl | TriumphImgCdn:'w=2000&fit=crop&auto=compress,format' %}
+
+<div class="profile-card">
+    <div class="profile-card-img-wrap">
+        <img src="{{ primaryCampusImg }}" alt="{{ primaryCampus.Name }}" class="img-responsive w-100 profile-card-img">
+    </div>
+    <div class="profile-card-body">
+        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap">
+            <div class="profile-card-user">
+                <img src="{{ photoUrl }}" alt="" class="img-responsive">
+                <div class="profile-card-user-info">
+                    <span class="profile-card-title d-block mb-1">Hi {{ CurrentPerson.NickName }}</span>
+                    {% if Address %}
+                        {% assign addressTypeValue = AddressTypeValueId | FromCache:'DefinedValue' %}
+                        <span class="d-block"><i class="fa fa-map-marker text-invite"></i> {{ Address.Location.City |  Capitalize }}, {{ Address.Location.State | Upcase }}</span>
+                    {% endif %}
+                    {% if address and address %}
+                        <span class="d-block"><i class="fa fa-map-marker text-invite"></i> {{ address }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% unless ViewOnly %}
+                <div class="profile-card-actions">
+                    <a class="btn btn-primary btn-sm" onclick="{{ CurrentPerson.Guid | Postback:'EditPerson' }}">Update Profile</a>
+                </div>
+            {% endunless %}
+        </div>
+    </div>
+</div>
+

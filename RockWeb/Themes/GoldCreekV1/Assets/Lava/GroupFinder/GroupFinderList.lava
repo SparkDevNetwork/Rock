@@ -1,0 +1,110 @@
+{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+{%- comment -%}{% include '~~/Assets/Lava/GroupFinder/GroupFinderList.lava' %}{%- endcomment -%}
+
+<div class="row margin-t-md">
+{%- for group in Groups -%}
+
+{%- assign headerImage = group | Attribute:'HeaderImage','Guid' -%}
+{%- assign groupName = group.Name | Replace:"'",'’' -%}
+{%- assign groupNameUrl = groupName | ToCssClass | Remove:'’' -%}
+{%- assign groupDescription = group.Description | NewlineToBr | Replace:'<br />',' ' | StripNewlines | StripHtml -%}
+{%- assign groupDescription = groupDescription | TruncateWords:45,'...' -%}
+{%- assign groupTopic = group | Attribute:'Category' | Join:',' | ToCssClass | Remove:'’' -%}
+{%- assign groupTime = '' %}
+{%- if group.Schedule.WeeklyTimeOfDay != null -%}
+  {%- assign groupTime = group.Schedule.WeeklyTimeOfDay | Date:'HH:mm:ss' -%}
+{%- else -%}
+{% if group.Schedule.iCalendarContent != '' %}
+  {%- assign groupTime = group.Schedule.iCalendarContent | DatesFromICal:1 | First -%}
+ {% endif %}
+{%- endif -%}
+
+{%- capture groupSchedule -%}
+  {%- if group.Schedule.WeeklyDayOfWeek != null -%}
+      <span class="day">{{ group.Schedule.WeeklyDayOfWeek }}s</span>
+      <span class="time">{{ group.Schedule.WeeklyTimeOfDay | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+  {%- else -%}
+    {%- if group.Schedule.iCalendarContent != null -%}
+      {% include '~~/Assets/Lava/Functions/iCalParse.lava' iCalendarContent:group.Schedule.iCalendarContent %}
+      {%- assign firstDate = group.Schedule.iCalendarContent | DatesFromICal:1 | First -%}
+      {% case iCalParse_rrfreq %}
+        {% when 'WEEKLY' %}
+          {%- if iCalParse_rrint == null -%}
+            {%- if iCalParse_rrbyday == "MO,TU,WE,TH,FR" -%}
+              <span class="day">Weekdays</span>
+              <span class="time">{{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {% elseif iCalParse_rrbyday == "SU,SA" %}
+              <span class="day">Weekends</span>
+              <span class="time">{{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {%- else -%}
+              {%- assign friendly = group.Schedule.FriendlyScheduleText | Split:' at ' | First | Replace:',',', ' -%}
+              {%- assign friendly = friendly | Replace:'day','days' -%}
+              {%- assign friendly = friendly | ReplaceLast:' ',' and ' -%}
+              <span class="day trim" title="{{ friendly }}">{{ friendly }}</span>
+              <span class="time">{{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {%- endif -%}
+          {% else %}
+            {{ firstDate | Date:'dddd\s' }}
+            <span class="time">
+              {{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }} |
+              {%- if iCalParse_rrint == 1 -%}
+                Weekly
+              {%- elseif iCalParse_rrint == 2 -%}
+                Bi-Weekly
+              {%- else -%}
+                Every {{ iCalParse_rrint }} Weeks
+              {% endif %}
+            </span>
+          {%- endif -%}
+        {% when 'MONTHLY' %}
+          {%- if iCalParse_rrint == null -%}
+            {%- if iCalParse_rrbyday != null -%}
+              <span class="day trim">{{ iCalParse_rrbyday | Slice:0,1 | NumberToOrdinal }} {{ firstDate | Date:'dddd' }}</span>
+              <span class="time">Monthly | {{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+            {%- else -%}
+              <span class="day trim">{{ group.Schedule.FriendlyScheduleText | Split:' of ' | First | Remove:'The' }}
+              of Every Month</span>
+            {%- endif -%}
+          {%- elseif iCalParse_rrint == 2 -%}
+            <span class="day trim" title="The {{ iCalParse_rrbymonthday | NumberToOrdinal }}">The {{ iCalParse_rrbymonthday | NumberToOrdinal }}</span>
+            <span class="time">Bi-Monthly | {{ firstDate | Date:'h:mmtt' | Downcase | Remove:':00' }}</span>
+          {%- else -%}
+            {{ iCalParse_rrbymonthday | NumberToOrdinal }} of Every {{ iCalParse_rrint | NumberToOrdinal }} Month
+          {% endif %}
+      {% endcase %}
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+<div class="col col-12 col-sm-6 col-md-4 mb-5" data-group-id="{{ group.Id }}" data-group="{{ groupNameUrl }}" data-topic="{{ groupTopic }}" data-time="{{ groupTime }}"><a href="/groups/{{ group.Id }}" class="card card-groups">
+<div class="card-img-top image-loader-wrapper embed-responsive embed-responsive-16by9 bg-light">
+<img src="https://source.unsplash.com/collection/2065253/720x405?sig={{ group.Id }}" alt="">
+  </div>
+<div class="card-body pb-3 padding-b-md">
+  <h2 class="h4 group-name mb-0 margin-b-none">{{ groupName }}</h2>
+  <span class="group-schedule text-muted no-decoration">{{ groupSchedule }}</span>
+  {%- for location in group.GroupLocations -%}
+    {%- if location.GroupLocationTypeValue.DefinedTypeId == 15 and location.GroupLocationTypeValue.IsActive == true -%}
+        {%- if location.Location.Name -%}
+          <span class="group-location text-muted">{{ location.Location.Name }}</span>
+        {%- else -%}
+          {%- assign cityName = location.Location.City | Trim -%}
+          {%- if cityName != '' -%}
+            <span class="group-location text-muted no-decoration">{{ location.Location.City }}</span>
+          {%- else -%}
+            <span class="group-location text-muted no-decoration">{{ 'Global' | Attribute:'OrganizationName' }} Neighborhood</span>
+          {%- endif -%}
+        {%- endif -%}
+      {% break %}
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+{% comment %} <div class="card-footer">
+<a class="btn btn-default btn-signup btn-sm mt-3" href="/groups/{{ groupNameUrl }}/{{ group.Id }}">Learn More</a>
+</div> {% endcomment %}
+
+</a></div>
+{%- endfor -%}
+</div>

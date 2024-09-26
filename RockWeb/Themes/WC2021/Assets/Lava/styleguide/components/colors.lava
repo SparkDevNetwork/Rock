@@ -1,0 +1,46 @@
+/- {% include '~~/Assets/Lava/styleguide/components/colors.lava' %} -/
+{% capture newLine %}
+{% endcapture %}
+{% assign brandColors = 'primary,info,success,warning,danger,critical,purple,navy,gray,disabled,cream' | Split:',' %}
+
+<h1>Colors</h1>
+
+<h6>Table of Contents</h6>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#background">Background Colors</a></li>
+    <li><a href="#text">Text Colors</a></li>
+</ul>
+
+<div class="card mb-4" id="background">
+    <div class="card-header">
+        <h4 class="m-0">Background Colors</h4>
+    </div>
+
+{%- capture codeOutput -%}{% for item in brandColors %}{% if forloop.index > 1 %}{{newLine}}{% endif %}<pre class="bg-{{ item }}">bg-{{item}}</pre>{% endfor %}
+<pre class="bg-transparent text-body">bg-transparent</pre>
+{%- endcapture -%}
+
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Replace:'pre','div' | Escape }}</code></pre>
+    </div>
+</div>
+
+<div class="card mb-4" id="text">
+    <div class="card-header">
+        <h4 class="m-0">Text Colors</h4>
+    </div>
+    {%- capture codeOutput -%}
+<pre class="text-color bg-white">text-color</pre>
+<pre class="text-muted bg-white">text-muted</pre>
+{% for item in brandColors %}{% if forloop.index > 1 %}{{newLine}}{% endif %}<pre class="text-{{ item }} bg-white">text-{{item}}</pre>{% endfor %}{%- endcapture -%}
+
+    <div class="card-body">
+        {{ codeOutput }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeOutput | Replace:' bg-white','' | Replace:'pre','div' | Escape }}</code></pre>
+    </div>
+</div>

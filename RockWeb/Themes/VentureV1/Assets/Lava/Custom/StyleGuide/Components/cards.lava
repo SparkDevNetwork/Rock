@@ -1,0 +1,319 @@
+{% comment %}{% include '~~/Assets/Lava/styleguide/components/cards.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Standard Cards {% endcomment %}
+{% capture standardCards %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6 mb-4 mb-sm-0">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invest accent-light">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Learn More</a>
+                <a href="#" class="btn btn-link">Email Leaders</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invite accent-lightest">Card Title</h5>
+                <p>Lorem ipsum ipsum dolor sit amet consectetur qui itaque, ea m minus ut ipsum dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture standardCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Standard Cards</blockquote>
+{{ standardCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Same Height Cards {% endcomment %}
+
+{% capture sameHeightCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4 mb-sm-0">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invest accent-light">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invite accent-lightest">Card Title</h5>
+                <p>Lorem ipsum ipsum dolor sit amet consectetur qui itaque, ea m minus ut ipsum dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture sameHeightCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Same Height Cards Cards</blockquote>
+{{ sameHeightCardsWithImages | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% capture sameHeightCardsWithImages %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4 mb-sm-0">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invest accent-light">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="card h-100">
+            <img src="https://via.placeholder.com/800x450" alt="alt" class="card-img-top img-responsive">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invite accent-lightest">Card Title</h5>
+                <p>Lorem ipsum ipsum dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture sameHeightCardsWithImagesEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Same Height Cards With Images</blockquote>
+{{ sameHeightCardsWithImages | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Feature Cards {% endcomment %}
+
+{% capture featureCards %}
+<div class="row">
+    <div class="col-sm-6">
+        <div class="card feature-card">
+            <div class="card-body">
+                <div class="feature-card-title d-flex">
+                    <div class="feature-card-icon"><i class="fa fa-play"></i></div>
+                    <h5 class="card-title accent accent-invite accent-lightest">Watch on Demand</h5>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a class="font-weight-bold" href="#">Watch Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture featureCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Feature Cards Cards</blockquote>
+{{ featureCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ CTA Cards {% endcomment %}
+
+{% capture ctaCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-md-4 mb-4 mb-sm-0">
+        <div class="cta-card bg-invest h-100">
+            <div class="cta-card-body">
+                <h3 class="cta-card-title">Find Your Church</h3>
+            </div>
+            <div class="cta-card-footer">
+                <a href="#" class="btn btn-primary btn-light">Find Now</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-8">
+        <div class="cta-card h-100" style="background-image:url(https://via.placeholder.com/500x300);">
+            <div class="cta-card-body">
+                <i class="fa fa-comments cta-card-icon"></i>
+                <h3 class="cta-card-title">Need Prayer?</h3>
+            </div>
+            <div class="cta-card-footer">
+                <a href="#" class="btn btn-primary btn-opaque btn-grow">Request Prayer</a>
+                <a href="#" class="btn btn-default btn-light btn-grow">Find Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture ctaCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">CTA Cards Cards</blockquote>
+{{ ctaCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Poster Cards {% endcomment %}
+
+{% capture posterCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6">
+        <div class="poster-card js-poster-card" style="background-image:url(https://via.placeholder.com/500x300);">
+            <div class="poster-card-body js-poster-card-body">
+                <h4 class="poster-card-title accent accent-invite accent-">Resources</h4>
+
+                <div class="poster-card-hidden js-poster-card-hidden">
+                    <a href="#" class="text-white">View All Resources</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture posterCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Poster Cards Cards</blockquote>
+{{ posterCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Event Cards {% endcomment %}
+
+{% capture eventCards %}
+<div class="row">
+    <div class="col-sm-6">
+        <div class="event-card" style="background-image:url(https://via.placeholder.com/500x300);">
+            <div class="event-card-body">
+                <div class="event-card-subtitle">Reoccurring</div>
+                <div class="event-card-info">
+                    <div class="event-card-date accent accent-white accent-light">
+                        <span class="day">22</span>
+                        <span class="month">May</span>
+                    </div>
+                    <div class="event-card-title-wrap">
+                        <div class="event-card-subtitle">Gulf Coast</div>
+                        <h5 class="event-card-title">MVMNT</h5>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="event-card-link"></a>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture eventCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Event Cards</blockquote>
+{{ eventCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Icon Cards {% endcomment %}
+
+{% capture iconCards %}
+<div class="icon-card rounded-md bg-white h-100" data-aos="fade-up">
+    <img src="/Themes/VentureV1/Assets/Images/give-in-person.svg" alt="Give In Person" class="img-responsive icon-card-icon o-70">
+    <div class="icon-card-content">
+        <h3 class="accent accent-invite accent-lighter icon-card-heading mb-4">Give In Person</h3>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat, sapiente soluta nesciunt tempore nostrum beatae. Est placeat laborum incidunt tempora?
+    </div>
+    <a href="#" class="stretched-link"></a>
+</div>
+{% endcapture %}
+
+{% capture iconCardsEscaped %}
+{{ codeOpen }}<blockquote class="mb-0">Icon Cards</blockquote>
+{{ iconCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header">Standard Cards</h3>
+
+{{ standardCards }}
+
+{{ standardCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Same Height Standard Cards</h3>
+
+{{ sameHeightCards }}
+
+{{ sameHeightCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Same Height Cards With Images</h3>
+
+{{ sameHeightCardsWithImages }}
+
+{{ sameHeightCardsWithImagesEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Feature Cards</h3>
+
+{{ featureCards }}
+
+{{ featureCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">CTA Cards</h3>
+
+{{ ctaCards }}
+
+{{ ctaCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Poster Cards</h3>
+
+{{ posterCards }}
+
+{{ posterCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Event Cards</h3>
+
+{{ eventCards }}
+
+{{ eventCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Icon Cards</h3>
+
+{{ iconCards }}
+
+{{ iconCardsEscaped }}
+
+
+

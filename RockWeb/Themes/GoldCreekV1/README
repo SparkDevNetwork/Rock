@@ -1,0 +1,11 @@
+JumpStart Theme V1.1.1
+Copyright 2022 Triumph Tech, LLC
+
+===
+Triumph Staff URL: https://triumph.slab.com/posts/jumpstart-theme-rock-integrated-webpages-mb3k8tre
+
+
+# CHANGELOG
+## V1.1.1 6/27/2022
+- Added max-width on container to prevent blocks from overflowwing.
+- Added MyConnectionOpportunitiesSortable.lava file

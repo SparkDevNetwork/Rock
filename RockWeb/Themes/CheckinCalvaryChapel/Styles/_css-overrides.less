@@ -1,0 +1,76 @@
+.welcome .checkin-active .checkin-body::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 300px;
+  left: 0;
+  width: 100%;
+  content: "";
+  background:url(/Themes/CheckinCalvaryChapel/Assets/Images/calvary-checkin-bg-1.jpg) no-repeat center center;
+  background-size: cover;
+  z-index: -1;
+}
+
+.welcome div .checkin-active .start-button-container .checkin-search-actions:has(.btn) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome div .checkin-active .start-button-container .checkin-search-actions:has(.btn) .btn {
+  height: 100%;
+}
+
+.welcome div .checkin-active::before {
+  aspect-ratio: 504/244;
+  opacity: .8;
+  top: unset !important;
+  bottom: 320px !important;
+  left: 20px !important;
+  right: 20px !important;
+  width: unset !important;
+}
+
+@media (min-width: 992px) {
+  .welcome div .checkin-active .checkin-body::after {
+    width: 59.7%;
+    bottom: 0;
+  }
+
+  .welcome div .checkin-active::before {
+    left: 64px !important;
+    bottom: 64px !important;
+    top: unset !important;
+    right: unset !important;
+    width: calc(~'59.7% - 120px') !important;
+  }
+}
+
+@media (max-width: 991px) {
+
+  .welcome div .checkin-active .welcome-banner {
+    right: unset;
+    top: 120px;
+    left: 4%;
+    right: 4%;
+    bottom: unset;
+  }
+
+  .welcome div .checkin-active .start-button-container {
+    width: 100%;
+    top: unset;
+    height: 300px;
+    justify-content: flex-end;
+    background-color: transparent;
+    bottom: 0;
+  }
+}
+
+
+
+
+
+
+
+
+

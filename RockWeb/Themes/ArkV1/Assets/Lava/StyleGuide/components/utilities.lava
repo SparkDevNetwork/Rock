@@ -1,0 +1,169 @@
+/- {% include '~~/Assets/Lava/styleguide/components/cards.lava' %} -/
+
+<h1 class="mb-4">Utilities</h1>
+
+<h4>BackDrop</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#alignment">Backdrop Alignment</a></li>
+    <li><a href="#colors">Backdrop Colors</a></li>
+</ul>
+
+<div class="py-3"></div>
+<h4>Waves</h4>
+<ul class="nav nav-pills mb-4">
+    <li><a href="#waves">Waves</a></li>
+</ul>
+
+{% capture cardMarkup %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="mb-3">
+            <code>.backdrop + .backdrop-left + .backdrop-primary</code>
+        </div>
+        <div class="backdrop backdrop-left backdrop-primary rounded-md">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 mb-4">
+        <div class="mb-3">
+            <code>.backdrop + .backdrop-right + .backdrop-primary</code>
+        </div>
+        <div class="backdrop backdrop-right backdrop-primary rounded-md">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="alignment">
+    <div class="card-header">
+        <h4 class="m-0">Alignment</h4>
+    </div>
+    <div class="card-body">
+        {{ cardMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture cardMarkup %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-primary</code>
+        </div>
+        <div class="backdrop backdrop-left backdrop-primary rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-dark</code>
+        </div>
+        <div class="backdrop backdrop-left backdrop-dark rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-white</code>
+        </div>
+        <div class="bg-black p-3">
+            <div class="backdrop backdrop-left backdrop-white rounded-sm">
+                <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-light</code>
+        </div>
+        <div class="bg-black p-3">
+            <div class="backdrop backdrop-left backdrop-light rounded-sm">
+                <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-muted</code>
+        </div>
+        <div class="backdrop backdrop-left backdrop-muted rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-info</code>
+        </div>
+        <div class="backdrop backdrop-right backdrop-info rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-success</code>
+        </div>
+        <div class="backdrop backdrop-right backdrop-success rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-danger</code>
+        </div>
+        <div class="backdrop backdrop-right backdrop-danger rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+    <div class="col-xs-4 col-sm-3 mb-4">
+        <div class="mb-3">
+            <code>.backdrop-warning</code>
+        </div>
+        <div class="backdrop backdrop-right backdrop-warning rounded-sm">
+            <img src="https://via.placeholder.com/400x225" alt="" class="img-responsive">
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="colors">
+    <div class="card-header">
+        <h4 class="m-0">Colors</h4>
+    </div>
+    <div class="card-body">
+        {{ cardMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture waveMarkup %}
+    {% include '~~/Assets/Lava/Custom/Components/wave-animation.lava' %}
+{% endcapture %}
+
+{% capture waveMarkupRaw %}{% raw %}{% include '~~/Assets/Lava/Custom/Components/wave-animation.lava' %}{% endraw %}{% endcapture %}
+
+{% capture darkWaveMarkup %}
+    {% include '~~/Assets/Lava/Custom/Components/wave-animation.lava' dark:'true' %}
+{% endcapture %}
+
+{% capture darkWaveMarkupRaw %}{% raw %}{% include '~~/Assets/Lava/Custom/Components/wave-animation.lava' dark:'true' %}{% endraw %}{% endcapture %}
+
+<div class="card mb-4" id="waves">
+    <div class="card-header">
+        <h4 class="m-0">Waves</h4>
+    </div>
+    <div class="card-body">
+        {{ waveMarkup }}
+        {{ darkWaveMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ waveMarkupRaw | Trim | Escape }}</code>
+<code>{{ darkWaveMarkupRaw | Trim | Escape }}</code>
+        </pre>
+    </div>
+</div>
+

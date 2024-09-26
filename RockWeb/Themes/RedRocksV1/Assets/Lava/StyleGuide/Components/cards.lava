@@ -1,0 +1,98 @@
+{% comment %}{% include '~~/Assets/Lava/styleguide/components/cards.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+<h1 class="mt-0">Cards</h1>
+
+{% comment %} ~ Standard Cards {% endcomment %}
+{% capture standardCards %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6 mb-4 mb-sm-0">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invest accent-light">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-xs btn-primary">Learn More</a>
+                <a href="#" class="btn btn-xs btn-link">Email Leaders</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invite accent-lightest">Card Title</h5>
+                <p>Lorem ipsum ipsum dolor sit amet consectetur qui itaque, ea m minus ut ipsum dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-xs btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture standardCardsEscaped %}
+{{ codeOpen }}
+{{ standardCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Same Height Cards {% endcomment %}
+
+{% capture sameHeightCards %}
+<div class="row d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-6 col-lg-4 mb-4 mb-sm-0">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invest accent-light">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-xs btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title accent accent-invite accent-lightest">Card Title</h5>
+                <p>Lorem ipsum ipsum dolor sit amet consectetur qui itaque, ea m minus ut ipsum dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-xs btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+{% capture sameHeightCardsEscaped %}
+{{ codeOpen }}
+{{ sameHeightCards | Escape }}
+{{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="sg-section-header mt-0">Standard Cards</h3>
+
+{{ standardCards }}
+<br>
+{{ standardCardsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Same Height Standard Cards</h3>
+
+{{ sameHeightCards }}
+<br>
+{{ sameHeightCardsEscaped }}
+
+

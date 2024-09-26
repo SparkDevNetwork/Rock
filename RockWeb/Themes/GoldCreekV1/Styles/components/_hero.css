@@ -1,0 +1,8 @@
+.hero {
+  padding: 156px 0;
+}
+@media screen and (min-width: 768px) {
+  .hero {
+    padding: 250px 0;
+  }
+}

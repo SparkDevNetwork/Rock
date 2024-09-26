@@ -1,0 +1,85 @@
+<div class="bg-white rounded-md py-5 px-3 px-md-5 shadow-md mb-5 position-relative">
+    <h2 class="display"><span class="text-goldcreek">Image</span> Sizes</h2>
+    <p class="tall">On this page you will find a list of common page components created for this site. Listed under each item name will be the recommended image ratio and size (px).</p>
+</div>
+
+<div class="pb-5">
+    <div class="row d-flex flex-wrap pb-md-4">
+
+        {% comment %} Homepage Hero {% endcomment %}
+        <div class="col-xs-12 col-sm-6 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top" alt="Image Sizes – Standard Hero" src="/Themes/VentureV1/Assets/Images/img-sizes-hero-img-1.jpg">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Standard Hero</h4>
+                    <div class="mb-2"><strong>Recommended Ratio:</strong> 4 : 1</div>
+                    <div><strong>Recommended Size:</strong> 2000px x 500px</div>
+                </div>
+                <div class="card-footer">
+                    <a href="/Themes/VentureV1/Assets/PSD/Venture_Hero_Safety_Zones_V2.psd" target="_blank" class="btn btn-default btn-dark stretched-link">PSD Template</a>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Event Cards {% endcomment %}
+        <div class="col-xs-12 col-sm-6 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top" alt="Image Sizes – Event Cards" src="/Themes/VentureV1/Assets/Images/img-sizes-event-card-1.jpg">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Event Cards</h4>
+                    <div class="mb-2"><strong>Recommended Ratio:</strong> 5 : 3</div>
+                    <div><strong>Recommended Size:</strong> 500px x 300px</div>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Poster Cards {% endcomment %}
+        <div class="col-xs-12 col-sm-6 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top" alt="Image Sizes – Poster Cards" src="/Themes/VentureV1/Assets/Images/img-sizes-poster-card-1.jpg">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Poster Cards</h4>
+                    <div class="mb-2"><strong>Recommended Ratio:</strong> 5 : 3</div>
+                    <div><strong>Recommended Size:</strong> 500px x 300px</div>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Full Width Banner {% endcomment %}
+        <div class="col-xs-12 col-sm-6 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top" alt="Image Sizes – Full Width Banner" src="/Themes/VentureV1/Assets/Images/img-sizes-full-width-banner-1.jpg">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Full Width Banner</h4>
+                    <div class="mb-2"><strong>Recommended Ratio:</strong> 4 : 1</div>
+                    <div><strong>Recommended Size:</strong> 2000px x 500px</div>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Gradient Banner (Content Component) {% endcomment %}
+        <div class="col-xs-12 col-sm-6 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top" alt="Image Sizes – Gradient Banner (Content Component)" src="/Themes/VentureV1/Assets/Images/img_sizes-gradient_banners.jpg">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Gradient Banner (Content Component)</h4>
+                    <div class="mb-2"><strong>Recommended Ratio:</strong> 1 : 1</div>
+                    <div><strong>Recommended Size:</strong> 1600px x 1600px</div>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Side By Side (Content Component) {% endcomment %}
+        <div class="col-xs-12 col-sm-6 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top" alt="Image Sizes – Side By Side (Content Component)" src="/Themes/VentureV1/Assets/Images/img_sizes-side_by_side.jpg">
+                <div class="card-body panel-body">
+                    <h4 class="card-title">Side By Side (Content Component)</h4>
+                    <div class="mb-2"><strong>Recommended Ratio:</strong> 9 : 7</div>
+                    <div><strong>Recommended Size:</strong> 1116px x 868px</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

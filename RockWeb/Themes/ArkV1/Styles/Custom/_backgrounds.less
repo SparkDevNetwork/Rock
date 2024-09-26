@@ -1,0 +1,38 @@
+// out:false
+
+
+.bg-gold {
+  background-color: @theme-3;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image: url('/Themes/ArkV1/Assets/Images/grey-sandbag.png');
+    opacity: .5;
+    mix-blend-mode: luminosity;
+  }
+}
+
+.bg-dark {
+  background-color: @gray-darker !important;
+}
+
+.bg-muted, .bg-gray {
+  background-color: #D9D9D9;
+}
+
+.bg-light-gray {
+  background-color: #F2F3F5;
+}
+
+.bg-topograph {
+  background-image: url('/Themes/ArkV1/Assets/Images/bg-topographic.png');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}

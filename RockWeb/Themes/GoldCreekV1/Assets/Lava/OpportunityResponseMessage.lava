@@ -1,0 +1,11 @@
+{% comment %}
+JumpStart Theme V1.1.1 / Copyright (c) 2022, Triumph Tech, LLC. All rights reserved.
+{% endcomment %}
+
+<div class="alert alert-success">
+	<strong>
+	Congratulations!
+	</strong>
+	<br/>
+	Your request to serve on the {{ Opportunity.PublicName }} team has been submitted.
+</div>

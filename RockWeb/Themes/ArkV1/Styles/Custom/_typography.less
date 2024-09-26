@@ -1,0 +1,140 @@
+// out:false
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-weight: 700;
+  margin: 0;
+}
+
+
+h1.display,
+.h1.display {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.22em;
+
+  @media (min-width: 768px) {
+    font-size: 60px;
+  }
+
+  @media (min-width: 1200px) {
+    font-size: 80px;
+  }
+}
+
+h2.display,
+.h2.display {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.194em;
+
+  @media (min-width: 768px) {
+    font-size: 54px;
+  }
+
+  @media (min-width: 1200px) {
+    font-size: 72px;
+  }
+}
+
+h3.display,
+.h3.display {
+  font-size: 32px;
+  font-weight: 700;
+
+  @media (min-width: 768px) {
+    font-size: 48px;
+  }
+
+  @media (min-width: 1200px) {
+    font-size: 64px;
+  }
+}
+
+h4.display,
+.h4.display {
+  font-size: 28px;
+  font-weight: 700;
+
+  @media (min-width: 768px) {
+    font-size: 42px;
+  }
+
+  @media (min-width: 1200px) {
+    font-size: 56px;
+  }
+}
+
+h1, .h1 {
+  line-height: 1.22em;
+}
+
+h2, .h2 {
+  line-height: 1.285em;
+}
+
+h3, .h3 {
+  line-height: 1.4em;
+}
+
+h4, .h4 {
+  line-height: 1.167em;
+}
+
+h5, .h5 {
+  line-height: 1.214em;
+}
+
+h6, .h6 {
+  line-height: 1.167em;
+}
+
+.lead {
+  font-weight: 500;
+  font-size: 1.125em;
+  line-height: 1.78;
+}
+
+.tall {
+  font-size: 1.125em;
+  line-height: 1.78;
+}
+
+.small {
+  font-weight: 500;
+  font-size: .9375em;
+}
+
+
+blockquote {
+  border-left: 5px solid fadeout(@theme-1, 50%);
+  font-style: italic;
+
+  footer {
+    margin: 0;
+    font-style: normal;
+  }
+}
+
+.italic {
+  font-style: italic;
+}
+
+// 2. Colors
+.text-medium {
+  color: @text-medium;
+}
+
+a.text-medium:hover {
+  color: darken(@text-medium, 10%);
+}

@@ -1,0 +1,25 @@
+{% comment %} {% include '~~/Assets/Lava/StyleGuide/Components/component-heading.lava', heading:'', navitems:'', description:'' %} {% endcomment %}
+
+{% if heading and heading != empty %}
+
+    <div class="card mb-5 border-nickel border-lg bg-transparent">
+        <div class="card-body">
+            <h1 class="card-title mt-0">{{ heading }}</h1>
+            {% if description and description != empty %}
+                <p class="m-0">{{ description }}</p>
+            {% endif %}
+            {% if navitems and navitems != empty %}
+                {% assign navigationItems = navitems | Split:',' %}
+                <hr>
+                <h6>Table of Contents</h6>
+                <ol>
+                    {% for navItem in navigationItems %}
+                        <li><a href="#{{ navItem }}">{{ navItem | Replace:'-',' ' | Capitalize }}</a></li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr class="my-5">
+{% endif %}

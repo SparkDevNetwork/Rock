@@ -1,0 +1,117 @@
+// out:false
+
+.workflow-entry {
+  label.control-label {
+    color: fadeout(@onyx, 50%);
+  }
+
+  input.form-control,
+  label.control-label,
+  select.form-control,
+  .picker a {
+    font-size: 20px;
+    font-weight: 700;
+
+    @media (min-width: 992px) {
+      font-size: 24px;
+    }
+  }
+
+  input.form-control,
+  select.form-control,
+  .picker a {
+    height: 40px;
+  }
+
+  input[type="text"].form-control,
+  input[type="email"].form-control {
+    background-color: transparent;
+    border: 0;
+    border-bottom: 1px solid #353535;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+
+    &::placeholder {
+      color: @onyx;
+      opacity: .5;
+    }
+
+    &:focus {
+      box-shadow: none;
+
+      &::placeholder {
+        opacity: .2;
+      }
+    }
+  }
+
+  .form-group.has-error {
+    input[type="text"].form-control,
+    input[type="email"].form-control {
+      &::placeholder {
+        color: @rocks-red;
+        opacity: 1;
+      }
+    }
+  }
+
+  select.form-control {
+    background-color: transparent;
+    height: unset;
+    color: fadeout(@onyx, 50%);
+
+    &:focus {
+      box-shadow: none;
+    }
+
+    option {
+      font-size: 18px;
+      color: @onyx;
+    }
+  }
+
+  label.checkbox-inline {
+    padding-left: 24px;
+
+    @media (min-width: 992px) {
+      padding-left: 32px;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      left: 0;
+      margin: 0;
+      accent-color: @rocks-red;
+
+      @media (min-width: 992px) {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  .date,
+  div[class*="timepicker"] {
+    input.form-control[type="text"] {
+      border: 1px solid @onyx;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
+
+  .btn-group.btn-toggle {
+    a.btn {
+      border-color: @onyx;
+      background-color: transparent;
+      color: @onyx;
+
+      &.active {
+        background-color: @rocks-red;
+        border-color: @rocks-red;
+        color: @ultra-white;
+      }
+    }
+  }
+}

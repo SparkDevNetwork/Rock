@@ -1,0 +1,380 @@
+// out: false
+
+.sign-ups {
+    .sign-up-finder {
+        .obsidian-block-loading {
+            &::before,
+            &::after {
+                content:"";
+            }
+
+            &::before {
+                display: block;
+                height: 404px !important;
+                opacity: .6;
+            }
+
+            .obsidian-block {
+                display: none
+            }
+        }
+
+        .results-header {
+            display: none;
+        }
+
+        .img-thumbnail {
+            padding: 0;
+            border: 5px solid #f2f2f2;
+            border-radius: 0;
+        }
+
+        .filters,
+        .obsidian-block-loading:before {
+            padding: 0;
+            margin: 0 auto 24px;
+        }
+
+        .filters {
+            &::before {
+                display: block;
+                padding-bottom: 8px;
+                margin-bottom: 0;
+                font-size: 14px;
+                letter-spacing: .5px;
+                content: "FILTERS";
+                border-bottom: 2px solid #ddd;
+            }
+
+            & > .row {
+                // max-height: calc(~"100vh - 200px");
+                padding: 0 0 16px;
+                margin: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+
+                & > .col-xs-12 {
+                    padding:0;
+                    margin:0;
+                }
+            }
+
+            .form-group {
+                max-width:100%;
+                margin:0;
+            }
+
+            .col-xs-12 > .form-group {
+
+                & > .control-label {
+                    display: flex;
+                    align-items: center;
+                    padding: 10px 4px 8px;
+                    margin: 0;
+                    font-weight: 700;
+                    cursor: pointer;
+                    border-top: 1px solid #ededf2;
+
+                    &::after {
+                        margin-left:auto;
+                        font-family:FontAwesome;
+                        content:"\f078";
+                    }
+
+                    &.open {
+                        &::after {
+                            transform:rotate(180deg);
+                        }
+                    }
+                }
+
+                & > .control-wrapper,
+                & > .field-criteria > .col-xs-12 > .control-wrapper {
+                    display:none;
+                    padding:10px 8px 12px;
+                }
+
+                & > .field-criteria > .col-md-2 {
+                    display:none !important;
+                }
+
+                & > .field-criteria > .col-xs-12 {
+                    display:block;
+                    width:100%;
+                }
+
+            }
+        }
+
+        label.checkbox-inline {
+            margin-top:0 !important;
+            margin-bottom:4px;
+        }
+    }
+
+    @media only screen and (min-width:480px){
+        .sign-up-finder .group-items {
+            grid-template-columns:1fr 1fr;
+            margin:0 auto;
+        }
+
+        .sign-up-finder .group-item {
+            align-items:center;
+        }
+    }
+
+    @media only screen and (max-width: 991px) {
+        .filters {
+            max-width: 580px;
+        }
+    }
+
+    @media only screen and (min-width:992px){
+        .obsidian-block .sign-up-finder,
+        .sign-up-finder .obsidian-block-loading {
+            display:flex;
+            width:980px;
+            max-width:100%;
+            margin:20px auto;
+        }
+
+        .sign-up-finder .filters,.sign-up-finder .obsidian-block-loading:before {
+            position:sticky;
+            top:20px;
+            display:flex;
+            flex-direction:column;
+            width:100%;
+            max-width:200px;
+            max-height:calc(~"100vh - 20px");
+            margin:8px 0 0;
+            overflow:hidden;
+            height:fit-content;
+            flex: 1 0 auto;
+        }
+
+        .sign-up-finder .results {
+            margin:8px 0;
+        }
+
+        .scrolled-up .sign-up-finder .filters {
+            top:91px;
+        }
+
+        .filters .actions .btn {
+            display:block;
+            width:100%;
+        }
+
+        .sign-up-finder .results {
+            flex:1 1 auto;
+            padding-left:8px;
+            margin-left:8px;
+        }
+
+        .rockcheckboxlist label.checkbox-inline {
+            display:block;
+        }
+    }
+
+    @media only screen and (min-width:1200px){
+        .obsidian-block .sign-up-finder,.sign-up-finder .obsidian-block-loading {
+            width:100%;
+        }
+
+        .sign-up-finder .results {
+            margin-left:30px;
+        }
+
+        .sign-up-finder .filters,
+        .sign-up-finder .obsidian-block-loading:before {
+            max-width:295px;
+        }
+    }
+
+    @media only screen and (min-width:1400px){
+        .sign-up-finder .group-items {
+            grid-template-columns:1fr 1fr 1fr;
+            justify-content:space-between;
+            grid-gap:30px;
+            margin:0 auto;
+        }
+    }
+
+    .card-group-item {
+        .card-header {
+            padding: 8px 10px;
+            min-height: 50px;
+            background: #383A37;
+            color: #E8E8E8;
+            align-content: center;
+
+            .card-title {
+                font-size: 15px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2; /* number of lines to show */
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+
+
+        }
+
+        .card-body {
+            padding: 16px 10px;
+            font-size: 12px;
+            color: #777;
+            min-height: 85px;
+        }
+
+        .card-footer {
+            background: #fff;
+        }
+
+    }
+
+
+
+    .group-description {
+        max-height: 190px;
+        overflow-y: auto;
+    }
+
+    .btn-lined {
+        min-height: 46px;
+        color: #777777;
+        text-decoration: underline;
+        text-decoration-color: #EB4924;
+        padding: 12px 0;
+        text-underline-offset: 2px;
+    }
+
+    .btn-contact-leader {
+        border-right: 1px solid #ddd !important;
+    }
+
+    .group-icon {
+        color: #BFBFBF;
+        width: 15px;
+        text-align: center;
+        margin-right: 8px;
+    }
+}
+
+.modal-sign-up-detail {
+    .modal-header::before,
+    .modal-header::after {
+        display: none;
+        content: unset;
+    }
+
+    .group-icon {
+        width: 20px;
+        text-align: center;
+        color: #bfbfbf;
+        margin-right: 8px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.sign-ups-map {
+    .panel-body {
+        display: flex;
+        justify-content: center;
+        margin-top: 0 !important;
+    }
+
+    div[id$='_pnlFilters'] {
+        width: 100%;
+        max-width: 540px;
+
+        &::before {
+            display: block;
+            padding-bottom: 8px;
+            margin-bottom: 0;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            content: "FILTERS";
+            border-bottom: 2px solid #ddd;
+        }
+
+        @media (min-width: 992px) {
+            .btn {
+                width: 100%;
+            }
+        }
+
+        & > .row {
+            margin-bottom: 16px;
+        }
+    }
+
+    div[id*='_attributeCol_'] {
+        width: 100% !important;
+        margin: 0;
+
+        .form-group {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 4px 8px;
+            margin: 0;
+            font-weight: 700;
+            cursor: pointer;
+            border-top: 1px solid #ededf2;
+
+            &::after {
+                margin-left: auto;
+                font-family: FontAwesome;
+                content: "\f078";
+            }
+        }
+
+        .control-wrapper {
+            display: none;
+            padding: 10px 8px 12px;
+        }
+
+        .control-label.open {
+            &::after {
+                transform: rotate(180deg);
+            }
+        }
+    }
+
+    .group-map div[role='dialog'] {
+        .gm-style-iw-ch {
+            padding: 0;
+        }
+
+        button[title='Close'] {
+            margin: 0 !important;
+            position: absolute !important;
+            top: 0;
+            right: 0;
+            z-index: 100;
+
+            span {
+                height: 16px !important;
+            }
+        }
+    }
+}

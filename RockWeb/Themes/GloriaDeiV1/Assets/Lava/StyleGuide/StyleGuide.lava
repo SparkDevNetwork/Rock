@@ -1,0 +1,137 @@
+//- {% include '~~/Assets/Lava/Custom/StyleGuide.lava' %}
+{% assign page = PageParameter.component | Default:'intro' %}
+{% assign includePath = '~~/Assets/Lava/StyleGuide/Components/' | Append:page | Append:'.lava' %}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% comment %} first sidebar nav panel {% endcomment %}
+{% assign componentsGeneral = 'intro,typography,modals,navs,buttons,shadows,lists,cards,call-to-actions,accordion' | Split:',' %}
+{% comment %} second sidebar nav panel {% endcomment %}
+{% comment %} {% assign componentsMain = '' | Split:',' %} {% endcomment %}
+{% comment %} third sidebar nav panel {% endcomment %}
+
+{% comment %} todo: update shortcodes {% endcomment %}
+{% assign componentsAndShortcodes = 'triumph-swiper' | Split:',' %}
+
+{% comment %}
+References nav panel
+    - example
+        [nav-item-ONE-title],[nav-item-ONE-url],[new-tab ? 'true' || 'false']|
+        [nav-item-TWO-title],[nav-item-TWO-url],[new-tab ? 'true' || 'false']
+        Rolling Cards,/style-guide/rolling-cards,false
+{% endcomment %}
+
+{% comment %} todo: update components {% endcomment %}
+{%- capture components -%}
+    Side by Side,/v1/style-guide/side-by-side,false
+{%- endcapture -%}
+{% assign componentsArray = components | Split:'|' %}
+
+{%- capture layouts -%}
+    Layouts,/v1/style-guide/layouts,false|
+{%- endcapture -%}
+{% assign layoutsArray = layouts | Split:'|' %}
+
+{% comment %} todo: update links {% endcomment %}
+{%- capture references -%}
+    Control Gallery,/style-guide/control-gallery,false|
+    Consulting Notes,https://triumph.tech/partner-portal/be0fd5b7-450d-464b-bd2e-694595917dba/notes,true|
+    Rock Core Style Guide,https://community.rockrms.com/styling,true
+{%- endcapture -%}
+{% assign referencesArray = references | Split:'|' %}
+
+<div class="py-5">
+    <div class="py-md-4">
+        <div class="row">
+            <div class="col-md-4 col-lg-3">
+                {% comment %} "GENERAL" Nav Items – Intro, Layout Gallery, Image Sizes {% endcomment %}
+                <nav class="mb-4">
+                    <ul class="nav nav-stacked">
+                        <li class="nav-heading h5">General & Styling</li>
+                        {% for item in componentsGeneral %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="?component={{ item }}" class="nav-link">{{ item | Capitalize | Replace:'-',' ' }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                {% comment %} "COMPONENTS & SHORTCODES" Nav Items – Typography & Colors, Buttons, Lists, Navs, Breadcrumbs {% endcomment %}
+                <nav class="mb-4">
+                    <ul class="nav nav-stacked">
+                        <li class="nav-heading h5">Components &amp Shortcodes</li>
+                        {% for item in componentsAndShortcodes %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="?component={{ item }}" class="nav-link">{{ item | Capitalize | Replace:'-',' ' }}</a></li>
+                        {% endfor %}
+
+                        {% for components in componentsArray %}
+                            {% assign componentsParts = components | Split:',' %}
+                            {% for part in componentsParts %}
+                                {% if forloop.index == 1 %}
+                                    {% assign componentsTitle = part %}
+                                {% elseif forloop.index == 2 %}
+                                    {% assign componentsUrl = part %}
+                                {% else %}
+                                    {% assign componentsNewTab = part %}
+                                {% endif %}
+                            {% endfor %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="{{ componentsUrl }}" class="nav-link"{% if componentsNewTab and componentsNewTab == 'true' %} target="_blank"{% endif %}>{{ componentsTitle | Capitalize }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                {% comment %} "LAYOUTS" Nav Items – Consulting Notes, Rock Core Style Guide {% endcomment %}
+                <nav class="mb-4">
+                    <ul class="nav nav-stacked">
+                        <li class="nav-heading h5">Layouts & Heroes</li>
+                        {% for layouts in layoutsArray limit:1 %}
+                            {% assign layoutsParts = layouts | Split:',' %}
+                            {% for part in layoutsParts %}
+                                {% if forloop.index == 1 %}
+                                    {% assign layoutsTitle = part %}
+                                {% elseif forloop.index == 2 %}
+                                    {% assign layoutsUrl = part %}
+                                {% else %}
+                                    {% assign layoutsNewTab = part %}
+                                {% endif %}
+                            {% endfor %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="{{ layoutsUrl }}" class="nav-link"{% if layoutsNewTab and layoutsNewTab == 'true' %} target="_blank"{% endif %}>{{ layoutsTitle | Capitalize }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                {% comment %} "REFERENCES" Nav Items – Consulting Notes, Rock Core Style Guide {% endcomment %}
+                <nav class="mb-4">
+                    <ul class="nav nav-stacked">
+                        <li class="nav-heading h5">External References</li>
+
+                        {% for reference in referencesArray %}
+                            {% assign referenceParts = reference | Split:',' %}
+                            {% for part in referenceParts %}
+                                {% if forloop.index == 1 %}
+                                    {% assign referenceTitle = part %}
+                                {% elseif forloop.index == 2 %}
+                                    {% assign referenceUrl = part %}
+                                {% else %}
+                                    {% assign referenceNewTab = part %}
+                                {% endif %}
+                            {% endfor %}
+                            <li class="nav-item{% if item == page %} active{% endif %}"><a href="{{ referenceUrl }}" class="nav-link"{% if referenceNewTab and referenceNewTab == 'true' %} target="_blank"{% endif %}>{{ referenceTitle | Capitalize }}</a></li>
+                        {% endfor %}
+
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="col-md-8 col-lg-9 pl-md-5">
+                {%- capture contentCheck -%}{% include includePath %}{%- endcapture -%}
+                {% if contentCheck == 'Liquid error: LavaFileSystem Template Not Found' %}
+                    <div class="text-center">
+                        <h1 class="display">404!</h1>
+                        <h4>Sorry! We couldn't find that component.</h4>
+                    </div>
+                {% else %}
+                    {{ contentCheck }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

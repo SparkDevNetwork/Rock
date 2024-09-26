@@ -1,0 +1,16 @@
+{% assign consultingLink = 'https://triumph.tech/partner-portal/92fbf294-3635-4d9a-a9ba-3b44bd3e0200/notes' %}
+
+<h4 class="gotham-bold mt-0 mb-1">Welcome to</h4>
+<h1 class="display-2 m-0 leading-snug mb-3">
+    RedRocks Church<br>
+    <span class="text-primary">Web <span class="color-primary">Style Guide</span></span>
+</h1>
+<h5>Developed by Triumph Tech</h5>
+<hr>
+
+<p class="lead leading-loose">On this page you will find elements and links for the <strong>RedRocksChurchV1</strong> Theme created by Triumph Tech. The following items will provide quick copy classes, markup, page layout examples and consulting note documentation links.</p>
+
+<hr>
+
+<h3>Consulting Notes</h3>
+<p>View the latest consulting notes at <a href="{{ consultingLink }}" target="_blank" rel="noopener noreferrer">Triumph.Tech</a></p>

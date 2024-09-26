@@ -1,0 +1,277 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_mixins.less";
+@import "_utility.less";
+@import "_print.less";
+@import "_fonts.less";
+@import "./Global/_site-nav.less";
+@import "./Global/_site-footer.less";
+@import "./Components/_typography.less";
+@import "./Components/_colors.less";
+@import "./Components/_navs.less";
+@import "./Components/_banners.less";
+@import "./Components/_accordions.less";
+@import "./Components/_buttons.less";
+@import "./Components/_cards.less";
+@import "./Components/_forms.less";
+@import "./Components/_modals.less";
+@import "./Components/_hero.less";
+@import "./Components/_group-finder.less";
+@import "./Components/_tables.less";
+@import "./Components/_panels.less";
+@import "./Components/_alerts.less";
+@import "./Components/_swiper.less";
+@import "./Events/_calendar.less";
+@import "./MyAccount/_profile-card.less";
+@import "./MyAccount/_dashboard.less";
+@import "./Custom/_our-story-swiper.less";
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Theme Styling
+      2.1. Social Share
+      2.2. Anchor Tags
+    3. Responsive Overrides
+
+*/
+
+
+
+
+
+
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+// Temporary Fix for Safari 13 Select Rendering Bug
+select {
+  text-rendering: auto;
+  -webkit-font-smoothing: none;
+}
+// End Temporary Fix
+
+main {
+  display: block;
+}
+
+body {
+  overflow: hidden;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 2. Theme Styling
+// -------------------------
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+.page-icon {
+  display: none;
+}
+
+header {
+  .page-menu,
+  .login-status {
+    float: right;
+  }
+
+  .navbar {
+    background-color: @header-bg;
+    border: 0;
+  }
+}
+
+// homepage items
+#announcement-rotator {
+  margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
+
+  .item {
+    img {
+      width: 100%;
+    }
+  }
+}
+
+.announcement-list {
+  .announcement {
+    max-width: 390px;
+    margin: 0 auto @spacing-lg-px;
+  }
+
+  .announcement-title {
+    margin: @spacing-sm-px 0;
+  }
+
+  img {
+    width: 100%;
+  }
+}
+
+.announcement-detail {
+  img {
+    width: 100%;
+  }
+}
+
+.nav-sub {
+  li {
+    border: 1px solid @gray-lighter;
+    border-radius: @border-radius-base;
+  }
+}
+
+footer {
+  margin-bottom: 60px;
+
+  .footer-message {
+    float: left;
+  }
+
+  .footer-address {
+    float: right;
+  }
+
+  @media (min-width: 768px) {
+    margin-bottom: 0;
+  }
+}
+
+#splash.error {
+  background-color: @gray-lighter;
+
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+
+.panel-heading {
+  a {
+    border-bottom: 1px dotted @link-color;
+    &:hover {
+      text-decoration: none;
+      border-bottom-style: solid;
+    }
+  }
+
+  .panel-success & {
+    a {
+      color: @panel-success-text;
+      border-color: @panel-success-text;
+    }
+  }
+
+  .panel-warning & {
+    a {
+      color: @panel-warning-text;
+      border-color: @panel-warning-text;
+    }
+  }
+}
+
+a.text-color {
+  color: @venture-onyx !important;
+
+  &:hover {
+    color: @invite !important;
+  }
+}
+
+
+// 2.1. Social Share
+// -------------------------
+.social-share {
+  display: flex;
+}
+
+// 2.2. Anchor Tags
+// -------------------------
+a {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// 3. Responsive Overrides
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+  #announcement-rotator {
+    margin: @spacing-lg-px 0;
+  }
+}
+
+
+// Control Panel Styles
+// ----------------------
+
+
+@import "_css-overrides.less";

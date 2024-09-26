@@ -1,0 +1,126 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/SocialShare.lava', justify:'start|center|end', justifySm:'start|center|end', justifyMd:'start|center|end', justifyLg:'start|center|end' %} {% endcomment %}
+
+{%- capture justifyClasses -%}
+    {% if justify and justify != empty %}align-items-{{ justify }}{% endif %}{% if justifySm and justifySm != empty %} align-items-sm-{{ justifySm }}{% endif %}{% if justifyMd and justifyMd != empty %} justify-content-md-{{ justifyMd }}{% endif %}{% if justifyLg and justifyLg != empty %} justify-content-lg-{{ justifyLg }}{% endif %}
+{%- endcapture -%}
+
+{% assign pageUrl = 'Global' | Page:'Url' %}
+{% assign pageUrlEscaped = 'Global' | Page:'Url' | EscapeDataString %}
+{% assign messageSubject = 'Global' | Page:'BrowserTitle' | Prepend:'Venture Church – ' %}
+
+<div class="d-flex flex-wrap align-items-md-center {{ justifyClasses }} w-100 flex-column flex-md-row">
+    <script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+    <h5 class="mr-md-3 mb-3 mb-md-0">Share &amp; Invite</h5>
+    <ul class="social-share">
+    	<li class="mr-2">
+    		<a href="https://www.facebook.com/sharer/sharer.php?u={{ pageUrlEscaped }}" target="_blank" onclick="return fbs_click()" target="_blank" class="socialicon js-socialicon socialicon-facebook" title="" data-original-title="Share via Facebook" data-interaction-summary="Shared to Facebook: {{ CurrentPage.InternalName }} – {{ 'Global' | Page:'BrowserTitle' }}" data-component-name="Facebook">
+    			<i class="fa fa-fw fa-facebook"></i>
+    		</a>
+    	</li>
+    	<li class="mr-2">
+    		<a href="https://twitter.com/intent/tweet?text={{ pageUrlEscaped }}" target="_blank" class="socialicon js-socialicon socialicon-twitter" title="" data-original-title="Share via Twitter" data-interaction-summary="Shared to Twitter: {{ CurrentPage.InternalName }} – {{ 'Global' | Page:'BrowserTitle' }}" data-component-name="Twitter">
+    			<i class="fa fa-fw fa-twitter"></i>
+    		</a>
+    	</li>
+    	<li class="mr-2">
+    		<a href="mailto:?Subject={{ messageSubject }}&Body={{ pageUrl }}" target="_blank"  class="socialicon js-socialicon socialicon-email" title="" data-original-title="Share via Email" data-interaction-summary="Shared view Email: {{ CurrentPage.InternalName }} – {{ 'Global' | Page:'BrowserTitle' }}" data-component-name="Email">
+    			<i class="fa fa-fw fa-envelope"></i>
+    		</a>
+    	</li>
+    	<li>
+    		<a href="#" class="socialicon js-socialicon socialicon-link js-socialicon-link" title="" data-original-title="Copy Link" data-interaction-summary="Shared Via Link: {{ CurrentPage.InternalName }} – {{ 'Global' | Page:'BrowserTitle' }}" data-component-name="Link">
+    			<i class="fa fa-fw fa-link"></i>
+    		</a>
+    	</li>
+    </ul>
+</div>
+
+{% stylesheet id:'social-share' compile:'less' %}
+    .social-share {
+        display: flex;
+        list-style: none;
+        margin-block-start: 0;
+        margin-block-end: 0;
+        padding-inline-start: 0;
+
+        .socialicon {
+            color: #fff;
+            // todo: background-color: @invite;
+            background-color: #5896ba;
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            //todo: .transition();
+            transition: all .3s ease;
+
+            &:hover {
+                text-decoration: none;
+                // todo: background-color: darken(@invite, 5%);
+                background-color: darken(#5896ba, 10%);
+            }
+        }
+    }
+{% endstylesheet %}
+
+{% assign restApiUrl = 'https://www.rockrmslatest.com/api/Interactions/WriteInteractions' %}
+{% assign eventItemOccurrenceId = Item.Id %}
+
+{% assign apiPersonAliasId = CurrentPerson.PrimaryAliasId %}
+/-- May Have to Check if this refers to the Website Component or if Invites will be it's own component  --/
+{% assign apiInteractionComponentId = '93' %}
+
+<script>
+    $(document).ready( function() {
+        $('.js-socialicon-link').on('click', (e) => {
+            e.preventDefault();
+
+            // Get the text that needs to be copied
+            var copyText = '{{ pageUrl }}';
+
+            // Copy the text inside the text field
+            navigator.clipboard.writeText(copyText);
+
+            // Alert the copied text
+            alert("Link has been copied to the clipboard.");
+        });
+
+
+        $('.js-socialicon').each((i, obj)=> {
+            $(obj).on('click', (e) => {
+                var xhr = new XMLHttpRequest();
+                var url = "https://my.venturechurch.org/api/Interactions/WriteInteractions";
+                var interactionSummary = $(obj).data('interaction-summary');
+                var componentName = $(obj).data('component-name');
+                xhr.open("POST", url, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var json = JSON.parse(xhr.responseText);
+                        console.log(json.InteractionSummary + ", " + json.InteractionSummary);
+                    }
+                };
+                var data = JSON.stringify([{
+                    "ChannelTypeMediumValueId": "668",
+                    "InteractionOperation": "View", //Static
+                    "InteractionSummary": `${interactionSummary}`, //Append Medium "by Twitter" //Dynamic
+                    "PersonAliasId": "{{ apiPersonAliasId }}", //Dynamic
+                    "ComponentName": `${componentName}`,
+                    "ChannelName": `Invited using Social Share`,
+                    "InteractionDateTime": "{{ 'Now' | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}" //Make Dynamic to current time
+                }]);
+                xhr.send(data);
+            });
+        });
+
+    });
+</script>
+
+
+
+
+
+

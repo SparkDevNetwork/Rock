@@ -1,0 +1,44 @@
+{% comment %} {% include '~~/Assets/Lava/StyleGuide/ImageSizes/Cards.lava' %} {% endcomment %}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Standard Cards {% endcomment %}
+
+{% capture standardCards %}
+<div class="giant-card mb-3">
+    <div class="giant-card-img-wrap">
+        <div class="giant-card-img">
+            <img src="https://via.placeholder.com/800x800" alt="">
+        </div>
+    </div>
+    <div class="giant-card-body">
+        <div class="text-uppercase giant-card-subtitle">Giant Card Sub Title</div>
+        <div class="text-uppercase giant-card-title">Giant Card</div>
+        <div class="giant-card-content">
+            Lorem ipsum ipsum dolor dolor sit amet consectetur qui itaque, ea m minus ut m minus ut nam vitae!
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-sm-4">
+        <div class="card">
+            <img src="https://via.placeholder.com/800x450" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">Card Title</h5>
+                <p>Lorem ipsum dolor sit amet consectetur qui itaque, ea m minus ut nam vitae!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+
+
+{% comment %} ~ Print sections {% endcomment %}
+
+<h3 class="mt-5">Cards</h3>
+
+{{ standardCards }}
+
+<hr class="my-5">
