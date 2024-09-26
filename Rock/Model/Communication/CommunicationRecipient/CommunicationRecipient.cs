@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -198,6 +198,15 @@ namespace Rock.Model
                 arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JArray ) AdditionalMergeValues[k] ).ToObjectArray() );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the process send key, which indicates the node and thread responsible for sending a communication to this recipient.
+        /// </summary>
+        /// <value>
+        /// The process send key.
+        /// </value>
+        [MaxLength( 300 )]
+        public string ProcessSendKey { get; set; }
 
         #endregion
 
