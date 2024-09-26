@@ -185,6 +185,10 @@
 
     watch(() => props.modelValue, () => {
         updateRefValue(internalValue, props.modelValue);
+
+        if (editor && editor.getValue() !== internalValue.value) {
+            editor.setValue(internalValue.value, 1);
+        }
     });
 
     watch(internalValue, () => {
