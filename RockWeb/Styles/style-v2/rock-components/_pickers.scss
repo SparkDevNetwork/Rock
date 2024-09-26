@@ -474,26 +474,6 @@ textarea,
   }
 }
 
-// Moved from _rock-obsidian.less
-.picker.picker-obsidian {
-  width:            initial;
-
-  > .picker-label {
-    max-width:      initial;
-  }
-
-  .picker-select-none {
-    display:        none;
-  }
-
-  &.picker-show-clear .picker-select-none {
-    display:        block;
-  }
-
-  &.picker-full-width {
-    max-width:      initial;
-  }
-}
 // ====================== END BASE STYLE ======================
 
 
