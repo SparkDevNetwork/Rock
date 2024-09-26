@@ -375,7 +375,7 @@ namespace Rock.Blocks.Lms
                 () => entity.ConfigurationMode = box.Bag.ConfigurationMode.Value );
 
             box.IfValidProperty( nameof( box.Bag.DefaultGradingSystem ),
-                () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ).Value );
+                () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
