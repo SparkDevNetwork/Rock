@@ -183,7 +183,7 @@ namespace Rock.Blocks.Core
                 IconCssClass = entity.IconCssClass,
                 IsImage = entity.IsImage,
                 IsSystem = entity.IsSystem,
-                MaxDocumentsPerEntity = entity.MaxDocumentsPerEntity,
+                MaxDocumentsPerEntity = entity.MaxDocumentsPerEntity.ToString(),
                 Name = entity.Name,
                 UserSelectable = entity.UserSelectable
             };
@@ -263,7 +263,7 @@ namespace Rock.Blocks.Core
                 () => entity.IsImage = box.Entity.IsImage );
 
             box.IfValidProperty( nameof( box.Entity.MaxDocumentsPerEntity ),
-                () => entity.MaxDocumentsPerEntity = box.Entity.MaxDocumentsPerEntity );
+                () => entity.MaxDocumentsPerEntity = box.Entity.MaxDocumentsPerEntity.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );

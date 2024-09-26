@@ -70,7 +70,7 @@ namespace Rock.ViewModels.Blocks.Core.DocumentTypeDetail
         /// <summary>
         /// Gets or sets the maximum documents per entity.  This would limit the documents of that type per entity. A blank value means no limit.
         /// </summary>
-        public int? MaxDocumentsPerEntity { get; set; }
+        public string MaxDocumentsPerEntity { get; set; }
 
         /// <summary>
         /// Gets or sets the given Name of the DocumentType.
