@@ -140,10 +140,7 @@
 
 /* ===================== UTILITIES =================== */
 @import 'utilities/helpers';
-@import 'utilities/spacing-utilities';      // FULLY COPY AND PAST FROM bootstrap _utilities.less.
-@import 'utilities/typography-utilities';   // Fully Format.
-@import 'utilities/color-utilities';        // Fully Format.
-@import 'utilities/rounded-utilities';      // Fully Format.
+@import 'utilities/type';
 @import 'utilities/cursor';                 // Fully Format.
 @import 'utilities/borders';                // Fully Format.
 

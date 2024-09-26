@@ -13,28 +13,28 @@
   // APPLICATION COLORS 
   --color-critical-soft:    #FEDEC8;
   --color-critical-strong:  #EE7624;
-  --color-critical-tint:      color-mix(in srgb, var(--color-critical) 50%, #FFF 98%);
-  --color-critical-shade:     color-mix(in srgb, var(--color-critical) 100%, #000 15%);
+  --color-critical-tint:      color-mix(in srgb, var(--color-critical-strong) 50%, #FFF 98%);
+  --color-critical-shade:     color-mix(in srgb, var(--color-critical-strong) 100%, #000 15%);
 
   --color-danger-soft:      #FFCCD1;
   --color-danger-strong:    #D70015;
-  --color-danger-tint:        color-mix(in srgb, var(--color-danger) 50%, #FFF 98%);
-  --color-danger-shade:       color-mix(in srgb, var(--color-danger) 100%, #000 15%);
+  --color-danger-tint:        color-mix(in srgb, var(--color-danger-strong) 50%, #FFF 98%);
+  --color-danger-shade:       color-mix(in srgb, var(--color-danger-strong) 100%, #000 15%);
 
   --color-info-soft:        #D6EAFF;
   --color-info-strong:      #007AFF;
-  --color-info-tint:          color-mix(in srgb, var(--color-info) 50%, #FFF 98%);
-  --color-info-shade:         color-mix(in srgb, var(--color-info) 100%, #000 15%);
+  --color-info-tint:          color-mix(in srgb, var(--color-info-strong) 50%, #FFF 98%);
+  --color-info-shade:         color-mix(in srgb, var(--color-info-strong) 100%, #000 15%);
 
   --color-success-soft:     #D7F4DE;
   --color-success-strong:   #248A3D;
-  --color-success-tint:       color-mix(in srgb, var(--color-success) 50%, #FFF 98%);
-  --color-success-shade:      color-mix(in srgb, var(--color-success) 100%, #000 15%);
+  --color-success-tint:       color-mix(in srgb, var(--color-success-strong) 50%, #FFF 98%);
+  --color-success-shade:      color-mix(in srgb, var(--color-success-strong) 100%, #000 15%);
 
   --color-warning-soft:     #FFECD1;
   --color-warning-strong:   #E58600;
-  --color-warning-tint:       color-mix(in srgb, var(--color-warning) 50%, #FFF 98%);
-  --color-warning-shade:      color-mix(in srgb, var(--color-warning) 100%, #000 15%);
+  --color-warning-tint:       color-mix(in srgb, var(--color-warning-strong) 50%, #FFF 98%);
+  --color-warning-shade:      color-mix(in srgb, var(--color-warning-strong) 100%, #000 15%);
 
   // SYSTEM COLORS 
   --color-primary:          #EE7725;

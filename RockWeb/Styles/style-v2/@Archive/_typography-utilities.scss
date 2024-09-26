@@ -1,55 +1,6 @@
 
 /* TYPOGRAPHY Utilities */
-.font-size-xsmall  { font-size: var(--font-size-xsmall)}
-.font-size-small   { font-size: var(--font-size-small); }
-.font-size-regular { font-size: var(--font-size-regular); }
-.font-size-h1      { font-size: var(--font-size-h1); }
-.font-size-h2      { font-size: var(--font-size-h2); }
-.font-size-h3      { font-size: var(--font-size-h3); }
-.font-size-h4      { font-size: var(--font-size-h4); }
-.font-size-h5      { font-size: var(--font-size-h5); }
-.font-size-h6      { font-size: var(--font-size-h6); }
 
-.font-weight-light   { font-weight: var(--font-weight-light); }
-.font-weight-regular { font-weight: var(--font-weight-regular); }
-.font-weight-medium  { font-weight: var(--font-weight-medium); }
-.font-weight-semibold{ font-weight: var(--font-weight-semibold); }
-.font-weight-bold    { font-weight: var(--font-weight-bold); }
-.font-weight-black   { font-weight: var(--font-weight-black); }
-
-.line-height-normal  { line-height: var(--line-height-normal); }
-.line-height-tight   { line-height: var(--line-height-tight); }
-.line-height-compact { line-height: var(--line-height-compact); }
-
-.font-family-segoe { font-family: var(--font-family-segoe); }
-.font-family-sans  { font-family: var(--font-family-sans); }
-.font-family-serif { font-family: var(--font-family-serif); }
-
-.text-primary { color: var(--color-primary) !important;}
-.text-success { color: var(--color-success-strong) !important;}
-.text-warning { color: var(--color-warning-strong) !important;}
-.text-danger  { color: var(--color-danger-strong) !important;}
-.text-info    { color: var(--color-info-strong) !important;}
-
-.text-center    { text-align: center !important;}
-.text-right     { text-align: right !important;}
-.text-left      { text-align: left !important;}
-.text-justify   { text-align: justify !important;}
-.text-nowrap    { white-space: nowrap !important;}
-
-.text-lowercase      { text-transform: lowercase; }
-.text-uppercase      { text-transform: uppercase; }
-.text-capitalize     { text-transform: capitalize; }
-
-.text-monospace { font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
-.text-justify   { text-align: justify !important;}
-.text-nowrap    { white-space: nowrap !important;}
-
-.text-truncate { 
-    overflow:       hidden;
-    text-overflow:  ellipsis;
-    white-space:    nowrap;
-}
 
 .control-label {
     margin-bottom:  var(--spacing-tiny);
@@ -57,7 +8,7 @@
     line-height:    18px;
 }
   
-  .control-label-sm {
+.control-label-sm {
     display:    block;
     font-size:  var(--font-size-xsmall);
     color:      var(--color-interface-medium);
@@ -140,9 +91,6 @@ h6.condensed {
 }
 
 //Moved from bootstrap type.less
-.text-muted {
-    color: var(--color-interface-medium);
-}
 .text-primary {
     color: var(--color-primary);
     a &:hover,
@@ -250,51 +198,3 @@ blockquote {
     }
   }
 // ================
-
-@media (min-width: 576px) {
-    .text-sm-left {
-        text-align: left !important;
-    }
-    .text-sm-right {
-        text-align: right !important;
-    }
-    .text-sm-center {
-        text-align: center !important;
-    }
-}
-
-@media (min-width: $screen-small) {
-    .text-md-left {
-        text-align: left !important;
-    }
-    .text-md-right {
-        text-align: right !important;
-    }
-    .text-md-center {
-        text-align: center !important;
-    }
-}
-
-@media (min-width: $screen-medium) {
-    .text-lg-left {
-        text-align: left !important;
-    }
-    .text-lg-right {
-        text-align: right !important;
-    }
-    .text-lg-center {
-        text-align: center !important;
-    }
-}
-
-@media (min-width: $screen-large) {
-    .text-xl-left {
-        text-align: left !important;
-    }
-    .text-xl-right {
-        text-align: right !important;
-    }
-    .text-xl-center {
-        text-align: center !important;
-    }
-}

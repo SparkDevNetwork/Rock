@@ -41,17 +41,11 @@
   border-color: var(--color-interface-softer) !important;
 }
 
-//
-// Border-radius
-//
 
+// Border-radius
 .rounded {
   border-radius: var(--rounded-small) !important;
 }
-
-//
-// Border Radius Sizes
-//
 
 .rounded-sm {
   border-radius: var(--rounded-tiny) !important;
@@ -65,7 +59,6 @@
   border-radius: 50% !important;
 }
 
-// TODO: Rounded Pill
 .rounded-pill {
   border-radius: 999px !important;
 }
@@ -93,3 +86,30 @@
   border-top-left-radius: var(--rounded-small) !important;
   border-bottom-left-radius: var(--rounded-small) !important;
 }
+
+// New color added in Style V2
+.rounded-tiny {
+  border-radius: var(--rounded-tiny);
+}
+
+.rounded-small {
+  border-radius: var(--rounded-small);
+}
+
+.rounded-medium {
+  border-radius: var(--rounded-medium);
+}
+
+.rounded-large {
+  border-radius: var(--rounded-large);
+}
+
+.rounded-xlarge {
+  border-radius: var(--rounded-xlarge);
+}
+
+.rounded-huge {
+  border-radius: var(--rounded-huge);
+}
+// ==============
+

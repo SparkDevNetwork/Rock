@@ -5,10 +5,10 @@
 .font-monospace { font-family: var(--font-family-monospace); }
 
 // Alignment
-
 .text-justify  { text-align: justify !important; }
 .text-wrap     { white-space: normal !important; }
 .text-nowrap   { white-space: nowrap !important; }
+
 .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -16,7 +16,6 @@
 }
 
 // Overflow
-
 .overflow-auto {
   overflow: auto !important;
 }
@@ -43,33 +42,42 @@
 }
 
 // Responsive alignment
-// stylelint-disable
-// .util-mix-text-align(@breakpoint:"base") {
-//   .setInfix(@bp) when (@bp = "base") {
-//     .text-left   { text-align: left !important; }
-//     .text-right  { text-align: right !important; }
-//     .text-center { text-align: center !important; }
-//   }
+@mixin util-mix-text-align($breakpoint:"base") {
+  @if $breakpoint == "base" {
+    .text-left   { text-align: left !important; }
+    .text-right  { text-align: right !important; }
+    .text-center { text-align: center !important; }
+  } @else {
+    @include display-text($breakpoint);
+  }
+}
 
-//   .setInfix(@bp) when (default()) {
-//     @infix: ~"@{breakpoint}";
+// Includes legacy .sm-text-left style markup
+@mixin display-text($infix) {
+  .text-#{$infix}-left,
+  .#{$infix}-text-left    { text-align: left !important; }
+  .text-#{$infix}-right,
+  .#{$infix}-text-right  { text-align: right !important; }
+  .text-#{$infix}-center,
+  .#{$infix}-text-center { text-align: center !important; }
+}
 
-//     .display-text(@infix);
-//   }
 
-//   .setInfix(@breakpoint);
-// }
-// // stylelint-enable
+// Call the mixin here
+@include util-mix-text-align;
 
-// // Includes legacy .sm-text-left style markup
-// .display-text(@infix) {
-//   .text-@{infix}-left,
-//   .@{infix}-text-left    { text-align: left !important; }
-//   .text-@{infix}-right,
-//   .@{infix}-text-right  { text-align: right !important; }
-//   .text-@{infix}-center,
-//   .@{infix}-text-right { text-align: center !important; }
-// }
+@media (min-width: $screen-small) {
+  @include util-mix-text-align("sm");
+}
+
+@media (min-width: $screen-medium) {
+  @include util-mix-text-align("md");
+}
+
+@media (min-width: $screen-large) {
+  @include util-mix-text-align("lg")
+}
+
 
 // Transformation
 
@@ -78,13 +86,12 @@
 .text-uppercase  { text-transform: uppercase !important; }
 .text-capitalize { text-transform: capitalize !important; }
 
-// // Weight and italics
-
+// Weight and italics
 .font-weight-light,
 .text-light   { font-weight: var(--font-weight-light) !important; }
 .font-weight-lighter { font-weight: 200 !important; }
 .font-weight-normal,
-.text-normal  { font-weight: var(--font-weight-normal) !important; }
+.text-normal  { font-weight: var(--font-weight-medium) !important; }
 .text-semibold,
 .font-weight-semibold { font-weight: var(--font-weight-semibold) !important; }
 .font-weight-bold,
@@ -93,10 +100,8 @@
 .text-bolder  { font-weight: var(--font-weight-black) !important; }
 .font-italic         { font-style: italic !important; }
 
-// // Contextual colors
-
+// Contextual colors
 // .text-white { color: @white !important; }
-
 .text-primary { color: var(--color-primary) !important; }
 .text-success { color: var(--color-success-strong) !important; }
 .text-danger { color: var(--color-danger-strong) !important; }
@@ -104,7 +109,7 @@
 .text-info { color: var(--color-info-strong) !important; }
 .text-critical { color: var(--color-critical-strong) !important; }
 
-// // Text Color is Legacy
+// Text Color is Legacy
 .text-color,
 .text-body { color: var(--color-interface-stronger) !important; }
 
@@ -117,16 +122,13 @@
 .text-white-50 { color: fade(#fff, 50%) !important; }
 
 // Misc
-
 .text-decoration-none { text-decoration: none !important; }
 .text-linethrough { text-decoration: line-through !important; }
 
 // Reset
-
 .text-reset { color: inherit !important; }
 
 // Legacy
-
 .text-shadow-light {
   text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
 }
@@ -140,7 +142,6 @@
 }
 
 // Tailwind
-
 .leading-tight {
   line-height: .9 !important;
 }
@@ -168,6 +169,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
 .line-clamp-2 {
@@ -175,6 +177,8 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
+
 }
 
 .line-clamp-3 {
@@ -182,6 +186,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 .line-clamp-4 {
@@ -189,6 +194,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
 }
 
 .line-clamp-5 {
@@ -196,6 +202,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 5;
+  line-clamp: 5;
 }
 
 .line-clamp-6 {
@@ -203,6 +210,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 6;
+  line-clamp: 6;
 }
 
 // Font Variant
