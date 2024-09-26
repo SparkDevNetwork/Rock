@@ -438,7 +438,14 @@
                 emit("next", await props.session.withNextScreen());
             }
             else {
-                let newSession = props.session.withSelectedAttendees(selections.value);
+                // This makes sure our selections are in the same order as they
+                // are displayed on screen so when we start asking for details
+                // of attendees the order isn't random.
+                const familySelections = attendees.value
+                    .filter(a => selections.value.includes(a.person?.id ?? ""))
+                    .map(a => a.person?.id ?? "");
+
+                let newSession = props.session.withSelectedAttendees(familySelections);
 
                 emit("next", await newSession.withNextScreen());
             }
