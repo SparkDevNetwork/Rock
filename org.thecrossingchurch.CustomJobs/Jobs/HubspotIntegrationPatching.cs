@@ -302,9 +302,9 @@ namespace org.crossingchurch.HubSpotIntegration.Jobs
                         // Discpleship Step Path step completed date gathering
                         Dictionary<int, string> stepsPath = new Dictionary<int, string>()
                         {
-                            { 26, "baptism" },
-                            { 27, "life_groups" },
-                            { 29, "first_time_serving" }
+                            { 26, "rock_baptism_date" },
+                            { 27, "rock_first_time_life_group" },
+                            { 29, "rock_first_time_serving" }
                         };
                         foreach ( KeyValuePair<int, string> kvp in stepsPath )
                         {
