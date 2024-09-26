@@ -120,6 +120,14 @@ namespace Rock.ViewModels.CheckIn
         public bool IsSupervisorEnabled { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether to attempt to use the same options
+        /// from the first service when a person is checking into more than one
+        /// service schedule.
+        /// </summary>
+        /// <value><c>true</c> if the same options from the first service will be used; otherwise, <c>false</c>.</value>
+        public virtual bool IsSameOptionUsed { get; set; }
+
+        /// <summary>
         /// Gets or sets the maximum length of the phone number during
         /// family search.
         /// </summary>
