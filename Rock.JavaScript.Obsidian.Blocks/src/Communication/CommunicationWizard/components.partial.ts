@@ -1,9 +1,9 @@
 import { EditorComponentType, EditorComponentTypeName } from "./types.partial";
 import { toWordFull } from "@Obsidian/Utility/numberUtils";
 
-export function getComponentOrThrow(componentElement: HTMLElement): EditorComponentType;
-export function getComponentOrThrow(type: EditorComponentTypeName): EditorComponentType;
-export function getComponentOrThrow(componentElementOrType: EditorComponentTypeName | HTMLElement): EditorComponentType {
+export function getComponentTypeOrThrow(componentElement: HTMLElement): EditorComponentType;
+export function getComponentTypeOrThrow(type: EditorComponentTypeName): EditorComponentType;
+export function getComponentTypeOrThrow(componentElementOrType: EditorComponentTypeName | HTMLElement): EditorComponentType {
     let type: string = "";
     if (typeof componentElementOrType === "string") {
         type = componentElementOrType;
