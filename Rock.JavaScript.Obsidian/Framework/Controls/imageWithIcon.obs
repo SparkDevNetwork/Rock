@@ -1,11 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="container" class="image-with-icon-container">
-        <img :src="imgSrc" />
-        <span class="icon-stack-container" :class="stackClass" v-if="hasIcon">
-            <i class="fa fa-circle fa-stack-2x" :style="stackColorStyle"></i>
+    <div ref="container" class="image-with-icon-container" :style="backgroundImagePath">
+        <div class="icon-stack-container" v-if="hasIcon" :style="stackColorStyle">
             <i :style="highlightColorStyle" :class="iconCssClasses"></i>
-        </span>
+        </div>
     </div>
 </template>
 
@@ -38,12 +36,6 @@ import { Guid } from "@Obsidian/Types";
             default: ""
         },
 
-        /** The scale of the font-awesome icon (defaults to 3). */
-        iconSize: {
-            type: Number as PropType<number>,
-            default: 3
-        },
-
         /** The Guid of the Image file to show. */
         imageFileGuid: {
             type: String as PropType<Guid>,
@@ -68,51 +60,52 @@ import { Guid } from "@Obsidian/Types";
     const highlightColor = ref<string>(props?.highlightColor ?? "");
     const stackColor = ref<string>(props.stackColor ?? "");
 
-    // The scale of the stacked icon.
-    const iconSize = ref<number>(props?.iconSize ?? 3);
-
     // The containing element for getting the image with the proper width.
     const container = ref<HTMLElement | null>();
 
     // #endregion
 
     // #region Computed Values
-
     const guidIsValid = computed(() => imageFileGuid.value.length > 0 && isValidGuid(imageFileGuid.value) && imageFileGuid.value !== emptyGuid);
-
-    const imgSrc = computed(() =>
-        guidIsValid.value === true ?
-            `/GetImage.ashx?guid=${imageFileGuid.value}&width=${container.value?.clientWidth}` :
-            "/Assets/Images/no-picture.svg"
-    );
-
-    const stackClass = computed(() => iconSize.value > 1 ? `fa-stack fa-${iconSize.value}x` : "fa-stack");
 
     // The color style attribute value for the highlight color.
     const highlightColorStyle = computed(() => `color: ${highlightColor.value};`);
 
     const hasIcon = computed(() => iconCssClass.value.length > 0);
 
-    const iconCssClasses = computed(() => [iconCssClass.value, "fa-stack-1x"]);
+    const iconCssClasses = computed(() => [iconCssClass.value, "fa-fw"]);
 
     // The color style attribute value for the stack color.
     const stackColorStyle = computed(() => {
         // If the caller provided a stackColor then use that.
         if (stackColor.value.length > 0) {
-            return `color: ${stackColor.value}`;
+            return `background-color: ${stackColor.value}`;
         }
 
         // If the autoLightenStackColor is true lighten based on the highlight color;
         // otherwise return undefined for no attribute.
         if (props.autoLightenStackColor) {
             const pair = RockColor.calculateColorPair(new RockColor(highlightColor.value));
-            return `color: ${pair.backgroundColor.toRgba()}`;
+            return `background-color: ${pair.backgroundColor.toRgba()}`;
         }
         else {
             return undefined;
         }
     });
 
+    // Get the background image to display
+    const backgroundImagePath = computed(() => {
+
+        if (guidIsValid.value === true){
+            return { backgroundImage: `url('/GetImage.ashx?guid=${imageFileGuid.value}&width=${container.value?.clientWidth}')`};
+        }
+
+        return { backgroundImage: "url('/Assets/Images/no-picture.svg')"};
+
+    });
+
     // #endregion
+
+
 
 </script>

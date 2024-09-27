@@ -36,8 +36,9 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, watch, ref, nextTick, onUnmounted } from "vue";
+    import { computed, onMounted, PropType, watch, ref, nextTick } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { useScreenSize } from "@Obsidian/Utility/screenSize";
     import { LocaleDateFormatter } from "@Obsidian/Utility/localeDateFormatter";
     import { DateTime } from "luxon";
 
@@ -134,7 +135,7 @@
     const nativeDatePickerValue = ref("");
     const defaultId = `datepicker-${newGuid()}`;
     const inputEl = ref<HTMLInputElement | null>(null);
-    const isNative = ref(false);
+    const { isMobile: isNative } = useScreenSize();
 
     // #endregion
 
@@ -213,15 +214,6 @@
         internalValue.value = newVal;
     }
 
-    function onResize(): void {
-        if (screen.width <= 480) {
-            isNative.value = true;
-        }
-        else {
-            isNative.value = false;
-        }
-    }
-
     // #endregion
 
     // #region Watchers
@@ -258,14 +250,7 @@
         // Bit of a back to make sure all our props are set correctly.
         nextTick(() => {
             initializePopup();
-            onResize();
         });
-
-        window.addEventListener("resize", onResize);
-    });
-
-    onUnmounted(() => {
-        window.removeEventListener("resize", onResize);
     });
 
     // #endregion

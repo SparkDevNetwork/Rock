@@ -1,0 +1,237 @@
+<template>
+    <GalleryAndResult :value="{ modelValue: value, items: items }" :importCode="importCode" :exampleCode="exampleCode" enableReflection hasMultipleValues>
+
+        <CustomSelect v-model="value" :items="items" itemKey="id" label="Custom Select" wrapperClass="my-select" itemClass="my-item">
+            <template #default="{ item }">
+                <i class="fa fa-book fa-lg mr-3 text-primary"></i>
+                <div>
+                    <h3 class="my-0">{{ item.title }}</h3>
+                    <p class="text-muted ">{{ item.description }}</p>
+                </div>
+            </template>
+
+            <template #placeholder>
+                <p class="text-muted ">Tap here to select an item</p>
+            </template>
+        </CustomSelect>
+
+        <template #props>
+            <h5>CustomSelect Props</h5>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td><code>TItem | null</code></td>
+                        <td>null</td>
+                        <td>The <code>v-model</code> for providing/receiving the selected item. The type is determined by the elements of the <code>items</code> prop.</td>
+                    </tr>
+                    <tr>
+                        <td><code>items</code></td>
+                        <td><code>TItem[]</code>></td>
+                        <td><em>Required</em></td>
+                        <td>The list of items to choose from. No specific type is required, but must be an object with some sort of unique identifier property.</td>
+                    </tr>
+                    <tr>
+                        <td><code>itemKey</code></td>
+                        <td>String</td>
+                        <td>"id"</td>
+                        <td>The name of the property on the items that will be used as the unique identifier.</td>
+                    </tr>
+                    <tr>
+                        <td><code>wrapperClass</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>CSS class(es) that will be applied to the element wrapping the list of items. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>itemClass</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>CSS class(es) that will be applied to the element wrapping the individual items. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>selectedClass</code></td>
+                        <td>String</td>
+                        <td>"selected"</td>
+                        <td>CSS class(es) that will be applied to the element wrapping the individual item that is selected. Useful for custom styling.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h5>Standard RockFormField Props</h5>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>label</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>Adds a label for the form field.</td>
+                    </tr>
+                    <tr>
+                        <td><code>help</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>Adds a little help icon next to the label. When hovered, the value of this prop will appear in the tooltip.</td>
+                    </tr>
+                    <tr>
+                        <td><code>rules</code></td>
+                        <td><code>ValidationRule | ValidationRule[]</code></td>
+                        <td>""</td>
+                        <td>A list of validation rules used to validate the value of this input. See <a href="https://app.gitbook.com/o/-LZeM2HF8FOmeOnEE-hg/s/qEX8FxRZdIq9SLZ3KNxi/form-validation" target="_blank">Form Validation</a>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>formGroupClasses</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>CSS classes that will be applied to the element wrapping the input.</td>
+                    </tr>
+                    <tr>
+                        <td><code>validationTitle</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>If provided and there is a validation error, the error will be labeled with this text. By default, it will be labeled with the <code>label</code> prop instead.</td>
+                    </tr>
+                    <tr>
+                        <td><code>isRequiredIndicatorHidden</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>By default, if the "required" rule is applied, a red dot indicator appears next to the label. If set to true that indicator will be hidden.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 class="mt-0 mb-3">Slots</h4>
+
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Slot Name</th>
+                        <th>Scoped Variables</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>default</td>
+                        <td>`{ item }`</td>
+                        <td>This slot is used to render an individual item from the <code>items</code> list. The scoped variable is an item from the <code>items</code> prop.</td>
+                    </tr>
+                    <tr>
+                        <td>placeholder</td>
+                        <td><em>none</em></td>
+                        <td>This slot is used to render a placeholder item in the mobile view when no items are selected.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+        </template>
+
+        <template #usageNotes>
+            <h5>Note on Styles</h5>
+
+            <p>
+                This control has very limited styling. It is recommended that you provide your own styles to customize
+                the look and feel of the control. Use the <code>wrapperClass</code> and <code>itemClass</code> props to
+                add classes you can use to style the control. The sample control above uses "my-item" as the
+                <code>itemClass</code> prop along with the following CSS:
+            </p>
+
+            <CodeSample language="css" :code="sampleCSS" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style>
+.my-item {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-top-width: 0;
+    padding: .5rem .75rem;
+    display: flex;
+    align-items: center;
+}
+
+.my-item.selected {
+    background: #fff;
+}
+
+.my-item:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-top-width: 1px;
+}
+
+.my-item:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import CustomSelect from "@Obsidian/Controls/customSelect.obs";
+    import CodeSample from "./codeSample.partial.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const items = ref([
+        { id: "matthew", title: "Matthew", description: "The gospel according to Matthew" },
+        { id: "mark", title: "Mark", description: "The gospel according to Mark" },
+        { id: "luke", title: "Luke", description: "The gospel according to Luke" },
+        { id: "john", title: "John", description: "The gospel according to John" }
+    ]);
+
+    const value = ref(null);
+
+    const importCode = getSfcControlImportPath("customSelect");
+    const exampleCode = computed(() => `<CustomSelect v-model="value" :items="items" itemKey="id">
+    <template #default="{ item }">
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
+    </template>
+    <template #placeholder>
+        <p>Tap here to select an item</p>
+    </template>
+</CustomSelect>`);
+
+    const sampleCSS = `.my-item {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-top-width: 0;
+    padding: .5rem .75rem;
+    display: flex;
+    align-items: center;
+}
+
+.my-item.selected {
+    background: #fff;
+}
+
+.my-item:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-top-width: 1px;
+}
+
+.my-item:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}`;
+</script>
