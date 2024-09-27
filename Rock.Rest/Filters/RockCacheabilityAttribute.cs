@@ -65,7 +65,9 @@ namespace Rock.Rest.Filters
             }
             else
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 restActionCache = RestActionCache.Get( apiId );
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             if ( restActionCache != null && restActionCache.CacheControlHeader != null )
