@@ -25,11 +25,11 @@
                 <div class="email-editor-designer">
                     <div class="email-editor-toolbox">
                         <div class="email-editor-toolbox-menu">
-                            <div class="menu-item selected"><i class="fa fa-grip-horizontal"></i><span>Content</span></div>
-                            <div class="menu-item"><i class="fa fa-drafting-compass"></i><span>Design</span></div>
+                            <div :class="['menu-item', toolboxMenuItem === 'content' ? 'selected' : '']" @click="toolboxMenuItem = 'content'"><i class="fa fa-grip-horizontal"></i><span>Content</span></div>
+                            <div :class="['menu-item', toolboxMenuItem === 'design' ? 'selected' : '']" @click="toolboxMenuItem = 'design'"><i class="fa fa-drafting-compass"></i><span>Design</span></div>
                         </div>
 
-                        <div class="email-editor-toolbox-submenu">
+                        <div v-if="toolboxMenuItem === 'content'" class="email-editor-toolbox-submenu">
                             <TabbedContent v-model="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
                                 <template #tabpane="{ item }">
                                     <div class="email-editor-toolbox-submenu-content">
@@ -52,18 +52,28 @@
                                             </DropDownList>
 
                                             <div class="section-list">
-
+                                                <div v-for="sectionComponentType in sectionComponentTypes"
+                                                     :key="sectionComponentType.typeName"
+                                                     class="section-list-item"
+                                                     draggable="true"
+                                                     @dragstart="onComponentTypeDragStart(sectionComponentType)"
+                                                     @dragend="onComponentTypeDragEnd()"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </template>
                             </TabbedContent>
                         </div>
+
+                        <div v-else-if="toolboxMenuItem === 'design'" class="email-editor-toolbox-submenu">
+                            Hello!
+                        </div>
                     </div>
 
                     <div class="email-editor-window-wrapper">
                         <EditorWindow :html="config.emailMessage"
-                                      :draggingComponentType="draggingComponentType" />
+                                      :draggingComponentType="draggingComponentType"
+                                      @selectComponent="selectedComponent = $event" />
                     </div>
                 </div>
 
@@ -99,6 +109,13 @@
     flex-wrap: wrap;
 }
 
+.section-list {
+    display: flex;
+    flex-direction: column;
+    /* TODO JMH Is this supported? */
+    gap: 16px;
+}
+
 .component-list-item {
     display: flex;
     flex-direction: column;
@@ -110,7 +127,17 @@
     justify-content: center;
 }
 
-.component-list-item:active {
+.section-list-item {
+    display: flex;
+    flex-direction: column;
+    height: 74px;
+    text-align: center;
+    align-items: center;
+    border: 1px solid;
+    justify-content: center;
+}
+
+.component-list-item:active, .section-list-item:active {
     border-color: var(--color-primary);
 }
 
@@ -183,10 +210,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/components.partial";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
-    import { EditorComponentType } from "./CommunicationWizard/types.partial";
+    import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -199,10 +226,12 @@
 
     // #region Values
 
+    const toolboxMenuItem = ref<"content" | "design">("content");
     const toolboxSubMenuTab = ref<string>("");
     const draggingComponentType = ref<EditorComponentType | null | undefined>();
     const sectionCategory = ref<string>("");
     const sectionCategories = ref<ListItemBag[]>([]);
+    const selectedComponent = ref<EditorComponent | null | undefined>();
 
     // #endregion
 
@@ -225,6 +254,9 @@
         imageComponent,
         lavaComponent,
         rsvpComponent,
+    ];
+
+    const sectionComponentTypes: EditorComponentType[] = [
         oneColumnSectionComponent,
         twoColumnSectionComponent,
         threeColumnSectionComponent
@@ -255,6 +287,18 @@
     // #endregion
 
     // #region Functions
+
+    function showComponentProperties(selectedComponent: EditorComponent): void { }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(selectedComponent, () => {
+        if (selectedComponent.value && selectedComponent.value.type.typeName === "section") {
+            showComponentProperties(selectedComponent.value);
+        }
+    });
 
     // #endregion
 

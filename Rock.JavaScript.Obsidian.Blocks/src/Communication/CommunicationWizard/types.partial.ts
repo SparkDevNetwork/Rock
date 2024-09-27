@@ -20,30 +20,22 @@ export type EditorComponentType = {
 
 export type EditorComponentTypeName = EditorComponentType["typeName"];
 
-export type Coords = {
-    x: number;
-    y: number;
-};
-
 export type ComponentTypeDragLeaveMessage = {
     type: "COMPONENT_TYPE_DRAG_LEAVE";
-    componentTypeName: EditorComponentTypeName;
 };
 
 export type ComponentTypeDragDropMessage = {
     type: "COMPONENT_TYPE_DRAG_DROP";
-    componentTypeName: EditorComponentTypeName;
 };
 
 export type ComponentTypeDragEndMessage = {
     type: "COMPONENT_TYPE_DRAG_END";
-    componentTypeName: EditorComponentTypeName;
 };
 
 export type ComponentTypeDragOverMessage = {
     type: "COMPONENT_TYPE_DRAG_OVER";
-    componentTypeName: EditorComponentTypeName;
-    coords: Coords;
+    clientX: number;
+    clientY: number;
 };
 
 export type EditorComponent = {

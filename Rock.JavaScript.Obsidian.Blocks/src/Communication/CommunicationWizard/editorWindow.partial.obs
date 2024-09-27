@@ -3,9 +3,9 @@
         <iframe ref="iFrameElement" frameborder="0" border="0" :srcdoc="html ?? ''"></iframe>
         <div v-if="draggingComponentType"
              class="overlay"
-             @dragover="onComponentTypeDragOver($event, draggingComponentType)"
-             @drop="onComponentTypeDragDrop(draggingComponentType)"
-             @dragleave="onComponentTypeDragLeave(draggingComponentType)"></div>
+             @dragover="onComponentTypeDragOver($event)"
+             @drop="onComponentTypeDragDrop()"
+             @dragleave="onComponentTypeDragLeave()"></div>
     </div>
 </template>
 
@@ -45,6 +45,10 @@ iframe,
             type: Object as PropType<EditorComponentType | null | undefined>
         }
     });
+
+    const emit = defineEmits<{
+        (e: "selectComponent", value: EditorComponent | null | undefined): void;
+    }>();
 
     // #region Values
 
@@ -136,7 +140,7 @@ iframe,
      * FYI, the "dragover" event is fired repetitively even if the pointer is stationary,
      * so this handler will be invoked many times.
      */
-    function onComponentTypeDragOver(event: DragEvent, componentType: EditorComponentType): void {
+    function onComponentTypeDragOver(event: DragEvent): void {
         if (!iFrameElement.value) {
             throw "Unable to handle 'dragover' event. The iframe is not initialized.";
         }
@@ -147,19 +151,16 @@ iframe,
         // The pointer's x and y coordinates are currently relative to the parent window.
         // Convert the coordinates to be relative to the iframe window
         // so the iframe can process which element(s) are currently being dragged over.
-        const x = event.clientX - iFrameElement.value.getBoundingClientRect().left;
-        const y = event.clientY - iFrameElement.value.getBoundingClientRect().top;
+        const clientX = event.clientX - iFrameElement.value.getBoundingClientRect().left;
+        const clientY = event.clientY - iFrameElement.value.getBoundingClientRect().top;
 
         // Tell the iframe window that a component type is being dragged over it via the message API.
         // It's important to do this so that the event handling can
         // be "transferred" to the iframe window.
         sendMessageToIFrame<ComponentTypeDragOverMessage>({
             type: "COMPONENT_TYPE_DRAG_OVER",
-            coords: {
-                x,
-                y
-            },
-            componentTypeName: componentType.typeName
+            clientX,
+            clientY
         });
     }
 
@@ -169,17 +170,12 @@ iframe,
      *
      * This should ultimately add the element representing the component type to the editor.
      */
-    function onComponentTypeDragDrop(componentType: EditorComponentType): void {
-        if (!iFrameElement.value) {
-            throw "Unable to handle 'drop' event. The iframe is not initialized.";
-        }
-
+    function onComponentTypeDragDrop(): void {
         // Tell the iframe window that a component type is being dropped into it via the message API.
         // It's important to do this so that the event handling can
         // be "transferred" to the iframe window.
         sendMessageToIFrame<ComponentTypeDragDropMessage>({
-            type: "COMPONENT_TYPE_DRAG_DROP",
-            componentTypeName: componentType.typeName
+            type: "COMPONENT_TYPE_DRAG_DROP"
         });
     }
 
@@ -189,17 +185,12 @@ iframe,
      *
      * This is the last event that is occurs in the drag-drop cycle.
      */
-    function onComponentTypeDragLeave(componentType: EditorComponentType): void {
-        if (!iFrameElement.value) {
-            throw "Unable to handle 'dragleave' event. The iframe is not initialized.";
-        }
-
+    function onComponentTypeDragLeave(): void {
         // Tell the iframe window that a component type is being dragged outside of the its border via the message API.
         // It's important to do this so that the event handling can
         // be "transferred" to the iframe window.
         sendMessageToIFrame<ComponentTypeDragLeaveMessage>({
-            type: "COMPONENT_TYPE_DRAG_LEAVE",
-            componentTypeName: componentType.typeName
+            type: "COMPONENT_TYPE_DRAG_LEAVE"
         });
     }
 
@@ -461,19 +452,19 @@ iframe,
             throw "iframe: Unable to handle 'dragstart' event. The iframe document has not been initialized.";
         }
 
-        if (!draggingComponentPlaceholderElement.value || (dragCursorX.value === message.coords.x && dragCursorY.value === message.coords.y)) {
+        if (!draggingComponentPlaceholderElement.value || (dragCursorX.value === message.clientX && dragCursorY.value === message.clientY)) {
             return;
         }
 
         // Keep track of dragging coordinates so the 'dragover' event is only handled
         // when dragging the component (does not execute if the dragged component is stationary).
-        dragCursorX.value = message.coords.x;
-        dragCursorY.value = message.coords.y;
+        dragCursorX.value = message.clientX;
+        dragCursorY.value = message.clientY;
 
         // This handler will place the current component type's placeholder element
         // either before or after the element being hovered over.
 
-        const elementsOver = (iFrameElement.value.contentDocument.elementsFromPoint(message.coords.x, message.coords.y) ?? []) as HTMLElement[];
+        const elementsOver = (iFrameElement.value.contentDocument.elementsFromPoint(message.clientX, message.clientY) ?? []) as HTMLElement[];
 
         // Find the first hovered-over element whose parent is a dropzone,
         // and move the placeholder either before or after it.
@@ -485,7 +476,7 @@ iframe,
                 for (const child of elementOver.children) {
                     const childElement = child as HTMLElement;
 
-                    if (childElement && message.coords.y < childElement.getBoundingClientRect().top) {
+                    if (childElement && message.clientY < childElement.getBoundingClientRect().top) {
                         elementOver.insertBefore(draggingComponentPlaceholderElement.value, childElement);
                         return;
                     }
@@ -500,7 +491,7 @@ iframe,
 
                 // If the current mouse position is less than this midpoint,
                 // then the new element should be placed before it.
-                if (message.coords.y < elementOverMidpointY) {
+                if (message.clientY < elementOverMidpointY) {
                     elementOver.parentElement.insertBefore(draggingComponentPlaceholderElement.value, elementOver);
                 }
                 // ... otherwise, the new element should be placed after it.
@@ -532,17 +523,22 @@ iframe,
         }
     }
 
-    function onIFrameComponentTypeDragDrop(e: ComponentTypeDragDropMessage): void {
+    function onIFrameComponentTypeDragDrop(): void {
         if (!iFrameElement.value?.contentDocument) {
             throw "iframe: Unable to handle 'drop' event. The iframe document has not been initialized.";
         }
+
+        if (!props.draggingComponentType) {
+            throw "iframe: Unable to handle 'drop' event. The component type is unknown.";
+        }
+
 
         else if (!draggingComponentPlaceholderElement.value) {
             // TODO JMH Remove this. It's nice to know when this occurs during development, but should be removed before merge.
             console.log("Nothing to drop");
         }
         else {
-            const componentElement = getComponentTypeOrThrow(e.componentTypeName).createComponentElement(iFrameElement.value.contentDocument);
+            const componentElement = props.draggingComponentType.createComponentElement(iFrameElement.value.contentDocument);
 
             // Swap the placeholder element with the permanent element.
             draggingComponentPlaceholderElement.value.replaceWith(componentElement);
@@ -573,7 +569,7 @@ iframe,
                 break;
 
             case "COMPONENT_TYPE_DRAG_DROP":
-                onIFrameComponentTypeDragDrop(event.data);
+                onIFrameComponentTypeDragDrop();
                 break;
 
             case "COMPONENT_TYPE_DRAG_END":
@@ -615,6 +611,10 @@ iframe,
         else {
             draggingComponentPlaceholderElement.value = null;
         }
+    });
+
+    watch(selectedComponent, value => {
+        emit("selectComponent", value);
     });
 
     // #endregion

@@ -279,7 +279,7 @@ export const sectionComponent: EditorComponentType & { sectionCount: number; } =
         }
 
         const el = d.createElement("div");
-        el.classList.add("component", "component-section");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         if (this.sectionCount <= 1) {
             el.innerHTML = `<div class="dropzone"></div>`;
@@ -299,7 +299,7 @@ export const sectionComponent: EditorComponentType & { sectionCount: number; } =
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.classList.add("component", "component-section", "gu-transit");
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
         ph.dataset.state = "template";
         ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
@@ -309,11 +309,11 @@ export const sectionComponent: EditorComponentType & { sectionCount: number; } =
 export const oneColumnSectionComponent: EditorComponentType = {
     iconCssClass: "rk rk-one-column",
     title: "One",
-    typeName: "one-column-section",
+    typeName: "section",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-section");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<div class="dropzone"></div>`;
         return el;
@@ -321,7 +321,7 @@ export const oneColumnSectionComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.classList.add("component", "component-section", "gu-transit");
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
         ph.dataset.state = "template";
         ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
@@ -331,11 +331,11 @@ export const oneColumnSectionComponent: EditorComponentType = {
 export const twoColumnSectionComponent: EditorComponentType = {
     iconCssClass: "rk rk-two-column",
     title: "Two",
-    typeName: "two-column-section",
+    typeName: "section",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-section");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<table class="row" width="100%">
     <tbody>
@@ -350,7 +350,7 @@ export const twoColumnSectionComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.classList.add("component", "component-section", "gu-transit");
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
         ph.dataset.state = "template";
         ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
@@ -360,11 +360,11 @@ export const twoColumnSectionComponent: EditorComponentType = {
 export const threeColumnSectionComponent: EditorComponentType = {
     iconCssClass: "rk rk-three-column",
     title: "Three",
-    typeName: "three-column-section",
+    typeName: "section",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
-        el.classList.add("component", "component-section");
+        el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
         el.innerHTML = `<table class="row" width="100%">
     <tbody>
@@ -380,7 +380,7 @@ export const threeColumnSectionComponent: EditorComponentType = {
 
     createComponentPlaceholder(d: Document): HTMLElement {
         const ph = d.createElement("div");
-        ph.classList.add("component", "component-section", "gu-transit");
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
         ph.dataset.state = "template";
         ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
         return ph;
