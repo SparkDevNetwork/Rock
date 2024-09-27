@@ -145,7 +145,7 @@
     cursor: text;
   }
   .ant-select-disabled.ant-select-multiple .ant-select-selector {
-    background: #f5f5f5;
+    background: var(--color-interface-softer);
     cursor: not-allowed;
   }
   .ant-select-multiple .ant-select-selector::after {
@@ -169,7 +169,7 @@
     margin-top: 2px;
     margin-bottom: 2px;
     line-height: 22px;
-    background: #f5f5f5;
+    background: var(--color-interface-softer);
     border: 1px solid #f0f0f0;
     border-radius: 2px;
     cursor: default;
@@ -345,11 +345,11 @@
   }
   .ant-select-disabled.ant-select:not(.ant-select-customize-input) .ant-select-selector {
     color: rgba(0, 0, 0, 0.25);
-    background: #f5f5f5;
+    background: var(--color-interface-softer);
     cursor: not-allowed;
   }
   .ant-select-multiple.ant-select-disabled.ant-select:not(.ant-select-customize-input) .ant-select-selector {
-    background: #f5f5f5;
+    background: var(--color-interface-softer);
   }
   .ant-select-disabled.ant-select:not(.ant-select-customize-input) .ant-select-selector input {
     cursor: not-allowed;
@@ -558,12 +558,12 @@
     flex: none;
   }
   .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-    background-color: #f5f5f5;
+    background-color: var(--color-interface-softer);
   }
   .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
     color: rgba(0, 0, 0, 0.85);
     font-weight: var(--font-weight-semibold);
-    background-color: #e6f7ff;
+    background-color: var(--color-interface-soft);
   }
   .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
     color: #1890ff;
@@ -573,13 +573,13 @@
     cursor: not-allowed;
   }
   .ant-select-item-option-disabled.ant-select-item-option-selected {
-    background-color: #f5f5f5;
+    background-color: var(--color-interface-softer);
   }
   .ant-select-item-option-grouped {
     padding-left: var(--spacing-medium);
   }
   .ant-select-lg {
-    font-size: 16px;
+    font-size: var(--font-size-regular);
   }
   .ant-select-borderless .ant-select-selector {
     background-color: transparent !important;

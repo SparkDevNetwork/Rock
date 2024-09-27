@@ -48,11 +48,11 @@
 
     > .panel-title {
       flex-grow: 1;
-      padding: 0 24px;
+      padding: 0 var(--spacing-large);
     }
 
     > .panel-aside {
-      padding: 0 24px 0 0;
+      padding: 0 var(--spacing-large) 0 0;
     }
 
     > .panel-action {
@@ -63,7 +63,7 @@
       justify-content: center;
       width: 48px;
       cursor: pointer;
-      border-left: 1px solid #ccc;
+      border-left: 1px solid var(--color-interface-soft);
 
       .rock-fullscreen-toggle {
         position: relative;
@@ -81,11 +81,11 @@
       > .action {
         padding: 10px;
         margin: 2px;
-        color: #616161;
+        color: var(--color-interface-strong);
         transition: color .2s, background-color .2s, border-radius .2s;
 
         &:hover {
-          color: #212121;
+          color: var(--color-interface-stronger);
         }
 
         &.active {

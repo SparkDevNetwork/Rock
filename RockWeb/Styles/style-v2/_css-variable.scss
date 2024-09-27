@@ -10,9 +10,17 @@
   --color-interface-softer:    #F2F2F7;
   --color-interface-softest:   #FFFFFF;
 
+  // --color-interface-strongest: #000000;
+  // --color-interface-stronger:  color-mix(in srgb, var(--color-primary) 20%, #000 80%);
+  // --color-interface-strong:    color-mix(in srgb, var(--color-primary) 20%, #000 53%);
+  // --color-interface-medium:    color-mix(in srgb, var(--color-primary) 20%, #000 35%);
+  // --color-interface-soft:      color-mix(in srgb, var(--color-primary) 15%, #000 10%);
+  // --color-interface-softer:    color-mix(in srgb, var(--color-primary) 7%, #FFF 98%);
+  // --color-interface-softest:   #FFFFFF;
+
   // APPLICATION COLORS 
   --color-critical-soft:    #FEDEC8;
-  --color-critical-strong:  #EE7624;
+  --color-critical-strong:  #EE7725;
   --color-critical-tint:      color-mix(in srgb, var(--color-critical-strong) 50%, #FFF 98%);
   --color-critical-shade:     color-mix(in srgb, var(--color-critical-strong) 100%, #000 15%);
 

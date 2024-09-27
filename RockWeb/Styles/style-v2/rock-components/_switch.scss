@@ -82,7 +82,7 @@
 
     &:active ~ .custom-control-label::before {
       color:              var(--color-interface-softest);
-      background-color: #f39c62; // TODO this is hard coded
+      background-color:   var(--color-primary-tint);
     }
   }
 
@@ -100,7 +100,7 @@
 
   .custom-control-input:disabled {
     &:checked ~ .custom-control-label::before {
-      background-color: #f39c62;
+      background-color: var(--color-primary-tint);
     }
   }
 }
