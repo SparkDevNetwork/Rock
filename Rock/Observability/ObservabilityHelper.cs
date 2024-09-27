@@ -26,7 +26,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-using Rock.Bus;
 using Rock.Configuration;
 using Rock.SystemKey;
 using Rock.ViewModels.Utility;
@@ -277,7 +276,7 @@ namespace Rock.Observability
         {
             builder.AddOpenTelemetry( cfg =>
             {
-                var nodeName = RockMessageBus.NodeName.ToLower();
+                var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
                 var machineName = _machineName.Value;
                 var instanceId = nodeName != machineName ? $"{machineName} ({nodeName})" : machineName;
 
