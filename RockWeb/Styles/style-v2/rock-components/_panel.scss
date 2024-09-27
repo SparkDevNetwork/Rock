@@ -38,13 +38,14 @@
   background:             var(--color-interface-softest);
   border:                 1px solid var(--color-interface-soft);
   border-radius:          var(--rounded-small);
+  margin-bottom:          var(--spacing-large);
   /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
   > .panel-sidebar-content {
     grid-column:    1;
     grid-row:       1;
     /* Include margins for the top and left. */
-    margin-top:     var(--spacing-medium);
-    left:           12px;
+    margin-top:           var(--spacing-medium);
+    margin-left:          var(--spacing-medium);
   }
   /* The main panel content spans 3 of the 4 columns of the 1st row. */
   > .panel {
