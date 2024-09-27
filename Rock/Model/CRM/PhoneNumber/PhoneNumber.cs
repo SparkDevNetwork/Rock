@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -148,6 +149,24 @@ namespace Rock.Model
         [DataMember]
         [LavaHidden]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether the phone number has opted out of messages through the SMS provider.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PhoneNumber has opted out of messaging; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessagingOptedOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time when the phone number opted out of messaging.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing the date and time when the phone number opted out of messaging. If the opted out date is not known or the phone number has not opted out this value will be null.
+        /// </value>
+        [DataMember]
+        public DateTime? MessagingOptedOutDateTime { get; set; }
 
         #endregion
 
