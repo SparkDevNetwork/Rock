@@ -1,0 +1,62 @@
+<template>
+    <NumberUpDown :modelValue="modelValue"
+                  @update:modelValue="onUpdateModelValue"
+                  label="Border Size"
+                  :min="0" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+
+    const props = defineProps({
+        htmlElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const modelValue = ref<number>(parseInt(props.htmlElement.style.borderWidth || "0"));
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onUpdateModelValue(value: number): void {
+        setValue(value);
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    function setValue(value: number): void {
+        modelValue.value = value;
+
+        if (value) {
+            props.htmlElement.style.borderWidth = `${value}px`;
+
+            if (!props.htmlElement.style.borderStyle) {
+                // Ensure the element has a border style if a border color is specified.
+                props.htmlElement.style.borderStyle = "solid";
+            }
+        }
+        else {
+            props.htmlElement.style.borderWidth = "";
+            props.htmlElement.style.borderStyle = "";
+        }
+
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.htmlElement, () => {
+        setValue(parseInt(props.htmlElement.style.borderWidth || "0"));
+    });
+
+    // #endregion
+</script>

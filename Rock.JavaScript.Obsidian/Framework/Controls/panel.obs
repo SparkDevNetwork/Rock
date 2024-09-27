@@ -339,8 +339,8 @@
 
     /** Event handler when the panel heading is clicked. */
     const onPanelHeadingClick = (event: Event): void => {
-        // Ignore the click if it happened inside the panel actions.
-        if (event.target && event.target instanceof HTMLElement && event.target.closest(".panel-header-actions")) {
+        // Ignore the click if it happened inside the panel actions or by the "expand" button being clicked.
+        if (event.target && event.target instanceof HTMLElement && (event.target.closest(".panel-header-actions") || !event.target.parentElement)) {
             return;
         }
 

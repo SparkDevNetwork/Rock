@@ -15,7 +15,7 @@
         <template #subheaderRight>
             <div>
                 <RockButton class="email-editor-subheader-action" btnSize="xs">Send Test</RockButton>
-                <RockButton class="email-editor-subheader-action" btnSize="xs">Preview</RockButton>
+                <RockButton class="email-editor-subheader-action" btnSize="xs" @click="onClickPreview">Preview</RockButton>
                 <RockButton class="email-editor-subheader-action" btnSize="xs">Save</RockButton>
             </div>
         </template>
@@ -30,36 +30,53 @@
                         </div>
 
                         <div v-if="toolboxMenuItem === 'content'" class="email-editor-toolbox-submenu">
-                            <TabbedContent v-model="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
+                            <TabbedContent v-model:selectedTab="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
                                 <template #tabpane="{ item }">
                                     <div class="email-editor-toolbox-submenu-content">
-                                        <div v-if="item === 'Components'" class="component-list">
-                                            <div v-for="componentType in componentTypes"
-                                                 :key="componentType.typeName"
-                                                 class="component-list-item"
-                                                 draggable="true"
-                                                 @dragstart="onComponentTypeDragStart(componentType)"
-                                                 @dragend="onComponentTypeDragEnd()"><i :class="componentType.iconCssClass"></i>{{ componentType.title }}</div>
-                                        </div>
-
-                                        <div v-else-if="item === 'Sections'">
-                                            <DropDownList v-model="sectionCategory" :items="sectionCategories" label="Category">
-                                                <template #inputGroupPrepend>
-                                                    <div class="input-group-addon">
-                                                        <i class="fa fa-folder"></i>
-                                                    </div>
-                                                </template>
-                                            </DropDownList>
-
-                                            <div class="section-list">
-                                                <div v-for="sectionComponentType in sectionComponentTypes"
-                                                     :key="sectionComponentType.typeName"
-                                                     class="section-list-item"
+                                        <template v-if="item === 'Components'">
+                                            <div v-if="!areComponentPropertiesShown" class="component-list">
+                                                <div v-for="componentType in componentTypes"
+                                                     :key="componentType.typeName"
+                                                     class="component-list-item"
                                                      draggable="true"
-                                                     @dragstart="onComponentTypeDragStart(sectionComponentType)"
-                                                     @dragend="onComponentTypeDragEnd()"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
+                                                     @dragstart="onComponentTypeDragStart(componentType)"
+                                                     @dragend="onComponentTypeDragEnd()"><i :class="componentType.iconCssClass"></i>{{ componentType.title }}</div>
                                             </div>
-                                        </div>
+
+                                            <div v-else-if="selectedComponent">
+                                                <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
+
+                                                <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :selectedComponent="selectedComponent" />
+                                                <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
+                                            </div>
+                                        </template>
+
+                                        <template v-else-if="item === 'Sections'">
+                                            <div v-if="!areSectionPropertiesShown">
+                                                <DropDownList v-model="sectionCategory" :items="sectionCategories" label="Category">
+                                                    <template #inputGroupPrepend>
+                                                        <div class="input-group-addon">
+                                                            <i class="fa fa-folder"></i>
+                                                        </div>
+                                                    </template>
+                                                </DropDownList>
+
+                                                <div class="section-list">
+                                                    <div v-for="sectionComponentType in sectionComponentTypes"
+                                                         :key="sectionComponentType.typeName"
+                                                         class="section-list-item"
+                                                         draggable="true"
+                                                         @dragstart="onComponentTypeDragStart(sectionComponentType)"
+                                                         @dragend="onComponentTypeDragEnd()"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
+                                                </div>
+                                            </div>
+
+                                            <div v-else-if="selectedComponent">
+                                                <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
+
+                                                <SectionComponentProperties v-if="selectedComponent.type.typeName === 'section'" :selectedComponent="selectedComponent" />
+                                            </div>
+                                        </template>
                                     </div>
                                 </template>
                             </TabbedContent>
@@ -71,9 +88,10 @@
                     </div>
 
                     <div class="email-editor-window-wrapper">
-                        <EditorWindow :html="config.emailMessage"
+                        <EditorWindow ref="editorWindow"
+                                      :html="config.emailMessage"
                                       :draggingComponentType="draggingComponentType"
-                                      @selectComponent="selectedComponent = $event" />
+                                      v-model:selectedComponent="selectedComponent" />
                     </div>
                 </div>
 
@@ -88,10 +106,46 @@
             </div>
         </template>
     </Panel>
+    <Modal v-model="isPreviewOpen">
+        <div class="preview">
+            <ButtonGroup v-model="previewDevice" :items="[{ text: 'Desktop', value: 'desktop' }, { text: 'Mobile', value: 'mobile' }]" />
+
+            <div :class="previewDevice === 'desktop' ? 'device-browser' : 'device-mobile'">
+                <iframe :srcdoc="previewHtml"></iframe>
+            </div>
+        </div>
+    </Modal>
 </template>
 
 <style scoped>
 @import "/Styles/RockFont/style.css";
+@import "/Styles/Blocks/Shared/Devices.css";
+
+.preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.preview > .btn-group {
+    width: 100%;
+}
+
+.device-browser {
+    height: 568px;
+    position: relative;
+}
+
+.device-mobile {
+    height: 693px;
+    position: relative;
+}
+
+.preview iframe {
+    width: 100%;
+    height: 100%;
+}
 
 [draggable] {
     cursor: grab;
@@ -137,7 +191,8 @@
     justify-content: center;
 }
 
-.component-list-item:active, .section-list-item:active {
+.component-list-item:active,
+.section-list-item:active {
     border-color: var(--color-primary);
 }
 
@@ -210,12 +265,16 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
-    import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/components.partial";
+    import { computed, nextTick, ref, watch } from "vue";
+    import CodeComponentProperties from "./CommunicationWizard/codeComponentProperties.partial.obs";
+    import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
+    import SectionComponentProperties from "./CommunicationWizard/sectionComponentProperties.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
@@ -226,12 +285,18 @@
 
     // #region Values
 
+    const editorWindow = ref<InstanceType<typeof EditorWindow> | undefined>();
     const toolboxMenuItem = ref<"content" | "design">("content");
     const toolboxSubMenuTab = ref<string>("");
     const draggingComponentType = ref<EditorComponentType | null | undefined>();
     const sectionCategory = ref<string>("");
     const sectionCategories = ref<ListItemBag[]>([]);
     const selectedComponent = ref<EditorComponent | null | undefined>();
+    const areComponentPropertiesShown = ref<boolean>(false);
+    const areSectionPropertiesShown = ref<boolean>(false);
+    const isPreviewOpen = ref<boolean>(false);
+    const previewDevice = ref<string>("desktop");
+    const previewHtml = ref<string>("");
 
     // #endregion
 
@@ -284,19 +349,46 @@
         draggingComponentType.value = null;
     }
 
+    function onClickPreview(): void {
+        selectedComponent.value = null;
+
+        nextTick(() => {
+            previewHtml.value = editorWindow.value?.getHtml() ?? "";
+            isPreviewOpen.value = true;
+        });
+    }
+
     // #endregion
 
     // #region Functions
-
-    function showComponentProperties(selectedComponent: EditorComponent): void { }
 
     // #endregion
 
     // #region Watchers
 
     watch(selectedComponent, () => {
-        if (selectedComponent.value && selectedComponent.value.type.typeName === "section") {
-            showComponentProperties(selectedComponent.value);
+        if (selectedComponent.value) {
+            if (selectedComponent.value.type.typeName !== "section") {
+                // TODO JMH Remove these hard-coded strings.
+                areComponentPropertiesShown.value = true;
+                areSectionPropertiesShown.value = false;
+                nextTick(() => {
+                    toolboxSubMenuTab.value = "Components";
+                });
+            }
+            else {
+                areComponentPropertiesShown.value = false;
+                areSectionPropertiesShown.value = true;
+                nextTick(() => {
+                    toolboxSubMenuTab.value = "Sections";
+                });
+            }
+        }
+        else {
+            // Don't change tabs.
+            // toolboxSubMenuTab.value = "Components";
+            areComponentPropertiesShown.value = false;
+            areSectionPropertiesShown.value = false;
         }
     });
 

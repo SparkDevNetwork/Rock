@@ -1,0 +1,43 @@
+<template>
+    <HtmlEditor :modelValue="text"
+                @update:modelValue="onUpdateText" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { EditorComponent } from "./types.partial";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+
+    const props = defineProps({
+        selectedComponent: {
+            type: Object as PropType<EditorComponent>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const text = ref<string>(props.selectedComponent?.componentElement.innerHTML ?? "");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onUpdateText(value: string): void {
+        text.value = value;
+        
+        if (props.selectedComponent?.componentElement) {
+            props.selectedComponent.componentElement.innerHTML = value;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.selectedComponent, () => {
+        text.value = props.selectedComponent?.componentElement.innerHTML ?? "";
+    });
+
+    // #endregion
+</script>

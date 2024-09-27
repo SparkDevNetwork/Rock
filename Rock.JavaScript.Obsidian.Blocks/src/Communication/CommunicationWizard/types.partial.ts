@@ -1,11 +1,12 @@
 export type EditorComponentType = {
-    readonly typeName: "text"
-    | "video"
+    readonly typeName:
+    "video"
     | "button"
-    | "paragraph"
+    | "text"
     | "divider"
     | "message"
     | "image"
+    | "lava"
     | "code"
     | "rsvp"
     | "section"

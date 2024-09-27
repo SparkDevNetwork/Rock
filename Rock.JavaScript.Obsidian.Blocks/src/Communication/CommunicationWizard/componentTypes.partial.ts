@@ -1,5 +1,5 @@
-import { EditorComponentType, EditorComponentTypeName } from "./types.partial";
 import { toWordFull } from "@Obsidian/Utility/numberUtils";
+import { EditorComponentType, EditorComponentTypeName } from "./types.partial";
 
 export function getComponentTypeOrThrow(componentElement: HTMLElement): EditorComponentType;
 export function getComponentTypeOrThrow(type: EditorComponentTypeName): EditorComponentType;
@@ -19,7 +19,7 @@ export function getComponentTypeOrThrow(componentElementOrType: EditorComponentT
             return videoComponent;
         case "button":
             return buttonComponent;
-        case "paragraph":
+        case "code":
             return paragraphComponent;
         case "divider":
             return dividerComponent;
@@ -27,7 +27,7 @@ export function getComponentTypeOrThrow(componentElementOrType: EditorComponentT
             return messageComponent;
         case "image":
             return imageComponent;
-        case "code":
+        case "lava":
             return lavaComponent;
         case "rsvp":
             return rsvpComponent;
@@ -129,7 +129,7 @@ export const buttonComponent: EditorComponentType = {
 export const paragraphComponent: EditorComponentType = {
     iconCssClass: "fa fa-align-left",
     title: "Paragraph",
-    typeName: "paragraph",
+    typeName: "code",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
@@ -217,7 +217,7 @@ export const imageComponent: EditorComponentType = {
 export const lavaComponent: EditorComponentType = {
     iconCssClass: "fa fa-code",
     title: "Lava",
-    typeName: "code",
+    typeName: "lava",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");

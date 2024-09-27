@@ -81,4 +81,9 @@
             classes.value[currentIndex] = "tab-pane fade active in";
         }, 150);
     });
+
+    watch(() => props.selectedTab, (current, _previous) => {
+        // Change the internal selectedTab whenever the tab is changed externally.
+        selectedTab.value = current;
+    });
 </script>
