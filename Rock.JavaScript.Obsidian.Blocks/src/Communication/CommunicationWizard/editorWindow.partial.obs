@@ -31,7 +31,7 @@ iframe,
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, EditorComponent, EditorComponentType } from "./types.partial";
     import { getComponentTypeOrThrow } from "./componentTypes.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -55,10 +55,6 @@ iframe,
         (e: "update:selectedComponent", value: EditorComponent | null | undefined): void;
     }>();
 
-    defineExpose({
-        getHtml
-    });
-
     // #region Values
 
     const iFrameElement = ref<HTMLIFrameElement | undefined>();
@@ -71,6 +67,10 @@ iframe,
     // #endregion
 
     // #region Computed Values
+
+    const emailEditorDocument = computed<Document | null | undefined>(() => {
+        return iFrameElement.value?.contentDocument as Document;
+    });
 
     // #endregion
 
@@ -226,17 +226,19 @@ iframe,
      * be removed before saving the email communication message.
      */
     function onIFrameLoaded(): void {
-        if (!iFrameElement.value?.contentDocument) {
+        const iFrameDocument = iFrameElement.value?.contentDocument;
+
+        if (!iFrameDocument) {
             throw "iframe: Unable to handle 'load' event. The iframe document has not been initialized.";
         }
 
         // Only include styles needed for editing the email, such as drag effects.
         // Styles for individual components in the HTML email should be styled by
         // CSS defined in the Communication Template as these will be stripped out.
-        var style = iFrameElement.value.contentDocument.createElement("style");
+        var style = iFrameDocument.createElement("style");
         style.className = "js-emaileditor2-addon";
         style.textContent = `
-.dropzone:empty {
+.dropzone:empty, .structure-dropzone:empty {
     position: relative;
     padding: 30px;
     outline: 2px dashed rgba(0, 0, 0, 0.3);
@@ -311,10 +313,17 @@ iframe,
     border-color: #59c9a5;
 }
 `;
-        iFrameElement.value.contentDocument.head.appendChild(style);
+        iFrameDocument.head.appendChild(style);
+
+        // If the body does not contain a structure-dropzone, then add one automatically.
+        if (!iFrameDocument.querySelector(".structure-dropzone")) {
+            const dropzone = iFrameDocument.createElement("div");
+            dropzone.classList.add("structure-dropzone");
+            iFrameDocument.body.append(dropzone);
+        }
 
         // Select the first component with the "selected" CSS class.
-        const selectedComponentElements = [...iFrameElement.value.contentDocument.querySelectorAll(".component.selected")] as HTMLElement[];
+        const selectedComponentElements = [...iFrameDocument.querySelectorAll(".component.selected")] as HTMLElement[];
         if (selectedComponentElements?.length) {
             selectComponent(selectedComponentElements[0]);
 
@@ -440,7 +449,7 @@ iframe,
         // and move the placeholder either before or after it.
         // FYI, elementsOver is sorted from descendant element to ancestor element.
         for (const draggedOverElement of draggedOverElements) {
-            if (draggedOverElement.matches(".dropzone")) {
+            if (draggedOverElement.matches(".dropzone, .structure-dropzone")) {
                 // TODO JMH Add case where dropping in dropzone but not on top of another child.
                 // TODO JMH For now, just put the element as the last child.
                 for (const child of draggedOverElement.children) {
@@ -455,7 +464,7 @@ iframe,
                 draggedOverElement.appendChild(draggingComponentElement.value);
                 return;
             }
-            else if (draggedOverElement.parentElement?.matches(".dropzone")) {
+            else if (draggedOverElement.parentElement?.matches(".dropzone, .structure-dropzone")) {
                 const draggedOverElementTop = draggedOverElement.getBoundingClientRect().top;
                 const draggedOverElementMidpointY = (draggedOverElement.offsetHeight / 2) + draggedOverElementTop;
 
@@ -512,7 +521,7 @@ iframe,
         // and move the placeholder either before or after it.
         // FYI, elementsOver is sorted from descendant element to ancestor element.
         for (const elementOver of elementsOver) {
-            if (elementOver.matches(".dropzone")) {
+            if (elementOver.matches(".dropzone, .structure-dropzone")) {
                 // TODO JMH Add case where dropping in dropzone but not on top of another child.
                 // TODO JMH For now, just put the element as the last child.
                 for (const child of elementOver.children) {
@@ -527,7 +536,7 @@ iframe,
                 elementOver.appendChild(draggingComponentPlaceholderElement.value);
                 return;
             }
-            else if (elementOver.parentElement?.matches(".dropzone")) {
+            else if (elementOver.parentElement?.matches(".dropzone, .structure-dropzone")) {
                 const topOfHoveredElement = elementOver.getBoundingClientRect().top;
                 const elementOverMidpointY = (elementOver.offsetHeight / 2) + topOfHoveredElement;
 
@@ -671,4 +680,9 @@ iframe,
     // #region Hooks
 
     // #endregion
+
+    defineExpose({
+        emailEditorDocument,
+        getHtml
+    });
 </script>

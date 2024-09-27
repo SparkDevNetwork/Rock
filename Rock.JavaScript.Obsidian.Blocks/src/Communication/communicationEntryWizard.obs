@@ -46,7 +46,7 @@
                                             <div v-else-if="selectedComponent">
                                                 <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
 
-                                                <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :selectedComponent="selectedComponent" />
+                                                <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :modelValue="selectedComponent" />
                                                 <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
                                             </div>
                                         </template>
@@ -71,7 +71,7 @@
                                                 </div>
                                             </div>
 
-                                            <div v-else-if="selectedComponent">
+                                            <div v-else-if="selectedComponent">x
                                                 <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
 
                                                 <SectionComponentProperties v-if="selectedComponent.type.typeName === 'section'" :selectedComponent="selectedComponent" />
@@ -82,14 +82,14 @@
                             </TabbedContent>
                         </div>
 
-                        <div v-else-if="toolboxMenuItem === 'design'" class="email-editor-toolbox-submenu">
-                            Hello!
+                        <div v-else-if="toolboxMenuItem === 'design' && editorWindow?.emailEditorDocument" class="email-editor-toolbox-submenu">
+                            <EmailDocumentProperties :modelValue="editorWindow.emailEditorDocument" />
                         </div>
                     </div>
 
                     <div class="email-editor-window-wrapper">
                         <EditorWindow ref="editorWindow"
-                                      :html="config.emailMessage"
+                                      :html="''"
                                       :draggingComponentType="draggingComponentType"
                                       v-model:selectedComponent="selectedComponent" />
                     </div>
@@ -269,6 +269,7 @@
     import CodeComponentProperties from "./CommunicationWizard/codeComponentProperties.partial.obs";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
+    import EmailDocumentProperties from "./CommunicationWizard/emailDocumentProperties.partial.obs";
     import SectionComponentProperties from "./CommunicationWizard/sectionComponentProperties.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";

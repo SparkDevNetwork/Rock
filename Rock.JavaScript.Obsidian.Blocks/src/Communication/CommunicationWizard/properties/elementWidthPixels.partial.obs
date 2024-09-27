@@ -1,0 +1,62 @@
+<template>
+    <RangeSlider :modelValue="modelValue"
+                 @update:modelValue="onUpdateModelValue"
+                 :label="label"
+                 :min="0"
+                 :max="700"
+                 :showValueBar="true" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { RangeSlider } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Width"
+        }
+    });
+
+    // #region Values
+
+    const modelValue = ref<number>(parseInt(props.modelValue.style.width || "0"));
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onUpdateModelValue(value: number): void {
+        setValue(value);
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    function setValue(value: number): void {
+        modelValue.value = value;
+
+        if (value) {
+            props.modelValue.style.width = `${value}px`;
+        }
+        else {
+            props.modelValue.style.width = "";
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        setValue(parseInt(props.modelValue.style.width || "0"));
+    });
+
+    // #endregion
+</script>

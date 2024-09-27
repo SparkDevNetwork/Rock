@@ -1,0 +1,28 @@
+<template>
+    <Panel :hasCollapse="true"
+           :modelValue="true"
+           title="General Settings">
+        <ElementWidthPixels :modelValue="modelValue.body" label="Content Area Width" />
+        <ElementBackgroundColor :modelValue="modelValue.documentElement" />
+        <ElementBackgroundColor :modelValue="modelValue.body" label="Body Color" />
+        <ElementBackgroundImage :modelValue="modelValue.body" />
+        <ElementBorder :modelValue="modelValue.body" label="Body Border" />
+    </Panel>
+</template>
+
+<script setup lang="ts">
+        import { PropType } from "vue";
+        import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
+        import ElementBackgroundImage from "./properties/elementBackgroundImage.partial.obs";
+        import ElementBorder from "./properties/elementBorder.partial.obs";
+        import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
+        import Panel from "@Obsidian/Controls/panel.obs";
+
+        defineProps({
+            /** This should be a body element. */
+            modelValue: {
+                type: Object as PropType<Document>,
+                required: true
+            }
+        });
+</script>

@@ -1,0 +1,122 @@
+<template>
+    <InlineSwitch v-model="hasBackgroundImage"
+                  label="Background Image" />
+
+    <template v-if="hasBackgroundImage">
+        <ImageUploader v-model="imageListItemBag"
+                       :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
+                       label="Background Image"
+                       :uploadAsTemporary="true" />
+
+        <RadioButton v-model="imageStyle" name="imageStyle" label="Tile" value="tile" />
+        <RadioButton v-model="imageStyle" name="imageStyle" label="Stretch" value="stretch" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { BinaryFileType, ImageUploader, InlineSwitch, RadioButton } from "../imports.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+
+    const dataAttributeKey = {
+        backgroundImageGuid: "backgroundImageGuid",
+        backgroundImageFileName: "backgroundImageFileName",
+
+    } as const;
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const hasBackgroundImage = ref<boolean>(!!props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]);
+    const imageListItemBag = ref<ListItemBag | null | undefined>({
+        value: toGuidOrNull(props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]),
+        text: props.modelValue.dataset[dataAttributeKey.backgroundImageFileName]
+    });
+    const imageStyle = ref<"tile" | "stretch" | undefined>(props.modelValue.style.backgroundRepeat === "repeat" ? "tile" : props.modelValue.style.backgroundRepeat === "no-repeat" ? "stretch" : undefined);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // #region Functions
+
+    function initialize(): void {
+        const fileGuid = toGuidOrNull(props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]);
+        const fileName = props.modelValue.dataset[dataAttributeKey.backgroundImageFileName];
+
+        if (fileGuid) {
+            // Initialize the edit control values.
+            hasBackgroundImage.value = true;
+            imageListItemBag.value = {
+                value: fileGuid,
+                text: fileName
+            };
+        }
+        else {
+            // Initialize the edit control values.
+            hasBackgroundImage.value = false;
+            imageListItemBag.value = null;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        initialize();
+    });
+
+    watch(hasBackgroundImage, () => {
+        if (!hasBackgroundImage.value) {
+            imageListItemBag.value = null;
+            imageStyle.value = undefined;
+        }
+    });
+
+    watch(imageListItemBag, () => {
+        const fileGuid = toGuidOrNull(imageListItemBag.value?.value);
+
+        if (fileGuid) {
+            const fileName = imageListItemBag.value?.text;
+
+            props.modelValue.style.backgroundImage = `url('/GetImage.ashx?guid=${fileGuid}')`;
+
+            // These hold data that cannot be easily retrieved from style properties.
+            props.modelValue.dataset[dataAttributeKey.backgroundImageGuid] = fileGuid ?? "";
+            props.modelValue.dataset[dataAttributeKey.backgroundImageFileName] = fileName ?? "";
+        }
+        else {
+            props.modelValue.style.backgroundImage = "";
+
+            delete props.modelValue.dataset[dataAttributeKey.backgroundImageGuid];
+            delete props.modelValue.dataset[dataAttributeKey.backgroundImageFileName];
+        }
+    });
+
+    watch(imageStyle, () => {
+        if (imageStyle.value === "tile") {
+            props.modelValue.style.backgroundRepeat = "repeat";
+            props.modelValue.style.backgroundSize = "";
+        }
+        else if (imageStyle.value === "stretch") {
+            props.modelValue.style.backgroundRepeat = "no-repeat";
+            props.modelValue.style.backgroundSize = "cover";
+        }
+        else {
+            props.modelValue.style.backgroundRepeat = "";
+            props.modelValue.style.backgroundSize = "";
+        }
+    });
+
+    // #endregion
+</script>

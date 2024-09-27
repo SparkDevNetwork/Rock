@@ -6,10 +6,10 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import { ColorPicker } from "../imports.partial";
 
     const props = defineProps({
-        htmlElement: {
+        modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -17,7 +17,7 @@
 
     // #region Values
 
-    const modelValue = ref<string>(props.htmlElement.style.borderColor ?? "");
+    const modelValue = ref<string>(props.modelValue.style.borderColor ?? "");
 
     // #endregion
 
@@ -33,15 +33,17 @@
 
     function setValue(value: string): void {
         modelValue.value = value;
-        props.htmlElement.style.borderColor = value;
+        props.modelValue.style.borderColor = value;
 
-        if (value && !props.htmlElement.style.borderStyle) {
-            // Ensure the element has a border style if a border color is specified.
-            props.htmlElement.style.borderStyle = "solid";
+        if (value) {
+            if (!props.modelValue.style.borderStyle) {
+                // Ensure the element has a border style if a border color is specified.
+                props.modelValue.style.borderStyle = "solid";
+            }
         }
         else {
-            props.htmlElement.style.borderWidth = "";
-            props.htmlElement.style.borderStyle = "";
+            props.modelValue.style.borderWidth = "";
+            props.modelValue.style.borderStyle = "";
         }
     }
 
@@ -49,8 +51,8 @@
 
     // #region Watchers
 
-    watch(() => props.htmlElement, () => {
-        setValue(props.htmlElement.style.borderColor);
+    watch(() => props.modelValue, () => {
+        setValue(props.modelValue.style.borderColor);
     });
 
     // #endregion

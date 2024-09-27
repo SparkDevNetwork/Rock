@@ -1,23 +1,28 @@
 <template>
     <ColorPicker :modelValue="modelValue"
                  @update:modelValue="onUpdateModelValue"
-                 label="Background Color" />
+                 :label="label" />
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import { ColorPicker } from "../imports.partial";
 
     const props = defineProps({
-        htmlElement: {
+        modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Background Color"
         }
     });
 
     // #region Values
 
-    const modelValue = ref<string>(props.htmlElement.style.backgroundColor ?? "");
+    const modelValue = ref<string>(props.modelValue.style.backgroundColor ?? "");
 
     // #endregion
 
@@ -33,15 +38,15 @@
 
     function setValue(value: string): void {
         modelValue.value = value;
-        props.htmlElement.style.backgroundColor = value;
+        props.modelValue.style.backgroundColor = value;
     }
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.htmlElement, () => {
-        setValue(props.htmlElement.style.backgroundColor);
+    watch(() => props.modelValue, () => {
+        setValue(props.modelValue.style.backgroundColor);
     });
 
     // #endregion

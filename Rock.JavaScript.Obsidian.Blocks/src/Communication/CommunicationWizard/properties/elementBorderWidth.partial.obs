@@ -7,10 +7,10 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { NumberUpDown } from "../imports.partial";
 
     const props = defineProps({
-        htmlElement: {
+        modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -18,7 +18,7 @@
 
     // #region Values
 
-    const modelValue = ref<number>(parseInt(props.htmlElement.style.borderWidth || "0"));
+    const modelValue = ref<number>(parseInt(props.modelValue.style.borderWidth || "0"));
 
     // #endregion
 
@@ -36,26 +36,25 @@
         modelValue.value = value;
 
         if (value) {
-            props.htmlElement.style.borderWidth = `${value}px`;
+            props.modelValue.style.borderWidth = `${value}px`;
 
-            if (!props.htmlElement.style.borderStyle) {
+            if (!props.modelValue.style.borderStyle) {
                 // Ensure the element has a border style if a border color is specified.
-                props.htmlElement.style.borderStyle = "solid";
+                props.modelValue.style.borderStyle = "solid";
             }
         }
         else {
-            props.htmlElement.style.borderWidth = "";
-            props.htmlElement.style.borderStyle = "";
+            props.modelValue.style.borderWidth = "";
+            props.modelValue.style.borderStyle = "";
         }
-
     }
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.htmlElement, () => {
-        setValue(parseInt(props.htmlElement.style.borderWidth || "0"));
+    watch(() => props.modelValue, () => {
+        setValue(parseInt(props.modelValue.style.borderWidth || "0"));
     });
 
     // #endregion
