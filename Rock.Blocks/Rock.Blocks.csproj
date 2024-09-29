@@ -246,6 +246,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialGatewayList.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
+	<Compile Include="Event\RegistrationInstanceList.cs" />
     <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />

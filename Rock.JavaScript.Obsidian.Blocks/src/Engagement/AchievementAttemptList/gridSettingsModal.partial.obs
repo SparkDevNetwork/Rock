@@ -73,6 +73,10 @@
     const isVisible = useVModelPassthrough(props, "visible", emit);
     const statusItems = [
         {
+            text: "",
+            value: ""
+        },
+        {
             text: "Open",
             value: "Open"
         },

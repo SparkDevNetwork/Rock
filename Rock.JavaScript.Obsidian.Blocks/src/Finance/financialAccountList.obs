@@ -92,11 +92,7 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        name: preferences.getValue(PreferenceKey.FilterAccountName),
-        isPublic: preferences.getValue(PreferenceKey.FilterIsPublic),
-        isActive: preferences.getValue(PreferenceKey.FilterIsActive),
-        campus: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "{}"),
-        isTaxDeductible: preferences.getValue(PreferenceKey.FilterIsTaxDeductible),
+        campus: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "{}")
     });
 
     // #endregion
@@ -105,11 +101,7 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.name
-            || !!gridSettings.value.isPublic
-            || !!gridSettings.value.isActive
-            || !!gridSettings.value.isTaxDeductible
-            || !!gridSettings.value.campus?.value;
+        return !!gridSettings.value.campus?.value;
     });
 
     const gridTitle = computed((): string => {
@@ -211,10 +203,6 @@
     // #endregion
 
     watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterAccountName, gridSettings.value.name ?? "");
-        preferences.setValue(PreferenceKey.FilterIsActive, gridSettings.value.isActive ?? "");
-        preferences.setValue(PreferenceKey.FilterIsPublic, gridSettings.value.isPublic ?? "");
-        preferences.setValue(PreferenceKey.FilterIsTaxDeductible, gridSettings.value.isTaxDeductible ?? "");
         preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus));
 
         await preferences.save();
