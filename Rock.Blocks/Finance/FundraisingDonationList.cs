@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Blocks.Types.Mobile.Crm;
 using Rock.Data;
@@ -35,34 +35,34 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Blocks.Fundraising
+namespace Rock.Blocks.Finance
 {
     /// <summary>
     /// Displays a list of financial transaction details.
     /// </summary>
-    [DisplayName( "Fundraising Donation List" )]
-    [Category( "Fundraising" )]
-    [Description( "Lists donations in a grid for the current fundraising opportunity or participant." )]
-    [IconCssClass( "fa fa-list" )]
+    [DisplayName("Fundraising Donation List")]
+    [Category("Fundraising")]
+    [Description("Lists donations in a grid for the current fundraising opportunity or participant.")]
+    [IconCssClass("fa fa-list")]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [CustomCheckboxListField( "Hide Grid Columns",
+    [CustomCheckboxListField("Hide Grid Columns",
         Key = AttributeKey.HideGridColumns,
         Description = "The grid columns that should be hidden from the user.",
         ListSource = "Amount, Donor Address, Donor Email, Participant",
         IsRequired = false,
         DefaultValue = "",
         Category = "Advanced",
-        Order = 0 )]
-    [CustomCheckboxListField( "Hide Grid Actions",
+        Order = 0)]
+    [CustomCheckboxListField("Hide Grid Actions",
         Key = AttributeKey.HideGridActions,
         Description = "The grid actions that should be hidden from the user.",
         ListSource = "Communicate, Merge Person, Bulk Update, Excel Export, Merge Template",
         IsRequired = false,
         DefaultValue = "",
         Category = "Advanced",
-        Order = 1 )]
-    [CodeEditorField( "Donor Column",
+        Order = 1)]
+    [CodeEditorField("Donor Column",
         Key = AttributeKey.DonorColumn,
         Description = "The value that should be displayed for the Donor column. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
@@ -71,8 +71,8 @@ namespace Rock.Blocks.Fundraising
         IsRequired = true,
         DefaultValue = @"<a href=""/Person/{{ Donor.Id }}"">{{ Donor.FullName }}</a>",
         Category = "Advanced",
-        Order = 2 )]
-    [CodeEditorField( "Participant Column",
+        Order = 2)]
+    [CodeEditorField("Participant Column",
         Key = AttributeKey.ParticipantColumn,
         Description = "The value that should be displayed for the Participant column. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
@@ -84,9 +84,9 @@ namespace Rock.Blocks.Fundraising
 </a>
 <a href=""/GroupMember/{{ Participant.Id }}"">{{ Participant.Person.FullName }}</a>",
         Category = "Advanced",
-        Order = 3 )]
-    [SystemGuid.EntityTypeGuid( "b80410e7-53d7-4ab1-8b17-39ff8b3e708f" )]
-    [SystemGuid.BlockTypeGuid( "054a8469-a838-4708-b18f-9f2819346298" )]
+        Order = 3)]
+    [SystemGuid.EntityTypeGuid("b80410e7-53d7-4ab1-8b17-39ff8b3e708f")]
+    [SystemGuid.BlockTypeGuid("054a8469-a838-4708-b18f-9f2819346298")]
     [CustomizedGrid]
     [ContextAware]
     public class FundraisingDonationList : RockEntityListBlockType<FinancialTransactionDetail>
@@ -106,7 +106,7 @@ namespace Rock.Blocks.Fundraising
         #region Fields
 
         private Dictionary<int, GroupMember> _groupMembers;
-        private Rock.Model.Group _group;
+        private Model.Group _group;
 
         #endregion Fields
 
@@ -136,8 +136,8 @@ namespace Rock.Blocks.Fundraising
             var currencyInfo = new RockCurrencyCodeInfo();
             var options = new FundraisingDonationListOptionsBag()
             {
-                ColumnsToHide = GetAttributeValue( AttributeKey.HideGridColumns ).Split( ',' ).ToList(),
-                ActionsToHide = GetAttributeValue( AttributeKey.HideGridActions ).Split( ',' ).ToList(),
+                ColumnsToHide = GetAttributeValue(AttributeKey.HideGridColumns).Split(',').ToList(),
+                ActionsToHide = GetAttributeValue(AttributeKey.HideGridActions).Split(',').ToList(),
                 IsContextEntityGroupMember = RequestContext.GetContextEntity<GroupMember>() != null,
                 IsBlockVisible = IsContextGroupFundraisingGroupType(),
                 CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
@@ -151,10 +151,10 @@ namespace Rock.Blocks.Fundraising
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<FinancialTransactionDetail> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<FinancialTransactionDetail> GetListQueryable(RockContext rockContext)
         {
-            var groupMemberService = new GroupMemberService( rockContext );
-            var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
+            var groupMemberService = new GroupMemberService(rockContext);
+            var financialTransactionDetailService = new FinancialTransactionDetailService(rockContext);
             var entityTypeIdGroupMember = EntityTypeCache.GetId<GroupMember>();
             List<int> groupMemberIds = new List<int>();
 
@@ -162,19 +162,19 @@ namespace Rock.Blocks.Fundraising
             // Get the donations for the entire opportunity group or for just the
             // one individual being viewed.
             //
-            if ( RequestContext.GetContextEntity<Rock.Model.Group>() != null )
+            if (RequestContext.GetContextEntity<Model.Group>() != null)
             {
-                _group = RequestContext.GetContextEntity<Rock.Model.Group>();
+                _group = RequestContext.GetContextEntity<Model.Group>();
 
                 groupMemberIds = groupMemberService.Queryable()
-                    .Where( m => m.GroupId == _group.Id )
-                    .Select( m => m.Id )
+                    .Where(m => m.GroupId == _group.Id)
+                    .Select(m => m.Id)
                     .ToList();
             }
             else
             {
                 var groupMember = RequestContext.GetContextEntity<GroupMember>();
-                if ( groupMember != null )
+                if (groupMember != null)
                 {
                     _group = groupMember.Group;
                     groupMemberIds = new List<int> { groupMember.Id };
@@ -182,58 +182,59 @@ namespace Rock.Blocks.Fundraising
             }
 
             var queryable = financialTransactionDetailService.Queryable()
-                .Where( d => d.EntityTypeId == entityTypeIdGroupMember && groupMemberIds.Contains( d.EntityId.Value ) );
+                .Where(d => d.EntityTypeId == entityTypeIdGroupMember && groupMemberIds.Contains(d.EntityId.Value));
 
             return queryable;
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<FinancialTransactionDetail> GetOrderedListQueryable( IQueryable<FinancialTransactionDetail> queryable, RockContext rockContext )
+        protected override IQueryable<FinancialTransactionDetail> GetOrderedListQueryable(IQueryable<FinancialTransactionDetail> queryable, RockContext rockContext)
         {
-            return queryable.OrderBy( f => f.Transaction.AuthorizedPersonAlias.Person.LastName )
-                .ThenBy( f => f.Transaction.AuthorizedPersonAlias.Person.NickName );
+            return queryable.OrderBy(f => f.Transaction.AuthorizedPersonAlias.Person.LastName)
+                .ThenBy(f => f.Transaction.AuthorizedPersonAlias.Person.NickName);
         }
 
         /// <inheritdoc/>
-        protected override List<FinancialTransactionDetail> GetListItems( IQueryable<FinancialTransactionDetail> queryable, RockContext rockContext )
+        protected override List<FinancialTransactionDetail> GetListItems(IQueryable<FinancialTransactionDetail> queryable, RockContext rockContext)
         {
             //
             // Get the donations for the entire opportunity group or for just the
             // one individual being viewed.
             //
-            if ( RequestContext.GetContextEntity<Rock.Model.Group>() != null )
+            if (RequestContext.GetContextEntity<Model.Group>() != null)
             {
-                var group = RequestContext.GetContextEntity<Rock.Model.Group>();
+                var group = RequestContext.GetContextEntity<Model.Group>();
 
-                _groupMembers = new GroupMemberService( rockContext ).Queryable()
-                    .Where( m => m.GroupId == group.Id )
-                    .ToDictionary( m => m.Id );
+                _groupMembers = new GroupMemberService(rockContext).Queryable()
+                    .Where(m => m.GroupId == group.Id)
+                    .ToDictionary(m => m.Id);
             }
             else
             {
                 var groupMember = RequestContext.GetContextEntity<GroupMember>();
-                if ( groupMember != null )
+                if (groupMember != null)
                 {
                     _groupMembers = new Dictionary<int, GroupMember> { { groupMember.Id, groupMember } };
                 }
             }
 
-            return base.GetListItems( queryable, rockContext );
+            return base.GetListItems(queryable, rockContext);
         }
 
         /// <inheritdoc/>
         protected override GridBuilder<FinancialTransactionDetail> GetGridBuilder()
         {
             return new GridBuilder<FinancialTransactionDetail>()
-                .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "donorIdKey", a => a.Transaction.AuthorizedPersonAlias.Person.IdKey )
-                .AddTextField( "donor", a => GetDonorText( a ) )
-                .AddTextField( "donorEmail", a => a.Transaction.AuthorizedPersonAlias.Person.Email )
-                .AddTextField( "participant", a => GetParticipantText( a ) )
-                .AddField( "amount", a => a.Amount )
-                .AddTextField( "donorAddress", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr() )
-                .AddDateTimeField( "date", a => a.Transaction.TransactionDateTime );
+                .WithBlock(this)
+                .AddTextField("idKey", a => a.IdKey)
+                .AddTextField("donorIdKey", a => a.Transaction.AuthorizedPersonAlias.Person.IdKey)
+                .AddTextField("donor", a => GetDonorText(a))
+                .AddTextField("donorEmail", a => a.Transaction.AuthorizedPersonAlias.Person.Email)
+                .AddTextField("participant", a => GetParticipantText(a))
+                .AddField("amount", a => a.Amount)
+                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr())
+                .AddTextField("donorAddress", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe())
+                .AddDateTimeField("date", a => a.Transaction.TransactionDateTime);
         }
 
         /// <summary>
@@ -241,10 +242,10 @@ namespace Rock.Blocks.Fundraising
         /// </summary>
         /// <param name="transactionDetail">The transaction detail.</param>
         /// <returns></returns>
-        private string GetDonorText( FinancialTransactionDetail transactionDetail )
+        private string GetDonorText(FinancialTransactionDetail transactionDetail)
         {
-            var mergeFields = GetMergeFields( transactionDetail );
-            var donorText = GetAttributeValue( AttributeKey.DonorColumn ).ResolveMergeFields( mergeFields );
+            var mergeFields = GetMergeFields(transactionDetail);
+            var donorText = GetAttributeValue(AttributeKey.DonorColumn).ResolveMergeFields(mergeFields);
             return donorText;
         }
 
@@ -253,10 +254,10 @@ namespace Rock.Blocks.Fundraising
         /// </summary>
         /// <param name="transactionDetail">The transaction detail.</param>
         /// <returns></returns>
-        private string GetParticipantText( FinancialTransactionDetail transactionDetail )
+        private string GetParticipantText(FinancialTransactionDetail transactionDetail)
         {
-            var mergeFields = GetMergeFields( transactionDetail );
-            var participantText = GetAttributeValue( AttributeKey.ParticipantColumn ).ResolveMergeFields( mergeFields );
+            var mergeFields = GetMergeFields(transactionDetail);
+            var participantText = GetAttributeValue(AttributeKey.ParticipantColumn).ResolveMergeFields(mergeFields);
             return participantText;
         }
 
@@ -265,16 +266,16 @@ namespace Rock.Blocks.Fundraising
         /// </summary>
         /// <param name="transactionDetail">The transaction detail.</param>
         /// <returns></returns>
-        private Dictionary<string, object> GetMergeFields( FinancialTransactionDetail transactionDetail )
+        private Dictionary<string, object> GetMergeFields(FinancialTransactionDetail transactionDetail)
         {
-            var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
+            var mergeFields = RequestContext.GetCommonMergeFields(GetCurrentPerson());
 
-            mergeFields.AddOrReplace( "Group", GetContextEntityGroup() );
-            mergeFields.AddOrReplace( "Donor", transactionDetail.Transaction.AuthorizedPersonAlias.Person );
+            mergeFields.AddOrReplace("Group", GetContextEntityGroup());
+            mergeFields.AddOrReplace("Donor", transactionDetail.Transaction.AuthorizedPersonAlias.Person);
 
-            if ( _groupMembers.TryGetValue( transactionDetail.EntityId.Value, out GroupMember groupMember ) )
+            if (_groupMembers.TryGetValue(transactionDetail.EntityId.Value, out GroupMember groupMember))
             {
-                mergeFields.AddOrReplace( "Participant", groupMember );
+                mergeFields.AddOrReplace("Participant", groupMember);
             }
 
             return mergeFields;
@@ -284,13 +285,13 @@ namespace Rock.Blocks.Fundraising
         /// Gets the group from the current context entity, if the context entity is a Group Member their group is returned.
         /// </summary>
         /// <returns></returns>
-        private Rock.Model.Group GetContextEntityGroup()
+        private Model.Group GetContextEntityGroup()
         {
-            if ( _group == null )
+            if (_group == null)
             {
-                if ( RequestContext.GetContextEntity<Rock.Model.Group>() != null )
+                if (RequestContext.GetContextEntity<Model.Group>() != null)
                 {
-                    _group = RequestContext.GetContextEntity<Rock.Model.Group>();
+                    _group = RequestContext.GetContextEntity<Model.Group>();
                 }
                 else
                 {
@@ -308,18 +309,18 @@ namespace Rock.Blocks.Fundraising
         /// <returns>
         ///   <c>true</c> if [is context group fundraising group type]; otherwise, <c>false</c>.
         /// </returns>
-        /// <exception cref="System.NotImplementedException"></exception>
+        /// <exception cref="NotImplementedException"></exception>
         private bool IsContextGroupFundraisingGroupType()
         {
             var rockContext = new RockContext();
             var group = GetContextEntityGroup();
-            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
-            var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable()
-                .Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising )
-                .Select( a => a.Id )
+            var groupTypeIdFundraising = GroupTypeCache.Get(SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid()).Id;
+            var fundraisingGroupTypeIdList = new GroupTypeService(rockContext).Queryable()
+                .Where(a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising)
+                .Select(a => a.Id)
                 .ToList();
 
-            return group != null && fundraisingGroupTypeIdList.Contains( group.GroupTypeId );
+            return group != null && fundraisingGroupTypeIdList.Contains(group.GroupTypeId);
         }
 
         #endregion Methods
