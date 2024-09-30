@@ -13,7 +13,9 @@
                     title="Date"
                     field="changeDateTime"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="xs"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"/>
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -26,7 +28,10 @@
                       title="EntityId"
                       field="entityId"
                       :filter="numberValueFilter"
-                      visiblePriority="md" />
+                      visiblePriority="md"
+                      width="5%"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right" />
 
         <PersonColumn name="changeBy"
                       title="Changed By"
@@ -39,15 +44,19 @@
         <TextColumn name="action"
                     title="Action"
                     field="action"
+                    width="8%"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="md"
+                    itemClass="justify-content-start" />
 
         <Column name="access"
                 title="Access"
                 field="access"
                 :filter="pickExistingValueFilter"
                 :filterValue="getAccessRowFilterValue"
-                visiblePriority="md">
+                width="8%"
+                visiblePriority="md"
+                itemClass="justify-content-center">
 
             <template #format="{ row }">
                 <span v-html="getAccessText(row.preAllowOrDeny, row.postAllowOrDeny)"></span>

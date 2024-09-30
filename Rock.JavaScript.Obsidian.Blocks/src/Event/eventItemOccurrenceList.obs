@@ -27,6 +27,8 @@
                     field="date"
                     :filter="dateValueFilter"
                     visiblePriority="xs"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     width="8%">
             <template #format="{ row }">
                 <span v-if="row.date">{{ RockDateTime.parseISO(row.date)?.toASPString("d") }}</span>
