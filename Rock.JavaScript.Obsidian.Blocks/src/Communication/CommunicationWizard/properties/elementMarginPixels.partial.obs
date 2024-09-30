@@ -1,0 +1,103 @@
+<template>
+    <RockLabel>Margin</RockLabel>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <NumberUpDown v-model="marginTop"
+                          label="Top"
+                          :min="0"
+                          :max="99" />
+        </div>
+
+        <div class="col-sm-6">
+            <NumberUpDown v-model="marginBottom"
+                          label="Bottom"
+                          :min="0"
+                          :max="99" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <NumberUpDown v-model="marginRight"
+                          label="Right"
+                          :min="0"
+                          :max="99" />
+        </div>
+
+        <div class="col-sm-6">
+            <NumberUpDown v-model="marginLeft"
+                          label="Left"
+                          :min="0"
+                          :max="99" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { NumberUpDown, RockLabel } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const marginTop = ref<number>(parseInt(props.modelValue.style.marginTop || "0"));
+    const marginBottom = ref<number>(parseInt(props.modelValue.style.marginBottom || "0"));
+    const marginRight = ref<number>(parseInt(props.modelValue.style.marginRight || "0"));
+    const marginLeft = ref<number>(parseInt(props.modelValue.style.marginLeft || "0"));
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        marginTop.value = parseInt(props.modelValue.style.marginTop || "0");
+        marginBottom.value = parseInt(props.modelValue.style.marginBottom || "0");
+        marginRight.value = parseInt(props.modelValue.style.marginRight || "0");
+        marginLeft.value = parseInt(props.modelValue.style.marginLeft || "0");
+    });
+
+    watch(marginTop, (value: number) => {
+        if (value) {
+            props.modelValue.style.marginTop = `${value}px`;
+        }
+        else {
+            props.modelValue.style.marginTop = "";
+        }
+    });
+
+    watch(marginBottom, (value: number) => {
+        if (value) {
+            props.modelValue.style.marginBottom = `${value}px`;
+        }
+        else {
+            props.modelValue.style.marginBottom = "";
+        }
+    });
+
+    watch(marginRight, (value: number) => {
+        if (value) {
+            props.modelValue.style.marginRight = `${value}px`;
+        }
+        else {
+            props.modelValue.style.marginRight = "";
+        }
+    });
+
+    watch(marginLeft, (value: number) => {
+        if (value) {
+            props.modelValue.style.marginLeft = `${value}px`;
+        }
+        else {
+            props.modelValue.style.marginLeft = "";
+        }
+    });
+
+    // #endregion
+</script>

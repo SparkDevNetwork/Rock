@@ -21,7 +21,7 @@
 
     // #region Values
 
-    const modelValue = ref<string>(props.modelValue.style.backgroundColor);
+    const modelValue = ref<string>(props.modelValue.style.backgroundColor || props.modelValue.style.borderColor);
 
     // #endregion
 
@@ -29,10 +29,11 @@
 
     watch(modelValue, (value: string) => {
         props.modelValue.style.backgroundColor = value;
+        props.modelValue.style.borderColor = value;
     });
 
     watch(() => props.modelValue, () => {
-        modelValue.value = props.modelValue.style.backgroundColor;
+        modelValue.value = props.modelValue.style.backgroundColor || props.modelValue.style.borderColor;
     });
 
     // #endregion

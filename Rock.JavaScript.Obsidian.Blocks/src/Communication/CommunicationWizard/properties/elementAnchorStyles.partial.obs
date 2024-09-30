@@ -1,0 +1,127 @@
+<template>
+    <ColorPicker v-model="fontColor"
+                 label="Link Color" />
+
+    <DropDownList v-model="linkStyle"
+                  :items="[]"
+                  label="Link Style" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ColorPicker, DropDownList } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    const tagName: keyof HTMLElementTagNameMap = "a";
+
+    // #region Values
+
+    // These are initialized in the "immediate" props.modelValue watcher below.
+    const fontColor = ref<string>("");
+    const linkStyle = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const cssRuleset = computed<string | null>(() => {
+        const declarations: string[] = [];
+
+        if (fontColor.value) {
+            declarations.push(`color: ${fontColor.value};`);
+        }
+
+        if (linkStyle.value) {
+            // TODO JMH ?? declarations.push(`font-family: ${linkStyle.value};`);
+        }
+
+        if (declarations.length) {
+            return `${tagName} {\n    ${declarations.join("\n    ")}\n}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        const ownerDocument = props.modelValue.ownerDocument;
+        const ownerWindow = ownerDocument.defaultView;
+
+        if (!ownerWindow) {
+            throw "The element is not a child of an active window";
+        }
+
+        let loaded = false;
+        for (const stylesheet of props.modelValue.ownerDocument.styleSheets) {
+            const ownerNode = stylesheet.ownerNode;
+
+            if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
+                if (ownerNode.classList.contains(`rock-design-${tagName}`)) {
+                    for (const rule of stylesheet.cssRules) {
+                        if (rule instanceof ownerWindow.CSSStyleRule) {
+                            if (rule.selectorText === tagName) {
+                                fontColor.value = rule.style.color;
+                                // TODO JMH ?? linkStyle.value = rule.style.fontFamily;
+
+                                loaded = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!loaded) {
+            fontColor.value = "";
+            linkStyle.value = "";
+        }
+    }, {
+        // Since the reactive values are not initialized where defined above,
+        // this needs to be immediate here.
+        immediate: true
+    });
+
+    // Whenever the CSS ruleset changes based on the font properties,
+    // the style tag associated with this component's bound element
+    // should be added/updated with the new styles.
+    watch(cssRuleset, () => {
+        if (cssRuleset.value) {
+            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
+            const styleTag = props.modelValue.ownerDocument.createElement("style");
+            styleTag.textContent = cssRuleset.value;
+            styleTag.classList.add(`rock-design-${tagName}`);
+            if (tag) {
+                tag.replaceWith(styleTag);
+            }
+            else {
+                props.modelValue.append(styleTag);
+            }
+        }
+        else {
+            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
+            if (tag) {
+                tag.remove();
+            }
+        }
+    });
+
+    // #endregion
+</script>

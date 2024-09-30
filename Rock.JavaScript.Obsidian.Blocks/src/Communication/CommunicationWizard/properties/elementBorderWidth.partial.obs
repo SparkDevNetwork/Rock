@@ -18,19 +18,21 @@
 
     // #region Values
 
-    const modelValue = ref<number>(parseInt(props.modelValue.style.borderWidth || "0"));
+    const modelValue = ref<number>(parseInt(props.modelValue.style.borderWidth || "0") || parseInt(props.modelValue.style.height || "0"));
 
     // #endregion
 
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        modelValue.value = parseInt(props.modelValue.style.borderWidth || "0");
-    });
+        modelValue.value = parseInt(props.modelValue.style.borderWidth || "0") || parseInt(props.modelValue.style.height || "0");
+        });
 
     watch(modelValue, (value: number) => {
         if (value) {
             props.modelValue.style.borderWidth = `${value}px`;
+            props.modelValue.style.height = `${value}px`;
+            props.modelValue.style.boxSizing = "border-box";
 
             if (!props.modelValue.style.borderStyle) {
                 // Ensure the element has a border style if a border color is specified.
@@ -39,6 +41,8 @@
         }
         else {
             props.modelValue.style.borderWidth = "";
+            props.modelValue.style.height = "";
+            props.modelValue.style.boxSizing = "";
             props.modelValue.style.borderStyle = "";
         }
     });

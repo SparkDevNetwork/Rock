@@ -1,0 +1,91 @@
+<template>
+    <RockLabel>Padding</RockLabel>
+
+    <NumberUpDown v-model="paddingTop"
+                  label="Top"
+                  :min="0"
+                  :max="99" />
+
+    <NumberUpDown v-model="paddingBottom"
+                  label="Bottom"
+                  :min="0"
+                  :max="99" />
+
+    <NumberUpDown v-model="paddingRight"
+                  label="Right"
+                  :min="0"
+                  :max="99" />
+
+    <NumberUpDown v-model="paddingLeft"
+                  label="Left"
+                  :min="0"
+                  :max="99" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { NumberUpDown, RockLabel } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const paddingTop = ref<number>(parseInt(props.modelValue.style.paddingTop || "0"));
+    const paddingBottom = ref<number>(parseInt(props.modelValue.style.paddingBottom || "0"));
+    const paddingRight = ref<number>(parseInt(props.modelValue.style.paddingRight || "0"));
+    const paddingLeft = ref<number>(parseInt(props.modelValue.style.paddingLeft || "0"));
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        paddingTop.value = parseInt(props.modelValue.style.paddingTop || "0");
+        paddingBottom.value = parseInt(props.modelValue.style.paddingBottom || "0");
+        paddingRight.value = parseInt(props.modelValue.style.paddingRight || "0");
+        paddingLeft.value = parseInt(props.modelValue.style.paddingLeft || "0");
+    });
+
+    watch(paddingTop, (value: number) => {
+        if (value) {
+            props.modelValue.style.paddingTop = `${value}px`;
+        }
+        else {
+            props.modelValue.style.paddingTop = "";
+        }
+    });
+
+    watch(paddingBottom, (value: number) => {
+        if (value) {
+            props.modelValue.style.paddingBottom = `${value}px`;
+        }
+        else {
+            props.modelValue.style.paddingBottom = "";
+        }
+    });
+
+    watch(paddingRight, (value: number) => {
+        if (value) {
+            props.modelValue.style.paddingRight = `${value}px`;
+        }
+        else {
+            props.modelValue.style.paddingRight = "";
+        }
+    });
+
+    watch(paddingLeft, (value: number) => {
+        if (value) {
+            props.modelValue.style.paddingLeft = `${value}px`;
+        }
+        else {
+            props.modelValue.style.paddingLeft = "";
+        }
+    });
+
+    // #endregion
+</script>

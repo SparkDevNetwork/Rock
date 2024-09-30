@@ -11,12 +11,16 @@
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+        clearBackgroundColor: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     // #region Values
 
-    const modelValue = ref<string>(props.modelValue.style.borderColor ?? "");
+    const modelValue = ref<string>(props.modelValue.style.borderColor);
 
     // #endregion
 
@@ -33,6 +37,10 @@
             if (!props.modelValue.style.borderStyle) {
                 // Ensure the element has a border style if a border color is specified.
                 props.modelValue.style.borderStyle = "solid";
+            }
+
+            if (props.clearBackgroundColor) {
+                props.modelValue.style.backgroundColor = "";
             }
         }
         else {

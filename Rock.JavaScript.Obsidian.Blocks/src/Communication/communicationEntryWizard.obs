@@ -47,6 +47,7 @@
                                                 <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
 
                                                 <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :modelValue="selectedComponent" />
+                                                <DividerComponentProperties v-else-if="selectedComponent.type.typeName === 'divider'" :modelValue="selectedComponent" />
                                                 <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
                                             </div>
                                         </template>
@@ -89,7 +90,7 @@
 
                     <div class="email-editor-window-wrapper">
                         <EditorWindow ref="editorWindow"
-                                      :html="''"
+                                      :html="config.emailMessage"
                                       :draggingComponentType="draggingComponentType"
                                       v-model:selectedComponent="selectedComponent" />
                     </div>
@@ -161,6 +162,7 @@
     /* TODO JMH Is this supported? */
     gap: 16px;
     flex-wrap: wrap;
+    width: 322px;
 }
 
 .section-list {
@@ -227,7 +229,8 @@
 .email-editor-toolbox-submenu {
     display: flex;
     flex-direction: column;
-    width: 322px;
+    min-width: 322px;
+    max-width: 500px;
 }
 
 .email-editor-toolbox-submenu-content {
@@ -268,6 +271,7 @@
     import { computed, nextTick, ref, watch } from "vue";
     import CodeComponentProperties from "./CommunicationWizard/codeComponentProperties.partial.obs";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
+    import DividerComponentProperties from "./CommunicationWizard/dividerComponentProperties.partial.obs";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
     import EmailDocumentProperties from "./CommunicationWizard/emailDocumentProperties.partial.obs";
     import SectionComponentProperties from "./CommunicationWizard/sectionComponentProperties.partial.obs";

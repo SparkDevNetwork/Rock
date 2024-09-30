@@ -1,0 +1,51 @@
+<template>
+    <DropDownList v-model="modelValue"
+                  :items="borderStyles"
+                  label="Styles" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { DropDownList } from "../imports.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
+    // If quotes are required, add them here.
+    const borderStyles: ListItemBag[] = [
+        {
+            value: "solid",
+            text: "Solid"
+        }, {
+            value: "dashed",
+            text: "Dashed"
+        }, {
+            value: "dotted",
+            text: "Dotted"
+        }
+    ];
+
+    // #region Values
+
+    const modelValue = ref<string>(props.modelValue.style.borderStyle);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        modelValue.value = props.modelValue.style.borderStyle;
+    });
+
+    watch(modelValue, (value: string) => {
+        props.modelValue.style.borderStyle = value;
+    });
+
+    // #endregion
+</script>
