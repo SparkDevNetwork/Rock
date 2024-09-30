@@ -156,10 +156,6 @@
     <Compile Include="Migrations\202409301803276_AddPhoneNumberOptOutColumns.Designer.cs">
       <DependentUpon>202409301803276_AddPhoneNumberOptOutColumns.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202409301825107_RemoveProcessSendKeyFromCommunicationRecipient.cs" />
-    <Compile Include="Migrations\202409301825107_RemoveProcessSendKeyFromCommunicationRecipient.Designer.cs">
-      <DependentUpon>202409301825107_RemoveProcessSendKeyFromCommunicationRecipient.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2302,9 +2298,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202409301803276_AddPhoneNumberOptOutColumns.resx">
       <DependentUpon>202409301803276_AddPhoneNumberOptOutColumns.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202409301825107_RemoveProcessSendKeyFromCommunicationRecipient.resx">
-      <DependentUpon>202409301825107_RemoveProcessSendKeyFromCommunicationRecipient.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
