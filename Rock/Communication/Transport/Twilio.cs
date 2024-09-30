@@ -539,7 +539,11 @@ namespace Rock.Communication.Transport
                     {
                         // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
                         var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
-                        phoneNumber.IsMessagingEnabled = false;
+                        if ( phoneNumber != null )
+                        {
+                            phoneNumber.IsMessagingEnabled = false;
+                            phoneNumber.IsMessagingOptedOut = true;                            
+                        }
 
                         // Add this to the Person Activity history
                         var historyChanges = new History.HistoryChangeList();
