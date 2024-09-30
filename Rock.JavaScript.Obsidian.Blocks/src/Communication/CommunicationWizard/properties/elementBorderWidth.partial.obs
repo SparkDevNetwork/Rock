@@ -1,7 +1,8 @@
 <template>
     <NumberUpDown v-model="modelValue"
                   label="Border Size"
-                  :min="0" />
+                  :min="0"
+                  :max="99" />
 </template>
 
 <script setup lang="ts">

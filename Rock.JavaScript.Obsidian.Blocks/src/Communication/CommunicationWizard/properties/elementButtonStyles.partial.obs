@@ -27,23 +27,12 @@
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+        fontFamilies: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
         }
     });
-
-    // IMPORTANT! Font families are not automatically quoted when generating the <style> tag,
-    // so make sure they are quoted here if necessary.
-    const fontFamilies: ListItemBag[] = [
-        {
-            value: "Arial",
-            text: "Arial"
-        }, {
-            value: "Helvetica",
-            text: "Helvetica"
-        }, {
-            value: "'Times New Roman'",
-            text: "Times New Roman"
-        }
-    ];
 
     const tagName: keyof HTMLElementTagNameMap = "button";
 
@@ -53,7 +42,7 @@
     const backgroundColor = ref<string>("");
     const color = ref<string>("");
     const fontFamily = ref<string>("");
-    const fontSize = ref<number>(0);
+    const fontSize = ref<number | null | undefined>();
     const borderRadius = ref<number>(0);
     const textStyle = ref<string>("");
 
@@ -98,14 +87,6 @@
 
     // #endregion
 
-    // #region Event Handlers
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
     // #region Watchers
 
     watch(() => props.modelValue, () => {
@@ -128,7 +109,7 @@
                                 backgroundColor.value = rule.style.backgroundColor;
                                 color.value = rule.style.color;
                                 fontFamily.value = rule.style.fontFamily;
-                                fontSize.value = parseInt(rule.style.fontSize || "0");
+                                fontSize.value = rule.style.fontSize ? parseInt(rule.style.fontSize) : null;
                                 borderRadius.value = parseInt(rule.style.borderRadius || "0");
                                 // TODO JMH textStyle.value = ??
 
@@ -144,7 +125,7 @@
             backgroundColor.value = "";
             color.value = "";
             fontFamily.value = "";
-            fontSize.value = 0;
+            fontSize.value = null;
             borderRadius.value = 0;
             textStyle.value = "";
         }

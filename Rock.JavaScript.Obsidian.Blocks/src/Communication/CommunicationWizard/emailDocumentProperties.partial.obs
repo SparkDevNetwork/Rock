@@ -12,19 +12,32 @@
     <Panel v-model="isTextStylingExpanded"
            :hasCollapse="true"
            title="Text Styling">
-        <ElementFontStyles :modelValue="modelValue.body" label="Heading 1" tagName="h1" />
+        <ElementFontStyles :modelValue="modelValue.body"
+                           :fontFamilies="fontFamilies"
+                           label="Heading 1"
+                           tagName="h1" />
         <hr>
-        <ElementFontStyles :modelValue="modelValue.body" label="Heading 2" tagName="h2" />
+        <ElementFontStyles :modelValue="modelValue.body"
+                           :fontFamilies="fontFamilies"
+                           label="Heading 2"
+                           tagName="h2" />
         <hr>
-        <ElementFontStyles :modelValue="modelValue.body" label="Heading 3" tagName="h3" />
+        <ElementFontStyles :modelValue="modelValue.body"
+                           :fontFamilies="fontFamilies"
+                           label="Heading 3"
+                           tagName="h3" />
         <hr>
-        <ElementFontStyles :modelValue="modelValue.body" label="Paragraph" tagName="p" />
+        <ElementFontStyles :modelValue="modelValue.body"
+                           :fontFamilies="fontFamilies"
+                           label="Paragraph"
+                           tagName="p" />
     </Panel>
 
     <Panel v-model="isDefaultButtonStylingExpanded"
            :hasCollapse="true"
            title="Default Button Styling">
-        <ElementButtonStyles :modelValue="modelValue.body" />
+        <ElementButtonStyles :modelValue="modelValue.body"
+                             :fontFamilies="fontFamilies" />
     </Panel>
 
     <Panel v-model="isDividerStylingExpanded"
@@ -50,6 +63,7 @@
     import ElementFontStyles from "./properties/elementFontStyles.partial.obs";
     import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     defineProps({
         /** This should be a body element. */
@@ -58,6 +72,39 @@
             required: true
         }
     });
+
+    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
+    // If quotes are required, add them here.
+    const fontFamilies: ListItemBag[] = [
+        {
+            text: "Arial",
+            value: "Arial"
+        }, {
+            text: "Courier New",
+            value: "'Courier New'"
+        }, {
+            text: "Georgia",
+            value: "Georgia"
+        }, {
+            text: "Tahoma",
+            value: "Tahoma"
+        }, {
+            text: "Times New Roman",
+            value: "'Times New Roman'"
+        }, {
+            text: "Trebuchet MS",
+            value: "'Trebuchet MS'"
+        }, {
+            text: "Verana",
+            value: "Verana"
+        }, {
+            text: "Lucida",
+            value: "Lucida"
+        }, {
+            text: "Helvetica Neue",
+            value: "'Helvetica Neue'"
+        }
+    ];
 
     // #region Values
 
