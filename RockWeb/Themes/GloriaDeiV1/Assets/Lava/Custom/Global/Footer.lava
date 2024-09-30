@@ -18,4 +18,3 @@
 </div>
 
 {{ 'Lava' | Debug }}
-test
