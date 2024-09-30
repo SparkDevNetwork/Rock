@@ -37,14 +37,6 @@
 
     // #endregion
 
-    // #region Event Handlers
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
     // #region Watchers
 
     watch(() => props.modelValue, () => {
@@ -54,6 +46,7 @@
 
     watch(hasBorder, () => {
         if (!hasBorder.value) {
+            // Clear the border properties when "Border" is switched off.
             borderColor.value = "";
             borderWidthPixels.value = 0;
         }

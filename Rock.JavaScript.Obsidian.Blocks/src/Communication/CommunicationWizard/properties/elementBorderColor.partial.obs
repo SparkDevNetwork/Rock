@@ -1,6 +1,5 @@
 <template>
-    <ColorPicker :modelValue="modelValue"
-                 @update:modelValue="onUpdateModelValue"
+    <ColorPicker v-model="modelValue"
                  label="Border Color" />
 </template>
 
@@ -21,18 +20,13 @@
 
     // #endregion
 
-    // #region Event Handlers
+    // #region Watchers
 
-    function onUpdateModelValue(value: string): void {
-        setValue(value);
-    }
+    watch(() => props.modelValue, () => {
+        modelValue.value = props.modelValue.style.borderColor;
+    });
 
-    // #endregion
-
-    // #region Functions
-
-    function setValue(value: string): void {
-        modelValue.value = value;
+    watch(modelValue, (value: string) => {
         props.modelValue.style.borderColor = value;
 
         if (value) {
@@ -45,14 +39,6 @@
             props.modelValue.style.borderWidth = "";
             props.modelValue.style.borderStyle = "";
         }
-    }
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(() => props.modelValue, () => {
-        setValue(props.modelValue.style.borderColor);
     });
 
     // #endregion

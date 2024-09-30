@@ -10,8 +10,10 @@
                        label="Background Image"
                        :uploadAsTemporary="true" />
 
-        <RadioButton v-model="imageStyle" name="imageStyle" label="Tile" value="tile" />
-        <RadioButton v-model="imageStyle" name="imageStyle" label="Stretch" value="stretch" />
+        <div class="form-group">
+            <RadioButton v-model="imageStyle" name="imageStyle" label="Tile" value="tile" />
+            <RadioButton v-model="imageStyle" name="imageStyle" label="Stretch" value="stretch" />
+        </div>
     </template>
 </template>
 
@@ -45,18 +47,13 @@
 
     // #endregion
 
-    // #region Event Handlers
+    // #region Watchers
 
-    // #endregion
-
-    // #region Functions
-
-    function initialize(): void {
+    watch(() => props.modelValue, () => {
         const fileGuid = toGuidOrNull(props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]);
         const fileName = props.modelValue.dataset[dataAttributeKey.backgroundImageFileName];
 
         if (fileGuid) {
-            // Initialize the edit control values.
             hasBackgroundImage.value = true;
             imageListItemBag.value = {
                 value: fileGuid,
@@ -64,22 +61,14 @@
             };
         }
         else {
-            // Initialize the edit control values.
             hasBackgroundImage.value = false;
             imageListItemBag.value = null;
         }
-    }
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(() => props.modelValue, () => {
-        initialize();
     });
 
     watch(hasBackgroundImage, () => {
         if (!hasBackgroundImage.value) {
+            // Clear the image properties when "Background Image" is switched off.
             imageListItemBag.value = null;
             imageStyle.value = undefined;
         }

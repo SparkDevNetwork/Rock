@@ -144,6 +144,7 @@ svg {
 
     // #region Values
 
+    // These are initialized in the "immediate" props.modelValue watcher below.
     const fontFamily = ref<string>("");
     const fontColor = ref<string>("");
     const fontSize = ref<number>(0);
@@ -263,9 +264,14 @@ svg {
             textTransform.value = "";
         }
     }, {
+        // Since the reactive values are not initialized where defined above,
+        // this needs to be immediate here.
         immediate: true
     });
 
+    // Whenever the CSS ruleset changes based on the font properties,
+    // the style tag associated with this component's bound element
+    // should be added/updated with the new styles.
     watch(cssRuleset, () => {
         if (cssRuleset.value) {
             const tag = props.modelValue.querySelector(`style.rock-design-${props.tagName}`);

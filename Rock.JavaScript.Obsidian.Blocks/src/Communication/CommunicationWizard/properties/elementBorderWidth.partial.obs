@@ -1,6 +1,5 @@
 <template>
-    <NumberUpDown :modelValue="modelValue"
-                  @update:modelValue="onUpdateModelValue"
+    <NumberUpDown v-model="modelValue"
                   label="Border Size"
                   :min="0" />
 </template>
@@ -22,19 +21,13 @@
 
     // #endregion
 
-    // #region Event Handlers
+    // #region Watchers
 
-    function onUpdateModelValue(value: number): void {
-        setValue(value);
-    }
+    watch(() => props.modelValue, () => {
+        modelValue.value = parseInt(props.modelValue.style.borderWidth || "0");
+    });
 
-    // #endregion
-
-    // #region Functions
-
-    function setValue(value: number): void {
-        modelValue.value = value;
-
+    watch(modelValue, (value: number) => {
         if (value) {
             props.modelValue.style.borderWidth = `${value}px`;
 
@@ -47,14 +40,6 @@
             props.modelValue.style.borderWidth = "";
             props.modelValue.style.borderStyle = "";
         }
-    }
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(() => props.modelValue, () => {
-        setValue(parseInt(props.modelValue.style.borderWidth || "0"));
     });
 
     // #endregion

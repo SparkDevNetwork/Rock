@@ -1,6 +1,5 @@
 <template>
-    <ColorPicker :modelValue="modelValue"
-                 @update:modelValue="onUpdateModelValue"
+    <ColorPicker v-model="modelValue"
                  :label="label" />
 </template>
 
@@ -26,27 +25,14 @@
 
     // #endregion
 
-    // #region Event Handlers
-
-    function onUpdateModelValue(value: string): void {
-        setValue(value);
-    }
-
-    // #endregion
-
-    // #region Functions
-
-    function setValue(value: string): void {
-        modelValue.value = value;
-        props.modelValue.style.backgroundColor = value;
-    }
-
-    // #endregion
-
     // #region Watchers
 
+    watch(modelValue, (value: string) => {
+        props.modelValue.style.backgroundColor = value;
+    });
+
     watch(() => props.modelValue, () => {
-        setValue(props.modelValue.style.backgroundColor);
+        modelValue.value = props.modelValue.style.backgroundColor;
     });
 
     // #endregion
