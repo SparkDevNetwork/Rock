@@ -120,7 +120,6 @@ namespace Rock.Model
             target.OpenedDateTime = source.OpenedDateTime;
             target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
-            target.ProcessSendKey = source.ProcessSendKey;
             target.ResponseCode = source.ResponseCode;
             target.SendDateTime = source.SendDateTime;
             target.SentMessage = source.SentMessage;

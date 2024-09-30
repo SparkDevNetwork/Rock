@@ -945,7 +945,7 @@ INNER JOIN @DuplicateRecipients dr
                           from blocking or waiting on locked rows, but it will skip over them and continue processing
                           other rows.
 
-                Reason: Ensure each recipient receives only a singly copy of each communication.
+                Reason: Ensure each recipient receives only a single copy of each communication.
              */
 
             rockContext.WrapTransaction( () =>
