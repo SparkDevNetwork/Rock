@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
+        <div class="btn-group">
+            <slot v-bind="{ btnSize, disabled, itemButtonType, toggleValue }"></slot>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<string>,
+            required: true
+        },
+
+        unselectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Default
+        },
+
+        selectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Primary
+        },
+
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    function itemButtonType(value: string): LiteralUnion<BtnType> {
+        return internalValue.value === value ? props.selectedBtnType : props.unselectedBtnType;
+    }
+
+    function toggleValue(value: string): void {
+        if (internalValue.value === value) {
+            internalValue.value = "";
+        }
+        else {
+            internalValue.value = value;
+        }
+    }
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+</script>

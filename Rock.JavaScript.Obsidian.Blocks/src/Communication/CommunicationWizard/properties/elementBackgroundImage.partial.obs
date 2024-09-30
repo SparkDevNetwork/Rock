@@ -1,6 +1,8 @@
 <template>
-    <InlineSwitch v-model="hasBackgroundImage"
-                  label="Background Image" />
+    <div class="form-group">
+        <InlineSwitch v-model="hasBackgroundImage"
+                      label="Background Image" />
+    </div>
 
     <template v-if="hasBackgroundImage">
         <ImageUploader v-model="imageListItemBag"

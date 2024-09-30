@@ -1,6 +1,6 @@
 <template>
-    <Panel :hasCollapse="true"
-           :modelValue="true"
+    <Panel v-model="isGeneralSettingsExpanded"
+           :hasCollapse="true"
            title="General Settings">
         <ElementWidthPixels :modelValue="modelValue.body" label="Content Area Width" />
         <ElementBackgroundColor :modelValue="modelValue.documentElement" />
@@ -8,21 +8,68 @@
         <ElementBackgroundImage :modelValue="modelValue.body" />
         <ElementBorder :modelValue="modelValue.body" label="Body Border" />
     </Panel>
+
+    <Panel v-model="isTextStylingExpanded"
+           :hasCollapse="true"
+           title="Text Styling">
+        <ElementFont :modelValue="modelValue.body" label="Heading 1" tagName="h1" />
+        <hr>
+        <ElementFont :modelValue="modelValue.body" label="Heading 2" tagName="h2" />
+        <hr>
+        <ElementFont :modelValue="modelValue.body" label="Heading 3" tagName="h3" />
+        <hr>
+        <ElementFont :modelValue="modelValue.body" label="Paragraph" tagName="p" />
+    </Panel>
 </template>
 
-<script setup lang="ts">
-        import { PropType } from "vue";
-        import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
-        import ElementBackgroundImage from "./properties/elementBackgroundImage.partial.obs";
-        import ElementBorder from "./properties/elementBorder.partial.obs";
-        import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
-        import Panel from "@Obsidian/Controls/panel.obs";
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0;
+}
+</style>
 
-        defineProps({
-            /** This should be a body element. */
-            modelValue: {
-                type: Object as PropType<Document>,
-                required: true
-            }
-        });
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
+    import ElementBackgroundImage from "./properties/elementBackgroundImage.partial.obs";
+    import ElementBorder from "./properties/elementBorder.partial.obs";
+    import ElementFont from "./properties/elementFont.partial.obs";
+    import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+
+    defineProps({
+        /** This should be a body element. */
+        modelValue: {
+            type: Object as PropType<Document>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const isGeneralSettingsExpanded = ref<boolean>(true);
+    const isTextStylingExpanded = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isGeneralSettingsExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other sections.
+            isTextStylingExpanded.value = false;
+        }
+    }, {
+        // This is the only expansion watcher that should run immediately.
+        immediate: true
+    });
+
+    watch(isTextStylingExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other sections.
+            isGeneralSettingsExpanded.value = false;
+        }
+    });
+
+    // #endregion
 </script>

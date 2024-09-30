@@ -106,7 +106,7 @@
             </div>
         </template>
     </Panel>
-    <Modal v-model="isPreviewOpen">
+    <Modal v-model="isPreviewOpen" title="Email Preview">
         <div class="preview">
             <ButtonGroup v-model="previewDevice" :items="[{ text: 'Desktop', value: 'desktop' }, { text: 'Mobile', value: 'mobile' }]" />
 

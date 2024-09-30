@@ -1,0 +1,291 @@
+<template>
+    <DropDownList v-model="fontFamily"
+                  :items="fontFamilies"
+                  :label="label" />
+
+    <NumberBox v-model="fontSize" :disableLabel="true" />
+
+    <ColorPicker v-model="fontColor" :disableLabel="true" />
+
+    <MultiSelectButtonGroup v-model="fontStyleGroup" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('bold')"
+                        @click="toggleValue('bold')"><i class="fa fa-bold"></i></RockButton>
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('underline')"
+                        @click="toggleValue('underline')"><i class="fa fa-underline"></i></RockButton>
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('italic')"
+                        @click="toggleValue('italic')"><i class="fa fa-italic"></i></RockButton>
+        </template>
+    </MultiSelectButtonGroup>
+
+    <SingleSelectButtonGroup v-model="lineHeight" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1')"
+                        title="Single"
+                        @click="selectValue('1')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="20" width="64" height="4" fill="#000" />
+                    <rect x="0" y="30" width="64" height="4" fill="#000" />
+                    <rect x="0" y="40" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.25')"
+                        title="Tight"
+                        @click="selectValue('1.25')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="18" width="64" height="4" fill="#000" />
+                    <rect x="0" y="30" width="64" height="4" fill="#000" />
+                    <rect x="0" y="42" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('normal')"
+                        title="Normal"
+                        @click="selectValue('normal')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="16" width="64" height="4" fill="#000" />
+                    <rect x="0" y="32" width="64" height="4" fill="#000" />
+                    <rect x="0" y="48" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('2')"
+                        title="Double"
+                        @click="selectValue('2')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="12" width="64" height="4" fill="#000" />
+                    <rect x="0" y="32" width="64" height="4" fill="#000" />
+                    <rect x="0" y="52" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+
+    <SingleSelectButtonGroup v-model="textTransform" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('capitalize')"
+                        title="Capitalize"
+                        @click="selectValue('capitalize')">Ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('lowercase')"
+                        title="Lowercase"
+                        @click="selectValue('lowercase')">ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('uppercase')"
+                        title="uppercase"
+                        @click="selectValue('uppercase')">AG</RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+svg {
+    height: 16px;
+    width: 16px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ColorPicker, DropDownList, NumberBox, RockButton } from "../imports.partial";
+    import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
+    import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+        label: {
+            type: String as PropType<string>,
+            default: "Border"
+        },
+        tagName: {
+            type: String as PropType<keyof HTMLElementTagNameMap | null | undefined>
+        }
+    });
+
+    // IMPORTANT! Font families are not automatically quoted when generating the <style> tag,
+    // so make sure they are quoted here if necessary.
+    const fontFamilies: ListItemBag[] = [
+        {
+            value: "Arial",
+            text: "Arial"
+        }, {
+            value: "Helvetica",
+            text: "Helvetica"
+        }, {
+            value: "'Times New Roman'",
+            text: "Times New Roman"
+        }
+    ];
+
+    // #region Values
+
+    const fontFamily = ref<string>("");
+    const fontColor = ref<string>("");
+    const fontSize = ref<number>(0);
+    const fontStyleGroup = ref<("bold" | "underline" | "italic")[]>([]);
+    const lineHeight = ref<string>("");
+    const textTransform = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const cssRuleset = computed<string | null>(() => {
+        const declarations: string[] = [];
+
+        if (fontFamily.value) {
+            declarations.push(`font-family: ${fontFamily.value};`);
+        }
+
+        if (fontColor.value) {
+            declarations.push(`color: ${fontColor.value};`);
+        }
+
+        if (fontSize.value) {
+            declarations.push(`font-size: ${fontSize.value}px;`);
+        }
+
+        if (fontStyleGroup.value.includes("bold")) {
+            declarations.push(`font-weight: bold;`);
+        }
+
+        if (fontStyleGroup.value.includes("italic")) {
+            declarations.push(`font-style: italic;`);
+        }
+
+        if (fontStyleGroup.value.includes("underline")) {
+            declarations.push(`text-decoration: underline;`);
+        }
+
+        if (lineHeight.value) {
+            declarations.push(`line-height: ${lineHeight.value};`);
+        }
+
+        if (textTransform.value) {
+            declarations.push(`text-transform: ${textTransform.value};`);
+        }
+
+        if (declarations.length) {
+            return `${props.tagName} {\n    ${declarations.join("\n    ")}\n}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([() => props.modelValue, () => props.tagName], () => {
+        const ownerDocument = props.modelValue.ownerDocument;
+        const ownerWindow = ownerDocument.defaultView;
+
+        if (!ownerWindow) {
+            throw "The element is not a child of an active window";
+        }
+
+        let loaded = false;
+        for (const stylesheet of props.modelValue.ownerDocument.styleSheets) {
+            const ownerNode = stylesheet.ownerNode;
+
+            if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
+                if (ownerNode.classList.contains(`rock-design-${props.tagName}`)) {
+                    for (const rule of stylesheet.cssRules) {
+                        if (rule instanceof ownerWindow.CSSStyleRule) {
+                            if (rule.selectorText === props.tagName) {
+                                fontFamily.value = rule.style.fontFamily;
+                                fontColor.value = rule.style.color;
+                                fontSize.value = parseInt(rule.style.fontSize || "0");
+
+                                const temp: ("bold" | "underline" | "italic")[] = [];
+                                if (rule.style.fontWeight) {
+                                    temp.push("bold");
+                                }
+                                if (rule.style.fontStyle == "italic") {
+                                    temp.push("italic");
+                                }
+                                if (rule.style.textDecoration == "underline") {
+                                    temp.push("underline");
+                                }
+                                fontStyleGroup.value = temp;
+
+                                lineHeight.value = rule.style.lineHeight;
+                                textTransform.value = rule.style.textTransform;
+
+                                loaded = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!loaded) {
+            fontFamily.value = "";
+            fontColor.value = "";
+            fontSize.value = parseInt(props.modelValue.style.fontSize || "0");
+            fontStyleGroup.value = [];
+            lineHeight.value = "";
+            textTransform.value = "";
+        }
+    }, {
+        immediate: true
+    });
+
+    watch(cssRuleset, () => {
+        if (cssRuleset.value) {
+            const tag = props.modelValue.querySelector(`style.rock-design-${props.tagName}`);
+            const styleTag = props.modelValue.ownerDocument.createElement("style");
+            styleTag.textContent = cssRuleset.value;
+            styleTag.classList.add(`rock-design-${props.tagName}`);
+            if (tag) {
+                tag.replaceWith(styleTag);
+            }
+            else {
+                props.modelValue.append(styleTag);
+            }
+        }
+        else {
+            const tag = props.modelValue.querySelector(`style.rock-design-${props.tagName}`);
+            if (tag) {
+                tag.remove();
+            }
+        }
+    });
+
+    // #endregion
+</script>

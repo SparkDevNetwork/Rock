@@ -1,6 +1,8 @@
 <template>
-    <InlineSwitch v-model="hasBorder"
-                  :label="label" />
+    <div class="form-group">
+        <InlineSwitch v-model="hasBorder"
+                      :label="label" />
+    </div>
 
     <template v-if="hasBorder">
         <ColorPicker v-model="borderColor"
