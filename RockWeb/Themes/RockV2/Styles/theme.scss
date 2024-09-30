@@ -1,0 +1,19 @@
+
+@import "../../../Styles/summernote/summernote.min.css";
+@import "../../../Styles/style-v2/core.css";
+@import "../../../Styles/style-v2/icons/fontawesome-icon.css";
+@import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
+@import "../../../Styles/style-v2/icons/fontawesome-solid.css";
+
+@-ms-viewport {
+  width: device-width;
+}
+
+html {
+  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  display: block;
+}
