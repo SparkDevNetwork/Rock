@@ -86,8 +86,8 @@ function topHeaderOffset() {
 }
 
 function navMouseEvents() {
-  var hoverDelay = 200,
-  hideDelay = 150;
+  var hoverDelay = 50,
+  hideDelay = 100;
 
   const navbarSide = $('.navbar-side');
   const navbarSideLi = navbarSide.children('li');

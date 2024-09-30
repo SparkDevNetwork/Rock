@@ -19,8 +19,8 @@
 .tt-dropdown-menu {
   min-width:                200px;
   padding:                  var(--spacing-medium);
-  color:                    var(--color-interface-medium);
-  background-color:         $ui-autocomplete-bg;
+  color:                    var(--color-interface-strong);
+  background-color:         var(--color-interface-softest);
   -webkit-background-clip:  padding-box;
   -moz-background-clip:     padding;
   background-clip:          padding-box;
@@ -38,14 +38,14 @@
     border-radius:  var(--rounded-small);
 
     &:hover {
-      color:            var(--color-interface-medium);
-      background-color: var(--color-interface-soft);
+      color:            var(--color-interface-strong);
+      background-color: var(--color-interface-softer);
     }
   }
 }
 
 .tt-suggestion.tt-is-under-cursor {
-  color:  var(--color-interface-soft);
+  color:  var(--color-interface-strong);
 }
 
 .tt-suggestion.tt-is-under-cursor a {
