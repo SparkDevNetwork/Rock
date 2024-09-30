@@ -21,7 +21,8 @@
         <DateColumn name="registrationDate"
                     title="Registration Date"
                     field="registrationDate"
-                    itemClass="grid-item-pull-left"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
@@ -67,6 +68,8 @@
                         field="cost"
                         :quickFilterValue="getCostQuickFilterValue"
                         :filter="numberValueFilter"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
         <CurrencyColumn name="feeTotal"
@@ -74,21 +77,11 @@
                         field="feeTotal"
                         :quickFilterValue="getFeesQuickFilterValue"
                         :filter="numberValueFilter"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="xs" />
     </Grid>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-
-.grid-item-pull-right {
-    flex-direction: column;
-    align-items: start;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

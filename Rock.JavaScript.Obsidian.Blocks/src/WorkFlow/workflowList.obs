@@ -74,7 +74,8 @@
                         field="createdDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="md"
-                        itemClass="grid-item-pull-left"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         width="150">
             <template #format="{ row }">
                 <span>{{ getElapsed(row.createdDateTime) }}</span>
@@ -148,13 +149,6 @@
         <p>The Workflow items are scheduled to be deleted.</p>
     </Modal>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";

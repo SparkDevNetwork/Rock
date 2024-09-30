@@ -26,14 +26,16 @@
         <DateColumn name="start"
                     title="Start"
                     field="start"
-                    itemClass="grid-item-pull-left"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="end"
                     title="End"
                     field="end"
-                    itemClass="grid-item-pull-left"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="xs" />
 
@@ -51,13 +53,6 @@
         </div>
     </Modal>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

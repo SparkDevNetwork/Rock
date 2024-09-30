@@ -30,14 +30,18 @@
                        field="isActive"
                        :filter="booleanValueFilter"
                        visiblePriority="xs"
-                       width="120" />
+                       width="150"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"/>
 
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
                        :filter="booleanValueFilter"
                        visiblePriority="md"
-                       width="120" />
+                       width="150"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

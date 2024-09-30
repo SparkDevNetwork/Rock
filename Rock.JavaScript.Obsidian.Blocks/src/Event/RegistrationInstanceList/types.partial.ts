@@ -15,14 +15,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-export const enum PreferenceKey {
-    FilterEnteredBy = "filter-entered-by",
-    FilterDidAttend = "filter-did-attend"
+export const enum NavigationUrlKey {
+    DetailPage = "DetailPage"
 }
-
-export type GridSettingsOptions = {
-    enteredBy?: ListItemBag | undefined;
-    attended?: string | null;
-};

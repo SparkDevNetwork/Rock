@@ -36,9 +36,11 @@
                 title="Donor Address"
                 width="18%"
                 :filter="textValueFilter"
+                :filterValue="getDonorAddressFilterValue"
+                :quickFilterValue="getDonorAddressFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
-                <div v-html="row.donorAddress">
+                <div v-html="row.donorAddressHtml">
 
                 </div>
             </template>
@@ -68,7 +70,8 @@
                     title="Date"
                     field="date"
                     width="120"
-                    itemClass="grid-item-pull-left"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
@@ -78,6 +81,8 @@
                         field="amount"
                         :filter="numberValueFilter"
                         width="3%"
+                        headerClass="text-right"
+                        itemClass="justify-content-end"
                         visiblePriority="xs">
             <template #format="{ row }">
                 <div class="flex-grow-1 text-right">
@@ -87,13 +92,6 @@
         </CurrencyColumn>
     </Grid>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -143,6 +141,10 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function getDonorAddressFilterValue(row: Record<string, unknown>): string {
+        return row.donorAddress as string ?? "";
     }
 
     // #endregion

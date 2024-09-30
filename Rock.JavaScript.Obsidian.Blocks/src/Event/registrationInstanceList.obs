@@ -1,14 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config.options?.canView"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
+          :rowClass="getCustomActiveClass"
           keyField="idKey"
-          itemTerm="Streak Type"
-          title="Streak Types"
-          :entityTypeGuid="EntityType.StreakType"
+          itemTerm="Instance"
+          :title="itemTerm"
+          :entityTypeGuid="EntityType.RegistrationInstance"
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
+          :exportTitle="config.options?.templateName ?? 'Registration Instance'"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -16,57 +19,68 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="30%" />
+                    width="40%"
+                    visiblePriority="xs" />
+
+        <DateColumn name="startDateTime"
+                    title="Start Date"
+                    field="startDateTime"
+                    :filter="dateValueFilter"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
+                    visiblePriority="xs" />
+
+        <DateColumn name="endDateTime"
+                    title="End Date"
+                    field="endDateTime"
+                    :filter="dateValueFilter"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
+                    visiblePriority="xs" />
+
+        <NumberColumn name="registrants"
+                      title="Registrants"
+                      field="registrants"
+                      :filter="numberValueFilter"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      visiblePriority="xs" />
+
+        <NumberColumn v-if="config.options?.waitListEnabled"
+                      name="waitList"
+                      title="Wait List"
+                      field="waitList"
+                      :filter="numberValueFilter"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
+                      visiblePriority="xs" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       :filter="booleanValueFilter"
-                       itemClass="justify-content-center text-center"
                        visiblePriority="xs"
-                       width="150" />
+                       :filter="booleanValueFilter"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center" />
 
-        <TextColumn name="occurrenceFrequency"
-                    title="Frequency"
-                    field="occurrenceFrequency"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="xs" />
-
-        <DateColumn name="startDate"
-                    title="Start Date"
-                    field="startDate"
-                    :filter="dateValueFilter"
-                    headerClass="text-right"
-                    itemClass="justify-content-end text-right"
-                    visiblePriority="md" />
-
-        <NumberColumn name="enrollmentCount"
-                      title="Enrollments"
-                      field="enrollmentCount"
-                      :filter="numberValueFilter"
-                      headerClass="text-right"
-                      itemClass="justify-content-end text-right"
-                      visiblePriority="md" />
-
-        <SecurityColumn />
-
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" :disableConfirmation="true" @click="onDeleteClick" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter, dateValueFilter, DeleteColumn, SecurityColumn, DateColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, booleanValueFilter, DeleteColumn, DateColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { StreakTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeList/streakTypeListOptionsBag";
+    import { RegistrationInstanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceList/registrationInstanceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./StreakTypeList/types.partial";
-    import { reactive, ref } from "vue";
+    import { NavigationUrlKey } from "./RegistrationInstanceList/types.partial";
+    import { computed, reactive, ref } from "vue";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
-    const config = useConfigurationValues<ListBlockBox<StreakTypeListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -93,7 +107,25 @@
         }
     }
 
+    function getCustomActiveClass(row: Record<string, unknown>): string {
+        const isActive = asBoolean(row.isActive);
+
+        if (!isActive) {
+            return "inactive";
+        }
+
+        return "";
+    }
+
     // #endregion
+
+    //# region
+
+    const itemTerm = computed((): string => {
+        return config.options?.templateName ? `${config.options?.templateName} Instances` : "Registration Instance";
+    });
+
+    //# endregion
 
     // #region Event Handlers
 
@@ -113,6 +145,18 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteClick(key: string): Promise<void> {
+        const confirmationResult = await confirm("Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!");
+
+        if (!confirmationResult) {
+            return;
+        }
+
+        const finalConfirmationResult = await confirm("Are you really sure?");
+
+        if (!finalConfirmationResult) {
+            return;
+        }
+
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -127,7 +171,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete streak type.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete registration instance.");
         }
     }
 
@@ -139,6 +183,8 @@
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
+
+    // #endregion
 
     gridDataSource.value = loadGridData();
 </script>

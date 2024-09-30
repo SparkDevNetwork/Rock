@@ -55,7 +55,8 @@
         <NumberColumn name="currentStreakCount"
                       title="Current Streak"
                       field="currentStreakCount"
-                      itemClass="grid-item-pull-left"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />
@@ -63,26 +64,29 @@
         <NumberColumn name="longestStreakCount"
                       title="Longest Streak"
                       field="longestStreakCount"
-                      itemClass="grid-item-pull-left"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
-                      width="5%"/>
+                      width="5%" />
 
         <NumberColumn name="engagementCount"
                       title="Engagements"
                       field="engagementCount"
-                      itemClass="grid-item-pull-left"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
-                      width="5%"/>
+                      width="5%" />
 
         <DateColumn name="enrollmentDate"
                     title="Enrollment Date"
                     field="enrollmentDate"
-                    itemClass="grid-item-pull-left"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="xs"
-                    width="5%"/>
+                    width="5%" />
 
         <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.ProfilePage]"
                       name="user"
@@ -93,13 +97,6 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

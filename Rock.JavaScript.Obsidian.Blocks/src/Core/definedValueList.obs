@@ -40,7 +40,9 @@
                        title="Active"
                        field="isActive"
                        width="120"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       :filter="booleanValueFilter"
+                       itemClass="justify-content-center text-center" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -86,7 +88,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Modal from "@Obsidian/Controls/modal.obs";
