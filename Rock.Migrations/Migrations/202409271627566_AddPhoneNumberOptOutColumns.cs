@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-
+    
     /// <summary>
     ///
     /// </summary>
@@ -29,21 +29,17 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn( "dbo.PhoneNumber", "IsMessagingOptedOut", c => c.Boolean( nullable: true ) );
-            AddColumn( "dbo.PhoneNumber", "MessagingOptedOutDateTime", c => c.DateTime() );
-
-            Sql( "UPDATE [PhoneNumber] SET [IsMessagingOptedOut] = 0;" );
-
-            AlterColumn( "dbo.PhoneNumber", "IsMessagingOptedOut", c => c.Boolean( nullable: false, defaultValue: false ) );
+            AddColumn( "dbo.PhoneNumber", "IsMessagingOptedOut", c => c.Boolean( nullable: false, defaultValue: false ) );
+            AddColumn( "dbo.PhoneNumber", "MessagingOptedOutDateTime", c => c.DateTime( nullable: true ) );
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn( "dbo.PhoneNumber", "MessagingOptedOutDateTime" );
             DropColumn( "dbo.PhoneNumber", "IsMessagingOptedOut" );
+            DropColumn( "dbo.PhoneNumber", "MessagingOptedOutDateTime" );
         }
     }
 }
