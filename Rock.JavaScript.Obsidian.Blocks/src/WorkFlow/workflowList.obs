@@ -73,7 +73,8 @@
                         field="createdDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="md"
-                        itemClass="grid-item-pull-left"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         width="150">
             <template #format="{ row }">
                 <span>{{ getElapsed(row.createdDateTime) }}</span>
@@ -148,13 +149,6 @@
     </Modal>
 </template>
 
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-</style>
-
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -174,7 +168,7 @@
     import { Guid } from "@Obsidian/Types";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

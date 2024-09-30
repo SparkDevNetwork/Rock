@@ -24,25 +24,33 @@
                         title="Last Successful Run"
                         field="lastSuccessfulRun"
                         :filter="dateValueFilter"
-                        visiblePriority="md" />
+                        visiblePriority="md"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right" />
 
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date"
                         field="lastRunDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="md" />
+                        visiblePriority="md"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right" />
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
                     field="lastRunDurationSeconds"
                     :filter="textValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="md"
+                    headerClass="text-center"
+                    itemClass="justify-content-center text-center" />
 
         <Column name="lastStatus"
                 title="Last Status"
                 visiblePriority="md"
                 :filter="textValueFilter"
-                :filterValue="getlastStatusFilterValue">
+                :filterValue="getlastStatusFilterValue"
+                headerClass="text-center"
+                itemClass="justify-content-center text-center">
             <template #format="{ row }">
                 <span :class='getStatusClass(row)'>{{ row.lastStatus === "Exception" ? "Failed" : row.lastStatus }}</span>
             </template>
@@ -68,19 +76,24 @@
                        title="System"
                        field="isSystem"
                        visiblePriority="md"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
                        width="5%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        visiblePriority="md"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
                        width="5%" />
 
         <Column name="history"
                 width="52px"
                 title="History"
                 disableSort
-                itemClass="grid-columncommand">
+                itemClass="grid-columncommand justify-content-center text-center"
+                headerClass="text-center">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onShowHistory(row, $event)"
@@ -95,7 +108,8 @@
                 width="52px"
                 title="Run Now"
                 disableSort
-                itemClass="grid-columncommand">
+                itemClass="grid-columncommand justify-content-center text-center"
+                headerClass="text-center">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onRunNowClick(row, $event)"
@@ -176,16 +190,16 @@
      *
      * @param row The row to be filtered.
      */
-     function getlastStatusMessageFilterValue(row: Record<string, unknown>): string {
+    function getlastStatusMessageFilterValue(row: Record<string, unknown>): string {
         return row.lastStatusMessage as string;
     }
 
-        /**
-     * Gets the filter value text to use for the status column.
-     *
-     * @param row The row to be filtered.
-     */
-     function getlastStatusFilterValue(row: Record<string, unknown>): string {
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getlastStatusFilterValue(row: Record<string, unknown>): string {
         return row.lastStatus as string;
     }
 

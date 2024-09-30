@@ -43,7 +43,8 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     :width="columnWidth"
-                    itemClass="grid-item-pull-left" />
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right" />
 
 
         <DateColumn name="lastLogin"
@@ -52,7 +53,8 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     :width="columnWidth"
-                    itemClass="grid-item-pull-left" />
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right" />
 
         <BooleanColumn name="isConfirmed"
                        title="Confirmed"
@@ -131,18 +133,6 @@
         </div>
     </Modal>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-
-.grid-item-center {
-    flex-direction: column;
-    align-items: center;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

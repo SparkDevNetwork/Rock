@@ -70,7 +70,8 @@
                     title="Date"
                     field="date"
                     width="120"
-                    itemClass="justify-content-end"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
@@ -80,6 +81,7 @@
                         field="amount"
                         :filter="numberValueFilter"
                         width="3%"
+                        headerClass="text-right"
                         itemClass="justify-content-end"
                         visiblePriority="xs">
             <template #format="{ row }">
