@@ -9,11 +9,11 @@ namespace Rock.Migrations
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
     public sealed partial class AddPhoneNumberOptOutColumns : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddProcessSendKeyToCommunicationRecipient));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddPhoneNumberOptOutColumns));
         
         string IMigrationMetadata.Id
         {
-            get { return "202409271627566_AddPhoneNumberOptOutColumns"; }
+            get { return "202409301803276_AddPhoneNumberOptOutColumns"; }
         }
         
         string IMigrationMetadata.Source
