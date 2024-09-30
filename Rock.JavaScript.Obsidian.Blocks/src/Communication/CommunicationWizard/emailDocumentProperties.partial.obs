@@ -12,19 +12,25 @@
     <Panel v-model="isTextStylingExpanded"
            :hasCollapse="true"
            title="Text Styling">
-        <ElementDefaultFont :modelValue="modelValue.body" label="Heading 1" tagName="h1" />
+        <ElementFontStyles :modelValue="modelValue.body" label="Heading 1" tagName="h1" />
         <hr>
-        <ElementDefaultFont :modelValue="modelValue.body" label="Heading 2" tagName="h2" />
+        <ElementFontStyles :modelValue="modelValue.body" label="Heading 2" tagName="h2" />
         <hr>
-        <ElementDefaultFont :modelValue="modelValue.body" label="Heading 3" tagName="h3" />
+        <ElementFontStyles :modelValue="modelValue.body" label="Heading 3" tagName="h3" />
         <hr>
-        <ElementDefaultFont :modelValue="modelValue.body" label="Paragraph" tagName="p" />
+        <ElementFontStyles :modelValue="modelValue.body" label="Paragraph" tagName="p" />
     </Panel>
 
     <Panel v-model="isDefaultButtonStylingExpanded"
            :hasCollapse="true"
            title="Default Button Styling">
-        <ElementDefaultButton :modelValue="modelValue.body" />
+        <ElementButtonStyles :modelValue="modelValue.body" />
+    </Panel>
+
+    <Panel v-model="isDividerStylingExpanded"
+           :hasCollapse="true"
+           title="Divider Styling">
+        <ElementDividerStyles :modelValue="modelValue.body" />
     </Panel>
 </template>
 
@@ -39,8 +45,9 @@
     import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
     import ElementBackgroundImage from "./properties/elementBackgroundImage.partial.obs";
     import ElementBorder from "./properties/elementBorder.partial.obs";
-    import ElementDefaultButton from "./properties/elementDefaultButton.partial.obs";
-    import ElementDefaultFont from "./properties/elementDefaultFont.partial.obs";
+    import ElementButtonStyles from "./properties/elementButtonStyles.partial.obs";
+    import ElementDividerStyles from "./properties/elementDividerStyles.partial.obs";
+    import ElementFontStyles from "./properties/elementFontStyles.partial.obs";
     import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
 
@@ -57,6 +64,7 @@
     const isGeneralSettingsExpanded = ref<boolean>(true);
     const isTextStylingExpanded = ref<boolean>(false);
     const isDefaultButtonStylingExpanded = ref<boolean>(false);
+    const isDividerStylingExpanded = ref<boolean>(false);
 
     // #endregion
 
@@ -67,6 +75,7 @@
             // Collapse other sections.
             isTextStylingExpanded.value = false;
             isDefaultButtonStylingExpanded.value = false;
+            isDividerStylingExpanded.value = false;
         }
     }, {
         // This is the only expansion watcher that should run immediately.
@@ -78,6 +87,7 @@
             // Collapse other sections.
             isGeneralSettingsExpanded.value = false;
             isDefaultButtonStylingExpanded.value = false;
+            isDividerStylingExpanded.value = false;
         }
     });
 
@@ -86,6 +96,16 @@
             // Collapse other sections.
             isGeneralSettingsExpanded.value = false;
             isTextStylingExpanded.value = false;
+            isDividerStylingExpanded.value = false;
+        }
+    });
+
+    watch(isDividerStylingExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other sections.
+            isGeneralSettingsExpanded.value = false;
+            isTextStylingExpanded.value = false;
+            isDefaultButtonStylingExpanded.value = false;
         }
     });
 

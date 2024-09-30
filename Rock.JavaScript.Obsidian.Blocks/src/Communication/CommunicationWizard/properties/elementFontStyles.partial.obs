@@ -258,7 +258,7 @@ svg {
         if (!loaded) {
             fontFamily.value = "";
             fontColor.value = "";
-            fontSize.value = parseInt(props.modelValue.style.fontSize || "0");
+            fontSize.value = 0;
             fontStyleGroup.value = [];
             lineHeight.value = "";
             textTransform.value = "";

@@ -1,26 +1,22 @@
 <template>
-    <ColorPicker v-model="backgroundColor" label="Background Color" />
-
-    <ColorPicker v-model="color" label="Text Color" />
-
-    <DropDownList v-model="fontFamily"
-                  :items="fontFamilies"
-                  label="Text" />
-
-    <NumberBox v-model="fontSize" :disableLabel="true" />
+    <ColorPicker v-model="borderColor" label="Color" />
 
     <NumberUpDown v-model="borderRadius"
                   label="Corner Radius"
                   :min="0" />
 
-    <DropDownList v-model="textStyle"
-                  :items="[]"
-                  label="Text Style" />
+    <DropDownList v-model="borderStyle"
+                  :items="borderStyles"
+                  label="Style" />
+
+    <NumberUpDown v-model="marginTop"
+                  label="Vertical Margin Size"
+                  :min="0" />
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { ColorPicker, DropDownList, NumberBox } from "../imports.partial";
+    import { ColorPicker, DropDownList, NumberUpDown } from "../imports.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -32,28 +28,28 @@
 
     // IMPORTANT! Font families are not automatically quoted when generating the <style> tag,
     // so make sure they are quoted here if necessary.
-    const fontFamilies: ListItemBag[] = [
+    const borderStyles: ListItemBag[] = [
         {
-            value: "Arial",
-            text: "Arial"
+            value: "solid",
+            text: "Solid"
         }, {
-            value: "Helvetica",
-            text: "Helvetica"
+            value: "dashed",
+            text: "Dashed"
         }, {
-            value: "'Times New Roman'",
-            text: "Times New Roman"
+            value: "dotted",
+            text: "Dotted"
         }
     ];
+
+    const tagName: keyof HTMLElementTagNameMap = "hr";
 
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.
-    const backgroundColor = ref<string>("");
-    const color = ref<string>("");
-    const fontFamily = ref<string>("");
-    const fontSize = ref<number>(0);
+    const borderColor = ref<string>("");
     const borderRadius = ref<number>(0);
-    const textStyle = ref<string>("");
+    const borderStyle = ref<string>("");
+    const marginTop = ref<number>(0);
 
     // #endregion
 
@@ -62,45 +58,30 @@
     const cssRuleset = computed<string | null>(() => {
         const declarations: string[] = [];
 
-        if (backgroundColor.value) {
-            declarations.push(`background-color: ${backgroundColor.value};`);
-        }
-
-        if (color.value) {
-            declarations.push(`color: ${color.value};`);
-        }
-
-        if (fontFamily.value) {
-            declarations.push(`font-family: ${fontFamily.value};`);
-        }
-
-        if (fontSize.value) {
-            declarations.push(`font-size: ${fontSize.value}px;`);
+        if (borderColor.value) {
+            declarations.push(`border-color: ${borderColor.value};`);
+            declarations.push(`background-color: ${borderColor.value};`);
         }
 
         if (borderRadius.value) {
             declarations.push(`border-radius: ${borderRadius.value}px;`);
         }
 
-        if (textStyle.value) {
-            // TODO JMH Do something?
+        if (borderStyle.value) {
+            declarations.push(`border-style: ${borderStyle.value};`);
+        }
+
+        if (marginTop.value) {
+            declarations.push(`margin-top: ${marginTop.value}px;`);
         }
 
         if (declarations.length) {
-            return `button {\n    ${declarations.join("\n    ")}\n}`;
+            return `${tagName} {\n    ${declarations.join("\n    ")}\n}`;
         }
         else {
             return null;
         }
     });
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 
@@ -119,16 +100,14 @@
             const ownerNode = stylesheet.ownerNode;
 
             if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
-                if (ownerNode.classList.contains(`rock-design-button`)) {
+                if (ownerNode.classList.contains(`rock-design-${tagName}`)) {
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
-                            if (rule.selectorText === "button") {
-                                backgroundColor.value = rule.style.backgroundColor;
-                                color.value = rule.style.color;
-                                fontFamily.value = rule.style.fontFamily;
-                                fontSize.value = parseInt(rule.style.fontSize || "0");
+                            if (rule.selectorText === tagName) {
+                                borderColor.value = rule.style.borderColor;
                                 borderRadius.value = parseInt(rule.style.borderRadius || "0");
-                                // TODO JMH textStyle.value = ??
+                                borderStyle.value = rule.style.borderStyle;
+                                marginTop.value = parseInt(rule.style.marginTop || "0");
 
                                 loaded = true;
                             }
@@ -139,12 +118,10 @@
         }
 
         if (!loaded) {
-            backgroundColor.value = "";
-            color.value = "";
-            fontFamily.value = "";
-            fontSize.value = parseInt(props.modelValue.style.fontSize || "0");
-            borderRadius.value = parseInt(props.modelValue.style.borderRadius || "0");
-            textStyle.value = "";
+            borderColor.value = "";
+            borderStyle.value = "";
+            borderRadius.value = 0;
+            marginTop.value = 0;
         }
     }, {
         // Since the reactive values are not initialized where defined above,
@@ -157,10 +134,10 @@
     // should be added/updated with the new styles.
     watch(cssRuleset, () => {
         if (cssRuleset.value) {
-            const tag = props.modelValue.querySelector(`style.rock-design-button`);
+            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
             const styleTag = props.modelValue.ownerDocument.createElement("style");
             styleTag.textContent = cssRuleset.value;
-            styleTag.classList.add(`rock-design-button`);
+            styleTag.classList.add(`rock-design-${tagName}`);
             if (tag) {
                 tag.replaceWith(styleTag);
             }
@@ -169,7 +146,7 @@
             }
         }
         else {
-            const tag = props.modelValue.querySelector(`style.rock-design-button`);
+            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
             if (tag) {
                 tag.remove();
             }

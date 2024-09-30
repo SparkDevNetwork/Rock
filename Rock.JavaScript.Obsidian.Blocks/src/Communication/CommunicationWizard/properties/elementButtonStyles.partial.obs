@@ -1,0 +1,182 @@
+<template>
+    <ColorPicker v-model="backgroundColor" label="Background Color" />
+
+    <ColorPicker v-model="color" label="Text Color" />
+
+    <DropDownList v-model="fontFamily"
+                  :items="fontFamilies"
+                  label="Text" />
+
+    <NumberBox v-model="fontSize" :disableLabel="true" />
+
+    <NumberUpDown v-model="borderRadius"
+                  label="Corner Radius"
+                  :min="0" />
+
+    <DropDownList v-model="textStyle"
+                  :items="[]"
+                  label="Text Style" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ColorPicker, DropDownList, NumberBox } from "../imports.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // IMPORTANT! Font families are not automatically quoted when generating the <style> tag,
+    // so make sure they are quoted here if necessary.
+    const fontFamilies: ListItemBag[] = [
+        {
+            value: "Arial",
+            text: "Arial"
+        }, {
+            value: "Helvetica",
+            text: "Helvetica"
+        }, {
+            value: "'Times New Roman'",
+            text: "Times New Roman"
+        }
+    ];
+
+    const tagName: keyof HTMLElementTagNameMap = "button";
+
+    // #region Values
+
+    // These are initialized in the "immediate" props.modelValue watcher below.
+    const backgroundColor = ref<string>("");
+    const color = ref<string>("");
+    const fontFamily = ref<string>("");
+    const fontSize = ref<number>(0);
+    const borderRadius = ref<number>(0);
+    const textStyle = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const cssRuleset = computed<string | null>(() => {
+        const declarations: string[] = [];
+
+        if (backgroundColor.value) {
+            declarations.push(`background-color: ${backgroundColor.value};`);
+        }
+
+        if (color.value) {
+            declarations.push(`color: ${color.value};`);
+        }
+
+        if (fontFamily.value) {
+            declarations.push(`font-family: ${fontFamily.value};`);
+        }
+
+        if (fontSize.value) {
+            declarations.push(`font-size: ${fontSize.value}px;`);
+        }
+
+        if (borderRadius.value) {
+            declarations.push(`border-radius: ${borderRadius.value}px;`);
+        }
+
+        if (textStyle.value) {
+            // TODO JMH Do something?
+        }
+
+        if (declarations.length) {
+            return `${tagName} {\n    ${declarations.join("\n    ")}\n}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        const ownerDocument = props.modelValue.ownerDocument;
+        const ownerWindow = ownerDocument.defaultView;
+
+        if (!ownerWindow) {
+            throw "The element is not a child of an active window";
+        }
+
+        let loaded = false;
+        for (const stylesheet of props.modelValue.ownerDocument.styleSheets) {
+            const ownerNode = stylesheet.ownerNode;
+
+            if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
+                if (ownerNode.classList.contains(`rock-design-${tagName}`)) {
+                    for (const rule of stylesheet.cssRules) {
+                        if (rule instanceof ownerWindow.CSSStyleRule) {
+                            if (rule.selectorText === tagName) {
+                                backgroundColor.value = rule.style.backgroundColor;
+                                color.value = rule.style.color;
+                                fontFamily.value = rule.style.fontFamily;
+                                fontSize.value = parseInt(rule.style.fontSize || "0");
+                                borderRadius.value = parseInt(rule.style.borderRadius || "0");
+                                // TODO JMH textStyle.value = ??
+
+                                loaded = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!loaded) {
+            backgroundColor.value = "";
+            color.value = "";
+            fontFamily.value = "";
+            fontSize.value = 0;
+            borderRadius.value = 0;
+            textStyle.value = "";
+        }
+    }, {
+        // Since the reactive values are not initialized where defined above,
+        // this needs to be immediate here.
+        immediate: true
+    });
+
+    // Whenever the CSS ruleset changes based on the font properties,
+    // the style tag associated with this component's bound element
+    // should be added/updated with the new styles.
+    watch(cssRuleset, () => {
+        if (cssRuleset.value) {
+            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
+            const styleTag = props.modelValue.ownerDocument.createElement("style");
+            styleTag.textContent = cssRuleset.value;
+            styleTag.classList.add(`rock-design-${tagName}`);
+            if (tag) {
+                tag.replaceWith(styleTag);
+            }
+            else {
+                props.modelValue.append(styleTag);
+            }
+        }
+        else {
+            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
+            if (tag) {
+                tag.remove();
+            }
+        }
+    });
+
+    // #endregion
+</script>
