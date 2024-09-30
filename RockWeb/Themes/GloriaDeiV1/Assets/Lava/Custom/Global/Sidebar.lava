@@ -6,9 +6,9 @@
 
 <div class="sidebar d-flex flex-column justify-content-between">
     <div class="top d-flex flex-column align-items-center w-100">
-        {% if CurrentPage.Layout.Site.SiteLogoBinaryFileId and CurrentPage.Layout.Site.SiteLogoBinaryFileId != empty %}
+        {% if CurrentPage.Layout.Site.FavIconBinaryFileId and CurrentPage.Layout.Site.FavIconBinaryFileId != empty %}
             <a href="/" title="home" class="d-block">
-                <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}" alt="Gloria Dei | Home" class="logo img-responsive">
+                <img src="{{ CurrentPage.Layout.Site.FavIconBinaryFileId | ImageUrl }}" alt="Gloria Dei | Home" class="logo img-responsive">
             </a>
         {% endif %}
 
@@ -26,6 +26,5 @@
         {% endif %}
     </div>
 </div>
-
 
 

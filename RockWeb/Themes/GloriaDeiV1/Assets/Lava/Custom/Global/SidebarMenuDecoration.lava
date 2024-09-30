@@ -1,0 +1,14 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Global/SidebarMenuDecoration.lava' %} {% endcomment %}
+{% assign sidebarImagesType = 109 | FromCache:'DefinedType' %}
+{% assign sidebarImage = sidebarImagesType.DefinedValues | Shuffle | First %}
+{% assign sidebarImageGuid = sidebarImage | Attribute:'Image','RawValue' %}
+
+<div class="sidebar-menu-decoration">
+    <div class="sidebar-menu-decoration-inner">
+        <div class="js-parallax-scene parallax-scene vertical">
+            <div class="text" data-depth=".09">{{ CurrentPage.PageTitle }}</div>
+        </div>
+    </div>
+
+    <img src="{{ sidebarImageGuid | ImageUrl }}" data-depth=".02" alt="Gloria Dei Lutheran | {{ sidebarImage.Value }}" class="img-responsive rounded-md shadow-xl">
+</div>

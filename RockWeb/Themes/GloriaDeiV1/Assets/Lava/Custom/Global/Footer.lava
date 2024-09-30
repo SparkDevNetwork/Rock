@@ -1,0 +1,20 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Global/Footer.lava' %} {% endcomment %}
+
+{% assign organizationPhone = 'Global' | Attribute:'OrganizationPhone','RawValue' %}
+
+<div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-4">
+        {% if CurrentPage.Layout.Site.SiteLogoBinaryFileId and CurrentPage.Layout.Site.SiteLogoBinaryFileId != empty %}
+            <a href="/" title="home" class="brand">
+                <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}" alt="Gloria Dei | Home" class="logo img-responsive">
+            </a>
+        {% endif %}
+        <div class="info">
+            <b>Contact Us:</b> <a href=""></a>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4"></div>
+    <div class="col-xs-12 col-sm-12 col-md-4"></div>
+</div>
+
+{{ 'Lava' | Debug }}

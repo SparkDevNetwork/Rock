@@ -24,6 +24,19 @@ $(() => {
         }
     });
 
+
+
+    // -------------------------------
+    // - Parallax js initialization
+    // -------------------------------
+    $('.js-parallax-scene').each((i, obj) => {
+        var parallaxInstance = new Parallax(obj, {
+            relativeInput: true,
+            frictionX: .075,
+            frictionY: .075
+        });
+    });
+
 })
 
 

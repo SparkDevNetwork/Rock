@@ -17,6 +17,9 @@
 
                 {% if childPage.DisplayChildPages and childPage.Pages != empty %}
                     <ul class="list-unstyled">
+                        <li class="nav-level-two{% if childPage.Current %} active{% endif %}">
+                            <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                        </li>
                         {% for childChildPage in childPage.Pages %}
                             <li class="nav-level-two{% if childChildPage.Current %} active{% endif %}">
                                 <a href="{{ childChildPage.Url }}">{{ childChildPage.Title }}</a>
@@ -32,6 +35,4 @@
 {% endif %}
 
 
-<script>
-    {% include '~~/Assets/Scripts/Working.js' %}
-</script>
+

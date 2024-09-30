@@ -25,6 +25,9 @@
 
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
 
+    <%-- parallax.js --%>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
+
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
@@ -36,6 +39,8 @@
 
     <%-- todo: for dev purposes. Remove when dev phase finished --%>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/working.css", true) %>"/>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/Working.js", true) %>"></script>
+
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -49,11 +54,14 @@
         </div>
 
         <div class="global-sidebar-menu js-global-sidebar-menu">
+            <Rock:Lava ID="sidebarmenudecoration" runat="server">
+                {% include '~~/Assets/Lava/Custom/Global/SidebarMenuDecoration.lava' %}
+            </Rock:Lava>
+
             <div class="container h-100">
                 <div class="row d-flex h-100 align-items-center">
                     <div class="col-xs-12 col-sm-12 col-md-6 h-100">
                         <div class="d-flex h-100 flex-column justify-content-between">
-                            <div></div>
                             <Rock:Zone Name="SidebarMenu" runat="server" />
                             <div class="sidebar-menu-footer">
                                 <a href="#" class="btn btn-link">Login</a>

@@ -9,6 +9,7 @@
   background-color: #F2F1ED;
   // background-color: @isabelline;
   z-index: 100;
+  overflow: hidden;
 
   @media (min-width: 992px) {
   // @media (min-width: @screen-md-min) {
@@ -19,9 +20,46 @@
     transform: translateX(0);
   }
 
+  .row {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
   nav {
+    margin-top: 96px;
+
+    li.nav-level-one,
+    li.nav-level-two {
+      line-height: 1;
+      font-weight: 700;
+      // todo
+      font-family: "Visby CF","Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji" !important;
+      // .font-secondary();
+
+
+      a {
+        text-decoration: none !important;
+      }
+    }
+
     li.nav-level-one {
       font-size: 24px;
+
+      a {
+        // todo
+        color: #666F7A;
+        // color: @nickel;
+
+        &:hover {
+          // todo
+          color: darken(#666F7A, 10%);
+          // color: darken(@nickel, 10%);
+        }
+      }
+
+      i {
+        margin-left: 10px;
+      }
 
       i.fa-minus {
         display: none;
@@ -33,6 +71,10 @@
         // todo
         transition: all .3s ease;
         // .transition();
+      }
+
+      & + .nav-level-one {
+        margin-top: 24px;
       }
 
       &.in {
@@ -48,6 +90,166 @@
           max-height: 400px;
         }
       }
+    }
+
+    li.nav-level-two {
+      margin-top: 20px;
+      padding-left: 32px;
+      font-size: 20px;
+
+      a {
+        // todo
+        color: #A2A9AD;
+        // color: @metallic-silver;
+
+        &:hover {
+          // todo
+          color: darken(#A2A9AD, 10%);
+          // color: darken(@metallic-silver, 10%);
+        }
+      }
+    }
+  }
+
+  .sidebar-menu-footer {
+    padding: 32px 0 32px;
+    margin-top: 64px;
+    border-top: 1px solid fadeout(#A2A9AD, 75%);
+    // border-top: 1px solid fadeout(@metallic-silver, 75%);
+
+    a {
+      font-size: 18px;
+      //todo
+      color: #B9825D;
+      // color: @early-fawn;
+      text-decoration: none !important;
+      
+      &:hover {
+        //todo
+        color: darken(#B9825D, 10%);
+        // color: darken(@early-fawn, 10%);
+      }
+
+      // todo
+      @media (min-width: 768px) {
+      // @media (min-width: @screen-md-min) {
+        font-size: 24px;
+      }
+
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+  .sidebar-menu-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0 50%, #9A8D7F 50%);
+
+    // todo
+    @media (max-width: 991px) {
+    // @media (max-width: @screen-md-max) {
+      display: none;
+    }
+    
+    &-inner {
+      position: absolute;
+      top: 50%;
+      right: 50%;
+      transform: translateY(-50%);
+      width: 50%;
+    }
+
+    img {
+      aspect-ratio: 5/8;
+      object-fit: cover;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translateY(-50%) translateX(-50%);
+      width: 75%;
+      max-height: 840px;
+      min-height: 360px;
+    }
+
+  }
+}
+
+
+
+
+
+
+
+
+
+// Parallax Scenes
+.parallax-scene {
+  .text {
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: #A2A9AD;
+    font-size: 190px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.14; 
+    text-transform: uppercase;
+    color: transparent;
+  }
+
+  &.vertical {
+    .text {
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+      
+    }
+  }
+}
+
+
+
+
+
+
+.sidebar-toggle {
+  svg * {
+    // todo
+    transition: all .3s ease;
+    // .transition();
+  }
+
+  &.in {
+    .arrow {
+      transform-origin: center;
+      transform: rotate(-90deg) translate(-20px, -5px);
+    }
+
+    .bar-one,
+    .bar-three {
+      width: 100%;
+    }
+
+    .bar-one {
+      transform: rotate(45deg) translate(2px, -4px);
+    }
+
+    .bar-three {
+      transform: rotate(-45deg) translate(-11px, -2px);
+    }
+
+    .bar-two {
+      display: none;
     }
   }
 }
