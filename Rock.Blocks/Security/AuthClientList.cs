@@ -38,7 +38,7 @@ namespace Rock.Blocks.Security
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect clients." )]
     [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the auth client details.",
