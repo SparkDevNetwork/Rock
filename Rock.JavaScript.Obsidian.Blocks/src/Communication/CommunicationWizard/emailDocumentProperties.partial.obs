@@ -12,13 +12,19 @@
     <Panel v-model="isTextStylingExpanded"
            :hasCollapse="true"
            title="Text Styling">
-        <ElementFont :modelValue="modelValue.body" label="Heading 1" tagName="h1" />
+        <ElementDefaultFont :modelValue="modelValue.body" label="Heading 1" tagName="h1" />
         <hr>
-        <ElementFont :modelValue="modelValue.body" label="Heading 2" tagName="h2" />
+        <ElementDefaultFont :modelValue="modelValue.body" label="Heading 2" tagName="h2" />
         <hr>
-        <ElementFont :modelValue="modelValue.body" label="Heading 3" tagName="h3" />
+        <ElementDefaultFont :modelValue="modelValue.body" label="Heading 3" tagName="h3" />
         <hr>
-        <ElementFont :modelValue="modelValue.body" label="Paragraph" tagName="p" />
+        <ElementDefaultFont :modelValue="modelValue.body" label="Paragraph" tagName="p" />
+    </Panel>
+
+    <Panel v-model="isDefaultButtonStylingExpanded"
+           :hasCollapse="true"
+           title="Default Button Styling">
+        <ElementDefaultButton :modelValue="modelValue.body" />
     </Panel>
 </template>
 
@@ -33,7 +39,8 @@
     import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
     import ElementBackgroundImage from "./properties/elementBackgroundImage.partial.obs";
     import ElementBorder from "./properties/elementBorder.partial.obs";
-    import ElementFont from "./properties/elementFont.partial.obs";
+    import ElementDefaultButton from "./properties/elementDefaultButton.partial.obs";
+    import ElementDefaultFont from "./properties/elementDefaultFont.partial.obs";
     import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
 
@@ -49,6 +56,7 @@
 
     const isGeneralSettingsExpanded = ref<boolean>(true);
     const isTextStylingExpanded = ref<boolean>(false);
+    const isDefaultButtonStylingExpanded = ref<boolean>(false);
 
     // #endregion
 
@@ -58,6 +66,7 @@
         if (isExpanded) {
             // Collapse other sections.
             isTextStylingExpanded.value = false;
+            isDefaultButtonStylingExpanded.value = false;
         }
     }, {
         // This is the only expansion watcher that should run immediately.
@@ -68,6 +77,15 @@
         if (isExpanded) {
             // Collapse other sections.
             isGeneralSettingsExpanded.value = false;
+            isDefaultButtonStylingExpanded.value = false;
+        }
+    });
+
+    watch(isDefaultButtonStylingExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other sections.
+            isGeneralSettingsExpanded.value = false;
+            isTextStylingExpanded.value = false;
         }
     });
 
