@@ -6,6 +6,8 @@
 @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
 @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
 @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
+// @import "../../../Styles/style-v2/icons/tabler-icon.css";
+
 
 @-ms-viewport {
   width: device-width;
@@ -593,11 +595,11 @@ $navbar-element-height: 40px;
 
     .nav-item {
       .nav-link {
-        padding: 0;
+        padding: var(--spacing-tiny);
         line-height: 1.4;
         display: flex;
         align-items: center;
-        margin: 18px 0;
+        margin: var(--spacing-small) 0;
         color: var(--color-interface-strong);
 
         &:last-child{
@@ -611,7 +613,7 @@ $navbar-element-height: 40px;
           margin-right: 14px;
           margin-bottom: 1px;
           content: " ";
-          background-color: var(--color-interface-strong);
+          background-color: var(--color-interface-soft);
           border-radius: 100px;
         }
 
@@ -622,7 +624,8 @@ $navbar-element-height: 40px;
 
         &:hover {
           color: var(--color-interface-strong);
-          background-color: var(--color-interface-softer);
+          background-color: var(--color-interface-soft);
+          border-radius: var(--rounded-small);
 
           &::before {
             width: 8px;
@@ -686,7 +689,7 @@ $navbar-element-height: 40px;
       }
 
       &:last-child {
-        margin-bottom: 72px;
+        // margin-bottom: 72px; // dont know the margin botton is here in the first place why???????
       }
     }
 
@@ -963,3 +966,8 @@ $hamburger-spacing: 4px;
     }
   }
 }
+
+.header + .nav-item {
+  margin-top: var(--spacing-medium);
+}
+
