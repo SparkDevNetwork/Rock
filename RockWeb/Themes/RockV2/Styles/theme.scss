@@ -492,12 +492,18 @@ $navbar-element-height: 40px;
       display: flex;
       align-items: center;
       justify-content: flex-start; 
+      padding: 18px 12px;
+      font-size: 18px;
+      margin-top: 0;
       text-align: center;
       line-height: 1;
       cursor: pointer;
       gap: 12px;
       transition: box-shadow .1s linear;
-
+      border-top: 1px solid #ffffff30;
+      &:last-child {
+        border-bottom: 1px solid #ffffff30;
+      }
       // &:last-child {
       //   border-bottom: 1px solid lighten(@navbarside-background-color, 7%); // commented out because the new nav doesn't have border
       // }
@@ -536,7 +542,7 @@ $navbar-element-height: 40px;
         font-size: 24px;
         font-weight: var(--font-weight-semibold);
         line-height: 1;
-        color: var(--color-interface-strong);
+        color: var(--color-interface-softer);
 
         &:after {
           content: "\f054";
@@ -782,6 +788,7 @@ $navbar-element-height: 40px;
         padding-bottom: 27px;
 
         .item-title {
+          color: var(--color-interface-strong);
           // display: inline-block;
           font-size: 28px;
 
