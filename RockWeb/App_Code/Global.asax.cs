@@ -279,9 +279,27 @@ namespace RockWeb
             CompileThemesThread = new Thread( () =>
             {
                 /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                // Compile the next-generation themes.
+                var stopwatchCompileTheme = Stopwatch.StartNew();
+                var compileMessages = ThemeService.CompileAll( _threadCancellationTokenSource.Token );
+                stopwatchCompileTheme.Stop();
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    Debug.WriteLine( string.Format( "[{0,5:#} ms] Themes Compiled", stopwatchCompileTheme.Elapsed.TotalMilliseconds ) );
+
+                    if ( compileMessages.Any() )
+                    {
+                        Debug.WriteLine( "ThemeService.CompileAll messages:" );
+                        compileMessages.ForEach( m => Debug.WriteLine( $"> {m}" ) );
+                    }
+                }
+
+                // Start compiling the legacy themes.
                 var stopwatchCompileLess = Stopwatch.StartNew();
 
-                Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
                 bool onlyCompileIfNeeded = true;
 

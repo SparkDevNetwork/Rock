@@ -163,6 +163,9 @@
     <Compile Include="Blocks\Cms\PageList\PageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ThemeDetail\ThemeBag.cs" />
+    <Compile Include="Blocks\Cms\ThemeDetail\ThemeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ThemeDetail\ThemeFieldBag.cs" />
     <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionBag.cs" />
     <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
@@ -276,6 +279,7 @@
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobList\ScheduledJobListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
