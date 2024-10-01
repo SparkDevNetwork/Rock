@@ -222,6 +222,9 @@
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplLabelRendererTests.cs" />
     <Compile Include="Rock\CheckIn\v2\TemplateConfigurationDataTests.cs" />
     <Compile Include="Rock\CheckIn\v2\AreaConfigurationDataTests.cs" />
+    <Compile Include="Rock\Cms\ThemeDefinitionTests.cs" />
+    <Compile Include="Rock\Cms\ThemeFieldTests.cs" />
+    <Compile Include="Rock\Cms\ThemeOverrideBuilderTests.cs" />
     <Compile Include="Rock\Configuration\RockAppExtensionsTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />

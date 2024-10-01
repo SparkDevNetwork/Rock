@@ -48,6 +48,7 @@
     </Compile>
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />
@@ -93,6 +94,8 @@
     <Compile Include="Cms\SiteTypeFlags.cs" />
     <Compile Include="Cms\SiteType.cs" />
     <Compile Include="Cms\TagType.cs" />
+    <Compile Include="Cms\ThemeFontAwesomeWeight.cs" />
+    <Compile Include="Cms\ThemeIconSet.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />

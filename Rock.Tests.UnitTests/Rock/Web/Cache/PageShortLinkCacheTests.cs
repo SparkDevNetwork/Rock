@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Cms;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
@@ -40,11 +41,11 @@ namespace Rock.Tests.UnitTests.Rock.Web.Cache
         {
             var expectedUrl = "https://www.rockrms.com";
 
-            var scheduleData = new Cms.PageShortLinkScheduleData
+            var scheduleData = new PageShortLinkScheduleData
             {
-                Schedules = new List<Cms.PageShortLinkSchedule>
+                Schedules = new List<PageShortLinkSchedule>
                 {
-                    new Cms.PageShortLinkSchedule
+                    new PageShortLinkSchedule
                     {
                         CustomCalendarContent = GetScheduleContentForNow(),
                         Url = expectedUrl
@@ -69,11 +70,11 @@ namespace Rock.Tests.UnitTests.Rock.Web.Cache
         {
             var expectedUrl = "https://www.rockrms.com";
 
-            var scheduleData = new Cms.PageShortLinkScheduleData
+            var scheduleData = new PageShortLinkScheduleData
             {
-                Schedules = new List<Cms.PageShortLinkSchedule>
+                Schedules = new List<PageShortLinkSchedule>
                 {
-                    new Cms.PageShortLinkSchedule
+                    new PageShortLinkSchedule
                     {
                         CustomCalendarContent = GetScheduleContentForYesterday(),
                         Url = "https://rock.rocksolidchurchdemo.com"

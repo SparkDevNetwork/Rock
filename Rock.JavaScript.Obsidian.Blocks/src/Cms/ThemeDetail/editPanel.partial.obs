@@ -1,0 +1,185 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <ThemeFields :fields="fields"
+                             :values="variables"
+                             @updateValue="onUpdateValue" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBoxList v-if="enabledIconSetsItems.length > 0"
+                              v-model="enabledIconSets"
+                              label="Icon Sets"
+                              help="The icon sets that should be included in the CSS for the theme."
+                              :items="enabledIconSetsItems"
+                              horizontal />
+
+                <template v-if="isFontAwesomeEnabled">
+                    <DropDownList v-model="defaultFontAwesomeWeight"
+                                  label="Default Font Awesome Weight"
+                                  help="Specifies the default weight to use for Font Awesome icons when sites use this theme."
+                                  :showBlankItem="false"
+                                  :items="fontAwesomeWeightItems" />
+
+                    <CheckBoxList v-if="options.hasFontAwesomePro"
+                                  v-model="additionalFontAwesomeWeights"
+                                  label="Additional Font Awesome Weights"
+                                  help="In addition to the default weight, additional weights can be made available when for syntax like 'far fa-cog'."
+                                  :items="additionalFontAwesomeWeightItems"
+                                  horizontal />
+                </template>
+
+                <CodeEditor v-model="customOverrides"
+                            label="CSS Overrides"
+                            mode="css"
+                            :editorHeight="600" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, provide, ref, watch } from "vue";
+    import ThemeFields from "./themeFields.partial.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ThemeBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeBag";
+    import { ThemeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { themeFieldsComponentSymbol } from "./types.partial";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { ThemeFontAwesomeWeight, ThemeFontAwesomeWeightDescription } from "@Obsidian/Enums/Cms/themeFontAwesomeWeight";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ThemeIconSet, ThemeIconSetDescription } from "@Obsidian/Enums/Cms/themeIconSet";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ThemeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ThemeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<ThemeBag>): void
+    }>();
+
+    provide(themeFieldsComponentSymbol, ThemeFields);
+
+    // #region Values
+
+    const fields = ref(props.modelValue.bag?.fields ?? []);
+    const variables = ref(props.modelValue.bag?.variableValues ?? {});
+    const enabledIconSets = ref(getIconSetsArray(props.modelValue.bag?.enabledIconSets ?? 0));
+    const defaultFontAwesomeWeight = ref(props.modelValue.bag?.defaultFontAwesomeWeight.toString() ?? "");
+    const additionalFontAwesomeWeights = ref(props.modelValue.bag?.additionalFontAwesomeWeights?.map(w => w.toString()) ?? []);
+    const customOverrides = ref(props.modelValue.bag?.customOverrides ?? "");
+
+    const fontAwesomeWeightItems = enumToListItemBag(ThemeFontAwesomeWeightDescription)
+        .filter(w => props.options.hasFontAwesomePro || w.value === ThemeFontAwesomeWeight.Solid.toString());
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const additionalFontAwesomeWeightItems = computed<ListItemBag[]>(() => {
+        return fontAwesomeWeightItems.filter(w => w.value !== defaultFontAwesomeWeight.value);
+    });
+
+    const enabledIconSetsItems = computed<ListItemBag[]>(() => {
+        const availableIconSets = props.modelValue.bag?.availableIconSets ?? 0;
+
+        return enumToListItemBag(ThemeIconSetDescription)
+            .filter(i => availableIconSets & toNumber(i.value));
+    });
+
+    const isFontAwesomeEnabled = computed<boolean>(() => {
+        return enabledIconSets.value.includes(ThemeIconSet.FontAwesome.toString());
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getIconSetsArray(value: ThemeIconSet): string[] {
+        const iconSets: string[] = [];
+
+        for (const iconValue of Object.keys(ThemeIconSetDescription)) {
+            if (value & toNumber(iconValue)) {
+                iconSets.push(iconValue);
+            }
+        }
+
+        return iconSets;
+    }
+
+    function getIconSetsValue(icons: string[]): ThemeIconSet {
+        let iconSet: ThemeIconSet = 0;
+
+        for (const icon of icons) {
+            iconSet |= toNumber(icon);
+        }
+
+        return iconSet;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onUpdateValue(key: string, value: string | null): void {
+        const newVariables = { ...variables.value };
+
+        if (value !== null) {
+            newVariables[key] = value;
+        }
+        else {
+            delete newVariables[key];
+        }
+
+        variables.value = newVariables;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(fields, props.modelValue.bag?.fields ?? []);
+        updateRefValue(variables, props.modelValue.bag?.variableValues ?? {});
+        updateRefValue(enabledIconSets, getIconSetsArray(props.modelValue.bag?.enabledIconSets ?? 0));
+        updateRefValue(defaultFontAwesomeWeight, props.modelValue.bag?.defaultFontAwesomeWeight.toString() ?? "");
+        updateRefValue(additionalFontAwesomeWeights, props.modelValue.bag?.additionalFontAwesomeWeights?.map(w => w.toString()) ?? []);
+        updateRefValue(customOverrides, props.modelValue.bag?.customOverrides ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, variables, enabledIconSets, defaultFontAwesomeWeight, additionalFontAwesomeWeights, customOverrides], () => {
+        const newValue: ValidPropertiesBox<ThemeBag> = {
+            bag: { ...props.modelValue.bag } as ThemeBag
+        };
+
+        setPropertiesBoxValue(newValue, "variableValues", variables.value);
+        setPropertiesBoxValue(newValue, "customOverrides", customOverrides.value);
+        setPropertiesBoxValue(newValue, "enabledIconSets", getIconSetsValue(enabledIconSets.value));
+        setPropertiesBoxValue(newValue, "defaultFontAwesomeWeight", <ThemeFontAwesomeWeight>toNumber(defaultFontAwesomeWeight.value));
+        setPropertiesBoxValue(newValue, "additionalFontAwesomeWeights", additionalFontAwesomeWeights.value.map(w => <ThemeFontAwesomeWeight>toNumber(w)));
+
+        emit("update:modelValue", newValue);
+    });
+</script>

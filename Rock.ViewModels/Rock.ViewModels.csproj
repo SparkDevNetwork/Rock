@@ -90,8 +90,11 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
-	  <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionBag.cs" />
-	  <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ThemeDetail\ThemeBag.cs" />
+    <Compile Include="Blocks\Cms\ThemeDetail\ThemeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ThemeDetail\ThemeFieldBag.cs" />
+    <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionBag.cs" />
+    <Compile Include="Blocks\Core\ScheduleCategoryExclusionList\ScheduleCategoryExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
     <Compile Include="Blocks\Administration\PageProperties\PagePropertiesBag.cs" />
     <Compile Include="Blocks\Administration\PageProperties\PagePropertiesOptionsBag.cs" />
@@ -153,7 +156,7 @@
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
-	<Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobList\ScheduledJobListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
