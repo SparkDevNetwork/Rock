@@ -18,7 +18,8 @@
                             <NumberBox v-model="visitorCookiePersistenceLength"
                                        label="Visitor Cookie Persistence Length"
                                        inputGroupClasses="input-width-lg"
-                                       help="The number of days a visitor cookie persists.">
+                                       help="The number of days a visitor cookie persists."
+                                       :minimumValue="1">
                                 <template #inputGroupAppend>
                                     <span class="input-group-addon">days</span>
                                 </template>
