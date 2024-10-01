@@ -1,18 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Block :title="config?.title ?? 'Asset Manager'" hasFullscreen>
-        <div class="panel-body-container">
-            <div class="panel-flex-fill-body">
-                <FileAssetManager v-model:openFolders="openFolders"
-                            v-model:selectedFolder="selectedFolder"
-                            :height="height"
-                            :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
-                            :enableAssetManager="config?.enableAssetProviders ?? true"
-                            :enableFileManager="config?.enableFileManager ?? false"
-                            :enableZipUpload="config?.enableZipUploader ?? false"
-                            :encryptedRootFolder="config?.rootFolder ?? undefined"
-                            :editFilePage="config?.fileEditorPage ?? undefined" />
-            </div>
+        <div style="margin:-18px">
+            <FileAssetManager v-model:openFolders="openFolders"
+                              v-model:selectedFolder="selectedFolder"
+                              :height="height"
+                              :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
+                              :enableAssetManager="config?.enableAssetProviders ?? true"
+                              :enableFileManager="config?.enableFileManager ?? false"
+                              :enableZipUpload="config?.enableZipUploader ?? false"
+                              :encryptedRootFolder="config?.rootFolder ?? undefined"
+                              :editFilePage="config?.fileEditorPage ?? undefined" />
         </div>
     </Block>
 </template>
@@ -75,9 +73,3 @@
     onConfigurationValuesChanged(useReloadBlock());
     provideSecurityGrant(securityGrant);
 </script>
-
-<style scoped>
-    .panel-body-container {
-        min-height: 600px;
-    }
-</style>
