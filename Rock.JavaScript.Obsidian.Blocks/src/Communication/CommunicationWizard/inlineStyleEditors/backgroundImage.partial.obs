@@ -19,9 +19,8 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { BinaryFileType, ImageUploader, InlineSwitch, RadioButton } from "../imports.partial";
+    import { BinaryFileType, ImageUploader, InlineSwitch, RadioButton, toGuidOrNull } from "../imports.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const dataAttributeKey = {
         backgroundImageGuid: "backgroundImageGuid",

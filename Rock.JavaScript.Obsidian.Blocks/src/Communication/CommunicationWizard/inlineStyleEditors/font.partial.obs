@@ -1,0 +1,229 @@
+<template>
+    <DropDownList v-model="fontFamily"
+                  :items="fontFamilies"
+                  :label="label" />
+
+    <NumberBox v-model="fontSize" :disableLabel="true" placeholder="Font Size (px)" />
+
+    <ColorPicker v-model="fontColor" :disableLabel="true" placeholder="Font Color" />
+
+    <MultiSelectButtonGroup v-model="fontStyleGroup" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('bold')"
+                        @click="toggleValue('bold')"><i class="fa fa-bold"></i></RockButton>
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('underline')"
+                        @click="toggleValue('underline')"><i class="fa fa-underline"></i></RockButton>
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('italic')"
+                        @click="toggleValue('italic')"><i class="fa fa-italic"></i></RockButton>
+        </template>
+    </MultiSelectButtonGroup>
+
+    <SingleSelectButtonGroup v-model="lineHeight" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.2')"
+                        title="Compact"
+                        @click="selectValue('1.2')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="20" width="64" height="4" fill="#000" />
+                    <rect x="0" y="30" width="64" height="4" fill="#000" />
+                    <rect x="0" y="40" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.5')"
+                        title="Normal"
+                        @click="selectValue('1.5')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="18" width="64" height="4" fill="#000" />
+                    <rect x="0" y="30" width="64" height="4" fill="#000" />
+                    <rect x="0" y="42" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.8')"
+                        title="Spacious"
+                        @click="selectValue('1.8')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="16" width="64" height="4" fill="#000" />
+                    <rect x="0" y="32" width="64" height="4" fill="#000" />
+                    <rect x="0" y="48" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('2')"
+                        title="Loose"
+                        @click="selectValue('2')">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="12" width="64" height="4" fill="#000" />
+                    <rect x="0" y="32" width="64" height="4" fill="#000" />
+                    <rect x="0" y="52" width="64" height="4" fill="#000" />
+                </svg>
+            </RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+
+    <SingleSelectButtonGroup v-model="textTransform" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('capitalize')"
+                        title="Capitalize"
+                        @click="selectValue('capitalize')">Ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('lowercase')"
+                        title="Lowercase"
+                        @click="selectValue('lowercase')">ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('uppercase')"
+                        title="Uppercase"
+                        @click="selectValue('uppercase')">AG</RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+svg {
+    height: 16px;
+    width: 16px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { ColorPicker, DropDownList, NumberBox, RockButton } from "../imports.partial";
+    import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
+    import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
+    import { useFontFamilies } from "../utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+        label: {
+            type: String as PropType<string>,
+            default: "Font"
+        }
+    });
+
+    const fontFamilies = useFontFamilies();
+
+    // #region Values
+
+    // These are initialized in the "immediate" props.modelValue watcher below.
+    const fontFamily = ref<string>("");
+    const fontColor = ref<string>("");
+    const fontSize = ref<number | null | undefined>();
+    const fontStyleGroup = ref<("bold" | "underline" | "italic")[]>([]);
+    const lineHeight = ref<string>("");
+    const textTransform = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    watch(fontFamily, (value: string) => {
+        props.modelValue.style.fontFamily = value;
+    });
+
+    watch(fontColor, (value: string) => {
+        props.modelValue.style.color = value;
+    });
+
+    watch(fontSize, value => {
+        if (value) {
+            props.modelValue.style.fontSize = `${fontSize.value}px`;
+        }
+        else {
+            props.modelValue.style.fontSize = "";
+        }
+    });
+
+    watch(fontStyleGroup, value => {
+        if (value.includes("bold")) {
+            props.modelValue.style.fontWeight = "bold";
+        }
+        else {
+            props.modelValue.style.fontWeight = "";
+        }
+
+        if (value.includes("italic")) {
+            props.modelValue.style.fontStyle = "italic";
+        }
+        else {
+            props.modelValue.style.fontStyle = "";
+        }
+
+        if (value.includes("underline")) {
+            props.modelValue.style.textDecoration = "underline";
+        }
+        else {
+            props.modelValue.style.textDecoration = "";
+        }
+    });
+
+    watch(lineHeight, (value: string) => {
+        props.modelValue.style.lineHeight = value;
+    });
+
+    watch(textTransform, (value: string) => {
+        props.modelValue.style.textTransform = value;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        fontFamily.value = props.modelValue.style.fontFamily;
+        fontColor.value = props.modelValue.style.color;
+        fontSize.value = props.modelValue.style.fontSize ? parseInt(props.modelValue.style.fontSize) : null;
+
+        const temp: ("bold" | "underline" | "italic")[] = [];
+        if (props.modelValue.style.fontWeight) {
+            temp.push("bold");
+        }
+        if (props.modelValue.style.fontStyle === "italic") {
+            temp.push("italic");
+        }
+        if (props.modelValue.style.textDecoration === "underline") {
+            temp.push("underline");
+        }
+        fontStyleGroup.value = temp;
+
+        lineHeight.value = props.modelValue.style.lineHeight;
+        textTransform.value = props.modelValue.style.textTransform;
+    }, {
+        // Since the reactive values are not initialized where defined above,
+        // this needs to be immediate here.
+        immediate: true
+    });
+
+    // #endregion
+</script>

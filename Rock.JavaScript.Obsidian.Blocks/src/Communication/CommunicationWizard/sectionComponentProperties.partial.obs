@@ -3,25 +3,23 @@
         <Panel :hasCollapse="true"
                :modelValue="true"
                title="Row Settings">
-            <ElementBackgroundColor :modelValue="selectedComponent.componentElement" />
-            <ElementBorderWidth :modelValue="selectedComponent.componentElement" />
-            <ElementBorderColor :modelValue="selectedComponent.componentElement" />
+            <BackgroundColor :modelValue="selectedComponent.componentElement" />
+            <Border :modelValue="selectedComponent.componentElement" />
         </Panel>
 
         <Panel :hasCollapse="true"
                title="Columns">
-            <ElementBackgroundColor :modelValue="selectedComponent.componentElement" />
+            <BackgroundColor :modelValue="selectedComponent.componentElement" />
             <ElementBorderWidth :modelValue="selectedComponent.componentElement" />
-            <ElementBorderColor :modelValue="selectedComponent.componentElement" />
+            <BorderColor :modelValue="selectedComponent.componentElement" />
         </Panel>
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
-    import ElementBorderColor from "./properties/elementBorderColor.partial.obs";
-    import ElementBorderWidth from "./properties/elementBorderWidth.partial.obs";
+    import BackgroundColor from "./inlineStyleEditors/backgroundColor.partial.obs";
+    import Border from "./inlineStyleEditors/border.partial.obs";
     import { EditorComponent } from "./types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 

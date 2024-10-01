@@ -2,48 +2,43 @@
     <Panel v-model="isGeneralSettingsExpanded"
            :hasCollapse="true"
            title="General Settings">
-        <ElementWidthPixels :modelValue="modelValue.body" label="Content Area Width" />
-        <ElementBackgroundColor :modelValue="modelValue.documentElement" />
-        <ElementBackgroundColor :modelValue="modelValue.body" label="Body Color" />
-        <ElementBackgroundImage :modelValue="modelValue.body" />
-        <ElementBorder :modelValue="modelValue.body" label="Body Border" />
+        <Width :modelValue="modelValue.body" label="Content Area Width" />
+        <BackgroundColor :modelValue="modelValue.documentElement" />
+        <BackgroundColor :modelValue="modelValue.body" label="Body Color" />
+        <BackgroundImage :modelValue="modelValue.body" />
+        <Border :modelValue="modelValue.body" label="Body Border" />
     </Panel>
 
     <Panel v-model="isTextStylingExpanded"
            :hasCollapse="true"
            title="Text Styling">
-        <ElementFontStyles :modelValue="modelValue.body"
-                           :fontFamilies="fontFamilies"
-                           label="Heading 1"
-                           tagName="h1" />
+        <FontStyleSheet :modelValue="modelValue.body"
+                        label="Heading 1"
+                        tagName="h1" />
         <hr>
-        <ElementFontStyles :modelValue="modelValue.body"
-                           :fontFamilies="fontFamilies"
-                           label="Heading 2"
-                           tagName="h2" />
+        <FontStyleSheet :modelValue="modelValue.body"
+                        label="Heading 2"
+                        tagName="h2" />
         <hr>
-        <ElementFontStyles :modelValue="modelValue.body"
-                           :fontFamilies="fontFamilies"
-                           label="Heading 3"
-                           tagName="h3" />
+        <FontStyleSheet :modelValue="modelValue.body"
+                        label="Heading 3"
+                        tagName="h3" />
         <hr>
-        <ElementFontStyles :modelValue="modelValue.body"
-                           :fontFamilies="fontFamilies"
-                           label="Paragraph"
-                           tagName="p" />
+        <FontStyleSheet :modelValue="modelValue.body"
+                        label="Paragraph"
+                        tagName="p" />
     </Panel>
 
     <Panel v-model="isDefaultButtonStylingExpanded"
            :hasCollapse="true"
            title="Default Button Styling">
-        <ElementButtonStyles :modelValue="modelValue.body"
-                             :fontFamilies="fontFamilies" />
+        <ButtonStyleSheet :modelValue="modelValue.body" />
     </Panel>
 
     <Panel v-model="isDividerStylingExpanded"
            :hasCollapse="true"
            title="Divider Styling">
-        <ElementDividerStyles :modelValue="modelValue.body" />
+        <DividerStyleSheet :modelValue="modelValue.body" />
     </Panel>
 </template>
 
@@ -55,15 +50,14 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import ElementBackgroundColor from "./properties/elementBackgroundColor.partial.obs";
-    import ElementBackgroundImage from "./properties/elementBackgroundImage.partial.obs";
-    import ElementBorder from "./properties/elementBorder.partial.obs";
-    import ElementButtonStyles from "./properties/elementButtonStyles.partial.obs";
-    import ElementDividerStyles from "./properties/elementDividerStyles.partial.obs";
-    import ElementFontStyles from "./properties/elementFontStyles.partial.obs";
-    import ElementWidthPixels from "./properties/elementWidthPixels.partial.obs";
+    import BackgroundColor from "./inlineStyleEditors/backgroundColor.partial.obs";
+    import BackgroundImage from "./inlineStyleEditors/backgroundImage.partial.obs";
+    import Border from "./inlineStyleEditors/border.partial.obs";
+    import Width from "./inlineStyleEditors/width.partial.obs";
+    import ButtonStyleSheet from "./styleSheetEditors/button.partial.obs";
+    import DividerStyleSheet from "./styleSheetEditors/divider.partial.obs";
+    import FontStyleSheet from "./styleSheetEditors/font.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     defineProps({
         /** This should be a body element. */
@@ -72,39 +66,6 @@
             required: true
         }
     });
-
-    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
-    // If quotes are required, add them here.
-    const fontFamilies: ListItemBag[] = [
-        {
-            text: "Arial",
-            value: "Arial"
-        }, {
-            text: "Courier New",
-            value: "'Courier New'"
-        }, {
-            text: "Georgia",
-            value: "Georgia"
-        }, {
-            text: "Tahoma",
-            value: "Tahoma"
-        }, {
-            text: "Times New Roman",
-            value: "'Times New Roman'"
-        }, {
-            text: "Trebuchet MS",
-            value: "'Trebuchet MS'"
-        }, {
-            text: "Verana",
-            value: "Verana"
-        }, {
-            text: "Lucida",
-            value: "Lucida"
-        }, {
-            text: "Helvetica Neue",
-            value: "'Helvetica Neue'"
-        }
-    ];
 
     // #region Values
 

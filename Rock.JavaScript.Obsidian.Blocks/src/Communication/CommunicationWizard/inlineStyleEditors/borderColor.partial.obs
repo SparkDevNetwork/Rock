@@ -1,0 +1,43 @@
+<template>
+    <ColorPicker v-model="borderColor"
+                 label="Border Color" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { ColorPicker } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "elementBorderColorUpdated"): void;
+    }>();
+
+    // #region Values
+
+    const borderColor = ref<string>(props.modelValue.style.borderColor);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        borderColor.value = props.modelValue.style.borderColor;
+    });
+
+    watch(borderColor, (value: string) => {
+        props.modelValue.style.borderColor = value;
+        emit("elementBorderColorUpdated");
+    });
+
+    // #endregion
+
+    defineExpose({
+        borderColor
+    });
+</script>

@@ -1,5 +1,5 @@
 <template>
-    <HtmlEditor v-model="modelValue" />
+    <HtmlEditor v-model="innerHtml" />
 </template>
 
 <script setup lang="ts">
@@ -15,17 +15,17 @@
 
     // #region Values
 
-    const modelValue = ref<string>(props.modelValue.innerHTML ?? "");
+    const innerHtml = ref<string>(props.modelValue.innerHTML ?? "");
 
     // #endregion
 
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        modelValue.value = props.modelValue.innerHTML;
+        innerHtml.value = props.modelValue.innerHTML;
     });
 
-    watch(modelValue, (value: string) => {
+    watch(innerHtml, (value: string) => {
         props.modelValue.innerHTML = value;
     });
 

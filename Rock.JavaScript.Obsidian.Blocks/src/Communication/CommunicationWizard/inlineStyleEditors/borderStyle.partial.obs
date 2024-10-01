@@ -1,5 +1,5 @@
 <template>
-    <DropDownList v-model="modelValue"
+    <DropDownList v-model="borderStyle"
                   :items="borderStyles"
                   label="Styles" />
 </template>
@@ -33,17 +33,17 @@
 
     // #region Values
 
-    const modelValue = ref<string>(props.modelValue.style.borderStyle);
+    const borderStyle = ref<string>(props.modelValue.style.borderStyle);
 
     // #endregion
 
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        modelValue.value = props.modelValue.style.borderStyle;
+        borderStyle.value = props.modelValue.style.borderStyle;
     });
 
-    watch(modelValue, (value: string) => {
+    watch(borderStyle, (value: string) => {
         props.modelValue.style.borderStyle = value;
     });
 

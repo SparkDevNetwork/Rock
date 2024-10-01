@@ -12,7 +12,8 @@ export type EditorComponentType = {
     | "section"
     | "one-column-section"
     | "two-column-section"
-    | "three-column-section";
+    | "three-column-section"
+    | "title";
     iconCssClass: string;
     title: string;
     createComponentPlaceholder(d: Document): HTMLElement;

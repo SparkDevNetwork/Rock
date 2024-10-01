@@ -3,7 +3,7 @@
         <Panel :hasCollapse="true"
                :modelValue="true"
                title="Settings">
-            <ElementInnerHtml :modelValue="modelValue.componentElement" />
+            <InnerHtml :modelValue="modelValue.componentElement" />
         </Panel>
     </template>
 </template>
@@ -11,7 +11,7 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import { EditorComponent } from "./types.partial";
-    import ElementInnerHtml from "./properties/elementInnerHtml.partial.obs";
+    import InnerHtml from "./propertyEditors/innerHtml.partial.obs";
 
     defineProps({
         modelValue: {

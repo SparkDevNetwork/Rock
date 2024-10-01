@@ -1,5 +1,5 @@
 <template>
-    <RangeSlider v-model="modelValue"
+    <RangeSlider v-model="width"
                  :label="label"
                  :min="0"
                  :max="700"
@@ -24,17 +24,17 @@
 
     // #region Values
 
-    const modelValue = ref<number>(parseInt(props.modelValue.style.width || "0"));
+    const width = ref<number>(parseInt(props.modelValue.style.width || "0"));
 
     // #endregion
 
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        modelValue.value = parseInt(props.modelValue.style.width || "0");
+        width.value = parseInt(props.modelValue.style.width || "0");
     });
 
-    watch(modelValue, (value: number) => {
+    watch(width, (value: number) => {
         if (value) {
             props.modelValue.style.width = `${value}px`;
         }

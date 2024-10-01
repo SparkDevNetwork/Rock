@@ -21,18 +21,16 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { ColorPicker, DropDownList, NumberBox } from "../imports.partial";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { useFontFamilies } from "../utils.partial";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
-        },
-        fontFamilies: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true
         }
     });
+
+    const fontFamilies = useFontFamilies();
 
     const tagName: keyof HTMLElementTagNameMap = "button";
 

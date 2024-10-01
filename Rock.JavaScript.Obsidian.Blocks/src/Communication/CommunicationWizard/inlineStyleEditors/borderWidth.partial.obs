@@ -1,0 +1,60 @@
+<template>
+    <NumberUpDown v-model="borderWidth"
+                  label="Border Size"
+                  :min="0"
+                  :max="99" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { NumberUpDown } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "elementBorderWidthUpdated"): void;
+    }>();
+
+    // #region Values
+
+    const borderWidth = ref<number>(getElementBorderWidth());
+
+    // #endregion
+
+    function getElementBorderWidth(): number {
+        if (props.modelValue.style.borderWidth.endsWith("px")) {
+            return parseInt(props.modelValue.style.borderWidth);
+        }
+        else {
+            return 0;
+        }
+    }
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        borderWidth.value = getElementBorderWidth();
+    });
+
+    watch(borderWidth, (value: number) => {
+        if (value) {
+            props.modelValue.style.borderWidth = `${value}px`;
+        }
+        else {
+            props.modelValue.style.borderWidth = "";
+        }
+
+        emit("elementBorderWidthUpdated");
+    });
+
+    // #endregion
+
+    defineExpose({
+        borderWidth
+    });
+</script>

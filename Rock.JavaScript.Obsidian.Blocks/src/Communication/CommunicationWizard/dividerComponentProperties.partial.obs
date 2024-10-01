@@ -3,21 +3,21 @@
            :modelValue="true"
            title="Settings">
         <template v-if="hrElement">
-            <ElementBorderColor :modelValue="hrElement" label="Color" :clearBackgroundColor="true" />
-            <ElementBorderStyle :modelValue="hrElement" />
-            <ElementBorderWidth :modelValue="hrElement" />
-            <ElementMarginPixels :modelValue="hrElement" />
+            <BorderColor :modelValue="hrElement" label="Color" :clearBackgroundColor="true" />
+            <BorderStyle :modelValue="hrElement" />
+            <BorderWidth :modelValue="hrElement" />
+            <Margin :modelValue="hrElement" />
         </template>
     </Panel>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import BorderColor from "./inlineStyleEditors/borderColor.partial.obs";
+    import BorderStyle from "./inlineStyleEditors/borderStyle.partial.obs";
+    import BorderWidth from "./inlineStyleEditors/borderWidth.partial.obs";
+    import Margin from "./inlineStyleEditors/margin.partial.obs";
     import { EditorComponent } from "./types.partial";
-    import ElementBorderColor from "./properties/elementBorderColor.partial.obs";
-    import ElementBorderStyle from "./properties/elementBorderStyle.partial.obs";
-    import ElementBorderWidth from "./properties/elementBorderWidth.partial.obs";
-    import ElementMarginPixels from "./properties/elementMarginPixels.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
 
     const props = defineProps({

@@ -1,0 +1,87 @@
+<template>
+    <div class="form-group">
+        <InlineSwitch v-model="hasBorder"
+                      :label="label" />
+    </div>
+
+    <template v-if="hasBorder">
+        <BorderColor ref="elementBorderColor"
+                     :modelValue="modelValue"
+                     @elementBorderColorUpdated="onElementBorderColorUpdated" />
+
+        <BorderWidth ref="elementBorderWidthPixels"
+                     :modelValue="modelValue"
+                     @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import BorderColor from "./borderColor.partial.obs";
+    import BorderWidth from "./borderWidth.partial.obs";
+    import { InlineSwitch } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+        label: {
+            type: String as PropType<string>,
+            default: "Border"
+        }
+    });
+
+    // #region Values
+
+    const hasBorder = ref<boolean>(!!(props.modelValue.style.border || props.modelValue.style.borderColor || props.modelValue.style.borderWidth));
+    const elementBorderColor = ref<InstanceType<typeof BorderColor> | undefined>();
+    const elementBorderWidthPixels = ref<InstanceType<typeof BorderWidth> | undefined>();
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onElementBorderColorUpdated(): void {
+        if (props.modelValue.style.borderColor) {
+            if (!props.modelValue.style.borderStyle) {
+                // Ensure the element has a border style if a border color is specified.
+                props.modelValue.style.borderStyle = "solid";
+            }
+        }
+        else {
+            props.modelValue.style.borderStyle = "";
+        }
+    }
+
+    function onElementBorderWidthUpdated(): void {
+        if (props.modelValue.style.borderWidth) {
+            if (!props.modelValue.style.borderStyle) {
+                // Ensure the element has a border style if a border color is specified.
+                props.modelValue.style.borderStyle = "solid";
+            }
+        }
+        else {
+            props.modelValue.style.borderStyle = "";
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(hasBorder, () => {
+        if (!hasBorder.value) {
+            // Clear the border properties when "Border" is switched off.
+            if (elementBorderColor.value) {
+                elementBorderColor.value.borderColor = "";
+            }
+
+            if (elementBorderWidthPixels.value) {
+                elementBorderWidthPixels.value.borderWidth = 0;
+            }
+        }
+    });
+
+    // #endregion
+</script>

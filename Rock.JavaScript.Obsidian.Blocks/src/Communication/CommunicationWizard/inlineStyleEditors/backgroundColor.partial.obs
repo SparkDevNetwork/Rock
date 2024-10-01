@@ -1,5 +1,5 @@
 <template>
-    <ColorPicker v-model="modelValue"
+    <ColorPicker v-model="backgroundColor"
                  :label="label" />
 </template>
 
@@ -21,18 +21,18 @@
 
     // #region Values
 
-    const modelValue = ref<string>(props.modelValue.style.backgroundColor);
+    const backgroundColor = ref<string>(props.modelValue.style.backgroundColor);
 
     // #endregion
 
     // #region Watchers
 
-    watch(modelValue, (value: string) => {
+    watch(backgroundColor, (value: string) => {
         props.modelValue.style.backgroundColor = value;
     });
 
     watch(() => props.modelValue, () => {
-        modelValue.value = props.modelValue.style.backgroundColor;
+        backgroundColor.value = props.modelValue.style.backgroundColor;
     });
 
     // #endregion

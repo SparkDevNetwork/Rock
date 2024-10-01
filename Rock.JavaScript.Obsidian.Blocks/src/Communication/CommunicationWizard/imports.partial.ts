@@ -10,8 +10,10 @@ import RadioButton from "@Obsidian/Controls/radioButton.obs";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 
 import { BinaryFiletype as BinaryFileType } from "@Obsidian/SystemGuids/binaryFiletype";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
 export {
     BinaryFileType,
@@ -26,5 +28,7 @@ export {
     RadioButton,
     RangeSlider,
     RockButton,
-    RockLabel
+    RockLabel,
+    TextBox,
+    toGuidOrNull
 };

@@ -1,0 +1,33 @@
+<template>
+    <TextBox v-model="textContent" label="Text" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { TextBox } from "../imports.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const textContent = ref<string>(props.modelValue.textContent ?? "");
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        textContent.value = props.modelValue.textContent ?? "";
+    });
+
+    watch(textContent, (value: string) => {
+        props.modelValue.textContent = value || null;
+    });
+
+    // #endregion
+</script>

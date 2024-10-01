@@ -93,7 +93,7 @@
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
                         :btnType="itemButtonType('uppercase')"
-                        title="uppercase"
+                        title="Uppercase"
                         @click="selectValue('uppercase')">AG</RockButton>
         </template>
     </SingleSelectButtonGroup>
@@ -111,25 +111,24 @@ svg {
     import { ColorPicker, DropDownList, NumberBox, RockButton } from "../imports.partial";
     import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
     import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useFontFamilies } from "../utils.partial";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
-        fontFamilies: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true
-        },
         label: {
             type: String as PropType<string>,
-            default: "Border"
+            default: "Font"
         },
         tagName: {
-            type: String as PropType<keyof HTMLElementTagNameMap | null | undefined>
+            type: String as PropType<keyof HTMLElementTagNameMap>,
+            required: true
         }
     });
+
+    const fontFamilies = useFontFamilies();
 
     // #region Values
 

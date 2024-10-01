@@ -13,7 +13,7 @@ export function getComponentTypeOrThrow(componentElementOrType: EditorComponentT
     }
 
     switch (type) {
-        case "text":
+        case "title":
             return titleComponent;
         case "video":
             return videoComponent;
@@ -47,7 +47,7 @@ export function getComponentTypeOrThrow(componentElementOrType: EditorComponentT
 export const titleComponent: EditorComponentType = {
     iconCssClass: "fa fa-font",
     title: "Title",
-    typeName: "text",
+    typeName: "title",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
