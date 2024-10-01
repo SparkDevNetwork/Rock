@@ -220,7 +220,7 @@
                                       help="The time zone you want Rock to operate in (regardless of what time zone the server is set to)." />
                         <CheckBox v-model="enableRunJobsInIISContext"
                                   label="Enable Run Jobs In IIS Context"
-                                  text="Yes"
+                                  text=""
                                   help="When checked, Rock's job engine runs on the web server. This setting allows you to disable running jobs on this server if it's participating in a Rock cluster. See the 'Jobs' section in the Admin Hero Guide for more information on this topic." />
                         <NumberBox v-model="maxUploadFileSize"
                                    label="Max Upload File Size"
@@ -234,7 +234,7 @@
                         <NumberBox v-model="loginCookieTimeout"
                                    label="Login Cookie Persistence Length"
                                    inputGroupClasses="input-width-lg"
-                                   MinimumValue="1"
+                                   :minimumValue="1"
                                    help="The length a login cookie persists in minutes. This should be set to a large number. This reduces 'login friction' and increases the chance that someone will remain logged in for a long period of time.">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">minutes</span>
@@ -242,7 +242,7 @@
                         </NumberBox>
                         <CheckBox v-model="enableDatabasePerformanceCounters"
                                   label="Enable Database Performance Counters"
-                                  text="Yes"
+                                  text=""
                                   help="When checked, metric values regarding the counts of active and available database connections will be collected, for reporting within the 'Hosting Metrics' category. Note that website performance can be impacted when this option is enabled; consider using only when investigating possible database performance issues." />
                         <div class="row">
                             <div class="col-md-4">
