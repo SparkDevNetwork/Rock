@@ -50,13 +50,13 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import BackgroundColor from "./inlineStyleEditors/backgroundColor.partial.obs";
-    import BackgroundImage from "./inlineStyleEditors/backgroundImage.partial.obs";
-    import Border from "./inlineStyleEditors/border.partial.obs";
-    import Width from "./inlineStyleEditors/width.partial.obs";
-    import ButtonStyleSheet from "./styleSheetEditors/button.partial.obs";
-    import DividerStyleSheet from "./styleSheetEditors/divider.partial.obs";
-    import FontStyleSheet from "./styleSheetEditors/font.partial.obs";
+    import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
+    import BackgroundImage from "../inlineStyleEditors/backgroundImage.partial.obs";
+    import Border from "../inlineStyleEditors/border.partial.obs";
+    import Width from "../inlineStyleEditors/width.partial.obs";
+    import ButtonStyleSheet from "../styleSheetEditors/button.partial.obs";
+    import DividerStyleSheet from "../styleSheetEditors/divider.partial.obs";
+    import FontStyleSheet from "../styleSheetEditors/font.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
 
     defineProps({

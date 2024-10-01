@@ -13,9 +13,9 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import InnerHtml from "./propertyEditors/innerHtml.partial.obs";
-    import Margin from "./inlineStyleEditors/margin.partial.obs";
-    import { EditorComponent } from "./types.partial";
+    import InnerHtml from "../propertyEditors/innerHtml.partial.obs";
+    import Margin from "../inlineStyleEditors/margin.partial.obs";
+    import { EditorComponent } from "../types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
     defineProps({

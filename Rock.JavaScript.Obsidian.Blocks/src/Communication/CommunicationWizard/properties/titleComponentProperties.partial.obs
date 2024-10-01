@@ -27,10 +27,10 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { DropDownList } from "./imports.partial";
-    import { EditorComponent } from "./types.partial";
-    import Font from "./inlineStyleEditors/font.partial.obs";
-    import TextContent from "./propertyEditors/textContent.partial.obs";
+    import { DropDownList } from "../imports.partial";
+    import { EditorComponent } from "../types.partial";
+    import Font from "../inlineStyleEditors/font.partial.obs";
+    import TextContent from "../propertyEditors/textContent.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

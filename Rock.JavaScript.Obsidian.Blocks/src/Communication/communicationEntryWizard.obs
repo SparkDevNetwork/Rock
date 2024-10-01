@@ -275,14 +275,14 @@
 
 <script setup lang="ts">
     import { computed, nextTick, provide, ref, watch } from "vue";
-    import CodeComponentProperties from "./CommunicationWizard/codeComponentProperties.partial.obs";
+    import CodeComponentProperties from "./CommunicationWizard/properties/codeComponentProperties.partial.obs";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
-    import DividerComponentProperties from "./CommunicationWizard/dividerComponentProperties.partial.obs";
+    import DividerComponentProperties from "./CommunicationWizard/properties/dividerComponentProperties.partial.obs";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
     import EmailDocumentProperties from "./CommunicationWizard/emailDocumentProperties.partial.obs";
-    import SectionComponentProperties from "./CommunicationWizard/sectionComponentProperties.partial.obs";
-    import TextComponentProperties from "./CommunicationWizard/textComponentProperties.partial.obs";
-    import TitleComponentProperties from "./CommunicationWizard/titleComponentProperties.partial.obs";
+    import SectionComponentProperties from "./CommunicationWizard/properties/sectionComponentProperties.partial.obs";
+    import TextComponentProperties from "./CommunicationWizard/properties/textComponentProperties.partial.obs";
+    import TitleComponentProperties from "./CommunicationWizard/properties/titleComponentProperties.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

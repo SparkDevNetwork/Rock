@@ -13,11 +13,11 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import BorderColor from "./inlineStyleEditors/borderColor.partial.obs";
-    import BorderStyle from "./inlineStyleEditors/borderStyle.partial.obs";
-    import BorderWidth from "./inlineStyleEditors/borderWidth.partial.obs";
-    import Margin from "./inlineStyleEditors/margin.partial.obs";
-    import { EditorComponent } from "./types.partial";
+    import BorderColor from "../inlineStyleEditors/borderColor.partial.obs";
+    import BorderStyle from "../inlineStyleEditors/borderStyle.partial.obs";
+    import BorderWidth from "../inlineStyleEditors/borderWidth.partial.obs";
+    import Margin from "../inlineStyleEditors/margin.partial.obs";
+    import { EditorComponent } from "../types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
     const props = defineProps({

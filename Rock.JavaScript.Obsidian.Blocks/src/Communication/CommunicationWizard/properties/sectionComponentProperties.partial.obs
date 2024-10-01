@@ -25,9 +25,9 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import BackgroundColor from "./inlineStyleEditors/backgroundColor.partial.obs";
-    import Border from "./inlineStyleEditors/border.partial.obs";
-    import { EditorComponent } from "./types.partial";
+    import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
+    import Border from "../inlineStyleEditors/border.partial.obs";
+    import { EditorComponent } from "../types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
     const props = defineProps({
