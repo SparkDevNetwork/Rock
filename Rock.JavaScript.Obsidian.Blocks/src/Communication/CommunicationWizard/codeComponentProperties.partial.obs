@@ -2,16 +2,21 @@
     <template v-if="modelValue.componentElement">
         <Panel :hasCollapse="true"
                :modelValue="true"
-               title="Settings">
-            <InnerHtml :modelValue="modelValue.componentElement" />
+               title="General Settings">
+            <InnerHtml :modelValue="modelValue.componentElement"
+                       label="HTML"
+                       mode="code" />
+            <Margin :modelValue="modelValue.componentElement" />
         </Panel>
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import { EditorComponent } from "./types.partial";
     import InnerHtml from "./propertyEditors/innerHtml.partial.obs";
+    import Margin from "./inlineStyleEditors/margin.partial.obs";
+    import { EditorComponent } from "./types.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
 
     defineProps({
         modelValue: {

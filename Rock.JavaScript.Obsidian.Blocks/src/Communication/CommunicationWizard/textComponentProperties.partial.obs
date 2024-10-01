@@ -1,0 +1,192 @@
+<template>
+    <template v-if="modelValue.componentElement">
+        <Panel v-model="isContentPanelExpanded"
+               :hasCollapse="true"
+               title="Content">
+            <InnerHtml :modelValue="modelValue.componentElement"
+                       mode="html" />
+
+            <hr>
+            <RockButton btnType="primary" @click="onClickComplete">Complete</RockButton>
+            <RockButton btnType="link" @click="onClickDelete">Delete</RockButton>
+        </Panel>
+
+        <Panel v-model="isTypographyPanelExpanded"
+               :hasCollapse="true"
+               title="Typography">
+            <LineHeight :modelValue="modelValue.componentElement" />
+        </Panel>
+
+        <Panel v-model="isSpacingAndLayoutPanelExpanded"
+               :hasCollapse="true"
+               title="Spacing & Layout">
+            <Padding :modelValue="modelValue.componentElement" />
+        </Panel>
+
+        <Panel v-model="isBordersAndEffectsPanelExpanded"
+               :hasCollapse="true"
+               title="Borders & Effects">
+            <Border :modelValue="modelValue.componentElement" />
+        </Panel>
+
+        <Panel v-model="isBackgroundPanelExpanded"
+               :hasCollapse="true"
+               title="Background">
+            <BackgroundColor :modelValue="modelValue.componentElement" />
+        </Panel>
+
+        <Panel v-model="isPositioningPanelExpanded"
+               :hasCollapse="true"
+               title="Positioning">
+
+        </Panel>
+
+        <Panel v-model="isDisplayAndVisibilityPanelExpanded"
+               :hasCollapse="true"
+               title="Display & Visibility">
+
+        </Panel>
+    </template>
+</template>
+
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import BackgroundColor from "./inlineStyleEditors/backgroundColor.partial.obs";
+    import Border from "./inlineStyleEditors/border.partial.obs";
+    import LineHeight from "./inlineStyleEditors/lineHeight.partial.obs";
+    import Padding from "./inlineStyleEditors/padding.partial.obs";
+    import InnerHtml from "./propertyEditors/innerHtml.partial.obs";
+    import { EditorComponent } from "./types.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    defineProps({
+        modelValue: {
+            type: Object as PropType<EditorComponent>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Values
+
+    const isContentPanelExpanded = ref<boolean>(true);
+    const isTypographyPanelExpanded = ref<boolean>(false);
+    const isSpacingAndLayoutPanelExpanded = ref<boolean>(false);
+    const isBordersAndEffectsPanelExpanded = ref<boolean>(false);
+    const isBackgroundPanelExpanded = ref<boolean>(false);
+    const isPositioningPanelExpanded = ref<boolean>(false);
+    const isDisplayAndVisibilityPanelExpanded = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onClickComplete(): void {
+        emit("complete");
+    }
+
+    function onClickDelete(): void {
+        emit("delete");
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isContentPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isTypographyPanelExpanded.value = false;
+            isSpacingAndLayoutPanelExpanded.value = false;
+            isBordersAndEffectsPanelExpanded.value = false;
+            isBackgroundPanelExpanded.value = false;
+            isPositioningPanelExpanded.value = false;
+            isDisplayAndVisibilityPanelExpanded.value = false;
+        }
+    });
+
+    watch(isTypographyPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+            isSpacingAndLayoutPanelExpanded.value = false;
+            isBordersAndEffectsPanelExpanded.value = false;
+            isBackgroundPanelExpanded.value = false;
+            isPositioningPanelExpanded.value = false;
+            isDisplayAndVisibilityPanelExpanded.value = false;
+        }
+    });
+
+    watch(isSpacingAndLayoutPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+            isTypographyPanelExpanded.value = false;
+            isBordersAndEffectsPanelExpanded.value = false;
+            isBackgroundPanelExpanded.value = false;
+            isPositioningPanelExpanded.value = false;
+            isDisplayAndVisibilityPanelExpanded.value = false;
+        }
+    });
+
+    watch(isBordersAndEffectsPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+            isTypographyPanelExpanded.value = false;
+            isSpacingAndLayoutPanelExpanded.value = false;
+            isBackgroundPanelExpanded.value = false;
+            isPositioningPanelExpanded.value = false;
+            isDisplayAndVisibilityPanelExpanded.value = false;
+        }
+    });
+
+    watch(isBackgroundPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+            isTypographyPanelExpanded.value = false;
+            isSpacingAndLayoutPanelExpanded.value = false;
+            isBordersAndEffectsPanelExpanded.value = false;
+            isPositioningPanelExpanded.value = false;
+            isDisplayAndVisibilityPanelExpanded.value = false;
+        }
+    });
+
+    watch(isPositioningPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+            isSpacingAndLayoutPanelExpanded.value = false;
+            isBordersAndEffectsPanelExpanded.value = false;
+            isBackgroundPanelExpanded.value = false;
+            isTypographyPanelExpanded.value = false;
+            isDisplayAndVisibilityPanelExpanded.value = false;
+        }
+    });
+
+    watch(isDisplayAndVisibilityPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+            isSpacingAndLayoutPanelExpanded.value = false;
+            isBordersAndEffectsPanelExpanded.value = false;
+            isBackgroundPanelExpanded.value = false;
+            isPositioningPanelExpanded.value = false;
+            isTypographyPanelExpanded.value = false;
+        }
+    });
+
+    // #endregion
+</script>

@@ -1,25 +1,37 @@
 <template>
     <RockLabel>Padding</RockLabel>
 
-    <NumberUpDown v-model="paddingTop"
-                  label="Top"
-                  :min="0"
-                  :max="99" />
+    <div class="row">
+        <div class="col-sm-6">
+            <NumberUpDown v-model="paddingTop"
+                          label="Top"
+                          :min="0"
+                          :max="99" />
+        </div>
 
-    <NumberUpDown v-model="paddingBottom"
-                  label="Bottom"
-                  :min="0"
-                  :max="99" />
+        <div class="col-sm-6">
+            <NumberUpDown v-model="paddingBottom"
+                          label="Bottom"
+                          :min="0"
+                          :max="99" />
+        </div>
+    </div>
 
-    <NumberUpDown v-model="paddingRight"
-                  label="Right"
-                  :min="0"
-                  :max="99" />
+    <div class="row">
+        <div class="col-sm-6">
+            <NumberUpDown v-model="paddingRight"
+                          label="Right"
+                          :min="0"
+                          :max="99" />
+        </div>
 
-    <NumberUpDown v-model="paddingLeft"
-                  label="Left"
-                  :min="0"
-                  :max="99" />
+        <div class="col-sm-6">
+            <NumberUpDown v-model="paddingLeft"
+                          label="Left"
+                          :min="0"
+                          :max="99" />
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">

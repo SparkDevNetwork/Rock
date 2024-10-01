@@ -1,4 +1,5 @@
 import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
@@ -18,6 +19,7 @@ import { toGuidOrNull } from "@Obsidian/Utility/guid";
 export {
     BinaryFileType,
     ButtonGroup,
+    CodeEditor,
     ColorPicker,
     DropDownList,
     HtmlEditor,

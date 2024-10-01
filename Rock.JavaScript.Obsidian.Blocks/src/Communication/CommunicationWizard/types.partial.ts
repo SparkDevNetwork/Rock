@@ -6,7 +6,6 @@ export type EditorComponentType = {
     | "divider"
     | "message"
     | "image"
-    | "lava"
     | "code"
     | "rsvp"
     | "section"

@@ -1,13 +1,14 @@
 <template>
     <template v-if="selectedComponent.componentElement">
-        <Panel :hasCollapse="true"
-               :modelValue="true"
+        <Panel v-model="isRowSettingsExpanded"
+               :hasCollapse="true"
                title="Row Settings">
             <BackgroundColor :modelValue="selectedComponent.componentElement" />
             <Border :modelValue="selectedComponent.componentElement" />
         </Panel>
 
-        <Panel :hasCollapse="true"
+        <Panel v-model="isColumnsExpanded"
+               :hasCollapse="true"
                title="Columns">
             <BackgroundColor :modelValue="selectedComponent.componentElement" />
             <ElementBorderWidth :modelValue="selectedComponent.componentElement" />
@@ -15,6 +16,12 @@
         </Panel>
     </template>
 </template>
+
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
@@ -33,51 +40,8 @@
     // #region Values
 
     const backgroundColor = ref<string>(props.selectedComponent?.componentElement.style.backgroundColor ?? "");
-    const borderWidth = ref<number>(parseInt(props.selectedComponent?.componentElement.style.borderWidth || "0"));
-    const borderColor = ref<string>(props.selectedComponent?.componentElement.style.borderColor ?? "");
-    const panels = ref<boolean[]>([true, false]);
-
-    // #endregion
-
-    // #region Event Handlers
-
-    function onUpdateBackgroundColor(value: string): void {
-        backgroundColor.value = value;
-
-        if (props.selectedComponent?.componentElement) {
-            props.selectedComponent.componentElement.style.backgroundColor = value;
-        }
-    }
-
-    function onUpdateBorderWidth(value: number): void {
-        borderWidth.value = value;
-
-        if (props.selectedComponent?.componentElement) {
-            if (value) {
-                props.selectedComponent.componentElement.style.borderWidth = `${value}px`;
-                props.selectedComponent.componentElement.style.borderStyle = "solid";
-            }
-            else {
-                props.selectedComponent.componentElement.style.borderWidth = "";
-                props.selectedComponent.componentElement.style.borderStyle = "";
-            }
-        }
-    }
-
-    function onUpdateBorderColor(value: string): void {
-        borderColor.value = value;
-
-        if (props.selectedComponent?.componentElement) {
-            if (value) {
-                props.selectedComponent.componentElement.style.borderColor = value;
-                props.selectedComponent.componentElement.style.borderStyle = "solid";
-            }
-            else {
-                props.selectedComponent.componentElement.style.borderColor = "";
-                props.selectedComponent.componentElement.style.borderStyle = "";
-            }
-        }
-    }
+    const isRowSettingsExpanded = ref<boolean>(true);
+    const isColumnsExpanded = ref<boolean>(false);
 
     // #endregion
 
@@ -85,6 +49,20 @@
 
     watch(() => props.selectedComponent, () => {
         backgroundColor.value = props.selectedComponent?.componentElement.style.backgroundColor ?? "";
+    });
+
+    watch(isRowSettingsExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isColumnsExpanded.value = false;
+        }
+    });
+
+    watch(isColumnsExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isRowSettingsExpanded.value = false;
+        }
     });
 
     // #endregion

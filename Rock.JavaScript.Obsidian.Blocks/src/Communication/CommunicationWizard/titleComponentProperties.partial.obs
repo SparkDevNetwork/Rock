@@ -1,19 +1,29 @@
 <template>
     <template v-if="headingElement">
-        <Panel :hasCollapse="true"
-               :modelValue="true"
-               title="Settings">
+        <Panel v-model="isGeneralSettingsExpanded"
+               :hasCollapse="true"
+               title="General Settings">
             <TextContent :modelValue="headingElement" />
 
             <DropDownList v-model="headingLevel"
                           :items="headingLevels"
-                          label="Heading Level"
+                          label="Level"
                           :showBlankItem="false" />
+        </Panel>
 
-            <Font :modelValue="headingElement" :tagName="headingLevel" />
+        <Panel v-model="isTextStylingExpanded" :hasCollapse="true"
+               title="Text Styling">
+            <Font :modelValue="headingElement"
+                  :tagName="headingLevel" />
         </Panel>
     </template>
 </template>
+
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
@@ -21,6 +31,7 @@
     import { EditorComponent } from "./types.partial";
     import Font from "./inlineStyleEditors/font.partial.obs";
     import TextContent from "./propertyEditors/textContent.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -58,6 +69,8 @@
 
     const headingElement = ref<HTMLHeadingElement | null | undefined>(getHeadingElement());
     const headingLevel = ref<HeadingLevel>(headingElement.value?.tagName?.toLowerCase() as HeadingLevel ?? "h1");
+    const isGeneralSettingsExpanded = ref<boolean>(true);
+    const isTextStylingExpanded = ref<boolean>(false);
 
     // #endregion
 
@@ -91,6 +104,20 @@
         headingElement.value.parentNode?.replaceChild(newHeadingElement, headingElement.value);
 
         headingElement.value = newHeadingElement;
+    });
+
+    watch(isGeneralSettingsExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isTextStylingExpanded.value = false;
+        }
+    });
+
+    watch(isTextStylingExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isGeneralSettingsExpanded.value = false;
+        }
     });
 
     // #endregion

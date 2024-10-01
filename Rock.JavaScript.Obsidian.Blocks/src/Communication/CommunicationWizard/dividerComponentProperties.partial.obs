@@ -1,7 +1,7 @@
 <template>
     <Panel :hasCollapse="true"
            :modelValue="true"
-           title="Settings">
+           title="General Settings">
         <template v-if="hrElement">
             <BorderColor :modelValue="hrElement" label="Color" :clearBackgroundColor="true" />
             <BorderStyle :modelValue="hrElement" />

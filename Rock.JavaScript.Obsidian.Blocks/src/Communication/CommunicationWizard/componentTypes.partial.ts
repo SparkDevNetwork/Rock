@@ -19,7 +19,7 @@ export function getComponentTypeOrThrow(componentElementOrType: EditorComponentT
             return videoComponent;
         case "button":
             return buttonComponent;
-        case "code":
+        case "text":
             return paragraphComponent;
         case "divider":
             return dividerComponent;
@@ -27,7 +27,7 @@ export function getComponentTypeOrThrow(componentElementOrType: EditorComponentT
             return messageComponent;
         case "image":
             return imageComponent;
-        case "lava":
+        case "code":
             return lavaComponent;
         case "rsvp":
             return rsvpComponent;
@@ -129,7 +129,7 @@ export const buttonComponent: EditorComponentType = {
 export const paragraphComponent: EditorComponentType = {
     iconCssClass: "fa fa-align-left",
     title: "Paragraph",
-    typeName: "code",
+    typeName: "text",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");
@@ -217,7 +217,7 @@ export const imageComponent: EditorComponentType = {
 export const lavaComponent: EditorComponentType = {
     iconCssClass: "fa fa-code",
     title: "Lava",
-    typeName: "lava",
+    typeName: "code",
 
     createComponentElement(d: Document): HTMLElement {
         const el = d.createElement("div");

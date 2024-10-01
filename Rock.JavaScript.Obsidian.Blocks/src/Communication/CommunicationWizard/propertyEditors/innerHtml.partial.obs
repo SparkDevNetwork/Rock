@@ -1,15 +1,20 @@
 <template>
-    <HtmlEditor v-model="innerHtml" />
+    <HtmlEditor v-if="mode === 'html'" v-model="innerHtml" :editorHeight="200" />
+    <CodeEditor v-else-if="mode === 'code'" v-model="innerHtml" />
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { HtmlEditor } from "../imports.partial";
+    import { CodeEditor, HtmlEditor } from "../imports.partial";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+        mode: {
+            type: String as PropType<"html" | "code">,
+            default: "html"
         }
     });
 

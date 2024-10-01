@@ -48,7 +48,12 @@
 
                                                 <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :modelValue="selectedComponent" />
                                                 <DividerComponentProperties v-else-if="selectedComponent.type.typeName === 'divider'" :modelValue="selectedComponent" />
-                                                <TitleComponentProperties v-else-if="selectedComponent.type.typeName === 'title'" :modelValue="selectedComponent" />
+                                                <TextComponentProperties v-else-if="selectedComponent.type.typeName === 'text'"
+                                                                         :modelValue="selectedComponent"
+                                                                         @complete="selectedComponent = null"
+                                                                         @delete="onDeleteComponent" />
+                                                <TitleComponentProperties v-else-if="selectedComponent.type.typeName === 'title'"
+                                                                          :modelValue="selectedComponent" />
                                                 <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
                                             </div>
                                         </template>
@@ -276,6 +281,7 @@
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
     import EmailDocumentProperties from "./CommunicationWizard/emailDocumentProperties.partial.obs";
     import SectionComponentProperties from "./CommunicationWizard/sectionComponentProperties.partial.obs";
+    import TextComponentProperties from "./CommunicationWizard/textComponentProperties.partial.obs";
     import TitleComponentProperties from "./CommunicationWizard/titleComponentProperties.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
@@ -364,6 +370,21 @@
             previewHtml.value = editorWindow.value?.getHtml() ?? "";
             isPreviewOpen.value = true;
         });
+    }
+
+    function onDeleteComponent(): void {
+        if (selectedComponent.value?.componentElement) {
+            const parentElement = selectedComponent.value.componentElement.parentElement;
+            selectedComponent.value.componentElement.remove();
+            if (parentElement?.children.length === 0 && [...parentElement.childNodes].every(n => !n.nodeValue?.trim())) {
+                // Clear all inner HTML if there are no children nor non-empty text elements.
+                parentElement.innerHTML = "";
+            }
+        }
+
+        if (selectedComponent.value) {
+            selectedComponent.value = null;
+        }
     }
 
     // #endregion
