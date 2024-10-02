@@ -5,10 +5,6 @@
                title="Content">
             <InnerHtml :modelValue="modelValue.componentElement"
                        mode="html" />
-
-            <hr>
-            <RockButton btnType="primary" @click="onClickComplete">Complete</RockButton>
-            <RockButton btnType="link" @click="onClickDelete">Delete</RockButton>
         </Panel>
 
         <Panel v-model="isTypographyPanelExpanded"
@@ -46,6 +42,11 @@
                title="Display & Visibility">
 
         </Panel>
+
+        <hr>
+
+        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
     </template>
 </template>
 
@@ -73,7 +74,7 @@
         }
     });
 
-    const emit = defineEmits<{
+    defineEmits<{
         (e: "complete"): void;
         (e: "delete"): void;
     }>();
@@ -87,18 +88,6 @@
     const isBackgroundPanelExpanded = ref<boolean>(false);
     const isPositioningPanelExpanded = ref<boolean>(false);
     const isDisplayAndVisibilityPanelExpanded = ref<boolean>(false);
-
-    // #endregion
-
-    // #region Event Handlers
-
-    function onClickComplete(): void {
-        emit("complete");
-    }
-
-    function onClickDelete(): void {
-        emit("delete");
-    }
 
     // #endregion
 

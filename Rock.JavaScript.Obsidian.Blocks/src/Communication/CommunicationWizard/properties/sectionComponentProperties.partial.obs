@@ -14,6 +14,11 @@
             <ElementBorderWidth :modelValue="selectedComponent.componentElement" />
             <BorderColor :modelValue="selectedComponent.componentElement" />
         </Panel>
+
+        <hr>
+
+        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
     </template>
 </template>
 
@@ -29,6 +34,7 @@
     import Border from "../inlineStyleEditors/border.partial.obs";
     import { EditorComponent } from "../types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         selectedComponent: {
@@ -36,6 +42,11 @@
             required: true
         }
     });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
 
     // #region Values
 

@@ -16,6 +16,11 @@
             <Font :modelValue="headingElement"
                   :tagName="headingLevel" />
         </Panel>
+
+        <hr>
+
+        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
     </template>
 </template>
 
@@ -32,6 +37,7 @@
     import Font from "../inlineStyleEditors/font.partial.obs";
     import TextContent from "../propertyEditors/textContent.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -40,6 +46,11 @@
             required: true
         }
     });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
 
     const headingLevels: ListItemBag[] = [
         {

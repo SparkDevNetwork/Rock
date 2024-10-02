@@ -46,8 +46,14 @@
                                             <div v-else-if="selectedComponent">
                                                 <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
 
-                                                <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :modelValue="selectedComponent" />
-                                                <DividerComponentProperties v-else-if="selectedComponent.type.typeName === 'divider'" :modelValue="selectedComponent" />
+                                                <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'"
+                                                                         :modelValue="selectedComponent"
+                                                                         @complete="onCompleteComponent"
+                                                                         @delete="onDeleteComponent" />
+                                                <DividerComponentProperties v-else-if="selectedComponent.type.typeName === 'divider'"
+                                                                            :modelValue="selectedComponent"
+                                                                            @complete="onCompleteComponent"
+                                                                            @delete="onDeleteComponent" />
                                                 <ImageComponentProperties v-else-if="selectedComponent.type.typeName === 'image'"
                                                                           :modelValue="selectedComponent"
                                                                           @complete="onCompleteComponent"
@@ -57,7 +63,9 @@
                                                                          @complete="onCompleteComponent"
                                                                          @delete="onDeleteComponent" />
                                                 <TitleComponentProperties v-else-if="selectedComponent.type.typeName === 'title'"
-                                                                          :modelValue="selectedComponent" />
+                                                                          :modelValue="selectedComponent"
+                                                                          @complete="onCompleteComponent"
+                                                                          @delete="onDeleteComponent" />
                                                 <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
                                             </div>
                                         </template>

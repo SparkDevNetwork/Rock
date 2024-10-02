@@ -8,6 +8,11 @@
                        mode="code" />
             <Margin :modelValue="modelValue.componentElement" />
         </Panel>
+
+        <hr>
+
+        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
     </template>
 </template>
 
@@ -17,6 +22,7 @@
     import Margin from "../inlineStyleEditors/margin.partial.obs";
     import { EditorComponent } from "../types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     defineProps({
         modelValue: {
@@ -24,4 +30,9 @@
             required: true
         }
     });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
 </script>

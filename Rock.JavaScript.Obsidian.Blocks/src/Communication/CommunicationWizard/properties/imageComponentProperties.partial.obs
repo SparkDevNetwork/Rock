@@ -67,8 +67,9 @@
         </Panel>
 
         <hr>
-        <RockButton btnType="primary" @click="onClickComplete">Complete</RockButton>
-        <RockButton btnType="link" @click="onClickDelete">Delete</RockButton>
+
+        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
     </template>
 </template>
 
@@ -99,7 +100,7 @@
         }
     });
 
-    const emit = defineEmits<{
+    defineEmits<{
         (e: "complete"): void;
         (e: "delete"): void;
     }>();
@@ -197,18 +198,6 @@
 
         return `/GetImage.ashx?${queryStringParameters.join("&")}`;
     });
-
-    // #endregion
-
-    // #region Event Handlers
-
-    function onClickComplete(): void {
-        emit("complete");
-    }
-
-    function onClickDelete(): void {
-        emit("delete");
-    }
 
     // #endregion
 
