@@ -1,7 +1,8 @@
 <template>
     <Panel v-model="isGeneralSettingsExpanded"
            :hasCollapse="true"
-           title="General Settings">
+           title="General Settings"
+           type="block">
         <Width :modelValue="modelValue.body" label="Content Area Width" />
         <BackgroundColor :modelValue="modelValue.documentElement" />
         <BackgroundColor :modelValue="modelValue.body" label="Body Color" />
@@ -11,7 +12,8 @@
 
     <Panel v-model="isTextStylingExpanded"
            :hasCollapse="true"
-           title="Text Styling">
+           title="Text Styling"
+           type="block">
         <FontStyleSheet :modelValue="modelValue.body"
                         label="Heading 1"
                         tagName="h1" />
@@ -31,20 +33,24 @@
 
     <Panel v-model="isDefaultButtonStylingExpanded"
            :hasCollapse="true"
-           title="Button Styling">
+           title="Button Styling"
+           type="block">
         <ButtonStyleSheet :modelValue="modelValue.body" />
     </Panel>
 
     <Panel v-model="isDividerStylingExpanded"
            :hasCollapse="true"
-           title="Divider Styling">
+           title="Divider Styling"
+           type="block">
         <DividerStyleSheet :modelValue="modelValue.body" />
     </Panel>
 </template>
 
 <style scoped>
 :deep(.panel) {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
+    /* Needed so that panel-block can collapse. */
+    height: auto !important;
 }
 </style>
 

@@ -2,57 +2,66 @@
     <template v-if="modelValue.componentElement">
         <Panel v-model="isContentPanelExpanded"
                :hasCollapse="true"
-               title="Content">
+               title="Content"
+               type="block">
             <InnerHtml :modelValue="modelValue.componentElement"
                        mode="html" />
         </Panel>
 
         <Panel v-model="isTypographyPanelExpanded"
                :hasCollapse="true"
-               title="Typography">
+               title="Typography"
+               type="block">
             <LineHeight :modelValue="modelValue.componentElement" />
         </Panel>
 
         <Panel v-model="isSpacingAndLayoutPanelExpanded"
                :hasCollapse="true"
-               title="Spacing & Layout">
+               title="Spacing & Layout"
+               type="block">
             <Padding :modelValue="modelValue.componentElement" />
         </Panel>
 
         <Panel v-model="isBordersAndEffectsPanelExpanded"
                :hasCollapse="true"
-               title="Borders & Effects">
+               title="Borders & Effects"
+               type="block">
             <Border :modelValue="modelValue.componentElement" />
         </Panel>
 
         <Panel v-model="isBackgroundPanelExpanded"
                :hasCollapse="true"
-               title="Background">
+               title="Background"
+               type="block">
             <BackgroundColor :modelValue="modelValue.componentElement" />
         </Panel>
 
         <Panel v-model="isPositioningPanelExpanded"
                :hasCollapse="true"
-               title="Positioning">
+               title="Positioning"
+               type="block">
 
         </Panel>
 
         <Panel v-model="isDisplayAndVisibilityPanelExpanded"
                :hasCollapse="true"
-               title="Display & Visibility">
+               title="Display & Visibility"
+               type="block">
 
         </Panel>
 
-        <hr>
-
-        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        <div class="m-2 d-flex justify-content-end">
+            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        </div>
     </template>
 </template>
 
 <style scoped>
 :deep(.panel) {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
+    /* Needed so that panel-block can collapse. */
+    height: auto !important;
 }
 </style>
 

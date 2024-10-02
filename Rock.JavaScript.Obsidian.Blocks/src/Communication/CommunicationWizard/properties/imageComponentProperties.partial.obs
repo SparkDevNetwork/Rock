@@ -2,7 +2,8 @@
     <template v-if="modelValue.componentElement">
         <Panel v-model="isContentPanelExpanded"
                :hasCollapse="true"
-               title="Content">
+               title="Content"
+               type="block">
             <div class="form-group">
                 <ButtonGroup v-model="imageSourceType" :items="imageSourceTypes" />
             </div>
@@ -19,8 +20,8 @@
 
         <Panel v-model="isSpacingAndLayoutPanelExpanded"
                :hasCollapse="true"
-               title="Spacing & Layout">
-
+               title="Spacing & Layout"
+               type="block">
             <div class="row">
                 <div class="col-sm-6">
                     <DropDownList v-model="widthItem"
@@ -66,16 +67,18 @@
             <Margin :modelValue="modelValue.componentElement" mode="numberBox" />
         </Panel>
 
-        <hr>
-
-        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        <div class="m-2 d-flex justify-content-end">
+            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        </div>
     </template>
 </template>
 
 <style scoped>
 :deep(.panel) {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
+    /* Needed so that panel-block can collapse. */
+    height: auto !important;
 }
 </style>
 

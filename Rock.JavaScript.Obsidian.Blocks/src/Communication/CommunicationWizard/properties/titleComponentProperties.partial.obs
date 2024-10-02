@@ -2,7 +2,8 @@
     <template v-if="headingElement">
         <Panel v-model="isGeneralSettingsExpanded"
                :hasCollapse="true"
-               title="General Settings">
+               title="General Settings"
+               type="block">
             <TextContent :modelValue="headingElement" />
 
             <DropDownList v-model="headingLevel"
@@ -12,21 +13,25 @@
         </Panel>
 
         <Panel v-model="isTextStylingExpanded" :hasCollapse="true"
-               title="Text Styling">
+               title="Text Styling"
+               type="block">
             <Font :modelValue="headingElement"
                   :tagName="headingLevel" />
         </Panel>
 
-        <hr>
-
-        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        <div class="m-2 d-flex justify-content-end">
+            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        </div>
     </template>
 </template>
 
 <style scoped>
 :deep(.panel) {
-    margin-bottom: 0;
+    /* TODO JMH Do this without !important */
+    margin-bottom: 0 !important;
+    /* Needed so that panel-block can collapse. */
+    height: auto !important;
 }
 </style>
 

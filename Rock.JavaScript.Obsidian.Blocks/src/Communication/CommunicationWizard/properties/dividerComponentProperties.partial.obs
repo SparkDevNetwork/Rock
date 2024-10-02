@@ -1,7 +1,8 @@
 <template>
     <Panel :hasCollapse="true"
            :modelValue="true"
-           title="General Settings">
+           title="General Settings"
+           type="block">
         <template v-if="hrElement">
             <BorderColor :modelValue="hrElement" label="Color" :clearBackgroundColor="true" />
             <BorderStyle :modelValue="hrElement" />
@@ -9,12 +10,20 @@
             <Margin :modelValue="hrElement" />
         </template>
 
-        <hr>
-
-        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        <div class="m-2 d-flex justify-content-end">
+            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+        </div>
     </Panel>
 </template>
+
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0 !important;
+    /* Needed so that panel-block can collapse. */
+    height: auto !important;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
