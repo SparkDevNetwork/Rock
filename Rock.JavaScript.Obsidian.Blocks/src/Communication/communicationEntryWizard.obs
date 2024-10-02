@@ -180,7 +180,6 @@
     /* TODO JMH Is this supported? */
     gap: 16px;
     flex-wrap: wrap;
-    width: 322px;
 }
 
 .section-list {
@@ -218,7 +217,8 @@
 
 .email-editor-toolbox {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-basis: 40%;
 }
 
 .email-editor-toolbox-menu {
@@ -245,10 +245,10 @@
 }
 
 .email-editor-toolbox-submenu {
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     min-width: 322px;
-    max-width: 500px;
 }
 
 .email-editor-toolbox-submenu-content {
@@ -282,8 +282,10 @@
     align-items: center;
     justify-content: center;
     background-color: lightgray;
+    flex-basis: 60%;
 }
 </style>
+
 
 <script setup lang="ts">
     import { computed, nextTick, provide, ref, watch } from "vue";
