@@ -1,0 +1,200 @@
+<template>
+    <template v-if="modelValue.componentElement">
+        <Panel v-model="isContentPanelExpanded"
+               :hasCollapse="true"
+               title="Content">
+            <ButtonGroup v-model="imageSourceType" :items="imageSourceTypes" />
+
+            <ImageUploader v-if="imageSourceType === 'image'"
+                           v-model="imageGuidAndName"
+                           :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
+                           :disableLabel="true"
+                           :uploadAsTemporary="true" />
+
+            <div v-else-if="imageSourceType === 'asset'">TBD</div>
+
+            <NumberBox v-model="imageWidth"
+                       label="Image Width">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">px</span>
+                </template>
+            </NumberBox>
+
+            <NumberBox v-model="imageHeight"
+                       label="Image Height">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">px</span>
+                </template>
+            </NumberBox>
+
+            <hr>
+            <RockButton btnType="primary" @click="onClickComplete">Complete</RockButton>
+            <RockButton btnType="link" @click="onClickDelete">Delete</RockButton>
+        </Panel>
+
+        <Panel v-model="isSpacingAndLayoutPanelExpanded"
+               :hasCollapse="true"
+               title="Spacing & Layout">
+            <Margin :modelValue="modelValue.componentElement" />
+        </Panel>
+    </template>
+</template>
+
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { BinaryFileType, toGuidOrNull } from "../imports.partial";
+    import Margin from "../inlineStyleEditors/margin.partial.obs";
+    import { EditorComponent } from "../types.partial";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<EditorComponent>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    const imageSourceTypes = [
+        {
+            text: "Image",
+            value: "image"
+        }, {
+            text: "Asset",
+            value: "asset"
+        }
+    ];
+
+    const dataAttributeKey = {
+        imageWidth: "imageWidth",
+        imageId: "imageId",
+        imageHeight: "imageHeight",
+        imageGuid: "imageGuid",
+        imageFileName: "imageFilename"
+    } as const;
+
+    // #region Values
+
+    const imageElement = ref<HTMLImageElement | null | undefined>(props.modelValue.componentElement?.querySelector("img"));
+    const imageGuidAndName = ref<ListItemBag | null | undefined>(props.modelValue.componentElement?.dataset[dataAttributeKey.imageGuid]
+        ? ({
+            text: props.modelValue.componentElement.dataset[dataAttributeKey.imageFileName],
+            value: props.modelValue.componentElement.dataset[dataAttributeKey.imageGuid]
+        })
+        : null);
+    const imageSourceType = ref<"image" | "asset">("image"); // TODO JMH Switch to "asset" if there is a dataset property...
+    const imageWidth = ref<number | null>(props.modelValue.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.modelValue.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null);
+    const imageHeight = ref<number | null>(props.modelValue.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.modelValue.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null);
+    const isContentPanelExpanded = ref<boolean>(true);
+    const isSpacingAndLayoutPanelExpanded = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const constructedImageSource = computed<string | null | undefined>(() => {
+        if (!imageGuidAndName.value?.value) {
+            return null;
+        }
+
+        return `/GetImage.ashx?guid=${imageGuidAndName.value.value}&fileName=${imageGuidAndName.value.text}${(imageWidth.value ? `&width=${imageWidth.value}` : "")}${(imageHeight.value ? `&height=${imageHeight.value}` : "")}`;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onClickComplete(): void {
+        emit("complete");
+    }
+
+    function onClickDelete(): void {
+        emit("delete");
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(imageGuidAndName, imageListItemBag => {
+        const fileGuid = toGuidOrNull(imageListItemBag?.value);
+        const fileName = imageListItemBag?.text;
+
+        if (fileGuid) {
+            props.modelValue.componentElement.dataset[dataAttributeKey.imageGuid] = fileGuid;
+        }
+        else {
+            delete props.modelValue.componentElement.dataset[dataAttributeKey.imageGuid];
+        }
+
+        if (fileName) {
+            props.modelValue.componentElement.dataset[dataAttributeKey.imageFileName] = fileName ?? "";
+        }
+        else {
+            delete props.modelValue.componentElement.dataset[dataAttributeKey.imageFileName];
+        }
+    });
+
+    watch(imageWidth, value => {
+        if (value) {
+            props.modelValue.componentElement.dataset[dataAttributeKey.imageWidth] = `${value}`;
+        }
+        else {
+            delete props.modelValue.componentElement.dataset[dataAttributeKey.imageWidth];
+        }
+    });
+
+    watch(imageHeight, value => {
+        if (value) {
+            props.modelValue.componentElement.dataset[dataAttributeKey.imageHeight] = `${value}`;
+        }
+        else {
+            delete props.modelValue.componentElement.dataset[dataAttributeKey.imageHeight];
+        }
+    });
+
+    watch(isContentPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isSpacingAndLayoutPanelExpanded.value = false;
+        }
+    });
+
+    watch(isSpacingAndLayoutPanelExpanded, isExpanded => {
+        if (isExpanded) {
+            // Collapse other panels.
+            isContentPanelExpanded.value = false;
+        }
+    });
+
+    watch(constructedImageSource, src => {
+        if (!imageElement.value) {
+            return;
+        }
+
+        if (src) {
+            imageElement.value.src = src;
+        }
+        else {
+            // Use the placeholder image.
+            imageElement.value.src = "/Assets/Images/image-placeholder.jpg";
+        }
+    });
+
+    // #endregion
+</script>

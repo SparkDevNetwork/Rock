@@ -48,9 +48,13 @@
 
                                                 <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'" :modelValue="selectedComponent" />
                                                 <DividerComponentProperties v-else-if="selectedComponent.type.typeName === 'divider'" :modelValue="selectedComponent" />
+                                                <ImageComponentProperties v-else-if="selectedComponent.type.typeName === 'image'"
+                                                                          :modelValue="selectedComponent"
+                                                                          @complete="onCompleteComponent"
+                                                                          @delete="onDeleteComponent" />
                                                 <TextComponentProperties v-else-if="selectedComponent.type.typeName === 'text'"
                                                                          :modelValue="selectedComponent"
-                                                                         @complete="selectedComponent = null"
+                                                                         @complete="onCompleteComponent"
                                                                          @delete="onDeleteComponent" />
                                                 <TitleComponentProperties v-else-if="selectedComponent.type.typeName === 'title'"
                                                                           :modelValue="selectedComponent" />
@@ -279,7 +283,8 @@
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
     import DividerComponentProperties from "./CommunicationWizard/properties/dividerComponentProperties.partial.obs";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
-    import EmailDocumentProperties from "./CommunicationWizard/emailDocumentProperties.partial.obs";
+    import EmailDocumentProperties from "./CommunicationWizard/properties/emailDocumentProperties.partial.obs";
+    import ImageComponentProperties from "./CommunicationWizard/properties/imageComponentProperties.partial.obs";
     import SectionComponentProperties from "./CommunicationWizard/properties/sectionComponentProperties.partial.obs";
     import TextComponentProperties from "./CommunicationWizard/properties/textComponentProperties.partial.obs";
     import TitleComponentProperties from "./CommunicationWizard/properties/titleComponentProperties.partial.obs";
@@ -370,6 +375,10 @@
             previewHtml.value = editorWindow.value?.getHtml() ?? "";
             isPreviewOpen.value = true;
         });
+    }
+
+    function onCompleteComponent(): void {
+        selectedComponent.value = null;
     }
 
     function onDeleteComponent(): void {
