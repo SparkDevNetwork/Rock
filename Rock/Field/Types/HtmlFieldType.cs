@@ -142,7 +142,6 @@ namespace Rock.Field.Types
             cbUserSpecificFolder.AutoPostBack = true;
             cbUserSpecificFolder.CheckedChanged += OnQualifierUpdated;
             cbUserSpecificFolder.Label = "User Specific Folders";
-            cbUserSpecificFolder.Text = "Yes";
             cbUserSpecificFolder.Help = "Should the root folders be specific to current user?";
             return controls;
         }
