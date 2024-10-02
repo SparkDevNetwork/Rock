@@ -395,7 +395,7 @@
 
                     <div class="row form-row">
                         <div class="col">
-                            <Rock:RockTextBox ID="tbInteractionFilterOperation" runat="server" Label="Operation" CssClass="input-width-xxl" Help="Examples: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'" />
+                            <Rock:RockTextBox ID="tbInteractionFilterOperation" runat="server" Label="Operation" CssClass="input-width-xxl" Help="Examples: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'." />
                         </div>
                     </div>
 
