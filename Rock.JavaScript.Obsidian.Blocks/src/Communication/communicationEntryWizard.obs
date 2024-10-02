@@ -44,8 +44,6 @@
                                             </div>
 
                                             <div v-else-if="selectedComponent">
-                                                <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
-
                                                 <CodeComponentProperties v-if="selectedComponent.type.typeName === 'code'"
                                                                          :modelValue="selectedComponent"
                                                                          @complete="onCompleteComponent"
@@ -71,8 +69,10 @@
                                         </template>
 
                                         <template v-else-if="item === 'Sections'">
-                                            <div v-if="!areSectionPropertiesShown">
-                                                <DropDownList v-model="sectionCategory" :items="sectionCategories" label="Category">
+                                            <div v-if="!areSectionPropertiesShown" class="submenu-content">
+                                                <DropDownList v-model="sectionCategory"
+                                                              :items="sectionCategories"
+                                                              label="Category">
                                                     <template #inputGroupPrepend>
                                                         <div class="input-group-addon">
                                                             <i class="fa fa-folder"></i>
@@ -91,9 +91,10 @@
                                             </div>
 
                                             <div v-else-if="selectedComponent">
-                                                <RockButton btnType="link" btnSize="xs" @click="selectedComponent = null"><i class="fa fa-arrow-left"></i></RockButton>
-
-                                                <SectionComponentProperties v-if="selectedComponent.type.typeName === 'section'" :selectedComponent="selectedComponent" />
+                                                <SectionComponentProperties v-if="selectedComponent.type.typeName === 'section'"
+                                                                            :selectedComponent="selectedComponent"
+                                                                            @complete="onCompleteComponent"
+                                                                            @delete="onDeleteComponent" />
                                             </div>
                                         </template>
                                     </div>
@@ -180,6 +181,7 @@
     /* TODO JMH Is this supported? */
     gap: 16px;
     flex-wrap: wrap;
+    margin: 16px;
 }
 
 .section-list {
@@ -187,6 +189,10 @@
     flex-direction: column;
     /* TODO JMH Is this supported? */
     gap: 16px;
+}
+
+.submenu-content {
+    margin: 16px;
 }
 
 .component-list-item {
@@ -249,10 +255,6 @@
     display: flex;
     flex-direction: column;
     min-width: 322px;
-}
-
-.email-editor-toolbox-submenu-content {
-    padding: 16px;
 }
 
 .email-editor-panel-title {
