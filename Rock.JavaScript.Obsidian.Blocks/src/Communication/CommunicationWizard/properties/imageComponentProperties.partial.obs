@@ -13,6 +13,15 @@
 
             <div v-else-if="imageSourceType === 'asset'">TBD</div>
 
+
+            <hr>
+            <RockButton btnType="primary" @click="onClickComplete">Complete</RockButton>
+            <RockButton btnType="link" @click="onClickDelete">Delete</RockButton>
+        </Panel>
+
+        <Panel v-model="isSpacingAndLayoutPanelExpanded"
+               :hasCollapse="true"
+               title="Spacing & Layout">
             <NumberBox v-model="imageWidth"
                        label="Image Width">
                 <template #inputGroupAppend>
@@ -27,14 +36,10 @@
                 </template>
             </NumberBox>
 
-            <hr>
-            <RockButton btnType="primary" @click="onClickComplete">Complete</RockButton>
-            <RockButton btnType="link" @click="onClickDelete">Delete</RockButton>
-        </Panel>
+            <DropDownList v-model="widthItem"
+                          :items="widthItems"
+                          label="Width" />
 
-        <Panel v-model="isSpacingAndLayoutPanelExpanded"
-               :hasCollapse="true"
-               title="Spacing & Layout">
             <Margin :modelValue="modelValue.componentElement" />
         </Panel>
     </template>
@@ -52,6 +57,7 @@
     import Margin from "../inlineStyleEditors/margin.partial.obs";
     import { EditorComponent } from "../types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -85,8 +91,21 @@
         imageId: "imageId",
         imageHeight: "imageHeight",
         imageGuid: "imageGuid",
-        imageFileName: "imageFilename"
+        imageFileName: "imageFilename",
+        imgCssWidth: "imgCssWidth"
     } as const;
+
+    const widthItems: ListItemBag[] = [
+        {
+            text: "Image Width",
+            value: "image"
+        }, {
+            text: "Full Width",
+            value: "full"
+        }
+    ];
+
+    type ImageCssWidth = "full" | "image";
 
     // #region Values
 
@@ -98,6 +117,7 @@
         })
         : null);
     const imageSourceType = ref<"image" | "asset">("image"); // TODO JMH Switch to "asset" if there is a dataset property...
+    const widthItem = ref<ImageCssWidth>((imageElement.value?.dataset[dataAttributeKey.imgCssWidth] as ImageCssWidth) ?? "full");
     const imageWidth = ref<number | null>(props.modelValue.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.modelValue.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null);
     const imageHeight = ref<number | null>(props.modelValue.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.modelValue.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null);
     const isContentPanelExpanded = ref<boolean>(true);
@@ -193,6 +213,25 @@
         else {
             // Use the placeholder image.
             imageElement.value.src = "/Assets/Images/image-placeholder.jpg";
+        }
+    });
+
+    watch(widthItem, value => {
+        if (!imageElement.value) {
+            return;
+        }
+
+        if (value === "full") {
+            imageElement.value.style.width = "100%";
+            imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "full";
+        }
+        else if (value === "image") {
+            imageElement.value.style.width = "auto";
+            imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "image";
+        }
+        else {
+            imageElement.value.style.width = "";
+            delete imageElement.value.dataset[dataAttributeKey.imgCssWidth];
         }
     });
 
