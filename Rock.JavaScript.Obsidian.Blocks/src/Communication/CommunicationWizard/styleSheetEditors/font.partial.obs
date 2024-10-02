@@ -3,7 +3,14 @@
                   :items="fontFamilies"
                   :label="label" />
 
-    <NumberBox v-model="fontSize" :disableLabel="true" placeholder="Font Size (px)" />
+    <NumberBox v-model="fontSize"
+               :disableLabel="true"
+               placeholder="Font Size"
+               @keydown="onFontSizeKeyDown">
+        <template #inputGroupAppend>
+            <span class="input-group-addon">px</span>
+        </template>
+    </NumberBox>
 
     <ColorPicker v-model="fontColor" :disableLabel="true" placeholder="Font Color" />
 
@@ -191,9 +198,24 @@ svg {
 
     // #region Event Handlers
 
-    // #endregion
-
-    // #region Functions
+    function onFontSizeKeyDown(event: KeyboardEvent): void {
+        if (event.key === "ArrowUp") {
+            if (fontSize.value !== null && fontSize.value !== undefined && fontSize.value! >= 0) {
+                fontSize.value = fontSize.value + 1;
+            }
+            else {
+                fontSize.value = 0;
+            }
+        }
+        else if (event.key === "ArrowDown") {
+            if (fontSize.value !== null && fontSize.value !== undefined && fontSize.value > 0) {
+                fontSize.value = fontSize.value - 1;
+            }
+            else {
+                fontSize.value = 0;
+            }
+        }
+    }
 
     // #endregion
 
