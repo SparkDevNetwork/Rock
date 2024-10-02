@@ -357,6 +357,60 @@ export const twoColumnSectionComponent: EditorComponentType = {
     }
 };
 
+export const leftColumnSectionComponent: EditorComponentType = {
+    iconCssClass: "rk rk-left-column",
+    title: "Left",
+    typeName: "section",
+
+    createComponentElement(d: Document): HTMLElement {
+        const el = d.createElement("div");
+        el.classList.add("component", `component-${this.typeName}`);
+        el.dataset.state = "component";
+        el.innerHTML = `<table class='row'width='100%' >
+    <tr>
+        <td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td>
+        <td class='dropzone columns large-8 small-12 last' width='67%' valign='top'></td>
+    </tr>
+</table>`;
+        return el;
+    },
+
+    createComponentPlaceholder(d: Document): HTMLElement {
+        const ph = d.createElement("div");
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
+        return ph;
+    }
+};
+
+export const rightColumnSectionComponent: EditorComponentType = {
+    iconCssClass: "rk rk-right-column",
+    title: "Right",
+    typeName: "section",
+
+    createComponentElement(d: Document): HTMLElement {
+        const el = d.createElement("div");
+        el.classList.add("component", `component-${this.typeName}`);
+        el.dataset.state = "component";
+        el.innerHTML = `<table class='row'width='100%' >
+    <tr>
+        <td class='dropzone columns large-8 small-12 first' width='67%' valign='top'></td>
+        <td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td>
+    </tr>
+</table>`;
+        return el;
+    },
+
+    createComponentPlaceholder(d: Document): HTMLElement {
+        const ph = d.createElement("div");
+        ph.classList.add("component", `component-${this.typeName}`, "gu-transit");
+        ph.dataset.state = "template";
+        ph.innerHTML = `<i class="${this.iconCssClass}"></i><br>${this.title}`;
+        return ph;
+    }
+};
+
 export const threeColumnSectionComponent: EditorComponentType = {
     iconCssClass: "rk rk-three-column",
     title: "Three",

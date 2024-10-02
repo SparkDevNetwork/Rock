@@ -280,7 +280,7 @@
 <script setup lang="ts">
     import { computed, nextTick, provide, ref, watch } from "vue";
     import CodeComponentProperties from "./CommunicationWizard/properties/codeComponentProperties.partial.obs";
-    import { buttonComponent, dividerComponent, imageComponent, lavaComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
+    import { buttonComponent, dividerComponent, imageComponent, lavaComponent, leftColumnSectionComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rightColumnSectionComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
     import DividerComponentProperties from "./CommunicationWizard/properties/dividerComponentProperties.partial.obs";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
     import EmailDocumentProperties from "./CommunicationWizard/properties/emailDocumentProperties.partial.obs";
@@ -343,7 +343,9 @@
     const sectionComponentTypes: EditorComponentType[] = [
         oneColumnSectionComponent,
         twoColumnSectionComponent,
-        threeColumnSectionComponent
+        threeColumnSectionComponent,
+        leftColumnSectionComponent,
+        rightColumnSectionComponent
     ];
 
     // #endregion
