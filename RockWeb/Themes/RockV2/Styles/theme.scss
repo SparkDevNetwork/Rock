@@ -728,7 +728,7 @@ $navbar-element-height: 40px;
     --nav-childpages-bg: var(--color-interface-strong);
     display: block;
     height: calc(100% - $navbar-top-height) !important; // Overrides collapse if window is resized
-    width: 80px;
+    width: $navbarside-width;
     top: $navbar-top-height;
     margin-left:    var(--spacing-small);
     height:         calc(100% - 88px) !important;
