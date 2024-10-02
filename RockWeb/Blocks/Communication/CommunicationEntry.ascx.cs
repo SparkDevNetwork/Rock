@@ -134,6 +134,11 @@ namespace RockWeb.Blocks.Communication
         Description = "Should new entries be flagged as bulk communication by default?",
         DefaultBooleanValue = false,
         Order = 14 )]
+    [BooleanField( "Show Duplicate Prevention Option",
+        Key = AttributeKey.ShowDuplicatePreventionOption,
+        Description = "Set this to true to show an option to prevent communications from being sent to people with the same email/SMS addresses. Typically, in Rock you’d want to send two emails as each will be personalized to the individual.",
+        DefaultBooleanValue = false,
+        Order = 15 )]
     [TextField( "Document Root Folder",
         Key =  AttributeKey.DocumentRootFolder,
         Description = "The folder to use as the root when browsing or uploading documents.",
@@ -445,6 +450,8 @@ namespace RockWeb.Blocks.Communication
             {
                 MediumEntityTypeId = PageParameter( PageParameterKey.MediumId ).AsIntegerOrNull();
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -556,6 +563,16 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            this.NavigateToCurrentPageReference( new Dictionary<string, string>() );
+        }
 
         protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
@@ -1116,6 +1133,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             cbBulk.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
+            cbDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
 
             if ( !_fullMode )
             {
@@ -1379,6 +1397,11 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
+                cbDuplicatePreventionOption.Visible = ( component.CommunicationType == CommunicationType.Email || component.CommunicationType == CommunicationType.SMS ) && GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+                cbDuplicatePreventionOption.Label = $"Prevent Duplicate {component.CommunicationType} Addresses";
+                cbDuplicatePreventionOption.Help = $@"Check this option to prevent communications from being sent to people with the same {component.CommunicationType} addresses.
+                            This will mean two people who share an address will not receive a personalized communication, only one of them will.";
+
                 return mediumControl;
             }
 
@@ -1600,6 +1623,11 @@ namespace RockWeb.Blocks.Communication
             }
 
             communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+
+            if ( GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean() )
+            {
+                communication.ExcludeDuplicateRecipientAddress = cbDuplicatePreventionOption.Checked;
+            }
 
             if ( qryRecipients == null )
             {

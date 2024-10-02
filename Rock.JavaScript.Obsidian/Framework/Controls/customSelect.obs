@@ -1,0 +1,177 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="custom-select-field">
+        <!-- MOBILE VERSION -->
+        <div v-if="isMobile" class="custom-select-mobile-wrapper">
+            <div :class="`custom-select-wrapper ${wrapperClass}`">
+                <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
+                    <div v-if="showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                        <slot v-bind="{ item }">
+                            {{ item }}
+                        </slot>
+                    </div>
+                </TransitionVerticalCollapse>
+                <div v-if="!internalValue && !showOverlay" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
+                    <slot name="placeholder">
+                        <p class="text-muted">Select an item</p>
+                    </slot>
+                </div>
+            </div>
+            <Transition name="fade">
+                <div class="custom-select-expand-icon" v-if="!showOverlay">
+                    <i class="fa fa-angle-up"></i><br>
+                    <i class="fa fa-angle-down"></i>
+                </div>
+            </Transition>
+        </div>
+        <!-- DESKTOP VERSION -->
+        <div v-else :class="`custom-select-wrapper ${wrapperClass}`">
+            <template v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
+                <div v-if="!isMobile || showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                    <slot v-bind="{ item }">
+                        {{ item }}
+                    </slot>
+                </div>
+            </template>
+        </div>
+    </RockFormField>
+</template>
+
+<style>
+.custom-select-mobile-wrapper {
+    position: relative;
+}
+
+.custom-select-mobile-modal-wrapper {
+    position: relative;
+    margin: -15px;
+}
+
+.custom-select-item {
+    cursor: pointer;
+}
+
+.custom-select-expand-icon {
+    color: rgba(0, 0, 0, 0.25);
+    position: absolute;
+    line-height: 10px;
+    cursor: pointer;
+    top: 50%;
+    transform: translateY(-50%);
+    right: .5rem;
+}
+
+/* Fade Transition */
+.fade-enter-active {
+    transition: opacity 0.25s ease .35s;
+}
+
+.fade-leave-active {
+    transition: opacity .15s ease;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts" generic="TItem, TKey extends keyof TItem">
+    import { PropType, Ref, ref } from "vue";
+    import { useScreenSize } from "@Obsidian/Utility/screenSize";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** V-model of the currently selected item */
+        modelValue: {
+            type: Object as PropType<TItem | null>,
+            default: null
+        },
+
+        /** List of items to display in the control */
+        items: {
+            type: Array as PropType<TItem[]>,
+            required: true
+        },
+
+        /** property name of the item to use as the unique key (used to control rendering) */
+        itemKey: {
+            type: String as unknown as PropType<TKey>,
+            default: "id"
+        },
+
+        /** CSS class(es) to apply to the wrapper element */
+        wrapperClass: {
+            type: String,
+            default: ""
+        },
+
+        /** CSS class(es) to apply to the item element */
+        itemClass: {
+            type: String,
+            default: ""
+        },
+
+        /** CSS class(es) to apply to the selected item. Default: "selected" */
+        selectedClass: {
+            type: String,
+            default: "selected"
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: TItem | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit) as Ref<TItem | null>;
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const { isMobile } = useScreenSize();
+    const showOverlay = ref(false);
+
+    // #endregion
+
+    // #region Functions
+
+    function itemClasses(item: TItem | null): string {
+        const classes = [
+            props.itemClass
+        ];
+
+        if (item === internalValue.value || item === null) {
+            classes.push(props.selectedClass);
+        }
+
+        return classes.join(" ");
+    }
+
+    function onItemClick(item: TItem | null): void {
+        if (showOverlay.value || !isMobile.value && item !== null) {
+            internalValue.value = item;
+            showOverlay.value = false;
+        }
+        else {
+            showOverlay.value = true;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // #region Lifecycle
+
+    // #endregion
+</script>

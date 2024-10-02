@@ -220,6 +220,7 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 File = entity.ToListItemBag(),
                 FileName = entity.FileName,
+                FileId = entity.IdKey,
                 MimeType = entity.MimeType,
                 ShowBinaryFileType = GetAttributeValue( AttributeKey.ShowBinaryFileType ).AsBoolean(),
                 WorkflowButtonText = GetAttributeValue( AttributeKey.WorkflowButtonText ),

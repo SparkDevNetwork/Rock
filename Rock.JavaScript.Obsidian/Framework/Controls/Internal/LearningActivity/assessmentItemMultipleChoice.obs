@@ -29,9 +29,7 @@
                     </button>
                 </span>
             </div>
-            <div class="add-answer-button" v-if="!disabled">
-                <i class="fa fa-plus-circle" @click.prevent="answers.push('')"></i>
-            </div>
+            <a class="btn btn-xs btn-action btn-square" v-if="!disabled" @click.prevent="answers.push('')"><i class="fa fa-plus-circle"></i></a>
             <div class="correct-answer-field">
                 <DropDownList v-model="correctAnswer" :disabled="disabled" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
             </div>
@@ -66,8 +64,8 @@
 
 .add-answer-button > i.fa-plus-circle {
     border-radius: 4px;
-    background-color: #69717a;
-    color: #fff;
+    background-color: var(--color-default-soft);
+    color: var(--color-default-strong);
     padding: 8px;
     cursor: pointer;
 }
@@ -77,40 +75,38 @@
     flex-direction: column;
     margin-bottom: 4px;
     padding-right: 12px;
+}
 
-    .answer-row {
-        display: grid;
-        grid-template-columns: calc(100% - 30px) 25px;
-        column-gap: 8px;
+.answer-row {
+    display: grid;
+    grid-template-columns: calc(100% - 30px) 25px;
+    column-gap: 8px;
+}
 
-        /*
-            Because each answer-row is a single row grid use margin instead of row-gap.
-            Skip the first row since the label includes margin-bottom already.
-        */
-        :not(.answer-row-0) {
-            margin-bottom: 12px;
-        }
+/*
+    Because each answer-row is a single row grid use margin instead of row-gap.
+    Skip the first row since the label includes margin-bottom already.
+*/
+.answer-row:not(.answer-row-0) {
+    margin-bottom: 12px;
+}
 
-        /* Textbox for an answer. */
-        :first-child {
-            grid-column: 1;
-        }
+/* Textbox for an answer. */
+.answer-row:first-child {
+    grid-column: 1;
+}
 
-        /* Remove button for an answer. */
-        :last-child {
-            grid-column: 2;
-            padding: 3px;
-            max-height: 38px;
-        }
-    }
+/* Remove button for an answer. */
+.answer-ro:last-child {
+    grid-column: 2;
+    padding: 3px;
+    max-height: 38px;
+}
 
-    .answer-row-0 {
-
-        /* Add a margin-top to the first Remove button to offset the label of the first answer. */
-        > .remove-answer-button {
-            margin-top: 25px;
-        }
-    }
+/* Add a margin-top to the first Remove button to offset the label of the first answer. */
+.answer-row-0  > .remove-answer-button {
+    margin-top: 25px;
+    margin-bottom: 12px;
 }
 
 .correct-answer-field {
@@ -134,12 +130,12 @@
 }
 
 .label.label-default.selected-response {
-    background-color: #e4e8eb;
+    background-color: var(--color-interface-medium);
 }
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, toRef, toValue, watch } from "vue";
+    import { PropType, computed, ref, toValue, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -169,8 +165,7 @@
         (event: "update:modelValue", value: MultipleChoiceItem | AssessmentItem): void
     }>();
 
-    const disabled = ref(props.disabled ?? false);
-    const modelValue = toRef(() => props.modelValue as MultipleChoiceItem);
+    const modelValue = ref(props.modelValue as MultipleChoiceItem);
 
     const question = ref(modelValue.value?.question ?? "");
     const helpText = ref(modelValue.value?.helpText ?? "");
@@ -186,13 +181,13 @@
         let cssClass = "";
 
         if (a === response.value) {
-            // If this was the response of the student.
+            // If this was the response of the individual.
             cssClass = `class="label label-default selected-response"`;
         }
         else {
-            // Only add the success style if the student didn't choose the correct answer.
+            // Only add the success style if the individual didn't choose the correct answer.
             if (a === correctAnswer.value) {
-                // If this was not the response of the student and was correct.
+                // If this was not the response of the individual and was correct.
                 cssClass = `class="label label-success"`;
             }
             else {
@@ -202,8 +197,6 @@
 
         return `<div ${cssClass}>${a}</div>`;
     }));
-
-    const screenToShow = ref(props.screenToShow);
 
     const correctnessLabel = ref(
         isCorrect.value === true ?
@@ -236,7 +229,7 @@
 
     /** CSS classes for the panel. */
     const containerClasses = computed((): string[] => {
-        const screenName = toValue(screenToShow);
+        const screenName = toValue(props.screenToShow);
         return [
             "lms-assessment-item-container",
             `lms-assessment-item-${screenName.toLowerCase()}-container`,

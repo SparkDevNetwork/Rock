@@ -35,7 +35,13 @@
                         <Rock:NotificationBox ID="nbSaveSuccess" runat="server" NotificationBoxType="Success" Text="Changes have been saved." Visible="false" />
 
                         <Rock:CheckinArea ID="checkinArea" runat="server" Visible="false" OnAddCheckinLabelClick="checkinArea_AddCheckinLabelClick" OnDeleteCheckinLabelClick="checkinArea_DeleteCheckinLabelClick" OnAddNextGenCheckInLabelClick="checkinArea_AddNextGenCheckInLabelClick" OnDeleteNextGenCheckInLabelClick="checkinArea_DeleteNextGenCheckInLabelClick" />
-                        <Rock:CheckinGroup ID="checkinGroup" runat="server" Visible="false" OnAddLocationClick="checkinGroup_AddLocationClick" OnDeleteLocationClick="checkinGroup_DeleteLocationClick" OnReorderLocationClick="checkinGroup_ReorderLocationClick" />
+                        <Rock:CheckinGroup ID="checkinGroup" runat="server" Visible="false"
+                            OnAddLocationClick="checkinGroup_AddLocationClick"
+                            OnDeleteLocationClick="checkinGroup_DeleteLocationClick"
+                            OnReorderLocationClick="checkinGroup_ReorderLocationClick"
+                            OnAddOverflowLocationClick="checkinGroup_AddOverflowLocationClick"
+                            OnDeleteOverflowLocationClick="checkinGroup_DeleteOverflowLocationClick"
+                            OnReorderOverflowLocationClick="checkinGroup_ReorderOverflowLocationClick" />
 
                         <div class="panel-actions margin-t-md">
                             <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" Visible="false" />
@@ -63,6 +69,7 @@
 
         <Rock:ModalDialog ID="mdLocationPicker" runat="server" ScrollbarEnabled="false" SaveButtonText="Save" OnSaveClick="mdLocationPicker_SaveClick" Title="Select Check-in Location" ValidationGroup="Location">
             <Content ID="mdLocationPickerContent">
+                <asp:HiddenField ID="hfLocationPickerOverflow" runat="server" />
                 <Rock:LocationItemPicker ID="locationPicker" runat="server" Label="Check-in Location" ValidationGroup="Location" Required="true" />
             </Content>
         </Rock:ModalDialog>

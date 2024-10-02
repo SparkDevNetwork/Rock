@@ -218,7 +218,7 @@ namespace Rock.Blocks.Core
                 Value = entity.Value
             };
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
         }

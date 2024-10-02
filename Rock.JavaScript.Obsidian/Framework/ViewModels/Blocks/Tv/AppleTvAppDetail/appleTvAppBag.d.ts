@@ -62,7 +62,7 @@ export type AppleTvAppBag = {
     name?: string | null;
 
     /** Gets or sets the page view retention period. */
-    pageViewRetentionPeriod?: number | null;
+    pageViewRetentionPeriod?: string | null;
 
     /** Gets or sets a value indicating whether [show application javascript]. */
     showApplicationJavascript: boolean;

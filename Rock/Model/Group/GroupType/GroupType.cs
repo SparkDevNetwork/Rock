@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
@@ -210,6 +211,25 @@ namespace Rock.Model
         /// </example>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
+
+        /// <summary>
+        /// <para>
+        /// When <see cref="AttendanceRule"/> is set to <see cref="AttendanceRule.AlreadyEnrolledInGroup"/>
+        /// then this specifies the group matching logic used.
+        /// </para>
+        /// <para>
+        /// <see cref="AlreadyEnrolledMatchingLogic.MustBeEnrolled"/> simply
+        /// that the person be a member of the group and no additional filtering
+        /// is performed.
+        /// </para>
+        /// <para>
+        /// <see cref="AlreadyEnrolledMatchingLogic.PreferEnrolledGroups"/> will
+        /// additionally then filter out any non-preferred groups if the person
+        /// is a member of any preferred groups.
+        /// </para>
+        /// </summary>
+        [DataMember]
+        public AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; set; }
 
         /// <summary>
         /// Gets or sets the group capacity rule.

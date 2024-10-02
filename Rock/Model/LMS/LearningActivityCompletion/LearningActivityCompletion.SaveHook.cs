@@ -57,7 +57,7 @@ namespace Rock.Model
                         typeof( LearningActivityCompletion ),
                         SystemGuid.Category.HISTORY_LEARNING_ACTIVITY_COMPLETION.AsGuid(),
                         this.Entity.Id,
-                        HistoryChanges,
+                        this.HistoryChanges,
                         caption,
                         null,
                         null,
@@ -72,7 +72,6 @@ namespace Rock.Model
             private void UpdateClassGrades()
             {
                 var completionDetails = new LearningParticipantService( RockContext ).GetActivityCompletions( Entity.StudentId )
-                    .Where( a => a.Student.LearningCompletionStatus == Enums.Lms.LearningCompletionStatus.Incomplete )
                     .Select( a => new
                     {
                         // Convert to decimal for proper precision when calculating grade percent.
@@ -80,7 +79,7 @@ namespace Rock.Model
                         Earned = ( decimal ) a.PointsEarned,
 
                         // For determining overall class completion and calculating grade based on (facilitator) completed activities.
-                        HasBeenGraded = a.IsFacilitatorCompleted,
+                        a.HasBeenGraded,
 
                         // For getting list of grade scales available.
                         GradingSystemId = a.LearningActivity.LearningClass.LearningGradingSystemId,
@@ -137,6 +136,8 @@ namespace Rock.Model
                             History.EvaluateChange( HistoryChanges, "CompletedDateTime", null, Entity.CompletedDateTime );
                             History.EvaluateChange( HistoryChanges, "FacilitatorComment", null, Entity.FacilitatorComment );
                             History.EvaluateChange( HistoryChanges, "StudentComment", null, Entity.StudentComment );
+                            History.EvaluateChange( HistoryChanges, "GradedByPersonAliasId", null, Entity.GradedByPersonAliasId );
+                            History.EvaluateChange( HistoryChanges, "GradedByPersonAlias", null, Entity.GradedByPersonAlias?.Name );
                             History.EvaluateChange( HistoryChanges, "PointsEarned", null, Entity.PointsEarned );
                             History.EvaluateChange( HistoryChanges, "IsStudentCompleted", null, Entity.IsStudentCompleted );
                             History.EvaluateChange( HistoryChanges, "IsFacilitatorCompleted", null, Entity.IsFacilitatorCompleted );
@@ -153,26 +154,33 @@ namespace Rock.Model
                         }
                     case EntityContextState.Modified:
                         {
-                            var originalDueDate = (DateTime?)this.Entry.OriginalValues["DueDate"];
+                            var originalDueDate = ( DateTime? ) this.Entry.OriginalValues["DueDate"];
                             History.EvaluateChange( HistoryChanges, "DueDate", originalDueDate, Entity.DueDate );
 
-                            var originalPointsEarned =this.Entry.OriginalValues["PointsEarned"].ToIntSafe();
+                            var originalPointsEarned = this.Entry.OriginalValues["PointsEarned"].ToIntSafe();
                             History.EvaluateChange( HistoryChanges, "PointsEarned", originalPointsEarned, Entity.PointsEarned );
 
-                            var originalCompletionJson = (string)this.Entry.OriginalValues["ActivityComponentCompletionJson"];
+                            var originalCompletionJson = ( string ) this.Entry.OriginalValues["ActivityComponentCompletionJson"];
                             History.EvaluateChange( HistoryChanges, "ActivityComponentCompletionJson", originalCompletionJson, Entity.ActivityComponentCompletionJson );
 
-                            var originalIsFacilitatorCompleted = this.Entry.OriginalValues["IsFacilitatorCompleted"].ConvertToBooleanOrDefault(false);
+                            var originalIsFacilitatorCompleted = this.Entry.OriginalValues["IsFacilitatorCompleted"].ConvertToBooleanOrDefault( false );
                             History.EvaluateChange( HistoryChanges, "IsFacilitatorCompleted", originalIsFacilitatorCompleted, Entity.IsFacilitatorCompleted );
+
+                            if ( this.Entry.OriginalValues.ContainsKey( "GradedByPersonAlias" ) )
+                            {
+                                var originalGradedByPersonAlias = ( this.Entry.OriginalValues["GradedByPersonAlias"] as PersonAlias )?.Name ?? string.Empty;
+                                History.EvaluateChange( HistoryChanges, "GradedByPersonAlias", originalGradedByPersonAlias, Entity.GradedByPersonAlias?.Name ?? string.Empty );
+                            }
+
+                            var originalGradedByPersonAliasId = this.Entry.OriginalValues["GradedByPersonAliasId"] as int?;
+                            History.EvaluateChange( HistoryChanges, "GradedByPersonAliasId", originalGradedByPersonAliasId, Entity.GradedByPersonAliasId );
 
                             var originalFacilitatorComment = ( string ) this.Entry.OriginalValues["FacilitatorComment"];
                             History.EvaluateChange( HistoryChanges, "FacilitatorComment", originalFacilitatorComment, Entity.FacilitatorComment );
 
                             break;
                         }
-
                 }
-
             }
         }
     }

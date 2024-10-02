@@ -35,7 +35,7 @@
                     title="Page Id"
                     field="pageId"
                     :filter="textValueFilter"
-                    width="5%"
+                    width="8%"
                     visiblePriority="md" />
 
         <BooleanColumn name="isGlobal"

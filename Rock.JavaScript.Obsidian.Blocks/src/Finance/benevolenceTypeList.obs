@@ -30,14 +30,18 @@
                        field="showFinancialResults"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"/>
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        width="5%"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center" />
 
         <SecurityColumn />
 

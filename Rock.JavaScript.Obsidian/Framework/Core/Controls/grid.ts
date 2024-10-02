@@ -293,8 +293,8 @@ export function textFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const haystackValue = haystack?.toLowerCase() ?? "";
-    const needleValue = needle["value"].toLowerCase();
+    const haystackValue = haystack?.toLowerCase()?.trim() ?? "";
+    const needleValue = needle["value"].toLowerCase()?.trim();
 
     if (needle["method"] === TextFilterMethod.Equals) {
         return haystackValue === needleValue;
@@ -490,9 +490,9 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "")?.date.toMilliseconds() ?? 0;
-    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "")?.date.toMilliseconds() ?? 0;
-    const haystackDate = RockDateTime.parseISO(haystack ?? "")?.date.toMilliseconds() ?? 0;
+    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "", false)?.date.toMilliseconds() ?? 0;
+    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "", false)?.date.toMilliseconds() ?? 0;
+    const haystackDate = RockDateTime.parseISO(haystack ?? "", false)?.date.toMilliseconds() ?? 0;
     const today = RockDateTime.now().date;
 
     if (needle["method"] === DateFilterMethod.Equals) {

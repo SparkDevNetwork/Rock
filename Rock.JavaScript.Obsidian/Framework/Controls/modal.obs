@@ -21,7 +21,7 @@
                         <slot v-else name="header" />
                     </div>
 
-                    <RockForm @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
+                    <RockForm v-model:submit="internalSubmit" @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
                         <div class="modal-body">
                             <RockValidation :errors="validationErrors" />
 
@@ -53,6 +53,7 @@
     import { trackModalState } from "@Obsidian/Utility/page";
     import { FormError } from "@Obsidian/Utility/form";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
@@ -114,6 +115,12 @@
             type: Function as PropType<(() => void | PromiseLike<void>)>,
             required: false
         },
+
+        /** True if the form should attempt to submit. */
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -121,6 +128,7 @@
         (e: "closeModal"): void;
         (e: "save"): void;
         (e: "saveThenAdd"): void;
+        (e: "update:submit", value: boolean): void;
     }>();
 
     // #region Values
@@ -128,6 +136,7 @@
     const internalModalVisible = ref(props.modelValue);
     const container = ref(document.fullscreenElement ?? document.body);
     const validationErrors = ref<FormError[]>([]);
+    const internalSubmit = useVModelPassthrough(props, "submit", emit);
 
     /** Used to determine if shaking should be currently performed. */
     const isShaking = ref(false);
@@ -223,10 +232,10 @@
         }
     }
 
-     /**
+    /**
      * Event handler for when the Save Then Add Button is clicked.
      */
-     function onSaveThenAdd(): void {
+    function onSaveThenAdd(): void {
         emit("saveThenAdd");
     }
 

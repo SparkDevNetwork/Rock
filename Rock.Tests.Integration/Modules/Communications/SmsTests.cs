@@ -31,6 +31,7 @@ namespace Rock.Tests.Integration.Modules.Communications
     /// Initialize test data for the Steps feature of Rock.
     /// </summary>
     [TestClass]
+    [TestCategory( TestFeatures.Communications )]
     public class SmsTests : DatabaseTestsBase
     {
         public static class Constants
@@ -41,7 +42,6 @@ namespace Rock.Tests.Integration.Modules.Communications
         }
 
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromUnknownMobileNumber_CreatesNamelessPerson()
         {
             var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.UnknownPerson1MobileNumber );
@@ -80,7 +80,6 @@ namespace Rock.Tests.Integration.Modules.Communications
         /// An incoming SMS sent from a mobile number that has been previously added as a Nameless Person record, should return the same Nameless Person record.
         /// </summary>
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamelessPerson_ReturnsMatchedPerson()
         {
             var dataContext = new RockContext();
@@ -107,7 +106,6 @@ namespace Rock.Tests.Integration.Modules.Communications
         /// An incoming SMS sent from a mobile number that has been previously added as a Nameless Person record, should return the same Nameless Person record.
         /// </summary>
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamedPerson_ReturnsMatchedPerson()
         {
             var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.MobilePhoneTedDecker );
@@ -123,7 +121,6 @@ namespace Rock.Tests.Integration.Modules.Communications
             Assert.That.AreEqual( namedPerson1.Guid, TestGuids.Communications.TedDeckerPersonGuid.AsGuid(), "Incorrect Person record retrieved by mobile phone number." );
         }
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void NamelessPersonRecordType_GetDefaultPersonQuery_DoesNotIncludeNameless()
         {
             // Verify at least one NamelessPerson Record Type exists.

@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,8 +40,10 @@ namespace Rock.Web.UI.Controls
 
         private DataTextBox _tbGroupName;
         private RockCheckBox _cbIsActive;
+        private RockCheckBox _cbIsSpecialNeeds;
         private PlaceHolder _phGroupAttributes;
         private Grid _gLocations;
+        private Grid _gOverflowLocations;
 
         /// <summary>
         /// Gets or sets the validation group.
@@ -81,6 +84,7 @@ namespace Rock.Web.UI.Controls
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
+
             if ( eventTarget.StartsWith( _gLocations.UniqueID ) )
             {
                 List<string> subTargetList = eventTarget.Replace( _gLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -100,6 +104,28 @@ namespace Rock.Web.UI.Controls
                         int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
                         RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList()[rowIndex].LocationId );
                         DeleteLocation_Click( this, rowEventArgs );
+                    }
+                }
+            }
+            else if ( eventTarget.StartsWith( _gOverflowLocations.UniqueID ) )
+            {
+                List<string> subTargetList = eventTarget.Replace( _gOverflowLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                EnsureChildControls();
+
+                // make sure it's not a reorder event
+                if ( subTargetList.Count != 0 )
+                {
+                    string lblAddControlId = subTargetList.Where( n => n.EndsWith( "Add" ) ).LastOrDefault();
+                    if ( lblAddControlId != null )
+                    {
+                        AddOverflowLocation_Click( this, new EventArgs() );
+                    }
+                    else
+                    {
+                        // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
+                        int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
+                        RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.OverflowLocations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList()[rowIndex].LocationId );
+                        DeleteOverflowLocation_Click( this, rowEventArgs );
                     }
                 }
             }
@@ -178,6 +204,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the overflow locations.
+        /// </summary>
+        /// <value>
+        /// The overflow locations.
+        /// </value>
+        public List<LocationGridItem> OverflowLocations
+        {
+            get
+            {
+                return ViewState["OverflowLocations"] as List<LocationGridItem>;
+            }
+
+            set
+            {
+                ViewState["OverflowLocations"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the group unique identifier.
         /// </summary>
         /// <value>
@@ -218,6 +263,7 @@ namespace Rock.Web.UI.Controls
         {
             group.Name = _tbGroupName.Text;
             group.IsActive = _cbIsActive.Checked;
+            group.IsSpecialNeeds = _cbIsSpecialNeeds.Checked;
             Rock.Attribute.Helper.GetEditValues( _phGroupAttributes, group );
         }
 
@@ -241,6 +287,17 @@ namespace Rock.Web.UI.Controls
                 _hfGroupTypeId.Value = value.GroupTypeId.ToString();
                 _tbGroupName.Text = value.Name;
                 _cbIsActive.Checked = value.IsActive;
+                _cbIsSpecialNeeds.Checked = value.IsSpecialNeeds;
+
+                var checkInConfiguration = GroupTypeCache.Get( value.GroupTypeId, rockContext )?.GetCheckInConfiguration( rockContext );
+
+                // The "Special Needs" checkbox should only show up if the
+                // configuration has enabled special needs logic.
+                if ( checkInConfiguration != null )
+                {
+                    _cbIsSpecialNeeds.Visible = checkInConfiguration.AreNonSpecialNeedsGroupsRemoved
+                        || checkInConfiguration.AreSpecialNeedsGroupsRemoved;
+                }
 
                 CreateGroupAttributeControls( value, rockContext );
             }
@@ -278,6 +335,13 @@ namespace Rock.Web.UI.Controls
             _tbGroupName.SourceTypeName = "Rock.Model.Group, Rock";
             _tbGroupName.PropertyName = "Name";
 
+            _cbIsSpecialNeeds = new RockCheckBox
+            {
+                ID = $"{ID}_cbIsSpecialNeeds",
+                Label = "Special Needs",
+                Help = "Only used by next-gen check-in. This will indicate that the group is intended for people with the Special Needs attribute set to true."
+            };
+
             _phGroupAttributes = new PlaceHolder();
             _phGroupAttributes.ID = this.ID + "_phGroupAttributes";
 
@@ -287,10 +351,12 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lblGroupName );
             Controls.Add( _tbGroupName );
             Controls.Add( _cbIsActive );
+            Controls.Add( _cbIsSpecialNeeds );
             Controls.Add( _phGroupAttributes );
 
             // Locations Grid
             CreateLocationsGrid();
+            CreateOverflowLocationsGrid();
         }
 
         /// <summary>
@@ -328,6 +394,40 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Creates the overflow locations grid.
+        /// </summary>
+        private void CreateOverflowLocationsGrid()
+        {
+            _gOverflowLocations = new Grid();
+
+            _gOverflowLocations.ID = this.ID + "_gOverflowLocations";
+
+            _gOverflowLocations.DisplayType = GridDisplayType.Light;
+            _gOverflowLocations.ShowActionRow = true;
+            _gOverflowLocations.RowItemText = "Location";
+            _gOverflowLocations.Actions.ShowAdd = true;
+
+            //// Handle AddClick manually in OnLoad()
+            _gOverflowLocations.Actions.AddClick += AddOverflowLocation_Click;
+            _gOverflowLocations.GridReorder += gOverflowLocations_Reorder;
+
+            var reorderField = new ReorderField();
+            _gOverflowLocations.Columns.Add( reorderField );
+            _gOverflowLocations.ShowHeader = false;
+            _gOverflowLocations.DataKeyNames = new string[] { "LocationId" };
+            _gOverflowLocations.Columns.Add( new BoundField { DataField = "FullNamePath", HeaderText = "Name" } );
+
+            DeleteField deleteField = new DeleteField();
+
+            //// handle manually in OnLoad()
+            deleteField.Click += DeleteOverflowLocation_Click;
+
+            _gOverflowLocations.Columns.Add( deleteField );
+
+            Controls.Add( _gOverflowLocations );
+        }
+
+        /// <summary>
         /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
         /// </summary>
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
@@ -347,6 +447,7 @@ namespace Rock.Web.UI.Controls
 
                 _tbGroupName.RenderControl( writer );
                 _cbIsActive.RenderBaseControl( writer );
+                _cbIsSpecialNeeds.RenderControl( writer );
                 _phGroupAttributes.RenderControl( writer );
 
                 writer.WriteLine( "<h3>Locations</h3>" );
@@ -356,6 +457,14 @@ namespace Rock.Web.UI.Controls
                     _gLocations.DataBind();
                 }
                 _gLocations.RenderControl( writer );
+
+                writer.WriteLine( "<h3>Overflow Locations <a class=\"help text-sm\" href=\"#\" tabindex=\"-1\" data-toggle=\"tooltip\" data-placement=\"auto\" data-container=\"body\" data-html=\"true\" title=\"Overflow locations will be used if all non-overflow locations are at capacity. This is only supported on next-gen check-in.\"><i class=\"fa fa-info-circle\"></i></a></h3>" );
+                if ( this.OverflowLocations != null )
+                {
+                    _gOverflowLocations.DataSource = this.OverflowLocations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList();
+                    _gOverflowLocations.DataBind();
+                }
+                _gOverflowLocations.RenderControl( writer );
             }
         }
 
@@ -421,6 +530,40 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the Reorder event of the gOverflowLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gOverflowLocations_Reorder( object sender, GridReorderEventArgs e )
+        {
+            if ( ReorderOverflowLocationClick != null )
+            {
+                var eventArg = new CheckinGroupEventArg( GroupGuid, e.DataKey, e.OldIndex, e.NewIndex );
+                ReorderOverflowLocationClick( this, eventArg );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the DeleteOverflowLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void DeleteOverflowLocation_Click( object sender, RowEventArgs e )
+        {
+            DeleteOverflowLocationClick?.Invoke( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the AddOverflowLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void AddOverflowLocation_Click( object sender, EventArgs e )
+        {
+            AddOverflowLocationClick?.Invoke( sender, e );
+        }
+
+        /// <summary>
         /// Occurs when [reorder field click].
         /// </summary>
         public event EventHandler<CheckinGroupEventArg> ReorderLocationClick;
@@ -434,6 +577,21 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [add location click].
         /// </summary>
         public event EventHandler AddLocationClick;
+
+        /// <summary>
+        /// Occurs when the list of overflow locations has been re-ordered.
+        /// </summary>
+        public event EventHandler<CheckinGroupEventArg> ReorderOverflowLocationClick;
+
+        /// <summary>
+        /// Occurs when an overflow location should be deleted.
+        /// </summary>
+        public event EventHandler<RowEventArgs> DeleteOverflowLocationClick;
+
+        /// <summary>
+        /// Occurs when a new overflow location should be added.
+        /// </summary>
+        public event EventHandler AddOverflowLocationClick;
     }
 
 

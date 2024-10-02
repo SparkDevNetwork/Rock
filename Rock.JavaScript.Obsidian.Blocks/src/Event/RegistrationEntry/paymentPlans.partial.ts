@@ -206,6 +206,34 @@ export function useConfigurePaymentPlanFeature() {
         });
     }
 
+    /**
+     * Gets a preview of a payment plan configuration
+     * that modifies the current work-in-progress config with the provided options.
+     */
+    function previewWorkInProgress(overrides?: Partial<PaymentPlanConfigurationOptions>): PaymentPlanConfiguration | null | undefined {
+        const wipConfig = wipPaymentPlanConfiguration.value;
+
+        if (!isWorkInProgress.value || !wipConfig) {
+            // Nothing to reconfigure.
+            return;
+        }
+
+        // Reconfigure the "work in progress" payment plan.
+        return getPaymentPlanConfiguration({
+            amountToPayToday: wipConfig.amountToPayToday,
+            balanceDue: wipConfig.balanceDue,
+            desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
+            desiredNumberOfPayments: wipConfig.numberOfPayments,
+            desiredPaymentPlanFrequency: wipConfig.paymentPlanFrequency,
+            desiredStartDate: wipConfig.startDate ?? RockDateTime.now().date,
+            endDate: wipConfig.endDate,
+            minAmountToPayToday: wipConfig.minAmountToPayToday,
+
+            // Override with values provided to the function.
+            ...overrides
+        });
+    }
+
     /** Removes the new payment plan from the registration. */
     function cancel(): void {
         wipPaymentPlanConfiguration.value = null;
@@ -282,6 +310,7 @@ export function useConfigurePaymentPlanFeature() {
         init,
         initializeWorkInProgress,
         reconfigureWorkInProgress,
+        previewWorkInProgress
     };
 }
 
@@ -597,7 +626,6 @@ const transactionFrequencyFirstAndFifteenth: TransactionFrequency = {
         secondDate = secondDate.date;
         const earliestDesiredDate = getNextDay(desiredDate.date, 1, 15);
 
-
         if (earliestDesiredDate.isLaterThan(secondDate)) {
             // The desired date is after the second date,
             // so there are no more valid dates.
@@ -652,30 +680,23 @@ const transactionFrequencyTwiceMonthly: TransactionFrequency = {
     },
 
     getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
-        firstDate = firstDate.date;
+        const earliestPossibleDate = getNextDay(firstDate.date, 1, 15);
         secondDate = secondDate.date;
-        desiredDate = desiredDate.date;
-        const today = RockDateTime.now().date;
-        const tomorrow = today.addDays(1);
+        const earliestDesiredDate = getNextDay(desiredDate.date, 1, 15);
 
-        const earliestPossibleDate =
-            firstDate.isLaterThan(today)
-                ? firstDate // First date is in the future (including tomorrow).
-                : tomorrow; // Tomorrow is the earliest date.
-
-        if (desiredDate.isLaterThan(secondDate)) {
+        if (earliestDesiredDate.isLaterThan(secondDate)) {
             // The desired date is after the second date,
             // so there are no more valid dates.
             return null;
         }
-        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+        else if (earliestDesiredDate.isEarlierThan(earliestPossibleDate)) {
             // The desired date is before the earliest possible date (first date or tomorrow).
             // The next valid date to use is the earliest possible date.
             return earliestPossibleDate;
         }
         else {
             // The desired date is valid (falls between the first and second dates).
-            return desiredDate;
+            return earliestDesiredDate;
         }
     },
 

@@ -10,6 +10,7 @@
 
             <TextBox v-model="summary"
                      :disabled="disabled"
+                     label="Description"
                      textMode="multiline"
                      inputClasses="form-control" />
         </div>
@@ -49,10 +50,8 @@
         (event: "update:modelValue", value: SectionItem): void
     }>();
 
-    const disabled = ref(props.disabled ?? false);
     const internalModelValue = props.modelValue as SectionItem;
 
-    const screenToShow = ref(props.screenToShow);
     const title = ref(internalModelValue.title ?? "");
     const summary = ref(internalModelValue.summary ?? "");
 
@@ -68,7 +67,7 @@
 
     /** CSS classes for the panel. */
     const containerClasses = computed((): string[] => {
-        const screenName = toValue(screenToShow);
+        const screenName = toValue(props.screenToShow);
         return [
             "lms-assessment-item-container",
             `lms-assessment-item-${screenName.toLowerCase()}-container`,

@@ -378,7 +378,7 @@ namespace Rock.Blocks.CheckIn.Config
             bag.RegistrationSettings = GetRegistrationSettings( entity, rockContext );
             bag.SearchSettings = GetSearchSettings( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, false, attributeFilter: IsAttributeIncluded );
 
             return bag;
         }
@@ -392,9 +392,9 @@ namespace Rock.Blocks.CheckIn.Config
         {
             return new CheckInSearchSettingsBag()
             {
-                MaxPhoneLength = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" ).AsIntegerOrNull() ?? 10,
-                MaxResults = groupType.GetAttributeValue( "core_checkin_MaxSearchResults" ).AsIntegerOrNull() ?? 100,
-                MinPhoneLength = groupType.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" ).AsIntegerOrNull() ?? 4,
+                MaxPhoneLength = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" ) ?? "10",
+                MaxResults = groupType.GetAttributeValue( "core_checkin_MaxSearchResults" ) ?? "100",
+                MinPhoneLength = groupType.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" ) ?? "4",
                 PhoneSearchType = groupType.GetAttributeValue( "core_checkin_PhoneSearchType" ),
                 SearchType = groupType.GetAttributeValue( "core_checkin_SearchType" )
             };
@@ -483,7 +483,7 @@ namespace Rock.Blocks.CheckIn.Config
                 AchievementTypes = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().ToList(),
                 AllowCheckoutAtKiosk = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean(),
                 AllowCheckoutInManager = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean(),
-                AutoSelectDaysBack = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ).AsIntegerOrNull() ?? 10,
+                AutoSelectDaysBack = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ) ?? "10",
                 AutoSelectOptions = groupType.GetAttributeValue( "core_checkin_AutoSelectOptions" ),
                 CheckInType = groupType.GetAttributeValue( "core_checkin_CheckInType" ),
                 EnableManager = groupType.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true ),
@@ -524,9 +524,9 @@ namespace Rock.Blocks.CheckIn.Config
         {
             return new CheckInBarcodeSettingsBag()
             {
-                CodeAlphaLength = groupType.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" ).AsInteger(),
-                CodeAlphaNumericLength = groupType.GetAttributeValue( "core_checkin_SecurityCodeLength" ).AsInteger(),
-                CodeNumericLength = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" ).AsInteger(),
+                CodeAlphaLength = groupType.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" ),
+                CodeAlphaNumericLength = groupType.GetAttributeValue( "core_checkin_SecurityCodeLength" ),
+                CodeNumericLength = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" ),
                 CodeRandom = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean( true ),
                 ReuseCode = groupType.GetAttributeValue( "core_checkin_ReuseSameCode" ).AsBoolean( false )
             };
@@ -539,15 +539,27 @@ namespace Rock.Blocks.CheckIn.Config
         /// <returns></returns>
         private CheckInAdvancedSettingsBag GetAdvancedSettings( GroupType groupType )
         {
-            return new CheckInAdvancedSettingsBag()
+            var bag = new CheckInAdvancedSettingsBag()
             {
                 AbilityLevelDetermination = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ),
                 AgeRequired = groupType.GetAttributeValue( "core_checkin_AgeRequired" ).AsBoolean( true ),
                 DisplayLocCount = groupType.GetAttributeValue( "core_checkin_DisplayLocationCount" ).AsBoolean( true ),
                 GradeRequired = groupType.GetAttributeValue( "core_checkin_GradeRequired" ).AsBoolean( true ),
-                RefreshInterval = groupType.GetAttributeValue( "core_checkin_RefreshInterval" ).AsIntegerOrNull(),
+                RefreshInterval = groupType.GetAttributeValue( "core_checkin_RefreshInterval" ),
                 SearchRegex = groupType.GetAttributeValue( "core_checkin_RegularExpressionFilter" )
             };
+
+            bag.SpecialNeedsValues = new List<string>();
+            if ( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean() )
+            {
+                bag.SpecialNeedsValues.Add( "special-needs" );
+            }
+            if ( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean() )
+            {
+                bag.SpecialNeedsValues.Add( "non-special-needs" );
+            }
+
+            return bag;
         }
 
         /// <summary>
@@ -608,6 +620,14 @@ namespace Rock.Blocks.CheckIn.Config
 
             box.IfValidProperty( nameof( box.Entity.AdvancedSettings.SearchRegex ),
                 () => entity.SetAttributeValue( "core_checkin_RegularExpressionFilter", box.Entity.AdvancedSettings.SearchRegex ) );
+
+            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.SpecialNeedsValues ),
+                () =>
+                {
+                    var specialNeedsValues = box.Entity.AdvancedSettings.SpecialNeedsValues ?? new List<string>();
+                    entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS, specialNeedsValues.Contains( "special-needs" ).ToString() );
+                    entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS, specialNeedsValues.Contains( "non-special-needs" ).ToString() );
+                } );
 
             // Barcode Settings
             box.IfValidProperty( nameof( box.Entity.BarcodeSettings.CodeAlphaLength ),
@@ -815,7 +835,15 @@ namespace Rock.Blocks.CheckIn.Config
         /// <returns>The <see cref="GroupType"/> to be viewed or edited on the page.</returns>
         private GroupType GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<GroupType, GroupTypeService>( rockContext, PageParameterKey.CheckinTypeId );
+            var entity = GetInitialEntity<GroupType, GroupTypeService>( rockContext, PageParameterKey.CheckinTypeId );
+
+            if ( entity.Id == 0 )
+            {
+                var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+                entity.GroupTypePurposeValueId = templatePurpose?.Id;
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -981,7 +1009,10 @@ namespace Rock.Blocks.CheckIn.Config
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS,
-                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS
+                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS,
+
+                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS,
+                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS
             };
 
             return excludeList;
@@ -1107,7 +1138,15 @@ namespace Rock.Blocks.CheckIn.Config
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var pageRef = new Rock.Web.PageReference( PageCache.Id );
+                var routeId = PageCache.PageRoutes.FirstOrDefault()?.Id;
+
+                if ( routeId.HasValue )
+                {
+                   pageRef.RouteId = routeId.Value;
+                }
+
+                return ActionOk( pageRef.BuildUrl() );
             }
         }
 

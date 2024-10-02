@@ -65,7 +65,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref, toRef, toValue, watch } from "vue";
+    import { computed, ref, toValue, watch } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -88,9 +88,9 @@
     const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -101,6 +101,7 @@
         footerContent,
         headerContent,
         panelTitle,
+        pointsPossibleAtCompletion,
         video,
         watchedPercentage
     } = useLearningComponent<VideoWatchActivityConfiguration, VideoWatchActivityCompletion>(
@@ -154,7 +155,8 @@
             } as LearningActivityCompletionBag;
 
             updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-                watchedPercentage: watchedPercentage.value
+                watchedPercentage: watchedPercentage.value,
+                pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
             }) ?? "{}";
             emits("update:completionBag", updatedCompletionBag);
         }

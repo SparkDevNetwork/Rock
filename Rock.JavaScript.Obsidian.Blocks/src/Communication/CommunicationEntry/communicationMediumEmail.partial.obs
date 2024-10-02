@@ -169,6 +169,13 @@
                 </div>
             </div>
 
+            <div v-if="isDuplicatePreventionOptionShown">
+                <CheckBox label="Prevent Duplicate Email Addresses"
+                          text="Yes"
+                          help="Check this option to prevent communications from being sent to people with the same email addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
+                          v-model="excludeDuplicateRecipientAddress" />
+            </div>
+
             <VerticalTransitionCollapse>
                 <div v-if="areAttachmentsShown" class="row">
                     <div class="col-sm-12">
@@ -267,6 +274,7 @@
     import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -294,6 +302,11 @@
         communicationListGroupGuid: {
             type: String as PropType<Guid | null | undefined>,
             required: true
+        },
+
+        isDuplicatePreventionOptionShown: {
+            type: Boolean as PropType<boolean>,
+            required: false
         }
     });
 
@@ -345,6 +358,7 @@
     const message = ref<string>(template.value?.message ?? "");
     const communicationGuid = ref<Guid>(template.value?.communicationGuid ?? emptyGuid);
     const mediumOptions = ref<CommunicationEntryEmailMediumOptionsBag | null>(isEmailMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
+    const excludeDuplicateRecipientAddress = ref<boolean>(template.value?.excludeDuplicateRecipientAddress ?? false);
     /** Programmatically submits the form when set to true. */
     const submitFormTrigger = ref<boolean>(false);
     const actionToExecuteOnSubmit = ref<() => PromiseLike<void>>();
@@ -662,7 +676,8 @@
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value,
-                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value)
+                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value),
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
@@ -704,7 +719,8 @@
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value,
-                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value)
+                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value),
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -748,7 +764,8 @@
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value,
-                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value)
+                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value),
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -788,7 +805,7 @@
     /**
      * Update controls whenever the template changes.
      */
-    watch(template, template => {
+    watch(template, (template, oldTemplate) => {
         if (!template) {
             return;
         }
@@ -804,7 +821,13 @@
         replyToAddress.value = template.replyAddress ?? "";
         ccAddresses.value = template.ccAddresses ?? "";
         bccAddresses.value = template.bccAddresses ?? "";
-        subject.value = template.subject ?? "";
+
+        // Only update the subject if the current subject is empty
+        // or if it is the old template's subject.
+        if (!subject.value || subject.value === oldTemplate?.subject) {
+            subject.value = template.subject ?? "";
+        }
+
         attachments.value = template.emailAttachmentBinaryFiles ?? [];
         message.value = template.message ?? "";
     });

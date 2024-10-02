@@ -45,11 +45,6 @@
                 required: true
             },
 
-            disableLabel: {
-                type: Boolean,
-                default: false
-            },
-
             ...standardRockFormFieldProps
         },
 

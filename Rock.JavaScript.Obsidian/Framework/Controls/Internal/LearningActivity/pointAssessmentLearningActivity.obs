@@ -17,10 +17,10 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
-            <NotificationBox v-if="hasScore" alertType="success">
+            <NotificationBox v-if="hasBeenGraded" alertType="success">
                 {{ assignee?.name ?? defaultAssigneeDescription }} assessed this activity.
             </NotificationBox>
-            <NotificationBox v-if="!hasScore" alertType="warning">
+            <NotificationBox v-if="!hasBeenGraded" alertType="warning">
                 {{ assignee?.name ?? defaultAssigneeDescription }} has not assessed this activity.
             </NotificationBox>
         </div>
@@ -33,7 +33,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref, toRef, toValue, watch, } from "vue";
+    import { computed, ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
@@ -48,15 +48,16 @@
     const emits = defineEmits({ ...learningActivityEmits });
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
         assignee,
         containerClasses,
         defaultAssigneeDescription,
+        hasBeenGraded,
         instructions,
         rubric,
         panelTitle
@@ -68,7 +69,6 @@
     );
 
     const disabled = ref(props.disabled ?? false);
-    const hasScore = computed(() => completionBag.value?.pointsEarned != null);
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -83,7 +83,8 @@
 
             emits("update:activityBag", updatedActivityBag);
     });
-    watch([instructions, rubric], () => {
+
+    watch([activityBag.value.points, instructions, rubric], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 </script>

@@ -20,7 +20,7 @@ using Rock.Enums.Lms;
 namespace Rock.ViewModels.Blocks.Lms.LearningCourseDetail
 {
     /// <summary>
-    /// 
+    /// The additional configuration options for the Learning Course Detail block.
     /// </summary>
     public class LearningCourseDetailOptionsBag
     {

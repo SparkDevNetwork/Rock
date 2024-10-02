@@ -73,25 +73,12 @@ namespace Rock.Blocks.Finance
 
         private static class PreferenceKey
         {
-            public const string FilterAccountName = "filter-account-name";
             public const string FilterCampus = "filter-campus";
-            public const string FilterIsPublic = "filter-is-public";
-            public const string FilterIsActive = "filter-is-active";
-            public const string FilterIsTaxDeductible = "filter-is-tax-deductible";
         }
 
         #endregion Keys
 
         #region Properties
-
-        /// <summary>
-        /// Gets the name of the account(s) to include in the result.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected string FilterAccountName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterAccountName );
 
         /// <summary>
         /// Gets the name of the associated campus of account(s) to include in the result.
@@ -101,33 +88,6 @@ namespace Rock.Blocks.Finance
         /// </value>
         protected string FilterCampus=> GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterCampus ).FromJsonOrNull<ListItemBag>()?.Value;
-
-        /// <summary>
-        /// If true only public accounts are included in the result.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected string FilterIsPublic => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsPublic );
-
-        /// <summary>
-        /// If true only active accounts are included in the result.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected string FilterIsActive => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsActive );
-
-        /// <summary>
-        /// If true only tax deductible accounts are included in the result.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected string FilterIsTaxDeductible => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsTaxDeductible );
 
         #endregion
 
@@ -226,30 +186,10 @@ namespace Rock.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == null );
             }
 
-            if ( !string.IsNullOrEmpty( FilterAccountName ) )
-            {
-                accountQuery = accountQuery.Where( account => account.Name.Contains( FilterAccountName ) );
-            }
-
             var campusGuid = FilterCampus.AsGuidOrNull();
             if ( campusGuid.HasValue )
             {
                 accountQuery = accountQuery.Where( account => account.Campus.Guid == campusGuid );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( FilterIsPublic ) )
-            {
-                accountQuery = accountQuery.Where( account => ( account.IsPublic ?? false ) == ( FilterIsPublic == "Yes" ) );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( FilterIsActive ) )
-            {
-                accountQuery = accountQuery.Where( account => account.IsActive == ( FilterIsActive == "Yes" ) );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( FilterIsTaxDeductible ) )
-            {
-                accountQuery = accountQuery.Where( account => account.IsTaxDeductible == ( FilterIsTaxDeductible == "Yes" ) );
             }
 
             return accountQuery;

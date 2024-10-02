@@ -15,7 +15,7 @@
         <AttributeValuesContainer :showCategoryLabel="false" :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
         <div class="row">
-            <div>
+            <div class="pl-3 pr-3">
                 <StructuredContentEditor :disabled="true"
                                          v-model="description" />
             </div>

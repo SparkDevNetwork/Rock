@@ -48,6 +48,8 @@
     </Compile>
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="AI\NameRemoval.cs" />
+    <Compile Include="AI\TextEnhancement.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />
@@ -66,6 +68,7 @@
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="CheckIn\AbilityLevelDeterminationMode.cs" />
+    <Compile Include="CheckIn\AlreadyEnrolledMatchingLogic.cs" />
     <Compile Include="CheckIn\AutoSelectMode.cs" />
     <Compile Include="CheckIn\KioskCheckInMode.cs" />
     <Compile Include="CheckIn\FamilySearchMode.cs" />
@@ -95,6 +98,9 @@
     <Compile Include="Cms\SiteTypeFlags.cs" />
     <Compile Include="Cms\SiteType.cs" />
     <Compile Include="Cms\TagType.cs" />
+    <Compile Include="Cms\ThemeFieldType.cs" />
+    <Compile Include="Cms\ThemeFontAwesomeWeight.cs" />
+    <Compile Include="Cms\ThemeIconSet.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
@@ -199,9 +205,9 @@
     <Compile Include="Lms\CommunicationMode.cs" />
     <Compile Include="Lms\ConfigurationMode.cs" />
     <Compile Include="Lms\AssignTo.cs" />
-    <Compile Include="Lms\AvailableDateCalculationMethod.cs" />
+    <Compile Include="Lms\AvailabilityCriteria.cs" />
     <Compile Include="Lms\CompletionStatus.cs" />
-    <Compile Include="Lms\DueDateCalculationMethod.cs" />
+    <Compile Include="Lms\DueDateCriteria.cs" />
     <Compile Include="Lms\LearningCompletionStatus.cs" />
     <Compile Include="Lms\RequirementType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />

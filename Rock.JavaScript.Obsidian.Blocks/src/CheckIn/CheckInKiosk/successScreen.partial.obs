@@ -31,6 +31,7 @@
     import { AggregateAttendance, KioskButton } from "./types.partial";
     import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
     import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+    import { useBlockBrowserBus } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         configuration: {
@@ -47,6 +48,8 @@
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
     }>();
+
+    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -137,4 +140,9 @@
     // #endregion
 
     updateActions();
+
+    browserBus.publish("block.checkInSuccess", {
+        attendances: aggregateAttendance,
+        achievements: completedAchievements.value
+    });
 </script>

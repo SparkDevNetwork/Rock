@@ -28,7 +28,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The length of the code alpha numeric.
         /// </value>
-        public int CodeAlphaNumericLength { get; set; }
+        public string CodeAlphaNumericLength { get; set; }
 
         /// <summary>
         /// Gets or sets the length of the code alpha.
@@ -36,7 +36,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The length of the code alpha.
         /// </value>
-        public int CodeAlphaLength { get; set; }
+        public string CodeAlphaLength { get; set; }
 
         /// <summary>
         /// Gets or sets the length of the code numeric.
@@ -44,7 +44,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The length of the code numeric.
         /// </value>
-        public int CodeNumericLength { get; set; }
+        public string CodeNumericLength { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [code random].

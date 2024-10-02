@@ -19,7 +19,7 @@
         <TextColumn name="entityType"
                     title="Entity Type"
                     field="entityType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs"
                     width="25%" />
 
@@ -74,7 +74,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";

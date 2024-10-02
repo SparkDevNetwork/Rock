@@ -21,12 +21,20 @@ import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningAct
 import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { isValidGuid } from "@Obsidian/Utility/guid";
 
-/** Determines how the component should be rendered. */
+/** Determines what screen should be shown. */
 export enum ComponentScreen {
+    /** The screen for configuring the activity. */
     Configuration = "configuration",
+
+    /** The screen for the student or facilitator to complete the activity. */
     Completion = "completion",
+
+    /** The screen for the facilitator to score the activity. */
     Scoring = "scoring",
+
+    /** The screen for the facilitator to view the results of the completed activity. */
     Summary = "summary"
 }
 
@@ -58,7 +66,6 @@ type LearningActivityComponentBaseProps = {
         default: ComponentScreen.Summary
     };
 };
-
 
 /**
  * The emits that all Learning Activity Components are expected to emit.
@@ -112,20 +119,45 @@ export const learningActivityEmits: LearningActivityComponentBaseEmits = {
     ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
 };
 
+/**
+ * A generic type destructured to a list of refs.
+ */
 type ToRef<T> = {
     [Property in keyof T]: Ref<T[Property]>;
 };
 
 type LearningComponentBaseProps = {
+    /** The name of the activity. */
     activityName: ComputedRef<string>;
+
+    /** The person responsible for completing the activity.  */
     assignee: ComputedRef<LearningActivityParticipantBag>;
+
+    /** Whether the assignee is a student or a facilitator. */
     assignTo: ComputedRef<AssignTo>;
+
+    /** The binary file related to the activity (e.g. an uploaded assignment).  */
     binaryFile: Ref<ListItemBag | null>;
+
+    /** The computed CSS classes to aplpy to the container element. */
     containerClasses: ComputedRef<string[]>;
+
+    /** The person currently viewing the activity. */
     currentPerson: ComputedRef<LearningActivityParticipantBag>;
+
+    /** The text to use for the assignee when no assignee property is available. */
     defaultAssigneeDescription: ComputedRef<string>;
+
+    /** The URL for the binaryFile if one was provided. */
     fileUrl: ComputedRef<string>;
+
+    /** Determines if the actiivty has been graded by a facilitator. */
+    hasBeenGraded: ComputedRef<boolean>;
+
+    /** The title of the panel to display in the template. */
     panelTitle: ComputedRef<string>;
+
+    /** The student the activity is related to. */
     student: Ref<LearningActivityParticipantBag>;
 };
 
@@ -139,8 +171,16 @@ type LearningComponent<TConfig, TCompletion> =
     ToRef<Exclude<TConfig, LearningComponentBaseProps>> &
     ToRef<Exclude<TCompletion, LearningComponentBaseProps>>;
 
+/**
+ * The class containing the default configuration and default completion classes.
+ * These classes define the list of ref properties that will be dynamically
+ * returned by the useLearningComponent composable.
+ */
 export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
+    /** The shape of the data necessary for managing the activity component. */
     defaultConfig!: TConfig;
+
+    /** The shape of the data necessary for handling the student completion logic. */
     defaultCompletion!: TCompletion;
 }
 
@@ -154,8 +194,8 @@ export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
  * @param defaults A class extending the LearningComponentBaseDefaults which initializes default values for the control.
  *      NOTE: Failure to provide this class with all fields initialized
  *      will result in no TConfig or TCompletion ref's to be returned by the composable.
- * @returns The properties common to all learning activity components
- *  and the parsed settings and completion objects.
+ * @returns The properties common to all learning activity components, the parsed settings
+ *  and completion objects.
  */
 export function useLearningComponent<TConfig extends object, TCompletion extends object>(
     activityBag: MaybeRefOrGetter<LearningActivityBag>,
@@ -186,6 +226,12 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     const student = ref(toValue(completionBag)?.student ?? {} as LearningActivityParticipantBag);
     const activityName = ref(toValue(activityBag)?.name ?? "");
 
+    /**
+     * If the assignee is the faciliator and the facilitator is currently viewing
+     * then return the current person. Otherwise, return the student.
+     * Note - because multiple facilitators may be configured we can't just return
+     * the faciliator if based on the assignTo value alone since we wouldn't know which facilitator.
+     */
     const assignee = computed((): LearningActivityParticipantBag => {
         if (assignTo.value === AssignTo.Facilitator && currentPerson.value.isFacilitator === true) {
             return currentPerson.value;
@@ -195,8 +241,17 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         }
     });
 
+    /** The binary file related to the activity (e.g. an uploaded assignment). */
     const binaryFile = ref<ListItemBag | null>(toValue(completionBag)?.binaryFile ?? null);
 
+    /** Determines if the actiivty has been graded by a facilitator. */
+    const hasBeenGraded = computed(() => isValidGuid(toValue(completionBag)?.gradedByPersonAlias?.value ?? ""));
+
+    /**
+     * The default title of the panel to display.
+     * This function is provided for consistency,
+     * but can be overridden by the component implementation.
+     */
     const panelTitle = computed(() => {
         const activityName = toValue(activityBag).name ?? "";
         switch (toValue(screenToShow)) {
@@ -211,15 +266,21 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         }
     });
 
+    /**
+     * The file URL to the binary file if one was provided.
+     */
     const fileUrl = computed((): string => {
+        const securityGrantToken = toValue(completionBag).binaryFileSecurityGrant ?? "";
+        const securityGrantQueryParam = securityGrantToken.length > 0? `&securitygrant=${securityGrantToken}` : "";
+
         if (toValue(completionBag)?.binaryFile?.value) {
-            return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}`;
+            return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}${securityGrantQueryParam}`;
         }
 
         return "";
     });
 
-    /** CSS classes for the panel. */
+    /** The CSS classes for the containing panel. */
     const containerClasses = computed((): string[] => {
         const screenName = toValue(screenToShow);
         const componentName = toValue(activityBag)?.activityComponent?.name ?? "";
@@ -233,6 +294,8 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         Get the properties of the generic types - TConfig and TCompletion.
         Assuming the LearningComponentBaseDefaults was given with proper values
         all fields should be initialized and therefore returned as ref's.
+
+        This code is what destructures the TConfig and TCompletion property values.
      */
     const dynamicProps: { [key: string]: unknown } = {};
     for (const key in configuration) {
@@ -259,6 +322,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         defaultAssigneeDescription,
         ...dynamicProps,
         fileUrl,
+        hasBeenGraded,
         panelTitle,
         student
     } as LearningComponent<TConfig, TCompletion>;

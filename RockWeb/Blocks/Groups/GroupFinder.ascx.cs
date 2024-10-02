@@ -1550,7 +1550,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             // Resolve info window lava template
                             var linkedPageParams = new Dictionary<string, string> { { "GroupId", group.Id.ToString() } };
-                            var mergeFields = new Dictionary<string, object>();
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                             mergeFields.Add( "Group", gl.Group );
                             mergeFields.Add( "Location", gl.Location );
 
@@ -1646,7 +1646,7 @@ namespace RockWeb.Blocks.Groups
             {
                 string template = GetAttributeValue( AttributeKey.LavaOutput );
 
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                 if ( fences != null )
                 {
                     mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );

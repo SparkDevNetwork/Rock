@@ -25,12 +25,5 @@ namespace Rock.ViewModels.Blocks.Group.GroupArchivedList
     /// </summary>
     public class GroupArchivedListOptionsBag
     {
-        /// <summary>
-        /// Gets or sets the group type guids for the group type filter.
-        /// </summary>
-        /// <value>
-        /// The group type guids.
-        /// </value>
-        public List<Guid> GroupTypeGuids { get; set; }
     }
 }

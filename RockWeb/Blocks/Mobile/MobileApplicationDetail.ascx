@@ -470,6 +470,13 @@
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbAuth0ClientDomain" runat="server" Label="Auth0 Domain" Help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
                                 </div>
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpAuth0ConnectionStatus" runat="server" Label="Connection Status" Help="When an Auth0 login creates a person, this connection status will be used." />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpAuth0RecordStatus" runat="server" Label="Record Status" Help="When an Auth0 login creates a person, this record status will be used.." />
+                                </div>
                             </div>
                             <hr class="section-header-hr" />
                         </div>

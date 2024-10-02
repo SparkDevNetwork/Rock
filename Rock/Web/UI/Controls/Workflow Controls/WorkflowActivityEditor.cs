@@ -394,7 +394,6 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _cbActivityIsComplete );
             _cbActivityIsComplete.ID = this.ID + "_cbActivityTypeIsActive";
             _cbActivityIsComplete.Label = "Activity Completed";
-            _cbActivityIsComplete.Text = "Yes";
 
             _ppAssignedToPerson = new PersonPicker();
             _ppAssignedToPerson.ID = this.ID + "_ppAssignedToPerson";

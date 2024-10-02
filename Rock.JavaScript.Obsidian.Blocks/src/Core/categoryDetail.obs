@@ -41,7 +41,7 @@
                             :showExport="false"
                             @selectItem="onCategoryClick"
                             stickyHeader >
-                            <ReorderColumn />
+                            <ReorderColumn @orderChanged="onChildCategoryOrderChanged" />
 
                             <Column name="name"
                                     title="Category"
@@ -75,7 +75,7 @@
 <style scoped>
 
 .add-button > i.fa-plus-circle {
-    color: #69717a;
+    color: #BCBCBD;
     padding: 8px;
     cursor: pointer;
 }
@@ -347,6 +347,29 @@
         params.set("ParentCategoryId", categoryViewBag.value?.idKey ?? "");
         params.set("returnUrl", window.location.href);
         window.location.search = params.toString();
+    }
+
+    /**
+     * When the order of the items in the child categories grid is changed via drag and drop, rearrange the items in the
+     * array and update the `order` property to match the array order.
+     */
+     async function onChildCategoryOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<void> {
+        const data: {
+            parentCategoryIdKey: string | null | undefined;
+            idKey: string;
+            beforeIdKey: string | null | undefined;
+        } = {
+            parentCategoryIdKey: categoryViewBag.value?.idKey,
+            idKey: item?.idKey as string ?? "",
+            beforeIdKey: beforeItem?.idKey as string ?? ""
+        };
+
+        const result = await invokeBlockAction("ReorderChildCategory", data);
+
+        if (!result.isSuccess) {
+            alert(result.errorMessage || "Unable to re-order sources, you might need to reload the page.");
+            return;
+        }
     }
 
     // #endregion

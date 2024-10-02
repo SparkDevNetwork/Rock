@@ -12,36 +12,47 @@
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
         <SelectColumn />
 
-        <PersonColumn name="name"
-                      title="Name"
-                      field="name"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      visiblePriority="xs" />
+        <Column name="name"
+                title="Name"
+                field="name"
+                :filter="textValueFilter"
+                :filterValue="getPersonNameFilterValue">
+            <template #format="{ row }">
 
-        <TextColumn name="currentAssignment"
-                    title="Current Assignment"
-                    field="currentAssignment"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="xs" />
+                <div class="d-flex flex-fill align-items-center">
+                    <div class="mr-2 flex-shrink-0"
+                         :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${getPhotoUrl(row)}')`, 'background-size': 'cover' }">
+                    </div>
+                    <div class="flex-grow-1">
+                        <span>
+                            <strong>{{ getFormattedName(row) }}</strong>
+                            <span
+                                v-if="row.note"
+                                :ref="(el) => addTooltip(el as Element)"
+                                data-toggle="tooltip"
+                                data-placement="auto"
+                                data-container="body"
+                                data-html="true"
+                                class="note-tooltip ml-2"
+                                :data-original-title="row.note">
+                                <i class='fa fa-file-text-o text-info'></i>
+                            </span>
+                        </span>
+                        <div v-if="row.role" class="text-muted">{{ row.role }}</div>
+                    </div>
+                </div>
+            </template>
+        </Column>
 
-        <Column
-                name="currentGradePercent"
-                title="Current Grade"
-                field="currentGradePercent"
-                :filter="numberValueFilter"
-                visiblePriority="xs">
+        <TextColumn name="currentAssignment" title="Current Assignment" field="currentAssignment" :filter="pickExistingValueFilter" visiblePriority="xs" />
+
+        <Column name="currentGradePercent" title="Current Grade" field="currentGradePercent" :filter="numberValueFilter" visiblePriority="xs">
             <template #format="{ row }">
                 {{ row.currentGrade }} ({{ row.currentGradePercent }}%)
             </template>
         </Column>
 
-        <Column v-if="hasAbsencesColumn"
-                name="absences"
-                title="Absences"
-                field="absences"
-                :filter="numberValueFilter"
-                visiblePriority="sm">
+        <Column v-if="hasAbsencesColumn" name="absences" title="Absences" field="absences" :filter="numberValueFilter" visiblePriority="sm">
             <template #format="{ row }">
                 <span :class="'label label-' + row.absencesLabelStyle">{{ row.absences }}</span>
             </template>
@@ -54,10 +65,11 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { SelectColumn, PersonColumn, Column, numberValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { SelectColumn, Column, numberValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -96,6 +108,13 @@
 
     // #region Functions
 
+    /** Adds the tooltip behavior to the element. */
+    function addTooltip(noteElement: Element | null): void {
+        if (noteElement) {
+            tooltip(noteElement);
+        }
+    }
+
     /**
     * Gets the filter value text to use for the name column.
     *
@@ -104,6 +123,36 @@
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
         const person = row["individual"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /** Contains the URL for the avatar. */
+    function getPhotoUrl(row: Record<string, unknown>): string {
+        if (!row["name"]) {
+            return "";
+        }
+
+        const value = row["name"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    }
+
+    /** Contains the full name in the correct format. */
+    function getFormattedName(row: Record<string, unknown>): string {
+        if (!row["name"]) {
+            return "";
+        }
+
+        const value = row["name"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
     }
 
     // #endregion

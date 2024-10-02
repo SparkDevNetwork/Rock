@@ -37,7 +37,7 @@ namespace Rock.Blocks.Group
     [Category( "Group" )]
     [Description( "List of Group Requirement Types." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the group requirement type details.",

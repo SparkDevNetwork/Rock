@@ -64,11 +64,6 @@ namespace Rock.CloudPrint.Desktop.Pages
                 {
                     ProxyId.Text = id.GetString() ?? string.Empty;
                 }
-
-                if ( json.TryGetProperty( "Priority", out var priority ) )
-                {
-                    Priority.Text = priority.GetString() ?? "0";
-                }
             }
             catch ( Exception ex )
             {
@@ -95,7 +90,6 @@ namespace Rock.CloudPrint.Desktop.Pages
                 json["Url"] = ServerUrl.Text;
                 json["Name"] = ProxyName.Text;
                 json["Id"] = ProxyId.Text;
-                json["Priority"] = Priority.Value ?? 0;
 
                 var text = JsonSerializer.Serialize( json, new JsonSerializerOptions
                 {

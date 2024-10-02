@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular attribute matrix template." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "86759d9b-281c-4c1b-95e6-d4305731c03b" )]
     [Rock.SystemGuid.BlockTypeGuid( "96c5df9e-6f5c-4e55-92f1-61fe16a18563" )]

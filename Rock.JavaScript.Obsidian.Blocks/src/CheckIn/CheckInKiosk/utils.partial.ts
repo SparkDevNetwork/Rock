@@ -125,15 +125,6 @@ export function isIpadAppWithCamera(kiosk: KioskBag): boolean {
 }
 
 /**
- * Determines if the theme supports HTML5 camera operations.
- *
- * @returns true if the theme supports HTML5 camera operations.
- */
-export function doesThemeSupportCamera(): boolean {
-    return document.body.classList.contains("js-camera-supported");
-}
-
-/**
  * Gets the cameras currently available for use.
  *
  * @returns A list of items that represent the available cameras.
@@ -172,7 +163,6 @@ export function isHtmlCameraAvailable(kiosk: KioskBag | undefined): boolean {
     // -- Kiosk IsCameraEnabled is true
     // -- Kiosk Type has been set (the HTML5 camera feature won't be enabled until they specifically set the KioskType)
     // -- The KioskType is not an IPad
-    // -- The current Theme supports the HTML5 Camera feature
     // -- Not running on the iPad application
 
     return !!kiosk
@@ -180,7 +170,6 @@ export function isHtmlCameraAvailable(kiosk: KioskBag | undefined): boolean {
         && kiosk.type !== null
         && kiosk.type !== undefined
         && kiosk.type !== KioskType.IPad
-        && doesThemeSupportCamera()
         && !isIpadAppWithCamera(kiosk);
 }
 

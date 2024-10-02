@@ -64,7 +64,8 @@
                 :filterValue="getRowStatusesFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div v-html="getRowStatusLabels(row)"></div>
+                <span v-if="row.requiresScoring" class="mr-1 mb-1 label label-warning">Requires Scoring</span>
+                <span v-if="row.isLate" class="mr-1 mb-1 label label-warning">Late</span>
             </template>
         </Column>
 
@@ -76,7 +77,8 @@
                 :filterValue="getRowCommentsFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div v-html="getRowCommentLabels(row)"></div>
+                <span v-if="hasValue(row.studentComment)" class="mr-1 mb-1 label label-info">Student</span>
+                <span v-if="hasValue(row.facilitatorComment)" class="mr-1 mb-1 label label-default">Facilitator</span>
             </template>
         </Column>
     </Grid>
@@ -90,8 +92,8 @@
 
         <DropDownList v-model="studentGuidToAdd"
                       :items="studentsWithoutActivity"
-                      label="For Student"
-                      help="Select the student to add the activity for." />
+                      label="For Individual"
+                      help="Select the individual to add the activity for." />
 
     </Modal>
 </template>
@@ -154,10 +156,6 @@
 
     // #region Functions
 
-    function getLabelHtml(type: string, text: string): string {
-        return `<span class="mr-1 mb-1 label label-${type}">${text}</span>`;
-    }
-
     /**
      * Gets the filter value text to use for the statuses column.
      *
@@ -184,29 +182,9 @@
      */
     function getRowStatusesFilterValue(row: Record<string, unknown>): string {
         return [
-            row.isFacilitatorCompleted === false && !!row.completionDate ? "requires scoring" : "",
-            !row.wasCompletedOnTime ? "late: " : "",
+            row.requiresScoring ? "requires scoring" : "",
+            row.isLate ? "late: " : "",
         ].join(" ");
-    }
-
-    function getRowStatusLabels(row: Record<string, unknown>): string {
-        if (!row.completionDate) {
-            return "";
-        }
-
-        const isFacilitatorCompleted = row.isFacilitatorCompleted === true ?? false;
-        const wasCompletedOnTime = row.wasCompletedOnTime === true ?? false;
-
-        let labels = "";
-        if (!isFacilitatorCompleted) {
-            labels += getLabelHtml("warning", "Requires Scoring");
-        }
-
-        if (!wasCompletedOnTime) {
-            labels += getLabelHtml("warning", "Late");
-        }
-
-        return labels;
     }
 
     /**
@@ -220,22 +198,6 @@
             hasValue(row.studentComment as string) ? "student: " + row.studentComment as string : "",
             hasValue(row.facilitatorComment as string) ? "facilitator: " + row.studentComment as string : "",
         ].join(" ");
-    }
-
-    function getRowCommentLabels(row: Record<string, unknown>): string {
-        const facilitatorComment = row.facilitatorComment as string ?? "";
-        const studentComment = row.studentComment as string ?? "";
-
-        let labels = "";
-        if (hasValue(studentComment)) {
-            labels += getLabelHtml("info", "Student");
-        }
-
-        if (hasValue(facilitatorComment)) {
-            labels += getLabelHtml("default", "Facilitator");
-        }
-
-        return labels;
     }
 
     function hasValue(text: string): boolean {
@@ -282,7 +244,7 @@
             reloadBlock();
         }
         else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to add student.");
+            throw new Error(result.errorMessage ?? "Unknown error while trying to add individual.");
         }
     }
 

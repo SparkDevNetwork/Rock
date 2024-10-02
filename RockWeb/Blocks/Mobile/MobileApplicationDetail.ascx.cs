@@ -510,6 +510,11 @@ namespace RockWeb.Blocks.Mobile
             cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
             tbAuth0ClientDomain.Text = additionalSettings.Auth0Domain;
             tbAuth0ClientId.Text = additionalSettings.Auth0ClientId;
+            dvpAuth0ConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ).Id;
+            dvpAuth0ConnectionStatus.SelectedDefinedValueId = additionalSettings.Auth0ConnectionStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
+            dvpAuth0RecordStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ).Id;
+            dvpAuth0RecordStatus.SelectedDefinedValueId = additionalSettings.Auth0RecordStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
             tbEntraClientId.Text = additionalSettings.EntraClientId;
             tbEntraTenantId.Text = additionalSettings.EntraTenantId;
 
@@ -1071,6 +1076,8 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
             additionalSettings.Auth0ClientId = tbAuth0ClientId.Text;
             additionalSettings.Auth0Domain = tbAuth0ClientDomain.Text;
+            additionalSettings.Auth0ConnectionStatusValueId = dvpAuth0ConnectionStatus.SelectedDefinedValueId;
+            additionalSettings.Auth0RecordStatusValueId = dvpAuth0RecordStatus.SelectedDefinedValueId;
             additionalSettings.EntraClientId = tbEntraClientId.Text;
             additionalSettings.EntraTenantId = tbEntraTenantId.Text;
 

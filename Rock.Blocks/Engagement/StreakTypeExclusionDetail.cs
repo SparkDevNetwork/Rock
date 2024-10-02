@@ -368,19 +368,20 @@ namespace Rock.Blocks.Engagement
             StreakType streakType = null;
             var streakTypeService = new StreakTypeService( rockContext );
 
-            if ( exclusion != null && exclusion.StreakType != null )
+            if ( exclusion?.StreakType != null )
             {
                 streakType = exclusion.StreakType;
             }
-            else if ( exclusion != null )
+            else if ( exclusion != null && exclusion.StreakTypeId > 0 )
             {
                 streakType = streakTypeService.Get( exclusion.StreakTypeId );
             }
             else
             {
-                var streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsIntegerOrNull();
+                var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
+                var streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsIntegerOrNull();
 
-                if ( streakTypeId.HasValue && streakTypeId.Value > 0 )
+                if ( streakTypeId > 0 )
                 {
                     streakType = streakTypeService.Get( streakTypeId.Value );
                 }

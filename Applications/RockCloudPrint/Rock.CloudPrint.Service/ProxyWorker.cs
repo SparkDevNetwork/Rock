@@ -228,7 +228,7 @@ class ProxyWorker : BackgroundService
             }
 
             var uri = new Uri( baseUrl );
-            uri = new Uri( uri, $"api/v2/checkin/cloudprint/{options.Id}?name={name}&priority={options.Priority}" );
+            uri = new Uri( uri, $"api/v2/checkin/cloudprint/{options.Id}?name={name}" );
 
             var ws = new ClientWebSocket();
 

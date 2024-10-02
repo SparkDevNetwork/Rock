@@ -15,11 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
+using Rock.AI.Classes.ChatCompletions;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Web.Cache;
@@ -33,8 +36,8 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC")]
-    public partial class NoteType : Model<NoteType>, IOrdered, ICacheable
+    [Rock.SystemGuid.EntityTypeGuid( "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC" )]
+    public partial class NoteType : Model<NoteType>, IOrdered, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -127,8 +130,6 @@ namespace Rock.Model
         ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        [Obsolete( "This property is no longer used and will be removed in the future." )]
-        [RockObsolete( "1.16" )]
         public bool RequiresApprovals { get; set; }
 
         /// <summary>
@@ -315,6 +316,61 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region IHasAdditionalSettings Models
+
+        /// <summary>
+        /// AI Approval Settings
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public class AIApprovalSettings
+        {
+            /// <summary>
+            /// Determines whether AI Approvals are enabled for this note type.
+            /// </summary>
+            public bool EnabledAIApprovals { get; set; }
+
+            /// <summary>
+            /// The criteria for AI to automatically approve notes. 
+            /// </summary>
+            public string AIApprovalGuidelines { get; set; }
+
+            /// <summary>
+            /// The <see cref="Rock.Model.AIProvider"/> to use for AI Approvals.
+            /// </summary>
+            public int? AIProviderId { get; set; }
+
+            /// <summary>
+            /// Gets the System and User messages for the AI Approval Chat Completion request for the <paramref name="note"/>.
+            /// </summary>
+            /// <param name="note">The <see cref="Note"/> to generate the chat completion messages for.</param>
+            /// <returns></returns>
+            public List<ChatCompletionsRequestMessage> AIApprovalRequestMessages( Note note )
+            {
+                return new List<ChatCompletionsRequestMessage>
+                {
+                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "You're a helpful church assistant. Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve." },
+                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = $@"
+```Approval Guidance```
+{AIApprovalGuidelines}
+```Approval Guidance```
+
+```Note Text```
+{note.Text}
+```Note Text```" }
+                };
+            }
+        }
+
+        #endregion IHasAdditionalSettings Models
     }
 
     #region Entity Configuration    

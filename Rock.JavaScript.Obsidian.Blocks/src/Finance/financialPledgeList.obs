@@ -32,14 +32,13 @@
         <TextColumn name="account"
                     title="Account"
                     field="account"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     v-if="showAccountColumn"
                     visiblePriority="sm" />
 
         <CurrencyColumn name="totalAmount"
                         title="Total Amount"
                         field="totalAmount"
-                        :headerClass="'text-right'"
                         :itemClass="'justify-content-end text-end'"
                         :filter="numberValueFilter"
                         v-if="!hideAmount"
@@ -48,21 +47,19 @@
         <TextColumn name="pledgeFrequency"
                     title="Payment Schedule"
                     field="pledgeFrequency"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="sm" />
 
         <DateColumn name="startDate"
                     title="Starts"
                     field="startDate"
-                    :headerClass="'text-right'"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
                     visiblePriority="sm" />
 
         <DateColumn name="endDate"
                     title="Ends"
-                    field="startDate"
-                    :headerClass="'text-right'"
+                    field="endDate"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
                     visiblePriority="sm" />
@@ -70,7 +67,6 @@
         <DateColumn name="modifiedDate"
                     title="Last Modified"
                     field="modifiedDate"
-                    :headerClass="'text-right'"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
                     v-if="showLastModifiedDateColumn"
@@ -109,14 +105,13 @@
         </template>
     </Grid>
     <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :config="config" />
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { DateColumn, numberValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, CurrencyColumn, dateValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { DateColumn, numberValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, CurrencyColumn, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
@@ -129,7 +124,7 @@
     import { GridSettingsOptions } from "./FinancialPledgeList/types.partial";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<FinancialPledgeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -142,11 +137,7 @@
     const preferences = usePersonPreferences().blockPreferences;
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        activeOnly: preferences.getValue(PreferenceKey.FilterActiveOnly) === "true",
-        dateRange: preferences.getValue(PreferenceKey.FilterDateRange) ? JSON.parse(preferences.getValue(PreferenceKey.FilterDateRange)) : undefined,
-        lastModified: preferences.getValue(PreferenceKey.FilterLastModified) ? JSON.parse(preferences.getValue(PreferenceKey.FilterLastModified)) : undefined,
-        person: preferences.getValue(PreferenceKey.FilterPerson) ? JSON.parse(preferences.getValue(PreferenceKey.FilterPerson)) : undefined,
-        accounts: preferences.getValue(PreferenceKey.FilterAccounts) ? JSON.parse(preferences.getValue(PreferenceKey.FilterAccounts)) : []
+        activeOnly: preferences.getValue(PreferenceKey.FilterActiveOnly)
     });
 
     const showAllSummaryAccounts = ref(false);
@@ -164,11 +155,9 @@
     const hideAmount = computed(() => config.options?.hideAmount ?? false);
     const showAccountSummary = computed(() => config.options?.showAccountSummary ?? true);
 
+    /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return config.options?.showPersonFilter !== false
-            || config.options?.showAccountFilter !== false
-            || config.options?.showDateRangeFilter !== false
-            || config.options?.showLastModifiedFilter !== false;
+        return asBoolean(gridSettings.value.activeOnly);
     });
 
     const visibleAccountSummaries = computed((): AccountSummary[] => {
@@ -242,43 +231,11 @@
         accountSummaries.value = summaries;
     }
 
-    async function applyFilter(): Promise<void> {
-        const result = await invokeBlockAction<GridDataBag>("ApplyFilter", {
-            dateRange: formatRange(gridSettings.value.dateRange),
-            lastModified: formatRange(gridSettings.value.lastModified),
-            personGuid: gridSettings.value.person?.value ?? null,
-            accountGuids: Array.isArray(gridSettings.value.accounts) ? gridSettings.value.accounts.map(a => a.value) : [],
-            activeOnly: gridSettings.value.activeOnly,
-            attributeFiltersJson: JSON.stringify({})
-        });
-
-        if (result.isSuccess && result.data) {
-            gridData = result.data;
-            gridDataSource.value = Promise.resolve(gridData);
-            calculateAccountTotalsAndSummaries();
-        }
-        else {
-            await alert(result.errorMessage ?? "Unknown error while applying filters.");
-        }
-    }
-
-    function formatRange(range: DateRangeParts | undefined): string {
-        if (!range) {
-            return "1||4||"; // Default value for empty range
-        }
-        const { lowerValue, upperValue } = range;
-        return `DateRange|0|Day|${lowerValue ?? ""}|${upperValue ?? ""}`;
-    }
-
     async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-
-            if (hasSettingsFilters.value) {
-                await applyFilter();
-            }
 
             calculateAccountTotalsAndSummaries();
 
@@ -330,18 +287,16 @@
     // region Watchers
 
     watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterDateRange, JSON.stringify(gridSettings.value.dateRange ?? {}));
-        preferences.setValue(PreferenceKey.FilterLastModified, JSON.stringify(gridSettings.value.lastModified ?? {}));
-        preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.person ?? {}));
-        preferences.setValue(PreferenceKey.FilterAccounts, JSON.stringify(gridSettings.value.accounts));
-        preferences.setValue(PreferenceKey.FilterActiveOnly, gridSettings.value.activeOnly ? "true" : "");
+        preferences.setValue(PreferenceKey.FilterActiveOnly, gridSettings.value.activeOnly ?? "");
 
         await preferences.save();
 
-        await applyFilter();
-    }, { deep: true });
+        gridDataSource.value = loadGridData();
+    });
 
     // endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
 
     gridDataSource.value = loadGridData();
 </script>

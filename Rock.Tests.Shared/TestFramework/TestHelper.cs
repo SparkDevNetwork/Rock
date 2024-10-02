@@ -234,6 +234,7 @@ namespace Rock.Tests.Shared
             hostingMock.Setup( a => a.VirtualRootPath ).Returns( "/" );
             hostingMock.Setup( a => a.WebRootPath )
                 .Returns( GetRockWebPath() ?? Directory.GetCurrentDirectory() );
+            hostingMock.Setup( a => a.NodeName ).Returns( "TestNode" );
 
             sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
             sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();

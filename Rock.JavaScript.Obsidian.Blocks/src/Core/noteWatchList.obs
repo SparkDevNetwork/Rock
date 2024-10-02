@@ -21,14 +21,14 @@
         <PersonColumn name="watcher"
                       title="Watcher Person"
                       field="watcher"
-                      :filter="pickExistingValueFilter"
+                      :filter="textValueFilter"
+                      :filterValue="getWatcherRowValue"
                       visiblePriority="xs" />
 
         <TextColumn name="watcherGroup"
                     title="Watcher Group"
                     field="watcherGroup"
                     :filter="textValueFilter"
-
                     visiblePriority="xs" />
 
         <TextColumn name="noteType"
@@ -59,13 +59,14 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { NoteWatchListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchList/noteWatchListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./NoteWatchList/types.partial";
     import { reactive, ref } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<NoteWatchListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -92,6 +93,11 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function getWatcherRowValue(row: Record<string, unknown>): string {
+        const watcher = row["watcher"] as PersonFieldBag;
+        return `${watcher?.nickName} ${watcher.lastName}`;
     }
 
     // #endregion

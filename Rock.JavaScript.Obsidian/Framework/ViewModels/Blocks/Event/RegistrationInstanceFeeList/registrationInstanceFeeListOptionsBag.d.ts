@@ -21,8 +21,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 /** The additional configuration options for the Registration Instance Fee List block. */
 export type RegistrationInstanceFeeListOptionsBag = {
     /** Gets or sets the file name of the export file. */
@@ -30,10 +28,4 @@ export type RegistrationInstanceFeeListOptionsBag = {
 
     /** Gets or sets the title of the export file. */
     exportTitleName?: string | null;
-
-    /** Gets or sets the fee name items for the fee name filter dropdown. */
-    feeNameItems?: ListItemBag[] | null;
-
-    /** Gets or sets the fee options items for the fee options filter dropdown. */
-    feeOptionsItems?: ListItemBag[] | null;
 };

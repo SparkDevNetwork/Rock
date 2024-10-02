@@ -168,7 +168,7 @@ namespace Rock.Jobs
                 // Is currently available.
                 .Where(
                     a => a.AvailableDateTime <= now ||
-                    Enums.Lms.AvailableDateCalculationMethod.AlwaysAvailable == a.LearningActivity.AvailableDateCalculationMethod )
+                    Enums.Lms.AvailabilityCriteria.AlwaysAvailable == a.LearningActivity.AvailabilityCriteria )
                 // Is assigned to a student
                 .Where( a => a.LearningActivity.AssignTo == Enums.Lms.AssignTo.Student )
                 // Get activities grouped by Participant and Course data.

@@ -152,7 +152,6 @@ namespace Rock.Field.Types
             cbIsPasswordField.AutoPostBack = true;
             cbIsPasswordField.CheckedChanged += OnQualifierUpdated;
             cbIsPasswordField.Label = "Password Field";
-            cbIsPasswordField.Text = "Yes";
             cbIsPasswordField.Help = "When set, edit field will be masked.";
 
             // Add number box for selecting the maximum number of characters
@@ -170,7 +169,6 @@ namespace Rock.Field.Types
             cbShowCountDown.AutoPostBack = true;
             cbShowCountDown.CheckedChanged += OnQualifierUpdated;
             cbShowCountDown.Label = "Show Character Limit Countdown";
-            cbShowCountDown.Text = "Yes";
             cbShowCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
 
             return controls;

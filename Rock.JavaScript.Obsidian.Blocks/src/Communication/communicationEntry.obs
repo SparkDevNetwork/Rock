@@ -25,6 +25,7 @@
                                    v-model:isBulkCommunication="isBulkCommunication"
                                    v-model:scheduleSendIsoString="scheduleSendIsoString"
                                    v-model:communicationListGroupGuid="communicationListGroupGuid"
+                                   v-model:isDuplicatePreventionOptionShown="isDuplicatePreventionOptionShown"
                                    @saved="onSaved"
                                    @sent="onSent($event, true)" />
 
@@ -34,6 +35,7 @@
                                  v-model:isBulkCommunication="isBulkCommunication"
                                  v-model:scheduleSendIsoString="scheduleSendIsoString"
                                  v-model:communicationListGroupGuid="communicationListGroupGuid"
+                                 v-model:isDuplicatePreventionOptionShown="isDuplicatePreventionOptionShown"
                                  @saved="onSaved"
                                  @sent="onSent" />
 
@@ -125,6 +127,7 @@
     const communicationGuid = ref<Guid | undefined>(config.communication?.communicationGuid ?? undefined);
     const template = ref<CommunicationEntryCommunicationBag | null | undefined>(config.communication);
     const communicationListGroupGuid = ref<Guid | null | undefined>(config.communication?.communicationListGroupGuid);
+    const isDuplicatePreventionOptionShown = ref<boolean>(config.isDuplicatePreventionOptionShown ?? false);
 
     //#endregion
 

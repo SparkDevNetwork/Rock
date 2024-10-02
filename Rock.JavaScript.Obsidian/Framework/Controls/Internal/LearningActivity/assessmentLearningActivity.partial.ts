@@ -48,7 +48,7 @@ export abstract class AssessmentItem {
     typeName!: string;
 
     /**
-     * A unique identifier for looking up a student response.
+     * A unique identifier for looking up a individual response.
      * This ensures that changing the order or name of an assessment item
      * doesn't cause issues with grading.
      */
@@ -104,12 +104,21 @@ export class ShortAnswerItem extends AssessmentItemBase {
 
     constructor(order = 0) {
         super(AssessmentItemType.ShortAnswer, order);
-        this.answerBoxRows = 4;
+        this.answerBoxRows = 3;
         this.pointsPossible = 0;
         this.question = "";
         this.questionWeight = 0;
     }
 }
+
+/**
+ * A function used to validate that the sum of all weights for an assessment is 100 (percent).
+ * This function is shared between the AssessmentLearningActivity (parent) component
+ * and zero or more assessmentItemShortAnswer (children) components.
+ *
+ * @returns An error message if the sum of weights is not 100, or true if the sum is 100.
+ */
+export type WeightsValidationFunction = () => string | boolean;
 
 export type AssessmentActivityConfiguration = {
     assessmentTerm: string;
@@ -122,6 +131,7 @@ export type AssessmentActivityConfiguration = {
 
 export type AssessmentActivityCompletion = {
     completedItems: Array<AssessmentItem | MultipleChoiceItem | SectionItem | ShortAnswerItem>;
+    multipleChoiceWeightAtCompletion: number;
 };
 
 export class AssessmentActivityDefaults
@@ -132,12 +142,13 @@ export class AssessmentActivityDefaults
             assessmentTerm: "Test",
             header: "",
             items: [],
-            multipleChoiceWeight: 1,
+            multipleChoiceWeight: 0,
             showMissedQuestionsOnResults: false,
             showResultsOnCompletion: false,
         };
         this.defaultCompletion = {
-            completedItems: []
+            completedItems: [],
+            multipleChoiceWeightAtCompletion: 0,
         };
     }
 }

@@ -187,6 +187,7 @@ namespace Rock.Model
             target.AllowMultipleLocations = source.AllowMultipleLocations;
             target.AllowSpecificGroupMemberAttributes = source.AllowSpecificGroupMemberAttributes;
             target.AllowSpecificGroupMemberWorkflows = source.AllowSpecificGroupMemberWorkflows;
+            target.AlreadyEnrolledMatchingLogic = source.AlreadyEnrolledMatchingLogic;
             target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
             target.AttendanceReminderFollowupDays = source.AttendanceReminderFollowupDays;

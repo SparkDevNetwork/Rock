@@ -26,6 +26,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseList;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Lms
     [Rock.SystemGuid.EntityTypeGuid( "e882d582-bc31-4b68-945b-d0d44a2ce5bc" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0afdf98-4afc-4e4f-a6e2-07ca4e7358e8" )]
     [CustomizedGrid]
-    public class LearningCourseList : RockEntityListBlockType<LearningCourse>
+    public class LearningCourseList : RockEntityListBlockType<LearningCourse>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -166,24 +167,21 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var qry = GetListQueryable( rockContext );
-                qry = GetOrderedListQueryable( qry, rockContext );
-
-                // Get the entities from the database.
-                var items = GetListItems( qry, rockContext );
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -194,33 +192,55 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LearningCourseService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new LearningCourseService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{LearningCourse.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningCourse.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{LearningCourse.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningCourse.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion
+
+        /// <summary>
+        /// Ensure the LearningProgramId parameter is provided to the breadcrumb.
+        /// </summary>
+        /// <remarks>
+        /// Although no customization is happening in this breadcrumb we want to
+        /// ensure the route works even after a server restart.
+        /// </remarks>
+        /// <param name="pageReference">The PageReference from the breadcrumb.</param>
+        /// <returns>The BreadCrumbResult to display for this block.</returns>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var pageParams =pageReference.Parameters?.Where( p => p.Key == PageParameterKey.LearningProgramId ).ToDictionary( p => p.Key, p => p.Value );
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageParams );
+            var breadCrumb = new BreadCrumbLink( "Courses", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+            };
+        }
     }
 }

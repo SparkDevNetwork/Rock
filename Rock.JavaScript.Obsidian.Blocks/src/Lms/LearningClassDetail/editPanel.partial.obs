@@ -45,6 +45,9 @@
                                 :allowedPickerModes="pickerMode"
                                 label="Location" />
             </div>
+
+        </div>
+        <div class="row">
             <div class="col-md-6">
                 <DropDownList
                               label="Grading System"

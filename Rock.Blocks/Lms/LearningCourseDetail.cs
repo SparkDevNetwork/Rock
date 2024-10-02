@@ -34,6 +34,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseDetail;
 using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
+using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -71,7 +72,7 @@ namespace Rock.Blocks.Lms
         Order = 3 )]
 
     [LinkedPage( "Announcement Detail Page",
-        Description = "The page that will be navigated to when clicking a content page row.",
+        Description = "The page that will be navigated to when clicking an announcement row.",
         Key = AttributeKey.AnnouncementDetailPage,
         IsRequired = false,
         Order = 4 )]
@@ -394,16 +395,23 @@ namespace Rock.Blocks.Lms
             return new LearningCourseService( RockContext ).GetCourseWithRequirements( entityId );
         }
 
-        private Dictionary<string, string> GetCurrentPageParams( string classIdKey, string keyPlaceholder = "" )
+        /// <summary>
+        /// Gets the current page parameters for the specified class identifier and
+        /// optionally include a '((Key))' placeholder with the specified <paramref name="keyPlaceholderParameterName"/>.
+        /// </summary>
+        /// <param name="classIdKey">The identifier of the LearningClass parameter.</param>
+        /// <param name="keyPlaceholderParameterName">The optional parameter name whose value would be dynamically set by the Obsidian Grid.</param>
+        /// <returns>A Dictionary of Route/Query Parameters with the specified values.</returns>
+        private Dictionary<string, string> GetCurrentPageParams( string classIdKey, string keyPlaceholderParameterName = "" )
         {
-            if ( !string.IsNullOrWhiteSpace( keyPlaceholder ) )
+            if ( !string.IsNullOrWhiteSpace( keyPlaceholderParameterName ) )
             {
                 return new Dictionary<string, string>
                 {
                     [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
                     [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
                     [PageParameterKey.LearningClassId] = classIdKey,
-                    [keyPlaceholder] = "((Key))"
+                    [keyPlaceholderParameterName] = "((Key))"
                 };
             }
 
@@ -418,14 +426,19 @@ namespace Rock.Blocks.Lms
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
+        /// <remarks>
+        /// Each of the Navigation pages that's a part of the learningClassSecondaryLists Obsidian component should have their own ((Key)) placeholder
+        /// for their respective parameter keys. This is because the Obsidian component is responsible for replacing those values.
+        /// The placeholder parameter name would be the Route or QueryString parameter name that gets sent to the page.
+        /// </remarks>
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls( LearningCourseBag entity )
         {
             var queryParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey );
-            var activityParams = GetCurrentPageParams( PageParameterKey.LearningActivityId );
-            var participantParams = GetCurrentPageParams( PageParameterKey.LearningParticipantId );
-            var contentPageParams = GetCurrentPageParams( PageParameterKey.LearningClassContentPageId );
-            var announcementParams = GetCurrentPageParams( PageParameterKey.LearningClassAnnouncementId );
+            var activityParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningActivityId );
+            var participantParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningParticipantId );
+            var contentPageParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassContentPageId );
+            var announcementParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassAnnouncementId );
 
             return new Dictionary<string, string>
             {
@@ -440,22 +453,23 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningCourseId ) ?? "";
+
+            // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
+            var excludedParamKeys = new[] { "autoedit", "returnurl" };
+            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+
+            var entityName = entityKey.Length > 0 ? new LearningCourseService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Course";
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "New Course", breadCrumbPageRef );
+
+            return new BreadCrumbResult
             {
-                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningCourseId ) ?? "";
-
-                var entityName = entityKey.Length > 0 ? new LearningCourseService( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Course";
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
-                var breadCrumb = new BreadCrumbLink( entityName ?? "New Course", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb>
+                BreadCrumbs = new List<IBreadCrumb>
                 {
                     breadCrumb
                 }
-                };
-            }
+            };
         }
 
         /// <summary>
@@ -520,9 +534,9 @@ namespace Rock.Blocks.Lms
             entity.LoadAttributes( RockContext );
 
             var bag = GetEntityBagForEdit( entity );
-            var box = new DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>
+            var box = new ValidPropertiesBox<LearningCourseBag>
             {
-                Entity = bag,
+                Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             };
 
@@ -561,58 +575,31 @@ namespace Rock.Blocks.Lms
             if ( isNew )
             {
                 // Need to ensure the program is tied to the Course when creating a new Course.
-                entity.LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            }
+                var learningProgramId = new LearningProgramService( RockContext )
+                    .GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.Id, !PageCache.Layout.Site.DisablePredictableIds );
 
-            entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                entity.LearningProgramId = learningProgramId;
+            }
 
             RockContext.SaveChanges();
-
-            if ( isNew )
-            {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.LearningCourseId] = entity.IdKey
-                } ) );
-            }
 
             // Ensure navigation properties will work now.
             entity = entityService.GetCourseWithRequirements( entity.Id );
             var bag = GetEntityBagForView( entity );
+
+            if ( isNew )
+            {
+                var queryParams = GetCurrentPageParams( bag.DefaultLearningClassIdKey );
+                queryParams.AddOrReplace( PageParameterKey.LearningCourseId, bag.IdKey );
+
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( queryParams ) );
+            }
 
             return ActionOk( new ValidPropertiesBox<LearningCourseBag>
             {
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new LearningCourseService( RockContext );
-
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -978,7 +965,8 @@ namespace Rock.Blocks.Lms
             // Return all facilitators for the course's default class.
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "name", a => a.Person );
+                .AddPersonField( "name", a => a.Person )
+                .AddTextField( "note", a => a.Note );
 
             return ActionOk( gridBuilder.Build( facilitators ) );
         }
@@ -1014,8 +1002,8 @@ namespace Rock.Blocks.Lms
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
                 .AddField( "points", a => a.Points )
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
-                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );
+                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
+                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var orderedItems = GetOrderedLearningPlan().AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
@@ -1050,10 +1038,10 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
-                .AddField( "currentGradePercent", a =>
-                    a.LearningGradePercent )
-                .AddField( "currentGrade", a =>
-                    a.LearningGradingSystemScale?.Name )
+                .AddField( "currentGradePercent", a => a.LearningGradePercent )
+                .AddField( "currentGrade", a => a.LearningGradingSystemScale?.Name )
+                .AddTextField( "note", a => a.Note )
+                .AddTextField( "role", a => a.GroupRole.Name )
                 .AddTextField( "currentAssignment", a =>
                     a.LearningActivities
                     .OrderBy( t => t.DueDate )
@@ -1115,10 +1103,119 @@ namespace Rock.Blocks.Lms
             return ActionOk();
         }
 
+        /// <summary>
+        /// Saves the new or updated participant for the class.
+        /// </summary>
+        /// <param name="participantBag">The bag containing the participant info that should be added or updated.</param>
+        /// <returns>The participantBag with updated data.</returns>
+        [BlockAction]
+        public BlockActionResult SaveParticipant( LearningParticipantBag participantBag )
+        {
+            var classService = new LearningClassService( RockContext );
+            var classIdKey = PageParameter( PageParameterKey.LearningClassId );
+            var classId = classService.GetSelect( classIdKey, p => p.Id );
+
+            var isNew = participantBag.IdKey.IsNullOrWhiteSpace();
+            var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
+            var learningParticipantService = new LearningParticipantService( RockContext );
+            LearningParticipant entity;
+
+            if ( isNew )
+            {
+                entity = GetNewLearningParticipantFromBag( participantBag, classService, classId );
+                learningParticipantService.Add( entity );
+            }
+            else
+            {
+                entity = learningParticipantService.Get( participantBag.IdKey, !disablePredictableIds );
+                entity.Note = participantBag.Note;
+            }
+
+            if ( participantBag.AttributeValues != null )
+            {
+                // Load attributes for the entity.
+                entity.LoadAttributes( RockContext );
+
+                // Set the attribute values from the bag.
+                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson );
+            }
+
+            RockContext.SaveChanges();
+
+            var updatedBag = GetLearningParticipantBag( entity, learningParticipantService );
+
+            return ActionOk( updatedBag );
+        }
+
         #endregion
 
         #region Private methods
 
+        /// <summary>
+        /// Gets the LearningParticipantBag for the specified <paramref name="entity"/>
+        /// and using the specified <paramref name="participantService"/>.
+        /// </summary>
+        /// <param name="entity">The <see cref="LearningParticipant"/> to convert to bag.</param>
+        /// <param name="participantService">The LearningParticipantService to use for getting the updated information.</param>
+        /// <returns>A LearningParticipantBag with the latest values from the database.</returns>
+        private LearningParticipantBag GetLearningParticipantBag( LearningParticipant entity, LearningParticipantService participantService )
+        {
+            var participantDetails = participantService
+                .Queryable()
+                .Include( p => p.Person )
+                .Include( p => p.GroupRole )
+                .Include( p => p.LearningGradingSystemScale )
+                .Where( p => p.Id == entity.Id )
+                .FirstOrDefault();
+
+            return new LearningParticipantBag
+            {
+                IdKey = entity.IdKey,
+                CurrentGradePercent = participantDetails.LearningGradePercent,
+                CurrentGradeText = participantDetails.LearningGradingSystemScale?.Name,
+                ParticipantRole = participantDetails.GroupRole.ToListItemBag(),
+                PersonAlias = participantDetails.Person.PrimaryAlias.ToListItemBag(),
+                IsFacilitator = participantDetails.GroupRole.IsLeader
+            };
+        }
+
+        /// <summary>
+        /// Gets a new LearningParticipant based on the data in the provided bag.
+        /// </summary>
+        /// <param name="participantBag">The bag containing the necessary information to get a LearningParticipant.</param>
+        /// <param name="classService">The <see cref="LearningClassService"/> to use for getting class roles.</param>
+        /// <param name="classId">The integer identifier of the <see cref="LearningClass"/> the participant belongs to.</param>
+        /// <returns>A New LearningParticipant record for the specified <paramref name="classId"/>, person and role (from <paramref name="participantBag"/>.</returns>
+        private LearningParticipant GetNewLearningParticipantFromBag( LearningParticipantBag participantBag, LearningClassService classService, int classId )
+        {
+            int? personId = null;
+            if ( Guid.TryParse( participantBag.PersonAlias.Value, out var primaryAliasGuid ) )
+            {
+                personId = new PersonAliasService( RockContext ).GetSelect( primaryAliasGuid, pa => pa.PersonId );
+            }
+
+            var classRoles = classService.GetClassRoles( classId ).Where( r => r.IsLeader == participantBag.IsFacilitator );
+
+            int groupRoleId = classRoles.Select( r => r.Id ).FirstOrDefault();
+
+            return new LearningParticipant
+            {
+                PersonId = personId.ToIntSafe(),
+                LearningClassId = classId,
+                GroupId = classId,
+                Note = participantBag.Note,
+                GroupRoleId = groupRoleId.ToIntSafe(),
+                LearningCompletionStatus = LearningCompletionStatus.Incomplete,
+                LearningGradePercent = 0
+            };
+        }
+
+        /// <summary>
+        /// Gets the ordered learning plan for the class specified by the current PageParameter.
+        /// </summary>
+        /// <param name="rockContext">The RockContex tto use for getting the ordered results</param>
+        /// <returns>An IQueryable of ordered <see cref="LearningActivity"/> records.</returns>
         private IQueryable<LearningActivity> GetOrderedLearningPlan()
         {
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
@@ -1151,8 +1248,8 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="bag">The bag.</param>
         /// <param name="contentChannel">The content channel.</param>
-        /// <param name="RockContext">The rock context.</param>
-        private void UpdateRequiredCourses( LearningCourseBag bag, LearningCourse entity, RockContext RockContext )
+        /// <param name="rockContext">The rock context.</param>
+        private void UpdateRequiredCourses( LearningCourseBag bag, LearningCourse entity, RockContext rockContext )
         {
             var currentRequirements = bag.CourseRequirements.Select( cr => new LearningCourseRequirement
             {
@@ -1161,14 +1258,13 @@ namespace Rock.Blocks.Lms
                 LearningCourseId = IdHasher.Instance.GetId( cr.LearningCourseIdKey ) ?? 0,
                 RequirementType = cr.RequirementType
             } )
-            .Where( cr => cr.RequiredLearningCourseId > 0 )
+            .Where( cr => cr.RequiredLearningCourseId > 0 && cr.LearningCourseId == entity.Id )
             .ToList();
 
-            //var existingIds = currentRequirements.Where( cr => cr.Id > 0 ).Select( cr => cr.Id ).ToList();
             var requirementsRemoved = entity.LearningCourseRequirements.Where( prev => !currentRequirements.Any( cur => prev.Id == cur.Id ) );
             var newRequirements = currentRequirements.Where( cur => !entity.LearningCourseRequirements.Any( prev => prev.Id == cur.Id ) );
 
-            var entityService = new LearningCourseRequirementService( RockContext );
+            var entityService = new LearningCourseRequirementService( rockContext );
 
             entityService.DeleteRange( requirementsRemoved );
             entityService.AddRange( newRequirements );

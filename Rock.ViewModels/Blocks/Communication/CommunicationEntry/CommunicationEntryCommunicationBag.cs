@@ -260,5 +260,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// Gets or sets the additional email addresses to receive the communication.
         /// </summary>
         public List<string> AdditionalEmailAddresses { get; set; }
+
+        /// <summary>
+        /// Option to prevent communications from being sent to people with the same email/SMS addresses.
+        /// This will mean two people who share an address will not receive a personalized communication, only one of them will.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [exclude duplicate recipient address]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ExcludeDuplicateRecipientAddress { get; set; }
     }
 }

@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -34,9 +32,9 @@ namespace Rock.SystemGuid
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
 
         /// <summary>
-        /// AI provider picker field type.
+        /// AI provider field type.
         /// </summary>
-        public const string AI_PROVIDER_PICKER = "2BAA190B-3EF7-47CE-AF70-C7613ED344AB";
+        public const string AI_PROVIDER = "2BAA190B-3EF7-47CE-AF70-C7613ED344AB";
 
         /// <summary>
         /// Assessment field type
@@ -46,7 +44,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Asset field type
         /// </summary>
-        public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";
+        public const string ASSET = "4E4E8692-23B4-49EA-88B4-2AB07899E0EE";
 
         /// <summary>
         /// Asset storage provider field type

@@ -12,11 +12,18 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class=col-md-12>
+                <StaticFormControl v-if="note" label="Note" :modelValue="note" />
+            </div>
+        </div>
+
         <div class="activities-grid-container">
 
             <Grid light
                   keyField="idKey"
                   itemTerm="Activity"
+                  :rowClass="getRowClass"
                   :data="gridDataSource">
 
                 <TextColumn name="name"
@@ -29,9 +36,7 @@
                         title="Type"
                         visiblePriority="xs">
                     <template #format="{ row }">
-                        <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .33) c h);'">
-                            <i :class="row.componentIconCssClass" :style="'color: ' + row.componentHighlightColor"></i>{{ row.componentName }}
-                        </span>
+                        <span v-html="getComponentHtml(row)"></span>
                     </template>
                 </Column>
 
@@ -68,12 +73,15 @@
     import { computed, PropType, reactive, ref } from "vue";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import Grid, { TextColumn, DateColumn, Column } from "@Obsidian/Controls/grid";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -94,6 +102,8 @@
 
     // #region Values
 
+    const note = ref(props.modelValue?.note ?? "");
+
     // #endregion
 
     // #region Computed Values
@@ -101,14 +111,14 @@
     /** The values to display at half-width on the left side of the block. */
     const leftSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
-
+        console.warn(props.modelValue);
         if (!props.modelValue) {
             return valueBuilder.build();
         }
 
         const gradePercentText = props.modelValue.currentGradePercent ? `(${props.modelValue.currentGradePercent}%)` : "";
         const gradeText = props.modelValue.currentGradeText ? `${props.modelValue.currentGradeText} ${gradePercentText}` : gradePercentText;
-        valueBuilder.addHtmlValue("", `<h4>Current Grade</h4>${gradeText}`);
+        valueBuilder.addTextValue("Current Grade", gradeText);
 
         return valueBuilder.build();
     });
@@ -122,7 +132,7 @@
         }
 
         if (props.modelValue.absences != null) {
-            valueBuilder.addHtmlValue("", `<h4>Absences</h4><div class='label label-${props.modelValue.absencesLabelStyle}'>${props.modelValue.absences}</div>`);
+            valueBuilder.addHtmlValue("Absences", `<div class='label label-${props.modelValue.absencesLabelStyle}'>${props.modelValue.absences}</div>`);
         }
 
         return valueBuilder.build();
@@ -131,6 +141,27 @@
     // #endregion
 
     // #region Functions
+
+    function getComponentHtml(row: Record<string, unknown>): string {
+        const baseColor = row.componentHighlightColor as string;
+        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const iconCssClass = row.componentIconCssClass as string;
+
+        return `
+            <span class="label label-default component-label" style="background-color: ${pair.backgroundColor.toRgba()}">
+                <i class="${iconCssClass}" style="color: ${baseColor}"></i>${row.componentName}
+            </span>`;
+    }
+
+    function getRowClass(row: Record<string, unknown>): string {
+        const availableDate = RockDateTime.parseISO(row.dateAvailable as string ?? "");
+        const now = RockDateTime.now();
+        if (availableDate && now.isEarlierThan(availableDate)) {
+            return "text-muted";
+        }
+
+        return "";
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

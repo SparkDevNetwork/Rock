@@ -1,0 +1,16 @@
+{
+    "$schema": "https://community.rockrms.com/schema/2024-10-01/theme.schema.json",
+    "name": "NextGenCheckin",
+    "description": "The default theme for the next generation check-in system.",
+    "purpose": "checkin",
+    "availableIconSets": ["fontawesome"],
+    "fields": [
+        {
+            "type": "color",
+            "name": "Primary Color",
+            "variable": "color-primary",
+            "description": "The primary color used to highlight screen elements, such as the main button.",
+            "default": "#ee7725"
+        }
+    ]
+}

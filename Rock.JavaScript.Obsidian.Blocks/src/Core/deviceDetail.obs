@@ -79,7 +79,9 @@
         "cameraBarcodeConfigurationType",
         "kioskType",
         "hasCamera",
-        "locations"
+        "locations",
+        "geoFence",
+        "geoPoint"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(deviceEditBag, validProperties, invokeBlockAction), undefined, true);

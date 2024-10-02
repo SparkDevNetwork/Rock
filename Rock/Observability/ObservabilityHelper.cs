@@ -15,12 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json.Linq;
 
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -28,8 +26,9 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-using Rock.Bus;
+using Rock.Configuration;
 using Rock.SystemKey;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Observability
 {
@@ -140,6 +139,14 @@ namespace Rock.Observability
             ConfigureLogExporter();
 
             return _currentTracerProvider;
+        }
+
+        /// <summary>
+        /// Configures the observability TraceProvider.
+        /// </summary>
+        internal static void ReconfigureObservability()
+        {
+            ConfigureObservability();
         }
 
         /// <summary>
@@ -269,7 +276,7 @@ namespace Rock.Observability
         {
             builder.AddOpenTelemetry( cfg =>
             {
-                var nodeName = RockMessageBus.NodeName.ToLower();
+                var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
                 var machineName = _machineName.Value;
                 var instanceId = nodeName != machineName ? $"{machineName} ({nodeName})" : machineName;
 
@@ -324,7 +331,7 @@ namespace Rock.Observability
                 return null;
             }
 
-            var nodeName = RockMessageBus.NodeName.ToLower();
+            var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
             var machineName = _machineName.Value;
 
             // Add on default attributes
@@ -342,6 +349,15 @@ namespace Rock.Observability
             activity.AddTag( "service.version", _rockVersion.Value );
 
             return activity;
+        }
+
+        /// <summary>
+        /// Converts the open telemetry exporter protocols to a <see cref="ListItemBag"/> list.
+        /// </summary>
+        /// <returns></returns>
+        public static List<ListItemBag> GetOpenTelemetryExporterProtocolsAsListItemBag()
+        {
+            return typeof( OpenTelemetry.Exporter.OtlpExportProtocol ).ToEnumListItemBag();
         }
 
         /// <summary>
@@ -441,7 +457,7 @@ namespace Rock.Observability
         /// <returns>A string containing the instance identifier.</returns>
         private static string GetServiceInstanceId()
         {
-            var nodeName = RockMessageBus.NodeName.ToLower();
+            var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
             var machineName = _machineName.Value;
 
             if ( nodeName != machineName )

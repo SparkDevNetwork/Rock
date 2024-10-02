@@ -15,26 +15,15 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
-
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
 
 export const enum PreferenceKey {
-    FilterDateRange = "filter-date-range",
-    FilterLastModified = "filter-last-modified",
-    FilterPerson = "filter-person",
-    FilterAccounts = "filter-accounts",
     FilterActiveOnly = "filter-active-only"
 }
 
 export type GridSettingsOptions = {
-    dateRange?: DateRangeParts;
-    lastModified?: DateRangeParts;
-    person?: ListItemBag;
-    accounts?: ListItemBag[];
-    activeOnly?: boolean;
+    activeOnly: string | null;
 };
 

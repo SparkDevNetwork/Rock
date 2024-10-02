@@ -619,7 +619,7 @@ namespace Rock.Financial
                                 }
                                 else
                                 {
-                                    return dateTime.AddDays( dateTime.Day - ( dateTime.Day - 1 ) );
+                                    return dateTime.AddDays( 1 - dateTime.Day );
                                 }
                             }
 

@@ -15,12 +15,12 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.Moderations;
-using Rock.IpAddress;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
@@ -97,9 +97,6 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
                     response.ModerationsResponseCategories.IsThreat = result.Categories.Threatening;
                 }
             }
-
-
-            
 
             return response;
         }

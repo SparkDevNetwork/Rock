@@ -85,7 +85,7 @@
                                     <Rock:DataTextBox ID="tbStatus" runat="server" SourceTypeName="Rock.Model.Workflow, Rock" PropertyName="Status" Label="Status Text" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbIsCompleted" runat="server" Label="Completed" Text="Yes" />
+                                    <Rock:RockCheckBox ID="cbIsCompleted" runat="server" Label="Completed" />
                                     <Rock:RockLiteral ID="lIsCompleted" runat="server" Label="Completed" Visible="false" />
                                     <Rock:RockControlWrapper ID="cwState" runat="server">
                                         <asp:Literal ID="lState" runat="server" />

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays a list of assessment types." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the assessment type details.",
@@ -72,29 +72,7 @@ namespace Rock.Blocks.Crm
             public const string LinkedPages = "Linked Pages";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterTitle = "filter-title";
-
-            public const string FilterRequest = "filter-request";
-
-            public const string FilterActive = "filter-active";
-        }
-
         #endregion Keys
-
-        #region Properties
-
-        protected string FilterTitle => GetBlockPersonPreferences()
-            .GetValue(PreferenceKey.FilterTitle);
-
-        protected string FilterRequest => GetBlockPersonPreferences()
-            .GetValue(PreferenceKey.FilterRequest);
-
-        protected string FilterActive => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActive );
-
-        #endregion
 
         #region Methods
 
@@ -152,50 +130,6 @@ namespace Rock.Blocks.Crm
             var query = new AssessmentTypeService(rockContext)
                 .Queryable()
                 .AsNoTracking();
-
-            // Filter by Title
-            if (!string.IsNullOrWhiteSpace(FilterTitle))
-            {
-                query = query.Where(a => a.Title.Contains(FilterTitle));
-            }
-
-            // Filter by Requires Request
-            if (!string.IsNullOrWhiteSpace(FilterRequest))
-            {
-                bool? requiresRequest = null;
-                if (FilterRequest.Equals("Yes", StringComparison.OrdinalIgnoreCase))
-                {
-                    requiresRequest = true;
-                }
-                else if (FilterRequest.Equals("No", StringComparison.OrdinalIgnoreCase))
-                {
-                    requiresRequest = false;
-                }
-
-                if (requiresRequest.HasValue)
-                {
-                    query = query.Where(a => a.RequiresRequest == requiresRequest.Value);
-                }
-            }
-
-            // Filter by isActive
-            if (!string.IsNullOrWhiteSpace(FilterActive))
-            {
-                bool? isActive = null;
-                if (FilterActive.Equals("Yes", StringComparison.OrdinalIgnoreCase))
-                {
-                    isActive = true;
-                }
-                else if (FilterActive.Equals("No", StringComparison.OrdinalIgnoreCase))
-                {
-                    isActive = false;
-                }
-
-                if (isActive.HasValue)
-                {
-                    query = query.Where(a => a.IsActive == isActive.Value);
-                }
-            }
 
             return query;
         }

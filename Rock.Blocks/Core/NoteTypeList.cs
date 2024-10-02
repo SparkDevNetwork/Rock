@@ -40,18 +40,11 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of note types." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the note type details.",
         Key = AttributeKey.DetailPage )]
-
-    [EntityTypeField("Entity Type",
-
-        IncludeGlobalAttributeOption = false,
-        IsRequired = false,
-        Order = 0,
-        Key = AttributeKey.EntityType)]
 
     [Rock.SystemGuid.EntityTypeGuid( "ca07cfe0-ac86-4ad5-a4e2-03a90b0281f5" )]
     [Rock.SystemGuid.BlockTypeGuid( "23e3ca31-6a1f-43cb-ac06-374bd9cb9fa5" )]
@@ -63,7 +56,6 @@ namespace Rock.Blocks.Core
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string EntityType = "EntityType";
         }
 
         private static class NavigationUrlKey
@@ -72,12 +64,6 @@ namespace Rock.Blocks.Core
         }
 
         #endregion Keys
-
-        #region Fields
-
-        private EntityTypeCache _blockConfigEntityType = null;
-
-        #endregion Fields
 
         #region Methods
 
@@ -104,7 +90,6 @@ namespace Rock.Blocks.Core
         private NoteTypeListOptionsBag GetBoxOptions()
         {
             var options = new NoteTypeListOptionsBag();
-            options.EntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
             return options;
         }
 
@@ -136,15 +121,6 @@ namespace Rock.Blocks.Core
         {
             var qry = base.GetListQueryable( rockContext )
                 .Include( a => a.EntityType );
-            Guid? blockEntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
-            if ( blockEntityTypeGuid.HasValue )
-            {
-                _blockConfigEntityType = EntityTypeCache.Get( blockEntityTypeGuid.Value );
-                if (_blockConfigEntityType != null )
-                {
-                    qry = qry.Where( a => a.EntityTypeId == _blockConfigEntityType.Id );
-                }
-            }
 
             return qry.OrderBy(a => a.EntityType.Name).ThenBy(a => a.Order).ThenBy(a => a.Name);
         }

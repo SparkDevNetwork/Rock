@@ -112,7 +112,9 @@ namespace RockWeb
                     // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
                     if ( parentEntityAllowsView == null && requiresViewSecurity )
                     {
-                        if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                        var securityGrant = SecurityGrant.FromToken( context.Request.QueryString["securityGrant"] );
+
+                        if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) && securityGrant?.IsAccessGranted( binaryFile, Authorization.VIEW ) != true )
                         {
                             SendError( context, 403, "Not authorized to view file." );
                             return;

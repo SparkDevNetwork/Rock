@@ -167,9 +167,7 @@ namespace Rock.Model
             target.MaxReplyDepth = source.MaxReplyDepth;
             target.Name = source.Name;
             target.Order = source.Order;
-            #pragma warning disable 612, 618
             target.RequiresApprovals = source.RequiresApprovals;
-            #pragma warning restore 612, 618
             #pragma warning disable 612, 618
             target.SendApprovalNotifications = source.SendApprovalNotifications;
             #pragma warning restore 612, 618

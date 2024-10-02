@@ -105,46 +105,8 @@ namespace Rock.Blocks.Engagement
         #region Fields
 
         private StepType _stepType = null;
-        private RockContext _dataContext;
 
         #endregion Fields
-
-        #region Properties
-
-        protected string FilterFirstName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterFirstName );
-
-        protected string FilterLastName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterLastName );
-
-        protected List<Guid> FilterStepStatus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterStepStatus )
-            .FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
-
-        protected DateTime? FilterDateStartedUpper => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateStartedUpper )
-            .AsDateTime();
-
-        protected DateTime? FilterDateStartedLower => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateStartedLower )
-            .AsDateTime();
-
-        protected DateTime? FilterDateCompletedUpper => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateCompletedUpper )
-            .AsDateTime();
-
-        protected DateTime? FilterDateCompletedLower => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateCompletedLower )
-            .AsDateTime();
-
-        protected string FilterNote => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterNote );
-
-        protected Guid? FilterCampus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCampus )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        #endregion
 
         #region Methods
 
@@ -196,7 +158,7 @@ namespace Rock.Blocks.Engagement
                 return new Dictionary<string, string>();
             }
 
-            var stepStatusService = new StepStatusService( GetDataContext() );
+            var stepStatusService = new StepStatusService( RockContext );
             return stepStatusService.Queryable()
                 .AsNoTracking()
                 .Where( ss => ss.StepProgram.StepTypes.Any( st => st.Id == stepType.Id ) )
@@ -247,68 +209,6 @@ namespace Rock.Blocks.Engagement
                 .AsNoTracking()
                 .Where( x => x.StepTypeId == stepType.Id );
 
-            // Filter by First Name
-            if ( !string.IsNullOrWhiteSpace( FilterFirstName ) )
-            {
-                queryable = queryable.Where( m =>
-                    m.PersonAlias.Person.FirstName.StartsWith( FilterFirstName ) ||
-                    m.PersonAlias.Person.NickName.StartsWith( FilterFirstName ) );
-            }
-
-            // Filter by Last Name
-            if ( !string.IsNullOrWhiteSpace( FilterLastName ) )
-            {
-                queryable = queryable.Where( m => m.PersonAlias.Person.LastName.StartsWith( FilterLastName ) );
-            }
-
-            // Filter by Step Status
-            var validStatusGuids = stepType.StepProgram.StepStatuses.Select( r => r.Guid ).ToList();
-            var statusGuids = FilterStepStatus.Where( statusId => validStatusGuids.Contains( statusId ) ).ToList();
-
-            if ( statusGuids.Any() )
-            {
-                queryable = queryable.Where( m => statusGuids.Contains( m.StepStatus.Guid ) );
-            }
-
-            // Filter By Start Date
-            if ( FilterDateStartedLower.HasValue )
-            {
-                var startDate = FilterDateStartedLower.Value.Date;
-                queryable = queryable.Where( m => m.StartDateTime >= startDate );
-            }
-
-            if ( FilterDateStartedUpper.HasValue )
-            {
-                var exclusiveEndDate = FilterDateStartedUpper.Value.Date.AddDays( 1 ).Date;
-                queryable = queryable.Where( m => m.StartDateTime < exclusiveEndDate );
-            }
-
-            // Filter by Date Completed
-            if ( FilterDateCompletedLower.HasValue )
-            {
-                var startDate = FilterDateCompletedLower.Value.Date;
-                queryable = queryable.Where( m => m.CompletedDateTime >= startDate );
-            }
-
-            if ( FilterDateCompletedUpper.HasValue )
-            {
-                var exclusiveEndDate = FilterDateCompletedUpper.Value.Date.AddDays( 1 ).Date;
-                queryable = queryable.Where( m => m.CompletedDateTime < exclusiveEndDate );
-            }
-
-            // Filter by Note
-            if ( !string.IsNullOrWhiteSpace( FilterNote ) )
-            {
-                queryable = queryable.Where( m => m.Note.Contains( FilterNote ) );
-            }
-
-            var campusContext = GetCampusContextOrNull();
-            var campusGuid = campusContext == null ? FilterCampus : campusContext.Guid;
-            if ( campusGuid.HasValue )
-            {
-                queryable = queryable.Where( m => m.Campus.Guid == campusGuid );
-            }
-
             return queryable;
         }
 
@@ -335,6 +235,11 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "signalMarkup", a => a.PersonAlias.Person.GetSignalMarkup() )
                 .AddField( "isDeceased", a => a.PersonAlias.Person.IsDeceased )
                 .AddField( "isInactive", a => a.PersonAlias.Person.RecordStatusValueId == inactiveStatus.Id )
+                .AddField( "id", a => a.Id )
+                .AddField( "personId", a => a.PersonAlias.PersonId )
+                .AddField( "stepStatusId", a => a.StepStatusId)
+                .AddField( "exportPerson", a => a.PersonAlias.Person.FullName )
+                .AddField( "isCompleted", a => a.IsComplete.ToTrueFalse() )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -376,23 +281,13 @@ namespace Rock.Blocks.Engagement
 
                 if ( !( stepTypeId == 0 && stepTypeGuid == Guid.Empty ) )
                 {
-                    var dataContext = GetDataContext();
-                    _stepType = new StepTypeService( dataContext ).Queryable()
+                    _stepType = new StepTypeService( RockContext ).Queryable()
                                         .Where( g => g.Id == stepTypeId || g.Guid == stepTypeGuid )
                                         .FirstOrDefault();
                 }
             }
 
             return _stepType;
-        }
-
-        /// <summary>
-        /// Retrieve a singleton data context for data operations in this block.
-        /// </summary>
-        /// <returns></returns>
-        private RockContext GetDataContext()
-        {
-            return _dataContext ?? ( _dataContext = new RockContext() );
         }
 
         /// <summary>

@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Utility;
 
@@ -55,7 +56,9 @@ namespace Rock.CheckIn.v2.Filters
                 var personIdNumber = IdHasher.Instance.GetId( Person.Person.Id ) ?? 0;
                 var groupIds = new GroupMemberService( RockContext )
                     .Queryable()
-                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.Person.Id == personIdNumber )
+                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active
+                        && m.Person.Id == personIdNumber
+                        && m.GroupRole.IsCheckInAllowed )
                     .Select( m => m.Group.Id )
                     .ToList()
                     .Select( id => IdHasher.Instance.GetHash( id ) );
@@ -71,9 +74,18 @@ namespace Rock.CheckIn.v2.Filters
         /// <inheritdoc/>
         public override bool IsGroupValid( GroupOpportunity group )
         {
-            if ( group.CheckInAreaData.AttendanceRule == AttendanceRule.AlreadyBelongs )
+            if ( group.CheckInAreaData.AttendanceRule == AttendanceRule.AlreadyEnrolledInGroup )
             {
-                return GroupIds.Value.Contains( group.Id );
+                var isMember = GroupIds.Value.Contains( group.Id );
+
+                // If the area is configured to prefer enrolled groups then mark
+                // this group as preferred if they are a member.
+                if ( isMember && group.CheckInAreaData.AlreadyEnrolledMatchingLogic == AlreadyEnrolledMatchingLogic.PreferEnrolledGroups )
+                {
+                    group.IsPreferredGroup = true;
+                }
+
+                return isMember;
             }
 
             return true;

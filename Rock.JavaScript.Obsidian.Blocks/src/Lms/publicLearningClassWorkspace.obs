@@ -39,7 +39,7 @@
                         Notifications
                     </div>
                     <div class="notifications-section">
-                        <template v-for="notification in notifications">
+                        <template v-for="notification in notifications" ::key="notification.idKey">
                             <div class="notification-container">
                                 <div class="notification-badge">
                                     <span :class="'badge badge-' + notification.labelType">
@@ -60,7 +60,7 @@
                         <div class="announcements-header h3">
                             Announcements
                         </div>
-                        <template v-for="announcement in announcements">
+                        <template v-for="announcement in announcements" :key="announcement.idKey">
                             <div class="announcement-container">
                                 <div class="announcement-date">
                                     {{ formattedDate(announcement.publishDateTime) }}
@@ -80,8 +80,11 @@
                         <div class="facilitators-label h4">
                             {{ facilitatorsLabel }}
                         </div>
-                        <div class="facilitators-list">
-                            <span v-html="facilitatorsHtml"></span>
+                        <div class="facilitators-list d-flex flex-column">
+                            <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
+                                <a v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{f.facilitatorEmail}}</a>
+                                {{ f.facilitatorName }}
+                            </span>
                         </div>
 
                         <div class="class-progress-label h4 mt-4">
@@ -91,14 +94,17 @@
                             <ProgressBar :percent="percentComplete" />
                         </div>
                         <div class="class-progress-tasks">
-                            {{ completedActivitiesCount }} out of {{ activities.length }} tasks completed
+                            {{ completedActivitiesCount }} out of {{ activities.length }} {{ pluralize('task', activities.length) }} completed
                         </div>
 
                         <div class="current-grade-label h4 mt-4" v-if="showGrades">
                             Current Grade
                         </div>
-                        <div class="current-grade" v-if="showGrades">
-                            <span v-html="currentGradeHtml"></span>
+                        <div class="current-grade" v-if="showGrades && currentGrade">
+                            <span v-if="showGrades && currentGrade"
+                                :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
+                                {{ currentGrade.name ?? '' }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -108,10 +114,10 @@
                 <div class="workspace-navigation-pane">
                     <div class="activity-navigation-item-container"
                          @click="selectActivity(activity)"
-                         :class="activityContainerClasses(activity)"
+                         :class="getActivityContainerClasses(activity)"
                          v-for="(activity, index) in activities" :key="activity.idKey ?? activity.activityBag?.idKey ?? ''">
                         <div>
-                            <span class="icon-stack-container fa-stack fa-2x">
+                            <span class="icon-stack-container fa-stack">
                                 <i :class="activityIconStackClasses(activity)"></i>
                                 <i class="icon fa-stack-1x" :class="activity.activityBag?.activityComponent?.iconCssClass"></i>
                             </span>
@@ -120,14 +126,14 @@
                             <div class="activity-item-name">
                                 {{ activity?.activityBag?.name }}
                             </div>
-                            <div class="activity-item-icons">
-                                <span v-if="activity.facilitatorComment" class="badge badge-info">Comment Available</span>
-                            </div>
-                            <div class="activity-item-time">
-                                <span>{{ getActivityTimeText(activity) }}</span>
+                            <div class="activity-item-time" :class="{'text-warning' : isDueSoonAndIncomplete(activity) }">
+                                <div>{{ getActivityTimeText(activity) }}</div>
+                                <div v-if="activity.facilitatorComment" class="label comments-label"><i class="fa fa-comment"></i>Comments</div>
                             </div>
                             <div class="activity-item-status text-right">
-                                <span v-html="getActivityStatusBadge(activity)"></span>
+                                <span v-if="activity.isStudentCompleted" class="pull-right px-1 badge badge-success">
+                                    {{ badgeText(activity) }}
+                                </span>
                             </div>
                         </div>
 
@@ -156,7 +162,7 @@
 </template>
 <style scoped>
 .workspace-page-container {
-    background-color: #F5F9FA;
+    background-color: var(--color-interface-softer);
 
 }
 
@@ -168,7 +174,7 @@
 .workspace-main-content,
 .main-content,
 .side-content {
-    background-color: #FFF;
+    background-color: var(--color-interface-softest);
     padding: 16px;
     border-radius: 12px;
 }
@@ -209,7 +215,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         max-width: 300px;
-        border: 1px solid #D9EDF2;
+        border: 1px solid var(--theme-color-light);
         border-radius: 12px;
         padding: 16px;
         margin-right: 8px;
@@ -235,7 +241,7 @@
     }
 
     .announcement-container {
-        background-color: #F5F9FA;
+        background-color: var(--interface-softer);
         padding: 16px;
     }
 
@@ -248,7 +254,7 @@
 .class-workspace-tabs {
     > ul li.active > span {
         background-color: var(--color-primary);
-        color: #fff;
+        color: var(--theme-white);
     }
 }
 
@@ -259,6 +265,7 @@
     padding-bottom: 1em;
     padding-left: 3em;
     padding-right: 3em;
+    background-color: var(--color-interface-softest);
 
     .workspace-header-bar {
         flex-grow: 1;
@@ -286,7 +293,7 @@
         display: flex;
         flex-direction: column;
         text-align: center;
-        background-color: white;
+        background-color: var(--theme-white);
         border-radius: 12px;
 
         /* For smaller devices don't apply margins and use the full width. */
@@ -310,19 +317,27 @@
     }
 }
 
+.comments-label{
+    color: var(--color-interface-strongest);
+    background-color: var(--color-interface-soft);
+}
+
 .workspace-navigation-pane {
-    background-color: #f6f9fa;
+    background-color: var(--theme-lightest);
     border-radius: 12px;
-    min-width: 300px;
+    min-width: 350px;
 
     .activity-navigation-item-container {
-        padding: .5em;
+        /* padding: 4px; */
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-top: 1px solid #ebf4f7;
-        border-bottom: 1px solid #ebf4f7;
+        border-top: 1px solid var(--theme-color-light);
+        border-bottom: 1px solid var(--theme-color-light);
         min-height: 100px;
+        padding-left: 12px;
+        padding-right: 12px;
+        border-radius: 12px;
 
         * {
             margin-right: .5em;
@@ -333,6 +348,7 @@
         }
 
         .activity-item-details {
+            width: 100%;
             display: grid;
             grid-template-columns: 2;
             grid-template-rows: 2;
@@ -340,12 +356,7 @@
 
             .activity-item-name {
                 grid-row: 1;
-                grid-column: 1;
-            }
-
-            .activity-item-icons {
-                grid-row: 1;
-                grid-column: 2;
+                grid-column: 1 / 2;
             }
 
             .activity-item-time {
@@ -361,7 +372,7 @@
     }
 
     .activity-navigation-item-container.is-selected {
-        background-color: #fff;
+        background-color: var(--color-interface-softest);
 
     }
 
@@ -417,7 +428,8 @@ span.icon-stack-container i.icon {
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
-    import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
+    import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -445,10 +457,10 @@ span.icon-stack-container i.icon {
     const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
     const isFacilitator = ref(config.isCurrentPersonFacilitator ?? false);
-    const facilitatorPortalUrl = ref(config.navigationUrls == null ? "" : config.navigationUrls[NavigationUrlKey.FacilitatorPortalPage]);
+    const facilitatorPortalUrl = ref(config.navigationUrls?.[NavigationUrlKey.FacilitatorPortalPage] ?? "");
     const facilitators = ref(config.facilitators ?? []);
     const notificationsToShow = ref(config.numberOfNotificationsToShow);
-    const notifications = ref(config.notifications?.filter((a, i) => i < notificationsToShow.value) ?? []);
+    const notifications = ref(config.notifications?.filter((_, i) => i < notificationsToShow.value) ?? []);
     const showGrades = ref(config.showGrades);
     const currentGrade = ref(config.currentGrade);
 
@@ -462,32 +474,11 @@ span.icon-stack-container i.icon {
 
     // #region Computed Values
 
-    /** An array of student completed activities. */
-    const completedActivitiesCount = computed(() => activities.value.filter(a => a.isStudentCompleted).length);
+    /** An array of completed activities. */
+    const completedActivitiesCount = computed(() => activities.value.filter(a => !!a.completedDate).length);
 
     /** The activityComponent.componentUrl from the ActivityBag or an empty string. */
     const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
-
-    /** The HTML for rendering the current grade label. */
-    const currentGradeHtml = computed(() => {
-        if (showGrades.value === true) {
-            const labelType = currentGrade.value?.isPassing === true ? "success" : "warning";
-
-            return `<span class="label label-${labelType}">${currentGrade.value?.name ?? ""}</span>`;
-        }
-        else {
-            return "";
-        }
-    });
-
-    /** The HTML for rendering the facilitator name and contact section. */
-    const facilitatorsHtml = computed(() =>
-        facilitators.value.map(f => {
-            return (f.facilitatorEmail ?? "").length > 0 ?
-                `${f.facilitatorName} <a href="mailto:${f.facilitatorEmail ?? ""}">${f.facilitatorEmail ?? ""}</a>"` :
-                f.facilitatorName;
-        }).join("<br />")
-    );
 
     /** The properly pluralized text for the Facilitator(s). */
     const facilitatorsLabel = computed(() => facilitators.value.length > 1 ? "Facilitators" : "Facilitator");
@@ -509,15 +500,25 @@ span.icon-stack-container i.icon {
 
     // #region Functions
 
+    function badgeText(activity: LearningActivityCompletionBag): string | undefined {
+        if (activity.isStudentCompleted && activity.gradeName) {
+            return activity.gradeName;
+        }
+    }
+
+    function isDueSoonAndIncomplete(activity: LearningActivityCompletionBag): boolean {
+        return !activity.isStudentCompleted && (activity.isDueSoon || activity.isPastDue);
+    }
+
     /** The CSS classes to apply to the activity container. */
-    function activityContainerClasses(activity: LearningActivityCompletionBag): string[] {
+    function getActivityContainerClasses(activity: LearningActivityCompletionBag): string[] {
         const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
 
         if (activity.idKey === viewingCompletionBag.value?.idKey) {
             classes.push("is-selected");
         }
 
-        if (activity.isStudentCompleted) {
+        if (activity.completedDate) {
             classes.push("is-completed");
         }
 
@@ -528,37 +529,6 @@ span.icon-stack-container i.icon {
     function activityIconStackClasses(activity: LearningActivityCompletionBag): string[] {
         const completionStatusClass = activity.isStudentCompleted ? "text-success" : "text-muted";
         return ["fa", "fa-circle", "fa-stack-2x", completionStatusClass];
-    }
-
-    /** The badge HTML to use for the activity status. */
-    function getActivityStatusBadge(forActivity: LearningActivityCompletionBag): string {
-        if (forActivity.isStudentCompleted) {
-            const pointsPossible = forActivity.activityBag?.points ?? 0;
-            if (forActivity.isFacilitatorCompleted && pointsPossible > 0) {
-                const badgeText = forActivity.isGradePassing === true ?
-                    "Passed" :
-                    "Complete";
-
-                return `<span class="badge badge-success">${badgeText}</span>`;
-            }
-            else {
-                return `<span class="badge badge-success">Complete</span>`;
-            }
-        }
-        else {
-            if (forActivity.isPastDue) {
-                return `<span class="badge badge-warning">Past Due</span>`;
-            }
-        }
-
-        if (forActivity.isDueSoon) {
-            return `<span class="badge badge-warning">Due Soon</span>`;
-        }
-        else if (forActivity.isAvailable) {
-            return `<span class="badge badge-default">Available</span>`;
-        }
-
-        return "";
     }
 
     /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
@@ -673,7 +643,8 @@ span.icon-stack-container i.icon {
                     const nextActivityIndex = index + 1;
                     const hasNextActivity = nextActivityIndex < activities.value?.length ?? -1;
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
-                    if (nextActivity != null && nextActivity.activityBag?.availableDateCalculationMethod === AvailableDateCalculationMethod.AfterPreviousCompleted) {
+
+                    if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
                         nextActivity.availableDate = viewingCompletionBag.value.completedDate;
                         nextActivity.isAvailable = true;
                     }
@@ -715,6 +686,10 @@ span.icon-stack-container i.icon {
     // Set the initially selected tab.
     const queryParams = new URLSearchParams(window.location.search);
     const tab = queryParams.has("tab") ? queryParams.get("tab") : "";
-    const selectedTab = ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? overviewTab.value);
+
+    // If this is not academic calendar mode then we only have access to the Activities tab.
+    const selectedTab = isAcademicCalendarMode.value === true ?
+        ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? overviewTab.value) :
+        activitiesTab;
 
 </script>
