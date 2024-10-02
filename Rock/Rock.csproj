@@ -1265,6 +1265,7 @@
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
+    <Compile Include="Jobs\RunNowRockJobListener.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdateAnalyticsSourcePostalCode.cs" />
