@@ -47,8 +47,13 @@
     margin: -15px;
 }
 
-.custom-select-item {
+.custom-select-item:not(.custom-select-item-disabled) {
     cursor: pointer;
+}
+
+.custom-select-item-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .custom-select-expand-icon {
@@ -113,9 +118,14 @@
             default: ""
         },
 
-        /** CSS class(es) to apply to the item element */
+        /**
+         * CSS class(es) to apply to the item element. If you supply a string,
+         * will apply that directly. You can also use a function that takes the
+         * item object and returns a string, which allows you to apply different
+         * classes to different items depending on the item data.
+         */
         itemClass: {
-            type: String,
+            type: [String, Function] as PropType<string | ((item: TItem | null) => string)>,
             default: ""
         },
 
@@ -123,6 +133,17 @@
         selectedClass: {
             type: String,
             default: "selected"
+        },
+
+        /**
+         * property name of the item to use to determine if the item is disabled.
+         * If you supply a string, will apply that directly. You can also use a
+         * function that takes the item object and returns a boolean, which
+         * allows you to use complex logic depending on the item data.
+         */
+        disabledKey: {
+            type: [String, Function] as PropType<string | ((item: TItem | null) => boolean)>,
+            default: "isDisabled"
         },
 
         ...standardRockFormFieldProps
@@ -143,20 +164,54 @@
 
     // #region Functions
 
+    /**
+     * Determine if the item should be disabled.
+     */
+    function isItemDisabled(item: TItem | null): boolean {
+        if (typeof props.disabledKey === "string") {
+            return !!item?.[props.disabledKey as keyof TItem];
+        }
+
+        if (typeof props.disabledKey === "function") {
+            return props.disabledKey(item);
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine the class to apply to each item.
+     */
+     function getItemClass(item: TItem | null): string | undefined {
+        if (typeof props.itemClass === "string") {
+            return props.itemClass;
+        }
+
+        if (typeof props.itemClass === "function") {
+            return props.itemClass(item);
+        }
+
+        return undefined;
+    }
+
     function itemClasses(item: TItem | null): string {
         const classes = [
-            props.itemClass
+            getItemClass(item)
         ];
 
         if (item === internalValue.value || item === null) {
             classes.push(props.selectedClass);
         }
 
+        if (isItemDisabled(item)) {
+            classes.push("custom-select-item-disabled");
+        }
+
         return classes.join(" ");
     }
 
     function onItemClick(item: TItem | null): void {
-        if (showOverlay.value || !isMobile.value && item !== null) {
+        if ((showOverlay.value || !isMobile.value) && item !== null && !isItemDisabled(item)) {
             internalValue.value = item;
             showOverlay.value = false;
         }
