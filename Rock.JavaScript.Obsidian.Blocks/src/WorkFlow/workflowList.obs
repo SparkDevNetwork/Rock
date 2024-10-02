@@ -10,7 +10,6 @@
           keyField="idKey"
           :title="gridTitle"
           :itemTerm="config.options?.itemTerm ?? 'Workflow'"
-          :title="title"
           :entityTypeGuid="EntityType.Workflow"
           stickyHeader
           liveUpdates
@@ -208,10 +207,6 @@ import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const gridTitle = computed((): string => {
         return pluralize(config.options?.itemTerm ?? "Workflow");
-    });
-
-    const title = computed((): string => {
-        return `${config.options?.itemTerm ?? "Workflow"}s`;
     });
 
     // #endregion
