@@ -77,6 +77,7 @@
     <Compile Include="Cms\ShortLink.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Cms\TvPageList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />

@@ -298,9 +298,6 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Bag.IsActive ),
                 () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Bag.PageViewRetentionDuration ),
-                () => SetPageViewRetentionDuration( entity, box.Bag.PageViewRetentionDuration ) );
-
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
@@ -374,8 +371,12 @@ namespace Rock.Blocks.Cms
         {
             // Get API key
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<RokuTvApplicationSettings>();
-            var apiKeyLogin = new UserLoginService( RockContext ).Get( additionalSettings.ApiKeyId ?? 0 );
+            if( additionalSettings == null )
+            {
+                return string.Empty;
+            }
 
+            var apiKeyLogin = new UserLoginService( RockContext ).Get( additionalSettings.ApiKeyId ?? 0 );
             return apiKeyLogin?.ApiKey ?? string.Empty;
         }
 
@@ -386,6 +387,11 @@ namespace Rock.Blocks.Cms
         /// <returns>The page view retention duration for the specified site, or null if not found.</returns>
         private int? GetPageViewRetentionDuration( Site site )
         {
+            if( site.Id == 0 )
+            {
+                return null;
+            }
+
             int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
             var retentionDuration = new InteractionChannelService( new RockContext() ).Queryable()
                     .Where( c => c.ChannelTypeMediumValueId == channelMediumWebsiteValueId && c.ChannelEntityId == site.Id )
@@ -477,19 +483,14 @@ namespace Rock.Blocks.Cms
             }
 
             var isNew = entity.Id == 0;
-
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-                entity.SaveAttributeValues( RockContext );
-            } );
-
             var additionalSettings = entity.AdditionalSettings.FromJsonOrNull<RokuTvApplicationSettings>() ?? new RokuTvApplicationSettings();
 
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
+
+                SetPageViewRetentionDuration( entity, box.Bag.PageViewRetentionDuration );
 
                 // Create/Modify API Key
                 additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, entity.Name, box.Bag.ApiKey, $"tv_application_{entity.Id}", RockContext );

@@ -98,6 +98,7 @@
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
     <Compile Include="Blocks\Cms\RokuApplicationDetail\RokuApplicationBag.cs" />
     <Compile Include="Blocks\Cms\RokuApplicationDetail\RokuApplicationOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\TvPageList\TvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />

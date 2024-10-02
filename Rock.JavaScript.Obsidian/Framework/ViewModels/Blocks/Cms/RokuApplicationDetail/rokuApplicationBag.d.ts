@@ -25,6 +25,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type RokuApplicationBag = {
+    /** Gets or sets the API key. */
+    apiKey?: string | null;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
@@ -34,8 +37,14 @@ export type RokuApplicationBag = {
     /** Gets or sets a user defined description/summary  of the Site. */
     description?: string | null;
 
+    /** Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site */
+    enablePageViews: boolean;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets whether or not the site is active. */
+    isActive: boolean;
 
     /** Gets or sets the login Rock.Model.Page page for the site. */
     loginPage?: ListItemBag | null;
@@ -43,21 +52,12 @@ export type RokuApplicationBag = {
     /** Gets or sets the name of the Site. This property is required. */
     name?: string | null;
 
-    /** Gets or sets whether or not to enable page views. */
-    enablePageViews?: boolean | null;
-
-    /** Gets or sets the Api key. */
-    apiKey?: string | null;
-
-    /** Gets or sets whether or not this site is active. */
-    isActive?: boolean | null;
-
-    /** Gets or sets the retention duration for page views. */
+    /** Gets or sets the page view retention duration. */
     pageViewRetentionDuration?: number | null;
 
-    /** Gets or sets whether or not to show the Roku components. */
-    showRokuComponents?: boolean | null;
-
-    /** Gets or sets the Roku components. */
+    /** Gets or sets the roku components for the site. */
     rokuComponents?: string | null;
+
+    /** Whether or not to show the Roku components. */
+    showRokuComponents: boolean;
 };
