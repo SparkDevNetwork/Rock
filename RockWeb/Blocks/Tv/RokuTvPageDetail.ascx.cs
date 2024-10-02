@@ -249,11 +249,11 @@ namespace RockWeb.Blocks.Tv
         /// </summary>
         private void ShowEdit()
         {
-            var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
+            var pageId = PageParameter( PageParameterKey.SitePageId );
 
-            if ( pageId != 0 )
+            if ( pageId.IsNotNullOrWhiteSpace() )
             {
-                var page = new PageService( new RockContext() ).Get( pageId );
+                var page = new PageService( new RockContext() ).Get( pageId, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( page != null )
                 {

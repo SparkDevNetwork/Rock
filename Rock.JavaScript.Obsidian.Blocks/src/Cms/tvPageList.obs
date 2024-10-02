@@ -8,28 +8,38 @@
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showBulkUpdate="false"
+          :showExport="false"
+          :showLaunchWorkflow="true"
           @selectItem="onSelectItem">
-        <SelectColumn />
 
         <ReorderColumn @orderChanged="onOrderChanged" />
 
-        <TextColumn name="pageTitle"
-                    title="Page Title"
-                    field="pageTitle"
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
                     :filter="textValueFilter"
+                    disableSort
                     visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
+                    disableSort
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
-        <TextColumn name="cacheControlHeaderSettings"
-                    title="Cache Control Header Settings"
-                    field="cacheControlHeaderSettings"
+        <TextColumn name="cacheSettings"
+                    title="Cache Settings"
+                    field="cacheSettings"
+                    disableSort
                     :filter="textValueFilter"
                     visiblePriority="xs" />
+
+        <BooleanColumn name="displayInNav"
+                       title="Display In Nav"
+                       field="displayInNav"
+                       visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -42,7 +52,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn, BooleanColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { TvPageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/TvPageList/tvPageListOptionsBag";

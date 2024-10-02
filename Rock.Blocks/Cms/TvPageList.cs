@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.TvPageList;
 using Rock.Web.Cache;
@@ -50,6 +51,11 @@ namespace Rock.Blocks.Cms
     public class TvPageList : RockEntityListBlockType<Page>
     {
         #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string SiteId = "SiteId";
+        }
 
         private static class AttributeKey
         {
@@ -111,7 +117,7 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PageId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "SitePageId", "((Key))" )
             };
         }
 
@@ -120,14 +126,47 @@ namespace Rock.Blocks.Cms
         {
             var queryable = base.GetListQueryable( rockContext );
             var siteService = new SiteService( rockContext );
+            var layoutService = new LayoutService( rockContext );
 
-            // Only include pages that site type is Tv.
-            var siteJoin = queryable.Join( siteService.Queryable(),
-                page => page.SiteId,
-                site => site.Id,
-                ( page, site ) => new { page, site.SiteType } );
+            // Join pages with their layouts.
+            var layoutJoin = queryable.Join(
+                layoutService.Queryable(),
+                p => p.LayoutId,
+                l => l.Id,
+                ( p, l ) => new
+                {
+                    Page = p,
+                    Layout = l
+                } );
 
-            return siteJoin.Where( a => a.SiteType == SiteType.Tv ).Select( a => a.page );
+            // Join the layout with its site.
+            var siteJoin = layoutJoin.Join(
+                siteService.Queryable(),
+                l => l.Layout.SiteId,
+                s => s.Id,
+                ( l, s ) => new
+                {
+                    Page = l.Page,
+                    Site = s
+                } );
+
+            return siteJoin
+                .Where( a => a.Site.SiteType == SiteType.Tv )
+                .Select( a => a.Page );
+        }
+
+        /// <inheritdoc />
+        protected override List<Page> GetListItems( IQueryable<Page> queryable, RockContext rockContext )
+        {
+            var listItems = base.GetListItems( queryable, rockContext );
+            var siteIdKey = PageParameter( PageParameterKey.SiteId );
+
+            var site = SiteCache.Get( siteIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( site == null ) {
+                return listItems;
+            }
+
+            return listItems.Where( a => a.Layout.SiteId == site.Id ).ToList();
         }
 
         /// <inheritdoc/>
@@ -136,12 +175,29 @@ namespace Rock.Blocks.Cms
             return new GridBuilder<Page>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "pageTitle", a => a.PageTitle )
+                .AddTextField( "name", a => a.InternalName )
                 .AddTextField( "description", a => a.Description )
-                .AddTextField( "cacheControlHeaderSettings", a => a.CacheControlHeaderSettings )
+                .AddTextField( "cacheSettings", a =>  GetCacheabilityType( a )?.ConvertToString() )
+                .AddField( "displayInNav", a => a.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
+        }
+
+        /// <summary>
+        /// Gets the cacheability type of the page from the cache control header settings.
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        private Enums.Controls.RockCacheabilityType? GetCacheabilityType( Page page )
+        {
+            var cacheability = page.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>();
+            if( cacheability == null )
+            {
+                return null;
+            }
+
+            return cacheability.ToCacheabilityBag().RockCacheabilityType;
         }
 
         #endregion
