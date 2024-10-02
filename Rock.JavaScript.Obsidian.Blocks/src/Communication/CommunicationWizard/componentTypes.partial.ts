@@ -53,6 +53,7 @@ export const titleComponent: EditorComponentType = {
         const el = d.createElement("div");
         el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
+        el.setAttribute("contenteditable", "true");
         el.innerHTML = `<h1>Title</h1>`;
         return el;
     },
@@ -105,7 +106,7 @@ export const buttonComponent: EditorComponentType = {
                     <tbody>
                         <tr>
                             <td align="center" valign="middle" class="button-content" style="border-radius: 3px;background-color:#2baadf">
-                                <a class="button-link" title="Push Me" href="http://" target="_blank" rel="noopener noreferrer" style="display: inline-block; font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #ffffff;background-color: #2baadf; padding: 15px; border: 1px solid #2baadf; border-radius: 3px;">Push Me</a>
+                                <a contenteditable="true" class="button-link" title="Push Me" href="http://" target="_blank" rel="noopener noreferrer" style="display: inline-block; font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #ffffff;background-color: #2baadf; padding: 15px; border: 1px solid #2baadf; border-radius: 3px;">Push Me</a>
                             </td>
                         </tr>
                     </tbody>
@@ -135,6 +136,7 @@ export const paragraphComponent: EditorComponentType = {
         const el = d.createElement("div");
         el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
+        el.setAttribute("contenteditable", "true");
         el.innerHTML = `<p>Can't wait to see what you have to say!</p>`;
         return el;
     },
@@ -179,6 +181,7 @@ export const messageComponent: EditorComponentType = {
         const el = d.createElement("div");
         el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
+        el.setAttribute("contenteditable", "true");
         el.innerText = this.title;
         return el;
     },
@@ -223,6 +226,7 @@ export const lavaComponent: EditorComponentType = {
         const el = d.createElement("div");
         el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
+        el.setAttribute("contenteditable", "true");
         el.innerHTML = `Add your code here...`;
         return el;
     },
@@ -462,7 +466,7 @@ export const rsvpComponent: EditorComponentType = {
                                     <tbody>
                                         <tr>
                                             <td align="center" valign="middle" class="rsvp-accept-content" style="font-family: Arial; font-size: 16px; padding: 15px;">
-                                                <a class="rsvp-accept-link" title="Accept" href="http://" target="_blank" rel="noopener noreferrer" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Accept</a>
+                                                <a contenteditable="true" class="rsvp-accept-link" title="Accept" href="http://" target="_blank" rel="noopener noreferrer" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Accept</a>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -473,7 +477,7 @@ export const rsvpComponent: EditorComponentType = {
                                     <tbody>
                                         <tr>
                                             <td align="center" valign="middle" class="rsvp-decline-content" style="font-family: Arial; font-size: 16px; padding: 15px;">
-                                                <a class="rsvp-decline-link" title="Decline" href="http://" target="_blank" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Decline</a>
+                                                <a contenteditable="true" class="rsvp-decline-link" title="Decline" href="http://" target="_blank" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Decline</a>
                                             </td>
                                         </tr>
                                     </tbody>

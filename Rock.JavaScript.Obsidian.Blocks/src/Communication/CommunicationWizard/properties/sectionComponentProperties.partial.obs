@@ -12,9 +12,7 @@
                :hasCollapse="true"
                title="Columns"
                type="block">
-            <BackgroundColor :modelValue="selectedComponent.componentElement" />
-            <ElementBorderWidth :modelValue="selectedComponent.componentElement" />
-            <BorderColor :modelValue="selectedComponent.componentElement" />
+            {{ columnElements.length }}
         </Panel>
 
         <div class="m-2 d-flex justify-content-end">
@@ -54,9 +52,10 @@
 
     // #region Values
 
-    const backgroundColor = ref<string>(props.selectedComponent?.componentElement.style.backgroundColor ?? "");
+    const backgroundColor = ref<string>(props.selectedComponent.componentElement.style.backgroundColor ?? "");
     const isRowSettingsExpanded = ref<boolean>(true);
     const isColumnsExpanded = ref<boolean>(false);
+    const columnElements = ref<HTMLElement[]>([...props.selectedComponent.componentElement.querySelectorAll(".dropzone")].map(e => <HTMLElement>e));
 
     // #endregion
 
