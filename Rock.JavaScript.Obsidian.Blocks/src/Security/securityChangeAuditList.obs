@@ -15,7 +15,7 @@
                     :filter="dateValueFilter"
                     visiblePriority="xs"
                     headerClass="text-right"
-                    itemClass="justify-content-end text-right"/>
+                    itemClass="justify-content-end text-right" />
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -38,6 +38,7 @@
                       field="changeBy"
                       :hideAvatar="true"
                       :filterValue="getChangedByValueFilter"
+                      :quickFilterValue="getChangedByValueFilter"
                       :filter="pickExistingValueFilter"
                       visiblePriority="xs" />
 
@@ -54,6 +55,8 @@
                 field="access"
                 :filter="pickExistingValueFilter"
                 :filterValue="getAccessRowFilterValue"
+                :quickFilterValue="getAccessRowFilterValue"
+                :sortValue="getAccessRowSortValue"
                 width="8%"
                 visiblePriority="md"
                 itemClass="justify-content-center">
@@ -86,7 +89,12 @@
         <Column name="order"
                 title="Order"
                 field="order"
-                visiblePriority="md">
+                :filter="pickExistingValueFilter"
+                :filterValue="getOrderRowFilterValue"
+                :quickFilterValue="getOrderRowFilterValue"
+                :sortValue="getOrderRowSortValue"
+                visiblePriority="md"
+                width="100">
 
             <template #format="{ row }">
                 <span v-html="getOrderText(row.preOrder, row.postOrder)"></span>
@@ -100,7 +108,8 @@
                      :filter="pickExistingValueFilter"
                      :textSource="ChangeTypeDescription"
                      :classSource="batchLabelColors"
-                     visiblePriority="sm" />
+                     visiblePriority="sm"
+                     width="100" />
     </Grid>
 </template>
 
@@ -160,6 +169,17 @@
     }
 
     /**
+    * Gets the filter value to use for the order column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getOrderRowFilterValue(row: Record<string, unknown>): string {
+        const preOrder = row.preOrder ? row.preOrder as number : null;
+        const postOrder = row.postOrder ? row.postOrder as number : null;
+        return getOrderText(preOrder, postOrder);
+    }
+
+    /**
     * Gets the filter value to use for the changed by column.
     *
     * @param row The row to be filtered.
@@ -167,6 +187,24 @@
     function getChangedByValueFilter(row: Record<string, unknown>): string {
         const person = row.changeBy as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the sort value to use for the access column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getAccessRowSortValue(row: Record<string, unknown>): string {
+        return `${getAccessString(row.preAllowOrDeny as string)} ${getAccessString(row.postAllowOrDeny as string)}`;
+    }
+
+        /**
+    * Gets the sort value to use for the order column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getOrderRowSortValue(row: Record<string, unknown>): string {
+        return getOrderRowFilterValue(row);
     }
 
     /**
