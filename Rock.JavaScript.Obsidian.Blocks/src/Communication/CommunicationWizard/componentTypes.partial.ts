@@ -53,8 +53,7 @@ export const titleComponent: EditorComponentType = {
         const el = d.createElement("div");
         el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
-        el.setAttribute("contenteditable", "true");
-        el.innerHTML = `<h1>Title</h1>`;
+        el.innerHTML = `<h1 contenteditable="true">Title</h1>`;
         return el;
     },
 

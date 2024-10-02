@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { onUnmounted, PropType, ref, watch } from "vue";
     import { CodeEditor, HtmlEditor } from "../imports.partial";
 
     const props = defineProps({
@@ -20,18 +20,52 @@
 
     // #region Values
 
+    // Initialized in the immediate watcher below.
     const innerHtml = ref<string>(props.modelValue.innerHTML ?? "");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onInput(): void {
+        if (innerHtml.value !== props.modelValue.innerHTML) {
+            console.log("updating reactive innerHtml value");
+            innerHtml.value = props.modelValue.innerHTML;
+        }
+    }
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
+    watch(() => props.modelValue, (newValue, oldValue) => {
         innerHtml.value = props.modelValue.innerHTML;
+
+        if (oldValue) {
+            oldValue.removeEventListener("input", onInput);
+        }
+
+        const component = newValue.closest(".component[data-state='component']");
+        if (component?.parentElement && component.parentElement.querySelectorAll("[contenteditable]").length) {
+            newValue.addEventListener("input", onInput);
+        }
+    }, {
+        immediate: true
     });
 
     watch(innerHtml, (value: string) => {
-        props.modelValue.innerHTML = value;
+        if (value !== props.modelValue.innerHTML) {
+            console.log("updating element's innerHTML");
+            props.modelValue.innerHTML = value;
+        }
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        props.modelValue.removeEventListener("input", onInput);
     });
 
     // #endregion

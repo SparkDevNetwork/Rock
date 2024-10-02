@@ -142,9 +142,13 @@ iframe,
         if (cloneDocument) {
             const removals = cloneDocument.querySelectorAll(".js-emaileditor2-addon");
             removals.forEach(el => el.remove());
-            return cloneDocument.documentElement.outerHTML ?? "";
+            const html = cloneDocument.documentElement.outerHTML ?? "";
+            clone.remove();
+            return html;
         }
-        return "";
+        else {
+            return "";
+        }
     }
 
     // #endregion

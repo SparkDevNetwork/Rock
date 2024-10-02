@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { onUnmounted, PropType, ref, watch } from "vue";
     import { TextBox } from "../imports.partial";
 
     const props = defineProps({
@@ -15,18 +15,50 @@
 
     // #region Values
 
-    const textContent = ref<string>(props.modelValue.textContent ?? "");
+    // Initialized in the immediate watcher below.
+    const textContent = ref<string>("");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onInput(): void {
+        if (textContent.value !== props.modelValue.textContent) {
+            textContent.value = props.modelValue.textContent ?? "";
+        }
+    }
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
+    watch(() => props.modelValue, (newValue, oldValue) => {
         textContent.value = props.modelValue.textContent ?? "";
+
+        if (oldValue) {
+            oldValue.removeEventListener("input", onInput);
+        }
+
+        const component = newValue.closest(".component[data-state='component']");
+        if (component?.parentElement && component.parentElement.querySelectorAll("[contenteditable]").length) {
+            newValue.addEventListener("input", onInput);
+        }
+    }, {
+        immediate: true
     });
 
     watch(textContent, (value: string) => {
-        props.modelValue.textContent = value || null;
+        if (value !== props.modelValue.textContent) {
+            props.modelValue.textContent = value || null;
+        }
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        props.modelValue.removeEventListener("input", onInput);
     });
 
     // #endregion
