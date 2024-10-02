@@ -8,17 +8,16 @@
           title="Attendance History"
           :entityTypeGuid="EntityType.Attendance"
           stickyHeader
-          liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick">
+          liveUpdates>
 
         <Column name="location"
                 title="Location"
                 field="location"
                 :filter="pickExistingValueFilter"
                 :filterValue="getLocationFilterValue"
-                visiblePriority="xs">
+                :quickFilterValue="getLocationFilterValue"
+                visiblePriority="xs"
+                width=15%>
             <template #format="{ row }">
                 <div class="text">
                     <div>{{ row.location }}</div>
@@ -51,6 +50,7 @@
                       :hideAvatar="true"
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonNameFilterValue"
+                      :quickFilterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <Column v-if="config.options?.isGroupColumnVisible"
@@ -59,6 +59,8 @@
                 field="group"
                 :filter="pickExistingValueFilter"
                 :filterValue="getGroupFilterValue"
+                :quickFilterValue="getGroupFilterValue"
+                :sortValue="getGroupSortValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div class="text">
@@ -76,72 +78,46 @@
                         title="Start Date Time"
                         field="startDateTime"
                         :filter="dateValueFilter"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
         <DateTimeColumn name="endDateTime"
                         title="End Date Time"
                         field="endDateTime"
                         :filter="dateValueFilter"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
         <BooleanColumn name="didAttend"
                        title="Attended"
                        field="didAttend"
                        :filter="booleanValueFilter"
+                       headerClass="text-center"
+                       width="150"
+                       itemClass="justify-content-center text-center"
                        visiblePriority="xs" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :groupItems="config.options?.groupItems ?? []"
-                       :showGroupPicker="config.options?.isGroupColumnVisible"
-                       :showPersonPicker="config.options?.isPersonColumnVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, PersonColumn, pickExistingValueFilter, dateValueFilter, booleanValueFilter, TextColumn, textValueFilter, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, PersonColumn, pickExistingValueFilter, dateValueFilter, booleanValueFilter, TextColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AttendanceHistoryListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/AttendanceHistoryList/attendanceHistoryListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { GridSettingsOptions, PreferenceKey } from "./AttendanceHistoryList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./AttendanceHistoryList/gridSettingsModal.partial.obs";
+    import { reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<AttendanceHistoryListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        startDate: preferences.getValue(PreferenceKey.FilterDateRangeStart),
-        endDate: preferences.getValue(PreferenceKey.FilterDateRangeEnd),
-        person: JSON.parse(preferences.getValue(PreferenceKey.FilterPerson) || "{}"),
-        group: preferences.getValue(PreferenceKey.FilterGroup),
-        schedule: JSON.parse(preferences.getValue(PreferenceKey.FilterSchedule) || "{}"),
-        attended: preferences.getValue(PreferenceKey.FilterDidAttend) || config.options?.filterAttendanceByDefault ? "true" : null,
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.startDate
-            || !!gridSettings.value.endDate
-            || (config.options?.isPersonColumnVisible && !!gridSettings.value.person?.value)
-            || (config.options?.isGroupColumnVisible && !!gridSettings.value.group)
-            || !!gridSettings.value.schedule?.value
-            || !!gridSettings.value.attended;
-    });
 
     // #endregion
 
@@ -191,32 +167,17 @@
         let filterValue = `${row["groupName"]} ${row["checkInAreaPath"]}`;
         return filterValue;
     }
-    // #endregion
-
-    // #region Event Handlers
 
     /**
-    * Called when the grid setting icon is clicked, displays the block filters.
+    * Gets the filter value text to use for the group column.
     *
+    * @param row The row to be filtered.
     */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
+    function getGroupSortValue(row: Record<string, unknown>): string {
+        return getGroupFilterValue(row);
     }
 
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterDateRangeStart, gridSettings.value.startDate ?? "");
-        preferences.setValue(PreferenceKey.FilterDateRangeEnd, gridSettings.value.endDate ?? "");
-        preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.person));
-        preferences.setValue(PreferenceKey.FilterGroup, gridSettings.value.group ?? "");
-        preferences.setValue(PreferenceKey.FilterSchedule, JSON.stringify(gridSettings.value.schedule));
-        preferences.setValue(PreferenceKey.FilterDidAttend, gridSettings.value.attended ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

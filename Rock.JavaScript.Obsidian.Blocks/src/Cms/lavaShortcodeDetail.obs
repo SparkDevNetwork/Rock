@@ -17,7 +17,7 @@
                  :isDeleteVisible="isDeletable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -98,7 +98,7 @@
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return lavaShortcodeEditBag.value?.idKey ?? "";
+        return lavaShortcodeViewBag.value?.idKey ?? "";
     });
 
     const isEditable = computed((): boolean => {
@@ -178,7 +178,7 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: lavaShortcodeEditBag.value?.idKey
+            key: lavaShortcodeViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {

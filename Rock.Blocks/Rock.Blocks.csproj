@@ -109,6 +109,7 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
+    <Compile Include="Cms\ThemeDetail.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />

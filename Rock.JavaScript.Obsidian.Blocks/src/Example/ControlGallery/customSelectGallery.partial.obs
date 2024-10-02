@@ -35,7 +35,7 @@
                     </tr>
                     <tr>
                         <td><code>items</code></td>
-                        <td><code>TItem[]</code>></td>
+                        <td><code>TItem[]</code></td>
                         <td><em>Required</em></td>
                         <td>The list of items to choose from. No specific type is required, but must be an object with some sort of unique identifier property.</td>
                     </tr>
@@ -66,55 +66,7 @@
                 </tbody>
             </table>
 
-            <h5>Standard RockFormField Props</h5>
-            <table class="table table-striped mb-4">
-                <thead>
-                    <tr>
-                        <th>Prop</th>
-                        <th>Type</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>label</code></td>
-                        <td>String</td>
-                        <td>""</td>
-                        <td>Adds a label for the form field.</td>
-                    </tr>
-                    <tr>
-                        <td><code>help</code></td>
-                        <td>String</td>
-                        <td>""</td>
-                        <td>Adds a little help icon next to the label. When hovered, the value of this prop will appear in the tooltip.</td>
-                    </tr>
-                    <tr>
-                        <td><code>rules</code></td>
-                        <td><code>ValidationRule | ValidationRule[]</code></td>
-                        <td>""</td>
-                        <td>A list of validation rules used to validate the value of this input. See <a href="https://app.gitbook.com/o/-LZeM2HF8FOmeOnEE-hg/s/qEX8FxRZdIq9SLZ3KNxi/form-validation" target="_blank">Form Validation</a>.</td>
-                    </tr>
-                    <tr>
-                        <td><code>formGroupClasses</code></td>
-                        <td>String</td>
-                        <td>""</td>
-                        <td>CSS classes that will be applied to the element wrapping the input.</td>
-                    </tr>
-                    <tr>
-                        <td><code>validationTitle</code></td>
-                        <td>String</td>
-                        <td>""</td>
-                        <td>If provided and there is a validation error, the error will be labeled with this text. By default, it will be labeled with the <code>label</code> prop instead.</td>
-                    </tr>
-                    <tr>
-                        <td><code>isRequiredIndicatorHidden</code></td>
-                        <td>Boolean</td>
-                        <td>false</td>
-                        <td>By default, if the "required" rule is applied, a red dot indicator appears next to the label. If set to true that indicator will be hidden.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <RockFormFieldPropsTable />
 
             <h4 class="mt-0 mb-3">Slots</h4>
 
@@ -129,7 +81,7 @@
                 <tbody>
                     <tr>
                         <td>default</td>
-                        <td>`{ item }`</td>
+                        <td><code>{ item }</code></td>
                         <td>This slot is used to render an individual item from the <code>items</code> list. The scoped variable is an item from the <code>items</code> prop.</td>
                     </tr>
                     <tr>
@@ -187,6 +139,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import RockFormFieldPropsTable from "./rockFormFieldPropsTable.partial.obs";
     import CustomSelect from "@Obsidian/Controls/customSelect.obs";
     import CodeSample from "./codeSample.partial.obs";
     import { getSfcControlImportPath } from "./utils.partial";
