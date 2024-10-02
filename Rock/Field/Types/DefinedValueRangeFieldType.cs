@@ -294,7 +294,6 @@ namespace Rock.Field.Types
             cbDescription.AutoPostBack = true;
             cbDescription.CheckedChanged += OnQualifierUpdated;
             cbDescription.Label = "Display Descriptions";
-            cbDescription.Text = "Yes";
             cbDescription.Help = "When set, the defined value descriptions will be displayed instead of the values.";
             return controls;
         }

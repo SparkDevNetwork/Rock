@@ -207,7 +207,6 @@ namespace Rock.Field.Types
             cbIncludeInactive.AutoPostBack = true;
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
             cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
             cbIncludeInactive.Help = HELP_TEXT_INCLUDE_INACTIVE;
 
             // Add ConnectionType Filter drop-down list.

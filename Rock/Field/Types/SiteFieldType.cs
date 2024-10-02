@@ -171,7 +171,6 @@ namespace Rock.Field.Types
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Shortening Enabled Sites Only";
-            cb.Text = "Yes";
             cb.Help = "Should only sites that are enabled for shortening be displayed.";
 
             return controls;
