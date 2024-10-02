@@ -737,7 +737,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Allow Multiple Values",
-                Text = "Yes",
                 Help = "When set, allows multiple defined type values to be selected."
             };
 
@@ -748,7 +747,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Display Descriptions",
-                Text = "Yes",
                 Help = "When set, the defined value descriptions will be displayed instead of the values."
             };
 
@@ -759,7 +757,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Enhance For Long Lists",
-                Text = "Yes",
                 Help = "When set, will render a searchable selection of options."
             };
 
@@ -770,7 +767,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Include Inactive",
-                Text = "Yes",
                 Help = "When set, inactive defined values will be included in the list."
             };
 
@@ -781,7 +777,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Allow Adding New Values",
-                Text = "Yes",
                 Help = "When set the defined type picker can be used to add new defined types."
             };
 
