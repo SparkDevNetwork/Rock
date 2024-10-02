@@ -94,7 +94,8 @@ namespace Rock.Blocks.Core
         private RestActionListOptionsBag GetBoxOptions()
         {
             var options = new RestActionListOptionsBag();
-            int controllerId = PageParameter( "Controller" ).AsInteger();
+            var controllerIdParam = PageParameter( PageParameterKey.Controller );
+            int controllerId = Rock.Utility.IdHasher.Instance.GetId( controllerIdParam ) ?? controllerIdParam.AsInteger();
             var controller = new RestControllerService( new RockContext() ).Get( controllerId );
 
             if ( controller != null )
@@ -140,7 +141,8 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<RestAction> GetListQueryable( RockContext rockContext )
         {
-            int controllerId = PageParameter( "Controller" ).AsInteger();
+            var controllerIdParam = PageParameter( PageParameterKey.Controller );
+            int controllerId = Rock.Utility.IdHasher.Instance.GetId( controllerIdParam ) ?? controllerIdParam.AsInteger();
 
             var query = new RestActionService( rockContext ).Queryable()
                 .Where( a => a.ControllerId == controllerId )
