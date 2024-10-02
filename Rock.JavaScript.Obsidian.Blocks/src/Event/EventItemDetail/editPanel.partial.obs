@@ -78,7 +78,7 @@
             </div>
         </Panel>
 
-        <Panel title="Event Attributes" hasCollapse>
+        <Panel title="Event Occurrence Attributes" hasCollapse>
             <Grid :data="occurenceAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
                 <TextColumn name="name"
                             field="name"
@@ -120,7 +120,7 @@
                             </li>
                         </ul>
                     </NotificationBox>
-                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :isAllowSearchVisible="true" />
                 </RockForm>
 
             </Modal>
@@ -132,11 +132,12 @@
                saveText="Save">
 
             <div>
-                <DefinedValuePicker label="Defined Value"
-                                    v-model="audience"
-                                    :definedTypeGuid="DefinedType.MarketingCampaignAudienceType"
-                                    :multiple="false"
-                                    :enhanceForLongLists="false" />
+                <DropDownList label="Defined Value"
+                              v-model="audience"
+                              :items="computedAudiences"
+                              :multiple="false"
+                              :enhanceForLongLists="false"
+                              :showBlankItem="false" />
             </div>
 
         </Modal>
@@ -144,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -153,7 +154,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
-    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -163,7 +164,6 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
@@ -201,6 +201,7 @@
     const calendars = ref(props.modelValue.calendars ?? []);
 
     const availableCalendars = ref(props.modelValue.availableCalendars ?? []);
+    const availableAudiences = ref(props.options.audiences ?? []);
 
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
@@ -208,7 +209,7 @@
     const reservedKeyNames = ref<string[]>([]);
     const attributeErrors = ref<string[]>([]);
 
-    const audience = ref({} as ListItemBag);
+    const audience = ref<string>("");
     const isAudienceModalOpen = ref(false);
     const audiences = ref(props.modelValue.audiences ?? []);
 
@@ -230,6 +231,11 @@
 
     const occurenceAttributesGridData: GridDataBag = reactive<GridDataBag>({
         rows: eventOccurenceAttributes.value.map(x => toAttributeGridRowItem(x))
+    });
+
+    const computedAudiences = computed((): ListItemBag[] => {
+        const selectedAudiences = audiences.value.map(a => a.value);
+        return availableAudiences.value.filter(x => !selectedAudiences.some(sa => sa == x.value)) || [];
     });
 
     // #endregion
@@ -267,14 +273,17 @@
     const onSaveAudience = (): void => {
         isAudienceModalOpen.value = false;
 
-        const audienceValue = audience.value?.value;
+        const audienceValue = audience.value;
         if (audienceValue && !audiences.value.some(x => x.value == audienceValue)) {
-            audiences.value.push(audience.value);
-            const rowItem = toAudienceRowItem(audience.value);
-            audienceGridData.rows?.push(rowItem);
+            const audience = availableAudiences.value.find(x => x.value == audienceValue);
+            if (audience) {
+                audiences.value.push(audience);
+                const rowItem = toAudienceRowItem(audience);
+                audienceGridData.rows?.push(rowItem);
+            }
         }
 
-        audience.value = {};
+        audience.value = "";
     };
 
     const onAddAudience = (): void => {
