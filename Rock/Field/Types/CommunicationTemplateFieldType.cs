@@ -212,7 +212,6 @@ namespace Rock.Field.Types
             cbIncludeInactive.AutoPostBack = true;
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
             cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
             cbIncludeInactive.Help = "When set, inactive campuses will be included in the list.";
 
             var controls = base.ConfigurationControls();

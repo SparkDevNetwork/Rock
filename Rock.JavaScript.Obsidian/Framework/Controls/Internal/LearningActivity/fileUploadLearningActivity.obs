@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+    <Panel :title="panelTitle" :class="containerClasses" v-if="screenToShow !== ComponentScreen.Completion">
         <div v-if="screenToShow === ComponentScreen.Configuration" class="configuration-container">
             <div class="instructions-section">
                 <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
@@ -16,42 +16,6 @@
                     <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" :disabled="disabled" />
                 </div>
             </div>
-        </div>
-
-        <div v-if="screenToShow === ComponentScreen.Completion">
-            <fieldset>
-                <div class="instructions-section">
-                    <StructuredContentEditor
-                                             :disabled="true"
-                                             label="Instructions"
-                                             v-model="instructions"
-                                             help="The content to show to the individual above the file upload. This is used to describe the paper or file that is to be provided." />
-                </div>
-                <div class="rubric-section" v-if="showRubricOnUpload">
-                    <StructuredContentEditor
-                                             :disabled="true"
-                                             label="Grading Rubric"
-                                             v-model="rubric"
-                                             help="The content to show the facilitator who is grading the file uploaded. This can be configured below to be shown to the individual when uploading and/or the facilitator when grading." />
-                </div>
-
-                <div class="file-upload-section">
-                    <FileUploader v-model="binaryFile"
-                                  label="Upload File"
-                                  rules="required"
-                                  :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
-                                  uploadButtonText="Upload"
-                                  :disabled="hasBeenGraded"
-                                  :showDeleteButton="true" />
-                </div>
-                <div class="footer-section">
-                    <RockButton :btnType="BtnType.Primary"
-                                :disabled="!binaryFile"
-                                @click="emits('completed', true)">
-                        Complete
-                    </RockButton>
-                </div>
-            </fieldset>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
@@ -82,6 +46,43 @@
             </NotificationBox>
         </div>
     </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion">
+        <fieldset>
+            <div class="instructions-section">
+                <StructuredContentEditor
+                                            :disabled="true"
+                                            label="Instructions"
+                                            v-model="instructions"
+                                            help="The content to show to the individual above the file upload. This is used to describe the paper or file that is to be provided." />
+            </div>
+            <div class="rubric-section" v-if="showRubricOnUpload">
+                <StructuredContentEditor
+                                            :disabled="true"
+                                            label="Grading Rubric"
+                                            v-model="rubric"
+                                            help="The content to show the facilitator who is grading the file uploaded. This can be configured below to be shown to the individual when uploading and/or the facilitator when grading." />
+            </div>
+
+            <div class="file-upload-section">
+                <FileUploader v-model="binaryFile"
+                                label="Upload File"
+                                rules="required"
+                                :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
+                                uploadButtonText="Upload"
+                                :disabled="hasBeenGraded"
+                                :showDeleteButton="true" />
+            </div>
+            <div class="footer-section">
+                <RockButton :btnType="BtnType.Primary"
+                            :disabled="!binaryFile"
+                            @click="emits('completed', true)">
+                    Complete
+                </RockButton>
+            </div>
+        </fieldset>
+    </div>
+
 </template>
 <style scoped>
 .grading-section {
