@@ -199,11 +199,16 @@ var Rock;
             translateWellKnownUrls(url) {
                 const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
                 const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+                const vimeoHLSPattern = /https?:\/\/player\.vimeo\.com\/external\/([0-9]+)\.m3u8(\?.*)?/i;
                 let match = youTubePattern.exec(url);
                 if (match !== null) {
                     return `https://www.youtube.com/embed/${match[1]}`;
                 }
                 match = vimeoPattern.exec(url);
+                if (match !== null) {
+                    return `https://player.vimeo.com/video/${match[1]}`;
+                }
+                match = vimeoHLSPattern.exec(url);
                 if (match !== null) {
                     return `https://player.vimeo.com/video/${match[1]}`;
                 }
