@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class PageShortLink : IHasQueryableAttributes<PageShortLink.PageShortLinkQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( PageShortLink.PageShortLinkQueryableAttributeValue ), nameof( PageShortLinkAttributeValues ) )]
+    public partial class PageShortLink
     {
-        /// <inheritdoc/>
-        public virtual ICollection<PageShortLinkQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PageShortLinkQueryableAttributeValue> PageShortLinkAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class PageShortLinkQueryableAttributeValue : QueryableAttributeValue

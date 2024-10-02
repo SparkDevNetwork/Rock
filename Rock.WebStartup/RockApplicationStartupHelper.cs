@@ -836,8 +836,6 @@ namespace Rock.WebStartup
         /// </remarks>
         private static void InitializeQueryableAttributeValues()
         {
-            var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
-
             // Find all core entity types and then all plugin entity types.
             var types = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
                 .Union( Reflection.FindTypes( typeof( IRockEntity ) ) )
@@ -876,15 +874,14 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
                 // Check each type we found by way of reflection.
                 foreach ( var type in types )
                 {
-                    var hasEntityAttributes = type
-                        .GetInterfaces()
-                        .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+                    var hasQueryableAttributesAttribute = type
+                        .GetCustomAttribute<HasQueryableAttributesAttribute>();
 
                     var entityTableName = type.GetCustomAttribute<TableAttribute>()?.Name;
 
-                    // If the entity does not implement IHasQueryableAttributes<> or
+                    // If the entity is not attributed with HasQueryableAttributesAttribute or
                     // has not specified a table name, then we can't set up the view.
-                    if ( hasEntityAttributes == null || entityTableName.IsNullOrWhiteSpace() )
+                    if ( hasQueryableAttributesAttribute == null || entityTableName.IsNullOrWhiteSpace() )
                     {
                         continue;
                     }
@@ -915,7 +912,14 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
 
                 foreach ( var viewName in oldViewNames )
                 {
-                    rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [{viewName}]" );
+                    try
+                    {
+                        rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [{viewName}]" );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Failed to drop attribute value view '{viewName}'.", ex ) );
+                    }
                 }
             }
         }
@@ -933,7 +937,8 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
             // Find all properties that have been decorated as valid for use
             // with attribute qualification.
             var qualifierColumns = type.GetProperties()
-                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null )
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
+                    && p.DeclaringType == type )
                 .Select( p => p.Name )
                 .ToList();
 

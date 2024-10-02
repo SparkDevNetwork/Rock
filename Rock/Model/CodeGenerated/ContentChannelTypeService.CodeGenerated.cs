@@ -68,10 +68,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class ContentChannelType : IHasQueryableAttributes<ContentChannelType.ContentChannelTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( ContentChannelType.ContentChannelTypeQueryableAttributeValue ), nameof( ContentChannelTypeAttributeValues ) )]
+    public partial class ContentChannelType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<ContentChannelTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ContentChannelTypeQueryableAttributeValue> ContentChannelTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class ContentChannelTypeQueryableAttributeValue : QueryableAttributeValue

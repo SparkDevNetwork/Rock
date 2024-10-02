@@ -106,10 +106,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class GroupType : IHasQueryableAttributes<GroupType.GroupTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( GroupType.GroupTypeQueryableAttributeValue ), nameof( GroupTypeAttributeValues ) )]
+    public partial class GroupType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<GroupTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupTypeQueryableAttributeValue> GroupTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class GroupTypeQueryableAttributeValue : QueryableAttributeValue

@@ -21,7 +21,6 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -29,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AIProvider Service class
+    /// GroupLocationHistoricalSchedule Service class
     /// </summary>
-    public partial class AIProviderService : Service<AIProvider>
+    public partial class GroupLocationHistoricalScheduleService : Service<GroupLocationHistoricalSchedule>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AIProviderService"/> class
+        /// Initializes a new instance of the <see cref="GroupLocationHistoricalScheduleService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public AIProviderService(RockContext context) : base(context)
+        public GroupLocationHistoricalScheduleService(RockContext context) : base(context)
         {
         }
 
@@ -49,64 +48,46 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( AIProvider item, out string errorMessage )
+        public bool CanDelete( GroupLocationHistoricalSchedule item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
         }
     }
 
-    [HasQueryableAttributes( typeof( AIProvider.AIProviderQueryableAttributeValue ), nameof( AIProviderAttributeValues ) )]
-    public partial class AIProvider
-    {
-        /// <summary>
-        /// Gets the entity attribute values. This should only be used inside
-        /// LINQ statements when building a where clause for the query. This
-        /// property should only be used inside LINQ statements for filtering
-        /// or selecting values. Do <b>not</b> use it for accessing the
-        /// attributes after the entity has been loaded.
-        /// </summary>
-        public virtual ICollection<AIProviderQueryableAttributeValue> AIProviderAttributeValues { get; set; } 
-
-        /// <inheritdoc/>
-        public class AIProviderQueryableAttributeValue : QueryableAttributeValue
-        {
-        }
-    }
-
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class AIProviderExtensionMethods
+    public static partial class GroupLocationHistoricalScheduleExtensionMethods
     {
         /// <summary>
-        /// Clones this AIProvider object to a new AIProvider object
+        /// Clones this GroupLocationHistoricalSchedule object to a new GroupLocationHistoricalSchedule object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static AIProvider Clone( this AIProvider source, bool deepCopy )
+        public static GroupLocationHistoricalSchedule Clone( this GroupLocationHistoricalSchedule source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as AIProvider;
+                return source.Clone() as GroupLocationHistoricalSchedule;
             }
             else
             {
-                var target = new AIProvider();
+                var target = new GroupLocationHistoricalSchedule();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this AIProvider object to a new AIProvider object with default values for the properties in the Entity and Model base classes.
+        /// Clones this GroupLocationHistoricalSchedule object to a new GroupLocationHistoricalSchedule object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static AIProvider CloneWithoutIdentity( this AIProvider source )
+        public static GroupLocationHistoricalSchedule CloneWithoutIdentity( this GroupLocationHistoricalSchedule source )
         {
-            var target = new AIProvider();
+            var target = new GroupLocationHistoricalSchedule();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -114,34 +95,24 @@ namespace Rock.Model
             target.ForeignKey = null;
             target.ForeignId = null;
             target.ForeignGuid = null;
-            target.CreatedByPersonAliasId = null;
-            target.CreatedDateTime = RockDateTime.Now;
-            target.ModifiedByPersonAliasId = null;
-            target.ModifiedDateTime = RockDateTime.Now;
 
             return target;
         }
 
         /// <summary>
-        /// Copies the properties from another AIProvider object to this AIProvider object
+        /// Copies the properties from another GroupLocationHistoricalSchedule object to this GroupLocationHistoricalSchedule object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this AIProvider target, AIProvider source )
+        public static void CopyPropertiesFrom( this GroupLocationHistoricalSchedule target, GroupLocationHistoricalSchedule source )
         {
             target.Id = source.Id;
-            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsActive = source.IsActive;
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Order = source.Order;
-            target.ProviderComponentEntityTypeId = source.ProviderComponentEntityTypeId;
-            target.CreatedDateTime = source.CreatedDateTime;
-            target.ModifiedDateTime = source.ModifiedDateTime;
-            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
-            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.GroupLocationHistoricalId = source.GroupLocationHistoricalId;
+            target.ScheduleId = source.ScheduleId;
+            target.ScheduleModifiedDateTime = source.ScheduleModifiedDateTime;
+            target.ScheduleName = source.ScheduleName;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

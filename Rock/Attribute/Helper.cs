@@ -64,20 +64,17 @@ namespace Rock.Attribute
             {
                 try
                 {
-                    var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
-                    var hasEntityAttributes = entityType
-                       .GetInterfaces()
-                       .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+                    var hasQueryableAttributeValuesAttribute = entityType
+                        .GetCustomAttribute<HasQueryableAttributesAttribute>();
+                    var attributeValueType = hasQueryableAttributeValuesAttribute?.AttributeValueType;
 
-                    if ( hasEntityAttributes == null )
+                    if ( attributeValueType == null )
                     {
                         return null;
                     }
 
-                    var entityAttributeValueType = hasEntityAttributes.GetGenericArguments()[0];
-
                     var method = typeof( Data.DbContext ).GetMethod( "Set", BindingFlags.Public | BindingFlags.Instance, null, new Type[0], null );
-                    method = method.MakeGenericMethod( entityAttributeValueType );
+                    method = method.MakeGenericMethod( attributeValueType );
 
                     return method;
                 }
@@ -1079,7 +1076,7 @@ This can be due to multiple threads updating the same attribute at the same time
 
         /// <summary>
         /// Loads the attributes for the specified entity by its identifier.
-        /// This only works if the entity supports <see cref="IHasQueryableAttributes{T}"/>.
+        /// This only works if the entity is decorated with <see cref="HasQueryableAttributesAttribute"/>.
         /// </summary>
         /// <remarks>
         /// This is an internal method used for testing. It may be removed or changed at any time.

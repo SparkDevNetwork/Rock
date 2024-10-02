@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class AchievementAttempt : IHasQueryableAttributes<AchievementAttempt.AchievementAttemptQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( AchievementAttempt.AchievementAttemptQueryableAttributeValue ), nameof( AchievementAttemptAttributeValues ) )]
+    public partial class AchievementAttempt
     {
-        /// <inheritdoc/>
-        public virtual ICollection<AchievementAttemptQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<AchievementAttemptQueryableAttributeValue> AchievementAttemptAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class AchievementAttemptQueryableAttributeValue : QueryableAttributeValue

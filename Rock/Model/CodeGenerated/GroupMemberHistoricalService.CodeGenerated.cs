@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class GroupMemberHistorical : IHasQueryableAttributes<GroupMemberHistorical.GroupMemberHistoricalQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( GroupMemberHistorical.GroupMemberHistoricalQueryableAttributeValue ), nameof( GroupMemberHistoricalAttributeValues ) )]
+    public partial class GroupMemberHistorical
     {
-        /// <inheritdoc/>
-        public virtual ICollection<GroupMemberHistoricalQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupMemberHistoricalQueryableAttributeValue> GroupMemberHistoricalAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class GroupMemberHistoricalQueryableAttributeValue : QueryableAttributeValue

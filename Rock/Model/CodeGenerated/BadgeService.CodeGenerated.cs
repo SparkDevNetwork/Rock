@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Badge : IHasQueryableAttributes<Badge.BadgeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Badge.BadgeQueryableAttributeValue ), nameof( BadgeAttributeValues ) )]
+    public partial class Badge
     {
-        /// <inheritdoc/>
-        public virtual ICollection<BadgeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<BadgeQueryableAttributeValue> BadgeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class BadgeQueryableAttributeValue : QueryableAttributeValue

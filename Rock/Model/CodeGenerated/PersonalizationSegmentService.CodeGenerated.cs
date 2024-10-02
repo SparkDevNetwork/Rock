@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class PersonalizationSegment : IHasQueryableAttributes<PersonalizationSegment.PersonalizationSegmentQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( PersonalizationSegment.PersonalizationSegmentQueryableAttributeValue ), nameof( PersonalizationSegmentAttributeValues ) )]
+    public partial class PersonalizationSegment
     {
-        /// <inheritdoc/>
-        public virtual ICollection<PersonalizationSegmentQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PersonalizationSegmentQueryableAttributeValue> PersonalizationSegmentAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class PersonalizationSegmentQueryableAttributeValue : QueryableAttributeValue

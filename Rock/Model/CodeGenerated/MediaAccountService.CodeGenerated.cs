@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class MediaAccount : IHasQueryableAttributes<MediaAccount.MediaAccountQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( MediaAccount.MediaAccountQueryableAttributeValue ), nameof( MediaAccountAttributeValues ) )]
+    public partial class MediaAccount
     {
-        /// <inheritdoc/>
-        public virtual ICollection<MediaAccountQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<MediaAccountQueryableAttributeValue> MediaAccountAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class MediaAccountQueryableAttributeValue : QueryableAttributeValue

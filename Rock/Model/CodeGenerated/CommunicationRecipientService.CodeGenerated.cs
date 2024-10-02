@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class CommunicationRecipient : IHasQueryableAttributes<CommunicationRecipient.CommunicationRecipientQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( CommunicationRecipient.CommunicationRecipientQueryableAttributeValue ), nameof( CommunicationRecipientAttributeValues ) )]
+    public partial class CommunicationRecipient
     {
-        /// <inheritdoc/>
-        public virtual ICollection<CommunicationRecipientQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<CommunicationRecipientQueryableAttributeValue> CommunicationRecipientAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class CommunicationRecipientQueryableAttributeValue : QueryableAttributeValue

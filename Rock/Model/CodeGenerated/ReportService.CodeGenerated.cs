@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Report : IHasQueryableAttributes<Report.ReportQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Report.ReportQueryableAttributeValue ), nameof( ReportAttributeValues ) )]
+    public partial class Report
     {
-        /// <inheritdoc/>
-        public virtual ICollection<ReportQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ReportQueryableAttributeValue> ReportAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class ReportQueryableAttributeValue : QueryableAttributeValue

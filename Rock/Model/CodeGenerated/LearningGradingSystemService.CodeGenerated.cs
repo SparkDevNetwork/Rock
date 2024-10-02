@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( LearningGradingSystem.LearningGradingSystemQueryableAttributeValue ), nameof( LearningGradingSystemAttributeValues ) )]
+    public partial class LearningGradingSystem
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningGradingSystemQueryableAttributeValue> LearningGradingSystemAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class LearningGradingSystemQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

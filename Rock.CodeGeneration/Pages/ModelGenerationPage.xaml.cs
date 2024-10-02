@@ -1015,11 +1015,18 @@ GO
             if ( hasQueryableAttributes )
             {
                 sb.AppendLine();
-                sb.AppendLine( $"    public partial class {type.Name} : IHasQueryableAttributes<{type.Name}.{type.Name}QueryableAttributeValue>" );
+                sb.AppendLine( $"    [HasQueryableAttributes( typeof( {type.Name}.{type.Name}QueryableAttributeValue ), nameof( {type.Name}AttributeValues ) )]" );
+                sb.AppendLine( $"    public partial class {type.Name}" );
                 sb.AppendLine( "    {" );
 
-                sb.AppendLine( "        /// <inheritdoc/>" );
-                sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> EntityAttributeValues {{ get; set; }} " );
+                sb.AppendLine( "        /// <summary>" );
+                sb.AppendLine( "        /// Gets the entity attribute values. This should only be used inside" );
+                sb.AppendLine( "        /// LINQ statements when building a where clause for the query. This" );
+                sb.AppendLine( "        /// property should only be used inside LINQ statements for filtering" );
+                sb.AppendLine( "        /// or selecting values. Do <b>not</b> use it for accessing the" );
+                sb.AppendLine( "        /// attributes after the entity has been loaded." );
+                sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> {type.Name}AttributeValues {{ get; set; }} " );
                 sb.AppendLine();
                 sb.AppendLine( "        /// <inheritdoc/>" );
                 sb.AppendLine( $"        public class {type.Name}QueryableAttributeValue : QueryableAttributeValue" );

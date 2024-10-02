@@ -66,10 +66,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Person : IHasQueryableAttributes<Person.PersonQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Person.PersonQueryableAttributeValue ), nameof( PersonAttributeValues ) )]
+    public partial class Person
     {
-        /// <inheritdoc/>
-        public virtual ICollection<PersonQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PersonQueryableAttributeValue> PersonAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class PersonQueryableAttributeValue : QueryableAttributeValue
