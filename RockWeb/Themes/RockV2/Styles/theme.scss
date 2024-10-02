@@ -65,6 +65,10 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--color-interface-softest);
     border-bottom: 1px solid var(--color-interface-soft);
 
+    .page-icon {
+      display: none;
+    }
+
     .breadcrumb {
       padding: 0;
       margin: 0;
@@ -967,7 +971,21 @@ $hamburger-spacing: 4px;
   }
 }
 
+
+// Miscellanous
 .header + .nav-item {
   margin-top: var(--spacing-medium);
 }
 
+.drawer-content {
+  padding: var(--spacing-medium);
+}
+
+.group-detail .panel-block > .panel-heading .panel-title i {
+  display: inline;
+}
+
+.list-group-item {
+  padding-right:  var(--spacing-large);
+  padding-left:   var(--spacing-large);
+}
