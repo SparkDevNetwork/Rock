@@ -3,45 +3,95 @@
 
     <div class="row">
         <div class="col-sm-6">
-            <NumberUpDown v-model="marginTop"
+            <NumberUpDown v-if="mode === 'numberUpDown'"
+                          v-model="marginTop"
                           label="Top"
                           :min="0"
                           :max="99" />
+
+            <NumberBox v-if="mode === 'numberBox'"
+                       v-model="marginTop"
+                       label="Top"
+                       :min="0"
+                       :max="99">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">px</span>
+                </template>
+            </NumberBox>
         </div>
 
         <div class="col-sm-6">
-            <NumberUpDown v-model="marginBottom"
+            <NumberUpDown v-if="mode === 'numberUpDown'"
+                          v-model="marginBottom"
                           label="Bottom"
                           :min="0"
                           :max="99" />
+
+            <NumberBox v-if="mode === 'numberBox'"
+                       v-model="marginBottom"
+                       label="Bottom"
+                       :min="0"
+                       :max="99">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">px</span>
+                </template>
+            </NumberBox>
         </div>
     </div>
 
     <div class="row">
         <div class="col-sm-6">
-            <NumberUpDown v-model="marginRight"
+            <NumberUpDown v-if="mode === 'numberUpDown'"
+                          v-model="marginRight"
                           label="Right"
                           :min="0"
                           :max="99" />
+
+            <NumberBox v-if="mode === 'numberBox'"
+                       v-model="marginRight"
+                       label="Right"
+                       :min="0"
+                       :max="99">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">px</span>
+                </template>
+            </NumberBox>
         </div>
 
         <div class="col-sm-6">
-            <NumberUpDown v-model="marginLeft"
+            <NumberUpDown v-if="mode === 'numberUpDown'"
+                          v-model="marginLeft"
                           label="Left"
                           :min="0"
                           :max="99" />
+
+            <NumberBox v-else-if="mode === 'numberBox'"
+                       v-model="marginLeft"
+                       label="Left"
+                       :min="0"
+                       :max="99">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">px</span>
+                </template>
+            </NumberBox>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { NumberUpDown, RockLabel } from "../imports.partial";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+        mode: {
+            type: String as PropType<"numberUpDown" | "numberBox">,
+            default: "numberUpDown"
         }
     });
 

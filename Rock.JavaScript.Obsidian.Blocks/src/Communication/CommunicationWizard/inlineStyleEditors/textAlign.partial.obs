@@ -1,0 +1,55 @@
+<template>
+    <DropDownList v-model="textAlign"
+                  :items="textAlignItems"
+                  :label="label" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { DropDownList } from "../imports.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+        label: {
+            type: String as PropType<string>,
+            default: "Text Align"
+        }
+    });
+
+    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
+    // If quotes are required, add them here.
+    const textAlignItems: ListItemBag[] = [
+        {
+            text: "Left",
+            value: "left"
+        }, {
+            text: "Center",
+            value: "center"
+        }, {
+            text: "Right",
+            value: "right"
+        }
+    ];
+
+    // #region Values
+
+    const textAlign = ref<string>(props.modelValue.style.textAlign);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        textAlign.value = props.modelValue.style.textAlign;
+    });
+
+    watch(textAlign, (value: string) => {
+        props.modelValue.style.textAlign = value;
+    });
+
+    // #endregion
+</script>
