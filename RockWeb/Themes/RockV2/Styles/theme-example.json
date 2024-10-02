@@ -1,0 +1,205 @@
+{
+    "$schema": "https://community.rockrms.com/schema/2024-10-01/theme.schema.json",
+    "name": "NextGenCheckin",
+    "description": "The default theme for the next generation check-in system.",
+    "purpose": "checkin",
+    "availableIconSets": ["fontawesome"],
+    "fields": [
+        {
+            "type": "color",
+            "name": "Primary Color",
+            "variable": "color-primary",
+            "description": "The primary color used to highlight screen elements, such as the main button.",
+            "default": "#ee7725"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Strongest",
+            "variable": "color-interface-strongest",
+            "description": "The strongest color used throughout the UI",
+            "default": "#000000"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Stronger",
+            "variable": "color-interface-stronger",
+            "description": "A stronger color used throughout the UI",
+            "default": "#1C1C1E"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Strong",
+            "variable": "color-interface-strong",
+            "description": "A strong color used throughout the UI",
+            "default": "#5D5D6F"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Medium",
+            "variable": "color-interface-medium",
+            "description": "A medium color used throughout the UI",
+            "default": "#8B8BA7"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Soft",
+            "variable": "color-interface-soft",
+            "description": "A soft color used throughout the UI",
+            "default": "#D9D9E3"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Softer",
+            "variable": "color-interface-softer",
+            "description": "A softer color used throughout the UI",
+            "default": "#F2F2F7"
+        },
+        {
+            "type": "color",
+            "name": "Interface Color Softest",
+            "variable": "color-interface-softest",
+            "description": "The softest color used throughout the UI",
+            "default": "#FFFFFF"
+        },
+        {
+            "type": "literal",
+            "name": "XSmall Font Size",
+            "variable": "font-size-xsmall",
+            "description": "The font size for very small text",
+            "default": "12px"
+        },
+        {
+            "type": "literal",
+            "name": "Small Font Size",
+            "variable": "font-size-small",
+            "description": "The font size for small text",
+            "default": "14px"
+        },
+        {
+            "type": "literal",
+            "name": "Regular Font Size",
+            "variable": "font-size-regular",
+            "description": "The font size for regular text",
+            "default": "16px"
+        },
+        {
+            "type": "literal",
+            "name": "H1 Font Size",
+            "variable": "font-size-h1",
+            "description": "The font size for h1 tag",
+            "default": "44px"
+        },
+        {
+            "type": "literal",
+            "name": "H2 Font Size",
+            "variable": "font-size-h2",
+            "description": "The font size for h2 tag",
+            "default": "36px"
+        },
+        {
+            "type": "literal",
+            "name": "H3 Font Size",
+            "variable": "font-size-h3",
+            "description": "The font size for h3 tag",
+            "default": "28px"
+        },
+        {
+            "type": "literal",
+            "name": "H4 Font Size",
+            "variable": "font-size-h4",
+            "description": "The font size for h4 tag",
+            "default": "22px"
+        },
+        {
+            "type": "literal",
+            "name": "H5 Font Size",
+            "variable": "font-size-h5",
+            "description": "The font size for h5 tag",
+            "default": "18px"
+        },
+        {
+            "type": "literal",
+            "name": "H6 Font Size",
+            "variable": "font-size-h6",
+            "description": "The font size for h6 tag",
+            "default": "16px"
+        },
+        {
+            "type": "literal",
+            "name": "Title Font Family",
+            "variable": "font-family-title",
+            "description": "The font family you wants your title to be",
+            "default": "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol'"
+        },
+        {
+            "type": "literal",
+            "name": "Body Font Family",
+            "variable": "font-family-body",
+            "description": "The font family you wants your body to be",
+            "default": "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol'"
+        },
+        {
+            "type": "literal",
+            "name": "Tiny Spacing",
+            "variable": "spacing-tiny",
+            "description": "The tiny spacing you want to set",
+            "default": "4px"  
+        },
+        {
+            "type": "literal",
+            "name": "Tiny Spacing",
+            "variable": "spacing-tiny",
+            "description": "The tiny spacing you want to set",
+            "default": "4px"
+        },
+        {
+            "type": "literal",
+            "name": "Small Spacing",
+            "variable": "spacing-small",
+            "description": "The small spacing you want to set",
+            "default": "8px"
+        },
+        {
+            "type": "literal",
+            "name": "Medium Spacing",
+            "variable": "spacing-medium",
+            "description": "The medium spacing you want to set",
+            "default": "16px"
+        },
+        {
+            "type": "literal",
+            "name": "Large Spacing",
+            "variable": "spacing-large",
+            "description": "The large spacing you want to set",
+            "default": "24px"
+        },
+        {
+            "type": "literal",
+            "name": "XLarge Spacing",
+            "variable": "spacing-xlarge",
+            "description": "The extra-large spacing you want to set",
+            "default": "48px"
+        },
+        {
+            "type": "literal",
+            "name": "Huge Spacing",
+            "variable": "spacing-huge",
+            "description": "The huge spacing you want to set",
+            "default": "80px"
+        },
+        {
+            "type": "literal",
+            "name": "Lightening Percentage",
+            "variable": "tint-white-percentage",
+            "description": "The percentage of white added to create a tinted version for each application, i.e., --color-primary-tint",
+            "default": "98%"
+        },
+        {
+            "type": "literal",
+            "name": "Darkening Percentage",
+            "variable": "shade-black-percentage",
+            "description": "The percentage of black added to create a shaded version for each application, i.e., --color-primary-shade ",
+            "default": "15%"
+        }
+    ]
+}

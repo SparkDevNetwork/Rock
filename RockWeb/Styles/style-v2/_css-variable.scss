@@ -10,48 +10,43 @@
   --color-interface-softer:    #F2F2F7;
   --color-interface-softest:   #FFFFFF;
 
-  // --color-interface-strongest: #000000;
-  // --color-interface-stronger:  color-mix(in srgb, var(--color-primary) 20%, #000 80%);
-  // --color-interface-strong:    color-mix(in srgb, var(--color-primary) 20%, #000 53%);
-  // --color-interface-medium:    color-mix(in srgb, var(--color-primary) 20%, #000 35%);
-  // --color-interface-soft:      color-mix(in srgb, var(--color-primary) 15%, #000 10%);
-  // --color-interface-softer:    color-mix(in srgb, var(--color-primary) 7%, #FFF 98%);
-  // --color-interface-softest:   #FFFFFF;
-
   // APPLICATION COLORS 
+  --tint-white-percentage: 100%;
+  --shade-black-percentage: 15%;
+
   --color-critical-soft:    #FEDEC8;
   --color-critical-strong:  #EE7725;
-  --color-critical-tint:      color-mix(in srgb, var(--color-critical-strong) 50%, #FFF 98%);
-  --color-critical-shade:     color-mix(in srgb, var(--color-critical-strong) 100%, #000 15%);
+  --color-critical-tint:      color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
+  --color-critical-shade:     color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));
 
   --color-danger-soft:      #FFCCD1;
   --color-danger-strong:    #D70015;
-  --color-danger-tint:        color-mix(in srgb, var(--color-danger-strong) 50%, #FFF 98%);
-  --color-danger-shade:       color-mix(in srgb, var(--color-danger-strong) 100%, #000 15%);
+  --color-danger-tint:        color-mix(in srgb, var(--color-danger-strong) 50%, #FFF var(--tint-white-percentage));
+  --color-danger-shade:       color-mix(in srgb, var(--color-danger-strong) 100%, #000 var(--shade-black-percentage));
 
   --color-info-soft:        #D6EAFF;
   --color-info-strong:      #007AFF;
-  --color-info-tint:          color-mix(in srgb, var(--color-info-strong) 50%, #FFF 98%);
-  --color-info-shade:         color-mix(in srgb, var(--color-info-strong) 100%, #000 15%);
+  --color-info-tint:          color-mix(in srgb, var(--color-info-strong) 50%, #FFF var(--tint-white-percentage));
+  --color-info-shade:         color-mix(in srgb, var(--color-info-strong) 100%, #000 var(--shade-black-percentage));
 
   --color-success-soft:     #D7F4DE;
   --color-success-strong:   #248A3D;
-  --color-success-tint:       color-mix(in srgb, var(--color-success-strong) 50%, #FFF 98%);
-  --color-success-shade:      color-mix(in srgb, var(--color-success-strong) 100%, #000 15%);
+  --color-success-tint:       color-mix(in srgb, var(--color-success-strong) 50%, #FFF var(--tint-white-percentage));
+  --color-success-shade:      color-mix(in srgb, var(--color-success-strong) 100%, #000 var(--shade-black-percentage));
 
   --color-warning-soft:     #FFECD1;
   --color-warning-strong:   #E58600;
-  --color-warning-tint:       color-mix(in srgb, var(--color-warning-strong) 50%, #FFF 98%);
-  --color-warning-shade:      color-mix(in srgb, var(--color-warning-strong) 100%, #000 15%);
+  --color-warning-tint:       color-mix(in srgb, var(--color-warning-strong) 50%, #FFF var(--tint-white-percentage));
+  --color-warning-shade:      color-mix(in srgb, var(--color-warning-strong) 100%, #000 var(--shade-black-percentage));
 
   // SYSTEM COLORS 
   --color-primary:          #EE7725;
-  --color-primary-tint:       color-mix(in srgb, var(--color-primary) 50%, #FFF 98%);
-  --color-primary-shade:      color-mix(in srgb, var(--color-primary) 100%, #000 15%);
+  --color-primary-tint:       color-mix(in srgb, var(--color-primary) 50%, #FFF var(--tint-white-percentage));
+  --color-primary-shade:      color-mix(in srgb, var(--color-primary) 100%, #000 var(--shade-black-percentage));
 
   --color-link:             #006DCC;
-  --color-link-tint:          color-mix(in srgb, var(--color-link) 50%, #FFF 98%);
-  --color-link-shade:         color-mix(in srgb, var(--color-link) 100%, #000 15%);
+  --color-link-tint:          color-mix(in srgb, var(--color-link) 50%, #FFF var(--tint-white-percentage));
+  --color-link-shade:         color-mix(in srgb, var(--color-link) 100%, #000 var(--shade-black-percentage));
   
   --color-campus:           #83758f;
 
