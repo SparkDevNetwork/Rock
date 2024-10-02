@@ -219,9 +219,9 @@ export const ConfigurationComponent = defineComponent({
     template: `
 <div>
     <NumberBox v-model="numberOfRows" label="Rows" help="The number of rows to display (default is 3)" />
-    <CheckBox v-model="allowHtml" label="Allow HTML" text="Yes" help="Controls whether server should prevent HTML from being entered in this field or not" />
+    <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should prevent HTML from being entered in this field or not" />
     <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text" />
-    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" text="Yes" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)" />
+    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)" />
 </div>
 `
 });

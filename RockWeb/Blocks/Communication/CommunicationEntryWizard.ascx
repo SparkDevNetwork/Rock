@@ -113,7 +113,6 @@
                                             ID="cbDuplicatePreventionOption"
                                             runat="server"
                                             Label="Prevent Duplicate Email/SMS Addresses"
-                                            Text="Yes"
                                             Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.
                                             This will mean two people who share an address will not receive a personalized communication, only one of them will." />
                                     </div>
@@ -1046,7 +1045,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <Rock:RockCheckBox ID="rcbIncludeDecline" runat="server" CssClass="js-rsvp-include-decline" Checked="true" Label="Show Decline" Text="Yes" />
+                                                    <Rock:RockCheckBox ID="rcbIncludeDecline" runat="server" CssClass="js-rsvp-include-decline" Checked="true" Label="Show Decline" />
                                                 </div>
                                             </div>
                                         </div>

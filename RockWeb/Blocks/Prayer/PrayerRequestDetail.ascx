@@ -39,7 +39,7 @@
                                 </div>
 
                                 <div class="col-md-3">
-                                    <Rock:RockCheckBox ID="cbIsActive" Label="Active" Text="Yes" runat="server" />
+                                    <Rock:RockCheckBox ID="cbIsActive" Label="Active" runat="server" />
                                     <Rock:HighlightLabel ID="hlblFlaggedMessage" IconCssClass="fa fa-flag" LabelType="warning" runat="server" Visible="false" ToolTip="re-approve the request to clear the flags" />
                                     <Rock:RockControlWrapper ID="rcwOptions" runat="server" Label="Options">
                                         <Rock:RockCheckBox ID="cbIsPublic" Text="Public" runat="server" />

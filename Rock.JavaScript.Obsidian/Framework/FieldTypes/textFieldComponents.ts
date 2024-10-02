@@ -203,9 +203,9 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <CheckBox v-model="passwordField" label="Password Field" text="Yes" help="When set, edit field will be masked." />
+    <CheckBox v-model="passwordField" label="Password Field" help="When set, edit field will be masked." />
     <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
-    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" text="Yes" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
+    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
 </div>
 `
 });
