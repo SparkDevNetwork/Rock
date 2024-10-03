@@ -6,7 +6,7 @@
 @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
 @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
 @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
-// @import "../../../Styles/style-v2/icons/tabler-icon.css";
+@import "../../../Styles/style-v2/icons/tabler-icon.css";
 
 
 @-ms-viewport {
@@ -34,10 +34,10 @@ body.navbar-side-open {
   margin-left: -12px;
 }
 
-.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
-  padding-right: 12px;
-  padding-left: 12px;
-}
+// .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+//   padding-right: 12px;
+//   padding-left: 12px;
+// }
 
 .main-content {
   padding: 5px 15px;
@@ -55,7 +55,7 @@ body.navbar-side-open {
     margin: -5px -15px 5px;
     color: var(--color-interface-stronger);
     background-color: var(--color-interface-softest);
-    border-bottom: 1px solid var(--color-interface-soft);
+    border: 1px solid var(--color-interface-soft);
 
     .page-icon {
       display: none;
@@ -987,4 +987,32 @@ $hamburger-spacing: 4px;
 
 .list-group-item:hover {
   background-color: var(--color-interface-softer);
+}
+
+.panel-body .actions:last-of-type,
+.panel-widget .panel-heading {
+  .pull-right {
+    order: 6;
+    margin-left: 0 !important;
+
+    &:nth-child(2) { order: 6; }
+    &:nth-child(3) { order: 5; }
+    &:nth-child(4) { order: 4; }
+    &:nth-child(5) { order: 3; }
+    &:last-child { margin-left: auto !important; }
+  }
+}
+
+.panel-body .actions:last-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 5px 18px;
+  margin: -17px;
+  margin-top: 18px;
+  border-top: 1px solid var(--color-interface-soft);
+
+  > * {
+    margin: 4px 8px 4px 0;
+  }
 }

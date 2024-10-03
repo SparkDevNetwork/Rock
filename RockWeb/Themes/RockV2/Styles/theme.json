@@ -1,9 +1,9 @@
 {
     "$schema": "https://community.rockrms.com/schema/2024-10-01/theme.schema.json",
-    "name": "NextGenCheckin",
-    "description": "The default theme for the next generation check-in system.",
-    "purpose": "checkin",
-    "availableIconSets": ["fontawesome"],
+    "name": "RockV2",
+    "description": "The default theme for the RockV2.",
+    "purpose": "web",
+    "availableIconSets": ["fontawesome", "tabler"],
     "fields": [
         {
             "type": "color",
