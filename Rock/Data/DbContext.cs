@@ -245,23 +245,29 @@ namespace Rock.Data
         /// </summary>
         private void ExecuteAfterCommitActions()
         {
-            // Create a new array for committed actions. This is so that if
-            // some action registers yet another action (not supported) then
-            // it will go into the next save rather than cause an enumeration error.
-            var actions = _commitedActions;
-            _commitedActions = new List<Action>();
-
-            foreach ( var action in actions )
+            // An executed action might not know that it is already in the after
+            // commit state and try to enqueue another ExecuteAfterCommit call.
+            // This will allow us to catch those and execute them.
+            while ( _commitedActions.Any() )
             {
-                try
+                // Create a new array for committed actions. This is so that if
+                // some action registers yet another action then it will go into
+                // the new queue rather than cause an enumeration error.
+                var actions = _commitedActions;
+                _commitedActions = new List<Action>();
+
+                foreach ( var action in actions )
                 {
-                    action();
-                }
-                catch ( Exception ex )
-                {
-                    // Log but do not throw, this ensures all commit
-                    // actions get executed.
-                    ExceptionLogService.LogException( ex );
+                    try
+                    {
+                        action();
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Log but do not throw, this ensures all commit
+                        // actions get executed.
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
             }
         }

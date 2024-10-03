@@ -33,6 +33,7 @@ namespace Rock.Migrations
             MigrationsNamespace = "Rock.Migrations";
             CodeGenerator = new RockCSharpMigrationCodeGenerator<Rock.Data.RockContext>();
             CommandTimeout = 300;
+            Rock.Data.RockContext.IsAddMigration = true;
         }
 
         /// <summary>

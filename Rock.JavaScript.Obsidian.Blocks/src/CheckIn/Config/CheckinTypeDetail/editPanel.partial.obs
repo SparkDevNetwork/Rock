@@ -28,12 +28,13 @@
         </div>
 
         <!-- General Settings -->
-        <Panel title="General Settings" :v-model="true" :hasCollapse="true" :isDrawerOpen="true">
+        <Panel title="General Settings" :modelValue="true" :hasCollapse="true">
             <div class="row">
                 <div class="col-md-6">
                     <DropDownList v-model="checkInType"
                                   label="Check-in Type"
                                   help="The type of check-in experience to use for this type. Family check-in allows more than one person in the family to be checked in at a time."
+                                  :showBlankItem="false"
                                   :items="checkInTypeOptions" />
 
                     <div class="row">
@@ -70,11 +71,11 @@
 
                 </div>
                 <div class="col-md-6">
-                    <NumberBox v-if="isFamilyType"
-                               v-model="autoSelectDaysBack"
-                               label="Auto Select Days Back"
-                               :minimumValue="0"
-                               help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked within this number of days, they will automatically be selected during the Family check-in process." />
+                    <TextBox v-if="isFamilyType"
+                             v-model="autoSelectDaysBack"
+                             :rules="validateNumberValue"
+                             label="Auto Select Days Back"
+                             help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked within this number of days, they will automatically be selected during the Family check-in process." />
                     <DropDownList v-if="isFamilyType"
                                   v-model="autoSelectOptions"
                                   label="Auto Select Options"
@@ -109,22 +110,19 @@
                         </RockLabel>
                         <div class="row">
                             <div class="col-sm-4 col-xs-12">
-                                <NumberBox v-model="codeAlphaNumericLength"
+                                <TextBox v-model="codeAlphaNumericLength"
                                            label="Alpha-Numeric"
-                                           :minimumValue="0"
-                                           :maximumValue="10" />
+                                           :rules="[validateNumberValue, minZeroMaxten]"/>
                             </div>
                             <div class="col-sm-4 col-xs-6">
-                                <NumberBox v-model="codeAlphaLength"
+                                <TextBox v-model="codeAlphaLength"
                                            label="Alpha"
-                                           :minimumValue="0"
-                                           :maximumValue="10" />
+                                           :rules="[validateNumberValue, minZeroMaxten]" />
                             </div>
                             <div class="col-sm-4 col-xs-6">
-                                <NumberBox v-model="codeNumericLength"
+                                <TextBox v-model="codeNumericLength"
                                            label="Numeric"
-                                           :minimumValue="0"
-                                           :maximumValue="10" />
+                                           :rules="[validateNumberValue, minZeroMaxten]" />
                             </div>
                         </div>
                         <CheckBox v-model="codeRandom"
@@ -152,23 +150,23 @@
                                   rules="required"
                                   Required="true"
                                   :items="searchTypeOptions"
+                                  :showBlankItem="false"
                                   help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the individual can also always check-in using a scanned barcode, fingerprint, RFID card, etc. if the scanner is attached and configured for keyboard wedge mode." />
-                    <NumberBox v-model="maxResults"
+                    <TextBox v-model="maxResults"
                                label="Maximum Number of Results"
-                               help="The maximum number of search results to return when searching (default is 100)." />
+                               help="The maximum number of search results to return when searching (default is 100)."
+                               :rules="validateNumberValue"/>
                 </div>
                 <div class="col-md-6">
-                    <NumberBox v-if="showPhoneFields"
+                    <TextBox v-if="showPhoneFields"
                                v-model="minPhoneLength"
                                label="Minimum Phone Number Length"
-                               :minimumValue="1"
-                               :maximumValue="10"
+                               :rules="[validateNumberValue, minOneMaxten]"
                                help="The minimum number of digits that needs to be entered for a phone number search (default is 4)." />
-                    <NumberBox v-if="showPhoneFields"
+                    <TextBox v-if="showPhoneFields"
                                v-model="maxPhoneLength"
                                label="Maximum Phone Number Length"
-                               :minimumValue="1"
-                               :maximumValue="10"
+                               :rules="[validateNumberValue, minOneMaxten]"
                                help="The maximum number of digits that can to be entered for a phone number search (default is 10)." />
                     <DropDownList v-if="showPhoneFields"
                                   v-model="phoneSearchType"
@@ -333,9 +331,15 @@
                              label="Regular Expression Filter"
                              help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
 
-                    <NumberBox v-model="refreshInterval"
+                    <TextBox v-model="refreshInterval"
                                label="Refresh Interval"
-                               help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
+                               help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information."
+                               :rules="validateNumberValue"/>
+
+                    <CheckBoxList v-model="specialNeedsValues"
+                                  :items="specialNeedsOptions"
+                                  label="Special Needs"
+                                  help="This feature is only supported on next-gen check-in. When Remove Special Needs Groups is selected, then a group will not be available unless the person is also marked as special needs. When Remove Non-Special Needs Groups is selected, then a group will not be available unless the person is not marked as special needs." />
                 </div>
                 <div class="col-md-6">
                     <CheckBox v-model="ageRequired"
@@ -377,12 +381,12 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -390,7 +394,6 @@
     import { CheckinTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { CheckInGeneralSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInGeneralSettingsBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { CheckInBarcodeSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInBarcodeSettingsBag";
     import { CheckInSearchSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInSearchSettingsBag";
     import { CheckInHeaderTextBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInHeaderTextBag";
@@ -431,24 +434,24 @@
     const enableManager = ref(props.modelValue.generalSettings?.enableManager ?? false);
     const enableOverride = ref(props.modelValue.generalSettings?.enableOverride ?? false);
     const achievementTypes = ref(props.modelValue.generalSettings?.achievementTypes ?? []);
-    const autoSelectDaysBack = ref(props.modelValue.generalSettings?.autoSelectDaysBack);
+    const autoSelectDaysBack = ref(props.modelValue.generalSettings?.autoSelectDaysBack ?? "");
     const autoSelectOptions = ref(props.modelValue.generalSettings?.autoSelectOptions ?? "");
     const useSameOptions = ref(props.modelValue.generalSettings?.useSameOptions ?? false);
     const preventInactivePeople = ref(props.modelValue.generalSettings?.preventInactivePeople ?? false);
     const preventDuplicateCheckin = ref(props.modelValue.generalSettings?.preventDuplicateCheckin ?? false);
 
     // Barcode Settings
-    const codeAlphaLength = ref(props.modelValue.barcodeSettings?.codeAlphaLength);
-    const codeAlphaNumericLength = ref(props.modelValue.barcodeSettings?.codeAlphaNumericLength);
-    const codeNumericLength = ref(props.modelValue.barcodeSettings?.codeNumericLength);
+    const codeAlphaLength = ref(props.modelValue.barcodeSettings?.codeAlphaLength ?? "");
+    const codeAlphaNumericLength = ref(props.modelValue.barcodeSettings?.codeAlphaNumericLength ?? "");
+    const codeNumericLength = ref(props.modelValue.barcodeSettings?.codeNumericLength ?? "");
     const codeRandom = ref(props.modelValue.barcodeSettings?.codeRandom ?? false);
     const reuseCode = ref(props.modelValue.barcodeSettings?.reuseCode ?? false);
 
     // Search Settings
     const searchType = ref(props.modelValue.searchSettings?.searchType ?? "");
-    const maxResults = ref(props.modelValue.searchSettings?.maxResults);
-    const minPhoneLength = ref(props.modelValue.searchSettings?.minPhoneLength);
-    const maxPhoneLength = ref(props.modelValue.searchSettings?.maxPhoneLength);
+    const maxResults = ref(props.modelValue.searchSettings?.maxResults ?? "");
+    const minPhoneLength = ref(props.modelValue.searchSettings?.minPhoneLength ?? "");
+    const maxPhoneLength = ref(props.modelValue.searchSettings?.maxPhoneLength ?? "");
     const phoneSearchType = ref(props.modelValue.searchSettings?.phoneSearchType ?? "");
 
     // Header Text
@@ -498,11 +501,12 @@
 
     // Advanced Settings
     const searchRegex = ref(props.modelValue.advancedSettings?.searchRegex ?? "");
-    const refreshInterval = ref(props.modelValue.advancedSettings?.refreshInterval);
+    const refreshInterval = ref(props.modelValue.advancedSettings?.refreshInterval ?? "");
     const ageRequired = ref(props.modelValue.advancedSettings?.ageRequired ?? false);
     const gradeRequired = ref(props.modelValue.advancedSettings?.gradeRequired ?? false);
     const abilityLevelDetermination = ref(props.modelValue.advancedSettings?.abilityLevelDetermination ?? "");
     const displayLocCount = ref(props.modelValue.advancedSettings?.displayLocCount ?? false);
+    const specialNeedsValues = ref(props.modelValue.advancedSettings?.specialNeedsValues ?? []);
 
     // Dropdown Options
     const nameSearch = ref(props.options.nameSearch ?? null);
@@ -515,12 +519,12 @@
     const searchTypeOptions = ref(props.options.searchTypeOptions ?? []);
     const checkInTypeOptions = ref<ListItemBag[]>([
         {
-            text: "Individual",
-            value: "0",
-        },
-        {
             text: "Family",
             value: "1",
+        },
+        {
+            text: "Individual",
+            value: "0",
         }
     ]);
     const autoSelectOptionsItems = ref<ListItemBag[]>([
@@ -557,6 +561,16 @@
             value: "2",
         }
     ]);
+    const specialNeedsOptions = ref<ListItemBag[]>([
+        {
+            text: "Remove Special Needs Groups",
+            value: "special-needs",
+        },
+        {
+            text: "Remove Non-Special Needs Groups",
+            value: "non-special-needs",
+        }
+    ]);
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, name, iconCssClass];
@@ -579,7 +593,7 @@
         registrationRequiredAttributesForChildren, registrationOptionalAttributesForChildren, registrationRequiredAttributesForFamilies, registrationDisplayBirthdateOnAdults, registrationDisplayBirthdateOnChildren,
         registrationDisplayGradeOnChildren, registrationDisplayRaceOnAdults, registrationDisplayEthnicityOnAdults, registrationDisplayRaceOnChildren, registrationDisplayEthnicityOnChildren];
 
-    const advancedSettingsRefs = [searchRegex, refreshInterval, ageRequired, gradeRequired, abilityLevelDetermination, displayLocCount];
+    const advancedSettingsRefs = [searchRegex, refreshInterval, ageRequired, gradeRequired, abilityLevelDetermination, displayLocCount, specialNeedsValues];
 
     // #endregion
 
@@ -607,6 +621,69 @@
 
     // #endregion
 
+    // #region Functions
+
+    function validateNumberValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+            else if (Number(stringValue) < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function minZeroMaxten(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue && isValidNumber(stringValue)) {
+            const numberValue = Number(stringValue);
+            if (numberValue < 0) {
+                return "must have a value of 0 or more.";
+            }
+            if (numberValue > 10) {
+                return "must have a value between 0 and 10.";
+            }
+        }
+
+        return true;
+    }
+
+    function minOneMaxten(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue && isValidNumber(stringValue)) {
+            const numberValue = Number(stringValue);
+            if (numberValue < 1) {
+                return "must have a value of 1 or more.";
+            }
+            if (numberValue > 10) {
+                return "must have a value between 1 and 10.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
+
+    // #endregion
+
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
@@ -617,11 +694,12 @@
 
         // Advavnced Settings
         updateRefValue(searchRegex, props.modelValue.advancedSettings?.searchRegex ?? "");
-        updateRefValue(refreshInterval, props.modelValue.advancedSettings?.refreshInterval);
+        updateRefValue(refreshInterval, props.modelValue.advancedSettings?.refreshInterval ?? "");
         updateRefValue(ageRequired, props.modelValue.advancedSettings?.ageRequired ?? false);
         updateRefValue(gradeRequired, props.modelValue.advancedSettings?.gradeRequired ?? false);
         updateRefValue(abilityLevelDetermination, props.modelValue.advancedSettings?.abilityLevelDetermination ?? "");
         updateRefValue(displayLocCount, props.modelValue.advancedSettings?.displayLocCount ?? false);
+        updateRefValue(specialNeedsValues, props.modelValue.advancedSettings?.specialNeedsValues ?? []);
 
         // General Settings
         updateRefValue(checkInType, props.modelValue.generalSettings?.checkInType ?? "");
@@ -631,24 +709,24 @@
         updateRefValue(enableManager, props.modelValue.generalSettings?.enableManager ?? false);
         updateRefValue(enableOverride, props.modelValue.generalSettings?.enableOverride ?? false);
         updateRefValue(achievementTypes, props.modelValue.generalSettings?.achievementTypes ?? []);
-        updateRefValue(autoSelectDaysBack, props.modelValue.generalSettings?.autoSelectDaysBack);
+        updateRefValue(autoSelectDaysBack, props.modelValue.generalSettings?.autoSelectDaysBack ?? "");
         updateRefValue(autoSelectOptions, props.modelValue.generalSettings?.autoSelectOptions ?? "");
         updateRefValue(useSameOptions, props.modelValue.generalSettings?.useSameOptions ?? false);
         updateRefValue(preventInactivePeople, props.modelValue.generalSettings?.preventInactivePeople ?? false);
         updateRefValue(preventDuplicateCheckin, props.modelValue.generalSettings?.preventDuplicateCheckin ?? false);
 
         // Barcode Settings
-        updateRefValue(codeAlphaLength, props.modelValue.barcodeSettings?.codeAlphaLength);
-        updateRefValue(codeAlphaNumericLength, props.modelValue.barcodeSettings?.codeAlphaNumericLength);
-        updateRefValue(codeNumericLength, props.modelValue.barcodeSettings?.codeNumericLength);
+        updateRefValue(codeAlphaLength, props.modelValue.barcodeSettings?.codeAlphaLength ?? "");
+        updateRefValue(codeAlphaNumericLength, props.modelValue.barcodeSettings?.codeAlphaNumericLength ?? "");
+        updateRefValue(codeNumericLength, props.modelValue.barcodeSettings?.codeNumericLength ?? "");
         updateRefValue(codeRandom, props.modelValue.barcodeSettings?.codeRandom ?? false);
         updateRefValue(reuseCode, props.modelValue.barcodeSettings?.reuseCode ?? false);
 
         // Search Settings
         updateRefValue(searchType, props.modelValue.searchSettings?.searchType ?? "");
-        updateRefValue(maxResults, props.modelValue.searchSettings?.maxResults);
-        updateRefValue(minPhoneLength, props.modelValue.searchSettings?.minPhoneLength);
-        updateRefValue(maxPhoneLength, props.modelValue.searchSettings?.maxPhoneLength);
+        updateRefValue(maxResults, props.modelValue.searchSettings?.maxResults ?? "");
+        updateRefValue(minPhoneLength, props.modelValue.searchSettings?.minPhoneLength ?? "");
+        updateRefValue(maxPhoneLength, props.modelValue.searchSettings?.maxPhoneLength ?? "");
         updateRefValue(phoneSearchType, props.modelValue.searchSettings?.phoneSearchType ?? "");
 
         // Header Text
@@ -704,11 +782,12 @@
 
             const advancedSettings: CheckInAdvancedSettingsBag = {
                 searchRegex: searchRegex.value,
-                refreshInterval: toNumber(refreshInterval.value),
+                refreshInterval: refreshInterval.value,
                 ageRequired: ageRequired.value,
                 gradeRequired: gradeRequired.value,
                 abilityLevelDetermination: abilityLevelDetermination.value,
                 displayLocCount: displayLocCount.value,
+                specialNeedsValues: specialNeedsValues.value
             };
 
             const registrationSettings: CheckInRegistrationSettingsBag = {
@@ -755,7 +834,7 @@
                 enableManager: enableManager.value,
                 enableOverride: enableOverride.value,
                 achievementTypes: achievementTypes.value,
-                autoSelectDaysBack: toNumber(autoSelectDaysBack.value),
+                autoSelectDaysBack: autoSelectDaysBack.value,
                 autoSelectOptions: autoSelectOptions.value,
                 useSameOptions: useSameOptions.value ?? false,
                 preventInactivePeople: preventInactivePeople.value,
@@ -763,18 +842,18 @@
             };
 
             const barcodeSettings: CheckInBarcodeSettingsBag = {
-                codeAlphaLength: toNumber(codeAlphaLength.value),
-                codeAlphaNumericLength: toNumber(codeAlphaNumericLength.value),
-                codeNumericLength: toNumber(codeNumericLength.value),
+                codeAlphaLength: codeAlphaLength.value,
+                codeAlphaNumericLength: codeAlphaNumericLength.value,
+                codeNumericLength: codeNumericLength.value,
                 codeRandom: codeRandom.value,
                 reuseCode: reuseCode.value,
             };
 
             const searchSettings: CheckInSearchSettingsBag = {
                 searchType: searchType.value,
-                maxResults: toNumber(maxResults.value),
-                minPhoneLength: toNumber(minPhoneLength.value),
-                maxPhoneLength: toNumber(maxPhoneLength.value),
+                maxResults: maxResults.value,
+                minPhoneLength: minPhoneLength.value,
+                maxPhoneLength: maxPhoneLength.value,
                 phoneSearchType: phoneSearchType.value,
             };
 

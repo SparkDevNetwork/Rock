@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Theme : IHasQueryableAttributes<Theme.ThemeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Theme.ThemeQueryableAttributeValue ), nameof( ThemeAttributeValues ) )]
+    public partial class Theme
     {
-        /// <inheritdoc/>
-        public virtual ICollection<ThemeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ThemeQueryableAttributeValue> ThemeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class ThemeQueryableAttributeValue : QueryableAttributeValue

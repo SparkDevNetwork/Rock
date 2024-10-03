@@ -363,8 +363,9 @@
             rules.push("notblank");
         }
 
-        rules.push(`gte:${min}`);
-        rules.push(`lte:${max}`);
+        // excluding the grouping separators (or the thousands separators) as they were not compactible with the rules engine.
+        rules.push(`gte:${min.format({excludeGroupingSeparators: true})}`);
+        rules.push(`lte:${max.format({excludeGroupingSeparators: true})}`);
 
         return rules;
     });

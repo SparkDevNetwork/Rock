@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class IdentityVerificationCode : IHasQueryableAttributes<IdentityVerificationCode.IdentityVerificationCodeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( IdentityVerificationCode.IdentityVerificationCodeQueryableAttributeValue ), nameof( IdentityVerificationCodeAttributeValues ) )]
+    public partial class IdentityVerificationCode
     {
-        /// <inheritdoc/>
-        public virtual ICollection<IdentityVerificationCodeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<IdentityVerificationCodeQueryableAttributeValue> IdentityVerificationCodeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class IdentityVerificationCodeQueryableAttributeValue : QueryableAttributeValue

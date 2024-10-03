@@ -10,7 +10,7 @@
                             class="group-button"
                             :disabled="isProcessing"
                             @click="onGroupClick(group)">
-                    {{ group.name }}
+                    <span class="title">{{ group.name }}</span>
                 </RockButton>
             </div>
         </MainPanel>

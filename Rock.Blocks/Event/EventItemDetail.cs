@@ -80,7 +80,7 @@ namespace Rock.Blocks.Event
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions();
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<EventItem>();
 
                 return box;
@@ -91,12 +91,22 @@ namespace Rock.Blocks.Event
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private EventItemDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private EventItemDetailOptionsBag GetBoxOptions()
         {
-            var options = new EventItemDetailOptionsBag();
+            var audiences = new List<ListItemBag>();
+
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+
+            if ( definedType != null )
+            {
+                audiences = definedType.DefinedValues.ConvertAll( dv => dv.ToListItemBag() );
+            }
+
+            var options = new EventItemDetailOptionsBag()
+            {
+                Audiences = audiences
+            };
 
             return options;
         }
@@ -303,6 +313,18 @@ namespace Rock.Blocks.Event
             box.IfValidProperty( nameof( box.Entity.Summary ),
                 () => entity.Summary = box.Entity.Summary );
 
+            box.IfValidProperty( nameof( box.Entity.IsApproved ),
+                () => SaveApprovalDetails( box, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.Photo ),
+                () => SavePhoto( box, rockContext, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.Audiences ),
+                () => SaveAudiences( box, rockContext, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.Calendars ),
+                () => SaveEventCalendars( box, rockContext, entity ) );
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
@@ -322,7 +344,26 @@ namespace Rock.Blocks.Event
         /// <returns>The <see cref="EventItem"/> to be viewed or edited on the page.</returns>
         private EventItem GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<EventItem, EventItemService>( rockContext, PageParameterKey.EventItemId );
+            var entity = GetInitialEntity<EventItem, EventItemService>( rockContext, PageParameterKey.EventItemId );
+
+            if ( entity.Id == 0 )
+            {
+                var idParam = PageParameter( PageParameterKey.EventCalendarId );
+                var calendarId = IdHasher.Instance.GetId( idParam ) ?? PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
+
+                if ( calendarId.HasValue )
+                {
+                    var eventCalendarService = new EventCalendarService( rockContext );
+                    var eventCalendar = eventCalendarService.Get( calendarId.Value );
+
+                    if ( eventCalendar != null )
+                    {
+                        entity.EventCalendarItems.Add( new EventCalendarItem() { EventCalendarId = eventCalendar.Id, EventCalendar = eventCalendar } );
+                    }
+                }
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -331,9 +372,17 @@ namespace Rock.Blocks.Event
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var calendarId = PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
+            var qryParams = new Dictionary<string, string>();
+
+            if ( calendarId.HasValue )
+            {
+                qryParams.Add( "EventCalendarId", calendarId.Value.ToString() );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( qryParams )
             };
         }
 
@@ -433,14 +482,15 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private void SetCalendars( RockContext rockContext, EventItemBag bag )
         {
-            var calendarId = RequestContext.GetPageParameter( PageParameterKey.EventCalendarId ).AsInteger();
+            var idParam = PageParameter( PageParameterKey.EventCalendarId );
+            var calendarId = IdHasher.Instance.GetId( idParam ) ?? idParam.AsInteger();
             bag.AvailableCalendars = new List<ListItemBag>();
 
             foreach ( var calendar in new EventCalendarService( rockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( c => c.Name ) )
             {
-                if ( calendar.Id == calendarId )
+                if ( calendar.Id == calendarId && string.IsNullOrEmpty( bag.IdKey ) )
                 {
                     bag.IsApproved = bag.IsApproved ||
                         calendar.IsAuthorized( Authorization.APPROVE, GetCurrentPerson() ) ||
@@ -457,15 +507,15 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Marks the old image as temporary.
         /// </summary>
-        /// <param name="oldbinaryFileId">The binary file identifier.</param>
+        /// <param name="oldBinaryFileId">The binary file identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void MarkOldImageAsTemporary( int? oldbinaryFileId, int? newBinaryFileId, RockContext rockContext )
+        private void MarkOldImageAsTemporary( int? oldBinaryFileId, int? newBinaryFileId, RockContext rockContext )
         {
             var binaryFileService = new BinaryFileService( rockContext );
 
-            if ( oldbinaryFileId != newBinaryFileId )
+            if ( oldBinaryFileId != newBinaryFileId )
             {
-                var oldImageTemplatePreview = binaryFileService.Get( oldbinaryFileId ?? 0 );
+                var oldImageTemplatePreview = binaryFileService.Get( oldBinaryFileId ?? 0 );
                 if ( oldImageTemplatePreview != null )
                 {
                     // the old image won't be needed anymore, so make it IsTemporary and have it get cleaned up later
@@ -553,6 +603,123 @@ namespace Rock.Blocks.Event
             return attributeBags;
         }
 
+        /// <summary>
+        /// Saves the event calendars.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entity">The entity.</param>
+        private void SaveEventCalendars( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, RockContext rockContext, EventItem entity )
+        {
+            var eventCalendarService = new EventCalendarService( rockContext );
+            var eventCalendarItemService = new EventCalendarItemService( rockContext );
+            // Remove existing Calendar Items that are not selected
+            var removeCalendars = entity.EventCalendarItems
+                .Where( ec => !box.Entity.Calendars.Exists( a => a == ec.EventCalendar.Guid.ToString() ) ).ToList();
+
+            foreach ( var eventCalendarItem in removeCalendars )
+            {
+                // Make sure user is authorized to remove calendar (they may not have seen every calendar due to security)
+                if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || eventCalendarItem.EventCalendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                {
+                    entity.EventCalendarItems.Remove( eventCalendarItem );
+                    eventCalendarItemService.Delete( eventCalendarItem );
+                }
+            }
+
+            // Add selected Calendars that are not existing
+            var addCalendarsGuids = box.Entity.Calendars
+                .Where( cGuid => !entity.EventCalendarItems.Any( ec => ec.EventCalendar.Guid.ToString() == cGuid ) )
+                .Select( cGuid => cGuid.AsGuid() )
+                .ToList();
+
+            foreach ( var eventCalendar in eventCalendarService.GetByGuids( addCalendarsGuids ) )
+            {
+                entity.EventCalendarItems.Add( new EventCalendarItem
+                {
+                    EventCalendarId = eventCalendar.Id,
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Saves the approval details such as the PersonAlias of the approver and the date it was approved.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="entity">The entity.</param>
+        private void SaveApprovalDetails( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, EventItem entity )
+        {
+            if ( !entity.IsApproved && box.Entity.IsApproved )
+            {
+                entity.ApprovedByPersonAliasId = GetCurrentPerson().PrimaryAliasId;
+                entity.ApprovedOnDateTime = RockDateTime.Now;
+            }
+
+            entity.IsApproved = box.Entity.IsApproved;
+            if ( !entity.IsApproved )
+            {
+                entity.ApprovedByPersonAliasId = null;
+                entity.ApprovedByPersonAlias = null;
+                entity.ApprovedOnDateTime = null;
+            }
+        }
+
+        /// <summary>
+        /// Saves the event item photo.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entity">The entity.</param>
+        private void SavePhoto( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, RockContext rockContext, EventItem entity )
+        {
+            if ( box.Entity.Photo != null )
+            {
+                var binaryFileId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
+                if ( entity.PhotoId != binaryFileId )
+                {
+                    MarkOldImageAsTemporary( entity.PhotoId, binaryFileId, rockContext );
+                    entity.PhotoId = binaryFileId;
+                    // Ensure that the Image is not set as IsTemporary=True
+                    EnsureCurrentImageIsNotMarkedAsTemporary( entity.PhotoId, rockContext );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the audience details.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entity">The entity.</param>
+        private static void SaveAudiences( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, RockContext rockContext, EventItem entity )
+        {
+            var eventItemAudienceService = new EventItemAudienceService( rockContext );
+            // Remove existing EventItemAudiences that are not selected
+            var removeEventItemAudience = entity.EventItemAudiences
+                .Where( ea => !box.Entity.Audiences.Exists( a => a.Value == ea.DefinedValue.Guid.ToString() ) ).ToList();
+
+            foreach ( var eventItemAudience in removeEventItemAudience )
+            {
+                entity.EventItemAudiences.Remove( eventItemAudience );
+                eventItemAudienceService.Delete( eventItemAudience );
+            }
+
+            // Add selected EventItemAudiences that are not existing
+            var addEventItemAudiencesDefinedValueGuids = box.Entity.Audiences
+                .Where( lb => !entity.EventItemAudiences.Any( eia => eia.DefinedValue.Guid.ToString() == lb.Value ) )
+                .Select( statGuid => statGuid.Value.AsGuid() )
+                .ToList();
+
+            foreach ( var definedValueGuid in addEventItemAudiencesDefinedValueGuids )
+            {
+                var eventItemAudience = new EventItemAudience
+                {
+                    DefinedValueId = DefinedValueCache.Get( definedValueGuid ).Id,
+                };
+                entity.EventItemAudiences.Add( eventItemAudience );
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -594,11 +761,6 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new EventItemService( rockContext );
-                var eventCalendarService = new EventCalendarService( rockContext );
-                var eventCalendarItemService = new EventCalendarItemService( rockContext );
-                var eventItemAudienceService = new EventItemAudienceService( rockContext );
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
@@ -614,87 +776,6 @@ namespace Rock.Blocks.Event
                 if ( !ValidateEventItem( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                if ( !entity.IsApproved && box.Entity.IsApproved )
-                {
-                    entity.ApprovedByPersonAliasId = GetCurrentPerson().PrimaryAliasId;
-                    entity.ApprovedOnDateTime = RockDateTime.Now;
-                }
-
-                entity.IsApproved = box.Entity.IsApproved;
-                if ( !entity.IsApproved )
-                {
-                    entity.ApprovedByPersonAliasId = null;
-                    entity.ApprovedByPersonAlias = null;
-                    entity.ApprovedOnDateTime = null;
-                }
-
-                if ( box.Entity.Photo != null )
-                {
-                    var binaryFileId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
-                    if ( entity.PhotoId != binaryFileId )
-                    {
-                        MarkOldImageAsTemporary( entity.PhotoId, binaryFileId, rockContext );
-                        entity.PhotoId = binaryFileId;
-                        // Ensure that the Image is not set as IsTemporary=True
-                        EnsureCurrentImageIsNotMarkedAsTemporary( entity.PhotoId, rockContext );
-                    }
-                }
-
-                // Remove existing EventItemAudiences that are not selected
-                var removeEventItemAudience = entity.EventItemAudiences
-                    .Where( ea => !box.Entity.Audiences.Any( a => a.Value == ea.DefinedValue.Guid.ToString() ) ).ToList();
-
-                foreach ( var eventItemAudience in removeEventItemAudience )
-                {
-                    entity.EventItemAudiences.Remove( eventItemAudience );
-                    eventItemAudienceService.Delete( eventItemAudience );
-                }
-
-                // Add selected EventItemAudiences that are not existing
-                var addEventItemAudiencesDefinedValueGuids = box.Entity.Audiences
-                    .Where( lb => !entity.EventItemAudiences.Any( eia => eia.DefinedValue.Guid.ToString() == lb.Value ) )
-                    .Select( statGuid => statGuid.Value.AsGuid() )
-                    .ToList();
-
-                foreach ( var definedValueGuid in addEventItemAudiencesDefinedValueGuids )
-                {
-                    var eventItemAudience = new EventItemAudience
-                    {
-                        DefinedValueId = DefinedValueCache.Get( definedValueGuid ).Id,
-                    };
-                    entity.EventItemAudiences.Add( eventItemAudience );
-                }
-
-                // Remove existing Calendar Items that are not selected
-                var removeCalendars = entity.EventCalendarItems
-                    .Where( ec => !box.Entity.Calendars.Any( a => a == ec.EventCalendar.Guid.ToString() ) ).ToList();
-
-                foreach ( var eventCalendarItem in removeCalendars)
-                {
-                    // Make sure user is authorized to remove calendar (they may not have seen every calendar due to security)
-                    if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || eventCalendarItem.EventCalendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
-                    {
-                        entity.EventCalendarItems.Remove( eventCalendarItem );
-                        eventCalendarItemService.Delete( eventCalendarItem );
-                    }
-                }
-
-                // Add selected Calendars that are not existing
-                var addCalendarsGuids = box.Entity.Calendars
-                    .Where( cGuid => !entity.EventCalendarItems.Any( ec => ec.EventCalendar.Guid.ToString() == cGuid ) )
-                    .Select( cGuid => cGuid.AsGuid() )
-                    .ToList();
-
-                foreach ( var eventCalendar in eventCalendarService.GetByGuids( addCalendarsGuids ) )
-                {
-                    entity.EventCalendarItems.Add( new EventCalendarItem
-                    {
-                        EventCalendarId = eventCalendar.Id,
-                    } );
                 }
 
                 rockContext.WrapTransaction( () =>
@@ -725,19 +806,11 @@ namespace Rock.Blocks.Event
                     EntityId = entity.Id
                 }.Send();
 
-                if ( isNew )
+                return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.EventItemId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                    [PageParameterKey.EventItemId] = entity.IdKey,
+                    [PageParameterKey.EventCalendarId] = PageParameter( PageParameterKey.EventCalendarId )
+                } ) );
             }
         }
 
@@ -766,7 +839,10 @@ namespace Rock.Blocks.Event
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.EventCalendarId] = PageParameter( PageParameterKey.EventCalendarId )
+                } ) );
             }
         }
 

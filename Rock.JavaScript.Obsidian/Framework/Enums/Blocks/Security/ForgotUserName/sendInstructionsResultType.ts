@@ -45,7 +45,6 @@ export const SendInstructionsResultTypeDescription: Record<number, string> = {
 
     2: "Change Password Not Supported",
 
-    /** @deprecated No longer used and will be removed in the future. */
     3: "Captcha Invalid"
 };
 

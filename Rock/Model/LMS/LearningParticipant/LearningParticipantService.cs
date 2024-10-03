@@ -58,6 +58,7 @@ namespace Rock.Model
         {
             return Queryable()
                 .Include( p => p.LearningActivities )
+                .Include( p => p.LearningClass )
                 .Where( p => p.Id == participantId )
                 .SelectMany( p => p.LearningActivities );
         }
@@ -145,6 +146,7 @@ namespace Rock.Model
 
             return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
+
         /// <summary>
         /// Gets the participant in the specified class matching the provided <see cref="LearningParticipant"/> Guid.
         /// </summary>

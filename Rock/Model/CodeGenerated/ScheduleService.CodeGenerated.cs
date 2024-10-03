@@ -120,10 +120,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Schedule : IHasQueryableAttributes<Schedule.ScheduleQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Schedule.ScheduleQueryableAttributeValue ), nameof( ScheduleAttributeValues ) )]
+    public partial class Schedule
     {
-        /// <inheritdoc/>
-        public virtual ICollection<ScheduleQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ScheduleQueryableAttributeValue> ScheduleAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class ScheduleQueryableAttributeValue : QueryableAttributeValue

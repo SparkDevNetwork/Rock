@@ -315,7 +315,7 @@ namespace Rock.Blocks.Core
                 }
 
                 campusTopics.Email = campusTopicsViewModel.Email;
-                campusTopics.IsPublic = campusTopicsViewModel.IsPublic;
+                campusTopics.IsPublic = ( bool ) campusTopicsViewModel.IsPublic;
                 campusTopics.TopicTypeValue = new DefinedValueService( rockContext )
                     .Get( campusTopicsViewModel.Type.Value.AsGuid() );
             }

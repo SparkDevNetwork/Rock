@@ -80,10 +80,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class FieldType : IHasQueryableAttributes<FieldType.FieldTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( FieldType.FieldTypeQueryableAttributeValue ), nameof( FieldTypeAttributeValues ) )]
+    public partial class FieldType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<FieldTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<FieldTypeQueryableAttributeValue> FieldTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class FieldTypeQueryableAttributeValue : QueryableAttributeValue

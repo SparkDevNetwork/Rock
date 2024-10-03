@@ -37,6 +37,12 @@
                     <CheckBox v-model="showSort"
                               label="Show Sort" />
                 </div>
+
+                <div class="col-md-4">
+                    <CheckBox v-model="includeUnapproved"
+                              label="Include Unapproved"
+                              help="Determines if unapproved items should be included in the search results." />
+                </div>
             </div>
 
             <div class="row">
@@ -146,7 +152,6 @@
                                help="The amount of boost to apply to each shared request filter. A value of 1 = no boost, a value of > 1 will increase the match score while a value of < 1 will reduce the match score." />
                 </div>
             </div>
-
         </div>
 
     </Modal>
@@ -238,6 +243,7 @@
     const boostMatchingRequestFilters = ref(false);
     const segmentBoostAmount = ref<number | null>(null);
     const requestFilterBoostAmount = ref<number | null>(null);
+    const includeUnapproved = ref<boolean>(false);
 
     const editingFilter = ref<FilterOptionsBag | null>(null);
     const editingFilterHeaderMarkup = ref("");
@@ -292,6 +298,7 @@
             boostMatchingRequestFilters.value = result.data.settings.boostMatchingRequestFilters;
             segmentBoostAmount.value = result.data.settings.segmentBoostAmount ?? null;
             requestFilterBoostAmount.value = result.data.settings.requestFilterBoostAmount ?? null;
+            includeUnapproved.value = result.data.settings.includeUnapproved;
             siteType.value = result.data.settings.siteType ?? "web";
             groupHeaderTemplate.value = result.data.settings.groupHeaderTemplate ?? "";
 
@@ -352,6 +359,7 @@
         setCustomSettingsBoxValue(box, "boostMatchingRequestFilters", boostMatchingRequestFilters.value);
         setCustomSettingsBoxValue(box, "segmentBoostAmount", segmentBoostAmount.value);
         setCustomSettingsBoxValue(box, "requestFilterBoostAmount", requestFilterBoostAmount.value);
+        setCustomSettingsBoxValue(box, "includeUnapproved", includeUnapproved.value);
         setCustomSettingsBoxValue(box, "groupHeaderTemplate", groupHeaderTemplate.value);
 
         const data = {

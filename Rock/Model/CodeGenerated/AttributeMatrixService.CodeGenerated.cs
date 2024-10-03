@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class AttributeMatrix : IHasQueryableAttributes<AttributeMatrix.AttributeMatrixQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( AttributeMatrix.AttributeMatrixQueryableAttributeValue ), nameof( AttributeMatrixAttributeValues ) )]
+    public partial class AttributeMatrix
     {
-        /// <inheritdoc/>
-        public virtual ICollection<AttributeMatrixQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<AttributeMatrixQueryableAttributeValue> AttributeMatrixAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class AttributeMatrixQueryableAttributeValue : QueryableAttributeValue

@@ -52,14 +52,45 @@ namespace Rock.Model
         public bool CanDelete( LearningClass item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningClassAnnouncement>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningClassAnnouncement.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningClassContentPage>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningClassContentPage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningParticipant>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningParticipant.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
-    public partial class LearningClass : IHasQueryableAttributes<LearningClass.LearningClassQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( LearningClass.LearningClassQueryableAttributeValue ), nameof( LearningClassAttributeValues ) )]
+    public partial class LearningClass
     {
-        /// <inheritdoc/>
-        public virtual ICollection<LearningClassQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningClassQueryableAttributeValue> LearningClassAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class LearningClassQueryableAttributeValue : QueryableAttributeValue
@@ -142,6 +173,7 @@ namespace Rock.Model
             target.IsArchived = source.IsArchived;
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
+            target.IsSpecialNeeds = source.IsSpecialNeeds;
             target.IsSystem = source.IsSystem;
             target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
             target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;

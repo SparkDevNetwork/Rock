@@ -27,8 +27,6 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 
 using Rock;
 using Rock.Blocks;
@@ -36,12 +34,11 @@ using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
@@ -282,9 +279,27 @@ namespace RockWeb
             CompileThemesThread = new Thread( () =>
             {
                 /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                // Compile the next-generation themes.
+                var stopwatchCompileTheme = Stopwatch.StartNew();
+                var compileMessages = ThemeService.CompileAll( _threadCancellationTokenSource.Token );
+                stopwatchCompileTheme.Stop();
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    Debug.WriteLine( string.Format( "[{0,5:#} ms] Themes Compiled", stopwatchCompileTheme.Elapsed.TotalMilliseconds ) );
+
+                    if ( compileMessages.Any() )
+                    {
+                        Debug.WriteLine( "ThemeService.CompileAll messages:" );
+                        compileMessages.ForEach( m => Debug.WriteLine( $"> {m}" ) );
+                    }
+                }
+
+                // Start compiling the legacy themes.
                 var stopwatchCompileLess = Stopwatch.StartNew();
 
-                Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
                 bool onlyCompileIfNeeded = true;
 
@@ -531,6 +546,40 @@ namespace RockWeb
         {
             Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
 
+            try
+            {
+                var cookie = Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName];
+
+                if ( cookie != null )
+                {
+                    var rejectAuthenticationCookiesIssuedBefore = new SecuritySettingsService()
+                        .SecuritySettings?
+                        .RejectAuthenticationCookiesIssuedBefore;
+
+                    // Ensure the rejection date and time are not set in the future, 
+                    // as this will block all logins until the date is in the past.
+                    if ( rejectAuthenticationCookiesIssuedBefore.HasValue
+                         && rejectAuthenticationCookiesIssuedBefore.Value <= RockDateTime.Now )
+                    {
+                        var ticket = System.Web.Security.FormsAuthentication.Decrypt( cookie.Value );
+
+                        if ( ticket != null && ticket.IssueDate < rejectAuthenticationCookiesIssuedBefore.Value )
+                        {
+                            // This runs before the person is authenticated, so removing the cookie
+                            // prevents them from being authenticated.
+                            this.Request.Cookies.Remove( System.Web.Security.FormsAuthentication.FormsCookieName );
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // If invalid cookie data is received, write the exception to the
+                // debug console for developers to see during testing.
+                // Otherwise, ignore this exception and avoid logging it to keep the logs clean.
+                Debug.WriteLine( ex.Message );
+            }
+
             WebRequestHelper.SetThreadCultureFromRequest( HttpContext.Current?.Request );
         }
 
@@ -614,7 +663,7 @@ namespace RockWeb
 
                     if ( !( ex is HttpRequestValidationException ) )
                     {
-                        SendNotification( ex );
+                        LogAndSendNotification( ex );
                     }
 
                     object siteId = context.Items["Rock:SiteId"];
@@ -770,17 +819,93 @@ namespace RockWeb
             }
         }
 
+        private bool ServerVariablesContainFilterSettings( string filterSettings, Exception ex )
+        {
+            if ( !string.IsNullOrWhiteSpace( filterSettings ) )
+            {
+                // Get the current request's list of server variables
+                var serverVarList = Context.Request.ServerVariables;
+
+                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                foreach ( string nameValue in nameValues )
+                {
+                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                    {
+                        if ( nameAndValue.Length == 2 )
+                        {
+                            switch ( nameAndValue[0].ToLower() )
+                            {
+                                case "type":
+                                    {
+                                        if ( ex.GetType().Name.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case "source":
+                                    {
+                                        if ( ex.Source.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case "message":
+                                    {
+                                        if ( ex.Message.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case "stacktrace":
+                                    {
+                                        if ( ex.StackTrace.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                default:
+                                    {
+                                        var serverValue = serverVarList[nameAndValue[0]];
+                                        if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+
         /// <summary>
         /// Sends the notification.
         /// </summary>
         /// <param name="ex">The ex.</param>
-        private void SendNotification( Exception ex )
+        private void LogAndSendNotification( Exception ex )
         {
             int? pageId = ( Context.Items["Rock:PageId"] ?? string.Empty ).ToString().AsIntegerOrNull();
             int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
 
             PersonAlias personAlias = null;
             Person person = null;
+            var globalAttributesCache = GlobalAttributesCache.Get();
 
             try
             {
@@ -798,7 +923,11 @@ namespace RockWeb
 
             try
             {
-                ExceptionLogService.LogException( ex, Context, pageId, siteId, personAlias );
+                string filterSettings = globalAttributesCache.GetValue( Rock.SystemKey.GlobalAttributeKey.EXCEPTION_LOG_FILTER );
+                if ( !ServerVariablesContainFilterSettings( filterSettings, ex ) )
+                {
+                    ExceptionLogService.LogException( ex, Context, pageId, siteId, personAlias );
+                }
             }
             catch
             {
@@ -808,8 +937,6 @@ namespace RockWeb
             try
             {
                 bool sendNotification = true;
-
-                var globalAttributesCache = GlobalAttributesCache.Get();
 
                 string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
                 if ( !string.IsNullOrWhiteSpace( filterSettings ) )

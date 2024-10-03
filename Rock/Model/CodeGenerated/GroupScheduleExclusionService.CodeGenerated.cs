@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class GroupScheduleExclusion : IHasQueryableAttributes<GroupScheduleExclusion.GroupScheduleExclusionQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( GroupScheduleExclusion.GroupScheduleExclusionQueryableAttributeValue ), nameof( GroupScheduleExclusionAttributeValues ) )]
+    public partial class GroupScheduleExclusion
     {
-        /// <inheritdoc/>
-        public virtual ICollection<GroupScheduleExclusionQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupScheduleExclusionQueryableAttributeValue> GroupScheduleExclusionAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class GroupScheduleExclusionQueryableAttributeValue : QueryableAttributeValue

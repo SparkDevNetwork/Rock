@@ -37,6 +37,12 @@ namespace Rock.Data
         #region Properties
 
         /// <summary>
+        /// Set during migrations to disable certain EF features when creating
+        /// the model.
+        /// </summary>
+        internal static bool IsAddMigration { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether timing metrics should be captured.
         /// </summary>
         /// <value>
@@ -122,6 +128,31 @@ namespace Rock.Data
         {
             ContextHelper.AddConfigurations( modelBuilder );
 
+            // Find all core models in the Rock DLL. When running under Add-Migration
+            // this will throw a reflection exception for some reason.
+            List<Type> coreEntityTypeList;
+            try
+            {
+                coreEntityTypeList = typeof( IEntity ).Assembly
+                    .DefinedTypes
+                    .Select( t => t.AsType() )
+                    .ToList();
+            }
+            catch ( ReflectionTypeLoadException ex )
+            {
+                // Get the types that could be loaded.
+                coreEntityTypeList = ex.Types.Where( t => t != null ).ToList();
+            }
+
+            coreEntityTypeList = coreEntityTypeList
+                .Where( t => t.GetInterfaces().Contains( typeof( IEntity ) )
+                    && !t.IsAbstract
+                    && t.GetCustomAttribute<NotMappedAttribute>() == null
+                    && t.GetCustomAttribute<HasQueryableAttributesAttribute>() != null )
+                .ToList();
+
+            ConfigureEntityAttributes( modelBuilder, coreEntityTypeList );
+
             try
             {
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
@@ -168,15 +199,6 @@ namespace Rock.Data
                     }
                 }
 
-                // Find all core models in the Rock DLL.
-                var coreEntityTypeList = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
-                    .Select( a => a.Value )
-                    .Where( a => !a.IsAbstract
-                        && a.GetCustomAttribute<NotMappedAttribute>() == null
-                        && a.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null )
-                    .ToList();
-
-                ConfigureEntityAttributes( modelBuilder, coreEntityTypeList );
                 ConfigureEntityAttributes( modelBuilder, pluginEntityTypeList );
             }
             catch ( Exception ex )
@@ -194,37 +216,32 @@ namespace Rock.Data
         /// <param name="entityTypes">The types that need to be configured.</param>
         private void ConfigureEntityAttributes( DbModelBuilder modelBuilder, IEnumerable<Type> entityTypes )
         {
-            var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
             var genericEntityMethod = modelBuilder.GetType().GetMethod( "Entity" );
-            var entityAttributeValuesPropertyName = nameof( IHasQueryableAttributes<Person.PersonQueryableAttributeValue>.EntityAttributeValues );
 
             foreach ( var entityType in entityTypes )
             {
                 try
                 {
-                    var hasEntityAttributes = entityType
-                        .GetInterfaces()
-                        .Except( entityType.BaseType.GetInterfaces() )
-                        .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+                    var hasQueryableAttributesAttribute = entityType
+                        .GetCustomAttribute<HasQueryableAttributesAttribute>();
 
                     var entityTableName = entityType.GetCustomAttribute<TableAttribute>()?.Name;
+                    var attributeValuesPropertyName = hasQueryableAttributesAttribute?.PropertyName;
+                    var attributeValueType = hasQueryableAttributesAttribute?.AttributeValueType;
 
                     // This is a bit unusual, but we have a few models (like
                     // LearningClass) that inherit from other concrete models.
                     // This causes a problem for normal GetProperty() method
                     // because it will find two properties, even though one is
                     // hidden in C#.
-                    var entityAttributeValuesProperty = entityType.GetProperties()
-                        .Where( p => p.Name == entityAttributeValuesPropertyName
-                            && p.DeclaringType == entityType )
-                        .FirstOrDefault();
+                    var entityAttributeValuesProperty = attributeValuesPropertyName != null
+                        ? entityType.GetProperty( attributeValuesPropertyName )
+                        : null;
 
-                    if ( hasEntityAttributes == null || entityTableName.IsNullOrWhiteSpace() || entityAttributeValuesProperty == null )
+                    if ( entityAttributeValuesProperty == null || entityTableName.IsNullOrWhiteSpace() || attributeValueType == null )
                     {
                         continue;
                     }
-
-                    var entityAttributeValueType = hasEntityAttributes.GetGenericArguments()[0];
 
                     // First configure the real entity so that the EntityAttributeValues
                     // navigation property works.
@@ -233,12 +250,27 @@ namespace Rock.Data
                     var entityMethod = genericEntityMethod.MakeGenericMethod( entityType );
                     var entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
 
-                    // .HasMany( a => a.EntityAttributeValues )
-                    var navigationPropertyType = typeof( ICollection<> ).MakeGenericType( entityAttributeValueType );
-                    var navigationPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, navigationPropertyType );
+                    // If we are running inside an Add-Migration call then mark
+                    // all the queryable attribute value properties as not
+                    // mapped so they do not get included in the migration.
+                    if ( IsAddMigration )
+                    {
+                        // .Ignore( a => a.[[attributeValuesPropertyName]] )
+                        var ignorePropertyType = typeof( ICollection<> ).MakeGenericType( attributeValueType );
+                        var ignorePropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, ignorePropertyType );
+                        var ignorePropertyParameter = Expression.Parameter( entityType );
+                        var ignorePropertyExpression = Expression.Lambda( Expression.Property( ignorePropertyParameter, entityAttributeValuesProperty ), ignorePropertyParameter );
+                        var ignoreMethod = entityTypeConfiguration.GetType().GetMethod( "Ignore" ).MakeGenericMethod( ignorePropertyType );
+
+                        ignoreMethod.Invoke( entityTypeConfiguration, new object[] { ignorePropertyExpression } );
+
+                        continue;
+                    }
+
+                    // .HasMany( a => a.[[attributeValuesPropertyName]] )
                     var navigationPropertyParameter = Expression.Parameter( entityType );
                     var navigationPropertyExpression = Expression.Lambda( Expression.Property( navigationPropertyParameter, entityAttributeValuesProperty ), navigationPropertyParameter );
-                    var hasManyMethod = entityTypeConfiguration.GetType().GetMethod( "HasMany" ).MakeGenericMethod( entityAttributeValueType );
+                    var hasManyMethod = entityTypeConfiguration.GetType().GetMethod( "HasMany" ).MakeGenericMethod( attributeValueType );
                     var manyNavigationPropertyConfiguration = hasManyMethod.Invoke( entityTypeConfiguration, new object[] { navigationPropertyExpression } );
 
                     // .WithRequired()
@@ -247,8 +279,8 @@ namespace Rock.Data
 
                     // .HasForeignKey( a => a.EntityId )
                     var foreignKeyPropertyType = typeof( int );
-                    var foreignKeyPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityAttributeValueType, typeof( int ) );
-                    var foreignKeyParameter = Expression.Parameter( entityAttributeValueType );
+                    var foreignKeyPropertyAccessorType = typeof( Func<,> ).MakeGenericType( attributeValueType, typeof( int ) );
+                    var foreignKeyParameter = Expression.Parameter( attributeValueType );
                     var foreignKeyExpression = Expression.Lambda( foreignKeyPropertyAccessorType, Expression.Property( foreignKeyParameter, "EntityId" ), foreignKeyParameter );
                     var foreignKeyMethod = dependentNavigationPropertyConfiguration.GetType().GetMethod( "HasForeignKey" ).MakeGenericMethod( foreignKeyPropertyType );
                     var cascadableNavigationPropertyConfiguration = ( System.Data.Entity.ModelConfiguration.Configuration.CascadableNavigationPropertyConfiguration ) foreignKeyMethod.Invoke( dependentNavigationPropertyConfiguration, new object[] { foreignKeyExpression } );
@@ -257,8 +289,8 @@ namespace Rock.Data
 
                     // Now configure the entity attribute value type's table name.
 
-                    // modelBuilder.Entity<entityAttributeValueType>()
-                    entityMethod = genericEntityMethod.MakeGenericMethod( entityAttributeValueType );
+                    // modelBuilder.Entity<[[attributeValueType]]>()
+                    entityMethod = genericEntityMethod.MakeGenericMethod( attributeValueType );
                     entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
 
                     // .ToTable( "name" )

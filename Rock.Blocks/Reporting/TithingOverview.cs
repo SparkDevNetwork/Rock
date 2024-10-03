@@ -38,7 +38,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Shows high-level statistics of the tithing overview." )]
     [IconCssClass( "fa fa-question" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -176,7 +176,8 @@ namespace Rock.Blocks.Reporting
                 Datasets = GetTimeSeriesDataset( rockContext ),
                 ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line,
                 TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day,
-                AreaFillOpacity = 0
+                AreaFillOpacity = 0,
+                DateFormatString = "o"
             };
 
             return chartFactory;
@@ -396,7 +397,7 @@ namespace Rock.Blocks.Reporting
                     .Select( x => new ChartDatasetInfo
                     {
                         MetricValueCampusIds = x.Key.MetricValuePartitionEntityIds,
-                        DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
+                        DateTime = x.Key.DateKey.GetDateKeyDate(),
                         CampusId = x.PartitionEntityId,
                         Value = x.Value.FirstOrDefault(),
                     } )
@@ -425,7 +426,7 @@ namespace Rock.Blocks.Reporting
                 .Select( c => c.Id )
                 .ToList();
 
-            _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || filteredCampusIds.Contains( m.CampusId.Value ) ).ToList();
+            _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => m.CampusId.HasValue && filteredCampusIds.Contains( m.CampusId.Value ) ).ToList();
 
             return _tithingOverviewMetricValues;
         }

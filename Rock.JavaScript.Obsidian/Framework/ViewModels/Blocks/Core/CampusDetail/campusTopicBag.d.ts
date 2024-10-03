@@ -24,17 +24,20 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** Class CampusTopicsBag. */
+/** Class CampusTopicBag */
 export type CampusTopicBag = {
-    /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
-
-    /** Gets or sets the type of the Campus Topic. */
-    type?: ListItemBag | null;
-
-    /** Gets or sets the email. */
+    /** Gets or sets the Email. */
     email?: string | null;
 
-    /** Gets or sets a value indicating whether this instance is public. */
-    isPublic?: boolean;
+    /** Gets or sets the unique identifier. */
+    guid: Guid;
+
+    /** Gets or sets if the Campus Topic is Public. */
+    isPublic?: boolean | null;
+
+    /**
+     * Gets or sets the Campus Topics.
+     * The Campus Topics is a Defined Value.
+     */
+    type?: ListItemBag | null;
 };

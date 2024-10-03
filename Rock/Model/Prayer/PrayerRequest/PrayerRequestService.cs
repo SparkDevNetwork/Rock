@@ -18,9 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
+using Rock.AI.Automations;
+using Rock.AI.Classes.ChatCompletions;
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -304,6 +309,135 @@ namespace Rock.Model
                 }
             }
         }
+
+        #region AI Automation
+
+        private PrayerRequest.PrayerRequestAICompletions AICompletionTemplates =>
+            SystemSettings.GetValue( SystemKey.SystemSetting.PRAYER_REQUEST_AI_COMPLETIONS )
+                    .FromJsonOrNull<PrayerRequest.PrayerRequestAICompletions>();
+
+        /// <summary>
+        /// Sends the Text Formatting Completion to the AI Provider's GetChatCompletions method and returns the first choice of the response.
+        /// </summary>
+        /// <param name="prayerRequest">The Prayer Request to run the text formatting completions for.</param>
+        /// <param name="aiAutomation">The AIAutomation configuration to use with the completion request.</param>
+        /// <param name="template">
+        ///     Optional template to use for the completion request.
+        ///     If none is provided the SystemSetting "core_PrayerRequestAICompletions"
+        ///     PrayerRequestFormatterTemplate will be used.
+        /// </param>
+        /// <returns>A PrayerRequestFormatterResponse containing the modified text from the AIProvider's completion.</returns>
+        public async Task<PrayerRequestFormatterResponse> GetAIAutomationFormatterResults( PrayerRequest prayerRequest, AIAutomation aiAutomation, string template = "" )
+        {
+            if ( template.IsNullOrWhiteSpace() )
+            {
+                template = AICompletionTemplates?.PrayerRequestFormatterTemplate;
+            }
+
+            if ( template.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var messages = PrayerRequestFormatterMessages( prayerRequest, template, aiAutomation );
+
+            return new PrayerRequestFormatterResponse
+            {
+                Content = await new AIProviderService( ( RockContext ) Context )
+                    .GetCompletionResponseFirstChoice( aiAutomation, messages )
+            };
+        }
+
+        /// <summary>
+        /// Sends the Analyzer Completion to the AI Provider's GetChatCompletions method and returns the first choice of the response.
+        /// </summary>
+        /// <param name="prayerRequest">The Prayer Request to run the analysis completions for.</param>
+        /// <param name="aiAutomation">The AIAutomation configuration to use with the completion request.</param>
+        /// <param name="template">
+        ///     Optional template to use for the completion request.
+        ///     If none is provided the SystemSetting "core_PrayerRequestAICompletions"
+        ///     PrayerRequestAnalyzerTemplate will be used.
+        /// </param>
+        /// <returns>A PrayerRequestAnalyzerResponse containing the results of the analysis from the AIProvider's completion.</returns>
+        public async Task<PrayerRequestAnalyzerResponse> GetAIAutomationAnalyzerResults( PrayerRequest prayerRequest, AIAutomation aiAutomation, string template = "" )
+        {
+            if ( template.IsNullOrWhiteSpace() )
+            {
+                template = AICompletionTemplates?.PrayerRequestAnalyzerTemplate;
+            }
+
+            if ( template.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var messages = PrayerRequestAnalyzerMessages( prayerRequest, template, aiAutomation );
+
+            return await new AIProviderService( ( RockContext ) Context )
+                .GetCompletionResponseFirstChoice<PrayerRequestAnalyzerResponse>( aiAutomation, messages );
+        }
+
+        /// <summary>
+        /// Gets the ChatCompletionsRequestMessage list for a specified <paramref name="template"/>
+        /// and the merge objects to be used by the Analyzer template.
+        /// </summary>
+        /// <param name="prayerRequest">The PrayerRequest the message should be generated for.</param>
+        /// <param name="template">The template to use for resolving merge fields.</param>
+        /// <param name="aiAutomation">The AIAutomation object containing the configuration.</param>
+        /// <returns>A List of ChatCompletionsRequestMessage objects.</returns>
+        public static List<ChatCompletionsRequestMessage> PrayerRequestAnalyzerMessages( PrayerRequest prayerRequest, string template, AIAutomation aiAutomation )
+        {
+            var sentiments = DefinedTypeCache.Get( SystemGuid.DefinedType.SENTIMENT_EMOTIONS );
+
+            // Get any data for use across all merge objects.
+            var mergeObjects = new Dictionary<string, object>
+                    {
+                        { "PrayerRequest", prayerRequest },
+                        { "AutoCategorize", aiAutomation.AutoCategorize },
+                        { "ClassifySentiment", aiAutomation.ClassifySentiment },
+                        { "CheckAppropriateness", aiAutomation.CheckPublicAppropriateness },
+                        { "SentimentEmotions", sentiments },
+                        { "Categories", aiAutomation.ChildCategories }
+                    };
+
+            return new List<ChatCompletionsRequestMessage>
+            {
+                new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "You're a helpful and detail-oriented church assistant" },
+                new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = template.ResolveMergeFields( mergeObjects ) }
+            };
+        }
+
+        /// <summary>
+        /// Gets the ChatCompletionsRequestMessage list for a specified <paramref name="template"/> 
+        /// and the merge objects to be used by the Formatter template.
+        /// </summary>
+        /// <param name="prayerRequest">The PrayerRequest the message should be generated for.</param>
+        /// <param name="template">The template to use for resolving merge fields.</param>
+        /// <param name="aiAutomation">The AIAutomation object containing the configuration.</param>
+        /// <returns>A List of ChatCompletionsRequestMessage objects.</returns>
+        public static List<ChatCompletionsRequestMessage> PrayerRequestFormatterMessages( PrayerRequest prayerRequest, string template, AIAutomation aiAutomation )
+        {
+            var parentCategoryId = prayerRequest.Category?.ParentCategoryId.HasValue == true ? CategoryCache.Get( prayerRequest.Category.ParentCategoryId.Value )?.ParentCategoryId : null;
+
+            // Get any data for use across all merge objects.
+            var mergeObjects = new Dictionary<string, object>
+                    {
+                        { "PrayerRequest", prayerRequest },
+                        { "ParentCategoryId", parentCategoryId },
+                        { "EnableRemovalLastNames", aiAutomation.RemoveNames == NameRemoval.LastNamesOnly },
+                        { "EnableRemovalFirstAndLastNames", aiAutomation.RemoveNames == NameRemoval.FirstAndLastNames },
+                        { "EnableFixFormattingAndSpelling", aiAutomation.TextEnhancement == TextEnhancement.MinorFormattingAndSpelling },
+                        { "EnableEnhancedReadability", aiAutomation.TextEnhancement == TextEnhancement.EnhanceReadability }
+                    };
+
+            return new List<ChatCompletionsRequestMessage>
+            {
+                new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "You're a helpful and detail-oriented church assistant" },
+                new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = template.ResolveMergeFields( mergeObjects ) }
+            };
+        }
+
+        #endregion
     }
 
     public static partial class PrayerRequestExtensionMethods

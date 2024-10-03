@@ -98,10 +98,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class FinancialAccount : IHasQueryableAttributes<FinancialAccount.FinancialAccountQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( FinancialAccount.FinancialAccountQueryableAttributeValue ), nameof( FinancialAccountAttributeValues ) )]
+    public partial class FinancialAccount
     {
-        /// <inheritdoc/>
-        public virtual ICollection<FinancialAccountQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<FinancialAccountQueryableAttributeValue> FinancialAccountAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class FinancialAccountQueryableAttributeValue : QueryableAttributeValue

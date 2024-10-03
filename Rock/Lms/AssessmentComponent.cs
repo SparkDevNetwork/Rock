@@ -56,17 +56,89 @@ namespace Rock.Lms
         public AssessmentComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/assessmentLearningActivity.obs" ) { }
 
         /// <summary>
+        /// Calculates the student grade based on the configured multiple choice responses and weights.
+        /// Includes the calculations for the facilitator graded Short Answer items as well (if completed).
+        /// </summary>
+        /// <param name="configurationJson">The JSON string of the components configuration.</param>
+        /// <param name="completionJson">The JSON string of the components completion.</param>
+        /// <param name="pointsPossible">The total number of points possible for this activity.</param>
+        /// <returns>The actual earned points for this activity.</returns>
+        public override int CalculatePointsEarned( string configurationJson, string completionJson, int pointsPossible )
+        {
+            var multipleChoiceSectionPoints = GetMultipleChoiceSectionPoints( configurationJson, completionJson, pointsPossible );
+            var shortAnswerSectionPoints = GetShortAnswerSectionPoints( configurationJson, completionJson, pointsPossible );
+
+            return multipleChoiceSectionPoints + shortAnswerSectionPoints;
+        }
+
+        /// <summary>
+        /// Adds the correctAnswer from the configuration JSON back
+        /// to the completion JSON for any multiple choice questions.
+        /// </summary>
+        /// <remarks>
+        /// This method ensures the
+        /// <see cref="LearningActivityCompletion.ActivityComponentCompletionJson"/>
+        /// contains all the configuration data necessary to
+        /// correctly display the assessment item in the event
+        /// that the configuration data is later changed.
+        /// </remarks>
+        /// <param name="completionJson">The JSON string of the components completion.</param>
+        /// <param name="configurationJson">The JSON string of the components configuration.</param>
+        /// <returns></returns>
+        public override string GetCompletionJsonToPersist( string completionJson, string configurationJson )
+        {
+            try
+            {
+                const string multipleChoiceItemTypeName = "Multiple Choice";
+
+                // Get the uniqueIds of the multiple choice assessment items.
+                var uniqueIdPath = $"$.completedItems[?(@.typeName == '{multipleChoiceItemTypeName}')].uniqueId";
+                var completionJObject = JObject.Parse( completionJson );
+                var uniqueIds = completionJObject.SelectTokens( uniqueIdPath );
+
+                // Get the correctAnsers from the configurationJson.
+                var correctAnswerPathTemplate = $"$.items[?(@.uniqueId == '@uniqueId')].correctAnswer";
+                var configurationJObject = JObject.Parse( configurationJson );
+
+                foreach ( var uniqueId in uniqueIds )
+                {
+                    var correctAnswer = configurationJObject.SelectToken( $"$.items[?(@.uniqueId == '{uniqueId}')].correctAnswer" );
+
+                    if ( correctAnswer == null )
+                    {
+                        continue;
+                    }
+                    
+                    var completionItem = completionJObject.SelectToken( $"$.completedItems[?(@.uniqueId == '{uniqueId}')]" );
+
+                    if (completionItem != null )
+                    {
+                        completionItem["correctAnswer"] = correctAnswer.ToString();
+                    }
+                }
+
+                return completionJObject.ToJson();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+
+            return completionJson;
+        }
+
+        /// <summary>
         /// Removes the isCorrect flag from any multiple choice assessment items.
         /// </summary>
-        /// <param name="rawConfigurationJsonString"></param>
+        /// <param name="configurationJson"></param>
         /// <returns>The json string stripped of any information that might identify correct answers.</returns>
-        public override string StudentScrubbedConfiguration( string rawConfigurationJsonString )
+        public override string StudentScrubbedConfiguration( string configurationJson )
         {
             try
             {
                 const string multipleChoiceItemTypeName = "Multiple Choice";
                 var correctAnswerPath = $"$.items[?(@.typeName == '{multipleChoiceItemTypeName}')].correctAnswer";
-                var jObject = JObject.Parse( rawConfigurationJsonString );
+                var jObject = JObject.Parse( configurationJson );
                 var correctAnswers = jObject.SelectTokens( correctAnswerPath );
 
                 foreach ( var correctAnswer in correctAnswers )
@@ -83,22 +155,6 @@ namespace Rock.Lms
 
             // If there was an error don't return anything (to prevent leaking answers).
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Calculates the student grade based on the configured multiple choice responses and weights.
-        /// Includes the calculations for the facilitator graded Short Answer items as well (if completed).
-        /// </summary>
-        /// <param name="configurationJson">The JSON string of the components configuration.</param>
-        /// <param name="completionJson">The JSON string of the components completion.</param>
-        /// <param name="pointsPossible">The total number of points possible for this activity.</param>
-        /// <returns>The actual earned points for this activity.</returns>
-        public override int CalculatePointsEarned( string configurationJson, string completionJson, int pointsPossible )
-        {
-            var multipleChoiceSectionPoints = GetMultipleChoiceSectionPoints(configurationJson, completionJson, pointsPossible );
-            var shortAnswerSectionPoints = GetShortAnswerSectionPoints(configurationJson, completionJson, pointsPossible);
-
-            return multipleChoiceSectionPoints + shortAnswerSectionPoints;
         }
 
         /// <summary>

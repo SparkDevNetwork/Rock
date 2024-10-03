@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class LearningProgram : IHasQueryableAttributes<LearningProgram.LearningProgramQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( LearningProgram.LearningProgramQueryableAttributeValue ), nameof( LearningProgramAttributeValues ) )]
+    public partial class LearningProgram
     {
-        /// <inheritdoc/>
-        public virtual ICollection<LearningProgramQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningProgramQueryableAttributeValue> LearningProgramAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class LearningProgramQueryableAttributeValue : QueryableAttributeValue
@@ -129,6 +136,8 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.CompletionWorkflowTypeId = source.CompletionWorkflowTypeId;
             target.ConfigurationMode = source.ConfigurationMode;
+            target.DefaultLearningGradingSystem = source.DefaultLearningGradingSystem;
+            target.DefaultLearningGradingSystemId = source.DefaultLearningGradingSystemId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

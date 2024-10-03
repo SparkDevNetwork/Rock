@@ -118,14 +118,12 @@
                                 SourceTypeName="Rock.Model.StepType, Rock"
                                 PropertyName="AllowMultiple"
                                 Label="Allow Multiple"
-                                Text="Yes"
                                 Help="Determines if a person can complete a step more than once." />
                             <Rock:RockCheckBox ID="cbHasDuration"
                                 runat="server"
                                 SourceTypeName="Rock.Model.StepType, Rock"
                                 PropertyName="HasEndDate"
                                 Label="Spans Time"
-                                Text="Yes"
                                 Help="Determines if the step occurs at a specific point or over a period of time." />
                             <Rock:RockCheckBox ID="cbShowBadgeCount"
                                 runat="server"
@@ -133,8 +131,7 @@
                                 PropertyName="ShowCountOnBadge"
                                 Label="Show Count on Badge"
                                 Help="Determines if the count of the number of times a step has been completed should be shown on the badge for the person profile page."
-                                Checked="false"
-                                Text="Yes" />
+                                Checked="false" />
                         </div>
                         <div class="col-md-6">
                             <Rock:ColorPicker ID="cpHighlight"
@@ -154,8 +151,7 @@
                                 PropertyName="IsDateRequired"
                                 Label="Is Date Required"
                                 Help="Determines if the date for the step is required."
-                                Checked="false"
-                                Text="Yes" />
+                                Checked="false" />
                         </div>
                         <div class="col-md-12">
                             <Rock:AttributeValuesContainer runat="server" ID="avcStepProgramAttributes" NumberOfColumns="3" />
@@ -213,8 +209,7 @@
                                     PropertyName="AllowManualEditing"
                                     Label="Allow Manual Edit"
                                     Help="Can the step be manually added or edited?"
-                                    Checked="false"
-                                    Text="Yes" />
+                                    Checked="false" />
                             </div>
                         </div>
                         <div class="row">

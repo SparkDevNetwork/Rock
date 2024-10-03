@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -83,6 +84,7 @@ namespace Rock.Cms.ContentCollection.Indexers
             var now = RockDateTime.Now;
             List<ContentChannelItem> items;
             Dictionary<int, int> trending;
+            List<int> unapprovedItems = new List<int>();
 
             // Make sure the source is valid.
             if ( contentCollectionSourceCache == null || contentCollectionSourceCache.EntityTypeId != contentChannelEntityTypeId )
@@ -112,13 +114,25 @@ namespace Rock.Cms.ContentCollection.Indexers
                 trending = options.IsTrendingEnabled && contentCollectionSourceCache.ContentCollection.TrendingEnabled
                     ? GetTrendingRanksLookup( contentCollectionSourceCache, rockContext )
                     : null;
+
+                foreach( var item in items )
+                {
+                    // If the content channel item is not approved, set "IsApproved" to false.
+                    if ( item.ContentChannel != null )
+                    {
+                        // If the content channel item is not approved, set "IsApproved" to false.
+                        if ( item.ContentChannel.RequiresApproval && item.ApprovedDateTime == null && !item.ContentChannelType.DisableStatus )
+                        {
+                            unapprovedItems.Add( item.Id );
+                        }
+                    }
+                }
             }
 
             // The RockContext is now closed. Any navigation properties that are
             // used by the indexer must be included in the query itself and
             // eager loaded. Navigation properties that lazy load are not
             // thread-safe.
-
             var processor = new ParallelProcessor( options.MaxConcurrency );
 
             await processor.ExecuteAsync( items, async contentChannelItem =>
@@ -131,6 +145,11 @@ namespace Rock.Cms.ContentCollection.Indexers
                     document.TrendingRank = document.IsTrending ? trending[document.EntityId] : 0;
                 }
 
+                if ( unapprovedItems.Contains( document.EntityId ) )
+                {
+                    document.IsApproved = false;
+                }
+
                 await ContentIndexContainer.IndexDocumentAsync( document );
             } );
 
@@ -141,6 +160,8 @@ namespace Rock.Cms.ContentCollection.Indexers
         public async Task<int> IndexContentCollectionDocumentAsync( int id, IndexDocumentOptions options )
         {
             ContentChannelItem itemEntity;
+
+            var isApproved = true;
 
             using ( var rockContext = new RockContext() )
             {
@@ -157,6 +178,16 @@ namespace Rock.Cms.ContentCollection.Indexers
                 if ( itemEntity.ExpireDateTime.HasValue && itemEntity.ExpireDateTime.Value < now )
                 {
                     return 0;
+                }
+
+                // If the content channel item is not approved, set "IsApproved" to false.
+                if ( itemEntity.ContentChannel != null )
+                {
+                    // If the content channel item is not approved, set "IsApproved" to false.
+                    if ( itemEntity.ContentChannel.RequiresApproval && itemEntity.ApprovedDateTime == null && !itemEntity.ContentChannelType.DisableStatus )
+                    {
+                        isApproved = false;
+                    }
                 }
 
                 itemEntity.LoadAttributes( rockContext );
@@ -179,6 +210,8 @@ namespace Rock.Cms.ContentCollection.Indexers
             await processor.ExecuteAsync( sources, async source =>
             {
                 var document = await ContentChannelItemDocument.LoadByModelAsync( itemEntity, source );
+                document.IsApproved = isApproved;
+
                 await ContentIndexContainer.IndexDocumentAsync( document );
             } );
 

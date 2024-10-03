@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Registration : IHasQueryableAttributes<Registration.RegistrationQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Registration.RegistrationQueryableAttributeValue ), nameof( RegistrationAttributeValues ) )]
+    public partial class Registration
     {
-        /// <inheritdoc/>
-        public virtual ICollection<RegistrationQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<RegistrationQueryableAttributeValue> RegistrationAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class RegistrationQueryableAttributeValue : QueryableAttributeValue

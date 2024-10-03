@@ -31,6 +31,22 @@ namespace Rock.Model
     public partial class LearningCourseService
     {
         /// <summary>
+        /// Get a list of required courses for the specified course. 
+        /// </summary>
+        /// <param name="courseId">The identifier of the <see cref="LearningCourse"/> to get requirements for.</param>
+        /// <returns>A list of <see cref="LearningCourseRequirementBag"/> records.</returns>
+        public LearningCourse GetCourseWithRequirements( int courseId )
+        {
+            var course = Queryable()
+                .Include( a => a.LearningProgram )
+                .Include( a => a.LearningClasses )
+                .Include( a => a.LearningCourseRequirements.Select( cr => cr.RequiredLearningCourse ) )
+                .FirstOrDefault( a => a.Id == courseId );
+
+            return course;
+        }
+
+        /// <summary>
         /// Gets the details for a public course.
         /// </summary>
         /// <param name="courseId">The identifier of the course to get.</param>
@@ -220,32 +236,6 @@ namespace Rock.Model
             }
 
             return courses.ToList();
-        }
-
-        /// <summary>
-        /// Get a list of required courses for the specified course. 
-        /// </summary>
-        /// <param name="courseId">The identifier of the <see cref="LearningCourse"/> to get requirements for.</param>
-        /// <returns>A list of <see cref="LearningCourseRequirementBag"/> records.</returns>
-        public LearningCourse GetCourseWithRequirements( int courseId )
-        {
-            var course = Queryable()
-                .Include( a => a.LearningProgram )
-                .Include( a => a.LearningClasses )
-                .Include( a => a.LearningCourseRequirements )
-                .FirstOrDefault( a => a.Id == courseId );
-
-            if ( course.LearningCourseRequirements.Any() )
-            {
-                var requiredCourseIds = course.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId );
-                var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
-
-                course.LearningCourseRequirements.ForEach( cr =>
-                    cr.RequiredLearningCourse =
-                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
-            }
-
-            return course;
         }
 
         #region Nested Classes

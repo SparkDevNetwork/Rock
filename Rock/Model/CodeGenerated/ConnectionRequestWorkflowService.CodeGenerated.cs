@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class ConnectionRequestWorkflow : IHasQueryableAttributes<ConnectionRequestWorkflow.ConnectionRequestWorkflowQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( ConnectionRequestWorkflow.ConnectionRequestWorkflowQueryableAttributeValue ), nameof( ConnectionRequestWorkflowAttributeValues ) )]
+    public partial class ConnectionRequestWorkflow
     {
-        /// <inheritdoc/>
-        public virtual ICollection<ConnectionRequestWorkflowQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ConnectionRequestWorkflowQueryableAttributeValue> ConnectionRequestWorkflowAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class ConnectionRequestWorkflowQueryableAttributeValue : QueryableAttributeValue

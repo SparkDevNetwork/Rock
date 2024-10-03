@@ -18,8 +18,8 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfInteractions" runat="server">
                         <Rock:SlidingDateRangePicker id="sdpDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
-                        <Rock:RockCheckBox ID="cbShowUnassignedDevices" runat="server" Label="Show Unassigned Devices" Text="Yes" />
-                        <Rock:RockCheckBox ID="cbPresentDevices" runat="server" Label="Present Devices" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbShowUnassignedDevices" runat="server" Label="Show Unassigned Devices" />
+                        <Rock:RockCheckBox ID="cbPresentDevices" runat="server" Label="Present Devices" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gInteractions" runat="server" AllowSorting="true">
                         <Columns>

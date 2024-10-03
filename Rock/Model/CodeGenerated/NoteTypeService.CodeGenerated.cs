@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class NoteType : IHasQueryableAttributes<NoteType.NoteTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( NoteType.NoteTypeQueryableAttributeValue ), nameof( NoteTypeAttributeValues ) )]
+    public partial class NoteType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<NoteTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<NoteTypeQueryableAttributeValue> NoteTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class NoteTypeQueryableAttributeValue : QueryableAttributeValue
@@ -160,9 +167,7 @@ namespace Rock.Model
             target.MaxReplyDepth = source.MaxReplyDepth;
             target.Name = source.Name;
             target.Order = source.Order;
-            #pragma warning disable 612, 618
             target.RequiresApprovals = source.RequiresApprovals;
-            #pragma warning restore 612, 618
             #pragma warning disable 612, 618
             target.SendApprovalNotifications = source.SendApprovalNotifications;
             #pragma warning restore 612, 618

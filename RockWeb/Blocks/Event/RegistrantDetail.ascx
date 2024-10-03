@@ -82,7 +82,7 @@
                                     <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" />
                                 </div>
                                 <div class="col-xs-6">
-                                    <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" Text="Yes" Help="If there was a discount code used for the registration, should it apply to this registrant?" />
+                                    <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" Help="If there was a discount code used for the registration, should it apply to this registrant?" />
                                 </div>
                             </div>
                             <div id="divFees" runat="server" class="well registration-additional-options">

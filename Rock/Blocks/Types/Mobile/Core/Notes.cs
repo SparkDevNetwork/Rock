@@ -428,49 +428,53 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <summary>
         /// Gets the viewable notes.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="parentNoteGuid">The parent note unique identifier.</param>
         /// <param name="startIndex">The start index.</param>
         /// <param name="count">The count.</param>
         /// <returns>List&lt;Note&gt;.</returns>
-        private List<Note> GetViewableNotes( RockContext rockContext, Guid? parentNoteGuid, int startIndex, int count )
+        private List<Note> GetViewableNotes( Guid? parentNoteGuid, int startIndex, int count )
         {
-            var noteService = new NoteService( rockContext );
-            var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
-
-            var entityType = EntityTypeCache.Get( ContextEntityType );
-            var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
-            if ( entity == null )
+            using ( var rockContext = new RockContext() )
             {
-                // Indicate to caller "not found" error.
-                return null;
-            }
+                var noteService = new NoteService( rockContext );
+                var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
 
-            var notesQuery = noteService.Queryable()
-                .AsNoTracking()
-                .Include( a => a.CreatedByPersonAlias.Person )
-                .Include( a => a.ParentNote )
-                .Include( a => a.ChildNotes )
-                .Where( a => viewableNoteTypeIds.Contains( a.NoteTypeId ) )
-                .Where( a => a.EntityId == entity.Id );
+                var entityType = EntityTypeCache.Get( ContextEntityType );
+                var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
+                if ( entity == null )
+                {
+                    // Indicate to caller "not found" error.
+                    return null;
+                }
 
-            if ( parentNoteGuid.HasValue )
-            {
-                notesQuery = notesQuery.Where( a => a.ParentNote.Guid == parentNoteGuid.Value );
-            }
-            else
-            {
-                notesQuery = notesQuery.Where( a => !a.ParentNoteId.HasValue );
-            }
+                var currentPersonId = GetCurrentPerson()?.Id;
+                var notesQuery = noteService.Queryable()
+                    .AsNoTracking()
+                    .Include( a => a.CreatedByPersonAlias.Person )
+                    .Include( a => a.ParentNote )
+                    .Include( a => a.ChildNotes )
+                    .AreViewableBy( currentPersonId )
+                    .Where( a => viewableNoteTypeIds.Contains( a.NoteTypeId ) )
+                    .Where( a => a.EntityId == entity.Id );
 
-            return notesQuery
-                .OrderByDescending( a => a.IsAlert == true )
-                .ThenByDescending( a => a.CreatedDateTime )
-                .ToList()
-                .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                .Skip( startIndex )
-                .Take( count )
-                .ToList();
+                if ( parentNoteGuid.HasValue )
+                {
+                    notesQuery = notesQuery.Where( a => a.ParentNote.Guid == parentNoteGuid.Value );
+                }
+                else
+                {
+                    notesQuery = notesQuery.Where( a => !a.ParentNoteId.HasValue );
+                }
+
+                return notesQuery
+                    .ToList()
+                    .OrderByDescending( a => a.IsAlert == true )
+                    .ThenByDescending( a => a.CreatedDateTime )
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .Skip( startIndex )
+                    .Take( count )
+                    .ToList();
+            }
         }
 
         /// <summary>
@@ -482,21 +486,18 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <returns>The list of notes found.</returns>
         private List<object> GetEntityNotes( Guid? parentNoteGuid, int startIndex, int count )
         {
-            using ( var rockContext = new RockContext() )
+            var viewableNotes = GetViewableNotes( parentNoteGuid, startIndex, count );
+
+            if ( viewableNotes == null )
             {
-                var viewableNotes = GetViewableNotes( rockContext, parentNoteGuid, startIndex, count );
-
-                if ( viewableNotes == null )
-                {
-                    return null;
-                }
-
-                var noteData = viewableNotes
-                    .Select( a => GetNoteObject( a ) )
-                    .ToList();
-
-                return noteData;
+                return null;
             }
+
+            var noteData = viewableNotes
+                .Select( a => GetNoteObject( a ) )
+                .ToList();
+
+            return noteData;
         }
 
         /// <summary>
@@ -784,12 +785,6 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                 note.EditedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 note.EditedDateTime = RockDateTime.Now;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                // Set this so anything doing direct SQL queries will still find
-                // the right set of notes.
-                note.ApprovalStatus = NoteApprovalStatus.Approved;
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 rockContext.SaveChanges();
 

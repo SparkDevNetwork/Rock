@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class MergeTemplate : IHasQueryableAttributes<MergeTemplate.MergeTemplateQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( MergeTemplate.MergeTemplateQueryableAttributeValue ), nameof( MergeTemplateAttributeValues ) )]
+    public partial class MergeTemplate
     {
-        /// <inheritdoc/>
-        public virtual ICollection<MergeTemplateQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<MergeTemplateQueryableAttributeValue> MergeTemplateAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class MergeTemplateQueryableAttributeValue : QueryableAttributeValue

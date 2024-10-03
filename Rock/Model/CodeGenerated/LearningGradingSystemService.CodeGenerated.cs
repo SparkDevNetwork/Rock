@@ -52,14 +52,33 @@ namespace Rock.Model
         public bool CanDelete( LearningGradingSystem item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<LearningClass>( Context ).Queryable().Any( a => a.LearningGradingSystemId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningGradingSystem.FriendlyTypeName, LearningClass.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.DefaultLearningGradingSystemId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningGradingSystem.FriendlyTypeName, LearningProgram.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
-    public partial class LearningGradingSystem : IHasQueryableAttributes<LearningGradingSystem.LearningGradingSystemQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( LearningGradingSystem.LearningGradingSystemQueryableAttributeValue ), nameof( LearningGradingSystemAttributeValues ) )]
+    public partial class LearningGradingSystem
     {
-        /// <inheritdoc/>
-        public virtual ICollection<LearningGradingSystemQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningGradingSystemQueryableAttributeValue> LearningGradingSystemAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class LearningGradingSystemQueryableAttributeValue : QueryableAttributeValue

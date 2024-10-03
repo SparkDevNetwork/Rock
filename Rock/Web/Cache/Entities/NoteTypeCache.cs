@@ -115,8 +115,6 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        [Obsolete( "This property is no longer used and will be removed in the future." )]
-        [RockObsolete( "1.16" )]
         public bool RequiresApprovals { get; private set; }
 
         /// <summary>

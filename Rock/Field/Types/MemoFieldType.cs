@@ -106,7 +106,6 @@ namespace Rock.Field.Types
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Allow HTML";
-            cb.Text = "Yes";
             cb.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
 
             // Add number box for selecting the maximum number of characters
@@ -124,7 +123,6 @@ namespace Rock.Field.Types
             cbCountDown.AutoPostBack = true;
             cbCountDown.CheckedChanged += OnQualifierUpdated;
             cbCountDown.Label = "Show Character Limit Countdown";
-            cbCountDown.Text = "Yes";
             cbCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
 
             return controls;

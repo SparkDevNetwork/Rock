@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class SignalType : IHasQueryableAttributes<SignalType.SignalTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( SignalType.SignalTypeQueryableAttributeValue ), nameof( SignalTypeAttributeValues ) )]
+    public partial class SignalType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<SignalTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<SignalTypeQueryableAttributeValue> SignalTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class SignalTypeQueryableAttributeValue : QueryableAttributeValue

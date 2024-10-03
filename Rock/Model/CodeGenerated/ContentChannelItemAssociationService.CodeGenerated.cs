@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class ContentChannelItemAssociation : IHasQueryableAttributes<ContentChannelItemAssociation.ContentChannelItemAssociationQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( ContentChannelItemAssociation.ContentChannelItemAssociationQueryableAttributeValue ), nameof( ContentChannelItemAssociationAttributeValues ) )]
+    public partial class ContentChannelItemAssociation
     {
-        /// <inheritdoc/>
-        public virtual ICollection<ContentChannelItemAssociationQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ContentChannelItemAssociationQueryableAttributeValue> ContentChannelItemAssociationAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class ContentChannelItemAssociationQueryableAttributeValue : QueryableAttributeValue

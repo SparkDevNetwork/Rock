@@ -21,7 +21,7 @@
                            :minimumValue="0"
                            :maximumValue="100"
                            label="Threshold Percentage"
-                           help="Enter the minimum percentage a student must achieve to receive this grade."
+                           help="Enter the minimum percentage an individual must achieve to receive this grade."
                            inputGroupClasses="input-width-md">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">%</span>
@@ -36,7 +36,6 @@
             </div>
 
         </div>
-
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>

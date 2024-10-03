@@ -10,14 +10,14 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :isAuditHidden="false"
-                 :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
                  :isSecurityHidden="false"
                  :entityTypeGuid="entityTypeGuid"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
@@ -146,29 +146,6 @@
         }
 
         return true;
-    }
-
-    /**
-     * Event handler for the Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
-     *
-     * @returns false if it should stay on the page; or a string containing a redirect URL.
-     */
-    async function onDelete(): Promise<false | string> {
-        errorMessage.value = "";
-
-        const result = await invokeBlockAction<string>("Delete", {
-            key: learningGradingSystemViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data) {
-            return result.data;
-        }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning grading system.";
-
-            return false;
-        }
     }
 
     /**

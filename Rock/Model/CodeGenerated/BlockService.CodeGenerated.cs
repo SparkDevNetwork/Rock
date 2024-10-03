@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Block : IHasQueryableAttributes<Block.BlockQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Block.BlockQueryableAttributeValue ), nameof( BlockAttributeValues ) )]
+    public partial class Block
     {
-        /// <inheritdoc/>
-        public virtual ICollection<BlockQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<BlockQueryableAttributeValue> BlockAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class BlockQueryableAttributeValue : QueryableAttributeValue

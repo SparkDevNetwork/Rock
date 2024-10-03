@@ -57,5 +57,11 @@ namespace Rock.Configuration
         /// The name of the machine this instance is running on.
         /// </summary>
         string MachineName { get; }
+
+        /// <summary>
+        /// The name of the node when running in a WebFarm environment
+        /// or the name of the machine when not running in a farm.
+        /// </summary>
+        string NodeName { get; }
     }
 }

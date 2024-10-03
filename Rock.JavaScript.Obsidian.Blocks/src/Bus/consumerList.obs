@@ -5,6 +5,7 @@
           itemTerm="Consumer"
           stickyHeader
           liveUpdates
+          :showMergeTemplate="false"
           :showLaunchWorkflow="false">
 
         <TextColumn name="queueName"

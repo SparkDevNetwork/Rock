@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class SiteDomain : IHasQueryableAttributes<SiteDomain.SiteDomainQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( SiteDomain.SiteDomainQueryableAttributeValue ), nameof( SiteDomainAttributeValues ) )]
+    public partial class SiteDomain
     {
-        /// <inheritdoc/>
-        public virtual ICollection<SiteDomainQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<SiteDomainQueryableAttributeValue> SiteDomainAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class SiteDomainQueryableAttributeValue : QueryableAttributeValue

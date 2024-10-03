@@ -2,7 +2,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           itemTerm="Device"
           :entityTypeGuid="EntityType.Device"
           stickyHeader
@@ -20,14 +20,14 @@
         <TextColumn name="deviceType"
                     title="Device Type"
                     field="deviceType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs"
                     width="20%"/>
 
         <TextColumn name="kioskType"
                     title="Kiosk Type"
                     field="kioskType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="ipAddress"
@@ -40,19 +40,19 @@
         <TextColumn name="printTo"
                     title="Print To"
                     field="printTo"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="printFrom"
                     title="Print From"
                     field="printFrom"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="printerDevice"
                     title="Printer"
                     field="printerDevice"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs"
                     width="15%"/>
 
@@ -69,7 +69,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { DeviceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DeviceList/deviceListOptionsBag";

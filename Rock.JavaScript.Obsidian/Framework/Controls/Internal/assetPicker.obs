@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="asset-picker-field">
+        <div class="control-wrapper">
+            <div class="picker-asset">
+                <a class="imageupload-group" @click.prevent="isShown = true">
+                    <div :class="{ 'fileupload-thumbnail': true, 'fileupload-thumbnail-icon': imageTypeUrl?.includes('/Assets/Icons/FileTypes/') }"
+                         :style="`background-image: url('${imageTypeUrl}') !important`" :title="internalValue?.name">
+                        <span v-if="internalValue?.name" class="file-link" style="background-color: transparent;text-shadow:0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white">{{ internalValue?.name }}</span>
+                        <span v-else class="file-link file-link-default"></span>
+                    </div>
+                    <div class="imageupload-dropzone">
+                        <span>
+                            Select Asset
+                        </span>
+                    </div>
+                </a>
+                <a v-if="internalValue" class="btn picker-select-none js-picker-select-none" @click.prevent="internalValue = undefined"><i class="fa fa-times"></i></a>
+            </div>
+        </div>
+        <Modal v-model="isShown"
+               title="Asset Manager"
+               cancelText="Cancel"
+               saveText="Select"
+               :onSave="onOkClicked"
+               :isSaveButtonDisabled="isOkButtonDisabled">
+            <AssetManager v-model="asset" enableAssetManager />
+        </Modal>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AssetManager from "@Obsidian/Controls/fileAssetManager.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FileAsset>
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const asset = ref<FileAsset[]>([]);
+    const isShown = ref(false);
+
+    const isOkButtonDisabled = computed<boolean>(() => {
+        return asset.value.length !== 1;
+    });
+
+    const imageTypeUrl = computed(() => {
+        if (internalValue.value) {
+            return internalValue.value.iconPath;
+        }
+        else {
+            return "";
+        }
+    });
+
+    //#region Event Handlers
+
+    /** Event handler for the OK button being clicked. */
+    function onOkClicked(): void {
+        internalValue.value = asset.value[0];
+
+        // Clear the asset value and close the modal.
+        asset.value = [];
+        isShown.value = false;
+    }
+
+    //#endregion
+
+</script>

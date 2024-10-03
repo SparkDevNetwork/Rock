@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class InteractiveExperienceOccurrence : IHasQueryableAttributes<InteractiveExperienceOccurrence.InteractiveExperienceOccurrenceQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( InteractiveExperienceOccurrence.InteractiveExperienceOccurrenceQueryableAttributeValue ), nameof( InteractiveExperienceOccurrenceAttributeValues ) )]
+    public partial class InteractiveExperienceOccurrence
     {
-        /// <inheritdoc/>
-        public virtual ICollection<InteractiveExperienceOccurrenceQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<InteractiveExperienceOccurrenceQueryableAttributeValue> InteractiveExperienceOccurrenceAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class InteractiveExperienceOccurrenceQueryableAttributeValue : QueryableAttributeValue

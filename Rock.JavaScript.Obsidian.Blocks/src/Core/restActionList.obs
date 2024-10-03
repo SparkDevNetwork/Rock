@@ -14,7 +14,7 @@
                     title="Method"
                     field="method"
                     width="100px"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="path"
@@ -41,7 +41,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, SecurityColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, SecurityColumn, Column, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RestActionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/RestActionList/restActionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

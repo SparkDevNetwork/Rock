@@ -1,20 +1,20 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel :title="panelTitle" class="panel panel-block" v-if="!isPanelHidden">
-        <NotificationBox v-if="showNotificationBox" :alertType="notificationMessageType" >{{ notificationMessage }}</NotificationBox>
+    <Panel :title="panelTitle" class="panel panel-block" v-if="isBlockVisible">
+        <NotificationBox v-if="showNotificationBox" :alertType="notificationMessageType">{{ notificationMessage }}</NotificationBox>
         <div class="well">
             <SlidingDateRangePicker v-model="dateRange"
-                formGroupClasses="margin-b-sm"
-                label="Date Range"
-                :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]" />
-            <RockButton btnType="default" btnSize="xs" @click="refreshCheckboxData" >
+                                    formGroupClasses="margin-b-sm"
+                                    label="Date Range"
+                                    :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]" />
+            <RockButton btnType="default" btnSize="xs" @click="refreshCheckboxData">
                 <i class="fa fa-refresh"></i> Update
             </RockButton>
         </div>
         <CheckBoxList :label="checkBoxListLabel"
-            v-model="selectedDates"
-            :items="dateItems"
-            vertical />
+                      v-model="selectedDates"
+                      :items="dateItems"
+                      vertical />
         <div class="actions">
             <RockButton btnType="primary" shortcutKey="s" @click="saveRecord">
                 Save
@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
     import { StreakMapEditorBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakMapEditor/streakMapEditorBag";
     import { RangeType, SlidingDateRange, TimeUnit, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
@@ -35,6 +35,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useStore } from "@Obsidian/PageState";
 
     const box = useConfigurationValues<StreakMapEditorBag>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -58,6 +59,14 @@
     const notificationMessageType = ref<string>("info");
     const notificationMessage = ref<string>("");
     const isPanelHidden = ref<boolean>(box.isPanelHidden);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isBlockVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown && !isPanelHidden.value;
+    });
 
     // #endregion
 

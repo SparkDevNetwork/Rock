@@ -70,7 +70,6 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeoutSeconds;
-                rockContext.SqlLogging( true );
 
                 var participantService = new LearningParticipantService( rockContext );
                 var completionService = new LearningProgramCompletionService( rockContext );

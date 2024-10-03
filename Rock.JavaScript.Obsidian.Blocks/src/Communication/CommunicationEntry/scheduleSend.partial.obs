@@ -8,8 +8,9 @@
             v-bind="$attrs" />
 
     <Modal v-model="isScheduleSendModalOpen"
-           title="Schedule Send"
+           :isSaveButtonDisabled="!tempScheduleSendIsoString"
            saveText="Save"
+           title="Schedule Send"
            @save="onScheduleSendModalSave"
            @closeModal="onScheduleSendModalClose">
         <div class="schedule-send-modal">
@@ -61,7 +62,7 @@
     //#region Computed Values
 
     const scheduleSendText = computed<string>(() => {
-        const dateTimeString = RockDateTime.parseISO(internalScheduleSendIsoString.value)?.toASPString("M/d/yyyy hh:mm tt");
+        const dateTimeString = RockDateTime.parseISO(internalScheduleSendIsoString.value)?.toASPString("g"); // "<short date> <short time>" such as "1/1/2024 9:49 AM"
 
         return isScheduled.value && dateTimeString ? `Scheduled: ${dateTimeString}` : "Schedule Send";
     });

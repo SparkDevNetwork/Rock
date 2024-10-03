@@ -80,10 +80,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class BinaryFileType : IHasQueryableAttributes<BinaryFileType.BinaryFileTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( BinaryFileType.BinaryFileTypeQueryableAttributeValue ), nameof( BinaryFileTypeAttributeValues ) )]
+    public partial class BinaryFileType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<BinaryFileTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<BinaryFileTypeQueryableAttributeValue> BinaryFileTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class BinaryFileTypeQueryableAttributeValue : QueryableAttributeValue
@@ -147,6 +154,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BinaryFileType target, BinaryFileType source )
         {
             target.Id = source.Id;
+            target.AllowAnonymous = source.AllowAnonymous;
             target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.CacheToServerFileSystem = source.CacheToServerFileSystem;
             target.Description = source.Description;

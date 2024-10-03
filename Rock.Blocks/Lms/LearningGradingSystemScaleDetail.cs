@@ -39,7 +39,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning grading system scale." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -276,7 +276,7 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningGradingSystemScale();
+                entity = new LearningGradingSystemScale { LearningGradingSystemId = RequestContext.PageParameterAsId( PageParameterKey.LearningGradingSystemId ) };
                 entityService.Add( entity );
             }
 
@@ -332,8 +332,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LearningGradingSystemScaleBag> box )
         {
-            var entityService = new LearningGradingSystemScaleService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
@@ -355,48 +353,18 @@ namespace Rock.Blocks.Lms
 
             RockContext.SaveChanges();
 
+            var parentPageUrl = this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningGradingSystemId] = PageParameter( PageParameterKey.LearningGradingSystemId )
+            } );
+
             if ( isNew )
             {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.LearningGradingSystemScaleId] = entity.IdKey
-                } ) );
+                return ActionContent( System.Net.HttpStatusCode.Created, parentPageUrl );
             }
-
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
 
             // This block doesn't contain a view mode so return to the parent page instead.
-            return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningGradingSystemScaleId] = entity.IdKey
-            } ) );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new LearningGradingSystemScaleService( RockContext );
-
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk( this.GetParentPageUrl() );
+            return ActionOk( parentPageUrl );
         }
 
         #endregion

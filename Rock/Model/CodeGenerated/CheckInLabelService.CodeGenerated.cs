@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class CheckInLabel : IHasQueryableAttributes<CheckInLabel.CheckInLabelQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( CheckInLabel.CheckInLabelQueryableAttributeValue ), nameof( CheckInLabelAttributeValues ) )]
+    public partial class CheckInLabel
     {
-        /// <inheritdoc/>
-        public virtual ICollection<CheckInLabelQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<CheckInLabelQueryableAttributeValue> CheckInLabelAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class CheckInLabelQueryableAttributeValue : QueryableAttributeValue

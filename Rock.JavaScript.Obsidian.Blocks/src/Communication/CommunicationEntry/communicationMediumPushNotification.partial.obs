@@ -516,6 +516,7 @@
                 pushOpenMessageJson: pushOpenMessageJson.value,
                 pushTitle: title.value,
                 recipients: props.recipients,
+                excludeDuplicateRecipientAddress: false
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
@@ -552,6 +553,7 @@
                 pushOpenMessageJson: pushOpenMessageJson.value,
                 pushTitle: title.value,
                 recipients: props.recipients,
+                excludeDuplicateRecipientAddress: false
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -590,6 +592,7 @@
                 pushOpenMessageJson: pushOpenMessageJson.value,
                 pushTitle: title.value,
                 recipients: props.recipients,
+                excludeDuplicateRecipientAddress: false
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -779,6 +782,11 @@
             }
 
             mediumOptions.value = response.data;
+
+            // Set the open action if it is currently set to No Action.
+            if (openAction.value === OpenAction.NoAction) {
+                openAction.value = getOpenAction(null);
+            }
         }
         finally {
             isLoadingMediumOptions.value = false;

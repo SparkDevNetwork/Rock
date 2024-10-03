@@ -106,7 +106,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("", props.modelValue.description);
+            valueBuilder.addHtmlValue("", props.modelValue.description);
         }
 
         if (props.modelValue.helpText) {

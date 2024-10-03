@@ -58,10 +58,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class Note : IHasQueryableAttributes<Note.NoteQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( Note.NoteQueryableAttributeValue ), nameof( NoteAttributeValues ) )]
+    public partial class Note
     {
-        /// <inheritdoc/>
-        public virtual ICollection<NoteQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<NoteQueryableAttributeValue> NoteAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class NoteQueryableAttributeValue : QueryableAttributeValue
@@ -128,15 +135,11 @@ namespace Rock.Model
             #pragma warning disable 612, 618
             target.ApprovalsSent = source.ApprovalsSent;
             #pragma warning restore 612, 618
-            #pragma warning disable 612, 618
             target.ApprovalStatus = source.ApprovalStatus;
-            #pragma warning restore 612, 618
             #pragma warning disable 612, 618
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             #pragma warning restore 612, 618
-            #pragma warning disable 612, 618
             target.ApprovedDateTime = source.ApprovedDateTime;
-            #pragma warning restore 612, 618
             target.Caption = source.Caption;
             target.EditedByPersonAliasId = source.EditedByPersonAliasId;
             target.EditedDateTime = source.EditedDateTime;

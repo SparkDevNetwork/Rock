@@ -52,14 +52,27 @@ namespace Rock.Model
         public bool CanDelete( LearningGradingSystemScale item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<LearningParticipant>( Context ).Queryable().Any( a => a.LearningGradingSystemScaleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningGradingSystemScale.FriendlyTypeName, LearningParticipant.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
-    public partial class LearningGradingSystemScale : IHasQueryableAttributes<LearningGradingSystemScale.LearningGradingSystemScaleQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( LearningGradingSystemScale.LearningGradingSystemScaleQueryableAttributeValue ), nameof( LearningGradingSystemScaleAttributeValues ) )]
+    public partial class LearningGradingSystemScale
     {
-        /// <inheritdoc/>
-        public virtual ICollection<LearningGradingSystemScaleQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningGradingSystemScaleQueryableAttributeValue> LearningGradingSystemScaleAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class LearningGradingSystemScaleQueryableAttributeValue : QueryableAttributeValue

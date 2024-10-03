@@ -62,10 +62,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class WorkflowActionType : IHasQueryableAttributes<WorkflowActionType.WorkflowActionTypeQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( WorkflowActionType.WorkflowActionTypeQueryableAttributeValue ), nameof( WorkflowActionTypeAttributeValues ) )]
+    public partial class WorkflowActionType
     {
-        /// <inheritdoc/>
-        public virtual ICollection<WorkflowActionTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<WorkflowActionTypeQueryableAttributeValue> WorkflowActionTypeAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class WorkflowActionTypeQueryableAttributeValue : QueryableAttributeValue

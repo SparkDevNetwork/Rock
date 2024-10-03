@@ -52,14 +52,33 @@ namespace Rock.Model
         public bool CanDelete( LearningCourse item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<LearningCourseRequirement>( Context ).Queryable().Any( a => a.LearningCourseId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningCourse.FriendlyTypeName, LearningCourseRequirement.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningCourseRequirement>( Context ).Queryable().Any( a => a.RequiredLearningCourseId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningCourse.FriendlyTypeName, LearningCourseRequirement.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
-    public partial class LearningCourse : IHasQueryableAttributes<LearningCourse.LearningCourseQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( LearningCourse.LearningCourseQueryableAttributeValue ), nameof( LearningCourseAttributeValues ) )]
+    public partial class LearningCourse
     {
-        /// <inheritdoc/>
-        public virtual ICollection<LearningCourseQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningCourseQueryableAttributeValue> LearningCourseAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class LearningCourseQueryableAttributeValue : QueryableAttributeValue

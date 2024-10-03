@@ -254,10 +254,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class BinaryFile : IHasQueryableAttributes<BinaryFile.BinaryFileQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( BinaryFile.BinaryFileQueryableAttributeValue ), nameof( BinaryFileAttributeValues ) )]
+    public partial class BinaryFile
     {
-        /// <inheritdoc/>
-        public virtual ICollection<BinaryFileQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<BinaryFileQueryableAttributeValue> BinaryFileAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class BinaryFileQueryableAttributeValue : QueryableAttributeValue

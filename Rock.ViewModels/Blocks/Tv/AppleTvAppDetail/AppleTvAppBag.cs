@@ -72,7 +72,7 @@ namespace Rock.ViewModels.Blocks.Tv.AppleTvAppDetail
         /// <value>
         /// The page view retention period.
         /// </value>
-        public int? PageViewRetentionPeriod { get; set; }
+        public string PageViewRetentionPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets the API key.

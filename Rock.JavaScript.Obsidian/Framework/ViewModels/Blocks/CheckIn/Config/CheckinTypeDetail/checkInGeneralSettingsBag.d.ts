@@ -33,7 +33,7 @@ export type CheckInGeneralSettingsBag = {
     allowCheckoutInManager: boolean;
 
     /** Gets or sets the automatic select days back. */
-    autoSelectDaysBack: number;
+    autoSelectDaysBack?: string | null;
 
     /** Gets or sets the automatic select options. */
     autoSelectOptions?: string | null;

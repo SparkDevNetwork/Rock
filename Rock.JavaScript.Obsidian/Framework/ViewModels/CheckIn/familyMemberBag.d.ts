@@ -26,12 +26,17 @@ import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 /**
  * A single member of a family. A family member may not belong to the actual
  * family as they may be assocaited via a "can check-in" relationship. This
- * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.FamilyId value being different
- * from the id on the family object.
+ * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.IsInPrimaryFamily value.
  */
 export type FamilyMemberBag = {
     /** Gets or sets the primary family identifier this person belongs to. */
     familyId?: string | null;
+
+    /**
+     * Gets or sets a value indicating whether this attendee is in the
+     * primary family matched during the search operation.
+     */
+    isInPrimaryFamily: boolean;
 
     /** Gets or sets the person that represents this family member. */
     person?: PersonBag | null;

@@ -1,30 +1,39 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
-        <div v-if="screenToShow === ComponentScreen.Configuration">
+        <div v-if="screenToShow === ComponentScreen.Configuration" class="configuration-container">
             <div class="instructions-section">
                 <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
             </div>
             <div class="rubric-section">
                 <StructuredContentEditor label="Grading Rubric" v-model="rubric" :disabled="disabled" />
             </div>
-            <div class="show-rubric-on-upload-section">
-                <CheckBox v-model="showRubricOnUpload" label="Show Rubric on Upload" :disabled="disabled" />
-            </div>
-            <div class="show-rubric-on-scoring-section">
-                <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" :disabled="disabled" />
+            <div class="row">
+                <div class="show-rubric-on-upload-section col-md-6">
+                    <CheckBox v-model="showRubricOnUpload" label="Show Rubric on Upload" :disabled="disabled" />
+                </div>
+                <div class="show-rubric-on-scoring-section col-md-6">
+                    <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" :disabled="disabled" />
+                </div>
             </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Completion">
             <fieldset>
                 <div class="instructions-section">
-                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="instructions" />
+                    <StructuredContentEditor
+                                             :disabled="true"
+                                             label="Instructions"
+                                             v-model="instructions"
+                                             help="The content to show to the individual above the file upload. This is used to describe the paper or file that is to be provided." />
                 </div>
                 <div class="rubric-section" v-if="showRubricOnUpload">
-                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="rubric" />
+                    <StructuredContentEditor
+                                             :disabled="true"
+                                             label="Grading Rubric"
+                                             v-model="rubric"
+                                             help="The content to show the facilitator who is grading the file uploaded. This can be configured below to be shown to the individual when uploading and/or the facilitator when grading." />
                 </div>
-
 
                 <div class="file-upload-section">
                     <FileUploader v-model="binaryFile"
@@ -32,11 +41,12 @@
                                   rules="required"
                                   :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
                                   uploadButtonText="Upload"
-                                  :disabled="isFacilitatorCompleted || dueDateHasPassed"
+                                  :disabled="hasBeenGraded"
                                   :showDeleteButton="true" />
                 </div>
                 <div class="footer-section">
                     <RockButton :btnType="BtnType.Primary"
+                                :disabled="!binaryFile"
                                 @click="emits('completed', true)">
                         Complete
                     </RockButton>
@@ -53,36 +63,11 @@
                     <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="rubric" />
                 </div>
 
-
                 <div class="grading-section">
-                    <div class="file-section">
+                    <div class="file-section d-flex flex-column">
                         <RockLabel>File</RockLabel>
                         <a v-if="fileUrl" :href="fileUrl" target="_blank">{{ binaryFile?.text }}</a>
                     </div>
-
-                    <div class="score-section">
-                        <NumberBox v-model="completionBag.pointsEarned"
-                                   label="Score"
-                                   rules="required"
-                                   :min="0"
-                                   :max="activityBag.points"
-                                   inputGroupClasses="input-width-md">
-                            <template #inputGroupAppend>
-                                <span class="input-group-addon">out of {{ activityBag.points }}</span>
-                            </template>
-                        </NumberBox>
-                    </div>
-                </div>
-
-                <div class="footer-section">
-                    <RockButton :btnType="BtnType.Primary"
-                                @click="emits('completed', true)">
-                        Complete
-                    </RockButton>
-                    <RockButton :btnType="BtnType.Link"
-                                @click="emits('completed', false)">
-                        Cancel
-                    </RockButton>
                 </div>
             </fieldset>
         </div>
@@ -103,16 +88,16 @@
     margin-top: 12px;
     display: grid;
     grid-template-columns: 50%;
+}
 
-    .file-section {
-        grid-row: 1;
-        grid-column: 1;
-    }
+.file-section {
+    grid-row: 1;
+    grid-column: 1;
+}
 
-    .score-section {
-        grid-row: 1;
-        grid-column: 2;
-    }
+.score-section {
+    grid-row: 1;
+    grid-column: 2;
 }
 
 .footer-section {
@@ -121,7 +106,7 @@
 </style>
 
 <script setup lang="ts">
-    import { ref, toRef, toValue, watch, } from "vue";
+    import { computed, ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -129,7 +114,6 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -137,7 +121,6 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { FileUploadActivityCompletion, FileUploadActivityConfiguration, FileUploadActivityDefaults } from "./fileUploadLearningActivity.partial";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -146,9 +129,9 @@
     const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
-    const activityBag = toRef(() => props.activityBag);
-    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -157,8 +140,10 @@
         containerClasses,
         defaultAssigneeDescription,
         fileUrl,
+        hasBeenGraded,
         instructions,
         panelTitle,
+        pointsPossibleAtCompletion,
         rubric,
         showRubricOnScoring,
         showRubricOnUpload,
@@ -169,13 +154,8 @@
         new FileUploadActivityDefaults()
     );
 
-    const dueDate =
-        (completionBag.value.dueDate ?? "").length === 0 ?
-            null :
-            RockDateTime.parseHTTP(completionBag.value.dueDate ?? "");
-
-    const dueDateHasPassed = ref(dueDate != null && dueDate < RockDateTime.now());
-    const isFacilitatorCompleted = ref(completionBag.value.isFacilitatorCompleted);
+    const pointsEarned = ref(completionBag.value.pointsEarned);
+    const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -202,12 +182,18 @@
             ...toValue(completionBag)
         } as LearningActivityCompletionBag;
 
+        updatedCompletionBag.pointsEarned = pointsEarned.value;
+
+        // Update the binaryFile for the completion activity in addition to the completion JSON.
+        updatedCompletionBag.binaryFile = binaryFile.value;
+
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-            binaryFile: binaryFile.value
+            binaryFile: binaryFile.value,
+            pointsPossibleAtCompletion: pointsPossible.value > 0 ? pointsPossible.value : undefined
         }) ?? "{}";
         emits("update:completionBag", updatedCompletionBag);
     });
-    watch(binaryFile, () => {
+    watch([binaryFile, pointsEarned], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

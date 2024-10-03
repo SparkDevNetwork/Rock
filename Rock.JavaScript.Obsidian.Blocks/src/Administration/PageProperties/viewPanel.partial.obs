@@ -1,0 +1,124 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { PagePropertiesBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesBag";
+    import { PagePropertiesOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesOptionsBag";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PagePropertiesBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<PagePropertiesOptionsBag>,
+            required: true
+        },
+
+        navigationUrls: {
+            type: Object as PropType<Record<string, string>>,
+            required: false
+        }
+    });
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.internalName) {
+            valueBuilder.addTextValue("Internal Name", props.modelValue.internalName);
+        }
+
+        if (props.modelValue.pageTitle) {
+            valueBuilder.addTextValue("Page Title", props.modelValue.pageTitle);
+        }
+
+        if (props.modelValue.browserTitle) {
+            valueBuilder.addTextValue("Browser Title", props.modelValue.browserTitle);
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        let medianPageLoadCss = "default";
+        let medianPageLoadText = "Not Measured";
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue?.medianPageLoadTimeDurationSeconds) {
+            medianPageLoadCss = props.modelValue.medianPageLoadTimeDurationSeconds <= 1 ? "success" :
+                props.modelValue.medianPageLoadTimeDurationSeconds <= 3 ? "warning" : "danger";
+            medianPageLoadText = `${props.modelValue.medianPageLoadTimeDurationSeconds.toFixed(2)}s`;
+        }
+
+        let medianPageLoadHtml = `<span class='label label-${medianPageLoadCss} padding-l-md padding-r-md'>${medianPageLoadText}</span>`;
+        const medianTimeDetailPageUrl = props.navigationUrls?.[NavigationUrlKey.MedianTimeDetailPage];
+
+        if (medianTimeDetailPageUrl && props.modelValue?.idKey) {
+            medianPageLoadHtml = `${medianPageLoadHtml} <a href='${medianTimeDetailPageUrl.replace("((Key))", props.modelValue.idKey)}'>Details</a>`;
+        }
+        else {
+            medianPageLoadHtml = `${medianPageLoadHtml} <a href='#'>Details</a>`;
+        }
+
+        valueBuilder.addHtmlValue("Median Time To Serve", medianPageLoadHtml);
+
+        if (props.modelValue.layout?.text) {
+            valueBuilder.addTextValue("Layout", props.modelValue.layout?.text);
+        }
+
+        if (props.modelValue.pageUrl) {
+            valueBuilder.addHtmlValue("URL", `<a href='${props.modelValue.pageUrl}'>${props.modelValue.pageUrl}</a>`);
+        }
+
+        return valueBuilder.build();
+    });
+</script>

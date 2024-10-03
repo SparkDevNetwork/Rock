@@ -116,7 +116,6 @@
                         borderWidth: 3,
                         scaleID: "y",
                         value: (ctx) => average(ctx),
-                        drawTime: "beforeDatasetsDraw",
                         label: {
                             content: (ctx, _options) => `Avg: ${average(ctx)}%`,
                             position: "start"
@@ -171,8 +170,8 @@
                             if (isValidDate(label)) {
                                 // If we're still in current month, do not display the label.
                                 const previousLabel = this.getLabelForValue(numberValue - 1);
-                                var currentLabelMonth = new Date(label).toLocaleString("default", { month: "short" });
-                                var previousLabelMonth = new Date(previousLabel).toLocaleString("default", { month: "short" });
+                                var currentLabelMonth = RockDateTime.parseISO(label)?.toASPString("MMM");
+                                var previousLabelMonth = RockDateTime.parseISO(previousLabel)?.toASPString("MMM");
                                 return currentLabelMonth === previousLabelMonth ? "" : currentLabelMonth;
                             }
                             else {
@@ -190,7 +189,8 @@
                     }
                 }
             }
-        }
+        },
+
     });
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -302,7 +302,7 @@
                     innerHtml += `<tr><td><span style="border-width: 2px">Tithing Households : ${toolTipInfo.tithingHouseHolds} | ${toolTipInfo.value}%</span></td><tr>`;
                 }
                 else {
-                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${dataPoint?.label} - ${dataPoint?.formattedValue}%</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${RockDateTime.parseISO(dataPoint?.label)?.toASPString("d")} - ${dataPoint?.formattedValue}%</span></td><tr>`;
                 }
 
                 innerHtml += "</tbody>";

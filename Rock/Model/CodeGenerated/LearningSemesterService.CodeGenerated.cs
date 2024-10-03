@@ -52,14 +52,27 @@ namespace Rock.Model
         public bool CanDelete( LearningSemester item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<LearningClass>( Context ).Queryable().Any( a => a.LearningSemesterId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningSemester.FriendlyTypeName, LearningClass.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
-    public partial class LearningSemester : IHasQueryableAttributes<LearningSemester.LearningSemesterQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( LearningSemester.LearningSemesterQueryableAttributeValue ), nameof( LearningSemesterAttributeValues ) )]
+    public partial class LearningSemester
     {
-        /// <inheritdoc/>
-        public virtual ICollection<LearningSemesterQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<LearningSemesterQueryableAttributeValue> LearningSemesterAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class LearningSemesterQueryableAttributeValue : QueryableAttributeValue

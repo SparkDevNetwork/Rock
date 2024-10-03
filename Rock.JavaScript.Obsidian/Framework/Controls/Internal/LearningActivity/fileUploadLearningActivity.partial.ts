@@ -27,6 +27,7 @@ export type FileUploadActivityConfiguration = {
 
 export type FileUploadActivityCompletion = {
     file: ListItemBag;
+    pointsPossibleAtCompletion?: number;
 };
 
 

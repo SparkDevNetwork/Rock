@@ -39,14 +39,7 @@
             <div v-if="folderListScrolled" class="scroll-shadow"><!-- Intentionally Empty... just used to create a shadow when the container below is scrolled --></div>
 
             <div ref="folderScrollContainer" class="overflow-y-auto overflow-x-auto mh-100" style="z-index:0">
-                <TreeList v-model="selectedFolderArray"
-                          :provider="itemProvider"
-                          v-model:items="folders"
-                          autoExpand
-                          @treeitem-expanded="onTreeItemExpanded"
-                          @treeitem-collapsed="onTreeItemCollapsed"
-                          :initiallyExpanded="openFolders"
-                          :key="treeRefreshKey" />
+                <TreeList v-model="selectedFolderArray" :provider="itemProvider" v-model:items="folders" autoExpand @treeitem-expanded="onTreeItemExpanded" @treeitem-collapsed="onTreeItemCollapsed" :initiallyExpanded="openFolders" :key="treeRefreshKey" />
             </div>
 
             <Transition>
@@ -168,10 +161,9 @@
 </template>
 
 <style scoped>
-
 #pnlAssetManager {
     height: 100%;
-    min-height: 600px;
+    min-height: 250px;
 }
 
 .assetmanager-files th,
@@ -191,7 +183,7 @@
 
 /* Add rollover effect so that images that are white with transparent backgrounds can be determined */
 .assetmanager-files tr:hover {
-    background-color: var( --color-interface-softer);
+    background-color: var(--color-interface-softer);
     transition: background-color 0.3s ease-in-out;
 }
 
@@ -1060,7 +1052,14 @@
         const response = await post<AssetManagerGetFilesResultsBag<FileAsset>>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
-            files.value = response.data.files ?? [];
+            let fileData = response.data.files ?? [];
+
+            // For some reason, most/all of the asset providers don't actually set the assetStorageProviderId
+            // so we need to set it here
+            files.value = fileData.map(asset => {
+                asset.assetStorageProviderId = parseInt(parseFolderName(selectedFolder.value ?? "").providerId, 10) || asset.assetStorageProviderId || 0;
+                return asset;
+            });
             isFolderRestricted.value = response.data.isFolderRestricted ?? false;
             isUploadRestricted.value = response.data.isFolderUploadRestricted ?? false;
         }

@@ -56,10 +56,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class EventItemOccurrenceChannelItem : IHasQueryableAttributes<EventItemOccurrenceChannelItem.EventItemOccurrenceChannelItemQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( EventItemOccurrenceChannelItem.EventItemOccurrenceChannelItemQueryableAttributeValue ), nameof( EventItemOccurrenceChannelItemAttributeValues ) )]
+    public partial class EventItemOccurrenceChannelItem
     {
-        /// <inheritdoc/>
-        public virtual ICollection<EventItemOccurrenceChannelItemQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<EventItemOccurrenceChannelItemQueryableAttributeValue> EventItemOccurrenceChannelItemAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class EventItemOccurrenceChannelItemQueryableAttributeValue : QueryableAttributeValue

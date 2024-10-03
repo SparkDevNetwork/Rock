@@ -22,7 +22,9 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Rock.Bus;
 using Rock.CloudPrint.Shared;
+using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2
@@ -33,7 +35,7 @@ namespace Rock.CheckIn.v2
     /// </summary>
     internal sealed class CloudPrintSocket : ProxyWebSocket
     {
-        #region Static Feilds
+        #region Static Fields
 
         /// <summary>
         /// Used to tell the long-running monitor task that we no longer need
@@ -53,6 +55,13 @@ namespace Rock.CheckIn.v2
 
         #endregion
 
+        #region Fields
+
+        /// <inheritdoc cref="LabelCount"/>
+        private int _labelCount;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -67,11 +76,20 @@ namespace Rock.CheckIn.v2
         public string Name { get; }
 
         /// <summary>
-        /// The priority that this proxy has. The lowest value has the most
-        /// priority. If multiple proxies have the same priority then they may
-        /// be used in a round-robin manner.
+        /// The remote IP address of this proxy connection.
         /// </summary>
-        public int Priority { get; }
+        public string Address { get; }
+
+        /// <summary>
+        /// The date and time this proxy connected to the server.
+        /// </summary>
+        public DateTime ConnectedDateTime { get; } = RockDateTime.Now;
+
+        /// <summary>
+        /// The number of labels that have been printed since
+        /// <see cref="ConnectedDateTime"/>
+        /// </summary>
+        public int LabelCount => _labelCount;
 
         #endregion
 
@@ -83,13 +101,13 @@ namespace Rock.CheckIn.v2
         /// <param name="socket">The <see cref="WebSocket"/> object that will handling the low-level communication.</param>
         /// <param name="deviceId">The device identifier for the proxy.</param>
         /// <param name="name">The friendly name of the proxy.</param>
-        /// <param name="priority">The priority of the printer proxy.</param>
-        public CloudPrintSocket( WebSocket socket, int deviceId, string name, int priority )
+        /// <param name="address">The remote IP address as a string.</param>
+        public CloudPrintSocket( WebSocket socket, int deviceId, string name, string address )
             : base( socket )
         {
             DeviceId = deviceId;
             Name = name;
-            Priority = priority;
+            Address = address;
 
             AddProxy( this );
         }
@@ -124,6 +142,8 @@ namespace Rock.CheckIn.v2
         /// <returns>A string that represents any error message returned by the proxy.</returns>
         public async Task<string> PrintAsync( DeviceCache printer, byte[] data, CancellationToken cancellationToken = default )
         {
+            Interlocked.Increment( ref _labelCount );
+
             var printMessage = new CloudPrintMessagePrint
             {
                 Address = printer.IPAddress
@@ -137,6 +157,48 @@ namespace Rock.CheckIn.v2
         #region Static Methods
 
         /// <summary>
+        /// Get the status of all proxies connected to this server.
+        /// </summary>
+        /// <returns></returns>
+        internal static List<CloudPrintProxyStatusBag> GetProxyStatus()
+        {
+            var statuses = new List<CloudPrintProxyStatusBag>();
+
+            lock ( _lock )
+            {
+                foreach ( var pair in _proxies )
+                {
+                    var proxyDevice = DeviceCache.Get( pair.Key );
+
+                    if ( proxyDevice == null )
+                    {
+                        continue;
+                    }
+
+                    var bag = new CloudPrintProxyStatusBag
+                    {
+                        Id = proxyDevice.IdKey,
+                        Name = proxyDevice.Name,
+                        ServerNode = RockMessageBus.NodeName,
+                        Connections = pair.Value
+                            .Select( socket => new CloudPrintProxyConnectionStatusBag
+                            {
+                                Name = socket.Name,
+                                Address = socket.Address,
+                                LabelCount = socket.LabelCount,
+                                ConnectedDateTime = socket.ConnectedDateTime.ToRockDateTimeOffset()
+                            } )
+                            .ToList()
+                    };
+
+                    statuses.Add( bag );
+                }
+            }
+
+            return statuses;
+        }
+
+        /// <summary>
         /// Gets the best proxy to use for the specified proxy <see cref="Model.Device"/>.
         /// </summary>
         /// <param name="proxyDeviceId">The identifier of the proxy.</param>
@@ -147,7 +209,7 @@ namespace Rock.CheckIn.v2
             {
                 if ( _proxies.TryGetValue( proxyDeviceId, out var proxies ) )
                 {
-                    return proxies.OrderBy( p => p.Priority ).FirstOrDefault();
+                    return proxies.FirstOrDefault();
                 }
                 else
                 {
@@ -194,6 +256,7 @@ namespace Rock.CheckIn.v2
                 }
                 else
                 {
+                    Task.Run( () => RockMessageBus.AddDynamicConsumerAsync<CloudPrintLabelConsumer>( $"rock-cloud-print-command-queue-{proxy.DeviceId}" ) );
                     _proxies.Add( proxy.DeviceId, new List<CloudPrintSocket> { proxy } );
                 }
 
@@ -227,6 +290,7 @@ namespace Rock.CheckIn.v2
 
                     if ( proxies.Count == 0 )
                     {
+                        Task.Run( () => RockMessageBus.RemoveDynamicConsumerAsync<CloudPrintLabelConsumer>( $"rock-cloud-print-command-queue-{proxy.DeviceId}" ) );
                         _proxies.Remove( proxy.DeviceId );
                     }
 

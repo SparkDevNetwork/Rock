@@ -58,10 +58,17 @@ namespace Rock.Model
         }
     }
 
-    public partial class MetricValue : IHasQueryableAttributes<MetricValue.MetricValueQueryableAttributeValue>
+    [HasQueryableAttributes( typeof( MetricValue.MetricValueQueryableAttributeValue ), nameof( MetricValueAttributeValues ) )]
+    public partial class MetricValue
     {
-        /// <inheritdoc/>
-        public virtual ICollection<MetricValueQueryableAttributeValue> EntityAttributeValues { get; set; } 
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<MetricValueQueryableAttributeValue> MetricValueAttributeValues { get; set; } 
 
         /// <inheritdoc/>
         public class MetricValueQueryableAttributeValue : QueryableAttributeValue

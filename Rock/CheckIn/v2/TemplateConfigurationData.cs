@@ -51,6 +51,20 @@ namespace Rock.CheckIn.v2
         public virtual IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
 
         /// <summary>
+        /// Gets a value indicating whether groups not marked as special needs
+        /// should be removed from a person's opportunity list if the person
+        /// <strong>is</strong> marked as special needs.
+        /// </summary>
+        public virtual bool AreNonSpecialNeedsGroupsRemoved { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether groups marked as special needs
+        /// should be removed from a person's opportunity list if the person
+        /// is <strong>not</strong> marked as special needs.
+        /// </summary>
+        public virtual bool AreSpecialNeedsGroupsRemoved { get; }
+
+        /// <summary>
         /// Gets the number of days back the AutoSelect feature will use to
         /// determine automatic selections. A value of <c>0</c> will disable.
         /// </summary>
@@ -159,6 +173,14 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value><c>true</c> if the presence system is enabled; otherwise, <c>false</c>.</value>
         public virtual bool IsPresenceEnabled { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether removing people with a "can check-in"
+        /// relationship from the family is allowed. This does not allow
+        /// full family members to be removed.
+        /// </summary>
+        /// <value><c>true</c> if can check-in relationship can be removed; otherwise, <c>false</c>.</value>
+        public virtual bool IsRemoveFromFamilyAtKioskAllowed { get; }
 
         /// <summary>
         /// Gets a value indicating whether the same security code should be
@@ -558,6 +580,8 @@ namespace Rock.CheckIn.v2
         {
             AbilityLevelDetermination = ( AbilityLevelDeterminationMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
             AchievementTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+            AreNonSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean();
+            AreSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AutoSelectDaysBack = groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ).AsInteger();
             AutoSelect = ( AutoSelectMode ) groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectOptions" ).AsInteger();
             KioskCheckInType = groupTypeCache.GetAttributeValue( "core_checkin_CheckInType" ) == "1" ? KioskCheckInMode.Family : KioskCheckInMode.Individual;
@@ -573,6 +597,7 @@ namespace Rock.CheckIn.v2
             IsOverrideAvailable = groupTypeCache.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
             IsPhotoHidden = groupTypeCache.GetAttributeValue( "core_checkin_HidePhotos" ).AsBoolean( true );
             IsPresenceEnabled = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
+            IsRemoveFromFamilyAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK ).AsBoolean();
             IsSameCodeUsedForFamily = groupTypeCache.GetAttributeValue( "core_checkin_ReuseSameCode" ).AsBoolean( false );
             IsSameOptionUsed = groupTypeCache.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false );
             IsSupervisorEnabled = groupTypeCache.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
@@ -714,7 +739,7 @@ namespace Rock.CheckIn.v2
                 results.Add( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() );
             }
 
-            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ).ToList() )
+            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ) )
             {
                 results.Add( role.Guid, true );
             }
