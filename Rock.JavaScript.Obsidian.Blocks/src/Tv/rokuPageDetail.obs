@@ -1,0 +1,234 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="true"
+                 :isSecurityHidden="false"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave"
+                 :isFullScreenVisible="false"
+                 :footerActions="footerActions">
+        <template #edit>
+            <EditPanel v-model="pageEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            <NotificationBox v-if="showSavedMessage" alertType="info">Your changes have been saved.</NotificationBox>
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./RokuPageDetail/editPanel.partial.obs";
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./RokuPageDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { RokuPageBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuPageDetail/rokuPageBag";
+    import { RokuPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuPageDetail/rokuPageDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<RokuPageBag, RokuPageDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const showSavedMessage = ref(false);
+
+    const pageViewBag = ref(config.entity);
+    const pageEditBag = ref<ValidPropertiesBox<RokuPageBag>>({
+        bag: config.entity,
+        validProperties: config.validProperties
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: pageEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const footerActions: PanelAction[] = [
+
+        {
+            title: "Save Continue Editing",
+            type: "link",
+            handler: onSaveAndContinue
+            //onClick: onSave
+        },
+    ]
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return panelMode.value === DetailPanelMode.Add ? "New Page" : "Edit Page";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return pageViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): RokuPageDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: pageViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete page.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<RokuPageBag>>("Edit", {
+            key: pageViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            pageEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(cont: boolean = false): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<RokuPageBag> | string>("Save", {
+            box: pageEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (cont) {
+                return false;
+            }
+
+            if ((result.statusCode === 201 || result.statusCode === 200) && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save page.";
+
+        return false;
+    }
+
+    async function onSaveAndContinue(): Promise<void> {
+        await onSave(true);
+        showSavedMessage.value = true;
+
+        setTimeout(() => {
+            showSavedMessage.value = false;
+        }, 3000);
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified page could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        pageEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

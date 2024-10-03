@@ -179,6 +179,12 @@
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
+    <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationBag.cs" />
+    <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageBag.cs" />
+    <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\TvApplicationList\TvApplicationOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\TvPageList\TvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />

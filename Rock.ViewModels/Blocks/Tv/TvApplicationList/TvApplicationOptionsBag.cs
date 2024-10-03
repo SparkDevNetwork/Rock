@@ -15,35 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.Tv.Classes
+namespace Rock.ViewModels.Blocks.Tv.TvApplicationList
 {
     /// <summary>
-    /// POCO for Application Settings
+    /// The Site List Options Bag
     /// </summary>
-    public class ApplicationSettings
+    public class TvApplicationOptionsBag
     {
-        /// <summary>
-        /// Gets or sets the type of the TV application.
-        /// </summary>
-        /// <value>
-        /// The type of the TV application.
-        /// </value>
-        public TvApplicationType TvApplicationType { get; set; }
-    }
-
-    /// <summary>
-    /// Enum for determining the type of TV application.
-    /// </summary>
-    public enum TvApplicationType
-    {
-        /// <summary>
-        /// Apple TV
-        /// </summary>
-        AppleTv = 0,
-
-        /// <summary>
-        /// Roku
-        /// </summary>
-        Roku = 1
     }
 }
