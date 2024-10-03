@@ -76,7 +76,7 @@
         color:                  var(--color-interface-strongest);
         text-align:             center;
         word-wrap:              break-word;
-        background-color:       var(--color-interface-softer);
+        background-color:       var(--color-interface-softest);
         background-clip:        border-box;
         border:                 1px solid var(--color-interface-soft);
         border-radius:          var(--rounded-small);
@@ -88,17 +88,17 @@
         i {
           margin:     var(--spacing-small) 0;
           font-size:  var(--font-size-h3);
-          color:      var(--color-interface-stronger);
+          color:      var(--color-interface-strong);
         }
 
         &:hover {
-          color:              var(--color-interface-softest);
+          color:              var(--color-interface-stronger);
           text-decoration:    none;
-          background-color:   var(--color-interface-medium);
+          background-color:   var(--color-interface-softer);
           border-color:       var(--color-interface-medium);
 
           i {
-            color:            var(--color-interface-softest);
+            color:            var(--color-interface-stronger);
           }
         }
 
