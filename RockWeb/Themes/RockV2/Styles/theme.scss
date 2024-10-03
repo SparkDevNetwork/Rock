@@ -642,12 +642,15 @@ $navbar-element-height: 40px;
       &.current {
         .nav-link {
           font-weight: 600;
-          color: var(--color-interface-softest);
+          color: var(--color-interface-strong);
+          // background-color: var(--color-primary);
+          // border-radius: var(--rounded-small);
 
           &::before {
             width: 8px;
             padding-left: 8px;
             margin-right: 6px;
+            background-color: var(--color-primary);
           }
         }
       }
@@ -988,4 +991,8 @@ $hamburger-spacing: 4px;
 .list-group-item {
   padding-right:  var(--spacing-large);
   padding-left:   var(--spacing-large);
+}
+
+.list-group-item:hover {
+  background-color: var(--color-interface-softer);
 }
