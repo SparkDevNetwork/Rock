@@ -772,7 +772,7 @@ namespace Rock.Rest.v2.Controllers
                 }
 
                 // Get the page response content from the AdditionalSettings property
-                var sceneGraph = page.GetAdditionalSettings<ApplePageResponse>()?.Content;
+                var sceneGraph = page.GetAdditionalSettings<RokuTvPageSettings>()?.ScenegraphContent;
 
                 if ( sceneGraph.IsNullOrWhiteSpace() )
                 {

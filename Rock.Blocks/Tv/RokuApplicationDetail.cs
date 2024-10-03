@@ -498,7 +498,6 @@ namespace Rock.Blocks.Tv
                 additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, entity.Name, box.Bag.ApiKey, $"tv_application_{entity.Id}", RockContext );
                 additionalSettings.RockComponents = box.Bag.RokuComponents;
 
-                entity.AdditionalSettings = additionalSettings.ToJson();
                 RockContext.SaveChanges();
             } );
 
@@ -534,12 +533,16 @@ namespace Rock.Blocks.Tv
 
                 entity.DefaultPageId = page.Id;
                 RockContext.SaveChanges();
+                additionalSettings.RockComponents = RokuConstants.DEFAULT_ROKU_COMPONENTS;
 
                 return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
                     [PageParameterKey.SiteId] = entity.IdKey
                 } ) );
             }
+
+            entity.AdditionalSettings = additionalSettings.ToJson();
+            RockContext.SaveChanges();
 
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
@@ -578,6 +581,166 @@ namespace Rock.Blocks.Tv
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        private static class RokuConstants
+        {
+            public const string DEFAULT_ROKU_COMPONENTS = @"###COMPONENT>Rock:Page###
+<component name=""Rock:Page"" extends=""Group"">
+    <interface>
+        <field id=""initialFocus"" type=""string"" />
+    </interface>
+</component>
+###COMPONENT>Rock:ContentNode###
+<component name=""Rock:ContentNode"" extends=""ContentNode"">
+    <interface>
+        <field id=""rockCommand"" type=""string"" />
+        <field id=""rockPageGuid"" type=""string"" />
+        <field id=""rockPageCacheControl"" type=""string"" />
+        <field id=""rockPageSuppressInteraction"" type=""bool"" />
+        <field id=""rockPageShowLoading"" type=""bool"" />
+        <field id=""rockVideoUrl"" type=""string"" />
+        <field id=""rockVideoMediaElementGuid"" type=""string"" />
+        <field id=""rockVideoRelatedEntityTypeIds"" type=""int"" />
+        <field id=""rockVideoRelatedEntityId"" type=""int"" />
+        <field id=""rockVideoEnableResume"" type=""bool"" value=""true"" />
+        <field id=""rockVideoTitle"" type=""string"" />
+        <field id=""rockVideoSubtitle"" type=""string"" />
+        <field id=""rockVideoArtworkImageUrl"" type=""string"" />
+        <field id=""rockVideoDescription"" type=""string"" />
+        <field id=""rockAudioUrl"" type=""string"" />
+        <field id=""rockAudioMediaElementGuid"" type=""string"" />
+        <field id=""rockAudioRelatedEntityTypeIds"" type=""int"" />
+        <field id=""rockAudioRelatedEntityId"" type=""int"" />
+        <field id=""rockAudioEnableResume"" type=""bool"" value=""true"" />
+        <field id=""rockAudioTitle"" type=""string"" />
+        <field id=""rockAudioSubtitle"" type=""string"" />
+        <field id=""rockAudioArtworkImageUrl"" type=""string"" />
+        <field id=""rockAudioDescription"" type=""string"" />
+        <field id=""rockInteractionGuid"" type=""string"" />
+        <field id=""rockLoginPageGuid"" type=""string"" />
+        <field id=""rockLoginSuccessPageGuid"" type=""string"" />
+        <field id=""rockLogoutSuccessPageGuid"" type=""string"" />
+        <field id=""rockWatchMap"" type=""string"" />
+    </interface>
+</component>
+###COMPONENT>Rock:FocusGroup###
+<component name=""Rock:FocusGroup"" extends=""LayoutGroup"">
+    <script type=""text/brightscript"">
+        <![CDATA[
+        sub init()
+            m.top.setFocus(true)  ' Set focus to the component itself
+            m.currentIndex = 0    ' Start focus at the first child
+        end sub
+
+        ' Function to handle key press events
+        function onKeyEvent(key as String, press as Boolean) as Boolean
+            if press 
+                layoutDirection = m.top.layoutDirection
+
+                ' Handle left + down navigation
+                if (layoutDirection = ""horiz"" and key = ""left"") or (layoutDirection = ""vert"" and key = ""down"")
+                    handleLeftOrDownNavigation()
+                    return true
+                ' Handle up + right navigation
+                elseif (layoutDirection = ""horiz"" and key = ""right"") or (layoutDirection = ""vert"" and key = ""up"")
+                    handleUpOrRightNavigation()
+                    return true
+                end if
+            end if
+            return false
+        end function
+
+        ' Handle left and down navigation with wrapping
+        sub handleLeftOrDownNavigation()
+            if m.currentIndex > 0
+                m.currentIndex -= 1
+            else
+                ' If we are at the first item, wrap to the last one
+                m.currentIndex = m.top.getChildCount() - 1
+            end if
+            updateFocus()
+        end sub
+
+        ' Handle up and right navigation with wrapping
+        sub handleUpOrRightNavigation()
+            if m.currentIndex < m.top.getChildCount() - 1
+                m.currentIndex += 1
+            else
+                ' If we are at the last item, wrap to the first one
+                m.currentIndex = 0
+            end if
+            updateFocus()
+        end sub
+
+        ' Set focus to the current child based on m.currentIndex
+        sub updateFocus()
+            focusedChild = m.top.getChild(m.currentIndex)
+            focusedChild.setFocus(true)
+        end sub
+        ]]>
+    </script>
+</component>
+###COMPONENT>Rock:Button###
+<component name=""Rock:Button"" extends=""Button"">
+    <interface>
+        <field id=""centerText"" type=""bool"" />
+        <field id=""rockCommand"" type=""string"" />
+        <field id=""rockPageGuid"" type=""string"" />
+        <field id=""rockPageCacheControl"" type=""string"" />
+        <field id=""rockPageSuppressInteraction"" type=""bool"" />
+        <field id=""rockPageShowLoading"" type=""bool"" />
+        <field id=""rockVideoUrl"" type=""string"" />
+        <field id=""rockVideoMediaElementGuid"" type=""string"" />
+        <field id=""rockVideoRelatedEntityTypeId"" type=""int"" />
+        <field id=""rockVideoRelatedEntityId"" type=""int"" />
+        <field id=""rockVideoEnableResume"" type=""bool"" value=""true"" />
+        <field id=""rockVideoTitle"" type=""string"" />
+        <field id=""rockVideoSubtitle"" type=""string"" />
+        <field id=""rockVideoArtworkImageUrl"" type=""string"" />
+        <field id=""rockVideoDescription"" type=""string"" />
+        <field id=""rockAudioUrl"" type=""string"" />
+        <field id=""rockAudioMediaElementGuid"" type=""string"" />
+        <field id=""rockAudioRelatedEntityTypeIds"" type=""int"" />
+        <field id=""rockAudioRelatedEntityId"" type=""int"" />
+        <field id=""rockAudioEnableResume"" type=""bool"" value=""true"" />
+        <field id=""rockAudioTitle"" type=""string"" />
+        <field id=""rockAudioSubtitle"" type=""string"" />
+        <field id=""rockAudioArtworkImageUrl"" type=""string"" />
+        <field id=""rockAudioDescription"" type=""string"" />
+        <field id=""rockInteractionGuid"" type=""string"" />
+        <field id=""rockLoginPageGuid"" type=""string"" />
+        <field id=""rockLoginSuccessPageGuid"" type=""string"" />
+        <field id=""rockLogoutSuccessPageGuid"" type=""string"" />
+        <field id=""rockWatchMap"" type=""string"" />
+    </interface>
+
+    <script type=""text/brightscript"">
+        <![CDATA[
+            sub init()
+                for i = 0 to m.top.getChildCount() - 1
+                    child = m.top.getChild(i)
+                    if child.subtype() = ""Label""
+                        child.horizAlign = ""center""
+                        child.observeField(""horizAlign"", ""onHorizAlignChanged"")
+                        exit for
+                    end if
+                end for
+            end sub
+
+            sub onHorizAlignChanged(msg as object)
+                label = msg.getRoSGNode()
+                if m.top.centerText and label.horizAlign <> ""center""
+                    label.horizAlign = ""center""
+                end if
+            end sub
+        ]]>
+    </script>
+</component>";
         }
 
         #endregion

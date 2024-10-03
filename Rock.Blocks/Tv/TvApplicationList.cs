@@ -151,7 +151,7 @@ namespace Rock.Blocks.Tv
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "tvPlatform", a => GetApplicationSettings( a ).TvApplicationType.ConvertToString() )
+                .AddField( "tvPlatform", a => GetApplicationSettings( a )?.TvApplicationType.ConvertToString() )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
