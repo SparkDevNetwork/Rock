@@ -37,6 +37,12 @@ namespace Rock.Data
         #region Properties
 
         /// <summary>
+        /// Set during migrations to disable certain EF features when creating
+        /// the model.
+        /// </summary>
+        internal static bool IsAddMigration { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether timing metrics should be captured.
         /// </summary>
         /// <value>
@@ -122,6 +128,31 @@ namespace Rock.Data
         {
             ContextHelper.AddConfigurations( modelBuilder );
 
+            // Find all core models in the Rock DLL. When running under Add-Migration
+            // this will throw a reflection exception for some reason.
+            List<Type> coreEntityTypeList;
+            try
+            {
+                coreEntityTypeList = typeof( IEntity ).Assembly
+                    .DefinedTypes
+                    .Select( t => t.AsType() )
+                    .ToList();
+            }
+            catch ( ReflectionTypeLoadException ex )
+            {
+                // Get the types that could be loaded.
+                coreEntityTypeList = ex.Types.Where( t => t != null ).ToList();
+            }
+
+            coreEntityTypeList = coreEntityTypeList
+                .Where( t => t.GetInterfaces().Contains( typeof( IEntity ) )
+                    && !t.IsAbstract
+                    && t.GetCustomAttribute<NotMappedAttribute>() == null
+                    && t.GetCustomAttribute<HasQueryableAttributesAttribute>() != null )
+                .ToList();
+
+            ConfigureEntityAttributes( modelBuilder, coreEntityTypeList );
+
             try
             {
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
@@ -168,15 +199,6 @@ namespace Rock.Data
                     }
                 }
 
-                // Find all core models in the Rock DLL.
-                var coreEntityTypeList = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
-                    .Select( a => a.Value )
-                    .Where( a => !a.IsAbstract
-                        && a.GetCustomAttribute<NotMappedAttribute>() == null
-                        && a.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null )
-                    .ToList();
-
-                ConfigureEntityAttributes( modelBuilder, coreEntityTypeList );
                 ConfigureEntityAttributes( modelBuilder, pluginEntityTypeList );
             }
             catch ( Exception ex )
@@ -228,9 +250,24 @@ namespace Rock.Data
                     var entityMethod = genericEntityMethod.MakeGenericMethod( entityType );
                     var entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
 
+                    // If we are running inside an Add-Migration call then mark
+                    // all the queryable attribute value properties as not
+                    // mapped so they do not get included in the migration.
+                    if ( IsAddMigration )
+                    {
+                        // .Ignore( a => a.[[attributeValuesPropertyName]] )
+                        var ignorePropertyType = typeof( ICollection<> ).MakeGenericType( attributeValueType );
+                        var ignorePropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, ignorePropertyType );
+                        var ignorePropertyParameter = Expression.Parameter( entityType );
+                        var ignorePropertyExpression = Expression.Lambda( Expression.Property( ignorePropertyParameter, entityAttributeValuesProperty ), ignorePropertyParameter );
+                        var ignoreMethod = entityTypeConfiguration.GetType().GetMethod( "Ignore" ).MakeGenericMethod( ignorePropertyType );
+
+                        ignoreMethod.Invoke( entityTypeConfiguration, new object[] { ignorePropertyExpression } );
+
+                        continue;
+                    }
+
                     // .HasMany( a => a.[[attributeValuesPropertyName]] )
-                    var navigationPropertyType = typeof( ICollection<> ).MakeGenericType( attributeValueType );
-                    var navigationPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, navigationPropertyType );
                     var navigationPropertyParameter = Expression.Parameter( entityType );
                     var navigationPropertyExpression = Expression.Lambda( Expression.Property( navigationPropertyParameter, entityAttributeValuesProperty ), navigationPropertyParameter );
                     var hasManyMethod = entityTypeConfiguration.GetType().GetMethod( "HasMany" ).MakeGenericMethod( attributeValueType );

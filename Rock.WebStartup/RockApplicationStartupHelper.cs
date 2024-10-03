@@ -830,10 +830,10 @@ namespace Rock.WebStartup
             // Find all core entity types and then all plugin entity types.
             var types = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
                 .Union( Reflection.FindTypes( typeof( IRockEntity ) ) )
-                .Select( a => a.Value )
-                .Where( a => !a.IsAbstract
-                    && a.GetCustomAttribute<NotMappedAttribute>() == null
-                    && a.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null )
+                .Select( t => t.Value )
+                .Where( t => !t.IsAbstract
+                    && t.GetCustomAttribute<NotMappedAttribute>() == null
+                    && t.GetCustomAttribute<HasQueryableAttributesAttribute>() != null )
                 .ToList();
 
             using ( var rockContext = new RockContext() )
