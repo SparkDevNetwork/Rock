@@ -16,10 +16,9 @@
 </style>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref, watch } from "vue";
-    import { useAccordionManager } from "./utils.partial";
+    import { PropType, ref } from "vue";
+    import { useAccordionGroup } from "./utils.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { newGuid } from "@Obsidian/Utility/guid";
 
     defineProps({
         title: {
@@ -32,41 +31,11 @@
         }
     });
 
-    const accordionKey = newGuid();
-    const accordionManager = useAccordionManager();
-
     // #region Values
 
     const isExpanded = ref<boolean>(false);
 
     // #endregion
 
-    // #region Functions
-
-    function expand(): void {
-        isExpanded.value = true;
-    }
-
-    function collapse(): void {
-        isExpanded.value = false;
-    }
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(isExpanded, value => {
-        if (value) {
-            accordionManager.expand(accordionKey);
-        }
-    });
-
-    // #endregion
-
-    onMounted(() => {
-        accordionManager.register(accordionKey, {
-            collapse,
-            expand
-        });
-    });
+    useAccordionGroup(isExpanded);
 </script>

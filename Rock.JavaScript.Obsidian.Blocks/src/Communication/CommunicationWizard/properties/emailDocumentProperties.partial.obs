@@ -1,61 +1,46 @@
 <template>
-    <Panel v-model="isGeneralSettingsExpanded"
-           :hasCollapse="true"
-           title="General Settings"
-           type="block">
-        <Width :modelValue="modelValue.body" label="Content Area Width" />
-        <BackgroundColor :modelValue="modelValue.documentElement" />
-        <BackgroundColor :modelValue="modelValue.body" label="Body Color" />
-        <BackgroundImage :modelValue="modelValue.body" />
-        <Border :modelValue="modelValue.body" label="Body Border" />
-    </Panel>
+    <AccordionGroup>
+        <Accordion title="General Settings">
+            <DropDownList v-model="communicationTemplateGuidOrEmptyString" :items="communicationTemplateItems" />
+            <Width :modelValue="modelValue.body" label="Content Area Width" />
+            <BackgroundColor :modelValue="modelValue.documentElement" />
+            <BackgroundColor :modelValue="modelValue.body" label="Body Color" />
+            <BackgroundImage :modelValue="modelValue.body" />
+            <Border :modelValue="modelValue.body" label="Body Border" />
+        </Accordion>
 
-    <Panel v-model="isTextStylingExpanded"
-           :hasCollapse="true"
-           title="Text Styling"
-           type="block">
-        <FontStyleSheet :modelValue="modelValue.body"
-                        label="Heading 1"
-                        tagName="h1" />
-        <hr>
-        <FontStyleSheet :modelValue="modelValue.body"
-                        label="Heading 2"
-                        tagName="h2" />
-        <hr>
-        <FontStyleSheet :modelValue="modelValue.body"
-                        label="Heading 3"
-                        tagName="h3" />
-        <hr>
-        <FontStyleSheet :modelValue="modelValue.body"
-                        label="Paragraph"
-                        tagName="p" />
-    </Panel>
+        <Accordion title="Text Styling">
+            <FontStyleSheet :modelValue="modelValue.body"
+                            label="Heading 1"
+                            tagName="h1" />
+            <hr>
+            <FontStyleSheet :modelValue="modelValue.body"
+                            label="Heading 2"
+                            tagName="h2" />
+            <hr>
+            <FontStyleSheet :modelValue="modelValue.body"
+                            label="Heading 3"
+                            tagName="h3" />
+            <hr>
+            <FontStyleSheet :modelValue="modelValue.body"
+                            label="Paragraph"
+                            tagName="p" />
+        </Accordion>
 
-    <Panel v-model="isDefaultButtonStylingExpanded"
-           :hasCollapse="true"
-           title="Button Styling"
-           type="block">
-        <ButtonStyleSheet :modelValue="modelValue.body" />
-    </Panel>
+        <Accordion title="Button Styling">
+            <ButtonStyleSheet :modelValue="modelValue.body" />
+        </Accordion>
 
-    <Panel v-model="isDividerStylingExpanded"
-           :hasCollapse="true"
-           title="Divider Styling"
-           type="block">
-        <DividerStyleSheet :modelValue="modelValue.body" />
-    </Panel>
+        <Accordion title="Divider Styling">
+            <DividerStyleSheet :modelValue="modelValue.body" />
+        </Accordion>
+    </AccordionGroup>
 </template>
-
-<style scoped>
-:deep(.panel) {
-    margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
-    height: auto !important;
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import BackgroundImage from "../inlineStyleEditors/backgroundImage.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";
@@ -63,63 +48,48 @@
     import ButtonStyleSheet from "../styleSheetEditors/button.partial.obs";
     import DividerStyleSheet from "../styleSheetEditors/divider.partial.obs";
     import FontStyleSheet from "../styleSheetEditors/font.partial.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     defineProps({
-        /** This should be a body element. */
         modelValue: {
             type: Object as PropType<Document>,
             required: true
         }
     });
 
+    const emit = defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "setEditorInnerHtml", value: string): void;
+    }>();
+
+    const config = useConfigurationValues<{ message?: string | null | undefined; templates?: ListItemBag[] | null | undefined; }>();
+    const invokeBlockAction = useInvokeBlockAction();
+
     // #region Values
 
-    const isGeneralSettingsExpanded = ref<boolean>(true);
-    const isTextStylingExpanded = ref<boolean>(false);
-    const isDefaultButtonStylingExpanded = ref<boolean>(false);
-    const isDividerStylingExpanded = ref<boolean>(false);
+    const communicationTemplateGuidOrEmptyString = ref<string>("");
+    const communicationTemplateItems = ref<ListItemBag[]>(config.templates ?? []);
 
     // #endregion
 
     // #region Watchers
 
-    watch(isGeneralSettingsExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other sections.
-            isTextStylingExpanded.value = false;
-            isDefaultButtonStylingExpanded.value = false;
-            isDividerStylingExpanded.value = false;
-        }
-    }, {
-        // This is the only expansion watcher that should run immediately.
-        immediate: true
-    });
+    watch(communicationTemplateGuidOrEmptyString, async guidOrEmptyString => {
+        const guid = toGuidOrNull(guidOrEmptyString);
 
-    watch(isTextStylingExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other sections.
-            isGeneralSettingsExpanded.value = false;
-            isDefaultButtonStylingExpanded.value = false;
-            isDividerStylingExpanded.value = false;
-        }
-    });
+        if (guid) {
+            const result = await invokeBlockAction<{ message: string | null | undefined }>("GetCommunicationTemplate", { communicationTemplateGuid: guid });
 
-    watch(isDefaultButtonStylingExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other sections.
-            isGeneralSettingsExpanded.value = false;
-            isTextStylingExpanded.value = false;
-            isDividerStylingExpanded.value = false;
-        }
-    });
-
-    watch(isDividerStylingExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other sections.
-            isGeneralSettingsExpanded.value = false;
-            isTextStylingExpanded.value = false;
-            isDefaultButtonStylingExpanded.value = false;
+            if (!result?.isSuccess || !result.data?.message) {
+                console.error(result?.errorMessage ?? "unable to select communication template");
+            }
+            else {
+                emit("setEditorInnerHtml", result.data.message);
+            }
         }
     });
 

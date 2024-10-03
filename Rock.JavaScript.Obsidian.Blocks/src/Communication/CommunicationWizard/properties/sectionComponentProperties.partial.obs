@@ -1,39 +1,27 @@
 <template>
     <ComponentProperties @complete="$emit('complete')"
                          @delete="$emit('delete')">
-        <Panel v-model="isRowSettingsExpanded"
-               :hasCollapse="true"
-               title="Row Settings"
-               type="block">
-            <BackgroundColor :modelValue="selectedComponent.componentElement" />
-            <Border :modelValue="selectedComponent.componentElement" />
-        </Panel>
+        <AccordionGroup>
+            <Accordion title="Row Settings">
+                <BackgroundColor :modelValue="selectedComponent.componentElement" />
+                <Border :modelValue="selectedComponent.componentElement" />
+            </Accordion>
 
-        <Panel v-model="isColumnsExpanded"
-               :hasCollapse="true"
-               title="Columns"
-               type="block">
-            {{ columnElements.length }}
-        </Panel>
+            <Accordion title="Columns">
+                {{ columnElements.length }}
+            </Accordion>
+        </AccordionGroup>
     </ComponentProperties>
 </template>
 
-<style scoped>
-:deep(.panel) {
-    margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
-    height: auto !important;
-}
-</style>
-
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
     import ComponentProperties from "../componentProperties.partial.obs";
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";
     import { EditorComponent } from "../types.partial";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         selectedComponent: {
@@ -50,8 +38,6 @@
     // #region Values
 
     const backgroundColor = ref<string>(props.selectedComponent.componentElement.style.backgroundColor ?? "");
-    const isRowSettingsExpanded = ref<boolean>(true);
-    const isColumnsExpanded = ref<boolean>(false);
     const columnElements = ref<HTMLElement[]>([...props.selectedComponent.componentElement.querySelectorAll(".dropzone")].map(e => <HTMLElement>e));
 
     // #endregion
@@ -60,20 +46,6 @@
 
     watch(() => props.selectedComponent, () => {
         backgroundColor.value = props.selectedComponent?.componentElement.style.backgroundColor ?? "";
-    });
-
-    watch(isRowSettingsExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other panels.
-            isColumnsExpanded.value = false;
-        }
-    });
-
-    watch(isColumnsExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other panels.
-            isRowSettingsExpanded.value = false;
-        }
     });
 
     // #endregion

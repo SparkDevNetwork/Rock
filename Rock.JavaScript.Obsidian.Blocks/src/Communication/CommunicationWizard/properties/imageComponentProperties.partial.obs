@@ -1,79 +1,75 @@
 <template>
     <ComponentProperties @complete="$emit('complete')"
                          @delete="$emit('delete')">
-        <template #default>
-            <div class="form-group">
-                <ButtonGroup v-model="imageSourceType" :items="imageSourceTypes" />
-            </div>
-
-            <ImageUploader v-if="imageSourceType === 'image'"
-                           v-model="imageGuidAndName"
-                           :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
-                           :disableLabel="true"
-                           :uploadAsTemporary="true"
-                           @onImageRemoved="imageGuidAndName = null" />
-
-            <div v-else-if="imageSourceType === 'asset'">TBD</div>
-        </template>
-
-        <template #spacingAndLayoutSettings>
-            <div class="row">
-                <div class="col-sm-6">
-                    <DropDownList v-model="widthItem"
-                                  :items="widthItems"
-                                  label="Width"
-                                  :showBlankItem="false" />
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <div class="form-group">
+                    <ButtonGroup v-model="imageSourceType" :items="imageSourceTypes" />
                 </div>
 
-                <div class="col-sm-6">
-                    <TextAlign :modelValue="modelValue.componentElement" label="Align" />
-                </div>
-            </div>
+                <ImageUploader v-if="imageSourceType === 'image'"
+                               v-model="imageGuidAndName"
+                               :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
+                               :disableLabel="true"
+                               :uploadAsTemporary="true"
+                               @onImageRemoved="imageGuidAndName = null" />
 
-            <div class="row">
-                <div class="col-sm-6">
-                    <DropDownList v-model="resizeMode"
-                                  :items="resizeModes"
-                                  label="Resize Mode" />
-                </div>
-                <div class="col-sm-6"></div>
-            </div>
+                <div v-else-if="imageSourceType === 'asset'">TBD</div>
+            </Accordion>
 
-            <div class="row">
-                <div class="col-sm-6">
-                    <NumberBox v-model="imageWidth"
-                               label="Image Width">
-                        <template #inputGroupAppend>
-                            <span class="input-group-addon">px</span>
-                        </template>
-                    </NumberBox>
+            <Accordion title="Spacing & Layout">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <DropDownList v-model="widthItem"
+                                      :items="widthItems"
+                                      label="Width"
+                                      :showBlankItem="false" />
+                    </div>
+
+                    <div class="col-sm-6">
+                        <TextAlign :modelValue="modelValue.componentElement" label="Align" />
+                    </div>
                 </div>
 
-                <div class="col-sm-6">
-                    <NumberBox v-model="imageHeight"
-                               label="Image Height">
-                        <template #inputGroupAppend>
-                            <span class="input-group-addon">px</span>
-                        </template>
-                    </NumberBox>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <DropDownList v-model="resizeMode"
+                                      :items="resizeModes"
+                                      label="Resize Mode" />
+                    </div>
+                    <div class="col-sm-6"></div>
                 </div>
-            </div>
 
-            <Margin :modelValue="modelValue.componentElement" mode="numberBox" />
-        </template>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <NumberBox v-model="imageWidth"
+                                   label="Image Width">
+                            <Accordion #inputGroupAppend>
+                                <span class="input-group-addon">px</span>
+                            </Accordion>
+                        </NumberBox>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <NumberBox v-model="imageHeight"
+                                   label="Image Height">
+                            <Accordion #inputGroupAppend>
+                                <span class="input-group-addon">px</span>
+                            </Accordion>
+                        </NumberBox>
+                    </div>
+                </div>
+
+                <Margin :modelValue="modelValue.componentElement" mode="numberBox" />
+            </Accordion>
+        </AccordionGroup>
     </ComponentProperties>
 </template>
 
-<style scoped>
-:deep(.panel) {
-    margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
-    height: auto !important;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../accordion.partial.obs";
     import ComponentProperties from "../componentProperties.partial.obs";
     import { BinaryFileType, toGuidOrNull } from "../imports.partial";
     import Margin from "../inlineStyleEditors/margin.partial.obs";

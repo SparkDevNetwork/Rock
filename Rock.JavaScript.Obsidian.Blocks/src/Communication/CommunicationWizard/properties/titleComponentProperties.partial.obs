@@ -2,7 +2,7 @@
     <template v-if="headingElement">
         <ComponentProperties @complete="$emit('complete')"
                              @delete="$emit('delete')">
-            <AccordionManager>
+            <AccordionGroup>
                 <Accordion title="General Settings">
                     <TextContent :modelValue="headingElement" />
 
@@ -16,14 +16,14 @@
                     <Font :modelValue="headingElement"
                           :tagName="headingLevel" />
                 </Accordion>
-            </AccordionManager>
+            </AccordionGroup>
         </ComponentProperties>
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AccordionManager from "../accordionManager.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import ComponentProperties from "../componentProperties.partial.obs";
     import { DropDownList } from "../imports.partial";

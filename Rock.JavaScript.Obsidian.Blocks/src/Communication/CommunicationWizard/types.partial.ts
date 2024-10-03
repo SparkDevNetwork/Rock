@@ -46,12 +46,6 @@ export type EditorComponent = {
     componentElement: HTMLElement;
 };
 
-export type Accordion = {
-    expand(): void;
-    collapse(): void;
-};
-
 export type AccordionManager = {
     register(key: string, isExpanded: Ref<boolean>): void;
-    expand(key: string): void;
 };

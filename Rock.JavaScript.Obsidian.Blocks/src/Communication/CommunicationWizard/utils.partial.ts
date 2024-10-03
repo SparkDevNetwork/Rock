@@ -1,6 +1,7 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { inject, InjectionKey } from "vue";
+import { inject, InjectionKey, Ref } from "vue";
 import { AccordionManager } from "./types.partial";
+import { newGuid } from "@Obsidian/Utility/guid";
 
 export const FontFamiliesInjectionKey: InjectionKey<ListItemBag[]> = Symbol("font-families");
 
@@ -22,8 +23,11 @@ export function useFontFamilies(): ListItemBag[] {
     return use(FontFamiliesInjectionKey);
 }
 
-export const AccordionManagerInjectionKey: InjectionKey<AccordionManager> = Symbol("accordion-manager");
+export const AccordionGroupInjectionKey: InjectionKey<AccordionManager> = Symbol("accordion-group");
 
-export function useAccordionManager(): AccordionManager {
-    return use(AccordionManagerInjectionKey);
+/** Uses an accordion group if one is set up. */
+export function useAccordionGroup(isExpanded: Ref<boolean>): void {
+    const accordionKey = newGuid();
+    const group = inject(AccordionGroupInjectionKey);
+    group?.register(accordionKey, isExpanded);
 }

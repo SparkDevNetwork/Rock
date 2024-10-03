@@ -1,0 +1,38 @@
+<template>
+    <slot></slot>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, provide, Ref, watch } from "vue";
+    import { AccordionGroupInjectionKey } from "./utils.partial";
+
+    const accordions: Record<string, Ref<boolean>> = {};
+
+    function register(key: string, isExpanded: Ref<boolean>): void {
+        // This will overwrite other accordions that use the same key.
+        accordions[key] = isExpanded;
+
+        watch(isExpanded, () => {
+            if (isExpanded.value) {
+                // Collapse other accordions.
+                for (const accordionKey in accordions) {
+                    if (accordionKey !== key) {
+                        accordions[accordionKey].value = false;
+                    }
+                }
+            }
+        });
+    }
+
+    onMounted(() => {
+        const accordionKeys = Object.keys(accordions);
+
+        if (accordionKeys.length) {
+            accordions[accordionKeys[0]].value = true;
+        }
+    });
+
+    provide(AccordionGroupInjectionKey, {
+        register
+    });
+</script>

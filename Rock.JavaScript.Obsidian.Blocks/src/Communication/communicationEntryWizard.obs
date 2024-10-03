@@ -103,13 +103,13 @@
                         </div>
 
                         <div v-else-if="toolboxMenuItem === 'design' && editorWindow?.emailEditorDocument" class="email-editor-toolbox-submenu">
-                            <EmailDocumentProperties :modelValue="editorWindow.emailEditorDocument" />
+                            <EmailDocumentProperties :modelValue="editorWindow.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 
                     <div class="email-editor-window-wrapper">
                         <EditorWindow ref="editorWindow"
-                                      :html="config.emailMessage"
+                                      :html="editorInnerHtml"
                                       :draggingComponentType="draggingComponentType"
                                       v-model:selectedComponent="selectedComponent" />
                     </div>
@@ -312,10 +312,11 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { FontFamiliesInjectionKey } from "./CommunicationWizard/utils.partial";
 
-    const config = useConfigurationValues<{ emailMessage?: string | null | undefined; }>();
+    const config = useConfigurationValues<{ message?: string | null | undefined; templates?: ListItemBag[] | null | undefined; }>();
 
     // #region Values
 
+    const editorInnerHtml = ref<string>(config.message ?? "");
     const editorWindow = ref<InstanceType<typeof EditorWindow> | undefined>();
     const toolboxMenuItem = ref<"content" | "design">("content");
     const toolboxSubMenuTab = ref<string>("");

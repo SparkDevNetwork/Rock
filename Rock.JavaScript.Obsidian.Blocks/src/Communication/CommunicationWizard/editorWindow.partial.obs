@@ -1,6 +1,6 @@
 <template>
     <div class="editor-window">
-        <iframe ref="iFrameElement" frameborder="0" border="0" :srcdoc="html ?? ''"></iframe>
+        <iframe v-if="!isResetting" ref="iFrameElement" frameborder="0" border="0" :srcdoc="internalSrcDoc"></iframe>
         <div v-if="draggingComponentType"
              class="overlay"
              @dragover="onComponentTypeDragOver($event)"
@@ -31,12 +31,13 @@ iframe,
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, EditorComponent, EditorComponentType } from "./types.partial";
     import { getComponentTypeOrThrow } from "./componentTypes.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
+        /** This is reactive. If it is changed, the inner HTML for the editor will be updated. */
         html: {
             type: String as PropType<string | null | undefined>,
             default: ""
@@ -57,6 +58,8 @@ iframe,
 
     // #region Values
 
+    const isResetting = ref<boolean>(false);
+    const internalSrcDoc = ref<string>(props.html ?? "");
     const iFrameElement = ref<HTMLIFrameElement | undefined>();
     const draggingComponentElement = ref<HTMLElement | null | undefined>();
     const draggingComponentPlaceholderElement = ref<HTMLElement | null | undefined>();
@@ -68,9 +71,7 @@ iframe,
 
     // #region Computed Values
 
-    const emailEditorDocument = computed<Document | null | undefined>(() => {
-        return iFrameElement.value?.contentDocument as Document;
-    });
+    const emailEditorDocument = ref<Document | null | undefined>(iFrameElement.value?.contentDocument as Document);
 
     // #endregion
 
@@ -335,6 +336,17 @@ iframe,
                 deselectComponentElement(otherSelectedComponentElement);
             }
         }
+
+        // Clear white space from dropzones so :empty styling gets applied.
+        // :empty styles make the dropzones visible in the iframe by showing
+        // an empty rectagle with a dashed border and "Drop component here" text.
+        iFrameDocument.querySelectorAll(".structure-dropzone, .dropzone").forEach(el => {
+            if (el.childNodes.length && [...el.childNodes].every(n => n.nodeType === Node.TEXT_NODE) && !el.textContent?.trim()) {
+                el.innerHTML = "";
+            }
+        });
+
+        emailEditorDocument.value = iFrameDocument;
     }
 
     function onIFrameClick(event: MouseEvent): void {
@@ -679,6 +691,19 @@ iframe,
         }
     });
 
+    watch(() => props.html, () => {
+        // Whenever the HTML is changed externally,
+        // a new iframe element must be created.
+        // Do this by setting v-if="false" then v-if="true"
+        // while also updating the iframe's srcdoc.
+        isResetting.value = true;
+
+        nextTick(() => {
+            internalSrcDoc.value = props.html ?? "";
+            isResetting.value = false;
+        });
+    });
+
     // #endregion
 
     // #region Hooks
@@ -686,7 +711,7 @@ iframe,
     // #endregion
 
     defineExpose({
-        emailEditorDocument,
+        emailEditorDocument: computed(() => emailEditorDocument.value),
         getHtml
     });
 </script>

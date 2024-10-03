@@ -1,39 +1,35 @@
 <template>
     <ComponentProperties @complete="$emit('complete')"
                          @delete="$emit('delete')">
-        <template #default>
-            <InnerHtml :modelValue="modelValue.componentElement"
-                       mode="html" />
-        </template>
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <InnerHtml :modelValue="modelValue.componentElement"
+                           mode="html" />
+            </Accordion>
 
-        <template #typographySettings>
-            <LineHeight :modelValue="modelValue.componentElement" />
-        </template>
+            <Accordion title="Typography">
+                <LineHeight :modelValue="modelValue.componentElement" />
+            </Accordion>
 
-        <template #spacingAndLayoutSettings>
-            <Padding :modelValue="modelValue.componentElement" />
-        </template>
+            <Accordion title="Spacing & Layout">
+                <Padding :modelValue="modelValue.componentElement" />
+            </Accordion>
 
-        <template #bordersAndEffectsSettings>
-            <Border :modelValue="modelValue.componentElement" />
-        </template>
+            <Accordion title="Borders & Effects">
+                <Border :modelValue="modelValue.componentElement" />
+            </Accordion>
 
-        <template #backgroundSettings>
-            <BackgroundColor :modelValue="modelValue.componentElement" />
-        </template>
+            <Accordion title="Background">
+                <BackgroundColor :modelValue="modelValue.componentElement" />
+            </Accordion>
+        </AccordionGroup>
     </ComponentProperties>
 </template>
 
-<style scoped>
-:deep(.panel) {
-    margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
-    height: auto !important;
-}
-</style>
-
 <script setup lang="ts">
     import { PropType } from "vue";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
     import ComponentProperties from "../componentProperties.partial.obs";
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";

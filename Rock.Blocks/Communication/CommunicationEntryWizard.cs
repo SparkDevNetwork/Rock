@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -159,7 +162,7 @@ namespace Rock.Blocks.Communication
 
         #endregion Attribute Keys
 
-        #region PageParameterKeys
+        #region Page Parameter Keys
 
         private static class PageParameterKey
         {
@@ -170,17 +173,88 @@ namespace Rock.Blocks.Communication
             public const string TemplateGuid = "TemplateGuid";
         }
 
-        #endregion PageParameterKeys
+        #endregion Page Parameter Keys
 
         public override object GetObsidianBlockInitialization()
         {
-            var communicationTemplate = new CommunicationTemplateService( this.RockContext ).Queryable().AsNoTracking().ToList().FirstOrDefault( c => c.SupportsEmailWizard() );
+            var emailCommunicationTemplates = GetCommunicationTemplates( postQueryFilter: ( templates ) => templates.Where( a => a.SupportsEmailWizard() ) );
 
             return new
             {
-                EmailMessage = communicationTemplate?.Message?.ResolveMergeFields( this.RequestContext.GetCommonMergeFields() )
+                Message = ResolveCommunicationTemplateMessage( emailCommunicationTemplates?.FirstOrDefault() ),
+                Templates = emailCommunicationTemplates?.ToListItemBagList()
             };
         }
+
+        #region Block Actions
+
+        [BlockAction]
+        public BlockActionResult GetCommunicationTemplate( Guid communicationTemplateGuid )
+        {
+            var communicationTemplate = GetCommunicationTemplates( queryFilter: ( query ) => query.Where( g => g.Guid == communicationTemplateGuid ).Take( 1 ) ).FirstOrDefault();
+
+            if ( communicationTemplate == null )
+            {
+                return ActionNotFound();
+            }
+            else
+            {
+                return ActionOk( new
+                {
+                    Message = ResolveCommunicationTemplateMessage( communicationTemplate )
+                } );
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        private string ResolveCommunicationTemplateMessage( CommunicationTemplate communicationTemplate )
+        {
+            return communicationTemplate?.Message?.ResolveMergeFields( this.RequestContext.GetCommonMergeFields() );
+        }
+
+        /// <summary>
+        /// Gets the Email communication templates. (TODO JMH Previously BindTemplatePicker; use this knowledge when converting to Obsidian)
+        /// </summary>
+        private List<CommunicationTemplate> GetCommunicationTemplates( Func<IQueryable<CommunicationTemplate>, IQueryable<CommunicationTemplate>> queryFilter = null, Func<IEnumerable<CommunicationTemplate>, IEnumerable<CommunicationTemplate>> postQueryFilter = null )
+        {
+            var templateQuery = new CommunicationTemplateService( this.RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a => a.IsActive );
+
+            //int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
+            //if ( categoryId.HasValue && categoryId > 0 )
+            //{
+            //    templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
+            //}
+
+            // Apply external query filters.
+            templateQuery = queryFilter?.Invoke( templateQuery ) ?? templateQuery;
+
+            templateQuery = templateQuery.OrderBy( a => a.Name );
+
+            // get list of templates that the current user is authorized to View
+            var templates = templateQuery.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) );
+
+            templates = postQueryFilter?.Invoke( templates ) ?? templates;
+            // If this is an Email (or RecipientPreference) communication, limit to templates that support the email wizard
+            //var communicationType = SelectedCommunicationType;
+            //if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
+            //{
+            //    templates = templates.Where( a => a.SupportsEmailWizard() );
+            //}
+            //else
+            //{
+            //    templates = templates.Where( a => a.HasSMSTemplate() || a.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() );
+            //}
+
+            return templates.ToList();
+        }
+
+        #endregion
 
         #region Old Block Code
         //        #region Attribute Keys
@@ -1803,44 +1877,6 @@ namespace Rock.Blocks.Communication
         //            nbTemplateSelectionWarning.Visible = false;
         //            SetNavigationHistory( pnlTemplateSelection );
         //            BindTemplatePicker();
-        //        }
-
-        //        /// <summary>
-        //        /// Binds the template picker.
-        //        /// </summary>
-        //        private void BindTemplatePicker()
-        //        {
-        //            var rockContext = new RockContext();
-
-        //            var templateQuery = new CommunicationTemplateService( rockContext )
-        //                .Queryable()
-        //                .AsNoTracking()
-        //                .Where( a => a.IsActive );
-
-        //            int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
-        //            if ( categoryId.HasValue && categoryId > 0 )
-        //            {
-        //                templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
-        //            }
-
-        //            templateQuery = templateQuery.OrderBy( a => a.Name );
-
-        //            // get list of templates that the current user is authorized to View
-        //            IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
-
-        //            // If this is an Email (or RecipientPreference) communication, limit to templates that support the email wizard
-        //            var communicationType = SelectedCommunicationType;
-        //            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
-        //            {
-        //                templateList = templateList.Where( a => a.SupportsEmailWizard() );
-        //            }
-        //            else
-        //            {
-        //                templateList = templateList.Where( a => a.HasSMSTemplate() || a.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() );
-        //            }
-
-        //            rptSelectTemplate.DataSource = templateList;
-        //            rptSelectTemplate.DataBind();
         //        }
 
         //        /// <summary>
