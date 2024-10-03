@@ -21,10 +21,16 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+/** Describes the Rock Log Events */
+export type RockLogEventsBag = {
+    /** Gets or sets the DateTime */
+    dateTime?: string | null;
 
-/** Additional configuration data for the EventItemDetail block. */
-export type EventItemDetailOptionsBag = {
-    /** Gets or sets the Audiences */
-    audiences?: ListItemBag[] | null;
+    domain?: string | null;
+
+    exception?: string | null;
+
+    level?: string | null;
+
+    message?: string | null;
 };

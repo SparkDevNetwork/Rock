@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Describes the TV Page List Options */
 export type TvPageListOptionsBag = {
     /** Gets or sets the site id key. */
     siteId?: string | null;
