@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField disableLabel :modelValue="internalValue" v-bind="standardFieldProps" :rules="mutatedRules" name="campus-account-amount-picker">
+    <RockFormField :modelValue="internalValue" v-bind="standardFieldProps" disableLabel :rules="mutatedRules" name="campus-account-amount-picker">
         <Loading :isLoading="isLoading">
             <template v-if="accountAmountEntryMode == 'singleAccount'">
                 <CurrencyBox :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" v-model="amount" :class="amountEntrySingleCssClass" />

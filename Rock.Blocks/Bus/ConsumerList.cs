@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,7 +37,7 @@ namespace Rock.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Displays a list of consumers." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.BlockTypeGuid( "63f5509a-3d71-4f0f-a074-fa5869856038" )]
 

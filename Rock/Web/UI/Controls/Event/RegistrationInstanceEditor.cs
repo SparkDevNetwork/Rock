@@ -1017,7 +1017,6 @@ namespace Rock.Web.UI.Controls
                 _cbReminderSent = new RockCheckBox();
                 _cbReminderSent.ID = this.ID + "_cbReminderSent";
                 _cbReminderSent.Label = "Reminder Sent";
-                _cbReminderSent.Text = "Yes";
                 Controls.Add( _cbReminderSent );
 
                 _nbTimeoutLengthMinutes = new NumberBox();

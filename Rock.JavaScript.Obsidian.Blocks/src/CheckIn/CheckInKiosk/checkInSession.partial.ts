@@ -670,7 +670,7 @@ export class CheckInSession {
         }
 
         if (this.configuration.template.kioskCheckInType === KioskCheckInMode.Family) {
-            if (!this.possibleSchedules || this.possibleSchedules.length === 0) {
+            if (!this.selectedSchedules || this.selectedSchedules.length === 0) {
                 throw new InvalidCheckInStateError("No schedules were available for check-in.");
             }
 
@@ -682,7 +682,7 @@ export class CheckInSession {
                 selectedArea: undefined,
                 selectedGroup: undefined,
                 selectedLocation: undefined,
-                currentFamilyScheduleId: this.possibleSchedules[0].id
+                currentFamilyScheduleId: this.selectedSchedules[0].id
             });
         }
 
@@ -898,15 +898,16 @@ export class CheckInSession {
      * attendee.
      *
      * @param selections The selections for the current attendee.
+     * @param replace If `true` then the current selections for the attendee will be replaced by the new selections.
      *
      * @returns A new CheckInSession object.
      */
-    public withStashedCurrentAttendeeSelections(selections: OpportunitySelectionBag[]): CheckInSession {
+    public withStashedCurrentAttendeeSelections(selections: OpportunitySelectionBag[], replace: boolean): CheckInSession {
         if (!this.currentAttendeeId) {
             throw new InvalidCheckInStateError("No attendee currently selected.");
         }
 
-        return this.withStashedAttendeeSelections(this.currentAttendeeId, selections);
+        return this.withStashedAttendeeSelections(this.currentAttendeeId, selections, replace);
     }
 
     /**
@@ -915,10 +916,11 @@ export class CheckInSession {
      *
      * @param attendeeId The attendee identifier these selections are for.
      * @param selections The selections for the current attendee.
+     * @param replace If `true` then the current selections for the attendee will be replaced by the new selections.
      *
      * @returns A new CheckInSession object.
      */
-    public withStashedAttendeeSelections(attendeeId: string, selections: OpportunitySelectionBag[]): CheckInSession {
+    public withStashedAttendeeSelections(attendeeId: string, selections: OpportunitySelectionBag[], replace: boolean): CheckInSession {
         const allSelections = clone(this.allAttendeeSelections);
         let attendeeSelection = allSelections.find(s => s.attendeeId === attendeeId);
 
@@ -931,7 +933,12 @@ export class CheckInSession {
             allSelections.push(attendeeSelection);
         }
         else {
-            attendeeSelection.selections = selections;
+            if (replace) {
+                attendeeSelection.selections = selections;
+            }
+            else {
+                attendeeSelection.selections.push(...selections);
+            }
         }
 
         return new CheckInSession(this, {
@@ -940,7 +947,7 @@ export class CheckInSession {
     }
 
     /**
-     * Creats a new session that is ready to start accepting selections for
+     * Creates a new session that is ready to start accepting selections for
      * the current attendee at the next selected family schedule. If the new
      * session {@link currentFamilyScheduleId} property is undefined then this was
      * the last schedule.
@@ -977,6 +984,28 @@ export class CheckInSession {
             selectedGroup: undefined,
             selectedLocation: undefined,
             currentFamilyScheduleId: nextScheduleId
+        });
+    }
+
+    /**
+     * Creates a new session that will have the specified attendee excluded
+     * from the list of attendees.
+     *
+     * @param attendeeId The identifier of the attendee to remove.
+     * @returns A new {@link CheckInSession} object.
+     */
+    public withRemovedAttendee(attendeeId: string): CheckInSession {
+        // Remove any selections that have been made for this attendee.
+        const session = this.withUnstashedAttendeeSelections(attendeeId);
+
+        if (!session.attendees) {
+            throw new InvalidCheckInStateError("Attendees have not been loaded.");
+        }
+
+        const newAttendees = session.attendees.filter(a => a.person?.id !== attendeeId);
+
+        return new CheckInSession(session, {
+            attendees: newAttendees
         });
     }
 
@@ -1697,9 +1726,44 @@ export class CheckInSession {
             // Get all the selections made and stash them so they can be saved
             // later.
             const selections = this.getCurrentSelections();
-            let familySession = this.withStashedCurrentAttendeeSelections(selections);
+            let familySession: CheckInSession;
 
-            familySession = familySession.withNextFamilySchedule();
+            if (this.configuration.template?.isSameOptionUsed) {
+                // There should be only one in this mode of check-in, so make
+                // sure that is the case.
+                if (selections.length !== 1) {
+                    throw new InvalidCheckInStateError("Only one opportunity selection is allowed.");
+                }
+
+                familySession = this.withNextFamilySchedule();
+
+                // Replicate the selection to all other services.
+                while (familySession.currentFamilyScheduleId) {
+                    // Find the schedule for the opportunity.
+                    const schedule = familySession.possibleSchedules
+                        ?.find(s => s.id === familySession.currentFamilyScheduleId);
+
+                    if (!schedule) {
+                        throw new InvalidCheckInStateError("Schedule was not found.");
+                    }
+
+                    selections.push({
+                        abilityLevel: selections[0].abilityLevel,
+                        area: selections[0].area,
+                        group: selections[0].group,
+                        location: selections[0].location,
+                        schedule: schedule
+                    });
+
+                    familySession = familySession.withNextFamilySchedule();
+                }
+
+                familySession = familySession.withStashedCurrentAttendeeSelections(selections, true);
+            }
+            else {
+                familySession = this.withStashedCurrentAttendeeSelections(selections, false);
+                familySession = familySession.withNextFamilySchedule();
+            }
 
             // Was this the last schedule for this attendee?
             if (!familySession.currentFamilyScheduleId) {
@@ -1749,7 +1813,7 @@ export class CheckInSession {
             throw new InvalidCheckInStateError("No schedules available.");
         }
 
-        if (!this.attendeeOpportunities.schedules.some(s => !s.id)) {
+        if (this.attendeeOpportunities.schedules.some(s => !s.id)) {
             throw new InvalidCheckInStateError("Invalid schedule.");
         }
 
@@ -1802,7 +1866,7 @@ export class CheckInSession {
 
         const selections = this.getCurrentSelections();
 
-        let newSession = this.withStashedCurrentAttendeeSelections(selections);
+        let newSession = this.withStashedCurrentAttendeeSelections(selections, false);
 
         // Individual check-in. Perform a full save of the attendance.
         newSession = await newSession.withSaveAttendance(false);

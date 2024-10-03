@@ -24,6 +24,9 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type LearningProgramDetailOptionsBag = {
+    /** Gets or sets the available grading systems. */
+    gradingSystems?: ListItemBag[] | null;
+
     /** Gets or sets the available system communications. */
     systemCommunications?: ListItemBag[] | null;
 };

@@ -172,6 +172,13 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER = "core_checkin_AllowCheckout_Manager";
 
         /// <summary>
+        /// Attribute key for GroupTypes that allows for a "can check-in"
+        /// relationship to be removed on the person select screen during
+        /// check-in at a kiosk.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK = "core_AllowRemoveFromFamily_Kiosk";
+
+        /// <summary>
         /// Attribute key for GroupTypes that have presence enabled
         /// </summary>
         public const string CHECKIN_GROUPTYPE_ENABLE_PRESENCE = "core_checkin_EnablePresence";

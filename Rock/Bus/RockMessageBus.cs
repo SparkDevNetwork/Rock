@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +31,7 @@ using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Bus.Statistics;
 using Rock.Bus.Transport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -120,32 +120,7 @@ namespace Rock.Bus
         /// Gets the name of the node.
         /// </summary>
         /// <returns></returns>
-        public static string NodeName
-        {
-            get
-            {
-                if ( !_nodeName.IsNullOrWhiteSpace() )
-                {
-                    return _nodeName;
-                }
-
-                _nodeName = ConfigurationManager.AppSettings["NodeName"];
-
-                if ( _nodeName.IsNullOrWhiteSpace() )
-                {
-                    _nodeName = Environment.MachineName;
-                }
-
-                if ( _nodeName.IsNullOrWhiteSpace() )
-                {
-                    _nodeName = Guid.NewGuid().ToString();
-                }
-
-                return _nodeName;
-            }
-        }
-
-        private static string _nodeName;
+        public static string NodeName => RockApp.Current.HostingSettings.NodeName;
 
         /// <summary>
         /// Gets a value indicating whether this instance is using the in memory transport.

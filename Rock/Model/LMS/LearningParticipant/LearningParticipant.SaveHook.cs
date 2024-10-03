@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -39,6 +40,16 @@ namespace Rock.Model
 
                 if ( PreSaveState == EntityContextState.Added )
                 {
+                    var group = new GroupService( RockContext )
+                        .Queryable()
+                        .Include( g => g.GroupType )
+                        .FirstOrDefault( g => g.Id == Entity.LearningClassId );
+
+                    // Ensure we have the group role.
+                    var roleAndGroup = new GroupTypeRoleService( RockContext ).Get( Entity.GroupRoleId );
+                    Entity.GroupRole = Entity.GroupRole ?? roleAndGroup;
+                    Entity.Group = group;
+
                     var isStudent = !Entity.GroupRole.IsLeader;
 
                     if ( isStudent )
@@ -62,10 +73,10 @@ namespace Rock.Model
                        LearningActivityId = a.Id,
                        EnrollmentDate = a.LearningClass.CreatedDateTime,
                        SemesterStart = a.LearningClass.LearningSemester.StartDate,
-                       a.AvailableDateCalculationMethod,
+                       a.AvailabilityCriteria,
                        a.AvailableDateDefault,
                        a.AvailableDateOffset,
-                       a.DueDateCalculationMethod,
+                       a.DueDateCriteria,
                        a.DueDateDefault,
                        a.DueDateOffset,
                        a.SendNotificationCommunication,
@@ -80,13 +91,13 @@ namespace Rock.Model
                         StudentId = Entity.Id,
                         LearningActivityId = a.LearningActivityId,
                         AvailableDateTime = LearningActivity.CalculateAvailableDate(
-                            a.AvailableDateCalculationMethod,
+                            a.AvailabilityCriteria,
                             a.AvailableDateDefault,
                             a.AvailableDateOffset,
                             a.SemesterStart,
                             a.EnrollmentDate
                         ),
-                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCalculationMethod, a.DueDateDefault, a.DueDateOffset, a.SemesterStart, a.EnrollmentDate ),
+                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.SemesterStart, a.EnrollmentDate ),
                         NotificationCommunicationId = a.SendNotificationCommunication ? ( int? ) a.NotificationCommunicationId : null
                     } );
 

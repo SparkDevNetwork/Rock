@@ -2259,7 +2259,7 @@ WHERE [Guid] = 'D40A9C32-F179-4E5E-9B0D-CE208C5D1870'
 
             Rock.Web.SystemSettings.SetValue( "core_PrayerRequestAICompletions", PrayerRequestAICompletionTemplate().ToJson() );
 
-            RockMigrationHelper.UpdateFieldType( "AI Provider", "Field type to select an AI Provider.", "Rock", "Rock.Field.Types.AIProviderFieldType", SystemGuid.FieldType.AI_PROVIDER_PICKER );
+            RockMigrationHelper.UpdateFieldType( "AI Provider", "Field type to select an AI Provider.", "Rock", "Rock.Field.Types.AIProviderFieldType", SystemGuid.FieldType.AI_PROVIDER);
 
             AIAutomationAttributesUp();
             PrayerCategoriesPageUp();
@@ -2381,7 +2381,7 @@ DECLARE @aiModerationWorkflowAttributeGuid NVARCHAR(40) = '{SystemGuid.Attribute
 DECLARE @aiPublicAppropriatenessAttributeGuid NVARCHAR(40) = '{SystemGuid.Attribute.AI_AUTOMATION_CHECK_PUBLIC_APPROPRIATENESS}';
 DECLARE @aiChildCategoriesInheritAttributeGuid NVARCHAR(40) = '{SystemGuid.Attribute.AI_AUTOMATION_CHILD_CATEGORIES_INHERIT_CONFIGURATION}';
 
-DECLARE @aiProviderPickerFieldTypeId INT = (SELECT TOP 1 Id FROM FieldType WHERE [Guid] = '{SystemGuid.FieldType.AI_PROVIDER_PICKER}');
+DECLARE @aiProviderPickerFieldTypeId INT = (SELECT TOP 1 Id FROM FieldType WHERE [Guid] = '{SystemGuid.FieldType.AI_PROVIDER}');
 DECLARE @booleanFieldTypeId INT = (SELECT TOP 1 Id FROM FieldType WHERE [Guid] = '{SystemGuid.FieldType.BOOLEAN}');
 DECLARE @singleSelectFieldTypeId INT = (SELECT TOP 1 Id FROM FieldType WHERE [Guid] = '{SystemGuid.FieldType.SINGLE_SELECT}');
 DECLARE @workflowTypeFieldTypeId INT = (SELECT TOP 1 Id FROM FieldType WHERE [Guid] = '{SystemGuid.FieldType.WORKFLOW_TYPE}');

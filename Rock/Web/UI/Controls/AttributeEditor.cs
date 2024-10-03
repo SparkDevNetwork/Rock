@@ -1410,14 +1410,12 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid = new RockCheckBox();
             _cbShowInGrid.ID = "cbShowInGrid";
             _cbShowInGrid.Label = "Show in Grid";
-            _cbShowInGrid.Text = "Yes";
             _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
 
             _cbShowOnBulk = new RockCheckBox();
             _cbShowOnBulk.ID = "cbShowOnBulk";
             _cbShowOnBulk.Label = "Show on Bulk";
-            _cbShowOnBulk.Text = "Yes";
             _cbShowOnBulk.Help = "If selected, this attribute will be shown with bulk update attributes.";
             Controls.Add( _cbShowOnBulk );
 
@@ -1475,7 +1473,6 @@ namespace Rock.Web.UI.Controls
             _cbEnableHistory = new RockCheckBox();
             _cbEnableHistory.ID = "_cbEnableHistory";
             _cbEnableHistory.Label = "Enable History";
-            _cbEnableHistory.Text = "Yes";
             _cbEnableHistory.Help = "If selected, changes to the value of this attribute will be stored in attribute value history";
             pnlAdvancedTopRowCol1.Controls.Add( _cbEnableHistory );
 
@@ -1489,7 +1486,6 @@ namespace Rock.Web.UI.Controls
             _cbAllowSearch = new RockCheckBox();
             _cbAllowSearch.ID = "cbAllowSearch";
             _cbAllowSearch.Label = "Allow Search";
-            _cbAllowSearch.Text = "Yes";
             _cbAllowSearch.Help = "If selected, this attribute can be searched on.";
             _cbAllowSearch.Visible = false;  // Default is to not show this option
             pnlAdvancedTopRowCol1.Controls.Add( _cbAllowSearch );
@@ -1497,7 +1493,6 @@ namespace Rock.Web.UI.Controls
             _cbIsIndexingEnabled = new RockCheckBox();
             _cbIsIndexingEnabled.ID = "cbAllowIndexing";
             _cbIsIndexingEnabled.Label = "Indexing Enabled";
-            _cbIsIndexingEnabled.Text = "Yes";
             _cbIsIndexingEnabled.Help = "If selected, this attribute can be used when indexing for universal search.";
             _cbIsIndexingEnabled.Visible = false;  // Default is to not show this option
             pnlAdvancedTopRowCol1.Controls.Add( _cbIsIndexingEnabled );
@@ -1505,7 +1500,6 @@ namespace Rock.Web.UI.Controls
             _cbIsAnalytic = new RockCheckBox();
             _cbIsAnalytic.ID = "_cbIsAnalytic";
             _cbIsAnalytic.Label = "Analytics Enabled";
-            _cbIsAnalytic.Text = "Yes";
             _cbIsAnalytic.Help = "If selected, this attribute will be made available as an Analytic";
             _cbIsAnalytic.Visible = false;  // Default is to not show this option
             pnlAdvancedTopRowCol2.Controls.Add( _cbIsAnalytic );
@@ -1513,7 +1507,6 @@ namespace Rock.Web.UI.Controls
             _cbIsAnalyticHistory = new RockCheckBox();
             _cbIsAnalyticHistory.ID = "_cbIsAnalyticHistory";
             _cbIsAnalyticHistory.Label = "Analytics History Enabled";
-            _cbIsAnalyticHistory.Text = "Yes";
             _cbIsAnalyticHistory.Help = "If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled.";
             _cbIsAnalyticHistory.Visible = false;  // Default is to not show this option
             pnlAdvancedTopRowCol2.Controls.Add( _cbIsAnalyticHistory );

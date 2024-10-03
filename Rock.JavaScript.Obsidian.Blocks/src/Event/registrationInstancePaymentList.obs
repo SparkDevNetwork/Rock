@@ -22,13 +22,15 @@
                         title="Date / Time"
                         field="transactionDateTime"
                         :filter="dateValueFilter"
-                        itemClass="grid-item-pull-right"
+                        headerClass="text-left"
+                        itemClass="justify-content-start text-left"
                         visiblePriority="md" />
 
         <CurrencyColumn name="totalAmount"
                         title="Amount"
                         field="totalAmount"
-                        itemClass="grid-item-pull-left"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         :quickFilterValue="getTotalAmountQuickFilterValue"
                         :filter="numberValueFilter"
                         visiblePriority="xs" />
@@ -95,18 +97,6 @@
 
     </Grid>
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-
-.grid-item-pull-right {
-    flex-direction: column;
-    align-items: start;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

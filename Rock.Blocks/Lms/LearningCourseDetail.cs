@@ -34,6 +34,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseDetail;
 using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
+using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -453,9 +454,13 @@ namespace Rock.Blocks.Lms
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningCourseId ) ?? "";
-            
+
+            // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
+            var excludedParamKeys = new[] { "autoedit", "returnurl" };
+            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+
             var entityName = entityKey.Length > 0 ? new LearningCourseService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Course";
-            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
             var breadCrumb = new BreadCrumbLink( entityName ?? "New Course", breadCrumbPageRef );
 
             return new BreadCrumbResult
@@ -960,7 +965,8 @@ namespace Rock.Blocks.Lms
             // Return all facilitators for the course's default class.
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "name", a => a.Person );
+                .AddPersonField( "name", a => a.Person )
+                .AddTextField( "note", a => a.Note );
 
             return ActionOk( gridBuilder.Build( facilitators ) );
         }
@@ -996,8 +1002,8 @@ namespace Rock.Blocks.Lms
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
                 .AddField( "points", a => a.Points )
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
-                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );
+                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
+                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var orderedItems = GetOrderedLearningPlan().AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
@@ -1032,10 +1038,10 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
-                .AddField( "currentGradePercent", a =>
-                    a.LearningGradePercent )
-                .AddField( "currentGrade", a =>
-                    a.LearningGradingSystemScale?.Name )
+                .AddField( "currentGradePercent", a => a.LearningGradePercent )
+                .AddField( "currentGrade", a => a.LearningGradingSystemScale?.Name )
+                .AddTextField( "note", a => a.Note )
+                .AddTextField( "role", a => a.GroupRole.Name )
                 .AddTextField( "currentAssignment", a =>
                     a.LearningActivities
                     .OrderBy( t => t.DueDate )
@@ -1097,10 +1103,119 @@ namespace Rock.Blocks.Lms
             return ActionOk();
         }
 
+        /// <summary>
+        /// Saves the new or updated participant for the class.
+        /// </summary>
+        /// <param name="participantBag">The bag containing the participant info that should be added or updated.</param>
+        /// <returns>The participantBag with updated data.</returns>
+        [BlockAction]
+        public BlockActionResult SaveParticipant( LearningParticipantBag participantBag )
+        {
+            var classService = new LearningClassService( RockContext );
+            var classIdKey = PageParameter( PageParameterKey.LearningClassId );
+            var classId = classService.GetSelect( classIdKey, p => p.Id );
+
+            var isNew = participantBag.IdKey.IsNullOrWhiteSpace();
+            var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
+            var learningParticipantService = new LearningParticipantService( RockContext );
+            LearningParticipant entity;
+
+            if ( isNew )
+            {
+                entity = GetNewLearningParticipantFromBag( participantBag, classService, classId );
+                learningParticipantService.Add( entity );
+            }
+            else
+            {
+                entity = learningParticipantService.Get( participantBag.IdKey, !disablePredictableIds );
+                entity.Note = participantBag.Note;
+            }
+
+            if ( participantBag.AttributeValues != null )
+            {
+                // Load attributes for the entity.
+                entity.LoadAttributes( RockContext );
+
+                // Set the attribute values from the bag.
+                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson );
+            }
+
+            RockContext.SaveChanges();
+
+            var updatedBag = GetLearningParticipantBag( entity, learningParticipantService );
+
+            return ActionOk( updatedBag );
+        }
+
         #endregion
 
         #region Private methods
 
+        /// <summary>
+        /// Gets the LearningParticipantBag for the specified <paramref name="entity"/>
+        /// and using the specified <paramref name="participantService"/>.
+        /// </summary>
+        /// <param name="entity">The <see cref="LearningParticipant"/> to convert to bag.</param>
+        /// <param name="participantService">The LearningParticipantService to use for getting the updated information.</param>
+        /// <returns>A LearningParticipantBag with the latest values from the database.</returns>
+        private LearningParticipantBag GetLearningParticipantBag( LearningParticipant entity, LearningParticipantService participantService )
+        {
+            var participantDetails = participantService
+                .Queryable()
+                .Include( p => p.Person )
+                .Include( p => p.GroupRole )
+                .Include( p => p.LearningGradingSystemScale )
+                .Where( p => p.Id == entity.Id )
+                .FirstOrDefault();
+
+            return new LearningParticipantBag
+            {
+                IdKey = entity.IdKey,
+                CurrentGradePercent = participantDetails.LearningGradePercent,
+                CurrentGradeText = participantDetails.LearningGradingSystemScale?.Name,
+                ParticipantRole = participantDetails.GroupRole.ToListItemBag(),
+                PersonAlias = participantDetails.Person.PrimaryAlias.ToListItemBag(),
+                IsFacilitator = participantDetails.GroupRole.IsLeader
+            };
+        }
+
+        /// <summary>
+        /// Gets a new LearningParticipant based on the data in the provided bag.
+        /// </summary>
+        /// <param name="participantBag">The bag containing the necessary information to get a LearningParticipant.</param>
+        /// <param name="classService">The <see cref="LearningClassService"/> to use for getting class roles.</param>
+        /// <param name="classId">The integer identifier of the <see cref="LearningClass"/> the participant belongs to.</param>
+        /// <returns>A New LearningParticipant record for the specified <paramref name="classId"/>, person and role (from <paramref name="participantBag"/>.</returns>
+        private LearningParticipant GetNewLearningParticipantFromBag( LearningParticipantBag participantBag, LearningClassService classService, int classId )
+        {
+            int? personId = null;
+            if ( Guid.TryParse( participantBag.PersonAlias.Value, out var primaryAliasGuid ) )
+            {
+                personId = new PersonAliasService( RockContext ).GetSelect( primaryAliasGuid, pa => pa.PersonId );
+            }
+
+            var classRoles = classService.GetClassRoles( classId ).Where( r => r.IsLeader == participantBag.IsFacilitator );
+
+            int groupRoleId = classRoles.Select( r => r.Id ).FirstOrDefault();
+
+            return new LearningParticipant
+            {
+                PersonId = personId.ToIntSafe(),
+                LearningClassId = classId,
+                GroupId = classId,
+                Note = participantBag.Note,
+                GroupRoleId = groupRoleId.ToIntSafe(),
+                LearningCompletionStatus = LearningCompletionStatus.Incomplete,
+                LearningGradePercent = 0
+            };
+        }
+
+        /// <summary>
+        /// Gets the ordered learning plan for the class specified by the current PageParameter.
+        /// </summary>
+        /// <param name="rockContext">The RockContex tto use for getting the ordered results</param>
+        /// <returns>An IQueryable of ordered <see cref="LearningActivity"/> records.</returns>
         private IQueryable<LearningActivity> GetOrderedLearningPlan()
         {
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );

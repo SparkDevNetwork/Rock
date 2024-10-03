@@ -1183,6 +1183,19 @@ namespace Rock.Blocks.Reporting
 
                     switch ( columnType )
                     {
+                        case ColumnType.BooleanValue:
+                            gridBuilder.AddField( camelCaseName, dataRow =>
+                            {
+                                var value = dataRow[actualColumnName]?.ToString();
+
+                                if ( isEncrypted )
+                                {
+                                    value = Rock.Security.Encryption.DecryptString( value );
+                                }
+
+                                return value.AsBoolean();
+                            } );
+                            break;
                         case ColumnType.PersonValue:
                             gridBuilder.AddPersonField( camelCaseName, dataRow =>
                             {

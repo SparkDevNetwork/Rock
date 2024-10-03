@@ -10,6 +10,7 @@
 
             <TextBox v-model="summary"
                      :disabled="disabled"
+                     label="Description"
                      textMode="multiline"
                      inputClasses="form-control" />
         </div>

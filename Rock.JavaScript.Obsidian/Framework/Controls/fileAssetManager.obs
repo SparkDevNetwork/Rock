@@ -39,14 +39,7 @@
             <div v-if="folderListScrolled" class="scroll-shadow"><!-- Intentionally Empty... just used to create a shadow when the container below is scrolled --></div>
 
             <div ref="folderScrollContainer" class="overflow-y-auto overflow-x-auto mh-100" style="z-index:0">
-                <TreeList v-model="selectedFolderArray"
-                          :provider="itemProvider"
-                          v-model:items="folders"
-                          autoExpand
-                          @treeitem-expanded="onTreeItemExpanded"
-                          @treeitem-collapsed="onTreeItemCollapsed"
-                          :initiallyExpanded="openFolders"
-                          :key="treeRefreshKey" />
+                <TreeList v-model="selectedFolderArray" :provider="itemProvider" v-model:items="folders" autoExpand @treeitem-expanded="onTreeItemExpanded" @treeitem-collapsed="onTreeItemCollapsed" :initiallyExpanded="openFolders" :key="treeRefreshKey" />
             </div>
 
             <Transition>
@@ -170,7 +163,7 @@
 <style scoped>
 #pnlAssetManager {
     height: 100%;
-    min-height: 600px;
+    min-height: 250px;
 }
 
 .assetmanager-files th,

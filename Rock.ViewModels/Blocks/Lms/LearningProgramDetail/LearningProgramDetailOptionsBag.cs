@@ -27,6 +27,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
     public class LearningProgramDetailOptionsBag
     {
         /// <summary>
+        /// Gets or sets the available grading systems.
+        /// </summary>
+        public List<ListItemBag> GradingSystems { get; set; }
+
+        /// <summary>
         /// Gets or sets the available system communications.
         /// </summary>
         public List<ListItemBag> SystemCommunications { get; set; }

@@ -17,10 +17,10 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
-            <NotificationBox v-if="hasScore" alertType="success">
+            <NotificationBox v-if="hasBeenGraded" alertType="success">
                 {{ assignee?.name ?? defaultAssigneeDescription }} assessed this activity.
             </NotificationBox>
-            <NotificationBox v-if="!hasScore" alertType="warning">
+            <NotificationBox v-if="!hasBeenGraded" alertType="warning">
                 {{ assignee?.name ?? defaultAssigneeDescription }} has not assessed this activity.
             </NotificationBox>
         </div>
@@ -57,10 +57,10 @@
         assignee,
         containerClasses,
         defaultAssigneeDescription,
+        hasBeenGraded,
         instructions,
         rubric,
-        panelTitle,
-        pointsPossibleAtCompletion
+        panelTitle
     } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
         activityBag,
         completionBag,
@@ -69,7 +69,6 @@
     );
 
     const disabled = ref(props.disabled ?? false);
-    const hasScore = computed(() => completionBag.value?.pointsEarned != null);
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -85,21 +84,7 @@
             emits("update:activityBag", updatedActivityBag);
     });
 
-    watch([activityBag.value.points], () => {
+    watch([activityBag.value.points, instructions, rubric], () => {
         debouncedActivityBagEmits();
-    }, { deep: true });
-      /** Watch for modified component completion. */
-      const debouncedCompletionBagEmits = debounce(() => {
-        const updatedCompletionBag = {
-            ...toValue(completionBag)
-        } as LearningActivityCompletionBag;
-
-        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-            pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
-        }) ?? "{}";
-        emits("update:completionBag", updatedCompletionBag);
-    });
-    watch([/* TODO: Add my specific completion ref values to watch here */], () => {
-        debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

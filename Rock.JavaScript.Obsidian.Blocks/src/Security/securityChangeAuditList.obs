@@ -13,7 +13,9 @@
                     title="Date"
                     field="changeDateTime"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="xs"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right" />
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -26,28 +28,38 @@
                       title="EntityId"
                       field="entityId"
                       :filter="numberValueFilter"
-                      visiblePriority="md" />
+                      visiblePriority="md"
+                      width="5%"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right" />
 
         <PersonColumn name="changeBy"
                       title="Changed By"
                       field="changeBy"
                       :hideAvatar="true"
                       :filterValue="getChangedByValueFilter"
+                      :quickFilterValue="getChangedByValueFilter"
                       :filter="pickExistingValueFilter"
                       visiblePriority="xs" />
 
         <TextColumn name="action"
                     title="Action"
                     field="action"
+                    width="8%"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="md"
+                    itemClass="justify-content-start" />
 
         <Column name="access"
                 title="Access"
                 field="access"
                 :filter="pickExistingValueFilter"
                 :filterValue="getAccessRowFilterValue"
-                visiblePriority="md">
+                :quickFilterValue="getAccessRowFilterValue"
+                :sortValue="getAccessRowSortValue"
+                width="8%"
+                visiblePriority="md"
+                itemClass="justify-content-center">
 
             <template #format="{ row }">
                 <span v-html="getAccessText(row.preAllowOrDeny, row.postAllowOrDeny)"></span>
@@ -77,7 +89,12 @@
         <Column name="order"
                 title="Order"
                 field="order"
-                visiblePriority="md">
+                :filter="pickExistingValueFilter"
+                :filterValue="getOrderRowFilterValue"
+                :quickFilterValue="getOrderRowFilterValue"
+                :sortValue="getOrderRowSortValue"
+                visiblePriority="md"
+                width="100">
 
             <template #format="{ row }">
                 <span v-html="getOrderText(row.preOrder, row.postOrder)"></span>
@@ -91,7 +108,8 @@
                      :filter="pickExistingValueFilter"
                      :textSource="ChangeTypeDescription"
                      :classSource="batchLabelColors"
-                     visiblePriority="sm" />
+                     visiblePriority="sm"
+                     width="100" />
     </Grid>
 </template>
 
@@ -151,6 +169,17 @@
     }
 
     /**
+    * Gets the filter value to use for the order column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getOrderRowFilterValue(row: Record<string, unknown>): string {
+        const preOrder = row.preOrder ? row.preOrder as number : null;
+        const postOrder = row.postOrder ? row.postOrder as number : null;
+        return getOrderText(preOrder, postOrder);
+    }
+
+    /**
     * Gets the filter value to use for the changed by column.
     *
     * @param row The row to be filtered.
@@ -158,6 +187,24 @@
     function getChangedByValueFilter(row: Record<string, unknown>): string {
         const person = row.changeBy as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the sort value to use for the access column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getAccessRowSortValue(row: Record<string, unknown>): string {
+        return `${getAccessString(row.preAllowOrDeny as string)} ${getAccessString(row.postAllowOrDeny as string)}`;
+    }
+
+        /**
+    * Gets the sort value to use for the order column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getOrderRowSortValue(row: Record<string, unknown>): string {
+        return getOrderRowFilterValue(row);
     }
 
     /**

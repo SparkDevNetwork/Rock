@@ -86,6 +86,20 @@ export type ConfigurationTemplateBag = {
     isPhotoHidden: boolean;
 
     /**
+     * Gets a value indicating whether removing people with a "can check-in"
+     * relationship from the family is allowed. This does not allow
+     * full family members to be removed.
+     */
+    isRemoveFromFamilyAtKioskAllowed: boolean;
+
+    /**
+     * Gets a value indicating whether to attempt to use the same options
+     * from the first service when a person is checking into more than one
+     * service schedule.
+     */
+    isSameOptionUsed: boolean;
+
+    /**
      * Gets a value indicating whether the supervisor screen is available
      * to kiosks after entering a pin number.
      */

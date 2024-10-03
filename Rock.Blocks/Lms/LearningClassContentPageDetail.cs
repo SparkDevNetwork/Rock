@@ -305,8 +305,12 @@ namespace Rock.Blocks.Lms
         {
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassContentPageId ) ?? "";
 
+            // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
+            var excludedParamKeys = new[] { PageParameterKey.AutoEdit.ToLower(), PageParameterKey.ReturnUrl.ToLower() };
+            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+
             var entityName = entityKey.Length > 0 ? new Service<LearningClassContentPage>( RockContext ).GetSelect( entityKey, p => p.Title ) : "New Content Page";
-            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude, null );
             var breadCrumb = new BreadCrumbLink( entityName ?? "New Content Page", breadCrumbPageRef );
 
             return new BreadCrumbResult

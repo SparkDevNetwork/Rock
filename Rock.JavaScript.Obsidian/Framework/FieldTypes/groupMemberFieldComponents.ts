@@ -166,8 +166,8 @@ export const ConfigurationComponent = defineComponent({
     template: `
 <div>
     <GroupPicker v-model="group" label="Group" help="The group to select the member(s) from."/>
-    <CheckBox v-model="allowMultipleValues" label="Allow Multiple Values" text="Yes" help="When set, allows multiple group members to be selected." />
-    <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" text="Yes" help="When set, will render a searchable selection of options." />
+    <CheckBox v-model="allowMultipleValues" label="Allow Multiple Values" help="When set, allows multiple group members to be selected." />
+    <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" help="When set, will render a searchable selection of options." />
 </div>
     `
 });

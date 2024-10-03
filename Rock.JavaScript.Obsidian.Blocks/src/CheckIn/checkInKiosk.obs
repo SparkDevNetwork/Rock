@@ -46,6 +46,7 @@
                                     :configuration="configuration"
                                     :session="currentSession"
                                     @next="onNextScreen"
+                                    @replaceSession="onReplaceSession"
                                     @editFamily="onEditFamily"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
 
@@ -227,7 +228,8 @@
     // #region Computed Values
 
     const hasNavigation = computed((): boolean => {
-        return currentScreen.value !== Screen.Welcome;
+        return currentScreen.value !== Screen.Welcome
+            && currentScreen.value !== Screen.None;
     });
 
     const hasBackButton = computed((): boolean => {
@@ -262,6 +264,15 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Performs all startup tasks associated with the block being presented
+     * on screen for the first time.
+     */
+    async function startup(): Promise<void> {
+        await readConfigurationFromLocalStorage();
+        await setupRealTime();
+    }
 
     /**
      * Reads configuration from local storage. This is set by the setup block
@@ -413,6 +424,16 @@
         previousScreens.value = newPreviousScreens;
         currentScreenActions.value = [];
         currentScreen.value = currentSession.value.currentScreen;
+    }
+
+    /**
+     * Replaces the current session with a new session without changing the
+     * navigation stack or the current screen.
+     *
+     * @param session The new session to replace the current session with.
+     */
+    function onReplaceSession(session: CheckInSession): void {
+        currentSession.value = session;
     }
 
     /**
@@ -623,9 +644,8 @@
 
     // #endregion
 
-    // Read our check-in configuration and then start up.
-    readConfigurationFromLocalStorage();
-    setupRealTime();
+    // Perform asynchronoush startup tasks.
+    startup();
 
     watch(currentScreen, () => {
         if (currentScreen.value !== Screen.Welcome) {

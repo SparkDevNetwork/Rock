@@ -7,10 +7,6 @@
         <SectionHeader title="Filters" />
 
         <div class="row">
-            <div class="col-md-4">
-                <TextBox v-model="name"
-                         label="Name" />
-            </div>
 
             <div class="col-md-4">
                 <CampusPicker v-model="campus"
@@ -20,31 +16,11 @@
                               showBlankItem />
             </div>
 
-            <div class="col-md-4">
-                <DropDownList v-model="isPublic"
-                              label="Public"
-                              :items="yesNoOptions" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="isActive"
-                              label="Active"
-                              :items="yesNoOptions" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="isTaxDeductible"
-                              label="Tax Deductible"
-                              :items="yesNoOptions" />
-            </div>
-
         </div>
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -72,30 +48,12 @@
         (e: "close"): void;
     }>();
 
-    const name = ref(props.modelValue.name ?? "");
     const campus = ref(props.modelValue.campus ?? null);
-    const isActive = ref(props.modelValue.isActive ?? "");
-    const isPublic = ref(props.modelValue.isPublic ?? "");
-    const isTaxDeductible = ref(props.modelValue.isTaxDeductible ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
-    const yesNoOptions = [
-        {
-            text: "Yes",
-            value: "Yes"
-        },
-        {
-            text: "No",
-            value: "No"
-        }
-    ] as ListItemBag[];
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            name: name.value,
-            campus: campus.value,
-            isActive: isActive.value,
-            isPublic: isPublic.value,
-            isTaxDeductible: isTaxDeductible.value
+            campus: campus.value
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -106,11 +64,7 @@
     }
 
     watch(() => props.modelValue, () => {
-        name.value = props.modelValue.name ?? "";
         campus.value = props.modelValue.campus ?? null;
-        isActive.value = props.modelValue.isActive ?? "";
-        isPublic.value = props.modelValue.isPublic ?? "";
-        isTaxDeductible.value = props.modelValue.isTaxDeductible ?? "";
     });
 
     watch(isVisible, () => {

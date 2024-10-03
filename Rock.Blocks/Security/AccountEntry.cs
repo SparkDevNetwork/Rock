@@ -32,7 +32,6 @@ using Rock.Security.Authentication.Passwordless;
 using Rock.ViewModels.Blocks.Security.AccountEntry;
 using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Security
@@ -231,11 +230,18 @@ namespace Rock.Blocks.Security
         Order = 21 )]
 
     [BooleanField(
+        "Require Campus",
+        Key = AttributeKey.RequireCampus,
+        Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
+        DefaultBooleanValue = false,
+        Order = 22 )]
+
+    [BooleanField(
         "Show Campus",
         Key = AttributeKey.ShowCampusSelector,
         Description = "Allows selection of primary a campus. If there is only one active campus then the campus field will not show.",
         DefaultBooleanValue = false,
-        Order = 22 )]
+        Order = 23 )]
 
     [TextField(
         "Campus Selector Label",
@@ -243,7 +249,7 @@ namespace Rock.Blocks.Security
         Description = "The label for the campus selector (only effective when \"Show Campus Selector\" is enabled).",
         IsRequired = false,
         DefaultValue = "Campus",
-        Order = 23 )]
+        Order = 24 )]
 
     [DefinedValueField(
         "Campus Types",
@@ -252,7 +258,7 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
-        Order = 24 )]
+        Order = 25 )]
 
     [DefinedValueField(
         "Campus Statuses",
@@ -261,21 +267,21 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
-        Order = 25 )]
+        Order = 26 )]
 
     [BooleanField( "Save Communication History",
         Key = AttributeKey.CreateCommunicationRecord,
         Description = "Should a record of communication from this block be saved to the recipient's profile?",
         DefaultBooleanValue = false,
         ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
-        Order = 26 )]
+        Order = 27 )]
 
     [BooleanField(
         "Show Gender",
         Key = AttributeKey.ShowGender,
         Description = "Determines if the gender selection field should be shown.",
         DefaultBooleanValue = true,
-        Order = 27 )]
+        Order = 28 )]
 
     [AttributeCategoryField(
         "Attribute Categories",
@@ -284,14 +290,14 @@ namespace Rock.Blocks.Security
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.Person",
         IsRequired = false,
-        Order = 28 )]
+        Order = 29 )]
 
     [BooleanField(
         "Disable Username Availability Checking",
         Key = AttributeKey.DisableUsernameAvailabilityCheck,
         Description = "Disables username availability checking.",
         DefaultBooleanValue = false,
-        Order = 29 )]
+        Order = 30 )]
 
     [SystemCommunicationField(
         "Confirm Account (Passwordless)",
@@ -300,7 +306,7 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT_PASSWORDLESS,
         Category = "Email Templates",
-        Order = 30 )]
+        Order = 31 )]
 
     [TextField(
         "Confirm Caption (Passwordless)",
@@ -308,19 +314,12 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefaultValue = "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a code for confirming.  Please enter the code from your email to continue.",
         Category = "Captions",
-        Order = 31 )]
+        Order = 32 )]
 
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
-        DefaultBooleanValue = false,
-        Order = 32 )]
-
-    [BooleanField(
-        "Require Campus",
-        Key = AttributeKey.RequireCampus,
-        Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
         DefaultBooleanValue = false,
         Order = 33 )]
 
@@ -1270,9 +1269,20 @@ namespace Rock.Blocks.Security
                 return true;
             }
 
+            var selectableCampusesCount = CampusCache.All()
+                .Where( c => c.IsActive.HasValue && c.IsActive.Value
+                        && config.CampusTypeFilter.ContainsOrEmpty( DefinedValueCache.GetGuid( c.CampusTypeValueId ?? -1 ) ?? Guid.Empty )
+                        && config.CampusStatusFilter.ContainsOrEmpty( DefinedValueCache.GetGuid( c.CampusStatusValueId ?? -1 ) ?? Guid.Empty )
+                ).Count();
+
+            if ( selectableCampusesCount == 0 )
+            {
+                return true;
+            }
+
             var campus = box.PersonInfo.Campus;
 
-            if ( !(campus.HasValue && campus.Value != Guid.Empty) )
+            if ( !( campus.HasValue && campus.Value != Guid.Empty ) )
             {
                 return false;
             }
@@ -1389,7 +1399,7 @@ namespace Rock.Blocks.Security
 
             if ( !IsOldEnough( box, config ) )
             {
-                errorMessage = $"We are sorry, you must be at least {( config.MinimumAge == 1 ? "year" : "years" )} old to create an account.";
+                errorMessage = $"We are sorry, you must be at least {config.MinimumAge} {( config.MinimumAge == 1 ? "year" : "years" )} old to create an account.";
                 return false;
             }
 

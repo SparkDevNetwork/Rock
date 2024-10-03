@@ -43,9 +43,9 @@
 
         <div class="row">
             <div class="col-md-6">
-                <NumberBox v-model="maxDocsPerEntity"
+                <TextBox v-model="maxDocsPerEntity"
                            label="Max Documents Per Entity"
-                           numberType="Integer"
+                           :rules="validateNumberValue"
                            help="This would limit the number of the documents of that type per entity. A blank value means no limit." />
             </div>
         </div>
@@ -98,7 +98,6 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -131,7 +130,7 @@
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
     const isUserSelectable = propertyRef(props.modelValue.userSelectable ?? "", "UserSelectable");
-    const maxDocsPerEntity = propertyRef(props.modelValue.maxDocumentsPerEntity ?? null, "MaxDocsPerEntity");
+    const maxDocsPerEntity = propertyRef(props.modelValue.maxDocumentsPerEntity ?? "", "MaxDocsPerEntity");
     const fileType = propertyRef(props.modelValue.binaryFileType ?? null, "FileType");
     const isImage = propertyRef(props.modelValue.isImage ?? false, "IsImage");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
@@ -155,6 +154,27 @@
 
     // #region Functions
 
+    function validateNumberValue(value: unknown): string | boolean {
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -175,7 +195,7 @@
         updateRefValue(isImage, props.modelValue.isImage);
         updateRefValue(isUserSelectable, props.modelValue.userSelectable);
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(maxDocsPerEntity, props.modelValue.maxDocumentsPerEntity ?? null);
+        updateRefValue(maxDocsPerEntity, props.modelValue.maxDocumentsPerEntity ?? "");
 
         updateRefValue(entityQualifierColumn, props.modelValue.entityTypeQualifierColumn ?? "");
         updateRefValue(entityQualifierValue, props.modelValue.entityTypeQualifierValue ?? "");

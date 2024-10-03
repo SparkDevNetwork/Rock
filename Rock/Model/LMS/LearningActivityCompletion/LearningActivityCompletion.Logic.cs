@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Enums.Lms;
+
 namespace Rock.Model
 {
     public partial class LearningActivityCompletion
@@ -36,13 +38,15 @@ namespace Rock.Model
         ///     The list of <see cref="LearningGradingSystemScale">Scales</see> for the Activity.
         ///     Assumes the scales are ordered by ThresholdPercentage descending so the first match can be taken.
         /// </param>
+        /// <param name="decimalPlaces">The number of decimal places to round to.</param>
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
-        public string GetGradeText( IEnumerable<LearningGradingSystemScale> scales = null )
+        public string GetGradeText( IEnumerable<LearningGradingSystemScale> scales = null, int decimalPlaces = 0 )
         {
-            var percent = GradePercent;
+            var percent = Math.Round( GradePercent, decimalPlaces );
             var grade = GetGrade( scales );
+            var percentString = decimalPlaces == 0 ? percent.ToIntSafe().ToString() : percent.ToString();
 
-            return grade?.Name.Length > 0 ? $"{grade?.Name} ({percent}%)" : $"{percent}%";
+            return grade?.Name.Length > 0 ? $"{grade?.Name} ({percentString}%)" : $"{percentString}%";
         }
 
         /// <summary>
@@ -69,5 +73,90 @@ namespace Rock.Model
             var gradePercent = GradePercent;
             return scales.FirstOrDefault( s => gradePercent >= s.ThresholdPercentage );
         }
+
+        /// <summary>
+        /// Determines if the individual was given an extension on the activity <see cref="DueDate"/>.
+        /// </summary>
+        public bool HadExtension => LearningActivity?.DueDateCalculated != null && DueDate.HasValue && DueDate.Value.Date != LearningActivity.DueDateCalculated.Value.Date;
+
+        /// <summary>
+        /// Determines if the activity has been graded (or doesn't require grading).
+        /// </summary>
+        public bool HasBeenGraded => IsStudentCompleted && !RequiresScoring;
+
+        /// <summary>
+        /// Determine if the activity has a student comment.
+        /// </summary>
+        public bool HasStudentComment
+        {
+            get
+            {
+                return StudentComment.IsNotNullOrWhiteSpace();
+            }
+        }
+
+        /// <summary>
+        /// Determine if the activity has a facilitator comment.
+        /// </summary>
+        public bool HasFacilitatorComment
+        {
+            get
+            {
+                return FacilitatorComment.IsNotNullOrWhiteSpace();
+            }
+        }
+
+        /// <summary>
+        /// Determines if the activity was completed late or is currently incomplete and late.
+        /// </summary>
+        public bool IsLate
+        {
+            get
+            {
+                // If this is not student assigned or has no due date it can't be late.
+                if ( LearningActivity.AssignTo != AssignTo.Student || !DueDate.HasValue )
+                {
+                    return false;
+                }
+
+                // If the student completed it, but was late.
+                if ( IsStudentCompleted && !WasCompletedOnTime )
+                {
+                    return true;
+                }
+
+                // If the student hasn't completed it yet and the due date is in the past.
+                if ( !IsStudentCompleted )
+                {
+                    return DueDate.Value <= RockDateTime.Now;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines if an activity requires attention by the facilitator.
+        /// </summary>
+        /// <remarks>
+        /// Either <see cref="RequiresScoring" /> or <see cref="RequiresFaciltatorCompletion"/> is <c>true</c>.
+        /// </remarks>
+        public bool NeedsAttention => RequiresScoring || RequiresFaciltatorCompletion;
+
+        /// <summary>
+        /// The activity has points, is assigned to the student and hasn't been graded.
+        /// </summary>
+        public bool RequiresScoring =>
+            LearningActivity?.Points > 0
+            && LearningActivity?.AssignTo == AssignTo.Student
+            && IsStudentCompleted && !GradedByPersonAliasId.HasValue;
+
+        /// <summary>
+        /// The activity has points, is assigned to the facilitator and hasn't been completed.
+        /// </summary>
+        public bool RequiresFaciltatorCompletion =>
+            LearningActivity.Points > 0
+            && LearningActivity.AssignTo == AssignTo.Facilitator
+            && !IsFacilitatorCompleted;
     }
 }

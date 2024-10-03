@@ -23,4 +23,6 @@
 
 /** The additional configuration options for the Learning Grading System Scale List block. */
 export type LearningGradingSystemScaleListOptionsBag = {
+    /** Gets or sets the IdKey of the LearningGradingSystem for the current page. */
+    learningGradingSystemIdKey?: string | null;
 };

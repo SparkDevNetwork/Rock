@@ -15,9 +15,9 @@
 // </copyright>
 
 using System;
-using System.Diagnostics;
 using System.Web.UI.Adapters;
-using Rock.Bus;
+
+using Rock.Configuration;
 using Rock.Observability;
 using Rock.Web.UI;
 
@@ -42,7 +42,7 @@ namespace Rock.Web
                     activity?.AddTag( "rock.otel_type", "rock-block" );
                     activity?.AddTag( "rock.blocktype.name", rockBlock.BlockCache.BlockType.Name );
                     activity?.AddTag( "rock.blocktype.id", rockBlock.BlockCache.BlockType.Id );
-                    activity?.AddTag( "rock.node", RockMessageBus.NodeName );
+                    activity?.AddTag( "rock.node", RockApp.Current.HostingSettings.NodeName );
 
                     base.OnInit( e );
                 }

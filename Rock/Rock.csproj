@@ -513,7 +513,7 @@
     <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
@@ -553,7 +553,7 @@
     <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
@@ -566,7 +566,7 @@
     <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -580,7 +580,7 @@
     <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -589,17 +589,17 @@
     <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.ProtectedData, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.ProtectedData.4.7.0\lib\net461\System.Security.Cryptography.ProtectedData.dll</HintPath>
@@ -607,7 +607,7 @@
     <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
@@ -909,6 +909,7 @@
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
+    <Compile Include="Bus\Message\ThemeWasUpdatedMessage.cs" />
     <Compile Include="Bus\Queue\CloudPrintCommandQueue.cs" />
     <Compile Include="Bus\Queue\CloudPrintEventQueue.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
@@ -942,6 +943,7 @@
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
@@ -1045,8 +1047,25 @@
     <Compile Include="Cms\ContentCollection\Search\SearchResults.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchSortOrder.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchTerm.cs" />
+    <Compile Include="Cms\IThemeOverrideBuilder.cs" />
     <Compile Include="Cms\PageShortLinkSchedule.cs" />
     <Compile Include="Cms\PageShortLinkScheduleData.cs" />
+    <Compile Include="Cms\ThemeCustomizationSettings.cs" />
+    <Compile Include="Cms\ThemeDefinition.cs" />
+    <Compile Include="Cms\ThemeFields\ColorThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\FileThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\HeadingThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\ImageThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\LiteralThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\PanelThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\SpacerThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\SwitchThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\TextThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\ThemeField.cs" />
+    <Compile Include="Cms\ThemeFields\VariableThemeField.cs" />
+    <Compile Include="Cms\ThemeOverrideBuilder.cs" />
+    <Compile Include="Cms\ThemePurpose.cs" />
+    <Compile Include="Cms\ThemeWasUpdatedConsumer.cs" />
     <Compile Include="Cms\UtmSettings.cs" />
     <Compile Include="Cms\Utm\UtmHelper.cs" />
     <Compile Include="Cms\Utm\UtmCookieData.cs" />
@@ -1289,6 +1308,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
     <Compile Include="Jobs\SendLearningActivityNotifications.cs" />
+    <Compile Include="Jobs\RunNowRockJobListener.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdateAnalyticsSourcePostalCode.cs" />
@@ -1306,7 +1326,7 @@
     <Compile Include="Lms\PointAssessmentComponent.cs" />
     <Compile Include="Lms\VideoWatchComponent.cs" />
     <Compile Include="Lms\FileUploadComponent.cs" />
-    <Compile Include="Lms\CheckOffComponent.cs" />
+    <Compile Include="Lms\AcknowledgementComponent.cs" />
     <Compile Include="Lms\LearningActivityComponent.cs" />
     <Compile Include="Lms\LearningActivityContainer.cs" />
     <Compile Include="Logging\DynamicConfigurationProvider.cs" />
@@ -1340,6 +1360,8 @@
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.Logic.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollectionService.cs" />
     <Compile Include="Model\CMS\Theme\Theme.cs" />
+    <Compile Include="Model\CMS\Theme\Theme.SaveHook.cs" />
+    <Compile Include="Model\CMS\Theme\ThemeService.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
@@ -1572,6 +1594,7 @@
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
     <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
+    <Compile Include="Plugin\HotFixes\209_MigrationRollupsForV17_0_16.cs" />
     <Compile Include="Plugin\HotFixes\208_MigrationRollupsForV17_0_15.cs" />
     <Compile Include="Plugin\HotFixes\207_MigrationRollupsForV17_0_14.cs" />
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
@@ -1602,6 +1625,7 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StreakDataViewFilter.cs" />
     <Compile Include="Reporting\FieldFilterPublicConverter.cs" />
     <Compile Include="Reporting\FieldFilterExpressionBuilder.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
@@ -1673,6 +1697,8 @@
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
+    <Compile Include="Tv\Classes\RokuTvApplicationSettings.cs" />
+    <Compile Include="Tv\Classes\RokuTvPageSettings.cs" />
     <Compile Include="Utility\CaptchaApi\CloudflareApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />

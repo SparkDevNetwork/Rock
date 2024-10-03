@@ -235,7 +235,9 @@ Respond with ONLY a VALID JSON object in the format below. Do not use backticks 
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17();
+
+            // Commenting out as the job has been updated in later migrations.
+            // ChopBlockTypesv17();
         }
 
         #endregion

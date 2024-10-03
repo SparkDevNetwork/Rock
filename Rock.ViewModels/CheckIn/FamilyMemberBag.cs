@@ -21,8 +21,7 @@ namespace Rock.ViewModels.CheckIn
     /// <summary>
     /// A single member of a family. A family member may not belong to the actual
     /// family as they may be assocaited via a "can check-in" relationship. This
-    /// can be determined by the <see cref="FamilyId"/> value being different
-    /// from the id on the family object.
+    /// can be determined by the <see cref="IsInPrimaryFamily"/> value.
     /// </summary>
     public class FamilyMemberBag
     {
@@ -37,6 +36,12 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The family identifier.</value>
         public string FamilyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this attendee is in the
+        /// primary family matched during the search operation.
+        /// </summary>
+        public bool IsInPrimaryFamily { get; set; }
 
         /// <summary>
         /// Gets or sets the group role order. This can be used to order parents

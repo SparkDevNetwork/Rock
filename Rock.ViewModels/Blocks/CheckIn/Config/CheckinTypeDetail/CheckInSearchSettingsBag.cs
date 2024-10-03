@@ -36,7 +36,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The maximum results.
         /// </value>
-        public int MaxResults { get; set; }
+        public string MaxResults { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum length of the phone.
@@ -44,7 +44,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The minimum length of the phone.
         /// </value>
-        public int MinPhoneLength { get; set; }
+        public string MinPhoneLength { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum length of the phone.
@@ -52,7 +52,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The maximum length of the phone.
         /// </value>
-        public int MaxPhoneLength { get; set; }
+        public string MaxPhoneLength { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the phone search.

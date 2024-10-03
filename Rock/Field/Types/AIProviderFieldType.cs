@@ -40,7 +40,7 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.IEntityFieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
-    [Rock.SystemGuid.FieldTypeGuid( "2BAA190B-3EF7-47CE-AF70-C7613ED344AB" )]
+    [Rock.SystemGuid.FieldTypeGuid( SystemGuid.FieldType.AI_PROVIDER )]
     public class AIProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         /// <inheritdoc />

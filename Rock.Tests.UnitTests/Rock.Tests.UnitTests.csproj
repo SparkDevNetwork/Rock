@@ -173,17 +173,17 @@
     <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.IO.UnmanagedMemoryStream, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.UnmanagedMemoryStream.4.3.0\lib\net46\System.IO.UnmanagedMemoryStream.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
@@ -238,6 +238,7 @@
     <Compile Include="Rock\CheckIn\v2\Filters\LocationClosedOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationOverflowOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\MembershipOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\PreferredGroupsOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\ThresholdOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\TextLabelRendererTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplImageHelperTests.cs" />
@@ -245,6 +246,9 @@
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplLabelRendererTests.cs" />
     <Compile Include="Rock\CheckIn\v2\TemplateConfigurationDataTests.cs" />
     <Compile Include="Rock\CheckIn\v2\AreaConfigurationDataTests.cs" />
+    <Compile Include="Rock\Cms\ThemeDefinitionTests.cs" />
+    <Compile Include="Rock\Cms\ThemeFieldTests.cs" />
+    <Compile Include="Rock\Cms\ThemeOverrideBuilderTests.cs" />
     <Compile Include="Rock\Configuration\RockAppExtensionsTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />

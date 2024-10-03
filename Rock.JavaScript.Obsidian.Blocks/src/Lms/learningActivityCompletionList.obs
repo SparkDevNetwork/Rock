@@ -64,8 +64,8 @@
                 :filterValue="getRowStatusesFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="getRequiresScoring(row)" class="mr-1 mb-1 label label-warning">Requires Scoring</span>
-                <span v-if="getIsLate(row)" class="mr-1 mb-1 label label-warning">Late</span>
+                <span v-if="row.requiresScoring" class="mr-1 mb-1 label label-warning">Requires Scoring</span>
+                <span v-if="row.isLate" class="mr-1 mb-1 label label-warning">Late</span>
             </template>
         </Column>
 
@@ -92,8 +92,8 @@
 
         <DropDownList v-model="studentGuidToAdd"
                       :items="studentsWithoutActivity"
-                      label="For Student"
-                      help="Select the student to add the activity for." />
+                      label="For Individual"
+                      help="Select the individual to add the activity for." />
 
     </Modal>
 </template>
@@ -182,32 +182,9 @@
      */
     function getRowStatusesFilterValue(row: Record<string, unknown>): string {
         return [
-            getRequiresScoring(row) ? "requires scoring" : "",
-            getIsLate(row) ? "late: " : "",
+            row.requiresScoring ? "requires scoring" : "",
+            row.isLate ? "late: " : "",
         ].join(" ");
-    }
-
-    /**
-     * Determines whether the activity completion requires scoring.
-     * @param row The row from the grid for determining if scoring is required.
-     * @returns true if the row requires scoring; otherwise false.
-     */
-    function getRequiresScoring(row: Record<string, unknown>): boolean {
-        const availablePoints = Number(row.points);
-        return row.isFacilitatorCompleted === false && row.isStudentCompleted === true && availablePoints > 0;
-    }
-
-    /**
-     * Determines whether the activity completion is currently or was completed late.
-     * @param row The row from the grid for determining if completed late.
-     * @returns true if the row is currently or was completed late; otherwise false.
-     */
-    function getIsLate(row: Record<string, unknown>): boolean {
-        const dueDate = RockDateTime.parseISO(row.dueDate as string);
-        const isLate = dueDate != null && dueDate >= RockDateTime.now();
-        const isStudentCompleted = row.isStudentCompleted === true;
-        const wasCompletedLate = isStudentCompleted && row.wasCompletedOnTime === false;
-        return (isLate && !isStudentCompleted) || wasCompletedLate;
     }
 
     /**
@@ -267,7 +244,7 @@
             reloadBlock();
         }
         else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to add student.");
+            throw new Error(result.errorMessage ?? "Unknown error while trying to add individual.");
         }
     }
 

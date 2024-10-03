@@ -444,75 +444,165 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the queued communications.
+        /// The number of minutes in the past to consider a previously-locked-for-sending communication recipient as expired.
+        /// This will be used to retry sending a communication to recipients who get stuck in the "Sending" status.
         /// </summary>
-        /// <param name="expirationDays">The expiration days.</param>
-        /// <param name="delayMinutes">The delay minutes.</param>
-        /// <param name="includeFuture">if set to <c>true</c> [include future].</param>
-        /// <param name="includePendingApproval">if set to <c>true</c> communications that haven't been approved yet will be included.</param>
-        /// <returns></returns>
+        internal static int PreviousSendLockExpiredMinutes = -240;
+
+        /// <summary>
+        /// Gets the queued communications based on the provided arguments.
+        /// </summary>
+        /// <param name="expirationDays">How many days in the past to look for queued communications before considering them as expired.</param>
+        /// <param name="delayMinutes">How long to wait after a communication was approved before considering it as queued.</param>
+        /// <param name="includeFuture">Whether to include ALL unsent communications that have a FutureSendDateTime on or
+        /// after (RockDateTime.Now minus <paramref name="expirationDays"/>), regardless of then they were created or
+        /// approved.
+        /// <para>
+        /// IMPORTANT: This will also include any communications that DON'T have a FutureSendDateTime, as long as they're
+        /// eligible to send based on the provided <paramref name="expirationDays"/>, <paramref name="delayMinutes"/>
+        /// and <paramref name="includePendingApproval"/> arguments.
+        /// </para>
+        /// <para>BE CAREFUL! Only use this option if you truly understand the implications.</para>
+        /// </param>
+        /// <param name="includePendingApproval">Whether to include communications that haven't been approved yet.</param>
+        /// <returns>The queued communications based on the provided arguments.</returns>
         public IQueryable<Communication> GetQueued( int expirationDays, int delayMinutes, bool includeFuture, bool includePendingApproval )
         {
-            var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
-            var endWindow = RockDateTime.Now.AddMinutes( 0 - delayMinutes );
             var currentDateTime = RockDateTime.Now;
 
-            // Conditions for communications that should be queued for Sending (indicated by includeFuture == false and includePending == false)
-            // -  communications that haven't been sent yet (SendDateTime is null)
-            // -  communication is approved (or includePendingApproval == false)
-            // - FutureSendDateTime is not set (not scheduled), and communication was created within a reasonable window based on expiration days (for example, no older than 3 days ago)
-            //   - OR - FutureSendDateTime IS set (scheduled), and the FutureSendDateTime is Now (or within the expiration window)
+            // Include communications that were approved (or created, for legacy plugins) on or AFTER this date/time.
+            var earliestDateTime = currentDateTime.AddDays( 0 - expirationDays );
 
-            // Limit to communications that haven't been sent yet
-            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue );
+            // Include communications that were approved (or created, for legacy plugins) on or BEFORE this date/time.
+            var latestDateTime = currentDateTime.AddMinutes( 0 - delayMinutes );
 
-            var qryPendingRecipients = new CommunicationRecipientService( ( RockContext ) Context )
-                .Queryable()
-                .Where( a => a.Status == CommunicationRecipientStatus.Pending )
-                .Select( cr => new { Id = cr.CommunicationId } );
+            // Limit to communications that haven't been sent yet. Note that communications are only stamped with a
+            // SendDateTime value once Rock has attempted to send to all of its recipients.
+            var queuedCommunicationsQry = Queryable().Where( c => !c.SendDateTime.HasValue );
 
             if ( includePendingApproval )
             {
-                // Also limit to communications that are Approved or Pending Approval
-                queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved || c.Status == CommunicationStatus.PendingApproval );
+                // Also limit to communications that are approved or pending approval.
+                queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
+                    c.Status == CommunicationStatus.Approved
+                    || c.Status == CommunicationStatus.PendingApproval
+                );
             }
             else
             {
-                // Also limit to communications that are Approved
-                queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved );
+                // Also limit to communications that are Approved.
+                queuedCommunicationsQry = queuedCommunicationsQry.Where( c => c.Status == CommunicationStatus.Approved );
             }
 
             if ( includeFuture )
             {
-                // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago) or are Scheduled to be sent at some point
-                queuedQry = queuedQry.Where( c =>
-                    // Use the reviewed date to get the communications to send
-                    ( !c.FutureSendDateTime.HasValue && c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value >= beginWindow && c.ReviewedDateTime.Value <= endWindow )
-                    // Use the created date to get the communications to send this is for communications that are created by legacy plugins that have switched to using reviewed date.
-                    || ( !c.FutureSendDateTime.HasValue && !c.ReviewedDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
-                    // Get all future communications.
-                    || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow ) );
+                // Also limit to communications that:
+                //
+                // [EITHER] (
+                //      Don't have a FutureSendDateTime
+                //      [AND] Have been created within a reasonable timeframe (typically no older than 3 days ago)
+                //      [AND] Have been created long enough ago (beyond any specified delay period)
+                // )
+                // [OR] (
+                //      FutureSendDateTime is on or AFTER the earliest date/time (regardless of when created or approved)
+                // )
+                queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
+                    // First, try to use the reviewed date to get the queued communications.
+                    (
+                        !c.FutureSendDateTime.HasValue
+                        && c.ReviewedDateTime.HasValue
+                        && c.ReviewedDateTime.Value >= earliestDateTime
+                        && c.ReviewedDateTime.Value <= latestDateTime
+                    )
+                    // Next, try to use the created date to get the queued communications.
+                    // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
+                    || (
+                        !c.FutureSendDateTime.HasValue
+                        && !c.ReviewedDateTime.HasValue
+                        && c.CreatedDateTime.HasValue
+                        && c.CreatedDateTime.Value >= earliestDateTime
+                        && c.CreatedDateTime.Value <= latestDateTime
+                    )
+                    // For communications that have a FutureSendDateTime, get all "future send" communications on or after the earliest date/time.
+                    || (
+                        c.FutureSendDateTime.HasValue
+                        && c.FutureSendDateTime.Value >= earliestDateTime
+                    )
+                );
             }
             else
             {
-                // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago)
-                // or are Scheduled to be sent (also within that reasonable timeframe. In other words, if it was scheduled to be sent, but stil hasn't been sent 3 days after it was scheduled, don't include it)
-                queuedQry = queuedQry.Where( c =>
-                    // Use the reviewed date to get the communications to send
-                    ( !c.FutureSendDateTime.HasValue && c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value >= beginWindow && c.ReviewedDateTime.Value <= endWindow )
-                    // Use the created date to get the communications to send this is for communications that are created by legacy plugins that have switched to using reviewed date.
-                    || ( !c.FutureSendDateTime.HasValue && !c.ReviewedDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
-                    // Get all future communication that are need to be sent.
-                    || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow && c.FutureSendDateTime.Value <= currentDateTime ) );
+                // Also limit to communications that:
+                //
+                //  Have been created within a reasonable timeframe (typically no older than 3 days ago)
+                //  [AND] Have been created long enough ago (beyond any specified delay period)
+                //  [AND] (
+                //      don't have a FutureSendDateTime
+                //      [OR] (
+                //          FutureSendDateTime is on or AFTER the earliest date/time
+                //          [AND] FutureSendDateTime is on or BEFORE the current date/time
+                //      )
+                //  )
+                queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
+                    // First, try to use the reviewed date to get the queued communications.
+                    (
+                        c.ReviewedDateTime.HasValue
+                        && c.ReviewedDateTime.Value >= earliestDateTime
+                        && c.ReviewedDateTime.Value <= latestDateTime
+                        && (
+                            !c.FutureSendDateTime.HasValue
+                            || (
+                                c.FutureSendDateTime.Value >= earliestDateTime
+                                && c.FutureSendDateTime.Value <= currentDateTime
+                            )
+                        )
+                    )
+                    // Next, try to use the created date to get the queued communications.
+                    // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
+                    || (
+                        !c.ReviewedDateTime.HasValue
+                        && c.CreatedDateTime.HasValue
+                        && c.CreatedDateTime.Value >= earliestDateTime
+                        && c.CreatedDateTime.Value <= latestDateTime
+                        && (
+                            !c.FutureSendDateTime.HasValue
+                            || (
+                                c.FutureSendDateTime.Value >= earliestDateTime
+                                && c.FutureSendDateTime.Value <= currentDateTime
+                            )
+                        )
+                    )
+                );
             }
 
-            // just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a ListGroupId or has PendingRecipients
-            var listGroupQuery = Queryable().Where( c => c.ListGroupId.HasValue ).Select( c => new { c.Id } );
-            var communicationListQry = qryPendingRecipients.Union( listGroupQuery );
+            // Just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a
+            // ListGroupId or have pending (or previous-lock-expired) recipients.
+            var commIdsWithListGroupIdQry = Queryable()
+                .Where( c => c.ListGroupId.HasValue )
+                .Select( c => c.Id )
+                .Distinct();
+
+            var previousSendLockExpiredDateTime = currentDateTime.AddMinutes( PreviousSendLockExpiredMinutes );
+            var commIdsWithPendingRecipientsQry = new CommunicationRecipientService( ( RockContext ) Context )
+                .Queryable()
+                .Where( a =>
+                    a.Status == CommunicationRecipientStatus.Pending
+                    || (
+                        a.Status == CommunicationRecipientStatus.Sending
+                        && a.ModifiedDateTime < previousSendLockExpiredDateTime
+                    )
+                )
+                .Select( cr => cr.CommunicationId )
+                .Distinct();
+
+            var commIdsWithRecipientsQry = commIdsWithListGroupIdQry.Union( commIdsWithPendingRecipientsQry );
 
             var returnQry = Queryable()
-                .Where( c => queuedQry.Any( c2 => c2.Id == c.Id ) )
-                .Where( c => communicationListQry.Any( c2 => c2.Id == c.Id ) );
+                .Where( c =>
+                    queuedCommunicationsQry.Any( queuedCommunication => queuedCommunication.Id == c.Id )
+                    && commIdsWithRecipientsQry.Any( commIdWithRecipients => commIdWithRecipients == c.Id )
+                );
+
             return returnQry;
         }
 

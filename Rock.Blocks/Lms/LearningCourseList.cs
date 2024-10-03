@@ -26,6 +26,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseList;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Lms
     [Rock.SystemGuid.EntityTypeGuid( "e882d582-bc31-4b68-945b-d0d44a2ce5bc" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0afdf98-4afc-4e4f-a6e2-07ca4e7358e8" )]
     [CustomizedGrid]
-    public class LearningCourseList : RockEntityListBlockType<LearningCourse>
+    public class LearningCourseList : RockEntityListBlockType<LearningCourse>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -216,5 +217,30 @@ namespace Rock.Blocks.Lms
         }
 
         #endregion
+
+        /// <summary>
+        /// Ensure the LearningProgramId parameter is provided to the breadcrumb.
+        /// </summary>
+        /// <remarks>
+        /// Although no customization is happening in this breadcrumb we want to
+        /// ensure the route works even after a server restart.
+        /// </remarks>
+        /// <param name="pageReference">The PageReference from the breadcrumb.</param>
+        /// <returns>The BreadCrumbResult to display for this block.</returns>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var pageParams =pageReference.Parameters?.Where( p => p.Key == PageParameterKey.LearningProgramId ).ToDictionary( p => p.Key, p => p.Value );
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageParams );
+            var breadCrumb = new BreadCrumbLink( "Courses", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+            };
+        }
     }
 }

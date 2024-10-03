@@ -79,7 +79,7 @@
             </div>
         </Panel>
 
-        <Panel title="Event Attributes" hasCollapse>
+        <Panel title="Event Occurrence Attributes" hasCollapse>
             <Grid :data="occurenceAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
                 <TextColumn name="name"
                             field="name"
@@ -121,7 +121,7 @@
                             </li>
                         </ul>
                     </NotificationBox>
-                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :isAllowSearchVisible="true" />
                 </RockForm>
 
             </Modal>
@@ -133,11 +133,12 @@
                saveText="Save">
 
             <div>
-                <DefinedValuePicker label="Defined Value"
-                                    v-model="audience"
-                                    :definedTypeGuid="DefinedType.MarketingCampaignAudienceType"
-                                    :multiple="false"
-                                    :enhanceForLongLists="false" />
+                <DropDownList label="Defined Value"
+                              v-model="audience"
+                              :items="computedAudiences"
+                              :multiple="false"
+                              :enhanceForLongLists="false"
+                              :showBlankItem="false" />
             </div>
 
         </Modal>
@@ -145,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -154,7 +155,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
-    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
@@ -165,9 +166,10 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -201,6 +203,7 @@
     const calendars = ref(props.modelValue.calendars ?? []);
 
     const availableCalendars = ref(props.modelValue.availableCalendars ?? []);
+    const availableAudiences = ref(props.options.audiences ?? []);
 
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
@@ -208,7 +211,7 @@
     const reservedKeyNames = ref<string[]>([]);
     const attributeErrors = ref<string[]>([]);
 
-    const audience = ref({} as ListItemBag);
+    const audience = ref<string>("");
     const isAudienceModalOpen = ref(false);
     const audiences = ref(props.modelValue.audiences ?? []);
 
@@ -232,6 +235,11 @@
         rows: eventOccurenceAttributes.value.map(x => toAttributeGridRowItem(x))
     });
 
+    const computedAudiences = computed((): ListItemBag[] => {
+        const selectedAudiences = audiences.value.map(a => a.value);
+        return availableAudiences.value.filter(x => !selectedAudiences.some(sa => sa == x.value)) || [];
+    });
+
     // #endregion
 
     // #region Functions
@@ -250,7 +258,7 @@
         }
 
         return {
-            key: bag.attribute?.key,
+            key: bag.attribute?.guid,
             name: bag.attribute?.name,
             fieldType: bag.fieldType,
             description: bag.attribute?.description,
@@ -267,14 +275,17 @@
     const onSaveAudience = (): void => {
         isAudienceModalOpen.value = false;
 
-        const audienceValue = audience.value?.value;
+        const audienceValue = audience.value;
         if (audienceValue && !audiences.value.some(x => x.value == audienceValue)) {
-            audiences.value.push(audience.value);
-            const rowItem = toAudienceRowItem(audience.value);
-            audienceGridData.rows?.push(rowItem);
+            const audience = availableAudiences.value.find(x => x.value == audienceValue);
+            if (audience) {
+                audiences.value.push(audience);
+                const rowItem = toAudienceRowItem(audience);
+                audienceGridData.rows?.push(rowItem);
+            }
         }
 
-        audience.value = {};
+        audience.value = "";
     };
 
     const onAddAudience = (): void => {
@@ -297,13 +308,14 @@
 
     const onAddAttribute = (): void => {
         occurrenceAttribute.value = {} as PublicEditableAttributeBag;
+        occurrenceAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isAttributeModalOpen.value = true;
         attributeErrors.value = [];
     };
 
-    const onEditAttribute = async (key: string): Promise<void> => {
+    const onEditAttribute = (key: string): void => {
         attributeErrors.value = [];
-        const selectedAttribute = eventOccurenceAttributes.value.find(x => x.attribute?.key === key);
+        const selectedAttribute = eventOccurenceAttributes.value.find(x => x.attribute?.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute?.attribute) {
             occurrenceAttribute.value = selectedAttribute.attribute;
@@ -317,8 +329,8 @@
 
     const onDeleteAttribute = async (key: string): Promise<void> => {
         isAttributeModalOpen.value = false;
-        const deletedAttribute = eventOccurenceAttributes.value.find(s => s.attribute?.key === key);
-        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.key !== key);
+        const deletedAttribute = eventOccurenceAttributes.value.find(s => s.attribute?.guid === key);
+        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.guid !== key);
 
         if (deletedAttribute?.attribute) {
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.attribute?.key);
@@ -337,10 +349,10 @@
     const onSaveAttribute = (): void => {
 
         if (occurrenceAttribute.value && eventOccurenceAttributes.value) {
-            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.key === occurrenceAttribute.value?.key);
+            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
 
             if (index !== -1) {
-                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.key == occurrenceAttribute.value?.key);
+                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid == occurrenceAttribute.value?.guid);
                 let rowItem = occurenceAttributesGridData.rows?.find(x => x.key == occurrenceAttribute.value?.key);
 
                 if (editedAttribute?.attribute) {
@@ -360,6 +372,7 @@
                     attribute: occurrenceAttribute.value,
                     fieldType: ""
                 };
+                newEventAttribute.attribute.guid = newGuid();
                 eventOccurenceAttributes.value.push(newEventAttribute);
 
                 // Add new RowItem to the grid to represent the newly added attribute.

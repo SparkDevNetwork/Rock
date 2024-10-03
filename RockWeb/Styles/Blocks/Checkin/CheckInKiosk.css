@@ -305,10 +305,12 @@
 .check-in-page .button-list .illustrated-button {
     padding: 0;
     min-height: 82px;
+    overflow: hidden;
+    gap: 0;
 }
 
 .check-in-page .illustrated-button > * {
-    margin: var(--spacing-medium) 0;
+    margin: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) 0;
 }
 
 .check-in-page .illustrated-button > *:first-child {
@@ -322,6 +324,13 @@
 .check-in-page .illustrated-button .selection {
     font-size: var(--font-size-h1);
     line-height: var(--line-height-compact);
+}
+
+.check-in-page .illustrated-button .btn {
+    margin: 0;
+    border-radius: 0;
+    align-self: stretch;
+    margin-right: 0;
 }
 
 
@@ -522,14 +531,6 @@
 
 .check-in-page .attendee-button .message {
     font-size: var(--font-size-regular);
-}
-
-.check-in-page .attendee-button .change-selection-button {
-    margin: 0;
-    align-self: stretch;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    padding: 0 var(--spacing-large);
 }
 
 

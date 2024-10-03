@@ -37,7 +37,6 @@ using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.CheckIn.Labels;
-using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -917,6 +916,53 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 LocationMap = locationMap,
                 GroupMap = groupMap
             } );
+        }
+
+        /// <summary>
+        /// Removes any "can check-in" relationship between the attendee and all
+        /// members of the family.
+        /// </summary>
+        /// <param name="templateId">The encrypted identifier of the configuration template being used.</param>
+        /// <param name="familyId">The encrypted identifier of the family.</param>
+        /// <param name="attendeeId">The encrypted identifier of the attendee.</param>
+        /// <returns>A status code of 200 to indicate all relationships were removed.</returns>
+        [BlockAction]
+        public BlockActionResult RemoveAttendee( string templateId, string familyId, string attendeeId )
+        {
+            var configuration = GroupTypeCache.GetByIdKey( templateId, RockContext )?.GetCheckInConfiguration( RockContext );
+
+            if ( configuration?.IsRemoveFromFamilyAtKioskAllowed != true )
+            {
+                return ActionBadRequest( "Removing family members is not allowed." );
+            }
+
+            var familyIdNumber = IdHasher.Instance.GetId( familyId );
+            var attendeeIdNumber = IdHasher.Instance.GetId( attendeeId );
+
+            if ( !familyIdNumber.HasValue || !attendeeIdNumber.HasValue )
+            {
+                return ActionBadRequest( "Invalid person or family specified." );
+            }
+
+            var groupMemberService = new GroupMemberService( RockContext );
+            var familyMemberPersonIds = groupMemberService
+                .Queryable()
+                .Where( fm => fm.GroupId == familyIdNumber.Value )
+                .Select( fm => fm.PersonId )
+                .ToList();
+
+            var canCheckInRoleId = GroupTypeRoleCache
+                .Get( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid(), RockContext )
+                .Id;
+
+            foreach ( var familyMemberPersonId in familyMemberPersonIds )
+            {
+                groupMemberService.DeleteKnownRelationship( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleId );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

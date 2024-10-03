@@ -641,7 +641,7 @@ function onTaskCompleted( resultData )
             lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
             cbDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
             cbDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
-            cbRecipientListDuplicatePreventionOption.Checked = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean(); ;
+            cbRecipientListDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
             cbRecipientListDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
             tbCommunicationName.Text = communication.Name;
             swBulkCommunication.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;

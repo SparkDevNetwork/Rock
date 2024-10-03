@@ -22,17 +22,9 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterAccountName = "filter-account-name",
     FilterCampus = "filter-campus",
-    FilterIsPublic = "filter-is-public",
-    FilterIsActive = "filter-is-active",
-    FilterIsTaxDeductible = "filter-is-tax-deductible"
 }
 
 export type GridSettingsOptions = {
-    name?: string | null;
     campus?: ListItemBag | null;
-    isPublic?: string | null;
-    isActive?: string | null;
-    isTaxDeductible?: string | null;
 };

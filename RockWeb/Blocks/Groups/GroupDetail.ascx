@@ -104,7 +104,7 @@
                                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                                         </div>
                                         <div class="col-sm-6">
-                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsSecurityRole_CheckedChanged" />
+                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" AutoPostBack="true" OnCheckedChanged="cbIsSecurityRole_CheckedChanged" />
                                         </div>
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
@@ -575,11 +575,11 @@
                         <Rock:RockDropDownList ID="ddlTriggerToStatus" runat="server" Label="To Status of" ValidationGroup="Trigger" />
                         <Rock:RockDropDownList ID="ddlTriggerFromRole" runat="server" Label="From Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                         <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
-                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" ValidationGroup="Trigger"
                             Help="Select this option if workflow should only be started when person attends the group for the first time. Leave this option unselected if the workflow should be started whenever a person attends the group." />
-                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" ValidationGroup="Trigger"
                             Help="Select this option if workflow should show UI for entering a note when the member is placed." />
-                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" ValidationGroup="Trigger"
                             Help="Select this option if workflow should show UI for entering a note and make it required when the member is placed." />
                     </div>
                 </div>
