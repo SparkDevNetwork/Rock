@@ -1,9 +1,7 @@
 <template>
-    <template v-if="modelValue.componentElement">
-        <Panel v-model="isContentPanelExpanded"
-               :hasCollapse="true"
-               title="Content"
-               type="block">
+    <ComponentProperties @complete="$emit('complete')"
+                         @delete="$emit('delete')">
+        <template #default>
             <div class="form-group">
                 <ButtonGroup v-model="imageSourceType" :items="imageSourceTypes" />
             </div>
@@ -16,12 +14,9 @@
                            @onImageRemoved="imageGuidAndName = null" />
 
             <div v-else-if="imageSourceType === 'asset'">TBD</div>
-        </Panel>
+        </template>
 
-        <Panel v-model="isSpacingAndLayoutPanelExpanded"
-               :hasCollapse="true"
-               title="Spacing & Layout"
-               type="block">
+        <template #spacingAndLayoutSettings>
             <div class="row">
                 <div class="col-sm-6">
                     <DropDownList v-model="widthItem"
@@ -65,13 +60,8 @@
             </div>
 
             <Margin :modelValue="modelValue.componentElement" mode="numberBox" />
-        </Panel>
-
-        <div class="m-2 d-flex justify-content-end">
-            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
-        </div>
-    </template>
+        </template>
+    </ComponentProperties>
 </template>
 
 <style scoped>
@@ -84,6 +74,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import ComponentProperties from "../componentProperties.partial.obs";
     import { BinaryFileType, toGuidOrNull } from "../imports.partial";
     import Margin from "../inlineStyleEditors/margin.partial.obs";
     import TextAlign from "../inlineStyleEditors/textAlign.partial.obs";
@@ -92,8 +83,6 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

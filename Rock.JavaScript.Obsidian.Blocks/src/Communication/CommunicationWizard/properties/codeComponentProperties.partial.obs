@@ -1,37 +1,29 @@
 <template>
-    <template v-if="modelValue.componentElement">
-        <Panel :hasCollapse="true"
-               :modelValue="true"
-               title="General Settings"
-               type="block">
-            <InnerHtml :modelValue="modelValue.componentElement"
-                       label="HTML"
-                       mode="code" />
-            <Margin :modelValue="modelValue.componentElement" />
-        </Panel>
+    <ComponentProperties :modelValue="modelValue"
+                         @complete="$emit('complete')"
+                         @delete="$emit('delete')">
+        <InnerHtml :modelValue="modelValue.componentElement"
+                   label="HTML"
+                   mode="code" />
 
-        <div class="m-2 d-flex justify-content-end">
-            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
-        </div>
-    </template>
+        <Margin :modelValue="modelValue.componentElement" />
+    </ComponentProperties>
 </template>
 
 <style scoped>
 :deep(.panel) {
     margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
+    /* Needed so that .panel-block can collapse. */
     height: auto !important;
 }
 </style>
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import ComponentProperties from "../componentProperties.partial.obs";
     import InnerHtml from "../propertyEditors/innerHtml.partial.obs";
     import Margin from "../inlineStyleEditors/margin.partial.obs";
     import { EditorComponent } from "../types.partial";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     defineProps({
         modelValue: {

@@ -1,0 +1,17 @@
+<template>
+    <slot></slot>
+
+    <div class="m-2 d-flex justify-content-end">
+        <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
+        <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+</script>

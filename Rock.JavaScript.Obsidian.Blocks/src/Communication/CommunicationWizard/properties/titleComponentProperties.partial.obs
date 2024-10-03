@@ -1,48 +1,35 @@
 <template>
     <template v-if="headingElement">
-        <Panel v-model="isGeneralSettingsExpanded"
-               :hasCollapse="true"
-               title="General Settings"
-               type="block">
-            <TextContent :modelValue="headingElement" />
+        <ComponentProperties @complete="$emit('complete')"
+                             @delete="$emit('delete')">
+            <AccordionManager>
+                <Accordion title="General Settings">
+                    <TextContent :modelValue="headingElement" />
 
-            <DropDownList v-model="headingLevel"
-                          :items="headingLevels"
-                          label="Level"
-                          :showBlankItem="false" />
-        </Panel>
+                    <DropDownList v-model="headingLevel"
+                                  :items="headingLevels"
+                                  label="Level"
+                                  :showBlankItem="false" />
+                </Accordion>
 
-        <Panel v-model="isTextStylingExpanded" :hasCollapse="true"
-               title="Text Styling"
-               type="block">
-            <Font :modelValue="headingElement"
-                  :tagName="headingLevel" />
-        </Panel>
-
-        <div class="m-2 d-flex justify-content-end">
-            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
-        </div>
+                <Accordion title="Typography">
+                    <Font :modelValue="headingElement"
+                          :tagName="headingLevel" />
+                </Accordion>
+            </AccordionManager>
+        </ComponentProperties>
     </template>
 </template>
 
-<style scoped>
-:deep(.panel) {
-    /* TODO JMH Do this without !important */
-    margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
-    height: auto !important;
-}
-</style>
-
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import AccordionManager from "../accordionManager.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import ComponentProperties from "../componentProperties.partial.obs";
     import { DropDownList } from "../imports.partial";
     import { EditorComponent } from "../types.partial";
     import Font from "../inlineStyleEditors/font.partial.obs";
     import TextContent from "../propertyEditors/textContent.partial.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -85,8 +72,6 @@
 
     const headingElement = ref<HTMLHeadingElement | null | undefined>(getHeadingElement());
     const headingLevel = ref<HeadingLevel>(headingElement.value?.tagName?.toLowerCase() as HeadingLevel ?? "h1");
-    const isGeneralSettingsExpanded = ref<boolean>(true);
-    const isTextStylingExpanded = ref<boolean>(false);
 
     // #endregion
 
@@ -120,20 +105,6 @@
         headingElement.value.parentNode?.replaceChild(newHeadingElement, headingElement.value);
 
         headingElement.value = newHeadingElement;
-    });
-
-    watch(isGeneralSettingsExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other panels.
-            isTextStylingExpanded.value = false;
-        }
-    });
-
-    watch(isTextStylingExpanded, isExpanded => {
-        if (isExpanded) {
-            // Collapse other panels.
-            isGeneralSettingsExpanded.value = false;
-        }
     });
 
     // #endregion

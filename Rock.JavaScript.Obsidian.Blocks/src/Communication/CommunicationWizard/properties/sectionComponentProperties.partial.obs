@@ -1,5 +1,6 @@
 <template>
-    <template v-if="selectedComponent.componentElement">
+    <ComponentProperties @complete="$emit('complete')"
+                         @delete="$emit('delete')">
         <Panel v-model="isRowSettingsExpanded"
                :hasCollapse="true"
                title="Row Settings"
@@ -14,12 +15,7 @@
                type="block">
             {{ columnElements.length }}
         </Panel>
-
-        <div class="m-2 d-flex justify-content-end">
-            <RockButton btnType="primary" @click="$emit('complete')">Complete</RockButton>
-            <RockButton btnType="link" @click="$emit('delete')">Delete</RockButton>
-        </div>
-    </template>
+    </ComponentProperties>
 </template>
 
 <style scoped>
@@ -32,6 +28,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import ComponentProperties from "../componentProperties.partial.obs";
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";
     import { EditorComponent } from "../types.partial";

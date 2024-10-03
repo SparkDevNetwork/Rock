@@ -1,0 +1,72 @@
+<template>
+    <Panel v-model="isExpanded"
+           :hasCollapse="true"
+           :title="title"
+           :type="type">
+        <slot></slot>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.panel) {
+    margin-bottom: 0 !important;
+    /* Needed so that panel-block can collapse. */
+    height: auto !important;
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref, watch } from "vue";
+    import { useAccordionManager } from "./utils.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    defineProps({
+        title: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+        type: {
+            type: String as PropType<"default" | "primary" | "danger" | "warning" | "success" | "info" | "block" | undefined>,
+            default: "block"
+        }
+    });
+
+    const accordionKey = newGuid();
+    const accordionManager = useAccordionManager();
+
+    // #region Values
+
+    const isExpanded = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Functions
+
+    function expand(): void {
+        isExpanded.value = true;
+    }
+
+    function collapse(): void {
+        isExpanded.value = false;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isExpanded, value => {
+        if (value) {
+            accordionManager.expand(accordionKey);
+        }
+    });
+
+    // #endregion
+
+    onMounted(() => {
+        accordionManager.register(accordionKey, {
+            collapse,
+            expand
+        });
+    });
+</script>
