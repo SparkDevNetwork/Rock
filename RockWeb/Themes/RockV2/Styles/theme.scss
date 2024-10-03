@@ -22,19 +22,11 @@ main {
   display: block;
 }
 
-body {
-  background-color: var(--color-interface-softer);
-  color: var(--color-interface-strong)
-}
-
 body.nav-open,
 body.navbar-side-open {
   overflow: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: var(--color-interface-stronger);
-}
 
 // Page Structure
 .row {
