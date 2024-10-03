@@ -88,13 +88,13 @@ WHERE GUID = 'E333D1CC-CB55-4E73-8568-41DAD296971C'
         private void AddObsidianControlGalleryToCMSUp()
         {
             // Add Page to the CMS Page
-            RockMigrationHelper.AddPage( "B4A24AB7-9369-4055-883F-4F4892C39AE3", "C2467799-BB45-4251-8EE6-F0BF27201535", "Obsidian Control Gallery", "", guid: "0CD9A871-2F7D-4713-8FBB-0D8EDDE02886", iconCssClass: "fa fa-magic", insertAfterPageGuid: "706C0584-285F-4014-BA61-EC42C8F6F76B" );
+            RockMigrationHelper.AddPage( true, "B4A24AB7-9369-4055-883F-4F4892C39AE3", "C2467799-BB45-4251-8EE6-F0BF27201535", "Obsidian Control Gallery", "", guid: "0CD9A871-2F7D-4713-8FBB-0D8EDDE02886", iconCssClass: "fa fa-magic", insertAfterPageGuid: "706C0584-285F-4014-BA61-EC42C8F6F76B" );
 
             // Add custom route
             RockMigrationHelper.AddOrUpdatePageRoute( "0CD9A871-2F7D-4713-8FBB-0D8EDDE02886", "admin/cms/control-gallery-obsidian", "B50D4D65-A7BA-40E3-AD87-00F5CEC6A874" );
 
             // Add Obsidian Control Gallery Block to page
-            RockMigrationHelper.AddBlock( "0CD9A871-2F7D-4713-8FBB-0D8EDDE02886", "", "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0", "Obsidian Control Gallery", "Main", "", "", 0, "6150D7FB-08FC-4A4E-BCBF-359F779A5A93" );
+            RockMigrationHelper.AddBlock( true, "0CD9A871-2F7D-4713-8FBB-0D8EDDE02886", "", "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0", "Obsidian Control Gallery", "Main", "", "", 0, "6150D7FB-08FC-4A4E-BCBF-359F779A5A93" );
         }
 
         private void AddObsidianControlGalleryToCMSDown()
