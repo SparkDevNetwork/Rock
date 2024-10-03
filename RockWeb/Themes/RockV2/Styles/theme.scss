@@ -770,10 +770,14 @@ $navbar-element-height: 40px;
         display: none;
       }
 
-      &:hover, &.open, &.current {
+      &:hover,  &.current {
+        background-color: #ffffff30;
+        border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
+        border: 0;
+      }
+      &.open {
         background-color: #ffffff30;
         border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
-        border: 0;
       }
     }
 
@@ -1015,4 +1019,21 @@ $hamburger-spacing: 4px;
   > * {
     margin: 4px 8px 4px 0;
   }
+}
+
+.panel-widget .panel-heading {
+  display: flex;
+  align-items: center;
+
+  .pull-left {
+    margin-right: auto;
+  }
+
+  .pull-right {
+    margin-left: auto;
+  }
+}
+
+.block-config-buttons .btn-sm {
+  margin-left: 4px;
 }

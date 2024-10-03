@@ -11,7 +11,7 @@
 .ti {
   font-family: "tabler-icons-outline" !important;
   font-weight: normal;
-  font-size: 1.2em; /* Added this because FontAwesome Icon is bigger than tabler so, when switching to tabler from FA the tabler icon is smaller */
+  font-size: 1.3em; /* Added this because FontAwesome Icon is bigger than tabler so, when switching to tabler from FA the tabler icon is smaller */
 }
 
 .ti-a-b-2:before {
