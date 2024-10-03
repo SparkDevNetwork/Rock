@@ -263,6 +263,9 @@ registerFieldType(FieldTypeGuids.GroupTypes, new GroupTypesFieldType());
 import { GroupTypeGroupField } from "./groupTypeGroupField.partial";
 registerFieldType(FieldTypeGuids.GroupTypeGroup, new GroupTypeGroupField());
 
+import { HtmlFieldType } from "./htmlField.partial";
+registerFieldType(FieldTypeGuids.Html, new HtmlFieldType());
+
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 

@@ -29,7 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.HTML )]
     public class HtmlFieldType : FieldType
     {
@@ -43,6 +43,36 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var publicConfig = new Dictionary<string, string>( privateConfigurationValues );
+
+            publicConfig.AddOrReplace( "condensedHtml", GetCondensedHtmlValue( value, privateConfigurationValues ) );
+
+            return publicConfig;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var privateConfig = new Dictionary<string, string>( publicConfigurationValues );
+
+            privateConfig.Remove( "condensedHtml" );
+
+            return privateConfig;
+        }
+
+
 
         #endregion
 
