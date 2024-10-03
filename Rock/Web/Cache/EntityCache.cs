@@ -145,7 +145,8 @@ namespace Rock.Web.Cache
         /// <param name="key">The key to be parsed and used to load the cached entity.</param>
         /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
         /// <returns>The cached <typeparamref name="T"/> or <c>null</c> if not found in cache or the database.</returns>
-        internal static T Get( string key, bool allowIntegerIdentifier )
+        [RockInternal( "1.16.7" )]
+        public static T Get( string key, bool allowIntegerIdentifier )
         {
             int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
 

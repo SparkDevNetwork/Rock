@@ -76,9 +76,12 @@
     <Compile Include="Cms\ThemeDetail.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Administration\PageProperties.cs" />
+    <Compile Include="Tv\RokuApplicationDetail.cs" />
     <Compile Include="Cms\ShortLink.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Tv\RokuPageDetail.cs" />
+    <Compile Include="Tv\TvPageList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Core\LogViewer.cs" />
@@ -105,6 +108,7 @@
     <Compile Include="Core\RestControllerList.cs" />
     <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Tv\TvApplicationList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Communication\SystemCommunicationList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />

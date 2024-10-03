@@ -39,6 +39,11 @@ namespace Rock.Common.Tv
         public TvPerson CurrentPerson { get; set; }
 
         /// <summary>
+        /// Gets or sets the Roku token.
+        /// </summary>
+        public string RokuToken { get; set; }
+
+        /// <summary>
         /// Obsolete as of Rock v14.1. Please use 'IsAuthenticated' as it is proper spelling.
         /// </summary>
         [Obsolete]
