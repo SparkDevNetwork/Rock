@@ -277,9 +277,14 @@ namespace Rock.Blocks.Tv
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParameters = new Dictionary<string, string>
+            {
+                [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParameters )
             };
         }
 

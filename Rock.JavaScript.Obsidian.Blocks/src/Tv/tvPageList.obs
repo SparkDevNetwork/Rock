@@ -11,7 +11,8 @@
           :showBulkUpdate="false"
           :showExport="false"
           :showLaunchWorkflow="true"
-          @selectItem="onSelectItem">
+          @selectItem="onSelectItem"
+          v-if="showBlock">
 
         <ReorderColumn @orderChanged="onOrderChanged" />
 
@@ -62,6 +63,7 @@
 
     const config = useConfigurationValues<ListBlockBox<TvPageListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const showBlock = ref(config.options?.siteId !== undefined && config.options?.siteId !== "" && config.options?.siteId !== "0");
 
     // #region Values
 

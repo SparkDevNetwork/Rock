@@ -484,6 +484,8 @@ namespace Rock.Blocks.Tv
 
             var isNew = entity.Id == 0;
             var additionalSettings = entity.AdditionalSettings.FromJsonOrNull<RokuTvApplicationSettings>() ?? new RokuTvApplicationSettings();
+            additionalSettings.TvApplicationType = TvApplicationType.Roku;
+            entity.SiteType = SiteType.Tv;
 
             RockContext.WrapTransaction( () =>
             {
@@ -500,9 +502,39 @@ namespace Rock.Blocks.Tv
                 RockContext.SaveChanges();
             } );
 
-
             if ( isNew )
             {
+                var layoutService = new LayoutService( RockContext );
+
+                var layout = new Layout
+                {
+                    Name = "Homepage",
+                    FileName = "Homepage.xaml",
+                    Description = string.Empty,
+                    SiteId = entity.Id
+                };
+
+                layoutService.Add( layout );
+                RockContext.SaveChanges();
+
+                var pageService = new PageService( RockContext );
+                var page = new Rock.Model.Page
+                {
+                    InternalName = "Start Screen",
+                    BrowserTitle = "Start Screen",
+                    PageTitle = "Start Screen",
+                    DisplayInNavWhen = DisplayInNavWhen.WhenAllowed,
+                    Description = string.Empty,
+                    LayoutId = layout.Id,
+                    Order = 0
+                };
+
+                pageService.Add( page );
+                RockContext.SaveChanges();
+
+                entity.DefaultPageId = page.Id;
+                RockContext.SaveChanges();
+
                 return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
                     [PageParameterKey.SiteId] = entity.IdKey

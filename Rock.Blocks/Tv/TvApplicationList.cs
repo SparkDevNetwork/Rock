@@ -45,11 +45,13 @@ namespace Rock.Blocks.Tv
     [LinkedPage( "Apple TV Detail Page",
         Description = "The page that will show the site details for an Apple TV application.",
         Key = AttributeKey.AppleTvDetailPage,
+        DefaultValue = "3D874455-7FE1-407B-A817-B0F82A51CEB8",
         Order = 0 )]
 
     [LinkedPage( "Roku Detail Page",
         Description = "The page that will show the site details for a Roku application.",
         Key = AttributeKey.RokuDetailPage,
+        DefaultValue = "867EC436-7F72-4108-81B6-ADBCFFC3918A",
         Order = 1 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "869B2D70-4AE6-40A0-8899-A3EB9EDFB3B3" )]
@@ -137,7 +139,7 @@ namespace Rock.Blocks.Tv
         {
             var tvSiteTypes = new List<SiteType> { SiteType.Tv };
             var listQueryable = base.GetListQueryable( rockContext );
-            
+
             return listQueryable.Where( a => tvSiteTypes.Contains( a.SiteType ) );
         }
 
@@ -196,6 +198,34 @@ namespace Rock.Blocks.Tv
             {
                 return ActionBadRequest( errorMessage );
             }
+
+            var sitePages = new List<int> {
+                    entity.DefaultPageId ?? -1,
+                    entity.LoginPageId ?? -1,
+                    entity.RegistrationPageId ?? -1,
+                    entity.PageNotFoundPageId ?? -1
+                };
+
+            entity.DefaultPageId = null;
+            RockContext.SaveChanges();
+
+            var pageService = new PageService( RockContext );
+            foreach ( var page in pageService.Queryable( "Layout" )
+                .Where( t => !t.IsSystem && ( t.Layout.SiteId == entity.Id || sitePages.Contains( t.Id ) ) ) )
+                {
+                    if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
+                    {
+                        pageService.Delete( page );
+                    }
+                }
+
+            var layoutService = new LayoutService( RockContext );
+            var layoutQry = layoutService.Queryable()
+                .Where( l =>
+                l.SiteId == entity.Id );
+            layoutService.DeleteRange( layoutQry );
+
+            RockContext.SaveChanges( true );
 
             entityService.Delete( entity );
             RockContext.SaveChanges();
