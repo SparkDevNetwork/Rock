@@ -73,8 +73,8 @@
     import { PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { RokuApplicationBag } from "@Obsidian/ViewModels/Blocks/Cms/RokuApplicationDetail/rokuApplicationBag";
-    import { RokuApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/RokuApplicationDetail/rokuApplicationDetailOptionsBag";
+    import { RokuApplicationBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuApplicationDetail/rokuApplicationBag";
+    import { RokuApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuApplicationDetail/rokuApplicationDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 

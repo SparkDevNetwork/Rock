@@ -30,14 +30,14 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.SiteList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.Tv
 {
     /// <summary>
     /// Displays a list of TV applications (sites).
     /// </summary>
 
     [DisplayName( "TV Application List" )]
-    [Category( "CMS" )]
+    [Category( "TV > TV Apps" )]
     [Description( "Displays a list of TV applications." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

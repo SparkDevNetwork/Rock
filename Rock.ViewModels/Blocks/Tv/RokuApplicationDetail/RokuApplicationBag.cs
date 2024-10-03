@@ -17,7 +17,7 @@
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Cms.RokuApplicationDetail
+namespace Rock.ViewModels.Blocks.Tv.RokuApplicationDetail
 {
     public class RokuApplicationBag : EntityBagBase
     {

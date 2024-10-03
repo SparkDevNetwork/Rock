@@ -41,8 +41,8 @@
     import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./RokuApplicationDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { RokuApplicationBag } from "@Obsidian/ViewModels/Blocks/Cms/RokuApplicationDetail/rokuApplicationBag";
-    import { RokuApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/RokuApplicationDetail/rokuApplicationDetailOptionsBag";
+    import { RokuApplicationBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuApplicationDetail/rokuApplicationBag";
+    import { RokuApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuApplicationDetail/rokuApplicationDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<RokuApplicationBag, RokuApplicationDetailOptionsBag>>();

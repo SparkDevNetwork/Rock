@@ -15,9 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Cms.TvPageList
+namespace Rock.ViewModels.Blocks.Tv.TvApplicationList
 {
-    public class TvPageListOptionsBag
+    /// <summary>
+    /// The Site List Options Bag
+    /// </summary>
+    public class TvApplicationOptionsBag
     {
     }
 }

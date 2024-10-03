@@ -25,8 +25,8 @@
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-    import { RokuApplicationBag } from "@Obsidian/ViewModels/Blocks/Cms/RokuApplicationDetail/rokuApplicationBag";
-    import { RokuApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/RokuApplicationDetail/rokuApplicationDetailOptionsBag";
+    import { RokuApplicationBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuApplicationDetail/rokuApplicationBag";
+    import { RokuApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuApplicationDetail/rokuApplicationDetailOptionsBag";
 
     const props = defineProps({
         modelValue: {

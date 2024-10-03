@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Cms.RokuApplicationDetail
+namespace Rock.ViewModels.Blocks.Tv.RokuApplicationDetail
 {
     public class RokuApplicationDetailOptionsBag
     {

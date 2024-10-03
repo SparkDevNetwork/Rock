@@ -26,17 +26,17 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.TvPageList;
+using Rock.ViewModels.Blocks.Tv.TvPageList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.Tv
 {
     /// <summary>
     /// Displays a list of pages.
     /// </summary>
 
     [DisplayName( "TV Page List" )]
-    [Category( "CMS" )]
+    [Category( "TV > TV Apps" )]
     [Description( "Displays a list of pages." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -94,6 +94,7 @@ namespace Rock.Blocks.Cms
         private TvPageListOptionsBag GetBoxOptions()
         {
             var options = new TvPageListOptionsBag();
+            options.SiteId = PageParameter( PageParameterKey.SiteId );
 
             return options;
         }
@@ -115,9 +116,15 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var parameters = new Dictionary<string, string>
+            {
+                ["SitePageId"] = "((Key))",
+                ["SiteId"] = "((SiteKey))"
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "SitePageId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, parameters )
             };
         }
 

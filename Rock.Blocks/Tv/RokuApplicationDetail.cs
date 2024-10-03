@@ -26,19 +26,19 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Tv.Classes;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.RokuApplicationDetail;
+using Rock.ViewModels.Blocks.Tv.RokuApplicationDetail;
 using Rock.ViewModels.Blocks.Cms.SiteDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.Tv
 {
     /// <summary>
     /// Displays the details of a Roku application.
     /// </summary>
 
     [DisplayName( "Roku Application Detail" )]
-    [Category( "CMS" )]
+    [Category( "TV > TV Apps" )]
     [Description( "Displays the details of a Roku application." )]
     [IconCssClass( "fa fa-tv" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
