@@ -23,10 +23,10 @@
 
 /** Describes the Rock Log Events */
 export type RockLogEventsBag = {
+    category?: string | null;
+
     /** Gets or sets the DateTime */
     dateTime?: string | null;
-
-    domain?: string | null;
 
     exception?: string | null;
 

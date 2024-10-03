@@ -36,7 +36,7 @@ namespace Rock.ViewModels.Blocks.Core.LogViewer
         /// <summary>
         /// 
         /// </summary>
-        public string Domain { get; set; }
+        public string Category { get; set; }
 
         /// <summary>
         /// 
