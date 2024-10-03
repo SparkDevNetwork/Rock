@@ -25,6 +25,9 @@ namespace Rock.ViewModels.Blocks.Event.EventItemDetail
     /// </summary>
     public class EventItemDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the Audiences
+        /// </summary>
         public List<ListItemBag> Audiences { get; set; }
     }
 }

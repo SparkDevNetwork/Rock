@@ -24,6 +24,7 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Describes the Roku Application */
 export type RokuApplicationBag = {
     /** Gets or sets the API key. */
     apiKey?: string | null;

@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The Roku Application Detail Options bag */
 export type RokuApplicationDetailOptionsBag = {
 };

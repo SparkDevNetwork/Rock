@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Tv.RokuPageDetail
 {
+    /// <summary>
+    /// The Roku Page Detail Options Bag
+    /// </summary>
     public class RokuPageDetailOptionsBag
     {
     }

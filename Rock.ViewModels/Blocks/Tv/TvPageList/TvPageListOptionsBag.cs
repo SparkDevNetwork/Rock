@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Tv.TvPageList
 {
+    /// <summary>
+    /// Describes the TV Page List Options
+    /// </summary>
     public class TvPageListOptionsBag
     {
         /// <summary>

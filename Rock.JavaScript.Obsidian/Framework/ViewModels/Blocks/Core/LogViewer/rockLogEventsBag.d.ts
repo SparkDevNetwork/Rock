@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Describes the Rock Log Events */
 export type RockLogEventsBag = {
     /** Gets or sets the DateTime */
     dateTime?: string | null;

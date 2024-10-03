@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The Roku Page Detail Options Bag */
 export type RokuPageDetailOptionsBag = {
 };

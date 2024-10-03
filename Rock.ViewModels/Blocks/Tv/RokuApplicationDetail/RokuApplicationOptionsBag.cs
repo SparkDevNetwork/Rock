@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Tv.RokuApplicationDetail
 {
+    /// <summary>
+    /// The Roku Application Detail Options bag
+    /// </summary>
     public class RokuApplicationDetailOptionsBag
     {
     }
