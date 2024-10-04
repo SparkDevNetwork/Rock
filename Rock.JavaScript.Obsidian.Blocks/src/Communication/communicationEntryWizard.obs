@@ -25,12 +25,21 @@
                 <div class="email-editor-designer">
                     <div class="email-editor-toolbox">
                         <div class="email-editor-toolbox-menu">
-                            <div :class="['menu-item', toolboxMenuItem === 'content' ? 'selected' : '']" @click="toolboxMenuItem = 'content'"><i class="fa fa-grip-horizontal"></i><span>Content</span></div>
-                            <div :class="['menu-item', toolboxMenuItem === 'design' ? 'selected' : '']" @click="toolboxMenuItem = 'design'"><i class="fa fa-drafting-compass"></i><span>Design</span></div>
+                            <div :class="['menu-item', toolboxMenuItem === 'content' ? 'selected' : '']"
+                                 @click="onToolboxMenuItemClicked('content')">
+                                <i class="fa fa-grip-horizontal"></i><span>Content</span>
+                            </div>
+
+                            <div :class="['menu-item', toolboxMenuItem === 'design' ? 'selected' : '']"
+                                 @click="onToolboxMenuItemClicked('design')">
+                                <i class="fa fa-drafting-compass"></i><span>Design</span>
+                            </div>
                         </div>
 
                         <div v-if="toolboxMenuItem === 'content'" class="email-editor-toolbox-submenu">
-                            <TabbedContent v-model:selectedTab="toolboxSubMenuTab" :tabs="toolboxSubMenuTabs">
+                            <TabbedContent :selectedTab="toolboxSubMenuTab"
+                                           :tabs="toolboxSubMenuTabs"
+                                           @update:selectedTab="onToolboxSubMenuTabClicked($event)">
                                 <template #tabpane="{ item }">
                                     <div class="email-editor-toolbox-submenu-content">
                                         <template v-if="item === 'Components'">
@@ -85,7 +94,13 @@
                                         </template>
 
                                         <template v-else-if="item === 'Sections'">
-                                            <div v-if="!areSectionPropertiesShown" class="submenu-content">
+                                            <div v-if="selectedComponent?.type.typeName === 'section'">
+                                                <SectionComponentProperties :selectedComponent="selectedComponent"
+                                                                            @complete="onCompleteComponent"
+                                                                            @delete="onDeleteComponent" />
+                                            </div>
+
+                                            <div v-else class="submenu-content">
                                                 <DropDownList v-model="sectionCategory"
                                                               :items="sectionCategories"
                                                               label="Category">
@@ -104,13 +119,6 @@
                                                          @dragstart="onComponentTypeDragStart(sectionComponentType)"
                                                          @dragend="onComponentTypeDragEnd()"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
                                                 </div>
-                                            </div>
-
-                                            <div v-else-if="selectedComponent">
-                                                <SectionComponentProperties v-if="selectedComponent.type.typeName === 'section'"
-                                                                            :selectedComponent="selectedComponent"
-                                                                            @complete="onCompleteComponent"
-                                                                            @delete="onDeleteComponent" />
                                             </div>
                                         </template>
                                     </div>
@@ -306,7 +314,7 @@
 
 
 <script setup lang="ts">
-    import { computed, nextTick, provide, ref, watch } from "vue";
+    import { nextTick, provide, ref, watch } from "vue";
     import AdaptiveMessageComponentProperties from "./CommunicationWizard/properties/adaptiveMessageComponentProperties.partial.obs";
     import ButtonComponentProperties from "./CommunicationWizard/properties/buttonComponentProperties.partial.obs";
     import CodeComponentProperties from "./CommunicationWizard/properties/codeComponentProperties.partial.obs";
@@ -354,12 +362,10 @@
 
     // #region Computed Values
 
-    const toolboxSubMenuTabs = computed<string[]>(() => {
-        return [
-            "Components",
-            "Sections"
-        ];
-    });
+    const toolboxSubMenuTabs: string[] = [
+        "Components",
+        "Sections"
+    ];
 
     const componentTypes: EditorComponentType[] = [
         titleComponent,
@@ -431,37 +437,44 @@
         }
     }
 
-    // #endregion
+    function onToolboxMenuItemClicked(item: "content" | "design"): void {
+        if (toolboxMenuItem.value !== item) {
+            toolboxMenuItem.value = item;
+            selectedComponent.value = null;
+        }
+    }
 
-    // #region Functions
+    function onToolboxSubMenuTabClicked(item: string): void {
+        if (toolboxSubMenuTab.value !== item) {
+            toolboxSubMenuTab.value = item;
+            selectedComponent.value = null;
+        }
+    }
 
     // #endregion
 
     // #region Watchers
 
-    watch(selectedComponent, () => {
-        if (selectedComponent.value) {
-            if (selectedComponent.value.type.typeName !== "section") {
-                // TODO JMH Remove these hard-coded strings.
-                areComponentPropertiesShown.value = true;
-                areSectionPropertiesShown.value = false;
-                nextTick(() => {
+    watch(selectedComponent, (component, oldComponent) => {
+        if (component !== oldComponent) {
+            if (component) {
+                if (component.type.typeName !== "section") {
                     toolboxSubMenuTab.value = "Components";
-                });
+                    areComponentPropertiesShown.value = true;
+                    areSectionPropertiesShown.value = false;
+                }
+                else {
+                    toolboxSubMenuTab.value = "Sections";
+                    areComponentPropertiesShown.value = false;
+                    areSectionPropertiesShown.value = true;
+                }
             }
             else {
+                // Don't change tabs.
+                // toolboxSubMenuTab.value = "Components";
                 areComponentPropertiesShown.value = false;
-                areSectionPropertiesShown.value = true;
-                nextTick(() => {
-                    toolboxSubMenuTab.value = "Sections";
-                });
+                areSectionPropertiesShown.value = false;
             }
-        }
-        else {
-            // Don't change tabs.
-            // toolboxSubMenuTab.value = "Components";
-            areComponentPropertiesShown.value = false;
-            areSectionPropertiesShown.value = false;
         }
     });
 
@@ -501,4 +514,3 @@
             }
         ]);
 </script>
-1
