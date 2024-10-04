@@ -285,6 +285,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected node key.
+        /// </summary>
+        public string SelectedNodeKey
+        {
+            get { return ViewState["SelectedNode"] as string ?? ""; }
+            set { ViewState["SelectedNode"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the selected value.
         /// </summary>
         /// <value>
@@ -405,7 +414,42 @@ namespace Rock.Web.UI.Controls
             {
                 CreateSelectionControls( this.SelectedKey );
             }
+            else
+            {
+                EnsureChildControls();
+                var postBackControlId = this.Page.Request.Params["__EVENTTARGET"];
+                var postBackControl = FindControlRecursive( this, postBackControlId );
 
+                // If Postback is from a control on this Picker, recreate dynamic controls to preserve state of controls,
+                // This is a safe guard for when the Picker is used in conjunction with another control like the AttributeMatrixEditor.
+                if ( postBackControl != null )
+                {
+                    // When used in another control like the AttributeMatrixEditor, the Picker could be re-created several times in between PostBacks,
+                    // in that case the NoteKey saved in this control's view state is used to recreate the dynamic controls since it will have the
+                    // latest, non-persisted value.
+                    EnsureChildControls();
+                    CreateSelectionControls( this.SelectedNodeKey );
+                }
+            }
+        }
+
+        private Control FindControlRecursive( Control root, string id )
+        {
+            if ( root.UniqueID == id )
+            {
+                return root;
+            }
+
+            foreach ( Control child in root.Controls )
+            {
+                Control found = FindControlRecursive( child, id );
+                if ( found != null )
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -722,6 +766,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
+                picker.SelectedNodeKey = newKey;
                 picker.CreateSelectionControls( newKey );
             }
         }
