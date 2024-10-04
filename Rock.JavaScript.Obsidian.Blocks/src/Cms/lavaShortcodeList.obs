@@ -1,0 +1,141 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel">
+        <div class="lava-shortcode-list-header panel-heading">
+            <h1 class="lava-shortcodes-list-title d-md-inline"><i class="fa fa-cube"></i> Lava Shortcodes</h1>
+            <RockButton class="pull-right btn btn-default btn-xs" @click="onAddClick"><i class="fa fa-plus"></i></RockButton>
+        </div>
+
+        <div class="panel-body">
+            <div class="lava-shortcode-list-filters d-flex justify-content-between mb-3">
+                <Switch v-model="includeInactive" text="Include Inactive" />
+                <DropDownList v-model="filteredCategory" :items="categories" :blankValue="blankCategory" />
+            </div>
+            <div class="lava-shortcode-list-items">
+                <ExpanderPanel v-for="shortcode in filteredLavaShortcodes"
+
+                    :panelTitle="shortcode.name ?? ''"
+                    :panelSubtext="shortcode.description ?? ''"
+                    panelClass="panel-shortcodeitem"
+                    :labels="getLabels(shortcode)"
+                >
+                <template #default>
+                    <span v-html="shortcode.documentation"></span>
+                </template>
+                    <template #footer>
+                        <div class="d-flex justify-content-end">
+                            <RockButton v-if="canEdit" @click="onEditClick(shortcode)">
+                                <i class="fa fa-pencil"></i>
+                            </RockButton>
+                        </div>
+                    </template>
+                </ExpanderPanel>
+            </div>
+        </div>
+    </div>
+
+</template>
+
+<style>
+.lava-shortcode-list-header {
+    border-bottom: 1px solid #eee;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ExpanderPanel from "@Obsidian/Controls/expanderPanel.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { LavaShortcodeListBox } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeList/lavaShortcodeListBox";
+    import { computed, ref } from "vue";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";
+
+    const box = useConfigurationValues<LavaShortcodeListBox>();
+
+    // #region Values
+
+    const blankCategory = ref("All Shortcodes");
+    const canEdit = ref(box.userCanEdit ?? false);
+    const categories = ref(box.categories ?? []);
+    const detailPage= ref(box.detailPage ?? "");
+    const filteredCategory = ref("");
+    const includeInactive = ref(false);
+    const lavaShortcodes = ref(box.lavaShortcodes.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")));
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Gets the lava shortcodes based on the selected category and include inactive filters.
+     * @returns The filtered lava shortcodes.
+     */
+     const filteredLavaShortcodes = computed((): LavaShortcodeBag[] => {
+        const hasCategoryFilter = filteredCategory.value !== blankCategory.value;
+
+        return lavaShortcodes.value.filter(l => {
+            return (includeInactive.value === true || l.isActive === true)
+                && (hasCategoryFilter === false || l.categories?.some(c => c.value === filteredCategory.value));
+        });
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the labels for a lava shortcode.
+     * @param lavaShortcode The lava shortcode.
+     * @returns The labels for the lava shortcode.
+     */
+    function getLabels(lavaShortcode: LavaShortcodeBag): PanelAction[] {
+        const labels: PanelAction[] = [];
+
+        if (lavaShortcode.isSystem === true) {
+            labels.push({
+                title: "System",
+                type: "default"
+            });
+        }
+
+        const hasCategories = (lavaShortcode?.categories?.length ?? 0) > 0;
+        if (hasCategories) {
+            lavaShortcode?.categories?.forEach(category => {
+                labels.push({
+                    title: category.text ?? "",
+                    type: "info"
+                });
+            });
+        }
+
+        return labels;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Navigates to the add lava shortcode page. */
+     function onAddClick(): void {
+        if (detailPage.value) {
+            window.location.href = detailPage.value.replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Navigates to the edit lava shortcode page.
+     * @param lavaShortcode The lava shortcode to edit.
+     */
+    function onEditClick(lavaShortcode: LavaShortcodeBag): void {
+        if (detailPage.value) {
+            const queryStrings = "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
+            window.location.href = detailPage.value.replace("((Key))", lavaShortcode.idKey ?? "") + queryStrings;
+        }
+    }
+
+    // #endregion
+
+</script>
