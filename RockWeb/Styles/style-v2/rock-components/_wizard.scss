@@ -17,7 +17,10 @@
   -webkit-align-items:  flex-start;
   align-items:          flex-start;
   padding:              var(--spacing-small) 0;
-  background-color:     var(--color-interface-soft);
+  background-color:     var(--color-interface-softest);
+  margin-bottom: var(--spacing-large);
+  border: 1px solid var(--color-interface-soft);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 
   &:before,
   &:after {
@@ -79,7 +82,7 @@
       color:          var(--color-primary);
 
       &::before {
-        background-color:   var(--color-interface-soft);
+        background-color:   var(--color-primary);
       }
 
       .wizard-item-icon i {
@@ -111,6 +114,11 @@
       display: none;
     }
   }
+}
+
+// Override asp disabled
+div.aspNetDisabled {
+  opacity: .5;
 }
 // ====================== END BASE STYLE ======================
 

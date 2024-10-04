@@ -23,7 +23,7 @@
   cursor:               pointer;
   background-image:     none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border:               1px solid transparent;
-  padding:              var(--spacing-small) var(--spacing-medium);
+  padding:              6px 16px;
   font-size:            var(--font-size-regular);
   line-height:          var(--line-height-normal);
   border-radius:        var(--rounded-small);

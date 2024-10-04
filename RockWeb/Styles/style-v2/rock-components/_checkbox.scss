@@ -17,9 +17,9 @@
 
 // ======================== IN-COLUMNS ========================
 .in-columns {
-  -webkit-column-gap:   var(--spacing-tiny);
-  -moz-column-gap:      var(--spacing-tiny);
-  column-gap:           var(--spacing-tiny);
+  -webkit-column-gap:   var(--spacing-small);
+  -moz-column-gap:      var(--spacing-small);
+  column-gap:           var(--spacing-small);
   -webkit-column-width: $checkbox-columns-width;
   -moz-column-width:    $checkbox-columns-width;
   column-width:         $checkbox-columns-width;

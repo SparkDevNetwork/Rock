@@ -40,9 +40,9 @@ caption {
   text-align:     left;
 }
 
-// th {
-//   // text-align: left; // TODO commented out for the tr to be center 
-// }
+th {
+  text-align: left; 
+}
 
 .table {
   width:          100%;
@@ -764,7 +764,7 @@ tr.row-highlight {
   }
 
   &.has-criteria .btn-filter-toggle {
-    background: var(--color-interface-softer);
+    background: var(--color-interface-softest);
   }
 }
 

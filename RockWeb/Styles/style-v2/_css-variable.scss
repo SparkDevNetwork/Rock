@@ -195,7 +195,7 @@
   --focus-state-border-color: @input-border-focus;
   --focus-state-shadow: @input-focus-box-shadow;
   --input-bg-disabled: @input-bg-disabled;
-  --input-border: @input-border;
+  --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
   --input-border-radius: @input-border-radius;
   --input-height-base: @input-height-base;
   --input-padding: @padding-base-vertical @padding-base-horizontal;

@@ -557,7 +557,7 @@
     }
 
     small {
-      color:          var(--color-info-soft);
+      color:          var(--color-interface-strong);
     }
   }
 
@@ -870,7 +870,7 @@
 // ======================= PANEL ANALYTICS =======================
 .panel-analytics {
   .panel-body {
-    padding:            0 calc(var(--gutter-x) * 0.5);
+    padding:            0 calc(30px * 0.5);
 
     // & > .row > [class*="col-"]:first-child {
     //   padding-top: 15px;

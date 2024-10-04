@@ -499,36 +499,12 @@ $navbar-element-height: 40px;
       gap: 12px;
       transition: box-shadow .1s linear;
       border-top: 1px solid #ffffff30;
-      &:last-child {
-        border-bottom: 1px solid #ffffff30;
-      }
-      // &:last-child {
-      //   border-bottom: 1px solid lighten(@navbarside-background-color, 7%); // commented out because the new nav doesn't have border
-      // }
-
-      &:first-child {
-        border-top: 0;
-      }
-
-      &:nth-child(2) {
-        margin-top: 48px; // Move the second list item (the first real menu item) down so it's not covered by the navbar-logo
-      }
-
-      i {
-        width: 1.25em;
-      }
-
-      &:hover,
-      &.open,
-      &.current {
-        background-color: var(--nav-childpages-bg);
-        box-shadow: inset 3px 0 0 0 var(--brand-primary);
-      }
 
       // TODO: This is split into a separate selector because it feels buggy when toggled open
       &.open {
         .nav-childpages {
           display: inline-block;
+          box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
         }
       }
 
@@ -549,6 +525,10 @@ $navbar-element-height: 40px;
           font-weight: 900;
           margin-left: 12px;
         }
+      }
+
+      &:nth-child(2) {
+        margin-top: 48px;
       }
 
       @media (min-width: $screen-small) {
@@ -758,10 +738,10 @@ $navbar-element-height: 40px;
   
       &.current {
         background-color: #ffffff30;
-        border-radius: var(--rounded-medium);
-        border-width: 0;
-  
+        border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
+        border: 0;
         &:hover {
+          background-color: transparent;
           border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
         }
       }
@@ -770,20 +750,21 @@ $navbar-element-height: 40px;
         display: none;
       }
 
-      &:hover,  &.current {
+      &:hover::before {
+        position: absolute;
+        content:"";
         background-color: #ffffff30;
-        border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
-        border: 0;
-      }
-      &.open {
-        background-color: #ffffff30;
+        top:0;
+        left:0;
+        height: 100%;
+        width: calc($navbarside-width - 8px);
         border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
       }
     }
 
     .nav-childpages {
       top: 0;
-      left: $navbarside-width;
+      left: calc($navbarside-width + 9px);
       width: 280px;
       border-radius: 0 14px 14px 0;
       margin-top:     var(--spacing-small);
@@ -1021,6 +1002,22 @@ $hamburger-spacing: 4px;
   }
 }
 
+.panel-analytics {
+  .panel-body {
+    > .row {
+      > * {
+        padding-right: 18px;
+        padding-left: 18px;
+      }
+
+      .row {
+        margin-right: -18px;
+        margin-left: -18px;
+      }
+    }
+  }
+}
+
 .panel-widget .panel-heading {
   display: flex;
   align-items: center;
@@ -1037,3 +1034,32 @@ $hamburger-spacing: 4px;
 .block-config-buttons .btn-sm {
   margin-left: 4px;
 }
+
+.grid-actions .form-control {
+  height: 37px;
+  font-size: 0.8em;
+  background-color: var(--color-interface-softest);
+  border: 0;
+  box-shadow: none;
+}
+
+.container-in-block {
+  max-width: 1020px;
+  padding: var(--spacing-large) 0;
+  margin: 0 auto;
+  @media (min-width: $screen-medium) {
+    padding: 48px 30px;
+  }
+}
+
+.navigation-tip {
+  padding: 2px 4px;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+  font-size: 90%;
+  color: #31708f;
+  white-space: nowrap;
+  background-color: #ecf9fd;
+  border-radius: 4px;
+}
+
+

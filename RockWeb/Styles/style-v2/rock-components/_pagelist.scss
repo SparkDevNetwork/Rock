@@ -87,7 +87,7 @@
 
         i {
           margin:     var(--spacing-small) 0;
-          font-size:  var(--font-size-h3);
+          font-size:  var(--font-size-h3);    /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
           color:      var(--color-interface-strong);
         }
 
@@ -110,7 +110,7 @@
           .label {
             padding:        2px var(--spacing-small);
             color:          var(--color-interface-softest);
-            background:     var(--color-danger-soft);
+            background:     var(--color-danger-strong);
             border-radius:  36px;
           }
         }
@@ -119,12 +119,12 @@
       &.active,
       &.selected {
         a {
-          color:              var(--color-interface-softest);
-          background-color:   var(--color-interface-medium);
-          border-color:       var(--color-interface-strong);
+          color:              var(--color-interface-stronger);
+          background-color:   var(--color-interface-soft);
+          border-color:       var(--color-interface-medium);
 
           i {
-            color: var(--color-interface-softest);
+            color: var(--color-interface-stronger);
           }
         }
       }
