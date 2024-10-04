@@ -56,6 +56,12 @@ iframe,
         (e: "update:selectedComponent", value: EditorComponent | null | undefined): void;
     }>();
 
+    /** Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getHtml(). */
+    const rockRuntimeElementCssClass = "rock-runtime-element" as const;
+
+    /** Add this CSS class prefix to any temporary CSS class that should be stripped out when the HTML is retrieved via getHTML(). */
+    const rockRuntimeClassCssClassPrefix = "rock-runtime-class-" as const;
+
     // #region Values
 
     const isResetting = ref<boolean>(false);
@@ -141,8 +147,8 @@ iframe,
         cloneDocument?.close();
 
         if (cloneDocument) {
-            const removals = cloneDocument.querySelectorAll(".js-emaileditor2-addon");
-            removals.forEach(el => el.remove());
+            removeTemporaryElements(cloneDocument);
+            removeTemporaryCssClasses(cloneDocument);
             const html = cloneDocument.documentElement.outerHTML ?? "";
             clone.remove();
             return html;
@@ -150,6 +156,30 @@ iframe,
         else {
             return "";
         }
+    }
+
+    function removeTemporaryElements(document: Document): void {
+        const removals = document.querySelectorAll(`.${rockRuntimeElementCssClass}`);
+        removals.forEach(el => el.remove());
+    }
+
+    function removeTemporaryCssClasses(document: Document): void {
+        let elementsWithRuntimeClasses = [...document.querySelectorAll(`[class*="${rockRuntimeClassCssClassPrefix}"]`)];
+
+        // The previous selector finds elements where "rock-" is any part of the class name.
+        // Filter to only those elements where "rock-" is the starting CSS class name.
+        elementsWithRuntimeClasses = elementsWithRuntimeClasses.filter(el => {
+            return [...el.classList].some(cls => cls.startsWith(rockRuntimeClassCssClassPrefix));
+        });
+
+        // Strip the Rock runtime CSS classes from the elements.
+        elementsWithRuntimeClasses.forEach(el => {
+            const classesToRemove = [...el.classList].filter(cls => {
+                return cls.startsWith(rockRuntimeClassCssClassPrefix);
+            });
+
+            el.classList.remove(...classesToRemove);
+        });
     }
 
     // #endregion
@@ -241,7 +271,7 @@ iframe,
         // Styles for individual components in the HTML email should be styled by
         // CSS defined in the Communication Template as these will be stripped out.
         var style = iFrameDocument.createElement("style");
-        style.className = "js-emaileditor2-addon";
+        style.className = rockRuntimeElementCssClass;
         style.textContent = `
 .dropzone:empty, .structure-dropzone:empty {
     position: relative;
@@ -289,11 +319,19 @@ iframe,
     opacity: 1 !important;
 }
 
+.component {
+    cursor: pointer;
+}
+
 .component.selected {
     cursor: move;
     outline: 3px solid #59c9a5;
     outline-offset: -2px;
     opacity: 1;
+}
+
+[contenteditable=true]:focus {
+    cursor: text;
 }
 
 .component-section[data-state="component"] {
@@ -327,7 +365,7 @@ iframe,
             iFrameDocument.body.append(dropzone);
         }
 
-        // Select the first component with the "selected" CSS class.
+        // Auto-select the first component with the "selected" CSS class.
         const selectedComponentElements = [...iFrameDocument.querySelectorAll(".component.selected")] as HTMLElement[];
         if (selectedComponentElements?.length) {
             selectComponent(selectedComponentElements[0]);
