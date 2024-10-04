@@ -42,15 +42,15 @@ export const EditComponent = defineComponent({
 
 
         const toolbar = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.Toolbar] ?? "Light";
+            return (props.configurationValues[ConfigurationValueKey.Toolbar] ?? "Light").toLocaleLowerCase();
         });
 
         const documentFolderRoot = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.DocumentFolderRoot] ?? "";
+            return props.configurationValues[ConfigurationValueKey.EncryptedDocumentFolderRoot] ?? "";
         });
 
         const imageFolderRoot = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.ImageFolderRoot] ?? "";
+            return props.configurationValues[ConfigurationValueKey.EncryptedImageFolderRoot] ?? "";
         });
 
         const userSpecificRoot = computed(() => {
@@ -82,8 +82,8 @@ export const EditComponent = defineComponent({
 <HtmlEditor v-model="internalValue"
             editorHeight="200px"
             :toolbar="toolbar"
-            encryptedDocumentRootFolder="~/Content"
-            encryptedImageRootFolder="~/Content"
+            :encryptedDocumentRootFolder="documentFolderRoot"
+            :encryptedImageRootFolder="imageFolderRoot"
             :userSpecificRoot="userSpecificRoot" />
 `
 });
@@ -175,7 +175,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
-        watch([], () => {
+        watch([toolbar, documentFolderRoot, imageFolderRoot, userSpecificRoot], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }

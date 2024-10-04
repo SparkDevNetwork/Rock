@@ -39,6 +39,9 @@ namespace Rock.Field.Types
         private const string DOCUMENT_FOLDER_ROOT = "documentfolderroot";
         private const string IMAGE_FOLDER_ROOT = "imagefolderroot";
         private const string USER_SPECIFIC_ROOT = "userspecificroot";
+        private const string CONDENSED_HTML = "condensedHtml";
+        private const string ENCRYPTED_DOCUMENT_FOLDER_ROOT = "encrypteddocumentfolderroot";
+        private const string ENCRYPTED_IMAGE_FOLDER_ROOT = "encryptedimagefolderroot";
 
         #endregion
 
@@ -56,7 +59,9 @@ namespace Rock.Field.Types
             // Create a new dictionary to protect against the passed dictionary being changed after we are called.
             var publicConfig = new Dictionary<string, string>( privateConfigurationValues );
 
-            publicConfig.AddOrReplace( "condensedHtml", GetCondensedHtmlValue( value, privateConfigurationValues ) );
+            publicConfig.AddOrReplace( CONDENSED_HTML, GetCondensedHtmlValue( value, privateConfigurationValues ) );
+            publicConfig.AddOrReplace( ENCRYPTED_DOCUMENT_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
+            publicConfig.AddOrReplace( ENCRYPTED_IMAGE_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
 
             return publicConfig;
         }
@@ -67,7 +72,9 @@ namespace Rock.Field.Types
             // Create a new dictionary to protect against the passed dictionary being changed after we are called.
             var privateConfig = new Dictionary<string, string>( publicConfigurationValues );
 
-            privateConfig.Remove( "condensedHtml" );
+            privateConfig.Remove( CONDENSED_HTML );
+            privateConfig.Remove( ENCRYPTED_DOCUMENT_FOLDER_ROOT );
+            privateConfig.Remove( ENCRYPTED_IMAGE_FOLDER_ROOT );
 
             return privateConfig;
         }
