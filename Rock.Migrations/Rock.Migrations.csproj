@@ -164,6 +164,10 @@
     <Compile Include="Migrations\202410031737181_CodeGenerated_20241003.designer.cs">
       <DependentUpon>202410031737181_CodeGenerated_20241003.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410042028316_AddRokuPlatform.cs" />
+    <Compile Include="Migrations\202410042028316_AddRokuPlatform.Designer.cs">
+      <DependentUpon>202410042028316_AddRokuPlatform.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2312,6 +2316,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202410031737181_CodeGenerated_20241003.resx">
       <DependentUpon>202410031737181_CodeGenerated_20241003.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410042028316_AddRokuPlatform.resx">
+      <DependentUpon>202410042028316_AddRokuPlatform.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>

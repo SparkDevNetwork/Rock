@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class RokuPlatform : IMigrationMetadata
+    public sealed partial class AddRokuPlatform : IMigrationMetadata
     {
         private readonly ResourceManager Resources = new ResourceManager(typeof(RemoveProcessSendKeyFromCommunicationRecipient));
         
         string IMigrationMetadata.Id
         {
-            get { return "202410030916019_RokuPlatform"; }
+            get { return "202410042028316_AddRokuPlatform"; }
         }
         
         string IMigrationMetadata.Source
