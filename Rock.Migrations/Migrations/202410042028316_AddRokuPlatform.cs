@@ -14,15 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Data.Entity.Migrations;
+
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
     ///
     /// </summary>
-    public partial class RokuPlatform : Rock.Migrations.RockMigration
+    public partial class AddRokuPlatform : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
