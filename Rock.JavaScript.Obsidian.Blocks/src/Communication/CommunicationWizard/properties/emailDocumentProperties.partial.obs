@@ -5,6 +5,7 @@
             <Accordion title="General Settings">
                 <DropDownList v-model="communicationTemplateGuidOrEmptyString" :items="communicationTemplateItems" />
                 <Width :modelValue="modelValue.body" label="Content Area Width" />
+                <Padding :modelValue="modelValue.body" />
                 <BackgroundColor :modelValue="modelValue.documentElement" />
                 <BackgroundColor :modelValue="modelValue.body" label="Body Color" />
                 <BackgroundImage :modelValue="modelValue.body" />
@@ -47,6 +48,7 @@
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import BackgroundImage from "../inlineStyleEditors/backgroundImage.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";
+    import Padding from "../inlineStyleEditors/padding.partial.obs";
     import Width from "../inlineStyleEditors/width.partial.obs";
     import ButtonStyleSheet from "../styleSheetEditors/button.partial.obs";
     import DividerStyleSheet from "../styleSheetEditors/divider.partial.obs";
