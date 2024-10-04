@@ -18,46 +18,42 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
-import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+
+export const enum ConfigurationValueKey {
+    Toolbar = "toolbar",
+    DocumentFolderRoot = "documentfolderroot",
+    ImageFolderRoot = "imagefolderroot",
+    UserSpecificRoot = "userspecificroot",
+    CondensedHtml = "condensedHtml",
+    EncryptedDocumentFolderRoot = "encrypteddocumentfolderroot",
+    EncryptedImageFolderRoot = "encryptedimagefolderroot"
+}
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
-    return (await import("./assetFieldComponents")).EditComponent;
+    return (await import("./htmlFieldComponents")).EditComponent;
 });
 
 // Load the configuration component only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
-    return (await import("./assetFieldComponents")).ConfigurationComponent;
+    return (await import("./htmlFieldComponents")).ConfigurationComponent;
 });
 
 /**
- * The field type handler for the Asset field.
+ * The field type handler for the HTML field.
  */
-export class AssetFieldType extends FieldTypeBase {
+export class HtmlFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        if (value) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                const asset = JSON.parse(value) as Partial<{Url: string}>;
-
-                return asset?.Url ?? "";
-            }
-            catch {
-                return value ?? "";
-            }
-        }
-        else {
-            return "";
-        }
+        return escapeHtml(value ?? "");
     }
 
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        const url = escapeHtml(this.getTextValue(value, configurationValues));
-        return isEscaped ? url : `<a href="${url}">${url}</a>`;
+        return isEscaped ? this.getTextValue(value, configurationValues) : value;
     }
 
     public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        return this.getHtmlValue(value, configurationValues, isEscaped);
+        const html = configurationValues?.[ConfigurationValueKey.CondensedHtml] ?? value ?? "";
+        return isEscaped ? escapeHtml(html) : html;
     }
 
     public override getEditComponent(): Component {
