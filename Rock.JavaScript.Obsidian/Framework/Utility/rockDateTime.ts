@@ -201,8 +201,8 @@ export class RockDateTime {
      *
      * @returns A new RockDateTime instance or null if the date was not valid.
      */
-    public static parseISO(dateString: string, setZone: boolean = true): RockDateTime | null {
-        const dateTime = DateTime.fromISO(dateString, { setZone });
+    public static parseISO(dateString: string): RockDateTime | null {
+        const dateTime = DateTime.fromISO(dateString, { setZone: true });
 
         if (!dateTime.isValid) {
             return null;
@@ -257,6 +257,26 @@ export class RockDateTime {
      */
     public get date(): RockDateTime {
         const date = RockDateTime.fromParts(this.year, this.month, this.day, 0, 0, 0, 0, this.offset);
+
+        if (date === null) {
+            throw "Could not convert to date instance.";
+        }
+
+        return date;
+    }
+
+    /**
+     * The raw date with no offset applied to it. Use this method when you only
+     * care about comparing explicit dates without the time zone, as we do within
+     * the grid's date column filter.
+     *
+     * This API is internal to Rock, and is not subject to the same compatibility
+     * standards as public APIs. It may be changed or removed without notice in any
+     * release. You should not use this API directly in any plug-ins. Doing so can
+     * result in application failures when updating to a new Rock release.
+     */
+    public get rawDate(): RockDateTime {
+        const date = RockDateTime.fromParts(this.year, this.month, this.day, 0, 0, 0, 0);
 
         if (date === null) {
             throw "Could not convert to date instance.";
