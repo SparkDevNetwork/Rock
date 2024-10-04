@@ -20,7 +20,6 @@
 
                 <CheckBox v-model="requiresViewSecurity"
                           label="Requires View Security"
-                          text=""
                           help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"

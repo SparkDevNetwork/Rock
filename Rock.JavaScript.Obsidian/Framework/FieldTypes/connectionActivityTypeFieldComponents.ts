@@ -175,7 +175,7 @@ export const ConfigurationComponent = defineComponent({
     },
 
     template: `
-    <CheckBox label="Include Inactive" text="Yes" v-model="includeInactive" help="When set, inactive activity types will be included in the list." />
+    <CheckBox label="Include Inactive" v-model="includeInactive" help="When set, inactive activity types will be included in the list." />
     <DropDownList label="Connection Type"
         v-model="connectionTypeValue"
         :items="options"
