@@ -191,6 +191,21 @@ iframe,
         });
     }
 
+    function removeWhiteSpaceFromDropzones(document: Document): void {
+        // Clear white space from dropzones so :empty styling gets applied.
+        // :empty styles make the dropzones visible in the iframe by showing
+        // an empty rectagle with a dashed border and "Drop component here" text.
+        document.querySelectorAll(".structure-dropzone, .dropzone").forEach(el => {
+            removeWhiteSpace(el);
+        });
+    }
+
+    function removeWhiteSpace(element: Element): void {
+        if (element.childNodes.length && [...element.childNodes].every(n => n.nodeType === Node.TEXT_NODE) && !element.textContent?.trim()) {
+            element.innerHTML = "";
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -328,7 +343,7 @@ iframe,
     opacity: 1 !important;
 }
 
-.component {
+.component:not(.component-section) {
     cursor: pointer;
 }
 
@@ -384,14 +399,7 @@ iframe,
             }
         }
 
-        // Clear white space from dropzones so :empty styling gets applied.
-        // :empty styles make the dropzones visible in the iframe by showing
-        // an empty rectagle with a dashed border and "Drop component here" text.
-        iFrameDocument.querySelectorAll(".structure-dropzone, .dropzone").forEach(el => {
-            if (el.childNodes.length && [...el.childNodes].every(n => n.nodeType === Node.TEXT_NODE) && !el.textContent?.trim()) {
-                el.innerHTML = "";
-            }
-        });
+        removeWhiteSpaceFromDropzones(iFrameDocument);
 
         emailEditorDocument.value = iFrameDocument;
     }
@@ -519,7 +527,13 @@ iframe,
                     const childElement = child as HTMLElement;
 
                     if (childElement && e.clientY < childElement.getBoundingClientRect().top) {
+                        const oldParentElement = draggingComponentElement.value.parentElement;
+
                         draggedOverElement.insertBefore(draggingComponentElement.value, childElement);
+
+                        if (oldParentElement && oldParentElement !== draggingComponentElement.value.parentElement) {
+                            removeWhiteSpace(oldParentElement);
+                        }
                         return;
                     }
                 }
@@ -531,6 +545,8 @@ iframe,
                 const draggedOverElementTop = draggedOverElement.getBoundingClientRect().top;
                 const draggedOverElementMidpointY = (draggedOverElement.offsetHeight / 2) + draggedOverElementTop;
 
+                const oldParentElement = draggingComponentElement.value.parentElement;
+
                 // If the current mouse position is less than this midpoint,
                 // then the new element should be placed before it.
                 if (e.clientY < draggedOverElementMidpointY) {
@@ -539,6 +555,10 @@ iframe,
                 // ... otherwise, the new element should be placed after it.
                 else {
                     draggedOverElement.parentElement.insertBefore(draggingComponentElement.value, draggedOverElement.nextSibling);
+                }
+
+                if (oldParentElement && oldParentElement !== draggingComponentElement.value.parentElement) {
+                    removeWhiteSpace(oldParentElement);
                 }
 
                 return;
