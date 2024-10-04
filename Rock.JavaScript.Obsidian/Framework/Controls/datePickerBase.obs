@@ -192,7 +192,7 @@
     watch(() => props.modelValue, () => {
         let date: DateTime | undefined = undefined;
         if (props.modelValue) {
-            date = DateTime.fromISO(props.modelValue);
+            date = DateTime.fromISO(props.modelValue, {setZone: true});
         }
 
         // Update the underlying datepicker when the props.modelValue changes.
