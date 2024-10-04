@@ -138,19 +138,28 @@ iframe,
 
     function getHtml(): string {
         const clone = document.createElement("iframe");
+
+        // Hide the clone.
+        clone.style.display = "none";
+
+        // Append the cloned iframe to the body to get access to the clone's contentDocument.
         document.body.appendChild(clone);
 
         const cloneDocument = clone.contentDocument ?? clone.contentWindow?.document;
 
-        cloneDocument?.open();
-        cloneDocument?.writeln(iFrameElement.value?.contentWindow?.document.documentElement.outerHTML ?? "");
-        cloneDocument?.close();
-
         if (cloneDocument) {
+            cloneDocument.open();
+            cloneDocument.writeln(iFrameElement.value?.contentWindow?.document.documentElement.outerHTML ?? "");
+            cloneDocument.close();
+
             removeTemporaryElements(cloneDocument);
             removeTemporaryCssClasses(cloneDocument);
+
             const html = cloneDocument.documentElement.outerHTML ?? "";
+
+            // Remove the cloned iframe element before returning the HTML.
             clone.remove();
+
             return html;
         }
         else {
