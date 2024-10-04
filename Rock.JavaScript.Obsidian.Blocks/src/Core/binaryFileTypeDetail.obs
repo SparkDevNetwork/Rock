@@ -18,6 +18,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -76,10 +77,7 @@
         "maxHeight",
         "maxWidth",
         "name",
-        "preferredColorDepth",
-        "preferredFormat",
         "preferredRequired",
-        "preferredResolution",
         "requiresViewSecurity",
         "storageEntityType"
     ];

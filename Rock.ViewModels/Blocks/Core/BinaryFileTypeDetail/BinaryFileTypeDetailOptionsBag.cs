@@ -21,30 +21,9 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
 {
     /// <summary>
-    /// 
+    /// Additional Configuration details for the Binary File Type Detail
     /// </summary>
     public class BinaryFileTypeDetailOptionsBag
     {
-        /// <summary>
-        /// Gets or sets the preferred color depth options for the client dropdown.
-        /// </summary>
-        /// <value>
-        /// The preferred color depth options.
-        /// </value>
-        public List<ListItemBag> PreferredColorDepthOptions { get; set; }
-        /// <summary>
-        /// Gets or sets the preferred resolution options for the client dropdown.
-        /// </summary>
-        /// <value>
-        /// The preferred resolution options.
-        /// </value>
-        public List<ListItemBag> PreferredResolutionOptions { get; set; }
-        /// <summary>
-        /// Gets or sets the preferred format options for the client dropdown.
-        /// </summary>
-        /// <value>
-        /// The preferred format options.
-        /// </value>
-        public List<ListItemBag> PreferredFormatOptions { get; set; }
     }
 }

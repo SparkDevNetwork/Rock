@@ -73,24 +73,9 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the preferred color depth of the file type.
-        /// </summary>
-        public ColorDepth PreferredColorDepth { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred format of the file type.
-        /// </summary>
-        public Format PreferredFormat { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the preferred attributes of the file type are required
         /// </summary>
         public bool PreferredRequired { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred resolution of the file type.
-        /// </summary>
-        public Resolution PreferredResolution { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether security should be checked when displaying files of this type
@@ -109,13 +94,21 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
         /// The binary file type attributes.
         /// </value>
         public List<PublicEditableAttributeBag> BinaryFileTypeAttributes { get; set; }
+
         /// <summary>
-        /// 
+        /// Gets or sets a value indicating whether [restricted edit].
         /// </summary>
+        /// <value>
+        ///   <c>true</c> if [restricted edit]; otherwise, <c>false</c>.
+        /// </value>
         public bool RestrictedEdit { get; set; }
+
         /// <summary>
-        /// 
+        /// Gets or sets the edit mode message.
         /// </summary>
+        /// <value>
+        /// The edit mode message.
+        /// </value>
         public string EditModeMessage { get; set; }
     }
 }
