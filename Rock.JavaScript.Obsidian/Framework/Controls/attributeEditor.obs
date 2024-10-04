@@ -90,8 +90,7 @@
 
                     <CheckBox label="Suppress History Logging"
                               v-model="isSuppressHistoryLogging"
-                              help="If selected, changes to the attribute values will not be recorded into the generic History log table."
-                              text="Yes" />
+                              help="If selected, changes to the attribute values will not be recorded into the generic History log table." />
 
                     <CheckBox v-if="isAllowSearchVisible"
                               label="Allow Search"

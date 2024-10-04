@@ -1479,7 +1479,6 @@ namespace Rock.Web.UI.Controls
             _cbSuppressHistoryLogging = new RockCheckBox();
             _cbSuppressHistoryLogging.ID = "_cbSuppressHistoryLogging";
             _cbSuppressHistoryLogging.Label = "Suppress History Logging";
-            _cbSuppressHistoryLogging.Text = "Yes";
             _cbSuppressHistoryLogging.Help = "If selected, changes to the attribute values will not be recorded into the generic History log table";
             pnlAdvancedTopRowCol1.Controls.Add( _cbSuppressHistoryLogging );
 

@@ -490,9 +490,10 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "", false)?.date.toMilliseconds() ?? 0;
-    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "", false)?.date.toMilliseconds() ?? 0;
-    const haystackDate = RockDateTime.parseISO(haystack ?? "", false)?.date.toMilliseconds() ?? 0;
+    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "")?.rawDate.toMilliseconds() ?? 0;
+    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "")?.rawDate.toMilliseconds() ?? 0;
+    const haystackDate = RockDateTime.parseISO(haystack ?? "")?.rawDate.toMilliseconds() ?? 0;
+
     const today = RockDateTime.now().date;
 
     if (needle["method"] === DateFilterMethod.Equals) {

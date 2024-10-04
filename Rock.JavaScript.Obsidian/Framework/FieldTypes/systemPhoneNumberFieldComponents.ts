@@ -188,8 +188,8 @@ export const ConfigurationComponent = defineComponent({
     },
 
     template: `
-<CheckBox v-model="allowMultiple" label="Allow Multiple Values" text="Yes" help="When set, allows multiple system phone numbers to be selected." />
-<CheckBox v-model="includeInactive" label="Include Inactive" text="Yes" help="When set, inactive system phone numbers will be included in the list." />
+<CheckBox v-model="allowMultiple" label="Allow Multiple Values" help="When set, allows multiple system phone numbers to be selected." />
+<CheckBox v-model="includeInactive" label="Include Inactive" help="When set, inactive system phone numbers will be included in the list." />
 <NumberBox v-model="numberOfColumns" label="Repeat Columns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add constraints due to available space." />
 `
 });

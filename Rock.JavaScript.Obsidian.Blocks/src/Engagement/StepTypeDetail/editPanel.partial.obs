@@ -25,17 +25,14 @@
                          help="The Font Awesome icon class to use when displaying steps of this type." />
                 <CheckBox v-model="allowMultiple"
                           label="Allow Multiple"
-                          text="Yes"
                           help="Determines if a person can complete a step more than once." />
                 <CheckBox v-model="hasEndDate"
                           label="Spans Time"
-                          text="Yes"
                           help="Determines if the step occurs at a specific point or over a period of time." />
                 <CheckBox v-model="showCountOnBadge"
                           label="Show Count on Badge"
                           help="Determines if the count of the number of times a step has been completed should be shown on the badge for the person profile page."
-                          checked="false"
-                          text="Yes" />
+                          checked="false" />
             </div>
             <div class="col-md-6">
                 <ColorPicker v-model="highlightColor"
@@ -48,8 +45,7 @@
                               vertical />
                 <CheckBox v-model="isDateRequired"
                           label="Is Date Required"
-                          help="Determines if the date for the step is required."
-                          text="Yes" />
+                          help="Determines if the date for the step is required." />
             </div>
 
         </div>
@@ -182,8 +178,7 @@
                 <div class="col-md-6 col-md-offset-4">
                     <CheckBox v-model="allowManualEditing"
                               label="Allow Manual Edit"
-                              help="Can the step be manually added or edited?"
-                              text="Yes" />
+                              help="Can the step be manually added or edited?" />
                 </div>
             </div>
             <div class="row">

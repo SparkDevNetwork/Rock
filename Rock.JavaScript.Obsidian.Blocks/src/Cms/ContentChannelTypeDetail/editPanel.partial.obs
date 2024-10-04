@@ -14,7 +14,7 @@
                             <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" :showBlankItem="false" />
                         </div>
                         <div class="col-xs-6">
-                            <CheckBox label="Include Time" text="Yes" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
+                            <CheckBox label="Include Time" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
                         </div>
                     </div>
                 </div>
@@ -23,20 +23,20 @@
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-sm-6">
-                            <CheckBox label="Disable Priority" text="Yes" v-model="disablePriority" help="Should channels of this type disable the use of priorities?" />
+                            <CheckBox label="Disable Priority" v-model="disablePriority" help="Should channels of this type disable the use of priorities?" />
                         </div>
                         <div class="col-sm-6">
-                            <CheckBox label="Disable Content Field" text="Yes" v-model="disableContentField" help="Should channels of this type disable the use of the content field?" />
+                            <CheckBox label="Disable Content Field" v-model="disableContentField" help="Should channels of this type disable the use of the content field?" />
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-sm-6">
-                            <CheckBox label="Disable Status" text="Yes" v-model="disableStatus" help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" />
+                            <CheckBox label="Disable Status" v-model="disableStatus" help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" />
                         </div>
                         <div class="col-sm-6">
-                            <CheckBox label="Show in Channel Lists" text="Yes" v-model="showInChannelList" help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
+                            <CheckBox label="Show in Channel Lists" v-model="showInChannelList" help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
                         </div>
                     </div>
                 </div>

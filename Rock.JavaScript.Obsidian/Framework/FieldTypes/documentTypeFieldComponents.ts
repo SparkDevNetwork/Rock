@@ -169,5 +169,5 @@ export const ConfigurationComponent = defineComponent({
         };
     },
 
-    template: `<CheckBox v-model="allowMultipleValues" label="Allow Multiple Values" text="Yes" help="When set, allows multiple group members to be selected." />`
+    template: `<CheckBox v-model="allowMultipleValues" label="Allow Multiple Values" help="When set, allows multiple group members to be selected." />`
 });

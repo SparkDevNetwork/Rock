@@ -141,7 +141,7 @@
         <Panel :isDrawerOpen="false" :hasCollapse="true" title="Advanced">
             <div class="row">
                 <div class="col-md-6">
-                    <CheckBox v-model="enableRss" label="Enable RSS" text="Yes" />
+                    <CheckBox v-model="enableRss" label="Enable RSS" />
                     <div v-if="enableRss">
                         <TextBox v-model="channelUrl"
                                  label="Channel URL"

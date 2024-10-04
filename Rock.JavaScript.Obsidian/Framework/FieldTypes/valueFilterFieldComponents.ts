@@ -150,7 +150,7 @@ export const ConfigurationComponent = defineComponent({
     },
 
     template: `
-    <CheckBox v-model="hideFilterMode" label="Hide Filter mode" text="Yes" help="When set, filter mode will be hidden." />
+    <CheckBox v-model="hideFilterMode" label="Hide Filter mode" help="When set, filter mode will be hidden." />
     <CheckBoxList v-model="comparisonTypes" label="Comparison Types" rules="required" :items="comparisonTypesOptions" :repeatColumns="2" help="The comparison types the user can select from." />
 `
 });
