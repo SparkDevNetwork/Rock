@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Tv.RokuApplicationDetail
 {
+    /// <summary>
+    /// Describes the Roku Application
+    /// </summary>
     public class RokuApplicationBag : EntityBagBase
     {
         /// <summary>

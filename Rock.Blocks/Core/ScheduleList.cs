@@ -78,41 +78,12 @@ namespace Rock.Blocks.Core
             public const string CategoryGuid = "CategoryGuid";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterCategory = "filter-category";
-            public const string FilterActiveStatus = "filter-active-status";
-        }
-
         #endregion Keys
 
         #region  Fields
 
         private Guid? _categoryGuid;
         private HashSet<int> _schedulesWithAttendance;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the category guid to filter results by.
-        /// </summary>
-        /// <value>
-        /// The category filter.
-        /// </value>
-        protected Guid? FilterCategory => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCategory )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        /// <summary>
-        /// Gets the active status to filter results by.
-        /// </summary>
-        /// <value>
-        /// The active status filter.
-        /// </value>
-        protected string FilterActiveStatus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActiveStatus );
 
         #endregion
 
@@ -179,19 +150,15 @@ namespace Rock.Blocks.Core
         {
             var queryable = new ScheduleService( rockContext ).Queryable().Where( a => !string.IsNullOrEmpty( a.Name ) );
 
-            Guid? categoryGuid = this.GetAttributeValue( AttributeKey.FilterCategoryFromQueryString ).AsBoolean() ? GetCategoryGuid() : FilterCategory;
-
-            // Filter by Category
-            if ( categoryGuid.HasValue )
+            if ( this.GetAttributeValue(AttributeKey.FilterCategoryFromQueryString).AsBoolean() )
             {
-                queryable = queryable.Where( a => a.Category.Guid == categoryGuid.Value );
-            }
+                var categoryGuid = GetCategoryGuid();
 
-            // Filter by IsActive
-            if ( !string.IsNullOrWhiteSpace( FilterActiveStatus ) )
-            {
-                var activeFilter = FilterActiveStatus.AsBoolean();
-                queryable = queryable.Where( b => b.IsActive == activeFilter );
+                // Filter by Category
+                if ( categoryGuid.HasValue )
+                {
+                    queryable = queryable.Where( a => a.Category.Guid == categoryGuid.Value );
+                }
             }
 
             return queryable;

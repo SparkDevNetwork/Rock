@@ -24,9 +24,9 @@
             visiblePriority="md"
             width="15%" />
 
-        <TextColumn name="domain"
-            title="Domain"
-            field="domain"
+        <TextColumn name="category"
+            title="Category"
+            field="category"
             visiblePriority="md"
             width="15%" />
 

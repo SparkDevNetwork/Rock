@@ -20,7 +20,7 @@
 
                 <CheckBox v-model="requiresViewSecurity"
                           label="Requires View Security"
-                          text="Yes"
+                          text=""
                           help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"
@@ -36,16 +36,11 @@
                     Attributes allow for providing different values for each binary file of this type.
                 </p>
                 <div>
-                    <div v-if="binaryFileTypeAttributes.length === 0">
-                        <hr />
-                        No Attributes Found.
-                        <hr />
-                    </div>
                     <div class="grid">
                         <Grid :data="attributesGridData" keyField="key" itemTerm=" Attribute" liveUpdates light @addItem="onAddAttribute">>
                             <TextColumn name="name" field="name" />
                             <EditColumn @click="onEditAttribute" />
-                            <DeleteColumn @click="onDeleteAttribute" disableConfirmation />
+                            <DeleteColumn @click="onDeleteAttribute" />
                         </Grid>
                     </div>
                     <Modal v-model="isAttributeModalOpen" title="Step Participant Attributes">
@@ -85,26 +80,26 @@
         <div class="row">
 
             <div class="col-md-6">
-                <NumberBox v-model="maxFileSizeBytes"
-                           label="Max File Size"
-                           help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed."
-                           :minimumValue="1">
+                <TextBox v-model="maxFileSizeBytes"
+                         label="Max File Size"
+                         help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed."
+                         :minimumValue="1"
+                         :rules="[validateIntegerValue, 'gte:1']">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">Bytes</span>
                     </template>
-                </NumberBox>
-                <NumberBox v-model="maxWidth" label="Maximum Width" />
-                <NumberBox v-model="maxHeight" label="Maximum Height" />
-                <DropDownList v-model="preferredColorDepth" :items="preferredColorDepthOptions" label="Preferred Color Depth" rules="required" />
+                </TextBox>
+                <TextBox v-model="maxWidth" label="Maximum Width"
+                         :rules="[validateIntegerValue, 'gte:0']"
+                         help="Sets the maximum width for images in pixels. Leave this field blank for no limit." />
+                <TextBox v-model="maxHeight"
+                         label="Maximum Height"
+                         help="Sets the maximum height in pixels. Leave this field blank for no limit."
+                         :rules="[validateIntegerValue, 'gte:0']" />
                 <CheckBox v-model="preferredRequired"
                           label="Preferred Settings Required"
                           help="Should the preferred settings for this file type be the required settings?" />
             </div>
-            <div class="col-md-6">
-                <DropDownList v-model="preferredFormat" :items="preferredFormatOptions" label="Preferred Format" rules="required" />
-                <DropDownList v-model="preferredResolution" :items="preferredResolutionOptions" label="Preferred Resolution" rules="required" />
-            </div>
-
         </div>
 
     </fieldset>
@@ -122,9 +117,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -133,10 +126,9 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { BinaryFileTypeBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeBag";
     import { BinaryFileTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeDetailOptionsBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { ColorDepth } from "@Obsidian/Enums/Core/colorDepth";
-    import { Format } from "@Obsidian/Enums/Core/format";
-    import { Resolution } from "@Obsidian/Enums/Core/resolution";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         modelValue: {
@@ -164,19 +156,13 @@
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const requiresViewSecurity = propertyRef(props.modelValue.requiresViewSecurity, "RequiresViewSecurity");
     const storageEntityType = propertyRef(props.modelValue.storageEntityType ?? {}, "StorageEntityTypeId");
-    const maxFileSizeBytes = propertyRef(props.modelValue.maxFileSizeBytes, "MaxFileSizeBytes");
-    const maxWidth = propertyRef(props.modelValue.maxWidth, "MaxWidth");
-    const maxHeight = propertyRef(props.modelValue.maxHeight, "MaxHeight");
-    const preferredColorDepth = propertyRef(props.modelValue.preferredColorDepth.toString(), "PreferredColorDepth");
+    const maxFileSizeBytes = propertyRef(props.modelValue.maxFileSizeBytes?.toString() ?? "", "MaxFileSizeBytes");
+    const maxWidth = propertyRef(props.modelValue.maxWidth?.toString() ?? "", "MaxWidth");
+    const maxHeight = propertyRef(props.modelValue.maxHeight?.toString() ?? "", "MaxHeight");
     const preferredRequired = propertyRef(props.modelValue.preferredRequired, "PreferredRequired");
     const cacheToServerFileSystem = propertyRef(props.modelValue.cacheToServerFileSystem, "CacheToServerFileSystem");
     const cacheControlHeaderSettings = propertyRef(props.modelValue.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
-    const preferredFormat = propertyRef(props.modelValue.preferredFormat.toString(), "preferredFormat");
-    const preferredResolution = propertyRef(props.modelValue.preferredResolution.toString(), "preferredResolution");
 
-    const preferredColorDepthOptions = ref(props.options.preferredColorDepthOptions ?? []);
-    const preferredFormatOptions = ref(props.options.preferredFormatOptions ?? []);
-    const preferredResolutionOptions = ref(props.options.preferredResolutionOptions ?? []);
     const editModeMessage = ref(props.modelValue.editModeMessage);
     const restrictedEdit = ref(props.modelValue.restrictedEdit);
 
@@ -189,18 +175,20 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name, iconCssClass, requiresViewSecurity, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredColorDepth,
-        preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings, preferredFormat, preferredResolution];
+    const propRefs = [description, name, iconCssClass, requiresViewSecurity, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
 
     // #endregion
 
     // #region Computed Values
+
     const attributesGridData: GridDataBag = reactive<GridDataBag>({
         rows: binaryFileTypeAttributes.value.map(x => convertToAttributeGridRowItem(x))
     });
+
     // #endregion
 
     // #region Functions
+
     function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
 
         if (attribute.key && !reservedKeyNames.value.includes(attribute.key)) {
@@ -208,25 +196,46 @@
         }
 
         return {
-            key: attribute.key,
+            key: attribute.guid,
             name: attribute.name,
             description: attribute.description,
             isRequired: attribute.isRequired
         };
     }
+
+    function validateIntegerValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
+
     // #endregion
 
     // #region Event Handlers
-    async function onAddAttribute(): Promise<void> {
-        binaryFileTypeAttribute.value = {} as PublicEditableAttributeBag;
+
+    function onAddAttribute(): void {
+        binaryFileTypeAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
         attributeErrors.value = [];
     }
 
-    const onEditAttribute = async (key: string): Promise<void> => {
-
+    function onEditAttribute(key: string): void {
         attributeErrors.value = [];
-        const selectedBinaryFileTypeAttribute = binaryFileTypeAttributes.value.find(x => x.key === key);
+        const selectedBinaryFileTypeAttribute = binaryFileTypeAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedBinaryFileTypeAttribute) {
             binaryFileTypeAttribute.value = selectedBinaryFileTypeAttribute;
@@ -235,12 +244,12 @@
         else {
             onAddAttribute();
         }
-    };
+    }
 
-    const onDeleteAttribute = async (key: string): Promise<void> => {
+    function onDeleteAttribute(key: string): void {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        binaryFileTypeAttributes.value = binaryFileTypeAttributes.value.filter(s => s.key !== key);
+        binaryFileTypeAttributes.value = binaryFileTypeAttributes.value.filter(s => s.guid !== key);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -250,16 +259,16 @@
                 attributesGridData.rows?.splice(index, 1);
             }
         }
-    };
+    }
 
     function onSaveAttribute(): void {
 
         if (binaryFileTypeAttribute.value) {
-            const index = binaryFileTypeAttributes.value.findIndex(a => a.key === binaryFileTypeAttribute.value?.key);
+            const index = binaryFileTypeAttributes.value.findIndex(a => a.guid === binaryFileTypeAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = binaryFileTypeAttributes.value.find(a => a.key == binaryFileTypeAttribute.value?.key);
-                let rowItem = attributesGridData.rows?.find(x => x.key == binaryFileTypeAttribute.value?.key);
+                let editedAttribute = binaryFileTypeAttributes.value.find(a => a.guid == binaryFileTypeAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key == binaryFileTypeAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -269,12 +278,13 @@
 
                 if (rowItem && attributesGridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = attributesGridData.rows.findIndex(r => r.key === binaryFileTypeAttribute.value?.key);
+                    const rowIndex = attributesGridData.rows.findIndex(r => r.key === binaryFileTypeAttribute.value?.guid);
                     rowItem = convertToAttributeGridRowItem(editedAttribute);
                     attributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
             }
             else {
+                binaryFileTypeAttribute.value.guid = newGuid();
                 binaryFileTypeAttributes.value.push(binaryFileTypeAttribute.value);
 
                 // Add new RowItem to the grid to represent the newly added attribute.
@@ -288,12 +298,13 @@
 
     const onStartSaveAttribute = (): void => {
         attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(binaryFileTypeAttribute.value?.key ?? "") && !binaryFileTypeAttribute.value?.guid;
+        const isExistingKey = reservedKeyNames.value.includes(binaryFileTypeAttribute.value?.key ?? "");
         saveAttribute.value = !isExistingKey;
         if (isExistingKey) {
             attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
         }
     };
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
@@ -305,20 +316,18 @@
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(requiresViewSecurity, props.modelValue.requiresViewSecurity);
         updateRefValue(storageEntityType, props.modelValue.storageEntityType ?? {});
-        updateRefValue(maxFileSizeBytes, props.modelValue.maxFileSizeBytes);
-        updateRefValue(maxWidth, props.modelValue.maxWidth);
-        updateRefValue(maxHeight, props.modelValue.maxHeight);
-        updateRefValue(preferredColorDepth, props.modelValue.preferredColorDepth.toString());
+        updateRefValue(maxFileSizeBytes, props.modelValue.maxFileSizeBytes?.toString() ?? "");
+        updateRefValue(maxWidth, props.modelValue.maxWidth?.toString() ?? "");
+        updateRefValue(maxHeight, props.modelValue.maxHeight?.toString() ?? "");
         updateRefValue(preferredRequired, props.modelValue.preferredRequired);
         updateRefValue(cacheToServerFileSystem, props.modelValue.cacheToServerFileSystem);
         updateRefValue(cacheControlHeaderSettings, props.modelValue.cacheControlHeaderSettings ?? null);
-        updateRefValue(preferredFormat, props.modelValue.preferredFormat.toString());
-        updateRefValue(preferredResolution, props.modelValue.preferredResolution.toString());
+        updateRefValue(binaryFileTypeAttributes, props.modelValue.binaryFileTypeAttributes ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues, binaryFileTypeAttributes, ...propRefs], () => {
         const newValue: BinaryFileTypeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -327,15 +336,13 @@
             iconCssClass: iconCssClass.value,
             requiresViewSecurity: requiresViewSecurity.value,
             storageEntityType: storageEntityType.value,
-            maxFileSizeBytes: maxFileSizeBytes.value,
-            maxWidth: maxWidth.value,
-            maxHeight: maxHeight.value,
-            preferredColorDepth: toNumber(preferredColorDepth.value) as ColorDepth,
+            maxFileSizeBytes: toNumberOrNull(maxFileSizeBytes.value),
+            maxWidth: toNumberOrNull(maxWidth.value),
+            maxHeight: toNumberOrNull(maxHeight.value),
             preferredRequired: preferredRequired.value,
             cacheToServerFileSystem: cacheToServerFileSystem.value,
             cacheControlHeaderSettings: cacheControlHeaderSettings.value,
-            preferredFormat: toNumber(preferredFormat.value) as Format,
-            preferredResolution: toNumber(preferredResolution.value) as Resolution
+            binaryFileTypeAttributes: binaryFileTypeAttributes.value
         };
 
         emit("update:modelValue", newValue);

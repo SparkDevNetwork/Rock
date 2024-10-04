@@ -77,7 +77,7 @@ namespace Rock.Blocks.Core
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions();
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<BinaryFileType>();
 
                 return box;
@@ -88,15 +88,10 @@ namespace Rock.Blocks.Core
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BinaryFileTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private BinaryFileTypeDetailOptionsBag GetBoxOptions()
         {
             var options = new BinaryFileTypeDetailOptionsBag();
-            options.PreferredColorDepthOptions = typeof( ColorDepth ).ToEnumListItemBag();
-            options.PreferredFormatOptions = typeof( Format ).ToEnumListItemBag();
-            options.PreferredResolutionOptions = typeof( Resolution ).ToEnumListItemBag();
             return options;
         }
 
@@ -181,7 +176,7 @@ namespace Rock.Blocks.Core
             return new BinaryFileTypeBag
             {
                 IdKey = entity.IdKey,
-                CacheControlHeaderSettings = ToCacheabilityBag( cacheability ),
+                CacheControlHeaderSettings = cacheability.ToCacheabilityBag(),
                 CacheToServerFileSystem = entity.CacheToServerFileSystem,
                 Description = entity.Description,
                 IconCssClass = entity.IconCssClass,
@@ -190,10 +185,7 @@ namespace Rock.Blocks.Core
                 MaxHeight = entity.MaxHeight,
                 MaxWidth = entity.MaxWidth,
                 Name = entity.Name,
-                PreferredColorDepth = entity.PreferredColorDepth,
-                PreferredFormat = entity.PreferredFormat,
                 PreferredRequired = entity.PreferredRequired,
-                PreferredResolution = entity.PreferredResolution,
                 RequiresViewSecurity = entity.RequiresViewSecurity,
                 StorageEntityType = entity.StorageEntityType.ToListItemBag()
             };
@@ -259,7 +251,7 @@ namespace Rock.Blocks.Core
             }
 
             box.IfValidProperty( nameof( box.Entity.CacheControlHeaderSettings ),
-                () => entity.CacheControlHeaderSettings = ToCacheability( box.Entity.CacheControlHeaderSettings ).ToJson() );
+                () => entity.CacheControlHeaderSettings = box.Entity.CacheControlHeaderSettings.ToCacheability()?.ToJson() );
 
             box.IfValidProperty( nameof( box.Entity.CacheToServerFileSystem ),
                 () => entity.CacheToServerFileSystem = box.Entity.CacheToServerFileSystem );
@@ -282,17 +274,8 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.PreferredColorDepth ),
-                () => entity.PreferredColorDepth = box.Entity.PreferredColorDepth );
-
-            box.IfValidProperty( nameof( box.Entity.PreferredFormat ),
-                () => entity.PreferredFormat = box.Entity.PreferredFormat );
-
             box.IfValidProperty( nameof( box.Entity.PreferredRequired ),
                 () => entity.PreferredRequired = box.Entity.PreferredRequired );
-
-            box.IfValidProperty( nameof( box.Entity.PreferredResolution ),
-                () => entity.PreferredResolution = box.Entity.PreferredResolution );
 
             box.IfValidProperty( nameof( box.Entity.RequiresViewSecurity ),
                 () => entity.RequiresViewSecurity = box.Entity.RequiresViewSecurity );
@@ -407,99 +390,13 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Converts the <see cref="RockCacheability"/> to a <see cref="RockCacheabilityBag"/>.
-        /// </summary>
-        /// <param name="cacheability">The cacheability.</param>
-        /// <returns></returns>
-        private RockCacheabilityBag ToCacheabilityBag( RockCacheability cacheability )
-        {
-            var bag = new RockCacheabilityBag()
-            {
-                MaxAge = new TimeIntervalBag
-                {
-                    Unit = TimeIntervalUnit.Minutes,
-                    Value = 0
-                },
-                RockCacheabilityType = RockCacheabilityType.Public,
-                SharedMaxAge = new TimeIntervalBag
-                {
-                    Unit = TimeIntervalUnit.Minutes,
-                    Value = 0
-                }
-            };
-
-            if ( cacheability == null )
-            {
-                return bag;
-            }
-
-            if ( cacheability.MaxAge != null )
-            {
-                bag.MaxAge = new TimeIntervalBag
-                {
-                    Unit = cacheability.MaxAge.Unit,
-                    Value = cacheability.MaxAge.Value
-                };
-            }
-
-            if ( cacheability.RockCacheablityType == RockCacheablityType.Private )
-            {
-                bag.RockCacheabilityType = ( RockCacheabilityType ) cacheability.RockCacheablityType;
-            }
-            else
-            {
-                bag.RockCacheabilityType = ( RockCacheabilityType ) cacheability.RockCacheablityType;
-
-                if ( cacheability.SharedMaxAge != null )
-                {
-                    bag.SharedMaxAge = new TimeIntervalBag
-                    {
-                        Unit = cacheability.SharedMaxAge.Unit,
-                        Value = cacheability.SharedMaxAge.Value
-                    };
-                }
-            }
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Converts the <see cref="RockCacheabilityBag"/> to a <see cref="RockCacheability"/>.
-        /// </summary>
-        /// <param name="cacheability">The cacheability.</param>
-        /// <returns></returns>
-        private static RockCacheability ToCacheability( RockCacheabilityBag cacheControlHeaderSettings )
-        {
-            var cacheability = new RockCacheability()
-            {
-                MaxAge = new TimeInterval
-                {
-                    Unit = cacheControlHeaderSettings.MaxAge.Unit,
-                    Value = cacheControlHeaderSettings.MaxAge.Value,
-                },
-                RockCacheablityType = ( RockCacheablityType ) cacheControlHeaderSettings.RockCacheabilityType,
-            };
-
-            if ( cacheability.RockCacheablityType == RockCacheablityType.Public )
-            {
-                cacheability.SharedMaxAge = new TimeInterval
-                {
-                    Unit = cacheControlHeaderSettings.SharedMaxAge.Unit,
-                    Value = cacheControlHeaderSettings.SharedMaxAge.Value,
-                };
-            }
-
-            return cacheability;
-        }
-
-        /// <summary>
         /// Save attributes associated with this BinaryFileType.
         /// </summary>
-        /// <param name="entityTypeId"></param>
-        /// <param name="qualifierColumn"></param>
-        /// <param name="qualifierValue"></param>
-        /// <param name="viewStateAttributes"></param>
-        /// <param name="rockContext"></param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="qualifierColumn">The qualifier column.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <param name="viewStateAttributes">The view state attributes.</param>
+        /// <param name="rockContext">The rock context.</param>
         private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
