@@ -8,10 +8,11 @@
             </Accordion>
 
             <Accordion title="Typography">
-                <LineHeight :modelValue="modelValue.componentElement" />
+                <Font :modelValue="modelValue.componentElement" />
             </Accordion>
 
             <Accordion title="Spacing & Layout">
+                <TextAlign :modelValue="modelValue.componentElement" />
                 <Padding :modelValue="modelValue.componentElement" />
             </Accordion>
 
@@ -33,8 +34,10 @@
     import ComponentProperties from "../componentProperties.partial.obs";
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";
+    import Font from "../inlineStyleEditors/font.partial.obs";
     import LineHeight from "../inlineStyleEditors/lineHeight.partial.obs";
     import Padding from "../inlineStyleEditors/padding.partial.obs";
+    import TextAlign from "../inlineStyleEditors/textAlign.partial.obs";
     import InnerHtml from "../propertyEditors/innerHtml.partial.obs";
     import { EditorComponent } from "../types.partial";
 
