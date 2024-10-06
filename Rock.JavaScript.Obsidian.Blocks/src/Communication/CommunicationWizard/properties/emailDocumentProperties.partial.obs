@@ -3,31 +3,42 @@
                          @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
-                <DropDownList v-model="communicationTemplateGuidOrEmptyString" :items="communicationTemplateItems" />
-                <Width :modelValue="modelValue.body" label="Content Area Width" />
+                <DropDownList v-model="communicationTemplateGuidOrEmptyString"
+                              :items="communicationTemplateItems"
+                              label="Template" />
+                <Width :modelValue="modelValue.body"
+                       label="Content Area Width" />
                 <Padding :modelValue="modelValue.body" />
                 <BackgroundColor :modelValue="modelValue.documentElement" />
-                <BackgroundColor :modelValue="modelValue.body" label="Body Color" />
+                <BackgroundColor :modelValue="modelValue.body"
+                                 label="Body Color" />
                 <BackgroundImage :modelValue="modelValue.body" />
-                <Border :modelValue="modelValue.body" label="Body Border" />
+                <Border :modelValue="modelValue.body"
+                        label="Body Border" />
             </Accordion>
 
-            <Accordion title="Text Styling">
-                <FontStyleSheet :modelValue="modelValue.body"
-                                label="Heading 1"
-                                tagName="h1" />
-                <hr>
-                <FontStyleSheet :modelValue="modelValue.body"
-                                label="Heading 2"
-                                tagName="h2" />
-                <hr>
-                <FontStyleSheet :modelValue="modelValue.body"
-                                label="Heading 3"
-                                tagName="h3" />
-                <hr>
-                <FontStyleSheet :modelValue="modelValue.body"
-                                label="Paragraph"
-                                tagName="p" />
+            <Accordion title="Typography">
+                <AccordionGroup>
+                    <Accordion title="Global">
+                        <Font :modelValue="modelValue.body" />
+                    </Accordion>
+                    <Accordion title="Heading 1">
+                        <FontStyleSheet :modelValue="modelValue.body"
+                                        tagName="h1" />
+                    </Accordion>
+                    <Accordion title="Heading 2">
+                        <FontStyleSheet :modelValue="modelValue.body"
+                                        tagName="h2" />
+                    </Accordion>
+                    <Accordion title="Heading 3">
+                        <FontStyleSheet :modelValue="modelValue.body"
+                                        tagName="h3" />
+                    </Accordion>
+                    <Accordion title="Paragraph">
+                        <FontStyleSheet :modelValue="modelValue.body"
+                                        tagName="p" />
+                    </Accordion>
+                </AccordionGroup>
             </Accordion>
 
             <Accordion title="Button Styling">
@@ -48,6 +59,7 @@
     import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
     import BackgroundImage from "../inlineStyleEditors/backgroundImage.partial.obs";
     import Border from "../inlineStyleEditors/border.partial.obs";
+    import Font from "../inlineStyleEditors/font.partial.obs";
     import Padding from "../inlineStyleEditors/padding.partial.obs";
     import Width from "../inlineStyleEditors/width.partial.obs";
     import ButtonStyleSheet from "../styleSheetEditors/button.partial.obs";
