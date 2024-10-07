@@ -1,0 +1,56 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+        <RadioButtonList v-model="actionType" :items="options" disableLabel horizontal />
+        <NumberBox v-if="showPageCount" v-model="pageCount" label="Page Count" help="The number of pages that will be removed from the navigation stack." class="input-width-sm" rules="required" />
+        <PagePicker v-if="showPageGuid" v-model="pageGuid" label="Path" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { MobileNavigationActionType, MobileNavigationActionTypeDescription } from "@Obsidian/Enums/Controls/mobileNavigationActionType";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag>,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const actionType = ref<string>(internalValue.value?.type ?? MobileNavigationActionType.None);
+    const pageCount = ref<number | null>(1);
+    const pageGuid = ref<Guid | null>(null);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const showPageCount = computed(() => actionType.value === MobileNavigationActionType.PopPage.toString());
+    const showPageGuid = computed(() => actionType.value === MobileNavigationActionType.ResetToPage.toString()
+        || actionType.value === MobileNavigationActionType.ReplacePage.toString()
+        || actionType.value === MobileNavigationActionType.PushPage.toString()
+    );
+
+    const options: ListItemBag[] = [
+        { value: MobileNavigationActionType.None.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.None] },
+        { value: MobileNavigationActionType.PopPage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.PopPage] },
+        { value: MobileNavigationActionType.ResetToPage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.ResetToPage] },
+        { value: MobileNavigationActionType.ReplacePage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.ReplacePage] },
+        { value: MobileNavigationActionType.PushPage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.PushPage] },
+        { value: MobileNavigationActionType.DismissCoverSheet.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.DismissCoverSheet] },
+    ];
+
+</script>
