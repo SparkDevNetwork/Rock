@@ -702,3 +702,7 @@
     width: 30px;
     height: 30px;
 }
+
+.grid-obsidian .grid-body .grid-row .btn.btn-default {
+    padding: var(--spacing-small) 0px;
+}
