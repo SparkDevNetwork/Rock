@@ -69,20 +69,17 @@ namespace Rock.Blocks.Cms
         /// <returns>List&lt;Category&gt;.</returns>
         private List<Category> GetCategoriesFromMetaData( LavaShortcodeMetadataAttribute metaData )
         {
-            List<Category> categories = new List<Category>();
+            var shortcodeCategoryGuids = metaData?.Categories?.Split( ',' ).AsGuidList();
 
-            var categoryService = new CategoryService( new RockContext() );
-            var shortcodeCategoryGuids = metaData.Categories.Split( ',' ).AsGuidList();
-            shortcodeCategoryGuids.ForEach( g => categories.Add( categoryService.Get( g ) ) );
-
-            return categories;
+            return shortcodeCategoryGuids.Any() ?
+                new CategoryService( RockContext ).GetByGuids( shortcodeCategoryGuids ).ToList() :
+                new List<Category>();
         }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             var box = new LavaShortcodeListBox();
-
             box.UserCanEdit = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.DetailPage = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LavaShortcodeId", "((Key))" );
 
@@ -103,16 +100,22 @@ namespace Rock.Blocks.Cms
             } ).ToList();
 
             box.NavigationUrls = GetBoxNavigationUrls();
-            box.Categories = shortcodes.SelectMany( l => l.Categories ).DistinctBy( c => c.Id ).ToListItemBagList();
+
+            // Get the distinct categories for all Lava Shortcodes
+            // and order them by name.
+            box.Categories = shortcodes
+                .SelectMany( l => l.Categories )
+                .DistinctBy( c => c.Id )
+                .OrderBy( c => c.Name )
+                .ToListItemBagList();
 
             return box;
         }
 
         /// <summary>
-        /// Converts a List of LavaShortcodeCache objects to LavaShortcodes and provides out a list of their distinct categories.
+        /// Converts a List of LavaShortcodeCache objects to LavaShortcodes.
         /// </summary>
         /// <param name="shortcodeCaches">The LavaShortcodeCache records to convert.</param>
-        /// <param name="distinctCategories">The distinct list of Categories used by the LavaShortcodeCache's.</param>
         /// <returns>A List of LavaShortcode's.</returns>
         private List<LavaShortcode> ConvertToLavaShortcode( IEnumerable<LavaShortcodeCache> shortcodeCaches )
         {
@@ -155,12 +158,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Loads the shortcodes.
+        /// Loads the shortcodes from the cache/database
+        /// and through reflection for shortcodes that aren't stored in the database.
         /// </summary>
         private List<LavaShortcode> GetLavaShortcodes()
         {
-            // To list the items from the database as we now need to add
-            // items in c# assemblies
+            // Get all the shortcodes from the cache/database first.
             var shortcodeList = ConvertToLavaShortcode( LavaShortcodeCache.All() );
 
             // Start with block items

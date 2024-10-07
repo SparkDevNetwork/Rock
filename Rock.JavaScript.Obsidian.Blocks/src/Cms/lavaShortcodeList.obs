@@ -1,9 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="panel">
+    <NotificationBox v-if="errorMessage" :text="errorMessage" type="danger" />
+
+    <div class="panel panel-default">
         <div class="lava-shortcode-list-header panel-heading">
-            <h1 class="lava-shortcodes-list-title d-md-inline"><i class="fa fa-cube"></i> Lava Shortcodes</h1>
-            <RockButton class="pull-right btn btn-default btn-xs" @click="onAddClick"><i class="fa fa-plus"></i></RockButton>
+            <h1 class="lava-shortcodes-list-title panel-title d-md-inline"><i class="fa fa-cube"></i> Lava Shortcodes</h1>
+            <RockButton v-if="canEdit" class="pull-right btn btn-default btn-xs" @click="onAddClick"><i class="fa fa-plus"></i></RockButton>
         </div>
 
         <div class="panel-body">
@@ -24,8 +26,11 @@
                 </template>
                     <template #footer>
                         <div class="d-flex justify-content-end">
-                            <RockButton v-if="canEdit" @click="onEditClick(shortcode)">
+                            <RockButton v-if="canEdit" @click="onEditClick(shortcode)" class="btn btn-xs btn-default">
                                 <i class="fa fa-pencil"></i>
+                            </RockButton>
+                            <RockButton v-if="canEdit && !shortcode.isSystem" @click="onDeleteClick(shortcode)" class="btn btn-xs btn-default ml-1">
+                                <i class="fa fa-times"></i>
                             </RockButton>
                         </div>
                     </template>
@@ -43,20 +48,25 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ExpanderPanel from "@Obsidian/Controls/expanderPanel.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LavaShortcodeListBox } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeList/lavaShortcodeListBox";
     import { computed, ref } from "vue";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";
 
     const box = useConfigurationValues<LavaShortcodeListBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
+    const errorMessage = ref("");
     const blankCategory = ref("All Shortcodes");
     const canEdit = ref(box.userCanEdit ?? false);
     const categories = ref(box.categories ?? []);
@@ -140,6 +150,28 @@
         if (detailPage.value) {
             const queryStrings = "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
             window.location.href = detailPage.value.replace("((Key))", lavaShortcode.idKey ?? "") + queryStrings;
+        }
+    }
+
+    /**
+     * Deletes a lava shortcode.
+     * @param lavaShortcode The lava shortcode to delete.
+     */
+    async function onDeleteClick(lavaShortcode: LavaShortcodeBag): Promise<void> {
+        const key = lavaShortcode.idKey ?? "";
+
+        if (key && await confirmDelete("LavaShortcode")) {
+            const result = await invokeBlockAction("Delete", { key });
+
+            if (result.isSuccess) {
+                const index = lavaShortcodes.value.findIndex(l => l.idKey === key);
+                if (index > -1) {
+                    lavaShortcodes.value.splice(index, 1);
+                }
+            }
+            else{
+                errorMessage.value = result.errorMessage ?? "An error occurred while deleting the lava shortcode.";
+            }
         }
     }
 
