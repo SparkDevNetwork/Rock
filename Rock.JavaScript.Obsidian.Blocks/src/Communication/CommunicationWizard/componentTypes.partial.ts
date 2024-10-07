@@ -158,7 +158,7 @@ export const dividerComponent: EditorComponentType = {
         const el = d.createElement("div");
         el.classList.add("component", `component-${this.typeName}`);
         el.dataset.state = "component";
-        el.innerHTML = `<hr style="margin-top: 20px; margin-bottom: 20px; border: 0; height: 4px; background: #c4c4c4;" />`;
+        el.innerHTML = `<hr />`;
         return el;
     },
 

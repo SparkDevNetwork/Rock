@@ -1,19 +1,15 @@
 <template>
-    <ColorPicker v-model="backgroundColor" label="Color" />
-
-    <NumberUpDown v-model="borderRadius"
-                  label="Corner Radius"
-                  :min="0"
-                  :max="99" />
-
-    <DropDownList v-model="borderStyle"
+    <DropDownList v-model="borderTopStyle"
                   :items="borderStyles"
                   label="Style" />
 
-    <NumberUpDown v-model="height"
+    <NumberUpDown v-model="borderTopWidth"
                   label="Thickness"
                   :min="0"
-                  :max="99" />
+                  :max="30" />
+
+    <ColorPicker v-model="borderTopColor"
+                 label="Color" />
 
     <NumberUpDown v-model="marginY"
                   label="Vertical Margin Size"
@@ -59,7 +55,7 @@
          */
         cssRulesetSelectors: {
             type: String as PropType<string>,
-            default: ".component-divider" as const
+            default: ".component-divider hr" as const
         }
     });
 
@@ -83,10 +79,9 @@
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.
-    const backgroundColor = ref<string>("");
-    const borderRadius = ref<number>(0);
-    const borderStyle = ref<BorderStyle>("");
-    const height = ref<number>(0);
+    const borderTopStyle = ref<BorderStyle>("");
+    const borderTopWidth = ref<number>(0);
+    const borderTopColor = ref<string>("");
     const marginY = ref<number>(0);
 
     // #endregion
@@ -96,42 +91,25 @@
     const cssRuleset = computed<string | null>(() => {
         const declarations: string[] = [];
 
-        if (borderStyle.value) {
-            // This has no visual effect but store the border style
-            // in this property so it can be retrieved on load.
-            declarations.push(`border-style: ${borderStyle.value};`);
+        if (borderTopStyle.value) {
+            declarations.push(`border-top-style: ${borderTopStyle.value};`);
+            declarations.push("border-bottom-style: none;");
+            declarations.push("border-right-style: none;");
+            declarations.push("border-left-style: none;");
         }
 
-        if (backgroundColor.value) {
-            if (!borderStyle.value || borderStyle.value === "solid") {
-                declarations.push(`background-color: ${backgroundColor.value};`);
-            }
-            else if (borderStyle.value === "dashed") {
-                declarations.push(`background: repeating-linear-gradient(
-    to right,
-    ${backgroundColor.value} 0%,
-        ${backgroundColor.value} 1.25%,
-        transparent 1.25%,
-        transparent 3.75%,
-        ${backgroundColor.value} 3.75%,
-        ${backgroundColor.value} 6.25%,
-        transparent 6.25%,
-        transparent 8.75%,
-        ${backgroundColor.value} 8.75%,
-        ${backgroundColor.value} 10%
-);`);
-            }
-            else if (borderStyle.value === "dotted") {
-                // TODO JMH
-            }
+        if (borderTopColor.value) {
+            declarations.push(`border-top-color: ${borderTopColor.value};`);
+            declarations.push("border-bottom-color: transparent;");
+            declarations.push("border-right-color: transparent;");
+            declarations.push("border-left-color: transparent;");
         }
 
-        if (borderRadius.value) {
-            declarations.push(`border-radius: ${borderRadius.value}px;`);
-        }
-
-        if (height.value) {
-            declarations.push(`height: ${height.value}px;`);
+        if (borderTopWidth.value) {
+            declarations.push(`border-top-width: ${borderTopWidth.value}px;`);
+            declarations.push("border-bottom-width: 0;");
+            declarations.push("border-right-width: 0;");
+            declarations.push("border-left-width: 0;");
         }
 
         if (marginY.value) {
@@ -140,7 +118,6 @@
         }
 
         if (declarations.length) {
-            //declarations.push("border: 0;");
             return `${props.cssRulesetSelectors} {\n    ${declarations.join("\n    ")}\n}`;
         }
         else {
@@ -169,10 +146,9 @@
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
                             if (rule.selectorText === props.cssRulesetSelectors) {
-                                backgroundColor.value = rule.style.borderColor;
-                                borderRadius.value = parseInt(rule.style.borderRadius || "0");
-                                borderStyle.value = rule.style.borderStyle as BorderStyle;
-                                height.value = parseInt(rule.style.height || "0");
+                                borderTopStyle.value = rule.style.borderTopStyle as BorderStyle;
+                                borderTopWidth.value = parseInt(rule.style.borderTopWidth || "0");
+                                borderTopColor.value = rule.style.borderTopColor;
                                 marginY.value = parseInt(rule.style.marginTop || "0");
 
                                 loaded = true;
@@ -184,10 +160,9 @@
         }
 
         if (!loaded) {
-            backgroundColor.value = "";
-            borderRadius.value = 0;
-            borderStyle.value = "";
-            height.value = 0;
+            borderTopStyle.value = "";
+            borderTopWidth.value = 0;
+            borderTopColor.value = "";
             marginY.value = 0;
         }
     }, {
