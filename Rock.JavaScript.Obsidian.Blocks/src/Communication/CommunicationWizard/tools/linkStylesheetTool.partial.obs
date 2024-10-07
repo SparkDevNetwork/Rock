@@ -9,7 +9,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { ColorPicker, DropDownList } from "../imports.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 
     const props = defineProps({
         modelValue: {

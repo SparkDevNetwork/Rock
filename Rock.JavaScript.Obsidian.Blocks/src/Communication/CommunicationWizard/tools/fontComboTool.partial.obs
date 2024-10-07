@@ -31,7 +31,7 @@
         </template>
     </MultiSelectButtonGroup>
 
-    <LineHeight :modelValue="modelValue" />
+    <LineHeightTool :modelValue="modelValue" />
 
     <SingleSelectButtonGroup v-model="textTransform" :disableLabel="true">
         <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
@@ -58,11 +58,14 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import LineHeight from "./lineHeight.partial.obs";
-    import { ColorPicker, DropDownList, NumberBox, RockButton } from "../imports.partial";
+    import LineHeightTool from "./lineHeightTool.partial.obs";
     import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
     import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
     import { useFontFamilies } from "../utils.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         modelValue: {

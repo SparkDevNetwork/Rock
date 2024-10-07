@@ -3,8 +3,8 @@
                          @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="Row Settings">
-                <BackgroundColor :modelValue="selectedComponent.componentElement" />
-                <Border :modelValue="selectedComponent.componentElement" />
+                <BackgroundColorTool :modelValue="selectedComponent.componentElement" />
+                <BorderComboTool :modelValue="selectedComponent.componentElement" />
             </Accordion>
 
             <Accordion title="Columns">
@@ -19,8 +19,8 @@
     import ComponentToolset from "./componentToolset.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import BackgroundColor from "../tools/backgroundColorTool.partial.obs";
-    import Border from "../tools/borderTool.partial.obs";
+    import BackgroundColorTool from "../tools/backgroundColorTool.partial.obs";
+    import BorderComboTool from "../tools/borderComboTool.partial.obs";
     import { EditorComponent } from "../types.partial";
 
     const props = defineProps({

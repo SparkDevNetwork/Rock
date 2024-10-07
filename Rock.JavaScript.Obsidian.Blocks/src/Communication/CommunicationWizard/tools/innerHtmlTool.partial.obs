@@ -5,7 +5,8 @@
 
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
-    import { CodeEditor, HtmlEditor } from "../imports.partial";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
 
     const props = defineProps({
         modelValue: {

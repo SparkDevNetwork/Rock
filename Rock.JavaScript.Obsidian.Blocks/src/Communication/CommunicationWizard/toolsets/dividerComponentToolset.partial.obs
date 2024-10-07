@@ -1,13 +1,13 @@
 <template>
     <ComponentToolset @complete="$emit('complete')"
-                         @delete="$emit('delete')">
+                      @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
                 <template v-if="hrElement">
-                    <BorderColor :modelValue="hrElement" label="Color" :clearBackgroundColor="true" />
-                    <BorderStyle :modelValue="hrElement" />
-                    <BorderWidth :modelValue="hrElement" />
-                    <Margin :modelValue="hrElement" />
+                    <BorderColorTool :modelValue="hrElement" label="Color" :clearBackgroundColor="true" />
+                    <BorderStyleTool :modelValue="hrElement" />
+                    <BorderWidthTool :modelValue="hrElement" />
+                    <MarginTool :modelValue="hrElement" />
                 </template>
             </Accordion>
         </AccordionGroup>
@@ -19,10 +19,10 @@
     import ComponentToolset from "./componentToolset.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import BorderColor from "../inlineStyleEditors/borderColor.partial.obs";
-    import BorderStyle from "../inlineStyleEditors/borderStyle.partial.obs";
-    import BorderWidth from "../inlineStyleEditors/borderWidth.partial.obs";
-    import Margin from "../inlineStyleEditors/margin.partial.obs";
+    import BorderColorTool from "../tools/borderColorTool.partial.obs";
+    import BorderStyleTool from "../tools/borderStyleTool.partial.obs";
+    import BorderWidthTool from "../tools/borderWidthTool.partial.obs";
+    import MarginTool from "../tools/marginTool.partial.obs";
     import { EditorComponent } from "../types.partial";
 
     const props = defineProps({

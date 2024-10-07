@@ -53,51 +53,17 @@
                                             </div>
 
                                             <div v-else-if="selectedComponent">
-                                                <TitleComponentProperties v-if="selectedComponent.type.typeName === 'title'"
-                                                                          :modelValue="selectedComponent"
-                                                                          @complete="onCompleteComponent"
-                                                                          @delete="onDeleteComponent" />
-                                                <VideoComponentProperties v-else-if="selectedComponent.type.typeName === 'video'"
-                                                                          :modelValue="selectedComponent"
-                                                                          @complete="onCompleteComponent"
-                                                                          @delete="onDeleteComponent" />
-                                                <ButtonComponentProperties v-else-if="selectedComponent.type.typeName === 'button'"
-                                                                           :modelValue="selectedComponent"
-                                                                           @complete="onCompleteComponent"
-                                                                           @delete="onDeleteComponent" />
-                                                <TextComponentProperties v-else-if="selectedComponent.type.typeName === 'text'"
-                                                                         :modelValue="selectedComponent"
-                                                                         @complete="onCompleteComponent"
-                                                                         @delete="onDeleteComponent" />
-                                                <DividerComponentProperties v-else-if="selectedComponent.type.typeName === 'divider'"
-                                                                            :modelValue="selectedComponent"
-                                                                            @complete="onCompleteComponent"
-                                                                            @delete="onDeleteComponent" />
-                                                <AdaptiveMessageComponentProperties v-else-if="selectedComponent.type.typeName === 'message'"
-                                                                                    :modelValue="selectedComponent"
-                                                                                    @complete="onCompleteComponent"
-                                                                                    @delete="onDeleteComponent" />
-                                                <ImageComponentProperties v-else-if="selectedComponent.type.typeName === 'image'"
-                                                                          :modelValue="selectedComponent"
-                                                                          @complete="onCompleteComponent"
-                                                                          @delete="onDeleteComponent" />
-                                                <CodeComponentProperties v-else-if="selectedComponent.type.typeName === 'code'"
-                                                                         :modelValue="selectedComponent"
-                                                                         @complete="onCompleteComponent"
-                                                                         @delete="onDeleteComponent" />
-                                                <RsvpComponentProperties v-else-if="selectedComponent.type.typeName === 'rsvp'"
-                                                                         :modelValue="selectedComponent"
-                                                                         @complete="onCompleteComponent"
-                                                                         @delete="onDeleteComponent" />
-                                                <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
+                                                <ComponentToolbox :selectedComponent="selectedComponent"
+                                                                  @complete="onCompleteComponent"
+                                                                  @delete="onDeleteComponent" />
                                             </div>
                                         </template>
 
                                         <template v-else-if="item === 'Sections'">
                                             <div v-if="selectedComponent?.type.typeName === 'section'">
-                                                <SectionComponentProperties :selectedComponent="selectedComponent"
-                                                                            @complete="onCompleteComponent"
-                                                                            @delete="onDeleteComponent" />
+                                                <SectionComponentToolset :selectedComponent="selectedComponent"
+                                                                         @complete="onCompleteComponent"
+                                                                         @delete="onDeleteComponent" />
                                             </div>
 
                                             <div v-else class="submenu-content">
@@ -127,7 +93,7 @@
                         </div>
 
                         <div v-else-if="toolboxMenuItem === 'design' && editorWindow?.emailEditorDocument" class="email-editor-toolbox-submenu">
-                            <EmailDocumentProperties :modelValue="editorWindow.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
+                            <GlobalToolset :modelValue="editorWindow.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 
@@ -315,19 +281,11 @@
 
 <script setup lang="ts">
     import { nextTick, provide, ref, watch } from "vue";
-    import AdaptiveMessageComponentProperties from "./CommunicationWizard/properties/adaptiveMessageComponentProperties.partial.obs";
-    import ButtonComponentProperties from "./CommunicationWizard/properties/buttonComponentProperties.partial.obs";
-    import CodeComponentProperties from "./CommunicationWizard/properties/codeComponentProperties.partial.obs";
+    import ComponentToolbox from "./CommunicationWizard/componentToolbox.partial.obs";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, leftColumnSectionComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rightColumnSectionComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
-    import DividerComponentProperties from "./CommunicationWizard/properties/dividerComponentProperties.partial.obs";
     import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
-    import EmailDocumentProperties from "./CommunicationWizard/properties/emailDocumentProperties.partial.obs";
-    import ImageComponentProperties from "./CommunicationWizard/properties/imageComponentProperties.partial.obs";
-    import RsvpComponentProperties from "./CommunicationWizard/properties/rsvpComponentProperties.partial.obs";
-    import SectionComponentProperties from "./CommunicationWizard/properties/sectionComponentProperties.partial.obs";
-    import TextComponentProperties from "./CommunicationWizard/properties/textComponentProperties.partial.obs";
-    import TitleComponentProperties from "./CommunicationWizard/properties/titleComponentProperties.partial.obs";
-    import VideoComponentProperties from "./CommunicationWizard/properties/videoComponentProperties.partial.obs";
+    import GlobalToolset from "./CommunicationWizard/toolsets/globalToolset.partial.obs";
+    import SectionComponentToolset from "./CommunicationWizard/toolsets/sectionComponentToolset.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

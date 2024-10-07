@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { RangeSlider } from "../imports.partial";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 
     const props = defineProps({
         modelValue: {

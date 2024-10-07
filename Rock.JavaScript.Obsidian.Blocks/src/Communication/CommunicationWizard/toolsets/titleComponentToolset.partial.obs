@@ -4,7 +4,7 @@
                           @delete="$emit('delete')">
             <AccordionGroup>
                 <Accordion title="General Settings">
-                    <TextContent :modelValue="headingElement" />
+                    <TextContentTool :modelValue="headingElement" />
 
                     <DropDownList v-model="headingLevel"
                                   :items="headingLevels"
@@ -13,7 +13,7 @@
                 </Accordion>
 
                 <Accordion title="Typography">
-                    <Font :modelValue="headingElement"
+                    <FontComboTool :modelValue="headingElement"
                           :tagName="headingLevel" />
                 </Accordion>
             </AccordionGroup>
@@ -26,10 +26,10 @@
     import ComponentToolset from "./componentToolset.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
-    import { DropDownList } from "../imports.partial";
-    import Font from "../tools/fontTool.partial.obs";
-    import TextContent from "../tools/textContentTool.partial.obs";
+    import FontComboTool from "../tools/fontComboTool.partial.obs";
+    import TextContentTool from "../tools/textContentTool.partial.obs";
     import { EditorComponent } from "../types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

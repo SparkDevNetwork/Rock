@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
-    import { TextBox } from "../imports.partial";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
 
     const props = defineProps({
         modelValue: {

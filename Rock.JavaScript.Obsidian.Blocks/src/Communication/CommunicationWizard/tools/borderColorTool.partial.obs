@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { ColorPicker } from "../imports.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 
     const props = defineProps({
         modelValue: {

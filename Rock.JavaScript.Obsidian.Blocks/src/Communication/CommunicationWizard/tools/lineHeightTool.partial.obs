@@ -61,8 +61,8 @@ svg {
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { RockButton } from "../imports.partial";
     import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         modelValue: {

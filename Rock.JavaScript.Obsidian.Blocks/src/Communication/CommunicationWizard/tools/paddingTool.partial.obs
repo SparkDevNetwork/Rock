@@ -36,7 +36,8 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { NumberUpDown, RockLabel } from "../imports.partial";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
         modelValue: {

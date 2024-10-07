@@ -115,10 +115,13 @@ svg {
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { ColorPicker, DropDownList, NumberBox, RockButton } from "../imports.partial";
     import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
     import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
     import { useFontFamilies } from "../utils.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         modelValue: {

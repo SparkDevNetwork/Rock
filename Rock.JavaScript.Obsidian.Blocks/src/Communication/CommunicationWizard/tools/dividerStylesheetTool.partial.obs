@@ -23,7 +23,9 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { ColorPicker, DropDownList, NumberUpDown } from "../imports.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

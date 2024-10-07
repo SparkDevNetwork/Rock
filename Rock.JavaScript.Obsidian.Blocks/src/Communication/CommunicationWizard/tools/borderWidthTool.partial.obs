@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { NumberUpDown } from "../imports.partial";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 
     const props = defineProps({
         modelValue: {

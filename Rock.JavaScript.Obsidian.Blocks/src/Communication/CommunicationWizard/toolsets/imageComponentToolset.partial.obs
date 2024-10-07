@@ -27,7 +27,7 @@
                     </div>
 
                     <div class="col-sm-6">
-                        <TextAlign :modelValue="modelValue.componentElement" label="Align" />
+                        <TextAlignTool :modelValue="modelValue.componentElement" label="Align" />
                     </div>
                 </div>
 
@@ -60,7 +60,7 @@
                     </div>
                 </div>
 
-                <Margin :modelValue="modelValue.componentElement" mode="numberBox" />
+                <MarginTool :modelValue="modelValue.componentElement" mode="numberBox" />
             </Accordion>
         </AccordionGroup>
     </ComponentToolset>
@@ -71,14 +71,15 @@
     import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import ComponentToolset from "./componentToolset.partial.obs";
-    import { BinaryFileType, toGuidOrNull } from "../imports.partial";
-    import Margin from "../tools/marginTool.partial.obs";
-    import TextAlign from "../tools/textAlignTool.partial.obs";
+    import MarginTool from "../tools/marginTool.partial.obs";
+    import TextAlignTool from "../tools/textAlignTool.partial.obs";
     import { EditorComponent } from "../types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { BinaryFiletype as BinaryFileType } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

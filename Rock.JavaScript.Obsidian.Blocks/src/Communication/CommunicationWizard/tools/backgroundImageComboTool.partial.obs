@@ -19,7 +19,11 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { BinaryFileType, ImageUploader, InlineSwitch, RadioButton, toGuidOrNull } from "../imports.partial";
+    import BinaryFileType from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RadioButton from "@Obsidian/Controls/radioButton.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const dataAttributeKey = {

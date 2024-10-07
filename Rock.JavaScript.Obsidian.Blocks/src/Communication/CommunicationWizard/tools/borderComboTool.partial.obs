@@ -5,21 +5,21 @@
     </div>
 
     <template v-if="hasBorder">
-        <BorderColor ref="elementBorderColor"
-                     :modelValue="modelValue"
-                     @elementBorderColorUpdated="onElementBorderColorUpdated" />
+        <BorderColorTool ref="borderColorTool"
+                         :modelValue="modelValue"
+                         @elementBorderColorUpdated="onElementBorderColorUpdated" />
 
-        <BorderWidth ref="elementBorderWidthPixels"
-                     :modelValue="modelValue"
-                     @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
+        <BorderWidthTool ref="borderWidthTool"
+                         :modelValue="modelValue"
+                         @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import BorderColor from "./borderColorTool.partial.obs";
-    import BorderWidth from "./borderWidthTool.partial.obs";
-    import { InlineSwitch } from "../imports.partial";
+    import BorderColorTool from "./borderColorTool.partial.obs";
+    import BorderWidthTool from "./borderWidthTool.partial.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
 
     const props = defineProps({
         modelValue: {
@@ -35,8 +35,8 @@
     // #region Values
 
     const hasBorder = ref<boolean>(!!(props.modelValue.style.border || props.modelValue.style.borderColor || props.modelValue.style.borderWidth));
-    const elementBorderColor = ref<InstanceType<typeof BorderColor> | undefined>();
-    const elementBorderWidthPixels = ref<InstanceType<typeof BorderWidth> | undefined>();
+    const borderColorTool = ref<InstanceType<typeof BorderColorTool> | undefined>();
+    const borderWidthTool = ref<InstanceType<typeof BorderWidthTool> | undefined>();
 
     // #endregion
 
@@ -73,12 +73,12 @@
     watch(hasBorder, () => {
         if (!hasBorder.value) {
             // Clear the border properties when "Border" is switched off.
-            if (elementBorderColor.value) {
-                elementBorderColor.value.borderColor = "";
+            if (borderColorTool.value) {
+                borderColorTool.value.borderColor = "";
             }
 
-            if (elementBorderWidthPixels.value) {
-                elementBorderWidthPixels.value.borderWidth = 0;
+            if (borderWidthTool.value) {
+                borderWidthTool.value.borderWidth = 0;
             }
         }
     });
