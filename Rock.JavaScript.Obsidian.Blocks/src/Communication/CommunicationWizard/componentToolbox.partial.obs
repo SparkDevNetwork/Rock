@@ -48,8 +48,8 @@
     import ImageComponentToolset from "./toolsets/imageComponentToolset.partial.obs";
     import RsvpComponentToolset from "./toolsets/rsvpComponentToolset.partial.obs";
     import TextComponentToolset from "./toolsets/textComponentToolset.partial.obs";
-    import TitleComponentToolset from "./toolsets/textComponentToolset.partial.obs";
-    import VideoComponentToolset from "./toolsets/titleComponentToolset.partial.obs";
+    import TitleComponentToolset from "./toolsets/titleComponentToolset.partial.obs";
+    import VideoComponentToolset from "./toolsets/videoComponentToolset.partial.obs";
 
     defineProps({
         selectedComponent: {
