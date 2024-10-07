@@ -1,0 +1,31 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <MobileNavigationActionEditor v-model="value" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import MobileNavigationActionEditor from "@Obsidian/Controls/mobileNavigationActionEditor.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref([]);
+    const someBool = ref(false);
+    const someVal = ref("hi");
+
+    const importCode = getSfcControlImportPath("mobileNavigationActionEditor");
+    const exampleCode = computed(() => {
+        const someBoolProp = someBool.value ? " someBool" : "";
+        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
+        return `<MobileNavigationActionEditor v-model="value"${someBoolProp}${someValProp} />`;
+    });
+</script>

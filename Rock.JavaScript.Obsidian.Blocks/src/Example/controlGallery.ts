@@ -240,6 +240,7 @@ import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
 import DatePartsPickerGallery from "./ControlGallery/datePartsPickerGallery.partial.obs";
+import MobileNavigationActionEditorGalleryPartial from "./ControlGallery/mobileNavigationActionEditorGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -8199,6 +8200,7 @@ const controlGalleryComponents: Record<string, Component> = [
     CampusAccountAmountPickerGallery,
     LightGridGallery,
     ImageEditorGallery,
+    MobileNavigationActionEditorGalleryPartial,
 ]
     // Sort list by component name
     .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))

@@ -109,6 +109,7 @@
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
     <Compile Include="Controls\DetailPanelMode.cs" />
     <Compile Include="Controls\MediaSelectorMode.cs" />
+    <Compile Include="Controls\MobileNavigationActionType.cs" />
     <Compile Include="Controls\RockCacheabilityType.cs" />
     <Compile Include="Controls\UniversalItemValuePickerDisplayStyle.cs" />
     <Compile Include="Core\BenchmarkRepititionMode.cs" />
