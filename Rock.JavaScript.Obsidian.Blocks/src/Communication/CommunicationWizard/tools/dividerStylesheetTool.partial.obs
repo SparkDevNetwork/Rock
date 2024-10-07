@@ -1,7 +1,6 @@
 <template>
-    <DropDownList v-model="borderTopStyle"
-                  :items="borderStyles"
-                  label="Style" />
+    <BorderStyleToolBase v-model="borderTopStyle"
+                         label="Style" />
 
     <NumberUpDown v-model="borderTopWidth"
                   label="Thickness"
@@ -19,10 +18,10 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import BorderStyleToolBase from "./borderStyleToolBase.partial.obs";
+    import { BorderStyle } from "./types.partial";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -58,23 +57,6 @@
             default: ".component-divider hr" as const
         }
     });
-
-    type BorderStyle = "solid" | "dashed" | "dotted" | "";
-
-    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
-    // If quotes are required, add them here.
-    const borderStyles: ListItemBag[] = [
-        {
-            text: "Solid",
-            value: "solid"
-        }, {
-            text: "Dashed",
-            value: "dashed"
-        }, {
-            text: "Dotted",
-            value: "dotted"
-        }
-    ];
 
     // #region Values
 
