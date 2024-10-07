@@ -38,8 +38,7 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         // The internal value used by the text editor.
         const internalValue = ref("");
-
-
+        const refreshKey = ref(0);
 
         const toolbar = computed(() => {
             return (props.configurationValues[ConfigurationValueKey.Toolbar] ?? "Light").toLocaleLowerCase();
@@ -69,17 +68,24 @@ export const EditComponent = defineComponent({
             emit("update:modelValue", internalValue.value ?? "");
         });
 
+        // HTML Editor can't change the toolbar after it changes, so we need to re-render it on change.
+        watch(toolbar, () => {
+            refreshKey.value++;
+        });
+
         return {
             internalValue,
             toolbar,
             documentFolderRoot,
             imageFolderRoot,
-            userSpecificRoot
+            userSpecificRoot,
+            refreshKey
         };
     },
 
     template: `
 <HtmlEditor v-model="internalValue"
+            :key="refreshKey"
             editorHeight="200px"
             :toolbar="toolbar"
             :encryptedDocumentRootFolder="documentFolderRoot"
@@ -175,14 +181,14 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
-        watch([toolbar, documentFolderRoot, imageFolderRoot, userSpecificRoot], () => {
+        watch([documentFolderRoot, imageFolderRoot], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(toolbar, () => maybeUpdateConfiguration(ConfigurationValueKey.Toolbar, asTrueFalseOrNull(toolbar.value) ?? "False"));
+        watch(toolbar, () => maybeUpdateConfiguration(ConfigurationValueKey.Toolbar, toolbar.value ?? "Light"));
         watch(documentFolderRoot, () => maybeUpdateConfiguration(ConfigurationValueKey.DocumentFolderRoot, documentFolderRoot.value?.toString() ?? ""));
         watch(imageFolderRoot, () => maybeUpdateConfiguration(ConfigurationValueKey.ImageFolderRoot, imageFolderRoot.value?.toString() ?? ""));
         watch(userSpecificRoot, () => maybeUpdateConfiguration(ConfigurationValueKey.UserSpecificRoot, asTrueFalseOrNull(userSpecificRoot.value) ?? "False"));
@@ -203,11 +209,11 @@ export const ConfigurationComponent = defineComponent({
         label="Toolbar Type"
         help="The type of toolbar to display on editor." />
 
-    <TextBox v-model="documentFolderRoot"
+    <TextBox v-model.lazy="documentFolderRoot"
         label="Document Root Folder"
         help="The folder to use as the root when browsing or uploading documents ( e.g. ~/Content )." />
 
-    <TextBox v-model="imageFolderRoot"
+    <TextBox v-model.lazy="imageFolderRoot"
         label="Image Root Folder"
         help="The folder to use as the root when browsing or uploading images ( e.g. ~/Content )." />
 
