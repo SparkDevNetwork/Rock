@@ -1,10 +1,6 @@
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { inject, InjectionKey, Ref } from "vue";
 import { AccordionManager } from "./types.partial";
 import { newGuid } from "@Obsidian/Utility/guid";
-
-export const FontFamiliesInjectionKey: InjectionKey<ListItemBag[]> = Symbol("font-families");
-
 /**
  * Injects a provided value.
  * Throws an exception if the value is undefined or not yet provided.
@@ -17,10 +13,6 @@ function use<T>(key: string | InjectionKey<T>): T {
     }
 
     return result;
-}
-
-export function useFontFamilies(): ListItemBag[] {
-    return use(FontFamiliesInjectionKey);
 }
 
 export const AccordionGroupInjectionKey: InjectionKey<AccordionManager> = Symbol("accordion-group");

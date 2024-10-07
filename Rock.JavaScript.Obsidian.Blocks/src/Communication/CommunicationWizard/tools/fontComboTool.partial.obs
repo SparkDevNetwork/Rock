@@ -1,7 +1,6 @@
 <template>
-    <DropDownList v-model="fontFamily"
-                  :items="fontFamilies"
-                  :label="label" />
+    <FontFamilyToolBase v-model="fontFamily"
+                        :label="label" />
 
     <NumberBox v-model="fontSize"
                :disableLabel="true"
@@ -58,10 +57,10 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import FontFamilyToolBase from "./fontFamilyToolBase.partial.obs";
     import LineHeightTool from "./lineHeightTool.partial.obs";
     import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
     import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
-    import { useFontFamilies } from "../utils.partial";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -72,13 +71,12 @@
             type: Object as PropType<HTMLElement>,
             required: true
         },
+
         label: {
             type: String as PropType<string>,
             default: "Font"
         }
     });
-
-    const fontFamilies = useFontFamilies();
 
     // #region Values
 

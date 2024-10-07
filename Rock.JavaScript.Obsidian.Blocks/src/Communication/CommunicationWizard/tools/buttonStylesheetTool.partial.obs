@@ -3,9 +3,8 @@
 
     <ColorPicker v-model="color" label="Text Color" />
 
-    <DropDownList v-model="fontFamily"
-                  :items="fontFamilies"
-                  label="Text" />
+    <FontFamilyToolBase v-model="fontFamily"
+                        label="Text" />
 
     <NumberBox v-model="fontSize" :disableLabel="true" />
 
@@ -20,7 +19,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { useFontFamilies } from "../utils.partial";
+    import FontFamilyToolBase from "./fontFamilyToolBase.partial.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -31,8 +30,6 @@
             required: true
         }
     });
-
-    const fontFamilies = useFontFamilies();
 
     const tagName: keyof HTMLElementTagNameMap = "button";
 
