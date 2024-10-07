@@ -143,6 +143,12 @@ namespace Rock.Cms
         public string Build()
         {
             var sb = new StringBuilder();
+            
+            foreach ( var content in _customContent )
+            {
+                sb.AppendLine();
+                sb.AppendLine( content.Trim() );
+            }
 
             if ( _variables.Values.Cast<string>().Any( v => v.IsNotNullOrWhiteSpace() ) )
             {
@@ -161,11 +167,7 @@ namespace Rock.Cms
                 sb.AppendLine( "}" );
             }
 
-            foreach ( var content in _customContent )
-            {
-                sb.AppendLine();
-                sb.AppendLine( content.Trim() );
-            }
+        
 
             return sb.ToString();
         }
