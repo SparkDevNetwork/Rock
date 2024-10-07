@@ -14,8 +14,6 @@
     padding: var(--spacing-small) var(--spacing-medium);
     font-size: var(--font-size-regular);
     font-weight: var(--font-weight-regular);
-
-    --logo-image: url('/Assets/Images/rock-logo-gray.svg');
 }
 
 .check-in-page .check-in-panel {
