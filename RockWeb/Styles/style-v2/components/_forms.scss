@@ -173,7 +173,7 @@ output {
   & > .form-row {
     display:      flex;
     flex-wrap:    wrap;
-    gap:          var(--spacing-medium);
+    gap:          var(--spacing-small);
     margin-right: var(--spacing-medium);
     align-items:  center;
   }
@@ -505,7 +505,7 @@ select.form-control {
 
 a.help {
   margin-left:  6px;
-  color:        var(--color-interface-stronger);
+  color:        var(--color-info-strong);
   outline:      0;
 }
 

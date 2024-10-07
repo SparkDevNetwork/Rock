@@ -1062,4 +1062,21 @@ $hamburger-spacing: 4px;
   border-radius: 4px;
 }
 
+.grid-actions {
+  .btn-grid-action {
+    &:hover {
+      color: var(--color-interface-stronger);
+    }
+  }
+  .btn-add:hover {
+    color: var(--color-success-strong);
+  }
+}
+
+.panel .panel-heading .panel-options {
+  button {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
 

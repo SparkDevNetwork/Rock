@@ -184,7 +184,7 @@
 
 
 // ========================== ALTERNATIVE BUTTON ==========================
-.btn.btn-default {
+.btn-default {
   color:            var(--color-interface-strong);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
@@ -212,7 +212,7 @@
     &:focus,
     &.focus {
       color:            var(--color-interface-stronger);
-      background-color: var(--color-interface-medium);
+      background-color: var(--color-interface-soft);
       border-color:     var(--color-interface-soft);
     }
   }

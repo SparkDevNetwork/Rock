@@ -86,7 +86,7 @@ th {
     font-size:          var(--font-size-small);
     font-weight:        var(--font-weight-semibold);
     color:              var(--color-interface-stronger);
-    background-color:   var(--color-interface-softer);
+    background-color:   var(--color-interface-softest);
     border-color:       var(--color-interface-soft);
 
     > a:not(.btn) {
@@ -254,7 +254,7 @@ td.wrap-contents {
 // Hover effect
 .table-hover {
   > tbody > tr:hover {
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
   }
 }
 
