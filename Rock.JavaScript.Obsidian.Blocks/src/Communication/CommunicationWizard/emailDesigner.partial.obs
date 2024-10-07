@@ -154,6 +154,7 @@ iframe,
 
             removeTemporaryElements(cloneDocument);
             removeTemporaryCssClasses(cloneDocument);
+            removeTemporaryAttributes(cloneDocument);
 
             const html = cloneDocument.documentElement.outerHTML ?? "";
 
@@ -188,6 +189,19 @@ iframe,
             });
 
             el.classList.remove(...classesToRemove);
+        });
+    }
+
+    function removeTemporaryAttributes(document: Document): void {
+        const attributesToRemove: string[] = ["draggable", "contenteditable"];
+
+        const elementsWithAttributesToRemove = [...document.querySelectorAll(`[${attributesToRemove.join("], [")}]`)];
+
+        // Strip the Rock runtime CSS classes from the elements.
+        elementsWithAttributesToRemove.forEach(el => {
+            attributesToRemove.forEach(attr => {
+                el.removeAttribute(attr);
+            });
         });
     }
 

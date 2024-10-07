@@ -92,16 +92,17 @@
                             </TabbedContent>
                         </div>
 
-                        <div v-else-if="toolboxMenuItem === 'design' && editorWindow?.emailEditorDocument" class="email-editor-toolbox-submenu">
-                            <GlobalToolset :modelValue="editorWindow.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
+                        <div v-else-if="toolboxMenuItem === 'design' && editorDesigner?.emailEditorDocument" class="email-editor-toolbox-submenu">
+
+                            <GlobalToolset :modelValue="editorDesigner.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 
                     <div class="email-editor-window-wrapper">
-                        <EditorWindow ref="editorWindow"
-                                      :html="editorInnerHtml"
-                                      :draggingComponentType="draggingComponentType"
-                                      v-model:selectedComponent="selectedComponent" />
+                        <EditorDesigner ref="editorDesigner"
+                                        :html="editorInnerHtml"
+                                        :draggingComponentType="draggingComponentType"
+                                        v-model:selectedComponent="selectedComponent" />
                     </div>
                 </div>
 
@@ -283,7 +284,7 @@
     import { nextTick, ref, watch } from "vue";
     import ComponentToolbox from "./CommunicationWizard/componentToolbox.partial.obs";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, leftColumnSectionComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rightColumnSectionComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./CommunicationWizard/componentTypes.partial";
-    import EditorWindow from "./CommunicationWizard/editorWindow.partial.obs";
+    import EditorDesigner from "./CommunicationWizard/emailDesigner.partial.obs";
     import GlobalToolset from "./CommunicationWizard/toolsets/globalToolset.partial.obs";
     import SectionComponentToolset from "./CommunicationWizard/toolsets/sectionComponentToolset.partial.obs";
     import { EditorComponent, EditorComponentType } from "./CommunicationWizard/types.partial";
@@ -302,7 +303,7 @@
     // #region Values
 
     const editorInnerHtml = ref<string>(config.message ?? "");
-    const editorWindow = ref<InstanceType<typeof EditorWindow> | undefined>();
+    const editorDesigner = ref<InstanceType<typeof EditorDesigner> | undefined>();
     const toolboxMenuItem = ref<"content" | "design">("content");
     const toolboxSubMenuTab = ref<string>("");
     const draggingComponentType = ref<EditorComponentType | null | undefined>();
@@ -370,7 +371,7 @@
         selectedComponent.value = null;
 
         nextTick(() => {
-            previewHtml.value = editorWindow.value?.getHtml() ?? "";
+            previewHtml.value = editorDesigner.value?.getHtml() ?? "";
             isPreviewOpen.value = true;
         });
     }
