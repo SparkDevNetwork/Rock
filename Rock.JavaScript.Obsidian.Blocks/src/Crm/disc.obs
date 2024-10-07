@@ -40,10 +40,14 @@
                                 <tr v-for="(question, key) in response.questions" :key="key">
                                     <td class="disc-question">{{ question }}</td>
                                     <td class="disc-answer grid-select-field disc-more">
-                                        <RadioButton v-model="response.mostScore" v-on:update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
+                                        <div class="radio">
+                                            <RadioButton v-model="response.mostScore" v-on:update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
+                                        </div>
                                     </td>
                                     <td class="disc-answer grid-select-field disc-less">
-                                        <RadioButton v-model="response.leastScore" v-on:update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
+                                        <div class="radio">
+                                            <RadioButton v-model="response.leastScore" v-on:update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
