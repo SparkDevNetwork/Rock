@@ -1,6 +1,6 @@
 <template>
-    <ComponentProperties @complete="$emit('complete')"
-                         @delete="$emit('delete')">
+    <ComponentToolset @complete="$emit('complete')"
+                      @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
                 <div class="form-group">
@@ -63,17 +63,17 @@
                 <Margin :modelValue="modelValue.componentElement" mode="numberBox" />
             </Accordion>
         </AccordionGroup>
-    </ComponentProperties>
+    </ComponentToolset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
-    import ComponentProperties from "../componentProperties.partial.obs";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import { BinaryFileType, toGuidOrNull } from "../imports.partial";
-    import Margin from "../inlineStyleEditors/margin.partial.obs";
-    import TextAlign from "../inlineStyleEditors/textAlign.partial.obs";
+    import Margin from "../tools/marginTool.partial.obs";
+    import TextAlign from "../tools/textAlignTool.partial.obs";
     import { EditorComponent } from "../types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

@@ -17,8 +17,8 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import BorderColor from "./borderColor.partial.obs";
-    import BorderWidth from "./borderWidth.partial.obs";
+    import BorderColor from "./borderColorTool.partial.obs";
+    import BorderWidth from "./borderWidthTool.partial.obs";
     import { InlineSwitch } from "../imports.partial";
 
     const props = defineProps({

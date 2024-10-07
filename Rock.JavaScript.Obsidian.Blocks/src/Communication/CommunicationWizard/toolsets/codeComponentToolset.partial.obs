@@ -1,19 +1,26 @@
 <template>
-    <ComponentProperties @complete="$emit('complete')"
+    <ComponentToolset :modelValue="modelValue"
+                         @complete="$emit('complete')"
                          @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
-                TBD
+                <InnerHtml :modelValue="modelValue.componentElement"
+                           label="HTML"
+                           mode="code" />
+
+                <Margin :modelValue="modelValue.componentElement" />
             </Accordion>
         </AccordionGroup>
-    </ComponentProperties>
+    </ComponentToolset>
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import ComponentProperties from "../componentProperties.partial.obs";
+    import InnerHtml from "../propertyEditors/innerHtml.partial.obs";
+    import Margin from "../inlineStyleEditors/margin.partial.obs";
     import { EditorComponent } from "../types.partial";
 
     defineProps({

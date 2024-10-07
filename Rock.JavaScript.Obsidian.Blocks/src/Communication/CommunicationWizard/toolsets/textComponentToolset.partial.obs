@@ -1,6 +1,6 @@
 <template>
-    <ComponentProperties @complete="$emit('complete')"
-                         @delete="$emit('delete')">
+    <ComponentToolset @complete="$emit('complete')"
+                      @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
                 <InnerHtml :modelValue="modelValue.componentElement"
@@ -24,21 +24,20 @@
                 <BackgroundColor :modelValue="modelValue.componentElement" />
             </Accordion>
         </AccordionGroup>
-    </ComponentProperties>
+    </ComponentToolset>
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import ComponentProperties from "../componentProperties.partial.obs";
-    import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
-    import Border from "../inlineStyleEditors/border.partial.obs";
-    import Font from "../inlineStyleEditors/font.partial.obs";
-    import LineHeight from "../inlineStyleEditors/lineHeight.partial.obs";
-    import Padding from "../inlineStyleEditors/padding.partial.obs";
-    import TextAlign from "../inlineStyleEditors/textAlign.partial.obs";
-    import InnerHtml from "../propertyEditors/innerHtml.partial.obs";
+    import BackgroundColor from "../tools/backgroundColorTool.partial.obs";
+    import Border from "../tools/borderTool.partial.obs";
+    import Font from "../tools/fontTool.partial.obs";
+    import InnerHtml from "../tools/innerHtmlTool.partial.obs";
+    import Padding from "../tools/paddingTool.partial.obs";
+    import TextAlign from "../tools/textAlignTool.partial.obs";
     import { EditorComponent } from "../types.partial";
 
     defineProps({

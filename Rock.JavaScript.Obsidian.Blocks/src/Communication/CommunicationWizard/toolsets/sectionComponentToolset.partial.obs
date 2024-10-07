@@ -1,5 +1,5 @@
 <template>
-    <ComponentProperties @complete="$emit('complete')"
+    <ComponentToolset @complete="$emit('complete')"
                          @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="Row Settings">
@@ -11,16 +11,16 @@
                 {{ columnElements.length }}
             </Accordion>
         </AccordionGroup>
-    </ComponentProperties>
+    </ComponentToolset>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import ComponentProperties from "../componentProperties.partial.obs";
-    import BackgroundColor from "../inlineStyleEditors/backgroundColor.partial.obs";
-    import Border from "../inlineStyleEditors/border.partial.obs";
+    import BackgroundColor from "../tools/backgroundColorTool.partial.obs";
+    import Border from "../tools/borderTool.partial.obs";
     import { EditorComponent } from "../types.partial";
 
     const props = defineProps({

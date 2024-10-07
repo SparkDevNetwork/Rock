@@ -1,7 +1,7 @@
 <template>
     <template v-if="headingElement">
-        <ComponentProperties @complete="$emit('complete')"
-                             @delete="$emit('delete')">
+        <ComponentToolset @complete="$emit('complete')"
+                          @delete="$emit('delete')">
             <AccordionGroup>
                 <Accordion title="General Settings">
                     <TextContent :modelValue="headingElement" />
@@ -17,19 +17,19 @@
                           :tagName="headingLevel" />
                 </Accordion>
             </AccordionGroup>
-        </ComponentProperties>
+        </ComponentToolset>
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
-    import ComponentProperties from "../componentProperties.partial.obs";
     import { DropDownList } from "../imports.partial";
+    import Font from "../tools/fontTool.partial.obs";
+    import TextContent from "../tools/textContentTool.partial.obs";
     import { EditorComponent } from "../types.partial";
-    import Font from "../inlineStyleEditors/font.partial.obs";
-    import TextContent from "../propertyEditors/textContent.partial.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

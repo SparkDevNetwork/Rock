@@ -114,7 +114,7 @@ svg {
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { ColorPicker, DropDownList, NumberBox, RockButton } from "../imports.partial";
     import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
     import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";

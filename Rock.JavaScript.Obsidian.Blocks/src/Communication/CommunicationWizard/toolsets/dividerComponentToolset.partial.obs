@@ -1,5 +1,5 @@
 <template>
-    <ComponentProperties @complete="$emit('complete')"
+    <ComponentToolset @complete="$emit('complete')"
                          @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
@@ -11,14 +11,14 @@
                 </template>
             </Accordion>
         </AccordionGroup>
-    </ComponentProperties>
+    </ComponentToolset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import ComponentProperties from "../componentProperties.partial.obs";
     import BorderColor from "../inlineStyleEditors/borderColor.partial.obs";
     import BorderStyle from "../inlineStyleEditors/borderStyle.partial.obs";
     import BorderWidth from "../inlineStyleEditors/borderWidth.partial.obs";
