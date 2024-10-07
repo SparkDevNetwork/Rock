@@ -13,7 +13,7 @@
             </div>
             <div class="lava-shortcode-list-items">
                 <ExpanderPanel v-for="shortcode in filteredLavaShortcodes"
-
+                    :key="shortcode.idKey ?? ''"
                     :panelTitle="shortcode.name ?? ''"
                     :panelSubtext="shortcode.description ?? ''"
                     panelClass="panel-shortcodeitem"
@@ -93,6 +93,13 @@
      */
     function getLabels(lavaShortcode: LavaShortcodeBag): PanelAction[] {
         const labels: PanelAction[] = [];
+
+        if (lavaShortcode.isActive === false) {
+            labels.push({
+                title: "Inactive",
+                type: "warning"
+            });
+        }
 
         if (lavaShortcode.isSystem === true) {
             labels.push({
