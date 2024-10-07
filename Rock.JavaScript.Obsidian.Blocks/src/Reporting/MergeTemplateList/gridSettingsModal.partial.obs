@@ -13,7 +13,7 @@
             </div>
 
             <div class="col-md-4">
-                <CheckBox v-model="showGlobalMergeTemplates" label="Show Global Merge Templates" text="Yes" />
+                <CheckBox v-model="showGlobalMergeTemplates" label="Show Global Merge Templates" />
             </div>
 
         </div>

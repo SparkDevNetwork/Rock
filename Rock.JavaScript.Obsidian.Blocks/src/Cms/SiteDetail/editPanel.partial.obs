@@ -503,7 +503,7 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, siteDomains, defaultPage, loginPage, changePasswordPage, communicationPage, registrationPage, pageNotFoundPage, ...propRefs], () => {
         const newValue: ValidPropertiesBox<SiteBag> = {
-            bag: { ...props.modelValue } as SiteBag
+            bag: { ...props.modelValue.bag } as SiteBag
         };
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);

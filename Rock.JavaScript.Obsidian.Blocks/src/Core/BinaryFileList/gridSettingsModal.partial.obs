@@ -19,7 +19,6 @@
 
             <div class="col-md-4">
                 <CheckBox label="Include Temporary"
-                          text="Yes"
                           v-model="includeTemporary"
                           help="Temporary files are files that were uploaded to the server, but a reference to the file was never saved." />
             </div>

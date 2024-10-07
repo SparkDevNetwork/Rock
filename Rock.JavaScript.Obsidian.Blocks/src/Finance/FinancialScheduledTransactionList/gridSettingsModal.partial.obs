@@ -29,7 +29,7 @@
                                label="Accounts" />
             </div>
             <div class="col-md-4">
-                <CheckBox v-model="includeActiveSchedules" label="Include Active Schedules" text="Yes" />
+                <CheckBox v-model="includeActiveSchedules" label="Include Active Schedules" />
             </div>
         </div>
     </Modal>

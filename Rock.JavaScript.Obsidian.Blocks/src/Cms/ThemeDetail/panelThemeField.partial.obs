@@ -1,0 +1,43 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-model="isExpanded"
+           :title="field.name || ''"
+           hasCollapse>
+        <ThemeFields :fields="field.fields || []"
+                     :values="props.values"
+                     @updateValue="onUpdateValue" />
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import type ThemeFieldsComponent from "./themeFields.partial.obs";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { inject, PropType, ref } from "vue";
+    import { themeFieldsComponentSymbol } from "./types.partial";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<ThemeFieldBag>,
+            required: true
+        },
+
+        values: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateValue", key: string, value: string | null): void;
+    }>();
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const ThemeFields = inject(themeFieldsComponentSymbol) as typeof ThemeFieldsComponent;
+
+    const isExpanded = ref(props.field.isExpanded);
+
+    function onUpdateValue(key: string, value: string | null): void {
+        emit("updateValue", key, value);
+    }
+</script>

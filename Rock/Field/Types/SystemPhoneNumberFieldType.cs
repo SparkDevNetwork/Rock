@@ -239,7 +239,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Allow Multiple Values",
-                Text = "Yes",
                 Help = "When set, allows multiple system phone numbers to be selected."
             };
 
@@ -250,7 +249,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Include Inactive",
-                Text = "Yes",
                 Help = "When set, inactive system phone numbers will be included in the list."
             };
 

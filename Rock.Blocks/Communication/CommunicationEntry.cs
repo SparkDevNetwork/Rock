@@ -2151,8 +2151,8 @@ namespace Rock.Blocks.Communication
             public void OnCommunicationSave( RockContext rockContext, CommunicationEntryCommunicationBag communication )
             {
                 // When saving the communication, mark all the file attachments as not temporary.
-                var binaryFileGuids = communication.EmailAttachmentBinaryFiles.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
-                if ( binaryFileGuids.Any() )
+                var binaryFileGuids = communication.EmailAttachmentBinaryFiles?.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
+                if ( binaryFileGuids?.Any() == true )
                 {
                     var binaryFilesQuery = new BinaryFileService( rockContext )
                         .Queryable()
@@ -2170,8 +2170,8 @@ namespace Rock.Blocks.Communication
             public void OnCommunicationSave( RockContext rockContext, CommunicationEntryCommunicationBag communication )
             {
                 // When saving the communication, mark all the file attachments as not temporary.
-                var binaryFileGuids = communication.SmsAttachmentBinaryFiles.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
-                if ( binaryFileGuids.Any() )
+                var binaryFileGuids = communication.SmsAttachmentBinaryFiles?.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
+                if ( binaryFileGuids?.Any() == true )
                 {
                     var binaryFilesQuery = new BinaryFileService( rockContext )
                         .Queryable()

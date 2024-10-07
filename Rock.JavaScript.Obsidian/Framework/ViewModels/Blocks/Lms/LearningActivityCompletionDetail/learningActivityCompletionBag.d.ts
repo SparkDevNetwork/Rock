@@ -50,7 +50,7 @@ export type LearningActivityCompletionBag = {
     binaryFileSecurityGrant?: string | null;
 
     /**
-     * Gets or sets the date the individual
+     * Gets or sets the date the student
      * completed the related Rock.Model.LearningActivity.
      */
     completedDate?: string | null;
@@ -67,7 +67,7 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the text of the grade earned by the student. */
     gradeName?: string | null;
 
-    /** Gets or sets the text for the achieved grade. */
+    /** Gets or sets the text for the achieved grade. For example, "B (87%). */
     gradeText?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
@@ -97,11 +97,11 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the number of points the student earned by completing the activity. */
     pointsEarned: number;
 
-    /** Gets or sets whether the activity requires a facilitator to grade/score it. */
-    requiresScoring: boolean;
-
     /** Gets or sets whether the facilitator must complete the activity. */
     requiresFacilitatorCompletion: boolean;
+
+    /** Gets or sets whether the activity requires a facilitator to grade/score it. */
+    requiresScoring: boolean;
 
     /** Gets or sets the student the activity is for. */
     student?: LearningActivityParticipantBag | null;

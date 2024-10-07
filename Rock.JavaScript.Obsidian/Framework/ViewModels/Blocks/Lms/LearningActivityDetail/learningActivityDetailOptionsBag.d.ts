@@ -33,10 +33,10 @@ export type LearningActivityDetailOptionsBag = {
     activityTypes?: LearningActivityComponentBag[] | null;
 
     /** Gets or sets the list of availability criteria options. */
-    availabilityCriteriaOptions: ListItemBag[] | null;
+    availabilityCriteriaOptions?: ListItemBag[] | null;
 
     /** Gets or sets the list of due date criteria options. */
-    dueDateCriteriaOptions: ListItemBag[] | null;
+    dueDateCriteriaOptions?: ListItemBag[] | null;
 
     /** Gets or sets whether any students have completed this activity yet. */
     hasCompletions: boolean;

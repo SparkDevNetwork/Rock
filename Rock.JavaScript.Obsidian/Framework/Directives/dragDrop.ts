@@ -822,6 +822,13 @@ export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?:
                 return false;
             }
 
+            // If the handle has a disabled class then do not allow a drag
+            // operation to begin. This allows for dynamically disabled reorder
+            // operations such as is used by the grid when sorting columns.
+            if (handle.classList.contains("disabled")) {
+                return false;
+            }
+
             return Array.from(operation.sourceContainer.querySelectorAll(".reorder-handle"))
                 .some(n => n.contains(handle));
         },

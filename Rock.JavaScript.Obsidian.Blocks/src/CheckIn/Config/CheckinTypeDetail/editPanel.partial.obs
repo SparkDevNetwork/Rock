@@ -41,27 +41,22 @@
                         <div class="col-md-6">
                             <CheckBox v-model="allowCheckoutAtKiosk"
                                       label="Enable Check-out at Kiosk"
-                                      text="Yes"
                                       help="Allows individuals to check-out using the kiosks." />
                         </div>
                         <div class="col-md-6">
                             <CheckBox v-model="allowCheckoutInManager"
                                       label="Enable Check-out in Manager"
-                                      text="Yes"
                                       help="Allows check-out to be enabled in the Check-in Manager." />
                         </div>
                     </div>
                     <CheckBox v-model="enablePresence"
                               label="Enable Presence"
-                              text="Yes"
                               help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
                     <CheckBox v-model="enableManager"
                               label="Enable Manager Option"
-                              text="Yes"
                               help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
                     <CheckBox v-model="enableOverride"
                               label="Enable Override"
-                              text="Yes"
                               help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                     <DropDownList v-model="achievementTypes"
                                   label="Achievement Types"
@@ -84,16 +79,13 @@
                     <CheckBox v-if="isFamilyType"
                               v-model="useSameOptions"
                               label="Use Same Service Options"
-                              text="Yes"
                               help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
                     <CheckBox v-model="preventInactivePeople"
                               label="Prevent Inactive People"
-                              text="Yes"
                               help="Should people who are inactive be excluded from being able to check-in?" />
                     <CheckBox v-if="isFamilyType"
                               v-model="preventDuplicateCheckin"
                               label="Prevent Duplicate Check-in"
-                              text="Yes"
                               help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
                 </div>
             </div>
@@ -135,7 +127,6 @@
                     <CheckBox v-if="isFamilyType"
                               v-model="reuseCode"
                               label="Use Same Code for Family"
-                              text="Yes"
                               help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
                 </div>
             </div>
@@ -223,7 +214,6 @@
                     <CheckBox v-if="isFamilyType"
                               v-model="hidePhotos"
                               label="Hide Photos"
-                              text="Yes"
                               help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
                     <CodeEditor v-model="startTemplate"
                                 label="Start Template"
@@ -344,11 +334,9 @@
                 <div class="col-md-6">
                     <CheckBox v-model="ageRequired"
                               label="Age is Required"
-                              text="Yes"
                               help="If an area and/or group has an age requirement, check this option to prevent people without an age from checking in to that area/group." />
                     <CheckBox v-model="gradeRequired"
                               label="Grade is Required"
-                              text="Yes"
                               help="If an area and/or group has a grade requirement, check this option to prevent people without a grade from checking in to that area/group." />
 
                     <RadioButtonList v-model="abilityLevelDetermination"
@@ -361,7 +349,6 @@
 
                     <CheckBox v-model="displayLocCount"
                               label="Display Location Count"
-                              text="Yes"
                               help="Should the room locations options include a count of how many people are currently checked into that location?" />
                 </div>
             </div>

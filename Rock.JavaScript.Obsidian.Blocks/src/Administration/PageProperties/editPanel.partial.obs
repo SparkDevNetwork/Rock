@@ -39,8 +39,7 @@
                                   :items="layouts" />
 
                     <CheckBox v-model="menuDisplayIcon"
-                              label="Show Icon"
-                              text="Yes" />
+                              label="Show Icon" />
 
                     <TextBox v-model="iconCssClass"
                              label="Icon CSS Class" />

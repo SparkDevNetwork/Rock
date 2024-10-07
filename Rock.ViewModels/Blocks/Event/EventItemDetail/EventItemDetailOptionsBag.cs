@@ -15,12 +15,19 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Event.EventItemDetail
 {
     /// <summary>
-    /// 
+    /// Additional configuration data for the EventItemDetail block.
     /// </summary>
     public class EventItemDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the Audiences
+        /// </summary>
+        public List<ListItemBag> Audiences { get; set; }
     }
 }

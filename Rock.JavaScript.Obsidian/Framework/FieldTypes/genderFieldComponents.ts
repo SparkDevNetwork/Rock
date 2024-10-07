@@ -162,7 +162,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <CheckBox v-model="hideUnknownGender" label="Hide Unknown Gender" help="When set, the 'Unknown' Option will not appear in the list of genders." text="Yes" />
+    <CheckBox v-model="hideUnknownGender" label="Hide Unknown Gender" help="When set, the 'Unknown' Option will not appear in the list of genders." />
 </div>
 `
 });

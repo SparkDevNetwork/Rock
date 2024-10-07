@@ -816,7 +816,7 @@ namespace Rock.Blocks.Group
                             person.MaritalStatusValueId = married.Id;
                         }
 
-                        spouse.Email = groupRegistrationBag.Email;
+                        spouse.Email = groupRegistrationBag.SpouseEmail;
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                         {

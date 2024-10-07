@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="internalName"
+                         label="Page Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="showInMenu"
+                          label="Show In Menu"
+                          rules="required" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline"
+                         :rows="3" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <CodeEditor v-model="scenegraphContent"
+                            label="Scenegraph Content"
+                            mode="lava"
+                            :editorHeight="400" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <CacheabilityPicker v-model="cacheability"
+                                    :showBlankItem="false"
+                                    :multiple="false" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { RokuPageBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuPageDetail/rokuPageBag";
+    import { RokuPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/RokuPageDetail/rokuPageDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<RokuPageBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RokuPageDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<RokuPageBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const internalName = propertyRef(props.modelValue.bag?.internalName ?? "", "internalName");
+    const showInMenu = propertyRef(props.modelValue.bag?.showInMenu ?? false, "showInMenu");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "description");
+    const scenegraphContent = propertyRef(props.modelValue.bag?.scenegraph ?? "", "scenegraphContent");
+    const cacheability = propertyRef(props.modelValue.bag?.rockCacheability ?? null, "rockCacheability");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [internalName, showInMenu, description, scenegraphContent, cacheability];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(internalName, props.modelValue.bag?.internalName ?? "");
+        updateRefValue(showInMenu, props.modelValue.bag?.showInMenu ?? false);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(scenegraphContent, props.modelValue.bag?.scenegraph ?? "");
+        updateRefValue(cacheability, props.modelValue.bag?.rockCacheability ?? null);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<RokuPageBag> = {
+            bag: { ...props.modelValue.bag } as RokuPageBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "internalName", internalName.value);
+        setPropertiesBoxValue(newValue, "showInMenu", showInMenu.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "scenegraph", scenegraphContent.value);
+        setPropertiesBoxValue(newValue, "rockCacheability", cacheability.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

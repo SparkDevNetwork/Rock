@@ -98,18 +98,15 @@
 
                 <CheckBox v-model="isConfirmed"
                           label="Confirmed"
-                          text="Yes"
                           help="Has the user confirmed this login?" />
 
                 <CheckBox v-model="isLockedOut"
                           label="Locked Out"
-                          text="Yes"
                           help="Has the user been locked out of using this login?" />
 
                 <CheckBox v-if="isChangePasswordVisible"
                           v-model="isPasswordChangeRequired"
                           label="Require Password Change"
-                          text="Yes"
                           help="Require the user to change the password on next log in." />
             </div>
             <div class="col-md-6">

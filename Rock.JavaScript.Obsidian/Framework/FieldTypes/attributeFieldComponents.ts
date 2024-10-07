@@ -183,7 +183,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <EntityTypePicker v-model="entityType" label="Entity Type" :multiple="false" :includeGlobalOption="false" help="The Entity Type to select attributes for." showBlankItem />
-<CheckBox v-model="allowMultiple" label="Allow Multiple Values" text="Yes" help="When set, allows multiple system phone numbers to be selected." />
+<CheckBox v-model="allowMultiple" label="Allow Multiple Values" help="When set, allows multiple system phone numbers to be selected." />
 <TextBox v-model="qualifierColumn" label="Qualifier Column" help="Entity column qualifier" />
 <TextBox v-model="qualifierValue" label="Qualifier Value" help="Entity column value" />
 `

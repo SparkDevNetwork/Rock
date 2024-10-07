@@ -124,6 +124,7 @@
      * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
+        contact.value = undefined;
         isModalOpen.value = true;
     }
 

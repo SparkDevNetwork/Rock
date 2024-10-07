@@ -46,11 +46,11 @@ export type LearningActivityBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** The criteria used for determining the AvailableDate of the activity. */
+    availabilityCriteria: AvailabilityCriteria;
+
     /** Gets or sets the calculated available date for the activity. */
     availableDateCalculated?: string | null;
-
-    /** The criteria used for determing the AvailableDate of the activity. */
-    availabilityCriteria: AvailabilityCriteria;
 
     /**
      * Gets or sets the default date the activity
@@ -91,7 +91,7 @@ export type LearningActivityBag = {
     /** Gets or sets the calculated due date for the activity. */
     dueDateCalculated?: string | null;
 
-    /** The criteria used for determing the DueDate of the activity. */
+    /** The criteria used for determining the DueDate of the activity. */
     dueDateCriteria: DueDateCriteria;
 
     /** Gets or sets the default date the activity is due. */

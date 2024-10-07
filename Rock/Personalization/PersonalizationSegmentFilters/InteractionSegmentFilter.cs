@@ -89,7 +89,7 @@ namespace Rock.Personalization.SegmentFilters
         /// <returns>Expression.</returns>
         public override Expression GetWherePersonAliasExpression( PersonAliasService personAliasService, ParameterExpression parameterExpression )
         {
-            var interactionChannelId = InteractionComponentCache.GetId( this.InteractionChannelGuid );
+            var interactionChannelId = InteractionChannelCache.GetId( this.InteractionChannelGuid );
             if ( interactionChannelId == null )
             {
                 // InteractionChannelGuid is required, so this shouldn't happen unless the interaction channel has been deleted

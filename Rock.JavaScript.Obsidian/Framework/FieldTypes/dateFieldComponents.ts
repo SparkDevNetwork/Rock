@@ -355,9 +355,9 @@ export const ConfigurationComponent = defineComponent({
     template: `
 <div>
     <TextBox v-model="format" label="Date Format" help="The format string to use for date (default is system short date)" />
-    <CheckBox v-model="displayDiff" label="Display as Elapsed Time" text="Yes" help="Display value as an elapsed time" />
+    <CheckBox v-model="displayDiff" label="Display as Elapsed Time" help="Display value as an elapsed time" />
     <DropDownList v-model="pickerControlType" :items="pickerControlTypeOptions" :show-blank-item="false" label="Control Type" help="Select 'Date Picker' to use a Date Picker, or 'Date Parts Picker' to select Month, Day, and Year individually" />
-    <CheckBox v-if="pickerControlType == 'Date Picker'" v-model="displayCurrentOption" label="Display Current Option" text="Yes" help="Include option to specify value as the current date" />
+    <CheckBox v-if="pickerControlType == 'Date Picker'" v-model="displayCurrentOption" label="Display Current Option" help="Include option to specify value as the current date" />
     <NumberBox v-else v-model="futureYears"  label="Future Years" help="The number of years  in the future to include in the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50." />
 </div>
 `

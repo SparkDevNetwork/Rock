@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
                 .WithBlock( this )
                 .AddDateTimeField( "datetime", a => a.DateTime.DateTime )
                 .AddTextField( "level", a => a.Level )
-                .AddTextField( "domain", a => a.Domain )
+                .AddTextField( "category", a => a.Category )
                 .AddTextField( "message", a => a.Message )
                 .AddTextField( "exception", a => a.Exception );
         }
@@ -50,7 +50,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult DownloadLogs()
         {
-            var logFiles = Rock.Logging.RockLogger.Log.LogFiles;
+            var logFiles = ( Rock.Logging.RockLogger.LogReader as Rock.Logging.RockSerilogReader ).GetLogFiles();
             var ms = new MemoryStream();
             ms.Seek( 0, SeekOrigin.Begin );
             using ( var zip = new ZipArchive( ms, ZipArchiveMode.Create, true ) )
@@ -78,8 +78,8 @@ namespace Rock.Blocks.Core
                 .Select( e => new RockLogEventsBag
             {
                 DateTime = e.DateTime,
-                Level = e.Level.ToStringSafe(),
-                Domain = e.Domain,
+                Level = e.LogLevel.ToStringSafe(),
+                Category = e.Category,
                 Message = e.Message,
                 Exception = e.SerializedException,
             } );
