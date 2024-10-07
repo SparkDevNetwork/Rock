@@ -161,6 +161,7 @@ svg {
             declarations.push(`font-family: ${fontFamily.value};`);
         }
 
+        console.log(`if (fontColor.value)`, fontColor.value);
         if (fontColor.value) {
             declarations.push(`color: ${fontColor.value};`);
         }
@@ -242,6 +243,7 @@ svg {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
                             if (rule.selectorText === props.tagName) {
                                 fontFamily.value = rule.style.fontFamily;
+                                console.log(`fontColor.value = rule.style.color`, rule.style.color);
                                 fontColor.value = rule.style.color;
                                 fontSize.value = rule.style.fontSize ? parseInt(rule.style.fontSize) : null;
 
@@ -270,6 +272,7 @@ svg {
 
         if (!loaded) {
             fontFamily.value = "";
+            console.log(`fontColor.value = ""`);
             fontColor.value = "";
             fontSize.value = null;
             fontStyleGroup.value = [];

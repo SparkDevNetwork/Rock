@@ -5,38 +5,35 @@
                           :items="communicationTemplateItems"
                           label="Template" />
             <WidthTool :modelValue="modelValue.body"
-                       label="Content Area WidthTool" />
+                       label="Content Area Width" />
             <PaddingTool :modelValue="modelValue.body" />
             <BackgroundColorTool :modelValue="modelValue.documentElement" />
             <BackgroundColorTool :modelValue="modelValue.body"
                                  label="Body Color" />
             <BackgroundImageComboTool :modelValue="modelValue.body" />
             <BorderComboTool :modelValue="modelValue.body"
-                        label="Body BorderComboTool" />
+                             label="Body Border" />
         </Accordion>
 
         <Accordion title="Typography">
-            <AccordionGroup>
-                <Accordion title="Global">
-                    <FontComboTool :modelValue="modelValue.body" />
-                </Accordion>
-                <Accordion title="Heading 1">
-                    <FontStyleSheetTool :modelValue="modelValue.body"
-                                        tagName="h1" />
-                </Accordion>
-                <Accordion title="Heading 2">
-                    <FontStyleSheetTool :modelValue="modelValue.body"
-                                        tagName="h2" />
-                </Accordion>
-                <Accordion title="Heading 3">
-                    <FontStyleSheetTool :modelValue="modelValue.body"
-                                        tagName="h3" />
-                </Accordion>
-                <Accordion title="Paragraph">
-                    <FontStyleSheetTool :modelValue="modelValue.body"
-                                        tagName="p" />
-                </Accordion>
-            </AccordionGroup>
+            <FontComboTool :modelValue="modelValue.body"
+                           label="Global Font" />
+            <hr />
+            <FontStyleSheetTool :modelValue="modelValue.body"
+                                label="Heading 1 Font"
+                                tagName="h1" />
+            <hr />
+            <FontStyleSheetTool :modelValue="modelValue.body"
+                                label="Heading 2 Font"
+                                tagName="h2" />
+            <hr />
+            <FontStyleSheetTool :modelValue="modelValue.body"
+                                label="Heading 3 Font"
+                                tagName="h3" />
+            <hr />
+            <FontStyleSheetTool :modelValue="modelValue.body"
+                                label="Paragraph Font"
+                                tagName="p" />
         </Accordion>
 
         <Accordion title="Button Styling">

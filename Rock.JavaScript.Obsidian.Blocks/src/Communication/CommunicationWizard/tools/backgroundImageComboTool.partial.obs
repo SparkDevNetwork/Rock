@@ -4,17 +4,19 @@
                       label="Background Image" />
     </div>
 
-    <template v-if="hasBackgroundImage">
-        <ImageUploader v-model="imageListItemBag"
-                       :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
-                       label="Background Image"
-                       :uploadAsTemporary="true" />
+    <TransitionVerticalCollapse>
+        <div v-if="hasBackgroundImage">
+            <ImageUploader v-model="imageListItemBag"
+                           :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
+                           label="Background Image"
+                           :uploadAsTemporary="true" />
 
-        <div class="form-group">
-            <RadioButton v-model="imageStyle" name="imageStyle" label="Tile" value="tile" />
-            <RadioButton v-model="imageStyle" name="imageStyle" label="Stretch" value="stretch" />
+            <div class="form-group">
+                <RadioButton v-model="imageStyle" name="imageStyle" label="Tile" value="tile" />
+                <RadioButton v-model="imageStyle" name="imageStyle" label="Stretch" value="stretch" />
+            </div>
         </div>
-    </template>
+    </TransitionVerticalCollapse>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +25,7 @@
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import RadioButton from "@Obsidian/Controls/radioButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

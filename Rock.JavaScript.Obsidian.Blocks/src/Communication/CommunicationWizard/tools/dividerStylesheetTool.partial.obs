@@ -1,5 +1,5 @@
 <template>
-    <ColorPicker v-model="borderColor" label="Color" />
+    <ColorPicker v-model="backgroundColor" label="Color" />
 
     <NumberUpDown v-model="borderRadius"
                   label="Corner Radius"
@@ -15,7 +15,7 @@
                   :min="0"
                   :max="99" />
 
-    <NumberUpDown v-model="marginTop"
+    <NumberUpDown v-model="marginY"
                   label="Vertical Margin Size"
                   :min="0"
                   :max="99" />
@@ -32,34 +32,62 @@
         modelValue: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        /**
+         * This CSS class will be added to the &lt;style&gt; element
+         * to help identify it during updates.
+         *
+         * @example
+         * <style class="{{ props.styleCssClass }}">
+         * </style>
+         */
+        styleCssClass: {
+            type: String as PropType<string>,
+            default: "rock-design-divider" as const
+        },
+
+        /**
+         * The CSS selectors used in the resulting CSS ruleset.
+         *
+         * @example
+         * <style class="rock-design-divider">
+         * {{ props.cssRulesetSelectors }} {
+         *   border-style: solid;
+         * }
+         * </style>
+         */
+        cssRulesetSelectors: {
+            type: String as PropType<string>,
+            default: ".component-divider" as const
         }
     });
+
+    type BorderStyle = "solid" | "dashed" | "dotted" | "";
 
     // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
     // If quotes are required, add them here.
     const borderStyles: ListItemBag[] = [
         {
-            value: "solid",
-            text: "Solid"
+            text: "Solid",
+            value: "solid"
         }, {
-            value: "dashed",
-            text: "Dashed"
+            text: "Dashed",
+            value: "dashed"
         }, {
-            value: "dotted",
-            text: "Dotted"
+            text: "Dotted",
+            value: "dotted"
         }
     ];
-
-    const tagName: keyof HTMLElementTagNameMap = "hr";
 
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.
-    const borderColor = ref<string>("");
+    const backgroundColor = ref<string>("");
     const borderRadius = ref<number>(0);
-    const borderStyle = ref<string>("");
+    const borderStyle = ref<BorderStyle>("");
     const height = ref<number>(0);
-    const marginTop = ref<number>(0);
+    const marginY = ref<number>(0);
 
     // #endregion
 
@@ -68,32 +96,52 @@
     const cssRuleset = computed<string | null>(() => {
         const declarations: string[] = [];
 
-        if (borderColor.value) {
-            declarations.push(`border-color: ${borderColor.value};`);
-            declarations.push(`background-color: ${borderColor.value};`);
+        if (borderStyle.value) {
+            // This has no visual effect but store the border style
+            // in this property so it can be retrieved on load.
+            declarations.push(`border-style: ${borderStyle.value};`);
+        }
+
+        if (backgroundColor.value) {
+            if (!borderStyle.value || borderStyle.value === "solid") {
+                declarations.push(`background-color: ${backgroundColor.value};`);
+            }
+            else if (borderStyle.value === "dashed") {
+                declarations.push(`background: repeating-linear-gradient(
+    to right,
+    ${backgroundColor.value} 0%,
+        ${backgroundColor.value} 1.25%,
+        transparent 1.25%,
+        transparent 3.75%,
+        ${backgroundColor.value} 3.75%,
+        ${backgroundColor.value} 6.25%,
+        transparent 6.25%,
+        transparent 8.75%,
+        ${backgroundColor.value} 8.75%,
+        ${backgroundColor.value} 10%
+);`);
+            }
+            else if (borderStyle.value === "dotted") {
+                // TODO JMH
+            }
         }
 
         if (borderRadius.value) {
             declarations.push(`border-radius: ${borderRadius.value}px;`);
         }
 
-        if (borderStyle.value) {
-            declarations.push(`border-style: ${borderStyle.value};`);
-        }
-
         if (height.value) {
             declarations.push(`height: ${height.value}px;`);
-
-            // Make sure the border thickness is included in the overall divider height.
-            declarations.push(`box-sizing: border-box;`);
         }
 
-        if (marginTop.value) {
-            declarations.push(`margin-top: ${marginTop.value}px;`);
+        if (marginY.value) {
+            declarations.push(`margin-top: ${marginY.value}px;`);
+            declarations.push(`margin-bottom: ${marginY.value}px;`);
         }
 
         if (declarations.length) {
-            return `${tagName} {\n    ${declarations.join("\n    ")}\n}`;
+            //declarations.push("border: 0;");
+            return `${props.cssRulesetSelectors} {\n    ${declarations.join("\n    ")}\n}`;
         }
         else {
             return null;
@@ -117,15 +165,15 @@
             const ownerNode = stylesheet.ownerNode;
 
             if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
-                if (ownerNode.classList.contains(`rock-design-${tagName}`)) {
+                if (ownerNode.classList.contains(props.styleCssClass)) {
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
-                            if (rule.selectorText === tagName) {
-                                borderColor.value = rule.style.borderColor;
+                            if (rule.selectorText === props.cssRulesetSelectors) {
+                                backgroundColor.value = rule.style.borderColor;
                                 borderRadius.value = parseInt(rule.style.borderRadius || "0");
-                                borderStyle.value = rule.style.borderStyle;
+                                borderStyle.value = rule.style.borderStyle as BorderStyle;
                                 height.value = parseInt(rule.style.height || "0");
-                                marginTop.value = parseInt(rule.style.marginTop || "0");
+                                marginY.value = parseInt(rule.style.marginTop || "0");
 
                                 loaded = true;
                             }
@@ -136,11 +184,11 @@
         }
 
         if (!loaded) {
-            borderColor.value = "";
+            backgroundColor.value = "";
             borderRadius.value = 0;
             borderStyle.value = "";
             height.value = 0;
-            marginTop.value = 0;
+            marginY.value = 0;
         }
     }, {
         // Since the reactive values are not initialized where defined above,
@@ -153,21 +201,24 @@
     // should be added/updated with the new styles.
     watch(cssRuleset, () => {
         if (cssRuleset.value) {
-            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
-            const styleTag = props.modelValue.ownerDocument.createElement("style");
-            styleTag.textContent = cssRuleset.value;
-            styleTag.classList.add(`rock-design-${tagName}`);
-            if (tag) {
-                tag.replaceWith(styleTag);
+            const newStyleElement = props.modelValue.ownerDocument.createElement("style");
+            newStyleElement.textContent = cssRuleset.value;
+            newStyleElement.classList.add(props.styleCssClass);
+
+            const currentStyleElement = props.modelValue.querySelector(`style.${props.styleCssClass}`);
+
+            if (currentStyleElement) {
+                currentStyleElement.replaceWith(newStyleElement);
             }
             else {
-                props.modelValue.append(styleTag);
+                props.modelValue.append(newStyleElement);
             }
         }
         else {
-            const tag = props.modelValue.querySelector(`style.rock-design-${tagName}`);
-            if (tag) {
-                tag.remove();
+            const currentStyleElement = props.modelValue.querySelector(`style.${props.styleCssClass}`);
+
+            if (currentStyleElement) {
+                currentStyleElement.remove();
             }
         }
     });

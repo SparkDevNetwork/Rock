@@ -4,15 +4,17 @@
                       :label="label" />
     </div>
 
-    <template v-if="hasBorder">
-        <BorderColorTool ref="borderColorTool"
-                         :modelValue="modelValue"
-                         @elementBorderColorUpdated="onElementBorderColorUpdated" />
+    <TransitionVerticalCollapse>
+        <div v-if="hasBorder">
+            <BorderColorTool ref="borderColorTool"
+                             :modelValue="modelValue"
+                             @elementBorderColorUpdated="onElementBorderColorUpdated" />
 
-        <BorderWidthTool ref="borderWidthTool"
-                         :modelValue="modelValue"
-                         @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
-    </template>
+            <BorderWidthTool ref="borderWidthTool"
+                             :modelValue="modelValue"
+                             @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
+        </div>
+    </TransitionVerticalCollapse>
 </template>
 
 <script setup lang="ts">
@@ -20,6 +22,7 @@
     import BorderColorTool from "./borderColorTool.partial.obs";
     import BorderWidthTool from "./borderWidthTool.partial.obs";
     import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 
     const props = defineProps({
         modelValue: {

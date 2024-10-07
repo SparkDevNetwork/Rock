@@ -1,0 +1,72 @@
+<template>
+    <RangeSlider v-if="mode === 'rangeSlider'"
+                 v-model="height"
+                 :label="label"
+                 :min="min"
+                 :max="max"
+                 :showValueBar="true" />
+
+    <NumberUpDown v-else-if="mode === 'numberUpDown'"
+                  v-model="height"
+                  :label="label"
+                  :min="min"
+                  :max="max" />
+
+    <div v-else>'{{ mode }}' is an invalid mode for the height tool.</div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Height"
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 700
+        },
+
+        mode: {
+            type: String as PropType<"rangeSlider" | "numberUpDown">,
+            default: "rangeSlider"
+        }
+    });
+
+    // #region Values
+
+    const height = ref<number>(parseInt(props.modelValue.style.height || "0"));
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        height.value = parseInt(props.modelValue.style.height || "0");
+    });
+
+    watch(height, (value: number) => {
+        if (value) {
+            props.modelValue.style.height = `${value}px`;
+        }
+        else {
+            props.modelValue.style.height = "";
+        }
+    });
+
+    // #endregion
+</script>

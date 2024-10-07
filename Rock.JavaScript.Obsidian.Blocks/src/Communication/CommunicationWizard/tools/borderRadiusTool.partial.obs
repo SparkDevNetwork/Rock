@@ -1,0 +1,56 @@
+<template>
+    <NumberUpDown v-model="borderRadius"
+                  :label="label"
+                  :min="min"
+                  :max="max" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Border Radius"
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 700
+        }
+    });
+
+    // #region Values
+
+    const borderRadius = ref<number>(parseInt(props.modelValue.style.borderRadius || "0"));
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        borderRadius.value = parseInt(props.modelValue.style.borderRadius || "0");
+    });
+
+    watch(borderRadius, (value: number) => {
+        if (value) {
+            props.modelValue.style.borderRadius = `${value}px`;
+        }
+        else {
+            props.modelValue.style.borderRadius = "";
+        }
+    });
+
+    // #endregion
+</script>

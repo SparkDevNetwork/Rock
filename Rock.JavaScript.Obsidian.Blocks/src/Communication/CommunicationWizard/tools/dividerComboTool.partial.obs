@@ -1,0 +1,122 @@
+<template>
+    <DropDownList v-model="borderTopStyle"
+                  :items="borderStyles"
+                  label="Style" />
+
+    <NumberUpDown v-model="borderTopWidth"
+                  label="Thickness"
+                  :min="0"
+                  :max="30" />
+
+    <ColorPicker v-model="borderTopColor"
+                 label="Color" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    type BorderStyle = "solid" | "dashed" | "dotted" | "";
+
+    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
+    // If quotes are required, add them here.
+    const borderStyles: ListItemBag[] = [
+        {
+            text: "Solid",
+            value: getBorderStyle("solid")
+        }, {
+            text: "Dashed",
+            value: getBorderStyle("dashed")
+        }, {
+            text: "Dotted",
+            value: getBorderStyle("dotted")
+        }
+    ];
+
+    // #region Values
+
+    const borderTopStyle = ref<BorderStyle>(props.modelValue.style.borderTopStyle as BorderStyle);
+    const borderTopWidth = ref<number>(parseInt(props.modelValue.style.borderTopWidth || "0") || parseInt(props.modelValue.style.height || "0"));
+    const borderTopColor = ref<string>(props.modelValue.style.borderTopColor || props.modelValue.style.backgroundColor);
+
+    // #endregion
+
+    // #region Functions
+
+    function getBorderStyle(value: BorderStyle): BorderStyle {
+        return value;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        borderTopStyle.value = props.modelValue.style.borderTopStyle as BorderStyle;
+        borderTopWidth.value = parseInt(props.modelValue.style.borderTopWidth || "0") || parseInt(props.modelValue.style.height || "0");
+        borderTopColor.value = props.modelValue.style.borderTopColor || props.modelValue.style.backgroundColor;
+    });
+
+    watch(borderTopStyle, (value: BorderStyle) => {
+        props.modelValue.style.borderTopStyle = value;
+
+        if (value) {
+            // Explicitly clear the styles on the other sides
+            // so the browser doesn't initialize them.
+            props.modelValue.style.borderBottomStyle = "none";
+            props.modelValue.style.borderRightStyle = "none";
+            props.modelValue.style.borderLeftStyle = "none";
+        }
+    });
+
+    watch(borderTopWidth, (value: number) => {
+        if (value) {
+            props.modelValue.style.borderTopWidth = `${value}px`;
+
+            // Explicitly clear the styles on the other sides
+            // so the browser doesn't initialize them.
+            props.modelValue.style.borderBottomWidth = "0";
+            props.modelValue.style.borderRightWidth = "0";
+            props.modelValue.style.borderLeftWidth = "0";
+
+            // Make sure the divider is using border box and that there is no height.
+            props.modelValue.style.boxSizing = "border-box";
+            props.modelValue.style.height = `${value}px`;
+        }
+        else {
+            props.modelValue.style.borderTopWidth = "";
+            props.modelValue.style.borderBottomWidth = "";
+            props.modelValue.style.borderRightStyle = "";
+            props.modelValue.style.borderLeftStyle = "";
+            props.modelValue.style.boxSizing = "";
+            props.modelValue.style.height = "";
+        }
+    });
+
+    watch(borderTopColor, (value: string) => {
+        props.modelValue.style.borderTopColor = value;
+
+        if (value) {
+            // Explicitly clear the styles on the other sides
+            // so the browser doesn't initialize them.
+            props.modelValue.style.borderBottomColor = "transparent";
+            props.modelValue.style.borderRightColor = "transparent";
+            props.modelValue.style.borderLeftColor = "transparent";
+
+            // Make sure the background is removed.
+            props.modelValue.style.background = "";
+        }
+    });
+
+    // #endregion
+</script>
