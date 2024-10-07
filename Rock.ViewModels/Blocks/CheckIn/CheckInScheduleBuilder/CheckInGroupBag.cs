@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 {
@@ -20,6 +21,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 
         public string LocationPath { get; set; }
 
-        public Dictionary<int, bool> IsScheduleSelected { get; set; }
+        public List<ListItemBag> IsScheduleSelected { get; set; }
     }
 }

@@ -1,0 +1,171 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+        :data="gridDataSource"
+        keyField="groupLocationId"
+        itemTerm="Schedule Builder"
+        stickyHeader
+        liveUpdates
+        :isFooterHidden="false"
+        :showLaunchWorkflow="true"
+        :isCountMessageVisible="true"
+        :showMergeTemplate="true"
+        :showExport="true">
+
+        <template #gridHeaderPrepend>
+            <!-- <NotificationBox class="m-3" :alertType="notificationMessageType" v-if="processVerificationMessage">{{ processVerificationMessage }}</NotificationBox> -->
+             <div class="form-inline margin-b-md row">
+                <div class="col-sm-3">
+                    <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" />
+                </div>
+                 <div class="col-sm-3">
+                     <LocationItemPicker v-model="parentLocation" label="Parent Location" />
+                 </div>
+                 <div class="col-sm-3">
+                     <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" />
+                 </div>
+                 <div class="col-sm-3">
+                     <CategoryPicker v-model="scheduleCategory" label="Schedule Category" :entityTypeGuid="EntityType.Schedule" />
+                 </div>
+             </div>
+        </template>
+
+        <TextColumn name="groupName" title="Group" field="groupName" :filter="textValueFilter" />
+
+        <TextColumn name="locationName" title="Location" field="locationName" visiblePriority="sm" :filter="textValueFilter" />
+
+        <!-- <Column name="isScheduleSelected" title="Hello">
+            <template #format="{ row }">
+                 {{ row.isScheduleSelected }}
+            </template>
+        </Column> -->
+
+        <!-- <Column v-for="(schedule, index) in schedules" :key="index" :name="index.toString()" :title="index.toString()">
+            <template #format="{ row }">
+                 <span>Hello World</span>
+            </template>
+        </Column> -->
+
+
+        <DynamicColumns :dynamicFields="dynamicFields" :defaultColumnComponent="TextColumn" />
+
+
+        <!-- <SelectColumn v-for="s in schedules" name="" :title="s.text ?? undefined" field="" /> -->
+
+    </Grid>
+
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { Column, TextColumn, textValueFilter, SelectColumn, ButtonColumn, DeleteColumn, DateTimeColumn, pickExistingValueFilter, DynamicColumns } from "@Obsidian/Controls/grid";
+    import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { computed, reactive, ref, watch } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { GridSettingsOptions, PreferenceKey } from "./CheckInScheduleBuilder/types.partial";
+    import GridSettingsModal from "./PhotoVerify/gridSettingsModal.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
+
+    // #region Values
+    const config = useConfigurationValues<ListBlockBox<CheckInScheduleBuilderOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    // const selectedKeys = ref<string[]>([]);
+    let gridData: GridDataBag | undefined;
+    const processVerificationMessage = ref<string | null>(null);
+    const notificationMessageType = ref<string>("warning");
+    const schedules = ref<ListItemBag[]>(config.options?.schedules ?? []);
+
+    const groupType = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)));
+    const parentLocation = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedParentLocation)));
+    const area = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedArea)));
+    const scheduleCategory = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedCategory)));
+
+
+    // const gridSettings = ref<GridSettingsOptions>({
+    //     selectedGroupType: preferences.getValue(PreferenceKey.SelectedGroupType),
+    //     selectedArea: preferences.getValue(PreferenceKey.SelectedArea),
+    //     selectedCategory: preferences.getValue(PreferenceKey.SelectedCategory),
+    //     selectedParentLocation: preferences.getValue(PreferenceKey.SelectedParentLocation)
+    // });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const dynamicFields = computed((): DynamicFieldDefinitionBag[] => {
+        return schedules.value.map((schedule) => {
+            return <DynamicFieldDefinitionBag>{
+                columnType: "TextColumn",
+                enableFiltering: false,
+                excludeFromExport: false,
+                hideOnScreen: false,
+                name: "groupLocationId",
+                title: schedule.text,
+            };
+        }) ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        processVerificationMessage.value = "";
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            // TODO: Is group location id the correct value to use as a key?
+            console.log("What did we get? ", result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // watch(gridSettings, async () => {
+    //     preferences.setValue(PreferenceKey.SelectedGroupType, gridSettings.value.selectedGroupType ?? "");
+    //     preferences.setValue(PreferenceKey.SelectedCategory, gridSettings.value.selectedCategory ?? "");
+
+    //     await preferences.save();
+
+    //     gridDataSource.value = loadGridData();
+    // });
+
+    watch([groupType, parentLocation, area, scheduleCategory], async () => {
+        preferences.setValue(PreferenceKey.SelectedGroupType, JSON.stringify(groupType.value));
+        preferences.setValue(PreferenceKey.SelectedParentLocation, JSON.stringify(parentLocation.value));
+        preferences.setValue(PreferenceKey.SelectedArea, JSON.stringify(area.value));
+        preferences.setValue(PreferenceKey.SelectedCategory, JSON.stringify(scheduleCategory.value));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -14,6 +14,8 @@ using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder;
 using Rock.Web.Cache;
 using Rock.ViewModels.Utility;
+using Rock.Web.UI.Controls;
+using DotLiquid;
 
 namespace Rock.Blocks.CheckIn
 {
@@ -26,7 +28,7 @@ namespace Rock.Blocks.CheckIn
     //[Rock.SystemGuid.EntityTypeGuid(  )]
     //[Rock.SystemGuid.BlockTypeGuid(  )]
     [CustomizedGrid]
-    public class CheckInScheduleBuilder : RockEntityListBlockType<CheckInGroupBag>
+    public class CheckInScheduleBuilder : RockListBlockType<CheckInGroupBag>
     {
         #region Keys
 
@@ -55,19 +57,40 @@ namespace Rock.Blocks.CheckIn
             /// The selected area user preference key
             /// </summary>
             public const string SelectedArea = "selected-area";
+
+            /// <summary>
+            /// The selected category user preference key
+            /// </summary>
+            public const string SelectedCategory = "selected-category";
+
+            /// <summary>
+            /// The selected parent location user preference key
+            /// </summary>
+            public const string SelectedParentLocation = "selected-parent-location";
         }
 
         #endregion
 
         #region Properties
 
-        protected Guid? SelectedGroupType => GetBlockPersonPreferences()
+        protected ListItemBag SelectedGroupType => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedGroupType )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            .FromJsonOrNull<ListItemBag>();
 
-        protected Guid? SelectedArea => GetBlockPersonPreferences()
+        protected ListItemBag SelectedArea => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedArea )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            .FromJsonOrNull<ListItemBag>();
+
+        protected ListItemBag SelectedCategory => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.SelectedCategory )
+            .FromJsonOrNull<ListItemBag>();
+
+        protected ListItemBag SelectedParentLocation => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.SelectedParentLocation )
+            .FromJsonOrNull<ListItemBag>();
+
+        private List<ListItemBag> _schedules;
+        private int? _groupTypeId;
 
         #endregion
 
@@ -91,14 +114,136 @@ namespace Rock.Blocks.CheckIn
         /// <returns>The options that provide additional details to the block.</returns>
         private CheckInScheduleBuilderOptionsBag GetBoxOptions()
         {
-            return GetSchedules();
+            CheckInScheduleBuilderOptionsBag bag = new CheckInScheduleBuilderOptionsBag
+            {
+                GroupTypes = new List<Guid>(),
+                Areas = new List<Guid>()
+            };
+
+            // TODO: Hide picker on the Obsidian side if the Page Parameter has a value.
+            var groupTypes = GetTopGroupTypes();
+            foreach ( var groupType in groupTypes )
+            {
+                bag.GroupTypes.Add( groupType.Guid );
+            }
+
+            var groupTypeService = new GroupTypeService( RockContext );
+            if ( _groupTypeId.HasValue )
+            {
+                bag.Areas = groupTypeService.GetCheckinAreaDescendants( _groupTypeId.Value ).Where( a => a.GroupTypePurposeValue == null || !a.GroupTypePurposeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER.AsGuid() ) ).Select( a => a.Guid).ToList();
+            }
+            else
+            {
+                List<GroupTypeCache> allAreas = new List<GroupTypeCache>();
+                foreach ( var groupType in groupTypes )
+                {
+                    var areas = groupTypeService.GetCheckinAreaDescendants( groupType.Id ).Where( a => a.GroupTypePurposeValue == null || !a.GroupTypePurposeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER.AsGuid() ) );
+                    allAreas.AddRange( areas );
+                }
+
+                bag.Areas = allAreas.Select( a => a.Guid ).ToList();
+            }
+
+            bag.Schedules = GetSchedules();
+
+            if ( !bag.Schedules.Any() )
+            {
+                //TODO: Resolve URL on Client side? Format on Client.
+                bag.WarningMessage = "<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.";
+            }
+
+            return bag;
         }
 
         /// <inheritdoc/>
         protected override IQueryable<CheckInGroupBag> GetListQueryable( RockContext rockContext )
         {
             var groupLocationQry = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths );
+            var groupService = new GroupService( rockContext );
+            var bags = new List<CheckInGroupBag>();
 
+            var qryList = groupLocationQry
+                .Where( a => a.Location != null )
+                .Select( a =>
+                new
+                {
+                    GroupLocationId = a.Id,
+                    a.Location,
+                    GroupId = a.GroupId,
+                    GroupName = a.Group.Name,
+                    ScheduleIdList = a.Schedules.Select( s => s.Id ),
+                    GroupTypeId = a.Group.GroupTypeId
+                } ).ToList();
+
+            var locationService = new LocationService( rockContext );
+            if ( SelectedParentLocation != null && Guid.TryParse( SelectedParentLocation.Value, out var parentLocationGuid ) )
+            {
+                var currentAndDescendantLocationIds = new List<int>();
+                var parentLocationId = locationService.Get( parentLocationGuid ).Id;
+                currentAndDescendantLocationIds.Add( parentLocationId );
+                currentAndDescendantLocationIds.AddRange( locationService.GetAllDescendents( parentLocationId ).Select( a => a.Id ) );
+
+                qryList = qryList.Where( a => currentAndDescendantLocationIds.Contains( a.Location.Id ) ).ToList();
+            }
+
+            if ( _schedules == null || _schedules.Count == 0 )
+            {
+                _schedules = GetSchedules();
+            }
+
+            var locationPaths = new Dictionary<int, string>();
+
+            foreach ( var row in qryList )
+            {
+                var bag = new CheckInGroupBag
+                {
+                    GroupLocationId = row.GroupLocationId,
+                    GroupName = groupService.GroupAncestorPathName( row.GroupId ),
+                    GroupPath = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault(),
+                    LocationName = row.Location.Name,
+                    IsScheduleSelected = new List<ListItemBag>()
+                };
+
+                if ( row.Location.ParentLocationId.HasValue )
+                {
+                    int locationId = row.Location.ParentLocationId.Value;
+
+                    if ( !locationPaths.ContainsKey( locationId ) )
+                    {
+                        var locationNames = new List<string>();
+                        var parentLocation = locationService.Get( locationId );
+                        while ( parentLocation != null )
+                        {
+                            locationNames.Add( parentLocation.Name );
+                            parentLocation = parentLocation.ParentLocation;
+                        }
+                        if ( locationNames.Any() )
+                        {
+                            locationNames.Reverse();
+                            locationPaths.Add( locationId, locationNames.AsDelimited( " > " ) );
+                        }
+                        else
+                        {
+                            locationPaths.Add( locationId, string.Empty );
+                        }
+                    }
+
+                    bag.LocationPath = locationPaths[locationId];
+
+                    foreach ( var schedule in _schedules )
+                    {
+                        bag.IsScheduleSelected.Add( new ListItemBag
+                        {
+                            Value = schedule.Value,
+                            Text = row.ScheduleIdList.Any( a => a == schedule.Value.ToIntSafe() ).ToString()
+                        } );
+                    }
+                }
+
+                bags.Add( bag );
+            }
+
+            return bags.AsQueryable();
         }
 
         /// <inheritdoc/>
@@ -115,44 +260,46 @@ namespace Rock.Blocks.CheckIn
                 .AddField( "isScheduleSelected", a => a.IsScheduleSelected );
         }
 
-        private CheckInScheduleBuilderOptionsBag GetSchedules()
+        private List<ListItemBag> GetSchedules()
         {
+            if ( _schedules?.Count > 0 )
+            {
+                return _schedules;
+            }
+
             ScheduleService scheduleService = new ScheduleService( RockContext );
-            CheckInScheduleBuilderOptionsBag bag = new CheckInScheduleBuilderOptionsBag();
+            var schedules = new List<ListItemBag>();
 
             // limit Schedules to ones that are Active and have a CheckInStartOffsetMinutes
             var scheduleQry = scheduleService.Queryable().Where( a => a.IsActive && a.CheckInStartOffsetMinutes != null );
 
-            // TODO
-            //// limit Schedules to the Category from the Filter
-            //int scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
-            //if ( scheduleCategoryId != Rock.Constants.All.Id )
-            //{
-            //    scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
-            //}
-            //else
-            //{
-            //    // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
-            //    scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
-            //}
+            // limit Schedules to the Category from the Filter
+            if ( SelectedCategory != null && Guid.TryParse( SelectedCategory.Value, out var categoryGuid ) )
+            {
+                var categoryId = CategoryCache.Get( categoryGuid ).Id;
+                scheduleQry = scheduleQry.Where( a => a.CategoryId == categoryId );
+            }
+            else
+            {
+                // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
+                scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
+            }
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
+            var scheduleList = scheduleQry.OrderBy(a => a.Name).ToList();
             var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
-
-            if ( !scheduleList.Any() )
-            {
-                //TODO: Resolve URL on Client side? Format on Client.
-                bag.WarningMessage = "<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.";
-                return bag;
-            }
 
             foreach ( var item in sortedScheduleList )
             {
-                bag.Schedules.Add( item.Id, item.Name );
+                schedules.Add( new ListItemBag
+                {
+                    Value = item.Id.ToString(),
+                    Text = item.Name
+                } );
             }
 
-            return bag;
+            _schedules = schedules;
+            return _schedules;
         }
 
         /// <summary>
@@ -166,27 +313,21 @@ namespace Rock.Blocks.CheckIn
             var groupTypeService = new GroupTypeService( RockContext );
             groupPaths = new List<CheckinAreaPath>();
             var groupLocationQry = groupLocationService.Queryable().Where( gl => gl.Group.IsActive && !gl.Group.IsArchived );
-            var groupTypeIdParam = PageParameter( PageParameterKey.GroupTypeId );
-            var groupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupTypeIdParam ) ?? groupTypeIdParam.AsIntegerOrNull();
 
-
-            // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter
+            // Determine the groupTypeId to use: first from the page parameter, then from the selected group type, or default to "All".
+            int? groupTypeId = _groupTypeId;
             if ( !groupTypeId.HasValue )
             {
-                if ( SelectedGroupType.HasValue )
-                {
-                    groupTypeId = GroupTypeCache.Get( SelectedGroupType.Value ).Id;
-                }
-                else
-                {
-                    groupTypeId = Rock.Constants.All.Id;
-                }
+                groupTypeId = GetIdFromPageParam( PageParameterKey.GroupTypeId )
+                               ?? ( SelectedGroupType != null && Guid.TryParse( SelectedGroupType.Value, out var groupTypeGuid )
+                                   ? GroupTypeCache.Get( groupTypeGuid ).Id
+                                   : Rock.Constants.All.Id );
             }
 
             int? selectedAreaId = null;
-            if ( SelectedArea.HasValue )
+            if ( SelectedArea != null && Guid.TryParse( SelectedArea.Value, out var areaGuid ) )
             {
-                selectedAreaId = GroupTypeCache.Get(SelectedArea.Value).Id;
+                selectedAreaId = GroupTypeCache.Get( areaGuid ).Id;
             }
             if ( groupTypeId != Rock.Constants.All.Id )
             {
@@ -280,6 +421,13 @@ namespace Rock.Blocks.CheckIn
             }
 
             return groupTypes;
+        }
+
+        private int? GetIdFromPageParam( string pageParameterKey )
+        {
+            var pageParamId = PageParameter( pageParameterKey );
+            _groupTypeId = Rock.Utility.IdHasher.Instance.GetId( pageParamId ) ?? pageParamId.AsIntegerOrNull();
+            return _groupTypeId;
         }
     }
 }
