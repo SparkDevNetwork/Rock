@@ -45,6 +45,18 @@ namespace Rock.Cms
         void AddVariable( string name, string value );
 
         /// <summary>
+        /// <para>
+        /// Adds a URL to be imported into the overrides file. This should be
+        /// a bare URL and will have any leading ~ or ~~ expanded automatically.
+        /// </para>
+        /// <para>
+        /// Example: <example>AddImport( "~~/Styles/on.css" );</example>
+        /// </para>
+        /// </summary>
+        /// <param name="url">The URL to be imported.</param>
+        void AddImport( string url );
+
+        /// <summary>
         /// Add a string of custom content to the overrides file. The content
         /// will be emitted as-is into the file after all the variables have
         /// been defined.
