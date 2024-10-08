@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -277,6 +277,11 @@ namespace Rock.SystemGuid
         /// The guid for <see cref="Rock.Model.Interaction"/>
         /// </summary>
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
+
+        /// <summary>
+        /// The guid for the <see cref="Rock.Model.InteractionEntity"/> entity.
+        /// </summary>
+        public const string INTERACTION_ENTITY = "AB3AC547-CCEF-4662-9646-64F16813DAC4";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/>

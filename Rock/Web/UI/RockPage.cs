@@ -64,6 +64,7 @@ namespace Rock.Web.UI
         private PlaceHolder phLoadStats;
         private LinkButton _btnRestoreImpersonatedByUser;
         private ScriptManager _scriptManager;
+        private HiddenField _hfInteractionGuid;
         private PageCache _pageCache = null;
 
         private string _clientType = null;
@@ -843,8 +844,6 @@ namespace Rock.Web.UI
             ConvertLegacyContextCookiesToJSON();
 #pragma warning restore 618
 
-            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
-
             if ( _pageCache != null )
             {
                 RequestContext.PrepareRequestForPage( _pageCache );
@@ -1540,6 +1539,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
@@ -1752,6 +1752,17 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
+
+                // Put a hidden field on the form that contains the interaction
+                // unique identifier of the original page load. When the view
+                // state is loaded the value will be replaced with the original.
+                _hfInteractionGuid = new HiddenField
+                {
+                    ID = "hfInteractionGuid",
+                    Value = RequestContext.RelatedInteractionGuid.ToString()
+                };
+
+                Form.Controls.Add( _hfInteractionGuid );
 
                 Page.Trace.Warn( "Setting meta tags" );
 
@@ -2471,6 +2482,12 @@ Obsidian.onReady(() => {{
 
             base.OnLoad( e );
 
+            // Attempt to restore the original interaction unique identifier.
+            if ( IsPostBack && Guid.TryParse( _hfInteractionGuid.Value, out var originalInteractionGuid ) )
+            {
+                RequestContext.RelatedInteractionGuid = originalInteractionGuid;
+            }
+
             Page.Header.DataBind();
 
             try
@@ -2584,6 +2601,7 @@ Sys.Application.add_load(function () {
             {
                 var interactionInfo = new InteractionTransactionInfo
                 {
+                    InteractionGuid = RequestContext.RelatedInteractionGuid,
                     InteractionTimeToServe = _tsDuration.TotalSeconds,
                     InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
                     InteractionChannelCustom2 = Request.UrlReferrerSearchTerms(),
@@ -2622,6 +2640,7 @@ Sys.Application.add_load(function () {
             // extracted from the request header to prevent cross-site scripting (XSS) issues.
             var pageInteraction = new PageInteractionInfo
             {
+                Guid = RequestContext.RelatedInteractionGuid,
                 ActionName = "View",
                 BrowserSessionGuid = rockSessionGuid,
                 PageId = this.PageId,
@@ -2725,13 +2744,6 @@ Sys.Application.add_load(function () {
             var scope = _lazyServiceProvider.Value.CreateScope();
 
             _pageServiceScopes.Add( scope );
-
-            var accessor = scope.ServiceProvider.GetRequiredService<IRockRequestContextAccessor>();
-
-            if ( accessor is RockRequestContextAccessor internalAccessor )
-            {
-                internalAccessor.RockRequestContext = RequestContext;
-            }
 
             return scope;
         }
@@ -4991,6 +5003,13 @@ Sys.Application.add_load(function () {
         /// <inheritdoc/>
         public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
         {
+            RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
+
+            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            {
+                internalAccessor.RockRequestContext = RequestContext;
+            }
+
             return AsyncPageBeginProcessRequest( context, cb, extraData );
         }
 
@@ -4998,6 +5017,14 @@ Sys.Application.add_load(function () {
         public void EndProcessRequest( IAsyncResult result )
         {
             AsyncPageEndProcessRequest( result );
+
+            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            {
+                if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
+                {
+                    internalAccessor.RockRequestContext = null;
+                }
+            }
         }
 
         #endregion

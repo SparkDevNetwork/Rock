@@ -428,6 +428,7 @@ namespace Rock.Model
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;
             target.IsMessageBusEventPublishEnabled = source.IsMessageBusEventPublishEnabled;
+            target.IsRelatedToInteractionTrackedOnCreate = source.IsRelatedToInteractionTrackedOnCreate;
             target.IsSecured = source.IsSecured;
             target.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;

@@ -286,6 +286,7 @@ namespace Rock.Transactions
                 var interaction = interactionService.CreateInteraction( info.InteractionComponentId.Value, info.UserAgent, info.InteractionData, info.IPAddress, info.BrowserSessionId );
 
                 // The rest of the properties need to be manually set.
+                interaction.Guid = info.InteractionGuid ?? Guid.NewGuid();
                 interaction.EntityId = info.InteractionEntityId;
                 interaction.Operation = info.InteractionOperation.IsNotNullOrWhiteSpace() ? info.InteractionOperation.Trim() : "View";
                 interaction.InteractionSummary = info.InteractionSummary?.Trim();
@@ -426,6 +427,12 @@ namespace Rock.Transactions
         #endregion InteractionDeviceType Properties
 
         #region Interaction Properties
+
+        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <remarks>
+        /// If this is not specified then a new Guid will be created.
+        /// </remarks>
+        public Guid? InteractionGuid { get; set; }
 
         /// <inheritdoc cref="Interaction.InteractionDateTime"/>
         /// <remarks>
