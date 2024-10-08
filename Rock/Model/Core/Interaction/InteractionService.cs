@@ -141,6 +141,7 @@ namespace Rock.Model
 
             var interaction = new Interaction
             {
+                Guid = info.InteractionGuid ?? Guid.NewGuid(),
                 InteractionDateTime = info.InteractionDateTime,
                 Operation = info.Operation.IsNotNullOrWhiteSpace() ? info.Operation.Trim() : "View",
                 InteractionComponentId = info.InteractionComponentId,
@@ -673,6 +674,7 @@ namespace Rock.Model
             // Create the interaction transaction.
             var interactionTransactionInfo = new InteractionTransactionInfo
             {
+                InteractionGuid = interactionInfo.InteractionGuid,
                 GetValuesFromHttpRequest = false,
                 PersonAliasId = personAliasId,
                 InteractionData = interactionInfo.PageRequestUrl,
@@ -1209,6 +1211,12 @@ namespace Rock.Model
     /// </summary>
     public class PageInteractionInfo
     {
+        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <remarks>
+        /// If this is not specified then a new Guid will be created.
+        /// </remarks>
+        public Guid? Guid { get; set; }
+
         /// <summary>
         /// The unique identifier of the page.
         /// </summary>
@@ -1316,6 +1324,7 @@ namespace Rock.Model
         {
             var actionInfo = new RegisterPageInteractionActionInfo()
             {
+                InteractionGuid = interactionInfo.Guid,
                 PageId = interactionInfo.PageId,
                 UserIdKey = interactionInfo.UserIdKey,
                 PageRequestUrl = interactionInfo.PageRequestUrl,
@@ -1341,6 +1350,12 @@ namespace Rock.Model
 
             return actionInfo;
         }
+
+        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <remarks>
+        /// If this is not specified then a new Guid will be created.
+        /// </remarks>
+        public Guid? InteractionGuid { get; set; }
 
         /// <summary>
         /// The unique identifier of the page.

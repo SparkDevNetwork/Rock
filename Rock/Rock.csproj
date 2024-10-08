@@ -1419,6 +1419,8 @@
     <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
+    <Compile Include="Model\Core\InteractionEntity\InteractionEntity.cs" />
+    <Compile Include="Model\Core\InteractionEntity\InteractionEntityService.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.Logic.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.cs" />
@@ -1696,6 +1698,7 @@
     <Compile Include="SystemKey\GlobalAttributeKey.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
+    <Compile Include="Transactions\AddInteractionEntityTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
     <Compile Include="Tv\Classes\RokuTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\RokuTvPageSettings.cs" />
