@@ -18,8 +18,6 @@ namespace Rock.Mobile
 {
     /// <summary>
     /// The type of navigation action to perform on the mobile shell.
-    /// This is copied to Rock.Enums.Controls.MobileNavigationActionType.
-    /// Any changes there or here should be mirrored.
     /// </summary>
     /// <remarks>
     /// This needs to move somewhere else before it is marked as public.
