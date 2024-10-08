@@ -21,9 +21,9 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+export type CheckInScheduledGroupLocationsBag = {
+    activeSchedules?: string[] | null;
 
-export type CheckInGroupBag = {
     groupId: number;
 
     groupLocationId: number;
@@ -32,7 +32,7 @@ export type CheckInGroupBag = {
 
     groupPath?: string | null;
 
-    isScheduleSelected?: ListItemBag[] | null;
+    idKey?: string | null;
 
     locationName?: string | null;
 

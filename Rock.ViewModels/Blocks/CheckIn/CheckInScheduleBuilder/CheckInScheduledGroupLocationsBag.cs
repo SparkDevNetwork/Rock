@@ -7,8 +7,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 {
-    public class CheckInGroupBag
+    public class CheckInScheduledGroupLocationsBag
     {
+        public string IdKey { get; set; }
+
         public int GroupLocationId { get; set; }
 
         public int GroupId { get; set; }
@@ -21,6 +23,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 
         public string LocationPath { get; set; }
 
-        public List<ListItemBag> IsScheduleSelected { get; set; }
+        public List<string> ActiveSchedules { get; set; }
     }
 }
