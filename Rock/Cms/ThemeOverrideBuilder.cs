@@ -38,6 +38,11 @@ namespace Rock.Cms
         private readonly OrderedDictionary _variables = new OrderedDictionary();
 
         /// <summary>
+        /// The list of CSS files to be imported into the output.
+        /// </summary>
+        private readonly List<string> _urlImports = new List<string>();
+
+        /// <summary>
         /// Any strings of custom content that should be included after all
         /// the variables have been defined.
         /// </summary>
@@ -80,6 +85,15 @@ namespace Rock.Cms
         }
 
         /// <inheritdoc/>
+        public void AddImport( string url )
+        {
+            if ( url.IsNotNullOrWhiteSpace() )
+            {
+                _urlImports.Add( url );
+            }
+        }
+
+        /// <inheritdoc/>
         public void AddCustomContent( string content )
         {
             if ( content.IsNotNullOrWhiteSpace() )
@@ -103,12 +117,8 @@ namespace Rock.Cms
 
             if ( enabledIconSets.HasFlag( ThemeIconSet.FontAwesome ) )
             {
-                var sb = new StringBuilder();
-
                 // Append the standard FontAwesome CSS file.
-                var fontAwesomeUrl = RockApp.Current.ResolveRockUrl( "~/Styles/style-v2/icons/fontawesome-icon.css" );
-
-                sb.AppendLine( $"@import url('{fontAwesomeUrl}');" );
+                AddImport( "~/Styles/style-v2/icons/fontawesome-icon.css" );
 
                 // Append each additional font weight file.
                 if ( customization.AdditionalFontAwesomeWeights != null )
@@ -116,26 +126,20 @@ namespace Rock.Cms
                     foreach ( var weight in customization.AdditionalFontAwesomeWeights )
                     {
                         var weightName = weight.ToString().ToLower();
-                        var fontUrl = RockApp.Current.ResolveRockUrl( $"~/Styles/style-v2/icons/fontawesome-{weightName}.css" );
 
-                        sb.AppendLine( $"@import url('{fontUrl}');" );
+                        AddImport( $"~/Styles/style-v2/icons/fontawesome-{weightName}.css" );
                     }
                 }
 
                 // Append the default font weight file.
                 var defaultFontWeight = customization.DefaultFontAwesomeWeight.ToString().ToLower();
-                var defaultFontUrl = RockApp.Current.ResolveRockUrl( $"~/Styles/style-v2/icons/fontawesome-{defaultFontWeight}.css" );
 
-                sb.AppendLine( $"@import url('{defaultFontUrl}');" );
-
-                AddCustomContent( sb.ToString() );
+                AddImport( $"~/Styles/style-v2/icons/fontawesome-{defaultFontWeight}.css" );
             }
 
             if ( enabledIconSets.HasFlag( ThemeIconSet.Tabler ) )
             {
-                var fontUrl = RockApp.Current.ResolveRockUrl( $"~/Styles/style-v2/icons/tabler-icon.css" );
-
-                AddCustomContent( $"@import url('{fontUrl}');" );
+                AddImport( $"~/Styles/style-v2/icons/tabler-icon.css" );
             }
         }
 
@@ -143,13 +147,21 @@ namespace Rock.Cms
         public string Build()
         {
             var sb = new StringBuilder();
-            
-            foreach ( var content in _customContent )
-            {
-                sb.AppendLine();
-                sb.AppendLine( content.Trim() );
-            }
 
+            if ( _urlImports.Any() )
+            {
+                foreach ( var importUrl in _urlImports )
+                {
+                    var url = importUrl.StartsWith( "~" )
+                        ? RockApp.Current.ResolveRockUrl( importUrl, ThemeName )
+                        : importUrl;
+
+                    sb.AppendLine( $"@import url('{url}');" );
+                }
+
+                sb.AppendLine();
+            }
+            
             if ( _variables.Values.Cast<string>().Any( v => v.IsNotNullOrWhiteSpace() ) )
             {
                 sb.AppendLine( ":root {" );
@@ -165,9 +177,14 @@ namespace Rock.Cms
                 }
 
                 sb.AppendLine( "}" );
+                sb.AppendLine();
             }
 
-        
+            foreach ( var content in _customContent )
+            {
+                sb.AppendLine( content.Trim() );
+                sb.AppendLine();
+            }
 
             return sb.ToString();
         }
