@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
-    import { useAccordionGroup } from "./utils.partial";
+    import { useAccordionGroup } from "../utils.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
     defineProps({

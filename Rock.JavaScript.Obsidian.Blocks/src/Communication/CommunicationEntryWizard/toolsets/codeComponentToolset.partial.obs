@@ -1,0 +1,37 @@
+<template>
+    <ComponentToolset :modelValue="modelValue"
+                      @complete="$emit('complete')"
+                      @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <InnerHtmlTool :modelValue="modelValue.componentElement"
+                               label="HTML"
+                               mode="code" />
+
+                <MarginTool :modelValue="modelValue.componentElement" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentToolset>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ComponentToolset from "./componentToolset.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import InnerHtmlTool from "../tools/innerHtmlTool.partial.obs";
+    import MarginTool from "../tools/marginTool.partial.obs";
+    import { EditorComponent } from "../types.partial";
+
+    defineProps({
+        modelValue: {
+            type: Object as PropType<EditorComponent>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+</script>

@@ -14,7 +14,7 @@
 
                 <Accordion title="Typography">
                     <FontComboTool :modelValue="headingElement"
-                          :tagName="headingLevel" />
+                                   :tagName="headingLevel" />
                 </Accordion>
             </AccordionGroup>
         </ComponentToolset>
@@ -24,8 +24,8 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import ComponentToolset from "./componentToolset.partial.obs";
-    import AccordionGroup from "../accordionGroup.partial.obs";
-    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
     import FontComboTool from "../tools/fontComboTool.partial.obs";
     import TextContentTool from "../tools/textContentTool.partial.obs";
     import { EditorComponent } from "../types.partial";

@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
     import { onMounted, provide, Ref, watch } from "vue";
-    import { AccordionGroupInjectionKey } from "./utils.partial";
+    import { AccordionGroupInjectionKey } from "../utils.partial";
 
     const accordions: Record<string, Ref<boolean>> = {};
 

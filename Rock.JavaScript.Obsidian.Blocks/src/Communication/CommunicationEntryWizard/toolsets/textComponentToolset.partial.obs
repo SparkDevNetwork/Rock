@@ -4,7 +4,7 @@
         <AccordionGroup>
             <Accordion title="General Settings">
                 <InnerHtmlTool :modelValue="modelValue.componentElement"
-                           mode="html" />
+                               mode="html" />
             </Accordion>
 
             <Accordion title="Typography">
@@ -30,8 +30,8 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import ComponentToolset from "./componentToolset.partial.obs";
-    import Accordion from "../accordion.partial.obs";
-    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import BackgroundColorTool from "../tools/backgroundColorTool.partial.obs";
     import BorderComboTool from "../tools/borderComboTool.partial.obs";
     import FontComboTool from "../tools/fontComboTool.partial.obs";

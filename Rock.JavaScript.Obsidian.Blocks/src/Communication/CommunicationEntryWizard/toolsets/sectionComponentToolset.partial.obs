@@ -1,6 +1,6 @@
 <template>
     <ComponentToolset @complete="$emit('complete')"
-                         @delete="$emit('delete')">
+                      @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="Row Settings">
                 <BackgroundColorTool :modelValue="selectedComponent.componentElement" />
@@ -17,8 +17,8 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import ComponentToolset from "./componentToolset.partial.obs";
-    import Accordion from "../accordion.partial.obs";
-    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import BackgroundColorTool from "../tools/backgroundColorTool.partial.obs";
     import BorderComboTool from "../tools/borderComboTool.partial.obs";
     import { EditorComponent } from "../types.partial";

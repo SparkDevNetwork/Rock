@@ -15,8 +15,8 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import ComponentToolset from "./componentToolset.partial.obs";
-    import Accordion from "../accordion.partial.obs";
-    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import DividerComboTool from "../tools/dividerComboTool.partial.obs";
     import MarginTool from "../tools/marginTool.partial.obs";
     import { EditorComponent } from "../types.partial";

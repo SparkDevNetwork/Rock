@@ -115,8 +115,8 @@ svg {
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import FontFamilyToolBase from "./fontFamilyToolBase.partial.obs";
-    import MultiSelectButtonGroup from "../multiSelectButtonGroup.partial.obs";
-    import SingleSelectButtonGroup from "../singleSelectButtonGroup.partial.obs";
+    import MultiSelectButtonGroup from "../controls/multiSelectButtonGroup.partial.obs";
+    import SingleSelectButtonGroup from "../controls/singleSelectButtonGroup.partial.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";

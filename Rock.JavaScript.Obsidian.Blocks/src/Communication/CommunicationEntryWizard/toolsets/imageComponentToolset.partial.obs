@@ -68,8 +68,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AccordionGroup from "../accordionGroup.partial.obs";
-    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
     import ComponentToolset from "./componentToolset.partial.obs";
     import MarginTool from "../tools/marginTool.partial.obs";
     import TextAlignTool from "../tools/textAlignTool.partial.obs";
