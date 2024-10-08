@@ -115,7 +115,8 @@ namespace Rock.Blocks.Finance
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialAccountListOptionsBag GetBoxOptions()
         {
-            int? parentAccountId = PageParameter( PageParameterKey.AccountId ).AsIntegerOrNull();
+            var accountIdParameter = PageParameter( PageParameterKey.AccountId );
+            var parentAccountId = accountIdParameter.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( accountIdParameter );
 
             var options = new FinancialAccountListOptionsBag
             {
