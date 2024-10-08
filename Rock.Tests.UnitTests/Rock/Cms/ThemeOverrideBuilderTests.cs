@@ -85,6 +85,65 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
         #endregion
 
+        #region AddImport
+
+        [TestMethod]
+        public void AddImport_WithEmptyValue_DoesNotEmitImport()
+        {
+            var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+            builder.AddImport( string.Empty );
+
+            var content = builder.Build();
+
+            Assert.That.IsEmpty( content );
+        }
+
+        [TestMethod]
+        public void AddImport_WithNullValue_DoesNotEmitVariable()
+        {
+            var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+            builder.AddImport( null );
+
+            var content = builder.Build();
+
+            Assert.That.IsEmpty( content );
+        }
+
+        [TestMethod]
+        public void AddImport_WithValue_EmitsImport()
+        {
+            var expectedUrl = "on.css";
+            var expectedContent = $"@import url('{expectedUrl}');";
+            var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+            builder.AddImport( expectedUrl );
+
+            var content = builder.Build();
+
+            Assert.That.Contains( content, expectedContent );
+        }
+
+        [TestMethod]
+        public void AddImport_WithDoubleTildeValue_ExpandsTilde()
+        {
+            var expectedUrl = "~~/Styles/on.css";
+            var expectedContent = $"@import url('{expectedUrl.Replace( "~~", "/Themes/TestTheme" )}');";
+            var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+            builder.AddImport( expectedUrl );
+
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                var content = builder.Build();
+
+                Assert.That.Contains( content, expectedContent );
+            }
+        }
+
+        #endregion
+
         #region AddFontIconSets
 
         [TestMethod]
@@ -344,6 +403,41 @@ namespace Rock.Tests.UnitTests.Rock.Cms
             var content = builder.Build();
 
             Assert.That.Contains( content, ":root {" );
+        }
+
+        [TestMethod]
+        public void Build_WithAllOptions_EmitsInCorrectOrder()
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                var expectedContent = @"@import url('on.css');
+@import url('/Styles/style-v2/icons/tabler-icon.css');
+
+:root {
+    --test-var: none;
+}
+
+div { display: none; }";
+
+                // Fix newlines to match what the builder uses.
+                expectedContent = expectedContent
+                    .Replace( "\r", string.Empty )
+                    .Replace( "\n", System.Environment.NewLine );
+
+                var themeJson = "{\"name\": \"TestTheme\", \"availableIconSets\": [\"tabler\"]}";
+                var themeDefinition = ThemeDefinition.Parse( themeJson );
+
+                var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+                builder.AddVariable( "test-var", "none" );
+                builder.AddImport( "on.css" );
+                builder.AddFontIconSets( themeDefinition, new ThemeCustomizationSettings() );
+                builder.AddCustomContent( "div { display: none; }" );
+
+                var content = builder.Build().Trim();
+
+                Assert.That.AreEqual( expectedContent, content );
+            }
         }
 
         #endregion
