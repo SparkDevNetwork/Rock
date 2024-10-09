@@ -2,9 +2,6 @@
 
 /* These are default styles to be moved to the theme or something. */
 .check-in-page {
-    position: absolute;
-    left: 0;
-    top: 0;
     width: 100vw;
     height: 100vh;
     background-color: var(--color-interface-softer);
