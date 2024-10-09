@@ -48,16 +48,16 @@
 
                                         <div v-else class="component-list">
                                             <div v-for="componentType in componentTypes"
-                                                 :key="componentType.typeName"
+                                                 :key="componentType.componentTypeName"
                                                  class="component-list-item"
                                                  draggable="true"
-                                                 @dragstart="onComponentTypeDragStart(componentType)"
+                                                 @dragstart="onComponentTypeDragStart(componentType.componentTypeName)"
                                                  @dragend="onComponentTypeDragEnd()"><i :class="componentType.iconCssClass"></i>{{ componentType.title }}</div>
                                         </div>
                                     </template>
 
                                     <template v-else-if="item === 'Sections'">
-                                        <div v-if="selectedComponent?.type.typeName === 'section'">
+                                        <div v-if="selectedComponent?.componentTypeName === 'section'">
                                             <SectionComponentToolset :selectedComponent="selectedComponent"
                                                                      @complete="onCompleteComponent"
                                                                      @delete="onDeleteComponent" />
@@ -76,10 +76,10 @@
 
                                             <div class="section-list">
                                                 <div v-for="sectionComponentType in sectionComponentTypes"
-                                                     :key="sectionComponentType.typeName"
+                                                     :key="sectionComponentType.componentTypeName"
                                                      class="section-list-item"
                                                      draggable="true"
-                                                     @dragstart="onComponentTypeDragStart(sectionComponentType)"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
+                                                     @dragstart="onComponentTypeDragStart(sectionComponentType.componentTypeName)"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
                                             </div>
                                         </div>
                                     </template>
@@ -87,17 +87,17 @@
                             </TabbedContent>
                         </div>
 
-                        <div v-else-if="selectedMainMenuItem === 'design' && editorDesigner?.emailEditorDocument" class="email-editor-toolbox-tray">
+                        <div v-else-if="selectedMainMenuItem === 'design' && emailDesigner?.emailDocument" class="email-editor-toolbox-tray">
 
-                            <GlobalToolset :modelValue="editorDesigner.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
+                            <GlobalToolset :modelValue="emailDesigner.emailDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 
                     <div class="email-designer-container">
-                        <EditorDesigner ref="editorDesigner"
-                                        :html="editorInnerHtml"
-                                        :draggingComponentType="draggingComponentType"
-                                        v-model:selectedComponent="selectedComponent" />
+                        <EmailDesigner ref="emailDesigner"
+                                       :html="editorInnerHtml"
+                                       :draggingComponentTypeName="draggingComponentTypeName"
+                                       v-model:selectedComponent="selectedComponent" />
                     </div>
                 </div>
 
@@ -254,13 +254,12 @@
 <script setup lang="ts">
     import { nextTick, ref, watch } from "vue";
     import ComponentToolset from "./componentToolset.partial.obs";
-    import { buttonComponent, dividerComponent, imageComponent, lavaComponent, leftColumnSectionComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rightColumnSectionComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./componentTypes.partial";
-    import EditorDesigner from "./emailDesigner.partial.obs";
+    import EmailDesigner from "./emailDesigner.partial.obs";
     import SideMenu from "./sideMenu.partial.obs";
     import MenuItem from "./menuItem.partial.obs";
     import GlobalToolset from "./toolsets/globalToolset.partial.obs";
     import SectionComponentToolset from "./toolsets/sectionComponentToolset.partial.obs";
-    import { EditorComponent, EditorComponentType } from "./types.partial";
+    import { EditorComponent, EditorComponentTypeName } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -270,16 +269,23 @@
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getComponentIconCssClass, getComponentTitle } from "./utils.partial";
 
     const config = useConfigurationValues<{ message?: string | null | undefined; templates?: ListItemBag[] | null | undefined; }>();
+
+    type ComponentTypeListItem = {
+        componentTypeName: EditorComponentTypeName;
+        iconCssClass: string;
+        title: string;
+    };
 
     // #region Values
 
     const editorInnerHtml = ref<string>(config.message ?? "");
-    const editorDesigner = ref<InstanceType<typeof EditorDesigner> | undefined>();
+    const emailDesigner = ref<InstanceType<typeof EmailDesigner> | undefined>();
     const selectedMainMenuItem = ref<"content" | "design">("content");
     const selectedContentTab = ref<string>("");
-    const draggingComponentType = ref<EditorComponentType | null | undefined>();
+    const draggingComponentTypeName = ref<EditorComponentTypeName | null | undefined>();
     const sectionCategory = ref<string>("");
     const sectionCategories = ref<ListItemBag[]>([]);
     const selectedComponent = ref<EditorComponent | null | undefined>();
@@ -298,24 +304,31 @@
         "Sections"
     ];
 
-    const componentTypes: EditorComponentType[] = [
-        titleComponent,
-        videoComponent,
-        buttonComponent,
-        paragraphComponent,
-        dividerComponent,
-        messageComponent,
-        imageComponent,
-        lavaComponent,
-        rsvpComponent,
+    function getComponentTypeListItem(componentTypeName: EditorComponentTypeName): ComponentTypeListItem {
+        return {
+            componentTypeName,
+            iconCssClass: getComponentIconCssClass(componentTypeName),
+            title: getComponentTitle(componentTypeName)
+        };
+    }
+
+    const componentTypes: ComponentTypeListItem[] = [
+        getComponentTypeListItem("title"),
+        getComponentTypeListItem("video"),
+        getComponentTypeListItem("button"),
+        getComponentTypeListItem("text"),
+        getComponentTypeListItem("divider"),
+        getComponentTypeListItem("message"),
+        getComponentTypeListItem("image"),
+        getComponentTypeListItem("code"),
+        getComponentTypeListItem("rsvp"),
     ];
 
-    const sectionComponentTypes: EditorComponentType[] = [
-        oneColumnSectionComponent,
-        twoColumnSectionComponent,
-        threeColumnSectionComponent,
-        leftColumnSectionComponent,
-        rightColumnSectionComponent
+    const sectionComponentTypes: ComponentTypeListItem[] = [
+        getComponentTypeListItem("section"),
+        getComponentTypeListItem("two-column-section"),
+        getComponentTypeListItem("three-column-section"),
+        // TODO JMH Add left and right sections.
     ];
 
     // #endregion
@@ -326,11 +339,11 @@
      * Handles a component type starting to be dragged in the parent window
      * and passes arguments to the child editor iframe to handle the event in the editor.
      */
-    function onComponentTypeDragStart(componentType: EditorComponentType): void {
-        console.log("emailEditor.onComponentTypeDragStart", componentType.typeName);
+    function onComponentTypeDragStart(componentTypeName: EditorComponentTypeName): void {
+        console.log(`"dragstart" toolbox component type`, componentTypeName);
 
         document.addEventListener("mouseup", onComponentTypeDragEnd);
-        draggingComponentType.value = componentType;
+        draggingComponentTypeName.value = componentTypeName;
     }
 
     /**
@@ -340,17 +353,20 @@
      * This is the last event that is occurs in the drag-drop cycle.
      */
     function onComponentTypeDragEnd(): void {
-        console.log("emailEditor.onComponentTypeDragEnd");
+        console.log(`"dragend" toolbox component type`);
 
         document.removeEventListener("mouseup", onComponentTypeDragEnd);
-        draggingComponentType.value = null;
+        emailDesigner.value?.onComponentTypeDragEnd();
+
+        // TODO JMH should this happen inside the designer's dragend handler?
+        draggingComponentTypeName.value = null;
     }
 
     function onClickPreview(): void {
         selectedComponent.value = null;
 
         nextTick(() => {
-            previewHtml.value = editorDesigner.value?.getHtml() ?? "";
+            previewHtml.value = emailDesigner.value?.getHtml() ?? "";
             isPreviewOpen.value = true;
         });
     }
@@ -395,7 +411,7 @@
     watch(selectedComponent, (component, oldComponent) => {
         if (component !== oldComponent) {
             if (component) {
-                if (component.type.typeName !== "section") {
+                if (!["section", "one-column-section", "two-column-section", "three-column-section"].includes(component.componentTypeName)) {
                     selectedContentTab.value = "Components";
                     areComponentPropertiesShown.value = true;
                     areSectionPropertiesShown.value = false;

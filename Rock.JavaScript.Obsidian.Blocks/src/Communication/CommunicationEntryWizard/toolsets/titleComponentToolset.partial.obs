@@ -86,6 +86,7 @@
     // #region Watchers
 
     watch(headingLevel, (value: HeadingLevel) => {
+        debugger;
         if (!value || !headingElement.value || headingElement.value?.tagName.toLowerCase() === value) {
             // No need to change heading level.
             return;

@@ -6,8 +6,7 @@ export type MenuItem = {
     iconCssClass: string; // TODO JMH This may need to support custom SVGs.
 };
 
-export type EditorComponentType = {
-    readonly typeName:
+export type EditorComponentTypeName =
     "video"
     | "button"
     | "text"
@@ -21,13 +20,6 @@ export type EditorComponentType = {
     | "two-column-section"
     | "three-column-section"
     | "title";
-    iconCssClass: string;
-    title: string;
-    createComponentPlaceholder(d: Document): HTMLElement;
-    createComponentElement(d: Document): HTMLElement;
-};
-
-export type EditorComponentTypeName = EditorComponentType["typeName"];
 
 export type ComponentTypeDragLeaveMessage = {
     type: "COMPONENT_TYPE_DRAG_LEAVE";
@@ -35,6 +27,7 @@ export type ComponentTypeDragLeaveMessage = {
 
 export type ComponentTypeDragDropMessage = {
     type: "COMPONENT_TYPE_DRAG_DROP";
+    componentTypeName: EditorComponentTypeName;
 };
 
 export type ComponentTypeDragEndMessage = {
@@ -48,7 +41,7 @@ export type ComponentTypeDragOverMessage = {
 };
 
 export type EditorComponent = {
-    type: EditorComponentType;
+    componentTypeName: EditorComponentTypeName;
     componentElement: HTMLElement;
 };
 
