@@ -1,0 +1,54 @@
+<template>
+    <div class="menu side-menu" v-bind="$attrs">
+        <slot></slot>
+    </div>
+</template>
+
+<style scoped>
+.menu {
+    display: flex;
+    background-color: lightgray;
+    gap: 16px;
+}
+
+.side-menu {
+    flex-direction: column;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<string>(props.modelValue);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, (newValue: string) => {
+        if (internalValue.value !== newValue) {
+            internalValue.value = newValue;
+        }
+    });
+
+    watch(internalValue, (newValue: string) => {
+        if (props.modelValue !== newValue) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    // #endregion
+</script>

@@ -1,0 +1,11 @@
+<template>
+    <div class="component component-text" data-state="component" contenteditable="true">
+        <p>Can't wait to see what you have to sayssdaf!</p>
+    </div>
+</template>
+
+<script setup lang="ts">
+    // Try not to implement any functionality for this template-only component.
+    // When an existing email communication is loaded, this component will
+    // not be associated with the template.
+</script>

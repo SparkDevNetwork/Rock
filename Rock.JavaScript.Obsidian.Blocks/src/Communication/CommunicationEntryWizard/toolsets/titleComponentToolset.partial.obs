@@ -1,7 +1,7 @@
 <template>
     <template v-if="headingElement">
-        <ComponentToolset @complete="$emit('complete')"
-                          @delete="$emit('delete')">
+        <ComponentToolsetBase @complete="$emit('complete')"
+                              @delete="$emit('delete')">
             <AccordionGroup>
                 <Accordion title="General Settings">
                     <TextContentTool :modelValue="headingElement" />
@@ -17,13 +17,13 @@
                                    :tagName="headingLevel" />
                 </Accordion>
             </AccordionGroup>
-        </ComponentToolset>
+        </ComponentToolsetBase>
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import ComponentToolset from "./componentToolset.partial.obs";
+    import ComponentToolsetBase from "./componentToolsetBase.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import FontComboTool from "../tools/fontComboTool.partial.obs";

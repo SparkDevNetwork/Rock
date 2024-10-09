@@ -1,0 +1,47 @@
+<template>
+    <div :class="['menu-item', isSelected ? 'selected' : '']">
+        <slot>
+            <i v-if="iconCssClass" :class="iconCssClass"></i>
+            <span v-if="title">{{ title }}</span>
+        </slot>
+    </div>
+</template>
+
+<style scoped>
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 95px;
+    height: 90px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.menu-item.selected {
+    background-color: white;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        title: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+</script>

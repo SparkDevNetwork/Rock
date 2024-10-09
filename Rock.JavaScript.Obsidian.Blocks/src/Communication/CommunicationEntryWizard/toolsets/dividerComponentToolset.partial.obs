@@ -1,6 +1,6 @@
 <template>
-    <ComponentToolset @complete="$emit('complete')"
-                      @delete="$emit('delete')">
+    <ComponentToolsetBase @complete="$emit('complete')"
+                          @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
                 <template v-if="hrElement">
@@ -9,12 +9,12 @@
                 </template>
             </Accordion>
         </AccordionGroup>
-    </ComponentToolset>
+    </ComponentToolsetBase>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import ComponentToolset from "./componentToolset.partial.obs";
+    import ComponentToolsetBase from "./componentToolsetBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import DividerComboTool from "../tools/dividerComboTool.partial.obs";

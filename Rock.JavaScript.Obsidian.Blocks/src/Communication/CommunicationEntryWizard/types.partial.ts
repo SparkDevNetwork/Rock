@@ -1,5 +1,11 @@
 import { Ref } from "vue";
 
+export type MenuItem = {
+    title: string;
+    value: string;
+    iconCssClass: string; // TODO JMH This may need to support custom SVGs.
+};
+
 export type EditorComponentType = {
     readonly typeName:
     "video"

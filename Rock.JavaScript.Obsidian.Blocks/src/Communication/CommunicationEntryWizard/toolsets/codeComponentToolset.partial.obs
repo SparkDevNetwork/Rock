@@ -1,5 +1,5 @@
 <template>
-    <ComponentToolset :modelValue="modelValue"
+    <ComponentToolsetBase :modelValue="modelValue"
                       @complete="$emit('complete')"
                       @delete="$emit('delete')">
         <AccordionGroup>
@@ -11,12 +11,12 @@
                 <MarginTool :modelValue="modelValue.componentElement" />
             </Accordion>
         </AccordionGroup>
-    </ComponentToolset>
+    </ComponentToolsetBase>
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import ComponentToolset from "./componentToolset.partial.obs";
+    import ComponentToolsetBase from "./componentToolsetBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import InnerHtmlTool from "../tools/innerHtmlTool.partial.obs";

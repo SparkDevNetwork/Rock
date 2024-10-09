@@ -32,8 +32,8 @@ iframe,
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, EditorComponent, EditorComponentType } from "./types.partial";
     import { getComponentTypeOrThrow } from "./componentTypes.partial";
+    import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, EditorComponent, EditorComponentType } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
@@ -54,6 +54,7 @@ iframe,
 
     const emit = defineEmits<{
         (e: "update:selectedComponent", value: EditorComponent | null | undefined): void;
+        (e: "componentTypeDragEnd"): void;
     }>();
 
     /** Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getHtml(). */
@@ -69,6 +70,7 @@ iframe,
     const iFrameElement = ref<HTMLIFrameElement | undefined>();
     const draggingComponentElement = ref<HTMLElement | null | undefined>();
     const draggingComponentPlaceholderElement = ref<HTMLElement | null | undefined>();
+    const componentElementToDrop = ref<HTMLElement | null | undefined>();
     const dragCursorX = ref<number | null | undefined>();
     const dragCursorY = ref<number | null | undefined>();
     const internalSelectedComponent = useVModelPassthrough(props, "selectedComponent", emit);
@@ -234,6 +236,8 @@ iframe,
      * so this handler will be invoked many times.
      */
     function onComponentTypeDragOver(event: DragEvent): void {
+        console.log("emailDesigner.onComponentTypeDragOver");
+
         if (!iFrameElement.value) {
             throw "Unable to handle 'dragover' event. The iframe is not initialized.";
         }
@@ -264,6 +268,8 @@ iframe,
      * This should ultimately add the element representing the component type to the editor.
      */
     function onComponentTypeDragDrop(): void {
+        console.log("editorDesigner.onComponentTypeDragDrop");
+
         // Tell the iframe window that a component type is being dropped into it via the message API.
         // It's important to do this so that the event handling can
         // be "transferred" to the iframe window.
@@ -279,6 +285,8 @@ iframe,
      * This is the last event that is occurs in the drag-drop cycle.
      */
     function onComponentTypeDragLeave(): void {
+        console.log("editorDesigner.onComponentTypeDragLeave");
+
         // Tell the iframe window that a component type is being dragged outside of the its border via the message API.
         // It's important to do this so that the event handling can
         // be "transferred" to the iframe window.
@@ -299,6 +307,8 @@ iframe,
      * be removed before saving the email communication message.
      */
     function onIFrameLoaded(): void {
+        console.log("editorDesigner.onIFrameLoaded");
+
         const iFrameDocument = iFrameElement.value?.contentDocument;
 
         if (!iFrameDocument) {
@@ -419,6 +429,8 @@ iframe,
     }
 
     function onIFrameClick(event: MouseEvent): void {
+        console.log("editorDesigner.onIFrameClick");
+
         const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
         if (componentElement) {
@@ -438,6 +450,8 @@ iframe,
      * This will enable dragging behavior
      */
     function onIFrameMouseDown(event: MouseEvent): void {
+        console.log("editorDesigner.onIFrameMouseDown");
+
         // When the mouse is down in the editor iframe,
         // find the nearest component element (or component ancestor element)
         // where the mouse currently is, and allow it to be dragged/moved to another
@@ -458,7 +472,9 @@ iframe,
         }
     }
 
-    function onIFrameComponentDragEnd(event: DragEvent): void {
+    function onIFrameComponentDragEnd(event: Event): void {
+        console.log("editorDesigner.onIFrameComponentDragEnd");
+
         const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
         if (componentElement) {
@@ -478,6 +494,8 @@ iframe,
     }
 
     function onIFrameComponentMouseUp(event: MouseEvent): void {
+        console.log("editorDesigner.onIFrameComponentMouseUp");
+
         const componentElement = (event.target as HTMLElement)?.closest(".component") as HTMLElement;
 
         if (componentElement) {
@@ -486,6 +504,8 @@ iframe,
     }
 
     function onIFrameComponentDragStart(event: DragEvent): void {
+        console.log("editorDesigner.onIFrameComponentDragStart");
+
         const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
         if (componentElement) {
@@ -498,6 +518,8 @@ iframe,
     }
 
     function onIFrameComponentDragOver(e: DragEvent): void {
+        console.log("editorDesigner.onIFrameComponentDragOver");
+
         if (!iFrameElement.value?.contentDocument) {
             throw "iframe: Unable to handle component 'dragover' event. The iframe document has not been initialized";
         }
@@ -584,6 +606,8 @@ iframe,
     }
 
     function onIFrameComponentDragDrop(event: DragEvent): void {
+        console.log("editorDesigner.onIFrameComponentDragDrop");
+
         const componentElement = (event.target as HTMLElement)?.closest(".component[data-state='component']") as HTMLElement;
 
         if (componentElement) {
@@ -596,6 +620,8 @@ iframe,
     // #region IFrame Component Type Drag Event Handlers
 
     function onIFrameComponentTypeDragOver(message: ComponentTypeDragOverMessage): void {
+        console.log("editorDesigner.onIFrameComponentTypeDragOver");
+
         if (!iFrameElement.value?.contentDocument) {
             throw "iframe: Unable to handle 'dragstart' event. The iframe document has not been initialized.";
         }
@@ -656,6 +682,8 @@ iframe,
     }
 
     function onIFrameComponentTypeDragEnd(): void {
+        console.log("editorDesigner.onIFrameComponentTypeDragEnd");
+
         // If "dragend" happens and there was never a "drop",
         // then remove the temporary dragging element from the DOM.
         if (draggingComponentPlaceholderElement.value) {
@@ -665,6 +693,8 @@ iframe,
     }
 
     function onIFrameComponentTypeDragLeave(): void {
+        console.log("editorDesigner.onIFrameComponentTypeDragLeave");
+
         // If "dragleave" happens then remove the temporary dragging element from the DOM.
         if (draggingComponentPlaceholderElement.value) {
             draggingComponentPlaceholderElement.value.remove();
@@ -672,24 +702,29 @@ iframe,
     }
 
     function onIFrameComponentTypeDragDrop(): void {
+        console.log("editorDesigner.onIFrameComponentTypeDragDrop");
+
         if (!iFrameElement.value?.contentDocument) {
             throw "iframe: Unable to handle 'drop' event. The iframe document has not been initialized.";
         }
 
-        if (!props.draggingComponentType) {
-            throw "iframe: Unable to handle 'drop' event. The component type is unknown.";
+        if (!componentElementToDrop.value) {
+            // The element to drop should have already been created (when the drag started),
+            // but create it here if it hasn't and display a warning to fix.
+            console.warn("Element to drop is unknown but should have been created. Attempting to create again.");
+            componentElementToDrop.value = props.draggingComponentType?.createComponentElement(iFrameElement.value.contentDocument);
         }
 
-
+        if (!componentElementToDrop.value) {
+            throw "iframe: Unable to handle 'drop' event. The component type is unknown.";
+        }
         else if (!draggingComponentPlaceholderElement.value) {
             // TODO JMH Remove this. It's nice to know when this occurs during development, but should be removed before merge.
             console.log("Nothing to drop");
         }
         else {
-            const componentElement = props.draggingComponentType.createComponentElement(iFrameElement.value.contentDocument);
-
             // Swap the placeholder element with the permanent element.
-            draggingComponentPlaceholderElement.value.replaceWith(componentElement);
+            draggingComponentPlaceholderElement.value.replaceWith(componentElementToDrop.value);
 
             // Set the dragging element to null to keep it in the DOM.
             draggingComponentPlaceholderElement.value = null;
@@ -705,8 +740,9 @@ iframe,
     function onIFrameMessageReceived(event: MessageEvent<
         ComponentTypeDragDropMessage
         | ComponentTypeDragOverMessage
-        | ComponentTypeDragEndMessage
         | ComponentTypeDragLeaveMessage>): void {
+        console.log("emailDesigner.onIFrameMessageReceived");
+
         switch (event.data.type) {
             case "COMPONENT_TYPE_DRAG_OVER":
                 onIFrameComponentTypeDragOver(event.data);
@@ -718,10 +754,6 @@ iframe,
 
             case "COMPONENT_TYPE_DRAG_DROP":
                 onIFrameComponentTypeDragDrop();
-                break;
-
-            case "COMPONENT_TYPE_DRAG_END":
-                onIFrameComponentTypeDragEnd();
                 break;
         }
     }
@@ -742,22 +774,30 @@ iframe,
         }
     });
 
-    watch(() => props.draggingComponentType, (newDraggingComponentType, _oldDraggingComponentType) => {
+    watch(() => props.draggingComponentType, (newDraggingComponentType) => {
         if (draggingComponentPlaceholderElement.value) {
             // If something was being dragged and there is a placeholder in the DOM, remove it!
             draggingComponentPlaceholderElement.value.remove();
+            draggingComponentPlaceholderElement.value = null;
+            componentElementToDrop.value = null;
+            console.log("emailDesigner.watch(() => props.draggingComponentType): cleared component element to drop");
         }
 
         if (newDraggingComponentType) {
+            window.removeEventListener("mouseup", onIFrameComponentTypeDragEnd);
+            window.addEventListener("mouseup", onIFrameComponentTypeDragEnd);
+
             if (iFrameElement.value?.contentDocument) {
                 draggingComponentPlaceholderElement.value = newDraggingComponentType.createComponentPlaceholder(iFrameElement.value.contentDocument);
+                componentElementToDrop.value = newDraggingComponentType.createComponentElement(iFrameElement.value.contentDocument);
+                console.log("emailDesigner.watch(() => props.draggingComponentType): created component element to drop", !!componentElementToDrop.value);
             }
             else {
                 throw "iframe: Unable to drag component type. The iframe document has not been initialized.";
             }
         }
         else {
-            draggingComponentPlaceholderElement.value = null;
+            console.log("emailDesigner.watch(() => props.draggingComponentType): new dragging component type is unknown");
         }
     });
 

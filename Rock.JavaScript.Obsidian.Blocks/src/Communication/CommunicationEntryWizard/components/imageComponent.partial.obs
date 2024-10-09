@@ -1,0 +1,14 @@
+<template>
+    <div class="component component-image" data-state="component">
+        <img src="/Assets/Images/image-placeholder.jpg"
+             style="width: 100%;"
+             data-imgcsswidth="full"
+             alt="" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    // Try not to implement any functionality for this template-only component.
+    // When an existing email communication is loaded, this component will
+    // not be associated with the template.
+</script>

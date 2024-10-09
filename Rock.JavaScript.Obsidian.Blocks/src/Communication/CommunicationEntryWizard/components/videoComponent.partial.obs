@@ -1,0 +1,15 @@
+<template>
+    <div class="component component-video" data-state="component">
+        <a href="">
+            <img src="/Assets/Images/video-placeholder.jpg"
+                 style="width: 100%;"
+                 data-imgcsswidth="full" />
+        </a>
+    </div>
+</template>
+
+<script setup lang="ts">
+    // Try not to implement any functionality for this template-only component.
+    // When an existing email communication is loaded, this component will
+    // not be associated with the template.
+</script>

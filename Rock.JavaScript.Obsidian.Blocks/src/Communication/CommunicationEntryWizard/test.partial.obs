@@ -1,0 +1,21 @@
+<template>
+    <div>
+        This is a test: <span>{{ counter }}</span>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, onUnmounted, ref } from "vue";
+
+    const counter = ref<number>(0);
+    let timeoutId: NodeJS.Timeout | undefined;
+
+    onMounted(() => {
+        timeoutId = setInterval(() => counter.value++, 1000);
+        console.log(window);
+    });
+
+    onUnmounted(() => {
+        clearTimeout(timeoutId);
+    });
+</script>

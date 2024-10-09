@@ -1,0 +1,73 @@
+<template>
+    <div>
+        <TitleComponentToolset v-if="selectedComponent.type.typeName === 'title'"
+                               :modelValue="selectedComponent"
+                               @complete="$emit('complete')"
+                               @delete="$emit('delete')" />
+
+        <VideoComponentToolset v-else-if="selectedComponent.type.typeName === 'video'"
+                               :modelValue="selectedComponent"
+                               @complete="$emit('complete')"
+                               @delete="$emit('delete')" />
+
+        <ButtonComponentToolset v-else-if="selectedComponent.type.typeName === 'button'"
+                                :modelValue="selectedComponent"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')" />
+
+        <TextComponentToolset v-else-if="selectedComponent.type.typeName === 'text'"
+                              :modelValue="selectedComponent"
+                              @complete="$emit('complete')"
+                              @delete="$emit('delete')" />
+
+        <DividerComponentToolset v-else-if="selectedComponent.type.typeName === 'divider'"
+                                 :modelValue="selectedComponent"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')" />
+
+        <AdaptiveMessageComponentToolset v-else-if="selectedComponent.type.typeName === 'message'"
+                                         :modelValue="selectedComponent"
+                                         @complete="$emit('complete')"
+                                         @delete="$emit('delete')" />
+
+        <ImageComponentToolset v-else-if="selectedComponent.type.typeName === 'image'"
+                               :modelValue="selectedComponent"
+                               @complete="$emit('complete')"
+                               @delete="$emit('delete')" />
+
+        <CodeComponentToolset v-else-if="selectedComponent.type.typeName === 'code'"
+                              :modelValue="selectedComponent"
+                              @complete="$emit('complete')"
+                              @delete="$emit('delete')" />
+
+        <RsvpComponentToolset v-else-if="selectedComponent.type.typeName === 'rsvp'"
+                              :modelValue="selectedComponent"
+                              @complete="$emit('complete')"
+                              @delete="$emit('delete')" />
+
+        <div v-else>Unknown component type: {{ selectedComponent.type.title }}.</div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { EditorComponent } from "./types.partial";
+    import AdaptiveMessageComponentToolset from "./toolsets/adaptiveMessageComponentToolset.partial.obs";
+    import ButtonComponentToolset from "./toolsets/buttonComponentToolset.partial.obs";
+    import CodeComponentToolset from "./toolsets/codeComponentToolset.partial.obs";
+    import DividerComponentToolset from "./toolsets/dividerComponentToolset.partial.obs";
+    import ImageComponentToolset from "./toolsets/imageComponentToolset.partial.obs";
+    import RsvpComponentToolset from "./toolsets/rsvpComponentToolset.partial.obs";
+    import TextComponentToolset from "./toolsets/textComponentToolset.partial.obs";
+    import TitleComponentToolset from "./toolsets/titleComponentToolset.partial.obs";
+    import VideoComponentToolset from "./toolsets/videoComponentToolset.partial.obs";
+
+    defineProps({
+        selectedComponent: {
+            type: Object as PropType<EditorComponent>,
+            required: true
+        }
+    });
+
+    defineEmits(["complete", "delete"]);
+</script>

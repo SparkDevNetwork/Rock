@@ -21,84 +21,79 @@
         </template>
 
         <template #default>
-            <div class="email-editor-panel-body">
-                <div class="email-editor-designer">
+            <div class="email-editor-container">
+                <div class="email-editor">
                     <div class="email-editor-toolbox">
-                        <div class="email-editor-toolbox-menu">
-                            <div :class="['menu-item', toolboxMenuItem === 'content' ? 'selected' : '']"
-                                 @click="onToolboxMenuItemClicked('content')">
-                                <i class="fa fa-grip-horizontal"></i><span>Content</span>
-                            </div>
+                        <SideMenu v-model="selectedMainMenuItem">
+                            <MenuItem title="Content"
+                                      iconCssClass="fa fa-grip-horizontal"
+                                      :isSelected="selectedMainMenuItem === 'content'"
+                                      @click="onMainMenuItemClicked('content')" />
+                            <MenuItem title="Design"
+                                      iconCssClass="fa fa-drafting-compass"
+                                      :isSelected="selectedMainMenuItem === 'design'"
+                                      @click="onMainMenuItemClicked('design')" />
+                        </SideMenu>
 
-                            <div :class="['menu-item', toolboxMenuItem === 'design' ? 'selected' : '']"
-                                 @click="onToolboxMenuItemClicked('design')">
-                                <i class="fa fa-drafting-compass"></i><span>Design</span>
-                            </div>
-                        </div>
-
-                        <div v-if="toolboxMenuItem === 'content'" class="email-editor-toolbox-submenu">
-                            <TabbedContent :selectedTab="toolboxSubMenuTab"
-                                           :tabs="toolboxSubMenuTabs"
-                                           @update:selectedTab="onToolboxSubMenuTabClicked($event)">
+                        <div v-if="selectedMainMenuItem === 'content'" class="email-editor-toolbox-tray">
+                            <TabbedContent :selectedTab="selectedContentTab"
+                                           :tabs="contentTabs"
+                                           @update:selectedTab="onContentTabSelected($event)">
                                 <template #tabpane="{ item }">
-                                    <div class="email-editor-toolbox-submenu-content">
-                                        <template v-if="item === 'Components'">
-                                            <div v-if="!areComponentPropertiesShown" class="component-list">
-                                                <div v-for="componentType in componentTypes"
-                                                     :key="componentType.typeName"
-                                                     class="component-list-item"
+                                    <template v-if="item === 'Components'">
+                                        <ComponentToolset v-if="selectedComponent"
+                                                          :selectedComponent="selectedComponent"
+                                                          @complete="onCompleteComponent"
+                                                          @delete="onDeleteComponent" />
+
+                                        <div v-else class="component-list">
+                                            <div v-for="componentType in componentTypes"
+                                                 :key="componentType.typeName"
+                                                 class="component-list-item"
+                                                 draggable="true"
+                                                 @dragstart="onComponentTypeDragStart(componentType)"
+                                                 @dragend="onComponentTypeDragEnd()"><i :class="componentType.iconCssClass"></i>{{ componentType.title }}</div>
+                                        </div>
+                                    </template>
+
+                                    <template v-else-if="item === 'Sections'">
+                                        <div v-if="selectedComponent?.type.typeName === 'section'">
+                                            <SectionComponentToolset :selectedComponent="selectedComponent"
+                                                                     @complete="onCompleteComponent"
+                                                                     @delete="onDeleteComponent" />
+                                        </div>
+
+                                        <div v-else class="submenu-content">
+                                            <DropDownList v-model="sectionCategory"
+                                                          :items="sectionCategories"
+                                                          label="Category">
+                                                <template #inputGroupPrepend>
+                                                    <div class="input-group-addon">
+                                                        <i class="fa fa-folder"></i>
+                                                    </div>
+                                                </template>
+                                            </DropDownList>
+
+                                            <div class="section-list">
+                                                <div v-for="sectionComponentType in sectionComponentTypes"
+                                                     :key="sectionComponentType.typeName"
+                                                     class="section-list-item"
                                                      draggable="true"
-                                                     @dragstart="onComponentTypeDragStart(componentType)"
-                                                     @dragend="onComponentTypeDragEnd()"><i :class="componentType.iconCssClass"></i>{{ componentType.title }}</div>
+                                                     @dragstart="onComponentTypeDragStart(sectionComponentType)"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
                                             </div>
-
-                                            <div v-else-if="selectedComponent">
-                                                <ComponentToolbox :selectedComponent="selectedComponent"
-                                                                  @complete="onCompleteComponent"
-                                                                  @delete="onDeleteComponent" />
-                                            </div>
-                                        </template>
-
-                                        <template v-else-if="item === 'Sections'">
-                                            <div v-if="selectedComponent?.type.typeName === 'section'">
-                                                <SectionComponentToolset :selectedComponent="selectedComponent"
-                                                                         @complete="onCompleteComponent"
-                                                                         @delete="onDeleteComponent" />
-                                            </div>
-
-                                            <div v-else class="submenu-content">
-                                                <DropDownList v-model="sectionCategory"
-                                                              :items="sectionCategories"
-                                                              label="Category">
-                                                    <template #inputGroupPrepend>
-                                                        <div class="input-group-addon">
-                                                            <i class="fa fa-folder"></i>
-                                                        </div>
-                                                    </template>
-                                                </DropDownList>
-
-                                                <div class="section-list">
-                                                    <div v-for="sectionComponentType in sectionComponentTypes"
-                                                         :key="sectionComponentType.typeName"
-                                                         class="section-list-item"
-                                                         draggable="true"
-                                                         @dragstart="onComponentTypeDragStart(sectionComponentType)"
-                                                         @dragend="onComponentTypeDragEnd()"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
+                                        </div>
+                                    </template>
                                 </template>
                             </TabbedContent>
                         </div>
 
-                        <div v-else-if="toolboxMenuItem === 'design' && editorDesigner?.emailEditorDocument" class="email-editor-toolbox-submenu">
+                        <div v-else-if="selectedMainMenuItem === 'design' && editorDesigner?.emailEditorDocument" class="email-editor-toolbox-tray">
 
                             <GlobalToolset :modelValue="editorDesigner.emailEditorDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 
-                    <div class="email-editor-window-wrapper">
+                    <div class="email-designer-container">
                         <EditorDesigner ref="editorDesigner"
                                         :html="editorInnerHtml"
                                         :draggingComponentType="draggingComponentType"
@@ -117,6 +112,7 @@
             </div>
         </template>
     </Panel>
+
     <Modal v-model="isPreviewOpen" title="Email Preview">
         <div class="preview">
             <ButtonGroup v-model="previewDevice" :items="[{ text: 'Desktop', value: 'desktop' }, { text: 'Mobile', value: 'mobile' }]" />
@@ -169,8 +165,7 @@
 .component-list {
     display: flex;
     flex-direction: row;
-    /* TODO JMH Is this supported? */
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
     margin: 16px;
 }
@@ -178,8 +173,7 @@
 .section-list {
     display: flex;
     flex-direction: column;
-    /* TODO JMH Is this supported? */
-    gap: 16px;
+    gap: 12px;
 }
 
 .submenu-content {
@@ -218,30 +212,7 @@
     flex-basis: 40%;
 }
 
-.email-editor-toolbox-menu {
-    background-color: gray;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.menu-item {
-    display: flex;
-    flex-direction: column;
-    width: 86px;
-    height: 74px;
-    text-align: center;
-    align-items: center;
-    gap: 16px;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.menu-item.selected {
-    background-color: white;
-}
-
-.email-editor-toolbox-submenu {
+.email-editor-toolbox-tray {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -258,18 +229,18 @@
     margin-left: 16px;
 }
 
-.email-editor-panel-body {
+.email-editor-container {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-.email-editor-designer {
+.email-editor {
     display: flex;
     flex-grow: 1;
 }
 
-.email-editor-window-wrapper {
+.email-designer-container {
     flex-grow: 1;
     display: flex;
     align-items: center;
@@ -282,9 +253,11 @@
 
 <script setup lang="ts">
     import { nextTick, ref, watch } from "vue";
-    import ComponentToolbox from "./emailToolbox.partial.obs";
+    import ComponentToolset from "./componentToolset.partial.obs";
     import { buttonComponent, dividerComponent, imageComponent, lavaComponent, leftColumnSectionComponent, messageComponent, oneColumnSectionComponent, paragraphComponent, rightColumnSectionComponent, rsvpComponent, threeColumnSectionComponent, titleComponent, twoColumnSectionComponent, videoComponent } from "./componentTypes.partial";
     import EditorDesigner from "./emailDesigner.partial.obs";
+    import SideMenu from "./sideMenu.partial.obs";
+    import MenuItem from "./menuItem.partial.obs";
     import GlobalToolset from "./toolsets/globalToolset.partial.obs";
     import SectionComponentToolset from "./toolsets/sectionComponentToolset.partial.obs";
     import { EditorComponent, EditorComponentType } from "./types.partial";
@@ -304,8 +277,8 @@
 
     const editorInnerHtml = ref<string>(config.message ?? "");
     const editorDesigner = ref<InstanceType<typeof EditorDesigner> | undefined>();
-    const toolboxMenuItem = ref<"content" | "design">("content");
-    const toolboxSubMenuTab = ref<string>("");
+    const selectedMainMenuItem = ref<"content" | "design">("content");
+    const selectedContentTab = ref<string>("");
     const draggingComponentType = ref<EditorComponentType | null | undefined>();
     const sectionCategory = ref<string>("");
     const sectionCategories = ref<ListItemBag[]>([]);
@@ -320,7 +293,7 @@
 
     // #region Computed Values
 
-    const toolboxSubMenuTabs: string[] = [
+    const contentTabs: string[] = [
         "Components",
         "Sections"
     ];
@@ -354,6 +327,9 @@
      * and passes arguments to the child editor iframe to handle the event in the editor.
      */
     function onComponentTypeDragStart(componentType: EditorComponentType): void {
+        console.log("emailEditor.onComponentTypeDragStart", componentType.typeName);
+
+        document.addEventListener("mouseup", onComponentTypeDragEnd);
         draggingComponentType.value = componentType;
     }
 
@@ -364,6 +340,9 @@
      * This is the last event that is occurs in the drag-drop cycle.
      */
     function onComponentTypeDragEnd(): void {
+        console.log("emailEditor.onComponentTypeDragEnd");
+
+        document.removeEventListener("mouseup", onComponentTypeDragEnd);
         draggingComponentType.value = null;
     }
 
@@ -395,16 +374,16 @@
         }
     }
 
-    function onToolboxMenuItemClicked(item: "content" | "design"): void {
-        if (toolboxMenuItem.value !== item) {
-            toolboxMenuItem.value = item;
+    function onMainMenuItemClicked(item: "content" | "design"): void {
+        if (selectedMainMenuItem.value !== item) {
+            selectedMainMenuItem.value = item;
             selectedComponent.value = null;
         }
     }
 
-    function onToolboxSubMenuTabClicked(item: string): void {
-        if (toolboxSubMenuTab.value !== item) {
-            toolboxSubMenuTab.value = item;
+    function onContentTabSelected(item: string): void {
+        if (selectedContentTab.value !== item) {
+            selectedContentTab.value = item;
             selectedComponent.value = null;
         }
     }
@@ -417,12 +396,12 @@
         if (component !== oldComponent) {
             if (component) {
                 if (component.type.typeName !== "section") {
-                    toolboxSubMenuTab.value = "Components";
+                    selectedContentTab.value = "Components";
                     areComponentPropertiesShown.value = true;
                     areSectionPropertiesShown.value = false;
                 }
                 else {
-                    toolboxSubMenuTab.value = "Sections";
+                    selectedContentTab.value = "Sections";
                     areComponentPropertiesShown.value = false;
                     areSectionPropertiesShown.value = true;
                 }
