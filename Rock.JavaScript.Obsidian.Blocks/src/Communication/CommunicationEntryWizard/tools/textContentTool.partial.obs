@@ -7,7 +7,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -23,8 +23,8 @@
     // #region Event Handlers
 
     function onInput(): void {
-        if (textContent.value !== props.modelValue.textContent) {
-            textContent.value = props.modelValue.textContent ?? "";
+        if (textContent.value !== props.element.textContent) {
+            textContent.value = props.element.textContent ?? "";
         }
     }
 
@@ -32,8 +32,8 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, (newValue, oldValue) => {
-        textContent.value = props.modelValue.textContent ?? "";
+    watch(() => props.element, (newValue, oldValue) => {
+        textContent.value = props.element.textContent ?? "";
 
         if (oldValue) {
             oldValue.removeEventListener("input", onInput);
@@ -48,8 +48,8 @@
     });
 
     watch(textContent, (value: string) => {
-        if (value !== props.modelValue.textContent) {
-            props.modelValue.textContent = value || null;
+        if (value !== props.element.textContent) {
+            props.element.textContent = value || null;
         }
     });
 
@@ -58,7 +58,7 @@
     // #region Hooks
 
     onUnmounted(() => {
-        props.modelValue.removeEventListener("input", onInput);
+        props.element.removeEventListener("input", onInput);
     });
 
     // #endregion

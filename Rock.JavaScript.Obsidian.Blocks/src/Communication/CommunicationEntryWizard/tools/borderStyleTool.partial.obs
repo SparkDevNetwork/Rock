@@ -8,7 +8,7 @@
     import { BorderStyle } from "./types.partial";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -16,18 +16,18 @@
 
     // #region Values
 
-    const borderStyle = ref<BorderStyle>(props.modelValue.style.borderStyle as BorderStyle);
+    const borderStyle = ref<BorderStyle>(props.element.style.borderStyle as BorderStyle);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        borderStyle.value = props.modelValue.style.borderStyle as BorderStyle;
+    watch(() => props.element, () => {
+        borderStyle.value = props.element.style.borderStyle as BorderStyle;
     });
 
     watch(borderStyle, (value: string) => {
-        props.modelValue.style.borderStyle = value;
+        props.element.style.borderStyle = value;
     });
 
     // #endregion

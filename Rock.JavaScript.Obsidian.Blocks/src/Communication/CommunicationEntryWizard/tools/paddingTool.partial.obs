@@ -40,7 +40,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -48,55 +48,55 @@
 
     // #region Values
 
-    const paddingTop = ref<number>(parseInt(props.modelValue.style.paddingTop || "0"));
-    const paddingBottom = ref<number>(parseInt(props.modelValue.style.paddingBottom || "0"));
-    const paddingRight = ref<number>(parseInt(props.modelValue.style.paddingRight || "0"));
-    const paddingLeft = ref<number>(parseInt(props.modelValue.style.paddingLeft || "0"));
+    const paddingTop = ref<number>(parseInt(props.element.style.paddingTop || "0"));
+    const paddingBottom = ref<number>(parseInt(props.element.style.paddingBottom || "0"));
+    const paddingRight = ref<number>(parseInt(props.element.style.paddingRight || "0"));
+    const paddingLeft = ref<number>(parseInt(props.element.style.paddingLeft || "0"));
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        paddingTop.value = parseInt(props.modelValue.style.paddingTop || "0");
-        paddingBottom.value = parseInt(props.modelValue.style.paddingBottom || "0");
-        paddingRight.value = parseInt(props.modelValue.style.paddingRight || "0");
-        paddingLeft.value = parseInt(props.modelValue.style.paddingLeft || "0");
+    watch(() => props.element, () => {
+        paddingTop.value = parseInt(props.element.style.paddingTop || "0");
+        paddingBottom.value = parseInt(props.element.style.paddingBottom || "0");
+        paddingRight.value = parseInt(props.element.style.paddingRight || "0");
+        paddingLeft.value = parseInt(props.element.style.paddingLeft || "0");
     });
 
     watch(paddingTop, (value: number) => {
         if (value) {
-            props.modelValue.style.paddingTop = `${value}px`;
+            props.element.style.paddingTop = `${value}px`;
         }
         else {
-            props.modelValue.style.paddingTop = "";
+            props.element.style.paddingTop = "";
         }
     });
 
     watch(paddingBottom, (value: number) => {
         if (value) {
-            props.modelValue.style.paddingBottom = `${value}px`;
+            props.element.style.paddingBottom = `${value}px`;
         }
         else {
-            props.modelValue.style.paddingBottom = "";
+            props.element.style.paddingBottom = "";
         }
     });
 
     watch(paddingRight, (value: number) => {
         if (value) {
-            props.modelValue.style.paddingRight = `${value}px`;
+            props.element.style.paddingRight = `${value}px`;
         }
         else {
-            props.modelValue.style.paddingRight = "";
+            props.element.style.paddingRight = "";
         }
     });
 
     watch(paddingLeft, (value: number) => {
         if (value) {
-            props.modelValue.style.paddingLeft = `${value}px`;
+            props.element.style.paddingLeft = `${value}px`;
         }
         else {
-            props.modelValue.style.paddingLeft = "";
+            props.element.style.paddingLeft = "";
         }
     });
 

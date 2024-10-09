@@ -10,7 +10,7 @@
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -27,8 +27,8 @@
     // #endregion
 
     function getElementBorderWidth(): number {
-        if (props.modelValue.style.borderWidth.endsWith("px")) {
-            return parseInt(props.modelValue.style.borderWidth);
+        if (props.element.style.borderWidth.endsWith("px")) {
+            return parseInt(props.element.style.borderWidth);
         }
         else {
             return 0;
@@ -37,16 +37,16 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
+    watch(() => props.element, () => {
         borderWidth.value = getElementBorderWidth();
     });
 
     watch(borderWidth, (value: number) => {
         if (value) {
-            props.modelValue.style.borderWidth = `${value}px`;
+            props.element.style.borderWidth = `${value}px`;
         }
         else {
-            props.modelValue.style.borderWidth = "";
+            props.element.style.borderWidth = "";
         }
 
         emit("elementBorderWidthUpdated");

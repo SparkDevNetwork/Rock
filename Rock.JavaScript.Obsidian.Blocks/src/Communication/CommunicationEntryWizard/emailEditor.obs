@@ -58,7 +58,7 @@
 
                                     <template v-else-if="item === 'Sections'">
                                         <div v-if="selectedComponent?.componentTypeName === 'section'">
-                                            <SectionComponentToolset :selectedComponent="selectedComponent"
+                                            <SectionComponentToolset :componentElement="selectedComponent.componentElement"
                                                                      @complete="onCompleteComponent"
                                                                      @delete="onDeleteComponent" />
                                         </div>
@@ -89,7 +89,7 @@
 
                         <div v-else-if="selectedMainMenuItem === 'design' && emailDesigner?.emailDocument" class="email-editor-toolbox-tray">
 
-                            <GlobalToolset :modelValue="emailDesigner.emailDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
+                            <GlobalToolset :document="emailDesigner.emailDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 

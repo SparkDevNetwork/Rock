@@ -19,7 +19,7 @@
     import { BorderStyle } from "./types.partial";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -27,68 +27,68 @@
 
     // #region Values
 
-    const borderTopStyle = ref<BorderStyle>(props.modelValue.style.borderTopStyle as BorderStyle);
-    const borderTopWidth = ref<number>(parseInt(props.modelValue.style.borderTopWidth || "0") || parseInt(props.modelValue.style.height || "0"));
-    const borderTopColor = ref<string>(props.modelValue.style.borderTopColor || props.modelValue.style.backgroundColor);
+    const borderTopStyle = ref<BorderStyle>(props.element.style.borderTopStyle as BorderStyle);
+    const borderTopWidth = ref<number>(parseInt(props.element.style.borderTopWidth || "0") || parseInt(props.element.style.height || "0"));
+    const borderTopColor = ref<string>(props.element.style.borderTopColor || props.element.style.backgroundColor);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        borderTopStyle.value = props.modelValue.style.borderTopStyle as BorderStyle;
-        borderTopWidth.value = parseInt(props.modelValue.style.borderTopWidth || "0") || parseInt(props.modelValue.style.height || "0");
-        borderTopColor.value = props.modelValue.style.borderTopColor || props.modelValue.style.backgroundColor;
+    watch(() => props.element, () => {
+        borderTopStyle.value = props.element.style.borderTopStyle as BorderStyle;
+        borderTopWidth.value = parseInt(props.element.style.borderTopWidth || "0") || parseInt(props.element.style.height || "0");
+        borderTopColor.value = props.element.style.borderTopColor || props.element.style.backgroundColor;
     });
 
     watch(borderTopStyle, (value: BorderStyle) => {
-        props.modelValue.style.borderTopStyle = value;
+        props.element.style.borderTopStyle = value;
 
         if (value) {
             // Explicitly clear the styles on the other sides
             // so the browser doesn't initialize them.
-            props.modelValue.style.borderBottomStyle = "none";
-            props.modelValue.style.borderRightStyle = "none";
-            props.modelValue.style.borderLeftStyle = "none";
+            props.element.style.borderBottomStyle = "none";
+            props.element.style.borderRightStyle = "none";
+            props.element.style.borderLeftStyle = "none";
         }
     });
 
     watch(borderTopWidth, (value: number) => {
         if (value) {
-            props.modelValue.style.borderTopWidth = `${value}px`;
+            props.element.style.borderTopWidth = `${value}px`;
 
             // Explicitly clear the styles on the other sides
             // so the browser doesn't initialize them.
-            props.modelValue.style.borderBottomWidth = "0";
-            props.modelValue.style.borderRightWidth = "0";
-            props.modelValue.style.borderLeftWidth = "0";
+            props.element.style.borderBottomWidth = "0";
+            props.element.style.borderRightWidth = "0";
+            props.element.style.borderLeftWidth = "0";
 
             // Make sure the divider is using border box and that there is no height.
-            props.modelValue.style.boxSizing = "border-box";
-            props.modelValue.style.height = `${value}px`;
+            props.element.style.boxSizing = "border-box";
+            props.element.style.height = `${value}px`;
         }
         else {
-            props.modelValue.style.borderTopWidth = "";
-            props.modelValue.style.borderBottomWidth = "";
-            props.modelValue.style.borderRightStyle = "";
-            props.modelValue.style.borderLeftStyle = "";
-            props.modelValue.style.boxSizing = "";
-            props.modelValue.style.height = "";
+            props.element.style.borderTopWidth = "";
+            props.element.style.borderBottomWidth = "";
+            props.element.style.borderRightStyle = "";
+            props.element.style.borderLeftStyle = "";
+            props.element.style.boxSizing = "";
+            props.element.style.height = "";
         }
     });
 
     watch(borderTopColor, (value: string) => {
-        props.modelValue.style.borderTopColor = value;
+        props.element.style.borderTopColor = value;
 
         if (value) {
             // Explicitly clear the styles on the other sides
             // so the browser doesn't initialize them.
-            props.modelValue.style.borderBottomColor = "transparent";
-            props.modelValue.style.borderRightColor = "transparent";
-            props.modelValue.style.borderLeftColor = "transparent";
+            props.element.style.borderBottomColor = "transparent";
+            props.element.style.borderRightColor = "transparent";
+            props.element.style.borderLeftColor = "transparent";
 
             // Make sure the background is removed.
-            props.modelValue.style.background = "";
+            props.element.style.background = "";
         }
     });
 

@@ -3,25 +3,25 @@
                           @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
-                <InnerHtmlTool :modelValue="modelValue.componentElement"
+                <InnerHtmlTool :element="componentElement"
                                mode="html" />
             </Accordion>
 
             <Accordion title="Typography">
-                <FontComboTool :modelValue="modelValue.componentElement" />
+                <FontComboTool :element="componentElement" />
             </Accordion>
 
             <Accordion title="Spacing & Layout">
-                <TextAlignTool :modelValue="modelValue.componentElement" />
-                <PaddingTool :modelValue="modelValue.componentElement" />
+                <TextAlignTool :element="componentElement" />
+                <PaddingTool :element="componentElement" />
             </Accordion>
 
             <Accordion title="Borders & Effects">
-                <BorderComboTool :modelValue="modelValue.componentElement" />
+                <BorderComboTool :element="componentElement" />
             </Accordion>
 
             <Accordion title="Background">
-                <BackgroundColorTool :modelValue="modelValue.componentElement" />
+                <BackgroundColorTool :element="componentElement" />
             </Accordion>
         </AccordionGroup>
     </ComponentToolsetBase>
@@ -38,11 +38,10 @@
     import InnerHtmlTool from "../tools/innerHtmlTool.partial.obs";
     import PaddingTool from "../tools/paddingTool.partial.obs";
     import TextAlignTool from "../tools/textAlignTool.partial.obs";
-    import { EditorComponent } from "../types.partial";
 
     defineProps({
-        modelValue: {
-            type: Object as PropType<EditorComponent>,
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
             required: true
         }
     });

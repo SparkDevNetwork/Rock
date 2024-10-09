@@ -14,11 +14,10 @@
     import ComponentToolsetBase from "./componentToolsetBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
-    import { EditorComponent } from "../types.partial";
 
     defineProps({
-        modelValue: {
-            type: Object as PropType<EditorComponent>,
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
             required: true
         }
     });

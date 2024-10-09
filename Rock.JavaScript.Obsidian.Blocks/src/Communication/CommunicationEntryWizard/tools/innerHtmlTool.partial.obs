@@ -9,7 +9,7 @@
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -22,16 +22,16 @@
     // #region Values
 
     // Initialized in the immediate watcher below.
-    const innerHtml = ref<string>(props.modelValue.innerHTML ?? "");
+    const innerHtml = ref<string>(props.element.innerHTML ?? "");
 
     // #endregion
 
     // #region Event Handlers
 
     function onInput(): void {
-        if (innerHtml.value !== props.modelValue.innerHTML) {
+        if (innerHtml.value !== props.element.innerHTML) {
             console.log("updating reactive innerHtml value");
-            innerHtml.value = props.modelValue.innerHTML;
+            innerHtml.value = props.element.innerHTML;
         }
     }
 
@@ -39,8 +39,8 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, (newValue, oldValue) => {
-        innerHtml.value = props.modelValue.innerHTML;
+    watch(() => props.element, (newValue, oldValue) => {
+        innerHtml.value = props.element.innerHTML;
 
         if (oldValue) {
             oldValue.removeEventListener("input", onInput);
@@ -55,9 +55,9 @@
     });
 
     watch(innerHtml, (value: string) => {
-        if (value !== props.modelValue.innerHTML) {
+        if (value !== props.element.innerHTML) {
             console.log("updating element's innerHTML");
-            props.modelValue.innerHTML = value;
+            props.element.innerHTML = value;
         }
     });
 
@@ -66,7 +66,7 @@
     // #region Hooks
 
     onUnmounted(() => {
-        props.modelValue.removeEventListener("input", onInput);
+        props.element.removeEventListener("input", onInput);
     });
 
     // #endregion

@@ -1,5 +1,5 @@
 <template>
-    <FontFamilyToolBase v-model="fontFamily"
+    <FontFamilyToolBase element="fontFamily"
                         :label="label" />
 
     <NumberBox v-model="fontSize"
@@ -122,7 +122,7 @@ svg {
     import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -220,8 +220,8 @@ svg {
 
     // #region Watchers
 
-    watch([() => props.modelValue, () => props.tagName], async () => {
-        const ownerDocument = props.modelValue.ownerDocument;
+    watch([() => props.element, () => props.tagName], async () => {
+        const ownerDocument = props.element.ownerDocument;
         const ownerWindow = ownerDocument.defaultView;
 
         if (!ownerWindow) {
@@ -229,7 +229,7 @@ svg {
         }
 
         let loaded = false;
-        for (const stylesheet of props.modelValue.ownerDocument.styleSheets) {
+        for (const stylesheet of props.element.ownerDocument.styleSheets) {
             const ownerNode = stylesheet.ownerNode;
 
             if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
@@ -283,19 +283,19 @@ svg {
     // should be added/updated with the new styles.
     watch(cssRuleset, () => {
         if (cssRuleset.value) {
-            const tag = props.modelValue.querySelector(`style.rock-design-${props.tagName}`);
-            const styleTag = props.modelValue.ownerDocument.createElement("style");
+            const tag = props.element.querySelector(`style.rock-design-${props.tagName}`);
+            const styleTag = props.element.ownerDocument.createElement("style");
             styleTag.textContent = cssRuleset.value;
             styleTag.classList.add(`rock-design-${props.tagName}`);
             if (tag) {
                 tag.replaceWith(styleTag);
             }
             else {
-                props.modelValue.append(styleTag);
+                props.element.append(styleTag);
             }
         }
         else {
-            const tag = props.modelValue.querySelector(`style.rock-design-${props.tagName}`);
+            const tag = props.element.querySelector(`style.rock-design-${props.tagName}`);
             if (tag) {
                 tag.remove();
             }

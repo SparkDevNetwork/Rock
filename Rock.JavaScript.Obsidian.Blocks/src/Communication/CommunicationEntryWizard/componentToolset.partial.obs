@@ -1,47 +1,47 @@
 <template>
     <div>
         <TitleComponentToolset v-if="selectedComponent.componentTypeName === 'title'"
-                               :modelValue="selectedComponent"
+                               :componentElement="selectedComponent.componentElement"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')" />
 
         <VideoComponentToolset v-else-if="selectedComponent.componentTypeName === 'video'"
-                               :modelValue="selectedComponent"
+                               :componentElement="selectedComponent.componentElement"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')" />
 
         <ButtonComponentToolset v-else-if="selectedComponent.componentTypeName === 'button'"
-                                :modelValue="selectedComponent"
+                                :componentElement="selectedComponent.componentElement"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')" />
 
         <TextComponentToolset v-else-if="selectedComponent.componentTypeName === 'text'"
-                              :modelValue="selectedComponent"
+                              :componentElement="selectedComponent.componentElement"
                               @complete="$emit('complete')"
                               @delete="$emit('delete')" />
 
         <DividerComponentToolset v-else-if="selectedComponent.componentTypeName === 'divider'"
-                                 :modelValue="selectedComponent"
+                                 :componentElement="selectedComponent.componentElement"
                                  @complete="$emit('complete')"
                                  @delete="$emit('delete')" />
 
         <AdaptiveMessageComponentToolset v-else-if="selectedComponent.componentTypeName === 'message'"
-                                         :modelValue="selectedComponent"
+                                         :componentElement="selectedComponent.componentElement"
                                          @complete="$emit('complete')"
                                          @delete="$emit('delete')" />
 
         <ImageComponentToolset v-else-if="selectedComponent.componentTypeName === 'image'"
-                               :modelValue="selectedComponent"
+                               :componentElement="selectedComponent.componentElement"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')" />
 
         <CodeComponentToolset v-else-if="selectedComponent.componentTypeName === 'code'"
-                              :modelValue="selectedComponent"
+                              :componentElement="selectedComponent.componentElement"
                               @complete="$emit('complete')"
                               @delete="$emit('delete')" />
 
         <RsvpComponentToolset v-else-if="selectedComponent.componentTypeName === 'rsvp'"
-                              :modelValue="selectedComponent"
+                              :componentElement="selectedComponent.componentElement"
                               @complete="$emit('complete')"
                               @delete="$emit('delete')" />
 

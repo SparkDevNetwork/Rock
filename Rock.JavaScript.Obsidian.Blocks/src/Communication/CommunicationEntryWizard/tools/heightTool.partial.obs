@@ -21,7 +21,7 @@
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -49,22 +49,22 @@
 
     // #region Values
 
-    const height = ref<number>(parseInt(props.modelValue.style.height || "0"));
+    const height = ref<number>(parseInt(props.element.style.height || "0"));
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        height.value = parseInt(props.modelValue.style.height || "0");
+    watch(() => props.element, () => {
+        height.value = parseInt(props.element.style.height || "0");
     });
 
     watch(height, (value: number) => {
         if (value) {
-            props.modelValue.style.height = `${value}px`;
+            props.element.style.height = `${value}px`;
         }
         else {
-            props.modelValue.style.height = "";
+            props.element.style.height = "";
         }
     });
 

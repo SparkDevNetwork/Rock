@@ -7,11 +7,11 @@
     <TransitionVerticalCollapse>
         <div v-if="hasBorder">
             <BorderColorTool ref="borderColorTool"
-                             :modelValue="modelValue"
+                             :element="element"
                              @elementBorderColorUpdated="onElementBorderColorUpdated" />
 
             <BorderWidthTool ref="borderWidthTool"
-                             :modelValue="modelValue"
+                             :element="element"
                              @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
         </div>
     </TransitionVerticalCollapse>
@@ -25,7 +25,7 @@
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -37,7 +37,7 @@
 
     // #region Values
 
-    const hasBorder = ref<boolean>(!!(props.modelValue.style.border || props.modelValue.style.borderColor || props.modelValue.style.borderWidth));
+    const hasBorder = ref<boolean>(!!(props.element.style.border || props.element.style.borderColor || props.element.style.borderWidth));
     const borderColorTool = ref<InstanceType<typeof BorderColorTool> | undefined>();
     const borderWidthTool = ref<InstanceType<typeof BorderWidthTool> | undefined>();
 
@@ -46,26 +46,26 @@
     // #region Event Handlers
 
     function onElementBorderColorUpdated(): void {
-        if (props.modelValue.style.borderColor) {
-            if (!props.modelValue.style.borderStyle) {
+        if (props.element.style.borderColor) {
+            if (!props.element.style.borderStyle) {
                 // Ensure the element has a border style if a border color is specified.
-                props.modelValue.style.borderStyle = "solid";
+                props.element.style.borderStyle = "solid";
             }
         }
         else {
-            props.modelValue.style.borderStyle = "";
+            props.element.style.borderStyle = "";
         }
     }
 
     function onElementBorderWidthUpdated(): void {
-        if (props.modelValue.style.borderWidth) {
-            if (!props.modelValue.style.borderStyle) {
+        if (props.element.style.borderWidth) {
+            if (!props.element.style.borderStyle) {
                 // Ensure the element has a border style if a border color is specified.
-                props.modelValue.style.borderStyle = "solid";
+                props.element.style.borderStyle = "solid";
             }
         }
         else {
-            props.modelValue.style.borderStyle = "";
+            props.element.style.borderStyle = "";
         }
     }
 

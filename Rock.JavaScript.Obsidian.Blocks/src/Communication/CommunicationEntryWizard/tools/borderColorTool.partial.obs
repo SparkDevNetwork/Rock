@@ -8,7 +8,7 @@
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -20,18 +20,18 @@
 
     // #region Values
 
-    const borderColor = ref<string>(props.modelValue.style.borderColor);
+    const borderColor = ref<string>(props.element.style.borderColor);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        borderColor.value = props.modelValue.style.borderColor;
+    watch(() => props.element, () => {
+        borderColor.value = props.element.style.borderColor;
     });
 
     watch(borderColor, (value: string) => {
-        props.modelValue.style.borderColor = value;
+        props.element.style.borderColor = value;
         emit("elementBorderColorUpdated");
     });
 

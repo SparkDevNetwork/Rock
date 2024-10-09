@@ -1,5 +1,5 @@
 <template>
-    <FontFamilyToolBase v-model="fontFamily"
+    <FontFamilyToolBase element="fontFamily"
                         :label="label" />
 
     <NumberBox v-model="fontSize"
@@ -30,7 +30,7 @@
         </template>
     </MultiSelectButtonGroup>
 
-    <LineHeightTool :modelValue="modelValue" />
+    <LineHeightTool :element="element" />
 
     <SingleSelectButtonGroup v-model="textTransform" :disableLabel="true">
         <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
@@ -62,12 +62,11 @@
     import MultiSelectButtonGroup from "../controls/multiSelectButtonGroup.partial.obs";
     import SingleSelectButtonGroup from "../controls/singleSelectButtonGroup.partial.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -114,24 +113,24 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        fontFamily.value = props.modelValue.style.fontFamily;
-        fontColor.value = props.modelValue.style.color;
-        fontSize.value = props.modelValue.style.fontSize ? parseInt(props.modelValue.style.fontSize) : null;
+    watch(() => props.element, () => {
+        fontFamily.value = props.element.style.fontFamily;
+        fontColor.value = props.element.style.color;
+        fontSize.value = props.element.style.fontSize ? parseInt(props.element.style.fontSize) : null;
 
         const temp: ("bold" | "underline" | "italic")[] = [];
-        if (props.modelValue.style.fontWeight) {
+        if (props.element.style.fontWeight) {
             temp.push("bold");
         }
-        if (props.modelValue.style.fontStyle === "italic") {
+        if (props.element.style.fontStyle === "italic") {
             temp.push("italic");
         }
-        if (props.modelValue.style.textDecoration === "underline") {
+        if (props.element.style.textDecoration === "underline") {
             temp.push("underline");
         }
         fontStyleGroup.value = temp;
 
-        textTransform.value = props.modelValue.style.textTransform;
+        textTransform.value = props.element.style.textTransform;
     }, {
         // Since the reactive values are not initialized where defined above,
         // this needs to be immediate here.
@@ -139,47 +138,47 @@
     });
 
     watch(fontFamily, (value: string) => {
-        props.modelValue.style.fontFamily = value;
+        props.element.style.fontFamily = value;
     });
 
     watch(fontColor, (value: string) => {
-        props.modelValue.style.color = value;
+        props.element.style.color = value;
     });
 
     watch(fontSize, value => {
         if (value) {
-            props.modelValue.style.fontSize = `${fontSize.value}px`;
+            props.element.style.fontSize = `${fontSize.value}px`;
         }
         else {
-            props.modelValue.style.fontSize = "";
+            props.element.style.fontSize = "";
         }
     });
 
     watch(fontStyleGroup, value => {
         if (value.includes("bold")) {
-            props.modelValue.style.fontWeight = "bold";
+            props.element.style.fontWeight = "bold";
         }
         else {
-            props.modelValue.style.fontWeight = "";
+            props.element.style.fontWeight = "";
         }
 
         if (value.includes("italic")) {
-            props.modelValue.style.fontStyle = "italic";
+            props.element.style.fontStyle = "italic";
         }
         else {
-            props.modelValue.style.fontStyle = "";
+            props.element.style.fontStyle = "";
         }
 
         if (value.includes("underline")) {
-            props.modelValue.style.textDecoration = "underline";
+            props.element.style.textDecoration = "underline";
         }
         else {
-            props.modelValue.style.textDecoration = "";
+            props.element.style.textDecoration = "";
         }
     });
 
     watch(textTransform, (value: string) => {
-        props.modelValue.style.textTransform = value;
+        props.element.style.textTransform = value;
     });
 
     // #endregion

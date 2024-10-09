@@ -4,7 +4,7 @@
                               @delete="$emit('delete')">
             <AccordionGroup>
                 <Accordion title="General Settings">
-                    <TextContentTool :modelValue="headingElement" />
+                    <TextContentTool :element="headingElement" />
 
                     <DropDownList v-model="headingLevel"
                                   :items="headingLevels"
@@ -13,7 +13,7 @@
                 </Accordion>
 
                 <Accordion title="Typography">
-                    <FontComboTool :modelValue="headingElement"
+                    <FontComboTool :element="headingElement"
                                    :tagName="headingLevel" />
                 </Accordion>
             </AccordionGroup>
@@ -28,13 +28,12 @@
     import Accordion from "../controls/accordion.partial.obs";
     import FontComboTool from "../tools/fontComboTool.partial.obs";
     import TextContentTool from "../tools/textContentTool.partial.obs";
-    import { EditorComponent } from "../types.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
-        modelValue: {
-            type: Object as PropType<EditorComponent>,
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
             required: true
         }
     });
@@ -78,7 +77,7 @@
     // #region Functions
 
     function getHeadingElement(): HTMLHeadingElement | null {
-        return props.modelValue.componentElement?.querySelector("h1,h2,h3,h4,h5,h6") ?? null;
+        return props.componentElement.querySelector("h1,h2,h3,h4,h5,h6") ?? null;
     }
 
     // #endregion
@@ -86,13 +85,12 @@
     // #region Watchers
 
     watch(headingLevel, (value: HeadingLevel) => {
-        debugger;
         if (!value || !headingElement.value || headingElement.value?.tagName.toLowerCase() === value) {
             // No need to change heading level.
             return;
         }
 
-        const newHeadingElement = props.modelValue.componentElement.ownerDocument.createElement(value);
+        const newHeadingElement = props.componentElement.ownerDocument.createElement(value);
 
         // Copy attributes from old to new heading element.
         [...headingElement.value.attributes].forEach(attr => {

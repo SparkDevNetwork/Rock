@@ -10,7 +10,7 @@
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -33,22 +33,22 @@
 
     // #region Values
 
-    const borderRadius = ref<number>(parseInt(props.modelValue.style.borderRadius || "0"));
+    const borderRadius = ref<number>(parseInt(props.element.style.borderRadius || "0"));
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        borderRadius.value = parseInt(props.modelValue.style.borderRadius || "0");
+    watch(() => props.element, () => {
+        borderRadius.value = parseInt(props.element.style.borderRadius || "0");
     });
 
     watch(borderRadius, (value: number) => {
         if (value) {
-            props.modelValue.style.borderRadius = `${value}px`;
+            props.element.style.borderRadius = `${value}px`;
         }
         else {
-            props.modelValue.style.borderRadius = "";
+            props.element.style.borderRadius = "";
         }
     });
 

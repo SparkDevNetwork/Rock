@@ -10,7 +10,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -37,18 +37,18 @@
 
     // #region Values
 
-    const textAlign = ref<string>(props.modelValue.style.textAlign);
+    const textAlign = ref<string>(props.element.style.textAlign);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        textAlign.value = props.modelValue.style.textAlign;
+    watch(() => props.element, () => {
+        textAlign.value = props.element.style.textAlign;
     });
 
     watch(textAlign, (value: string) => {
-        props.modelValue.style.textAlign = value;
+        props.element.style.textAlign = value;
     });
 
     // #endregion

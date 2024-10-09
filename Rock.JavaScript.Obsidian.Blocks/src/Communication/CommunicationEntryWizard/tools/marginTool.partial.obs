@@ -85,7 +85,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -97,55 +97,55 @@
 
     // #region Values
 
-    const marginTop = ref<number>(parseInt(props.modelValue.style.marginTop || "0"));
-    const marginBottom = ref<number>(parseInt(props.modelValue.style.marginBottom || "0"));
-    const marginRight = ref<number>(parseInt(props.modelValue.style.marginRight || "0"));
-    const marginLeft = ref<number>(parseInt(props.modelValue.style.marginLeft || "0"));
+    const marginTop = ref<number>(parseInt(props.element.style.marginTop || "0"));
+    const marginBottom = ref<number>(parseInt(props.element.style.marginBottom || "0"));
+    const marginRight = ref<number>(parseInt(props.element.style.marginRight || "0"));
+    const marginLeft = ref<number>(parseInt(props.element.style.marginLeft || "0"));
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        marginTop.value = parseInt(props.modelValue.style.marginTop || "0");
-        marginBottom.value = parseInt(props.modelValue.style.marginBottom || "0");
-        marginRight.value = parseInt(props.modelValue.style.marginRight || "0");
-        marginLeft.value = parseInt(props.modelValue.style.marginLeft || "0");
+    watch(() => props.element, () => {
+        marginTop.value = parseInt(props.element.style.marginTop || "0");
+        marginBottom.value = parseInt(props.element.style.marginBottom || "0");
+        marginRight.value = parseInt(props.element.style.marginRight || "0");
+        marginLeft.value = parseInt(props.element.style.marginLeft || "0");
     });
 
     watch(marginTop, (value: number) => {
         if (value) {
-            props.modelValue.style.marginTop = `${value}px`;
+            props.element.style.marginTop = `${value}px`;
         }
         else {
-            props.modelValue.style.marginTop = "";
+            props.element.style.marginTop = "";
         }
     });
 
     watch(marginBottom, (value: number) => {
         if (value) {
-            props.modelValue.style.marginBottom = `${value}px`;
+            props.element.style.marginBottom = `${value}px`;
         }
         else {
-            props.modelValue.style.marginBottom = "";
+            props.element.style.marginBottom = "";
         }
     });
 
     watch(marginRight, (value: number) => {
         if (value) {
-            props.modelValue.style.marginRight = `${value}px`;
+            props.element.style.marginRight = `${value}px`;
         }
         else {
-            props.modelValue.style.marginRight = "";
+            props.element.style.marginRight = "";
         }
     });
 
     watch(marginLeft, (value: number) => {
         if (value) {
-            props.modelValue.style.marginLeft = `${value}px`;
+            props.element.style.marginLeft = `${value}px`;
         }
         else {
-            props.modelValue.style.marginLeft = "";
+            props.element.style.marginLeft = "";
         }
     });
 

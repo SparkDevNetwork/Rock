@@ -3,8 +3,8 @@
                           @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="Row Settings">
-                <BackgroundColorTool :modelValue="selectedComponent.componentElement" />
-                <BorderComboTool :modelValue="selectedComponent.componentElement" />
+                <BackgroundColorTool :element="componentElement" />
+                <BorderComboTool :element="componentElement" />
             </Accordion>
 
             <Accordion title="Columns">
@@ -21,11 +21,10 @@
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import BackgroundColorTool from "../tools/backgroundColorTool.partial.obs";
     import BorderComboTool from "../tools/borderComboTool.partial.obs";
-    import { EditorComponent } from "../types.partial";
 
     const props = defineProps({
-        selectedComponent: {
-            type: Object as PropType<EditorComponent>,
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
             required: true
         }
     });
@@ -37,15 +36,15 @@
 
     // #region Values
 
-    const backgroundColor = ref<string>(props.selectedComponent.componentElement.style.backgroundColor ?? "");
-    const columnElements = ref<HTMLElement[]>([...props.selectedComponent.componentElement.querySelectorAll(".dropzone")].map(e => <HTMLElement>e));
+    const backgroundColor = ref<string>(props.componentElement.style.backgroundColor ?? "");
+    const columnElements = ref<HTMLElement[]>([...props.componentElement.querySelectorAll(".dropzone")].map(e => <HTMLElement>e));
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.selectedComponent, () => {
-        backgroundColor.value = props.selectedComponent?.componentElement.style.backgroundColor ?? "";
+    watch(() => props.componentElement, () => {
+        backgroundColor.value = props.componentElement.style.backgroundColor ?? "";
     });
 
     // #endregion

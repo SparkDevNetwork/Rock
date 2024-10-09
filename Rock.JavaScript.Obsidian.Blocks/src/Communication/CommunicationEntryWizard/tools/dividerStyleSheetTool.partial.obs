@@ -24,7 +24,7 @@
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         },
@@ -111,8 +111,8 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        const ownerDocument = props.modelValue.ownerDocument;
+    watch(() => props.element, () => {
+        const ownerDocument = props.element.ownerDocument;
         const ownerWindow = ownerDocument.defaultView;
 
         if (!ownerWindow) {
@@ -120,7 +120,7 @@
         }
 
         let loaded = false;
-        for (const stylesheet of props.modelValue.ownerDocument.styleSheets) {
+        for (const stylesheet of props.element.ownerDocument.styleSheets) {
             const ownerNode = stylesheet.ownerNode;
 
             if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
@@ -158,21 +158,21 @@
     // should be added/updated with the new styles.
     watch(cssRuleset, () => {
         if (cssRuleset.value) {
-            const newStyleElement = props.modelValue.ownerDocument.createElement("style");
+            const newStyleElement = props.element.ownerDocument.createElement("style");
             newStyleElement.textContent = cssRuleset.value;
             newStyleElement.classList.add(props.styleCssClass);
 
-            const currentStyleElement = props.modelValue.querySelector(`style.${props.styleCssClass}`);
+            const currentStyleElement = props.element.querySelector(`style.${props.styleCssClass}`);
 
             if (currentStyleElement) {
                 currentStyleElement.replaceWith(newStyleElement);
             }
             else {
-                props.modelValue.append(newStyleElement);
+                props.element.append(newStyleElement);
             }
         }
         else {
-            const currentStyleElement = props.modelValue.querySelector(`style.${props.styleCssClass}`);
+            const currentStyleElement = props.element.querySelector(`style.${props.styleCssClass}`);
 
             if (currentStyleElement) {
                 currentStyleElement.remove();

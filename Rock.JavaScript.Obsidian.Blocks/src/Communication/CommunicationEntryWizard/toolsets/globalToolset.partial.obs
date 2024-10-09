@@ -4,44 +4,44 @@
             <DropDownList v-model="communicationTemplateGuidOrEmptyString"
                           :items="communicationTemplateItems"
                           label="Template" />
-            <WidthTool :modelValue="modelValue.body"
+            <WidthTool :element="document.body"
                        label="Content Area Width" />
-            <PaddingTool :modelValue="modelValue.body" />
-            <BackgroundColorTool :modelValue="modelValue.documentElement" />
-            <BackgroundColorTool :modelValue="modelValue.body"
+            <PaddingTool :element="document.body" />
+            <BackgroundColorTool :element="document.documentElement" />
+            <BackgroundColorTool :element="document.body"
                                  label="Body Color" />
-            <BackgroundImageComboTool :modelValue="modelValue.body" />
-            <BorderComboTool :modelValue="modelValue.body"
+            <BackgroundImageComboTool :element="document.body" />
+            <BorderComboTool :element="document.body"
                              label="Body Border" />
         </Accordion>
 
         <Accordion title="Typography">
-            <FontComboTool :modelValue="modelValue.body"
+            <FontComboTool :element="document.body"
                            label="Global Font" />
             <hr />
-            <FontStyleSheetTool :modelValue="modelValue.body"
+            <FontStyleSheetTool :element="document.body"
                                 label="Heading 1 Font"
                                 tagName="h1" />
             <hr />
-            <FontStyleSheetTool :modelValue="modelValue.body"
+            <FontStyleSheetTool :element="document.body"
                                 label="Heading 2 Font"
                                 tagName="h2" />
             <hr />
-            <FontStyleSheetTool :modelValue="modelValue.body"
+            <FontStyleSheetTool :element="document.body"
                                 label="Heading 3 Font"
                                 tagName="h3" />
             <hr />
-            <FontStyleSheetTool :modelValue="modelValue.body"
+            <FontStyleSheetTool :element="document.body"
                                 label="Paragraph Font"
                                 tagName="p" />
         </Accordion>
 
         <Accordion title="Button Styling">
-            <ButtonStyleSheetTool :modelValue="modelValue.body" />
+            <ButtonStyleSheetTool :element="document.body" />
         </Accordion>
 
         <Accordion title="Divider Styling">
-            <DividerStyleSheetTool :modelValue="modelValue.body" />
+            <DividerStyleSheetTool :element="document.body" />
         </Accordion>
     </AccordionGroup>
 </template>
@@ -65,7 +65,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     defineProps({
-        modelValue: {
+        document: {
             type: Object as PropType<Document>,
             required: true
         }

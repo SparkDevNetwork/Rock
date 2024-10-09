@@ -10,7 +10,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: String as PropType<string>,
             required: true
         },
@@ -60,14 +60,14 @@
 
     // #region Values
 
-    const internalValue = ref<string>(props.modelValue);
+    const internalValue = ref<string>(props.element);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        internalValue.value = props.modelValue;
+    watch(() => props.element, () => {
+        internalValue.value = props.element;
     });
 
     watch(internalValue, (value: string) => {

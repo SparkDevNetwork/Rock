@@ -36,7 +36,7 @@
     } as const;
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -44,20 +44,20 @@
 
     // #region Values
 
-    const hasBackgroundImage = ref<boolean>(!!props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]);
+    const hasBackgroundImage = ref<boolean>(!!props.element.dataset[dataAttributeKey.backgroundImageGuid]);
     const imageListItemBag = ref<ListItemBag | null | undefined>({
-        value: toGuidOrNull(props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]),
-        text: props.modelValue.dataset[dataAttributeKey.backgroundImageFileName]
+        value: toGuidOrNull(props.element.dataset[dataAttributeKey.backgroundImageGuid]),
+        text: props.element.dataset[dataAttributeKey.backgroundImageFileName]
     });
-    const imageStyle = ref<"tile" | "stretch" | undefined>(props.modelValue.style.backgroundRepeat === "repeat" ? "tile" : props.modelValue.style.backgroundRepeat === "no-repeat" ? "stretch" : undefined);
+    const imageStyle = ref<"tile" | "stretch" | undefined>(props.element.style.backgroundRepeat === "repeat" ? "tile" : props.element.style.backgroundRepeat === "no-repeat" ? "stretch" : undefined);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        const fileGuid = toGuidOrNull(props.modelValue.dataset[dataAttributeKey.backgroundImageGuid]);
-        const fileName = props.modelValue.dataset[dataAttributeKey.backgroundImageFileName];
+    watch(() => props.element, () => {
+        const fileGuid = toGuidOrNull(props.element.dataset[dataAttributeKey.backgroundImageGuid]);
+        const fileName = props.element.dataset[dataAttributeKey.backgroundImageFileName];
 
         if (fileGuid) {
             hasBackgroundImage.value = true;
@@ -86,32 +86,32 @@
         if (fileGuid) {
             const fileName = imageListItemBag.value?.text;
 
-            props.modelValue.style.backgroundImage = `url('/GetImage.ashx?guid=${fileGuid}')`;
+            props.element.style.backgroundImage = `url('/GetImage.ashx?guid=${fileGuid}')`;
 
             // These hold data that cannot be easily retrieved from style properties.
-            props.modelValue.dataset[dataAttributeKey.backgroundImageGuid] = fileGuid ?? "";
-            props.modelValue.dataset[dataAttributeKey.backgroundImageFileName] = fileName ?? "";
+            props.element.dataset[dataAttributeKey.backgroundImageGuid] = fileGuid ?? "";
+            props.element.dataset[dataAttributeKey.backgroundImageFileName] = fileName ?? "";
         }
         else {
-            props.modelValue.style.backgroundImage = "";
+            props.element.style.backgroundImage = "";
 
-            delete props.modelValue.dataset[dataAttributeKey.backgroundImageGuid];
-            delete props.modelValue.dataset[dataAttributeKey.backgroundImageFileName];
+            delete props.element.dataset[dataAttributeKey.backgroundImageGuid];
+            delete props.element.dataset[dataAttributeKey.backgroundImageFileName];
         }
     });
 
     watch(imageStyle, () => {
         if (imageStyle.value === "tile") {
-            props.modelValue.style.backgroundRepeat = "repeat";
-            props.modelValue.style.backgroundSize = "";
+            props.element.style.backgroundRepeat = "repeat";
+            props.element.style.backgroundSize = "";
         }
         else if (imageStyle.value === "stretch") {
-            props.modelValue.style.backgroundRepeat = "no-repeat";
-            props.modelValue.style.backgroundSize = "cover";
+            props.element.style.backgroundRepeat = "no-repeat";
+            props.element.style.backgroundSize = "cover";
         }
         else {
-            props.modelValue.style.backgroundRepeat = "";
-            props.modelValue.style.backgroundSize = "";
+            props.element.style.backgroundRepeat = "";
+            props.element.style.backgroundSize = "";
         }
     });
 

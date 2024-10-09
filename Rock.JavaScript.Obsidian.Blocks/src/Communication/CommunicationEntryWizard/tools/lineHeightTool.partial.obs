@@ -65,7 +65,7 @@ svg {
     import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
-        modelValue: {
+        element: {
             type: Object as PropType<HTMLElement>,
             required: true
         }
@@ -73,18 +73,18 @@ svg {
 
     // #region Values
 
-    const lineHeight = ref<string>(props.modelValue.style.lineHeight);
+    const lineHeight = ref<string>(props.element.style.lineHeight);
 
     // #endregion
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        lineHeight.value = props.modelValue.style.lineHeight;
+    watch(() => props.element, () => {
+        lineHeight.value = props.element.style.lineHeight;
     });
 
     watch(lineHeight, (value: string) => {
-        props.modelValue.style.lineHeight = value;
+        props.element.style.lineHeight = value;
     });
 
     // #endregion
