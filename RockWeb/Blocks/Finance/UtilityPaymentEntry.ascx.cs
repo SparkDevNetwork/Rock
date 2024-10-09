@@ -2312,7 +2312,9 @@ mission. We are so grateful for your commitment.</p>
             bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             bool userLoggedIn = CurrentPerson != null;
 
-            acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
+            var addressTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuid();
+            var addressType = DefinedValueCache.Get( addressTypeGuid );
+            acAddress.Label = givingAsBusiness ? "Business Address" : addressType.Value + " Address";
             pnbPhone.Label = givingAsBusiness ? "Business Phone" : "Phone";
             txtEmail.Label = givingAsBusiness ? "Business Email" : "Email";
 

@@ -64,7 +64,17 @@ namespace Rock.Web.UI
         {
             base.OnLoad( e );
 
-            if ( Block is IRockWebBlockType webBlock )
+            /*
+                 10/08/2024 - NA
+
+                 An IRockWebBlockType (Obsidian block) should generally never be involved in
+                 an IsPostBack, so it should be able to ignore these events and avoid
+                 reloading its content.
+
+                 Reason: The Obsidian block content was being reloaded and then discarded.
+                         https://app.asana.com/0/1200625776837488/1206779635354257/f
+            */
+            if ( Block is IRockWebBlockType webBlock && !IsPostBack )
             {
                 var pageTask = new PageAsyncTask( async () =>
                 {
@@ -78,7 +88,6 @@ namespace Rock.Web.UI
 
                 Page.RegisterAsyncTask( pageTask );
             }
-        
         }
 
         /// <inheritdoc/>

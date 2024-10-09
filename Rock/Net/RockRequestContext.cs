@@ -223,6 +223,19 @@ namespace Rock.Net
         /// </summary>
         internal PageCache Page => _pageCache;
 
+        /// <summary>
+        /// <para>
+        /// The unique identifier of the interaction related to the original
+        /// page request. For block actions, this will be the interaction of
+        /// the initial page load.
+        /// </para>
+        /// <para>
+        /// This is a best effort value and may not match the actual value in
+        /// all edge cases.
+        /// </para>
+        /// </summary>
+        internal Guid RelatedInteractionGuid { get; set; } = Guid.NewGuid();
+
         #endregion
 
         #region Constructors

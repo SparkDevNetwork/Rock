@@ -30,6 +30,7 @@ using System.Web;
 
 using Rock.Bus.Message;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -755,6 +756,9 @@ namespace Rock.Data
 
             List<ITransaction> indexTransactions = new List<ITransaction>();
             var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
+            var addInteractionEntityTransactions = new List<AddInteractionEntityTransaction>();
+            var interactionGuid = RockRequestContextAccessor.Current?.RelatedInteractionGuid;
+
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -783,8 +787,9 @@ namespace Rock.Data
                     }
                 }
 
-                // Check if this item should be processed by the content collection.
                 var itemEntityTypeCache = EntityTypeCache.Get( item.Entity.TypeId );
+
+                // Check if this item should be processed by the content collection.
                 if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentCollectionIndexingEnabled )
                 {
                     // We only handle deleted states here. The detail blocks where
@@ -830,10 +835,20 @@ namespace Rock.Data
                         };
                     }, TaskContinuationOptions.ExecuteSynchronously );
                 }
+
+                // If we are supposed to track this entity and the Interaction
+                // that it's creation is related to then prepare the transaction
+                // that will be queued up later.
+                if ( interactionGuid.HasValue && itemEntityTypeCache?.IsRelatedToInteractionTrackedOnCreate == true && item.PreSaveState == EntityContextState.Added )
+                {
+                    var transaction = new AddInteractionEntityTransaction( itemEntityTypeCache.Id, item.Entity.Id, interactionGuid.Value );
+
+                    addInteractionEntityTransactions.Add( transaction );
+                }
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( indexTransactions.Any() )
+            if ( indexTransactions.Any() || deleteContentCollectionIndexingMsgs.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
@@ -843,6 +858,16 @@ namespace Rock.Data
                         indexTransactions.ForEach( t => t.Enqueue() );
                         deleteContentCollectionIndexingMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
+                } );
+            }
+
+            // If we had any InteractionEntity transactions to process then
+            // queue them up now.
+            if ( addInteractionEntityTransactions.Any() )
+            {
+                ExecuteAfterCommit( () =>
+                {
+                    addInteractionEntityTransactions.ForEach( t => t.Enqueue() );
                 } );
             }
         }

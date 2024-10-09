@@ -53,6 +53,7 @@
         <Column name="access"
                 title="Access"
                 field="access"
+                :excludeFromExport="true"
                 :filter="pickExistingValueFilter"
                 :filterValue="getAccessRowFilterValue"
                 :quickFilterValue="getAccessRowFilterValue"
@@ -63,6 +64,24 @@
 
             <template #format="{ row }">
                 <span v-html="getAccessText(row.preAllowOrDeny, row.postAllowOrDeny)"></span>
+            </template>
+
+        </Column>
+
+        <Column name="exportAccess"
+                title="Access"
+                field="access"
+                :hideOnScreen="true"
+                :filter="pickExistingValueFilter"
+                :filterValue="getAccessRowFilterValue"
+                :quickFilterValue="getAccessRowFilterValue"
+                :sortValue="getAccessRowSortValue"
+                width="8%"
+                visiblePriority="md"
+                itemClass="justify-content-center">
+
+            <template #format="{ row }">
+                <span v-html="getAccessTextForExport(row.preAllowOrDeny, row.postAllowOrDeny)"></span>
             </template>
 
         </Column>
@@ -89,6 +108,23 @@
         <Column name="order"
                 title="Order"
                 field="order"
+                :excludeFromExport="true"
+                :filter="pickExistingValueFilter"
+                :filterValue="getOrderRowFilterValue"
+                :quickFilterValue="getOrderRowFilterValue"
+                :sortValue="getOrderRowSortValue"
+                visiblePriority="md"
+                width="100">
+            <template #format="{ row }">
+                <span v-html="getOrderText(row.preOrder, row.postOrder)"></span>
+            </template>
+
+        </Column>
+
+        <Column name="exportOrder"
+                title="Order"
+                field="order"
+                :hideOnScreen="true"
                 :filter="pickExistingValueFilter"
                 :filterValue="getOrderRowFilterValue"
                 :quickFilterValue="getOrderRowFilterValue"
@@ -97,7 +133,7 @@
                 width="100">
 
             <template #format="{ row }">
-                <span v-html="getOrderText(row.preOrder, row.postOrder)"></span>
+                <span v-html="getOrderTextForExport(row.preOrder, row.postOrder)"></span>
             </template>
 
         </Column>
@@ -198,7 +234,7 @@
         return `${getAccessString(row.preAllowOrDeny as string)} ${getAccessString(row.postAllowOrDeny as string)}`;
     }
 
-        /**
+    /**
     * Gets the sort value to use for the order column.
     *
     * @param row The row to be sorted.
@@ -235,6 +271,48 @@
         if (preAllowOrDeny != postAllowOrDeny) {
             accessString = getAccessString(preAllowOrDeny);
             accessString += rightArrowIndicator;
+            accessString += getAccessString(postAllowOrDeny);
+        }
+
+        return accessString;
+    }
+
+    /**
+    * Gets the order text.
+    * @param preOrder The pre order or priority of the Auth entity.
+    * @param postOrder The post order or priority of the Auth entity.
+    */
+    function getOrderTextForExport(preOrder: number | null, postOrder: number | null): string {
+        let orderString = "";
+
+        if (preOrder != postOrder) {
+
+            if (preOrder !== null) {
+                orderString = preOrder != null ? preOrder.toString() : "";
+                orderString += " to ";
+            }
+
+            orderString += postOrder != null ? postOrder.toString() : "";
+        }
+
+        return orderString;
+    }
+
+    /**
+     * Gets the access text.
+     * @param preAllowOrDeny A flag indicating if the Auth entity was pre allowed or denied this action for the role.
+     * @param postAllowOrDeny A flag indicating if the Auth entity was post allowed or denied this action for the role.
+     */
+    function getAccessTextForExport(preAllowOrDeny: string | null, postAllowOrDeny: string | null): string {
+        let accessString = "";
+
+        if (preAllowOrDeny != postAllowOrDeny) {
+
+            if (preAllowOrDeny != null) {
+                accessString = getAccessString(preAllowOrDeny);
+                accessString += " to ";
+            }
+
             accessString += getAccessString(postAllowOrDeny);
         }
 

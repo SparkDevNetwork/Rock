@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks
@@ -37,5 +38,12 @@ namespace Rock.ViewModels.Blocks
         /// </summary>
         /// <value>The captcha that should be validated by the server.</value>
         public string Captcha { get; set; }
+
+        /// <summary>
+        /// Identifies the interaction that represented the original page load.
+        /// This is used to correlate actions in this request with the
+        /// original interaction.
+        /// </summary>
+        public Guid? InteractionGuid { get; set; }
     }
 }

@@ -532,6 +532,28 @@ namespace Rock.Tests.UnitTests.Rock.Cms
         #region SwitchThemeField
 
         [TestMethod]
+        public void SwitchThemeField_WithNumberInOnImport_ThrowsException()
+        {
+            var json = "{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"onImport\": 2}";
+
+            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            {
+                new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
+            }, "Import URLs must be of type string or an array of strings." );
+        }
+
+        [TestMethod]
+        public void SwitchThemeField_WithArrayOfNumbersObjectInOnImport_ThrowsException()
+        {
+            var json = "{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"onImport\": [2]}";
+
+            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            {
+                new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
+            }, "Import URLs must be of type string or an array of strings." );
+        }
+
+        [TestMethod]
         public void SwitchThemeField_WithNameAndVariable_Succeeds()
         {
             var json = "{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\"}";
@@ -581,6 +603,46 @@ namespace Rock.Tests.UnitTests.Rock.Cms
         }
 
         [TestMethod]
+        public void SwitchThemeField_WithFalseAndSingleImport_AddsImportWithOffImport()
+        {
+            var expectedUrl = "off.css";
+            var json = $"{{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"offImport\": \"{expectedUrl}\"}}";
+            var builderMock = new Mock<IThemeOverrideBuilder>();
+
+            builderMock.Setup( m => m.VariableValues ).Returns( new Dictionary<string, string>
+            {
+                ["test-variable"] = "false"
+            } );
+
+            var field = new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
+
+            field.AddCssOverrides( builderMock.Object );
+
+            builderMock.Verify( m => m.AddImport( expectedUrl ), Times.Once() );
+        }
+
+        [TestMethod]
+        public void SwitchThemeField_WithFalseAndTwoImports_AddsImportsWithOffImport()
+        {
+            var expectedUrl1 = "off1.css";
+            var expectedUrl2 = "off2.css";
+            var json = $"{{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"offImport\": [\"{expectedUrl1}\", \"{expectedUrl2}\"]}}";
+            var builderMock = new Mock<IThemeOverrideBuilder>();
+
+            builderMock.Setup( m => m.VariableValues ).Returns( new Dictionary<string, string>
+            {
+                ["test-variable"] = "false"
+            } );
+
+            var field = new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
+
+            field.AddCssOverrides( builderMock.Object );
+
+            builderMock.Verify( m => m.AddImport( expectedUrl1 ), Times.Once() );
+            builderMock.Verify( m => m.AddImport( expectedUrl2 ), Times.Once() );
+        }
+
+        [TestMethod]
         public void SwitchThemeField_WithTrue_AddsVariableWithOnValue()
         {
             var expectedVariable = "test-variable";
@@ -617,6 +679,46 @@ namespace Rock.Tests.UnitTests.Rock.Cms
             field.AddCssOverrides( builderMock.Object );
 
             builderMock.Verify( m => m.AddCustomContent( expectedContent ), Times.Once() );
+        }
+
+        [TestMethod]
+        public void SwitchThemeField_WithTrueAndSingleImport_AddsImportWithOffImport()
+        {
+            var expectedUrl = "on.css";
+            var json = $"{{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"onImport\": \"{expectedUrl}\"}}";
+            var builderMock = new Mock<IThemeOverrideBuilder>();
+
+            builderMock.Setup( m => m.VariableValues ).Returns( new Dictionary<string, string>
+            {
+                ["test-variable"] = "true"
+            } );
+
+            var field = new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
+
+            field.AddCssOverrides( builderMock.Object );
+
+            builderMock.Verify( m => m.AddImport( expectedUrl ), Times.Once() );
+        }
+
+        [TestMethod]
+        public void SwitchThemeField_WithTrueAndTwoImports_AddsImportsWithOffImport()
+        {
+            var expectedUrl1 = "on1.css";
+            var expectedUrl2 = "on2.css";
+            var json = $"{{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"onImport\": [\"{expectedUrl1}\", \"{expectedUrl2}\"]}}";
+            var builderMock = new Mock<IThemeOverrideBuilder>();
+
+            builderMock.Setup( m => m.VariableValues ).Returns( new Dictionary<string, string>
+            {
+                ["test-variable"] = "true"
+            } );
+
+            var field = new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
+
+            field.AddCssOverrides( builderMock.Object );
+
+            builderMock.Verify( m => m.AddImport( expectedUrl1 ), Times.Once() );
+            builderMock.Verify( m => m.AddImport( expectedUrl2 ), Times.Once() );
         }
 
         #endregion

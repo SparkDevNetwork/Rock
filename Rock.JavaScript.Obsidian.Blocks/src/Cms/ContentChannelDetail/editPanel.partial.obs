@@ -211,6 +211,8 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 
     const props = defineProps({
         modelValue: {
@@ -344,7 +346,7 @@
         }
 
         return {
-            key: attribute.key,
+            key: attribute.guid,
             name: attribute.name,
             description: attribute.description,
             isRequired: attribute.isRequired,
@@ -427,14 +429,16 @@
     // #region Item Attributes
 
     async function onAddAttribute(): Promise<void> {
-        itemAttribute.value = {} as PublicEditableAttributeBag;
+        itemAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
         attributeErrors.value = [];
     }
 
     const onEditAttribute = async (key: string): Promise<void> => {
         attributeErrors.value = [];
-        const selectedAttribute = itemAttributes.value.find(x => x.key === key);
+        const selectedAttribute = itemAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
             itemAttribute.value = selectedAttribute;
@@ -448,7 +452,7 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        itemAttributes.value = itemAttributes.value.filter(s => s.key !== key);
+        itemAttributes.value = itemAttributes.value.filter(s => s.guid !== key);
         reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
 
         // Update the grid.
@@ -469,14 +473,12 @@
             attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
         }
         else {
-
-
             if (itemAttribute.value) {
-                const index = itemAttributes.value.findIndex(a => a.key === itemAttribute.value?.key);
+                const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
                 if (index !== -1) {
                     // Get the updated attribute and rowItem.
-                    let editedAttribute = itemAttributes.value.find(a => a.key == itemAttribute.value?.key);
-                    let rowItem = attributesGridData.rows?.find(x => x.key == itemAttribute.value?.key);
+                    let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
+                    let rowItem = attributesGridData.rows?.find(x => x.key == itemAttribute.value?.guid);
 
                     if (editedAttribute) {
                         // Replace old attribute with updated attribute.
@@ -486,12 +488,13 @@
 
                     if (rowItem && attributesGridData.rows && editedAttribute) {
                         // Update GridRowItem so changes are reflected in the UI.
-                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
+                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.guid);
                         rowItem = convertToAttributeGridRowItem(editedAttribute);
                         attributesGridData.rows?.splice(rowIndex, 1, rowItem);
                     }
                 }
                 else {
+                    itemAttribute.value.guid = newGuid();
                     itemAttributes.value.push(itemAttribute.value);
 
                     // Add new RowItem to the grid to represent the newly added attribute.

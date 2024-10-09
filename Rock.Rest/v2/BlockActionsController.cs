@@ -255,6 +255,11 @@ namespace Rock.Rest.v2
                                     rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
                                 }
 
+                                if ( ( actionContext?.InteractionGuid ).HasValue )
+                                {
+                                    requestContext.RelatedInteractionGuid = actionContext.InteractionGuid.Value;
+                                }
+
                                 /*
                                     02/22/2024 - JSC
 
