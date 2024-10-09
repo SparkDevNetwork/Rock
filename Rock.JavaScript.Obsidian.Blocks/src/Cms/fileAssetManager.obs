@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Block :title="config?.title ?? 'Asset Manager'" hasFullscreen>
-        <div style="margin:-18px">
+        <div class="file-asset-manager-padding-override">
             <FileAssetManager v-model:openFolders="openFolders"
                               v-model:selectedFolder="selectedFolder"
                               :height="height"
