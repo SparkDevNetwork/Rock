@@ -226,9 +226,12 @@
 .grid-column-header {
     position: relative;
     display: flex;
+    justify-content: center;
     align-items: center;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+
+    min-width: 80px;
 }
 
 .grid-bordered .grid-column-header {
@@ -245,6 +248,10 @@
 
 .grid-column-title {
     flex: 1 1 auto;
+
+    white-space:nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .grid-sort-direction {
@@ -370,12 +377,17 @@
 }
 
 .grid-cell {
-    display: flex;
-    align-items: flex-start;
+    /* display: flex;
+    align-items: flex-start; */
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     overflow-x: hidden;
     align-self: center;
     line-height: 1.4;
+
+    min-width: 80px;
+    white-space:nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .grid-select-field:first-child {
