@@ -49,7 +49,6 @@
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
     import * as Dialogs from "@Obsidian/Utility/dialogs";
 
     const props = defineProps({
@@ -101,11 +100,6 @@
         multiple: {
             type: Boolean as PropType<boolean>,
             default: false
-        },
-
-        siteType: {
-            type: Number as PropType<SiteType | undefined>,
-            default: undefined
         },
 
         ...standardRockFormFieldProps
