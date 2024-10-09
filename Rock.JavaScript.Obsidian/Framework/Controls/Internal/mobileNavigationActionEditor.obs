@@ -17,13 +17,14 @@
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough, updateRefValue } from "@Obsidian/Utility/component";
     import { MobileNavigationActionType, MobileNavigationActionTypeDescription } from "@Obsidian/Enums/Controls/mobileNavigationActionType";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { MobileNavigationAction } from "@Obsidian/ViewModels/Controls/mobileNavigationAction";
     import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 
     type MobileNavigationActionTypeStrings = `${typeof MobileNavigationActionType[keyof typeof MobileNavigationActionType]}`;
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<any>,
+            type: Object as PropType<MobileNavigationAction>,
             required: true
         },
 
@@ -31,13 +32,13 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:modelValue", value: MobileNavigationAction): void
     }>();
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
-    const actionType = ref<MobileNavigationActionTypeStrings>(internalValue.value?.type ?? MobileNavigationActionType.None);
+    const actionType = ref<MobileNavigationActionTypeStrings>(internalValue.value?.type?.toString() as MobileNavigationActionTypeStrings ?? MobileNavigationActionType.None.toString());
     const pageCount = ref<number | null>(internalValue.value?.popCount ?? 1);
-    const page = ref<PageRouteValueBag | null>(internalValue.value?.page ?? null);
+    const page = ref<PageRouteValueBag | null>(internalValue.value?.page ? { page: internalValue.value.page } : null);
 
     const fieldProps = useStandardRockFormFieldProps(props);
 
@@ -71,7 +72,7 @@
     });
 
     watch(internalValue, () => {
-        const ivActionType = internalValue.value?.type?.toString() ?? MobileNavigationActionType.None;
+        const ivActionType = internalValue.value?.type?.toString() as MobileNavigationActionTypeStrings ?? MobileNavigationActionType.None.toString();
         if (ivActionType !== actionType.value) {
             actionType.value = ivActionType;
         }
@@ -82,14 +83,14 @@
         }
 
         const ivPage = internalValue.value?.page ?? page.value?.page ?? null;
-        if ((ivPage?.page?.value ?? null) !== (page.value?.page?.value ?? null)) {
+        if ((ivPage?.value ?? null) !== (page.value?.page?.value ?? null)) {
             page.value = { page: ivPage };
         }
     });
 
     function updateInternalValue(): void {
         updateRefValue(internalValue, {
-            type: parseInt(actionType.value, 10),
+            type: parseInt(actionType.value, 10) as SiteType,
             popCount: showPageCount.value ? pageCount.value : null,
             page: showPageGuid.value ? page.value?.page ?? null : null
         });
