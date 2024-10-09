@@ -96,7 +96,6 @@
                     <div class="email-designer-container">
                         <EmailDesigner ref="emailDesigner"
                                        :html="editorInnerHtml"
-                                       :draggingComponentTypeName="draggingComponentTypeName"
                                        v-model:selectedComponent="selectedComponent" />
                     </div>
                 </div>
@@ -285,7 +284,6 @@
     const emailDesigner = ref<InstanceType<typeof EmailDesigner> | undefined>();
     const selectedMainMenuItem = ref<"content" | "design">("content");
     const selectedContentTab = ref<string>("");
-    const draggingComponentTypeName = ref<EditorComponentTypeName | null | undefined>();
     const sectionCategory = ref<string>("");
     const sectionCategories = ref<ListItemBag[]>([]);
     const selectedComponent = ref<EditorComponent | null | undefined>();
@@ -343,7 +341,8 @@
         console.log(`"dragstart" toolbox component type`, componentTypeName);
 
         document.addEventListener("mouseup", onComponentTypeDragEnd);
-        draggingComponentTypeName.value = componentTypeName;
+
+        emailDesigner.value?.onComponentTypeDragStart(componentTypeName);
     }
 
     /**
@@ -356,10 +355,8 @@
         console.log(`"dragend" toolbox component type`);
 
         document.removeEventListener("mouseup", onComponentTypeDragEnd);
-        emailDesigner.value?.onComponentTypeDragEnd();
 
-        // TODO JMH should this happen inside the designer's dragend handler?
-        draggingComponentTypeName.value = null;
+        emailDesigner.value?.onComponentTypeDragEnd();
     }
 
     function onClickPreview(): void {

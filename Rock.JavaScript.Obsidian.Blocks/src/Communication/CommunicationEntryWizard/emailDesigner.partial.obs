@@ -2,13 +2,12 @@
     <div class="editor-window">
         <EmailIFrame ref="emailIFrame"
                      :html="html"
-                     :draggingComponentTypeName="draggingComponentTypeName"
                      v-model:selectedComponent="internalSelectedComponent" />
-        <div v-if="draggingComponentTypeName"
+        <div v-if="isOverlayShown"
              ref="overlayElement"
              class="overlay"
              @dragover="onComponentTypeDragOver($event)"
-             @drop="onComponentTypeDragDrop(draggingComponentTypeName)"
+             @drop="onComponentTypeDragDrop()"
              @dragleave="onComponentTypeDragLeave()"></div>
     </div>
 </template>
@@ -46,10 +45,6 @@
             default: ""
         },
 
-        draggingComponentTypeName: {
-            type: String as PropType<EditorComponentTypeName | null | undefined>
-        },
-
         selectedComponent: {
             type: Object as PropType<EditorComponent | null | undefined>
         }
@@ -57,7 +52,6 @@
 
     const emit = defineEmits<{
         (e: "update:selectedComponent", value: EditorComponent | null | undefined): void;
-        (e: "componentTypeDragEnd"): void;
     }>();
 
     // #region Values
@@ -65,10 +59,26 @@
     const internalSelectedComponent = useVModelPassthrough(props, "selectedComponent", emit);
     const overlayElement = ref<HTMLElement | undefined>();
     const emailIFrame = ref<InstanceType<typeof EmailIFrame> | undefined>();
+    const isOverlayShown = ref<boolean>(false);
 
     // #endregion
 
     // #region Event Handlers
+
+    function onComponentTypeDragStart(componentTypeName: EditorComponentTypeName): void {
+        console.log(`"dragstart" designer component type`);
+
+        if (!emailIFrame.value) {
+            throw "Unable to handle 'dragstart' event. The iframe is not initialized.";
+        }
+
+        isOverlayShown.value = true;
+
+        emailIFrame.value.sendMessage({
+            type: "COMPONENT_TYPE_DRAG_START",
+            componentTypeName
+        });
+    }
 
     /**
      * Handles a component type being dragged over the parent window's editor overlay
@@ -109,7 +119,7 @@
      *
      * This should ultimately add the element representing the component type to the editor.
      */
-    function onComponentTypeDragDrop(componentTypeName: EditorComponentTypeName): void {
+    function onComponentTypeDragDrop(): void {
         console.log(`"drop" designer component type`);
 
         if (!emailIFrame.value) {
@@ -120,8 +130,7 @@
         // It's important to do this so that the event handling can
         // be "transferred" to the iframe window.
         emailIFrame.value.sendMessage({
-            type: "COMPONENT_TYPE_DRAG_DROP",
-            componentTypeName
+            type: "COMPONENT_TYPE_DRAG_DROP"
         });
     }
 
@@ -153,6 +162,8 @@
             throw "Unable to handle 'dragend' event. The iframe is not initialized.";
         }
 
+        isOverlayShown.value = false;
+
         emailIFrame.value.sendMessage({
             type: "COMPONENT_TYPE_DRAG_END"
         });
@@ -167,6 +178,7 @@
         getHtml: () => {
             return emailIFrame.value?.getHtml();
         },
+        onComponentTypeDragStart,
         onComponentTypeDragEnd
     });
 

@@ -21,13 +21,17 @@ export type EditorComponentTypeName =
     | "three-column-section"
     | "title";
 
+export type ComponentTypeDragStartMessage = {
+    type: "COMPONENT_TYPE_DRAG_START";
+    componentTypeName: EditorComponentTypeName;
+};
+
 export type ComponentTypeDragLeaveMessage = {
     type: "COMPONENT_TYPE_DRAG_LEAVE";
 };
 
 export type ComponentTypeDragDropMessage = {
     type: "COMPONENT_TYPE_DRAG_DROP";
-    componentTypeName: EditorComponentTypeName;
 };
 
 export type ComponentTypeDragEndMessage = {
