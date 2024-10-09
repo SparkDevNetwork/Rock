@@ -147,10 +147,10 @@ import { Guid } from "@Obsidian/Types";
     // Filter Data
     const areaItems = ref<Guid[]>(config.areas ?? []);
     const groupTypeItems = ref<Guid[]>(config.groupTypes ?? []);
-    const groupType = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)));
-    const parentLocation = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedParentLocation)));
-    const area = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedArea)));
-    const scheduleCategory = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedCategory)));
+    const groupType = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedGroupType) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)) : {});
+    const parentLocation = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedParentLocation) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedParentLocation)) : {});
+    const area = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedArea) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedArea)) : {});
+    const scheduleCategory = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedCategory) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedCategory)) : {});
 
     // Modal Data
     const showCloneScheduleModal = ref<boolean>(false);
