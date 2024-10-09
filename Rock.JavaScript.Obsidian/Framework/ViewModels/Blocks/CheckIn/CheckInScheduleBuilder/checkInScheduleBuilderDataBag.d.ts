@@ -21,14 +21,11 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type CheckInScheduleBuilderOptionsBag = {
-    /** The list of Areas that can be chosen from */
-    areas?: Guid[] | null;
+export type CheckInScheduleBuilderDataBag = {
+    groupLocations?: GroupLocationsBag[] | null;
 
-    /** The list of GroupTypes that can be chosen from */
-    groupTypes?: Guid[] | null;
-
-    warningMessage?: string | null;
+    schedules?: ListItemBag[] | null;
 };

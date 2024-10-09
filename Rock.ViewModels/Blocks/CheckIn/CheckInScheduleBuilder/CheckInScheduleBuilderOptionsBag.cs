@@ -19,8 +19,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
         /// </summary>
         public List<Guid> Areas { get; set; }
 
-        public List<ListItemBag> Schedules { get; set; }
-
         public string WarningMessage { get; set; }
     }
 }

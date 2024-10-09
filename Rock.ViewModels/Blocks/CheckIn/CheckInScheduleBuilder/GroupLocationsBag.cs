@@ -7,7 +7,7 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 {
-    public class CheckInScheduledGroupLocationsBag
+    public class GroupLocationsBag
     {
         /// <summary>
         /// The encrypted identifier of the group location to be modified.

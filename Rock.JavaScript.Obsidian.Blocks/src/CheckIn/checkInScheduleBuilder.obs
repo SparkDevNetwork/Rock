@@ -1,115 +1,94 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- <div ref="scheduleGridElement" class="schedule-grid">
-        <div>Group</div>
-        <div>Location</div>
-        <div v-for="schedule in schedules">
-            <div class="d-flex flex-column justify-content-center align-items-center">
-                <div class="text-center" v-html="getScheduleHtml(schedule)"></div>
-                <input type="checkbox"
-                        :checked="isColumnEnabled(schedule.value ?? '')"
-                        @change="onScheduleColumnClick(schedule.value ?? '')">
-            </div>
-        </div>
-        <div v-for="(scheduledGroupLocation, index) in scheduledGroupLocations">
-            <div>
-                <div class="d-flex flex-column">
-                    <div>{{ scheduledGroupLocation.groupPath }}</div>
-                    <small>{{ scheduledGroupLocation.areaPath }}</small>
+    <div class="grid-obsidian grid-sticky grid-striped grid-bordered grid-hover">
+        <div class="grid-heading">
+            <div class="grid-title-heading">
+                <div class="grid-title">Schedule Builder</div>
+                <div class="grid-badges mr-3">
+                    <RockButton class="mr-3" @click="showCloneScheduleModal = true">Clone Schedule</RockButton>
+                    <span class="label label-default">
+                        <span class="label-value" v-if="groupLocations.length > 0">{{ groupLocations.length }} {{ getCountLabelText }}</span>
+                    </span>
                 </div>
             </div>
-
-            <div>
-                <div class="d-flex flex-column">
-                    <div>{{ scheduledGroupLocation.locationName }}</div>
-                    <small>{{ scheduledGroupLocation.locationPath }}</small>
-                </div>
-            </div>
-
-            <div v-for="schedule in schedules">
-                <CheckBox label=""
-                                :modelValue="isScheduleEnabled(scheduledGroupLocation, schedule)"
-                                @update:modelValue="onScheduleClick(scheduledGroupLocation, schedule)" />
-            </div>
-        </div>
-    </div> -->
-
-    <!-- <Panel title="Schedule Locations"> -->
-        <div ref="scheduleGridElement" class="grid-obsidian grid-striped grid-bordered grid-hover">
-            <div class="grid-heading">
-                <div class="grid-title-heading">
-                    <div class="grid-title">Schedule Locations</div>
-                    <div class="grid-badges mr-3">
-                        <RockButton class="mr-3" @click="showCloneScheduleModal = true">Clone Schedule</RockButton>
-                        <span class="label label-default">
-                            <!-- TODO: Handle singular 1 -->
-                            <span class="label-value" v-if="scheduledGroupLocations.length > 0">{{ scheduledGroupLocations.length }} Schedule Locations</span>
-                        </span>
-                    </div>
-                </div>
-                <div class="margin-b-md d-flex flex-row justify-content-evenly">
+            <div class="margin-b-md">
+                <div class="d-flex flex-row justify-content-evenly">
                     <div class="col-md-2">
-                        <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All"  />
+                        <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]"  />
                     </div>
                     <div class="col-md-2">
                         <LocationItemPicker v-model="parentLocation" label="Parent Location" />
                     </div>
                     <div class="col-md-2">
-                        <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" />
+                        <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" :groupTypes="[...areaItems]" />
                     </div>
                     <div class="col-md-2">
                         <CategoryPicker v-model="scheduleCategory" label="Schedule Category" :entityTypeGuid="EntityType.Schedule" />
                     </div>
                 </div>
-                <div class="grid-column-heading">
-                    <div class="grid-column-header" style="flex: 1 1 30%">
-                        <div class="grid-column-title">
-                            Group
-                        </div>
+                <div class="mx-4" v-if="!isLoading && schedules.length === 0">
+                    <NotificationBox alertType="warning" heading="Warning: ">No schedules found. Consider <a class="alert-link" href="/Schedules">adding a schedule</a> or a different schedule category.</NotificationBox>
+                </div>
+            </div>
+            <div class="grid-column-heading">
+                <div class="grid-column-header" style="flex: 1 1 20%">
+                    <div class="grid-column-title">
+                        Group
                     </div>
-                    <div class="grid-column-header" style="flex: 1 1 30%">
-                        <div class="grid-column-title">
-                            Location
-                        </div>
+                </div>
+                <div class="grid-column-header" style="flex: 1 1 20%">
+                    <div class="grid-column-title">
+                        Location
                     </div>
-                    <div class="grid-column-header" style="flex: 1 1 5%" v-for="schedule in schedules">
-                        <div class="d-flex flex-column justify-content-center align-items-center">
-                            <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
-                            <input type="checkbox"
-                                   :checked="isColumnEnabled(schedule.value ?? '')"
-                                   @change="onScheduleColumnClick(schedule.value ?? '')">
-                            <!-- <CheckBox label="" :modelValue="isColumnEnabled(schedule.value ?? '')" @update:modelValue="onScheduleColumnClick(schedule.value ?? '')" /> -->
-                        </div>
+                </div>
+                <div class="grid-column-header px-2" style="width: 5%; min-width: 75px; max-width: 100px;" v-for="schedule in schedules">
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
+                        <a href='#' style='display: inline; color: inherit' :class="['fa', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'fa-check-square-o' : 'fa-square-o']" @click="onScheduleColumnClick(schedule.value ?? '')"></a>
+                        <!-- <input type="checkbox"
+                                :checked="isColumnEnabled(schedule.value ?? '')"
+                                @change="onScheduleColumnClick(schedule.value ?? '')"> -->
+                        <!-- <CheckBox label="" :modelValue="isColumnEnabled(schedule.value ?? '')" @update:modelValue="onScheduleColumnClick(schedule.value ?? '')" /> -->
                     </div>
                 </div>
             </div>
-
-            <div class="grid-body">
-                <div v-for="(scheduledGroupLocation, index) in scheduledGroupLocations" :class="['grid-row', isEven(index + 1) ? 'grid-row-even' : 'grid-row-odd']">
-                    <div class="grid-cell" style="flex: 1 1 30%">
-                        <div class="d-flex flex-column">
-                            <div>{{ scheduledGroupLocation.groupPath }}</div>
-                            <small>{{ scheduledGroupLocation.areaPath }}</small>
-                        </div>
-                    </div>
-
-                    <div class="grid-cell" style="flex: 1 1 30%">
-                        <div class="d-flex flex-column">
-                            <div>{{ scheduledGroupLocation.locationName }}</div>
-                            <small>{{ scheduledGroupLocation.locationPath }}</small>
-                        </div>
-                    </div>
-
-                    <div v-for="schedule in schedules" class="grid-cell" style="flex: 1 1 5%">
-                        <CheckBox label=""
-                                        :modelValue="isScheduleEnabled(scheduledGroupLocation, schedule)"
-                                        @update:modelValue="onScheduleClick(scheduledGroupLocation, schedule)" />
-                    </div>
-                </div>
-            </div>
-            <RockButton btnType="primary" @click="onSaveClick">Save</RockButton>
         </div>
-    <!-- </Panel> -->
+
+        <div class="grid-body">
+            <div v-for="(scheduledGroupLocation, index) in groupLocations" :class="['grid-row', isEven(index + 1) ? 'grid-row-even' : 'grid-row-odd']">
+                <div class="grid-cell" style="flex: 1 1 20%">
+                    <div class="d-flex flex-column">
+                        <div>{{ scheduledGroupLocation.groupPath }}</div>
+                        <small>{{ scheduledGroupLocation.areaPath }}</small>
+                    </div>
+                </div>
+
+                <div class="grid-cell" style="flex: 1 1 20%">
+                    <div class="d-flex flex-column">
+                        <div>{{ scheduledGroupLocation.locationName }}</div>
+                        <small>{{ scheduledGroupLocation.locationPath }}</small>
+                    </div>
+                </div>
+
+                <div v-for="schedule in schedules" class="grid-cell" style="width: 5%; min-width: 75px; max-width: 100px;">
+                    <CheckBox label=""
+                                    :modelValue="isScheduleEnabled(scheduledGroupLocation, schedule)"
+                                    @update:modelValue="onScheduleClick(scheduledGroupLocation, schedule)" />
+                </div>
+            </div>
+        </div>
+        <div class="grid-footing">
+            <div class="d-flex m-3 align-items-center">
+                <div class="mr-2">
+                    <RockButton btnType="primary" @click="onSaveClick" :disabled="isSaving">
+                        <span v-if="isSaving"><i class='fa fa-refresh fa-spin'></i> Saving</span>
+                        <span v-else>Save</span>
+                    </RockButton>
+                </div>
+                <NotificationBox v-if="showSaveSuccess" alertType="success" class="mb-0">Changes have been saved.</NotificationBox>
+            </div>
+        </div>
+    </div>
 
     <Modal v-model="showCloneScheduleModal" title="Copy Schedule">
         <RockForm v-model:submit="submitClonedSchedule" @submit="saveClonedSchedule">
@@ -134,16 +113,16 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderOptionsBag";
-    import { CheckInScheduledGroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduledGroupLocationsBag";
+    import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderDataBag";
+    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
     import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CloneScheduleBag";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, ref, watch } from "vue";
     import { PreferenceKey } from "./CheckInScheduleBuilder/types.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import { alert } from "@Obsidian/Utility/dialogs";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -152,41 +131,66 @@ import Modal from "@Obsidian/Controls/modal.obs";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+import { Guid } from "@Obsidian/Types";
 
     // #region Values
     const config = useConfigurationValues<CheckInScheduleBuilderOptionsBag>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
-    const scheduledGroupLocations = ref<CheckInScheduledGroupLocationsBag[]>([]);
-    const schedules = ref<ListItemBag[]>(config.schedules ?? []);
 
+    const showSaveSuccess = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const isLoading = ref<boolean>(false);
+    const groupLocations = ref<GroupLocationsBag[]>([]);
+    const schedules = ref<ListItemBag[]>([]);
+
+    // Filter Data
+    const areaItems = ref<Guid[]>(config.areas ?? []);
+    const groupTypeItems = ref<Guid[]>(config.groupTypes ?? []);
     const groupType = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)));
     const parentLocation = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedParentLocation)));
     const area = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedArea)));
     const scheduleCategory = ref<ListItemBag>(JSON.parse(preferences.getValue(PreferenceKey.SelectedCategory)));
+
+    // Modal Data
     const showCloneScheduleModal = ref<boolean>(false);
     const submitClonedSchedule = ref<boolean>(false);
     const sourceSchedule = ref<ListItemBag>();
     const destinationSchedule = ref<ListItemBag>();
-    const scheduleGridElement = ref<HTMLElement>();
 
-    //TODO: handle 2 way bind correctly
+    // #endregion
+
+    // #region Computed Values
+
+    const getCountLabelText = computed(() => groupLocations.value.length === 1 ? "Schedule Location" : "Schedule Locations");
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Determines if a schedule column is enabled for all group locations.
+     * A column is considered enabled if the scheduleIdKey is present in the scheduleIds for every group location.
+     *
+     * @param scheduleIdKey - The key of the schedule to check.
+     * @returns `true` if the scheduleIdKey is present in all groupLocations, and false otherwise.
+     */
     function isColumnEnabled(scheduleIdKey: string): boolean {
-        return scheduledGroupLocations.value.filter(sgl => sgl.scheduleIds?.includes(scheduleIdKey)).length === scheduledGroupLocations.value.length && scheduledGroupLocations.value.length > 0;
+        return groupLocations.value.filter(sgl => sgl.scheduleIds?.includes(scheduleIdKey)).length === groupLocations.value.length && groupLocations.value.length > 0;
     }
 
     function onScheduleColumnClick(scheduleIdKey: string): void {
-        if (scheduledGroupLocations.value.length === 0) {
+        if (groupLocations.value.length === 0) {
             return;
         }
 
         const isCurrentlyEnabled = isColumnEnabled(scheduleIdKey);
 
         // Prepare a new array to hold the updated locations
-        const updatedLocations: typeof scheduledGroupLocations.value = [];
+        const updatedLocations: typeof groupLocations.value = [];
 
         // Process each location
-        for (const sgl of scheduledGroupLocations.value) {
+        for (const sgl of groupLocations.value) {
             let scheduleIds = sgl.scheduleIds || [];
 
             if (isCurrentlyEnabled) {
@@ -199,10 +203,10 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
             updatedLocations.push({ ...sgl, scheduleIds });
         }
 
-        scheduledGroupLocations.value = [];
+        groupLocations.value = [];
         // Update the reactive property in the next tick
         nextTick(() => {
-            scheduledGroupLocations.value = updatedLocations;
+            groupLocations.value = updatedLocations;
         });
     }
 
@@ -210,17 +214,17 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
      * Determines if the scheduled location is currently enabled for the
      * specified schedule. This provides the state of the checkbox for a cell.
      *
-     * @param scheduledGroupLocations The scheduled location.
+     * @param groupLocations The scheduled location.
      * @param schedule The schedule.
      *
      * @returns `true` if the cell checkbox should be checked.
      */
-    function isScheduleEnabled(scheduledGroupLocation: CheckInScheduledGroupLocationsBag, schedule: ListItemBag): boolean {
-        if (!scheduledGroupLocation.scheduleIds || !schedule.value) {
+    function isScheduleEnabled(groupLocation: GroupLocationsBag, schedule: ListItemBag): boolean {
+        if (!groupLocation.scheduleIds || !schedule.value) {
             return false;
         }
 
-        return scheduledGroupLocation.scheduleIds.includes(schedule.value);
+        return groupLocation.scheduleIds.includes(schedule.value);
     }
 
     function isEven(index: number): boolean {
@@ -232,7 +236,7 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
      *
      * @param schedule The schedule whose name will be displayed.
      */
-     function getScheduleHtml(schedule: ListItemBag): string {
+    function getScheduleHtml(schedule: ListItemBag): string {
         // Replace spaces with <br> to save horizontal space.
         return escapeHtml(schedule.text ?? "").replace(" ", "<br>");
     }
@@ -247,7 +251,7 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
      * @param scheduledLocation The scheduled location row.
      * @param schedule The schedule column.
      */
-    function onScheduleClick(scheduledLocation: CheckInScheduledGroupLocationsBag, schedule: ListItemBag): void {
+    function onScheduleClick(scheduledLocation: GroupLocationsBag, schedule: ListItemBag): void {
         if (!scheduledLocation.scheduleIds || !schedule.value) {
             return;
         }
@@ -260,35 +264,45 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
         }
     }
 
-    async function loadScheduledGroupLocations(): Promise<void> {
-        const response = await invokeBlockAction<CheckInScheduledGroupLocationsBag[]>("LoadGroupScheduleLocationData");
+    async function loadScheduleBuilderData(): Promise<void> {
+        isLoading.value = true;
+        const response = await invokeBlockAction<CheckInScheduleBuilderDataBag>("LoadGroupScheduleLocationData");
 
         if (response.isSuccess && response.data) {
-            scheduledGroupLocations.value = [];
-            console.log(response.data);
+            // groupLocations.value = response.data?.groupLocations ?? [];
+            // schedules.value = response.data?.schedules ?? [];
+            // isLoading.value = false;
+
+            groupLocations.value = [];
 
             nextTick(() => {
-                scheduledGroupLocations.value = response.data ?? [];
+                groupLocations.value = response.data?.groupLocations ?? [];
+                schedules.value = response.data?.schedules ?? [];
+                isLoading.value = false;
             });
-
-            if (scheduleGridElement.value) {
-                scheduleGridElement.value.style.setProperty("--schedule-count", schedules.value.length.toString());
-            }
         }
     }
 
     async function onSaveClick(): Promise<void> {
+        isSaving.value = true;
         const data = {
-            scheduledLocations: scheduledGroupLocations.value
+            scheduledLocations: groupLocations.value
         };
         console.log("Sending ", data.scheduledLocations);
 
         const response = await invokeBlockAction("Save", data);
 
         if (!response.isSuccess) {
+            isSaving.value = false;
             await alert(response.errorMessage || "Unknown error while saving schedule information.");
             return;
         }
+
+        isSaving.value = false;
+        showSaveSuccess.value = true;
+        setTimeout(() => {
+            showSaveSuccess.value = false;
+        }, 3000);
     }
 
     async function saveClonedSchedule(): Promise<void> {
@@ -297,16 +311,16 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
             destinationSchedule: destinationSchedule.value
         };
 
-        const response = await invokeBlockAction<CheckInScheduledGroupLocationsBag[]>("SaveClonedSchedule", {
+        const response = await invokeBlockAction<GroupLocationsBag[]>("SaveClonedSchedule", {
             bag: data
         });
         if (response.isSuccess && response.data) {
             submitClonedSchedule.value = false;
             showCloneScheduleModal.value = false;
-            scheduledGroupLocations.value = [];
+            groupLocations.value = [];
 
             nextTick(() => {
-                scheduledGroupLocations.value = response.data ?? [];
+                groupLocations.value = response.data ?? [];
             });
 
             return;
@@ -314,6 +328,8 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
 
         await alert(response.errorMessage || "Unknown error while cloning schedule information.");
     }
+
+    // #endregion
 
     watch([groupType, parentLocation, area, scheduleCategory], async () => {
         preferences.setValue(PreferenceKey.SelectedGroupType, JSON.stringify(groupType.value));
@@ -325,23 +341,17 @@ import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
 
         console.log("Watching");
 
-        loadScheduledGroupLocations();
+        loadScheduleBuilderData();
     });
 
     onConfigurationValuesChanged(useReloadBlock());
 
-    loadScheduledGroupLocations();
+    loadScheduleBuilderData();
 
 </script>
 
 
 <style scoped>
-.schedule-grid {
-    display: grid;
-    row-gap: 8px; /* TODO: Use variable spacing small */
-    grid-template-columns: 1fr 1fr repeat(8, 0) minmax(90px, max-content);
-}
-
 .grid-obsidian {
     --table-cell-padding-x: 16px;
     --table-cell-padding-y: 16px;

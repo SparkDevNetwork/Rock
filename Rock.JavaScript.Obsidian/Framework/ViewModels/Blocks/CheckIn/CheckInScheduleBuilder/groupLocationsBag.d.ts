@@ -21,14 +21,28 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+export type GroupLocationsBag = {
+    /** The path to the area that contains the group. */
+    areaPath?: string | null;
 
-export type CheckInScheduleBuilderOptionsBag = {
-    /** The list of Areas that can be chosen from */
-    areas?: Guid[] | null;
+    /** The encrypted identifier of the group location to be modified. */
+    groupLocationId?: string | null;
 
-    /** The list of GroupTypes that can be chosen from */
-    groupTypes?: Guid[] | null;
+    /**
+     * The path to the group that should be scheduled. This includes
+     * any parent groups in the text.
+     */
+    groupPath?: string | null;
 
-    warningMessage?: string | null;
+    /** The name of the location. */
+    locationName?: string | null;
+
+    /** The path to the location which includes all ancestor locations. */
+    locationPath?: string | null;
+
+    /**
+     * The encrypted schedule identifiers of all schedules that are currently
+     * active for this group location.
+     */
+    scheduleIds?: string[] | null;
 };

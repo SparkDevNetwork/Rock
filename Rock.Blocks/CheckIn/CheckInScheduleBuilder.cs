@@ -19,6 +19,7 @@ using DotLiquid;
 using Rock.Utility;
 using Rock.CheckIn;
 using System.Data.Entity;
+using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Blocks.CheckIn
 {
@@ -139,37 +140,6 @@ namespace Rock.Blocks.CheckIn
                 bag.Areas = allAreas.Select( a => a.Guid ).ToList();
             }
 
-            bag.Schedules = GetSchedules();
-
-
-            if ( !bag.Schedules.Any() )
-            {
-                //TODO: Resolve URL on Client side? Format on Client.
-                bag.WarningMessage = "<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.";
-            }
-
-            //var gridRows = GetGridRows();
-            //var scheduleRowMap = new Dictionary<int, Dictionary<string, string>>(); // Outer: scheduleId, Inner: rowIdKey -> bool
-
-            //foreach ( var schedule in bag.Schedules )
-            //{
-            //    var rowMap = new Dictionary<string, string>(); // For each schedule, map rowIdKey to bool
-
-            //    foreach ( var row in gridRows )
-            //    {
-            //        // Check if the schedule is selected for the current row
-            //        var isSelected = row.IsScheduleSelected.Where( s => s.Value == schedule.Value ).FirstOrDefault();
-
-            //        // Add to the row map (using row.IdKey as the key)
-            //        rowMap[row.IdKey] = isSelected.Text;
-            //    }
-
-            //    // Add the rowMap to the scheduleRowMap (keyed by schedule.Value)
-            //    scheduleRowMap[schedule.Value.ToIntSafe()] = rowMap;
-            //}
-
-            //bag.GroupSchedules = scheduleRowMap;
-
             return bag;
         }
 
@@ -194,6 +164,7 @@ namespace Rock.Blocks.CheckIn
             }
             else
             {
+                //TODO: this does not work.
                 // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
             }
@@ -343,10 +314,10 @@ namespace Rock.Blocks.CheckIn
             return _groupTypeId;
         }
 
-        private List<CheckInScheduledGroupLocationsBag> GetGroupLocationSchedules( IQueryable<GroupLocation> groupLocationQry, List<CheckinAreaPath> groupPaths )
+        private List<GroupLocationsBag> GetGroupLocationSchedules( IQueryable<GroupLocation> groupLocationQry, List<CheckinAreaPath> groupPaths )
         {
             var groupService = new GroupService( RockContext );
-            var bags = new List<CheckInScheduledGroupLocationsBag>();
+            var bags = new List<GroupLocationsBag>();
 
             var qryList = groupLocationQry
                 .Where( a => a.Location != null )
@@ -372,16 +343,11 @@ namespace Rock.Blocks.CheckIn
                 qryList = qryList.Where( a => currentAndDescendantLocationIds.Contains( a.Location.Id ) ).ToList();
             }
 
-            if ( _schedules == null || _schedules.Count == 0 )
-            {
-                _schedules = GetSchedules();
-            }
-
             var locationPaths = new Dictionary<int, string>();
 
             foreach ( var row in qryList )
             {
-                var bag = new CheckInScheduledGroupLocationsBag
+                var bag = new GroupLocationsBag
                 {
                     GroupLocationId = IdHasher.Instance.GetHash( row.GroupLocationId ),
                     GroupPath = groupService.GroupAncestorPathName( row.GroupId ),
@@ -426,7 +392,7 @@ namespace Rock.Blocks.CheckIn
         }
 
         [BlockAction]
-        public BlockActionResult Save(List<CheckInScheduledGroupLocationsBag> scheduledLocations)
+        public BlockActionResult Save(List<GroupLocationsBag> scheduledLocations)
         {
             // Normally we would want to validate all the data to be sure it
             // only specified valid locations and groups. But in the case of
@@ -539,9 +505,12 @@ namespace Rock.Blocks.CheckIn
         public BlockActionResult LoadGroupScheduleLocationData()
         {
             // TODO: handle action bad request?
+            CheckInScheduleBuilderDataBag bag = new CheckInScheduleBuilderDataBag();
             var groupLocationQry = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths );
-            var groupScheduleLocationData = GetGroupLocationSchedules( groupLocationQry, groupPaths );
-            return ActionOk(groupScheduleLocationData);
+            bag.GroupLocations = GetGroupLocationSchedules( groupLocationQry, groupPaths );
+            bag.Schedules = GetSchedules();
+
+            return ActionOk(bag);
         }
     }
 }
