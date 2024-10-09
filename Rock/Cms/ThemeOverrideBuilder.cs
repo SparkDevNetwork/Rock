@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using Rock.Configuration;
 using Rock.Enums.Cms;
@@ -31,6 +32,38 @@ namespace Rock.Cms
     internal class ThemeOverrideBuilder : IThemeOverrideBuilder
     {
         #region Fields
+
+        /// <summary>
+        /// The marker used to indicate the start of the top overrides section.
+        /// </summary>
+        internal const string TopOverrideStartMarker = "/* CSS Overrides Top Start */";
+
+        /// <summary>
+        /// The marker used to indicate the end of the top overrides section.
+        /// </summary>
+        internal const string TopOverrideEndMarker = "/* CSS Overrides Top End */";
+
+        /// <summary>
+        /// The marker used to indicate the start of the bottom overrides section.
+        /// </summary>
+        internal const string BottomOverrideStartMarker = "/* CSS Overrides Bottom Start */";
+
+        /// <summary>
+        /// The marker used to indicate the end of the bottom overrides section.
+        /// </summary>
+        internal const string BottomOverrideEndMarker = "/* CSS Overrides Bottom End */";
+
+        /// <summary>
+        /// A regular expression that finds all the top override section content
+        /// including the start and end markers.
+        /// </summary>
+        private static readonly Regex TopOverridePattern = new Regex( $"{TopOverrideStartMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}.*{TopOverrideEndMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}", RegexOptions.Compiled | RegexOptions.Singleline );
+
+        /// <summary>
+        /// A regular expression that finds all the bottom override section content
+        /// including the start and end markers.
+        /// </summary>
+        private static readonly Regex BottomOverridePattern = new Regex( $"{BottomOverrideStartMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}.*{BottomOverrideEndMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}", RegexOptions.Compiled | RegexOptions.Singleline );
 
         /// <summary>
         /// The variables that we should include in the output.
@@ -144,7 +177,47 @@ namespace Rock.Cms
         }
 
         /// <inheritdoc/>
-        public string Build()
+        public string Build( string originalThemeCss )
+        {
+            var sb = new StringBuilder();
+
+            originalThemeCss = TopOverridePattern.Replace( originalThemeCss, string.Empty );
+            originalThemeCss = BottomOverridePattern.Replace( originalThemeCss, string.Empty );
+            originalThemeCss = originalThemeCss.Trim();
+
+            var topOverrides = BuildTopOverrides().Trim();
+            var bottomOverrides = BuildBottomOverrides().Trim();
+
+            if ( topOverrides.Length > 0 )
+            {
+                sb.AppendLine( TopOverrideStartMarker );
+                sb.AppendLine( topOverrides );
+                sb.AppendLine( TopOverrideEndMarker );
+                sb.AppendLine();
+            }
+
+            if ( originalThemeCss.Length > 0 )
+            {
+                sb.AppendLine( originalThemeCss );
+            }
+
+            if ( bottomOverrides.Length > 0 )
+            {
+                sb.AppendLine();
+                sb.AppendLine( BottomOverrideStartMarker );
+                sb.AppendLine( bottomOverrides );
+                sb.AppendLine( BottomOverrideEndMarker );
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Builds the overrides that need to go at the top of the theme.css
+        /// file.
+        /// </summary>
+        /// <returns>A string that contains the top overrides content.</returns>
+        private string BuildTopOverrides()
         {
             var sb = new StringBuilder();
 
@@ -158,10 +231,20 @@ namespace Rock.Cms
 
                     sb.AppendLine( $"@import url('{url}');" );
                 }
-
-                sb.AppendLine();
             }
-            
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Builds the overrides that need to go at the bottom of the theme.css
+        /// file.
+        /// </summary>
+        /// <returns>A string that contains the bottom overrides content.</returns>
+        private string BuildBottomOverrides()
+        {
+            var sb = new StringBuilder();
+
             if ( _variables.Values.Cast<string>().Any( v => v.IsNotNullOrWhiteSpace() ) )
             {
                 sb.AppendLine( ":root {" );
