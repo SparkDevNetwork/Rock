@@ -23,7 +23,7 @@ iframe {
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, ComponentTypeDragStartMessage, EditorComponentTypeName } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { createComponentElement, createComponentElementPlaceholder } from "./utils.partial";
+    import { createComponentElement, createComponentElementPlaceholder, rockRuntimeClassContentEditable, rockRuntimeClassCssClassPrefix, rockRuntimeElementCssClass } from "./utils.partial";
 
     const props = defineProps({
         /** This is reactive. If it is changed, the inner HTML for the editor will be updated. */
@@ -41,12 +41,6 @@ iframe {
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "componentTypeDragEnd"): void;
     }>();
-
-    /** Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getHtml(). */
-    const rockRuntimeElementCssClass = "rock-runtime-element" as const;
-
-    /** Add this CSS class prefix to any temporary CSS class that should be stripped out when the HTML is retrieved via getHTML(). */
-    const rockRuntimeClassCssClassPrefix = "rock-runtime-class-" as const;
 
     // #region Values
 
@@ -114,11 +108,11 @@ iframe {
     function getInlineEditableElements(componentElement: HTMLElement): Element[] {
         const editableElements: Element[] = [];
 
-        if ([...componentElement.classList].includes("rock-runtime-class-contenteditable")) {
+        if ([...componentElement.classList].includes(rockRuntimeClassContentEditable)) {
             editableElements.push(componentElement);
         }
 
-        editableElements.push(...componentElement.querySelectorAll(".rock-runtime-class-contenteditable"));
+        editableElements.push(...componentElement.querySelectorAll(`.${rockRuntimeClassContentEditable}`));
 
         return editableElements;
     }
