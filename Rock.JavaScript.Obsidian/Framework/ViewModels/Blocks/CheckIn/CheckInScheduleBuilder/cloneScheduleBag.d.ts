@@ -21,28 +21,10 @@
 // </copyright>
 //
 
-export type CheckInScheduledGroupLocationsBag = {
-    /** The path to the area that contains the group. */
-    areaPath?: string | null;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** The encrypted identifier of the group location to be modified. */
-    groupLocationId?: string | null;
+export type CloneScheduleBag = {
+    destinationSchedule?: ListItemBag | null;
 
-    /**
-     * The path to the group that should be scheduled. This includes
-     * any parent groups in the text.
-     */
-    groupPath?: string | null;
-
-    /** The name of the location. */
-    locationName?: string | null;
-
-    /** The path to the location which includes all ancestor locations. */
-    locationPath?: string | null;
-
-    /**
-     * The encrypted schedule identifiers of all schedules that are currently
-     * active for this group location.
-     */
-    scheduleIds?: string[] | null;
+    sourceSchedule?: ListItemBag | null;
 };

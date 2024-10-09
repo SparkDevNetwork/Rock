@@ -17,6 +17,8 @@ using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 using DotLiquid;
 using Rock.Utility;
+using Rock.CheckIn;
+using System.Data.Entity;
 
 namespace Rock.Blocks.CheckIn
 {
@@ -204,7 +206,7 @@ namespace Rock.Blocks.CheckIn
             {
                 schedules.Add( new ListItemBag
                 {
-                    Value = item.Id.ToString(),
+                    Value = IdHasher.Instance.GetHash( item.Id ),
                     Text = item.Name
                 } );
             }
@@ -341,13 +343,10 @@ namespace Rock.Blocks.CheckIn
             return _groupTypeId;
         }
 
-        [BlockAction]
-        public List<CheckInScheduledGroupLocationsBag> GetScheduledGroupLocations()
+        private List<CheckInScheduledGroupLocationsBag> GetGroupLocationSchedules( IQueryable<GroupLocation> groupLocationQry, List<CheckinAreaPath> groupPaths )
         {
-            var groupLocationQry = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths );
             var groupService = new GroupService( RockContext );
             var bags = new List<CheckInScheduledGroupLocationsBag>();
-            var hasher = IdHasher.Instance;
 
             var qryList = groupLocationQry
                 .Where( a => a.Location != null )
@@ -384,12 +383,13 @@ namespace Rock.Blocks.CheckIn
             {
                 var bag = new CheckInScheduledGroupLocationsBag
                 {
-                    IdKey = hasher.GetHash( row.GroupLocationId ),
-                    GroupLocationId = row.GroupLocationId,
-                    GroupName = groupService.GroupAncestorPathName( row.GroupId ),
-                    GroupPath = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault(),
+                    GroupLocationId = IdHasher.Instance.GetHash( row.GroupLocationId ),
+                    GroupPath = groupService.GroupAncestorPathName( row.GroupId ),
+                    AreaPath = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault(),
                     LocationName = row.Location.Name,
-                    ActiveSchedules = new List<string>()
+                    ScheduleIds = row.ScheduleIdList
+                            .Select( id => IdHasher.Instance.GetHash( id ) )
+                            .ToList()
                 };
 
                 if ( row.Location.ParentLocationId.HasValue )
@@ -417,23 +417,131 @@ namespace Rock.Blocks.CheckIn
                     }
 
                     bag.LocationPath = locationPaths[locationId];
-                    bag.ActiveSchedules = row.ScheduleIdList.Select(s => s.ToString()).ToList();
-
-                    //TODO: might not need this...
-                    //foreach ( var schedule in _schedules )
-                    //{
-                    //    bag.ActiveSchedules.Add( new ListItemBag
-                    //    {
-                    //        Value = schedule.Value,
-                    //        Text = row.ScheduleIdList.Any( a => a == schedule.Value.ToIntSafe() ).ToString()
-                    //    } );
-                    //}
                 }
 
                 bags.Add( bag );
             }
 
             return bags;
+        }
+
+        [BlockAction]
+        public BlockActionResult Save(List<CheckInScheduledGroupLocationsBag> scheduledLocations)
+        {
+            // Normally we would want to validate all the data to be sure it
+            // only specified valid locations and groups. But in the case of
+            // this block we have decided that we are trusting the client by
+            // way of the pinCode.
+
+            // Load all the group locations in a single query, along with the
+            // schedule information.
+            var groupLocationIds = scheduledLocations
+                .Select( sl => IdHasher.Instance.GetId( sl.GroupLocationId ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+            var groupLocations = new GroupLocationService( RockContext )
+                .Queryable()
+                .Include( gl => gl.Schedules )
+                .Where( gl => groupLocationIds.Contains( gl.Id ) )
+                .ToList();
+
+            // Get the schedule IdKey values that are valid. This is used so we
+            // don't delete a schedule that wasn't available for selection.
+            var validScheduleIds = GetSchedules().Select( s => s.Value ).ToList();
+            var scheduleService = new ScheduleService( RockContext );
+
+            foreach ( var scheduledLocation in scheduledLocations )
+            {
+                var groupLocation = groupLocations.FirstOrDefault( gl => gl.IdKey == scheduledLocation.GroupLocationId );
+
+                if ( groupLocation == null )
+                {
+                    return ActionBadRequest( "Group or Location was not valid." );
+                }
+
+                // Add any schedules that are new.
+                foreach ( var scheduleIdKey in scheduledLocation.ScheduleIds )
+                {
+                    var scheduleId = IdHasher.Instance.GetId( scheduleIdKey );
+
+                    if ( !scheduleId.HasValue )
+                    {
+                        continue;
+                    }
+
+                    if ( !groupLocation.Schedules.Any( s => s.Id == scheduleId ) )
+                    {
+                        groupLocation.Schedules.Add( scheduleService.Get( scheduleId.Value ) );
+                    }
+                }
+
+                // Remove any schedules that are old.
+                foreach ( var schedule in groupLocation.Schedules.ToList() )
+                {
+                    if ( !scheduledLocation.ScheduleIds.Contains( schedule.IdKey ) && validScheduleIds.Contains( schedule.IdKey ) )
+                    {
+                        groupLocation.Schedules.Remove( schedule );
+                    }
+                }
+            }
+
+            if ( RockContext.SaveChanges() > 0 )
+            {
+                // Temporary until legacy check-in is removed.
+                KioskDevice.Clear();
+            }
+
+            return ActionOk();
+        }
+
+        [BlockAction]
+        public BlockActionResult SaveClonedSchedule(CloneScheduleBag bag)
+        {
+            var groupLocationQuery = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths ).ToList();
+
+            if ( bag.SourceSchedule != null
+                && Guid.TryParse( bag.SourceSchedule.Value, out var sourceScheduleId )
+                && bag.DestinationSchedule != null
+                && Guid.TryParse( bag.DestinationSchedule.Value, out var destinationScheduleId ) )
+            {
+                var sourceSchedule = NamedScheduleCache.Get( sourceScheduleId );
+                var destinationSchedule = NamedScheduleCache.Get( destinationScheduleId );
+
+                if ( sourceSchedule != null && destinationSchedule != null )
+                {
+                    var srcGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == sourceSchedule.Id ) );
+                    var destGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == destinationSchedule.Id ) );
+
+                    // Remove the target schedule from any existing GroupLocations, this should clear any existing enabled location for this configuration.
+                    foreach ( var groupLocation in destGroupLocations )
+                    {
+                        var scheduleToRemove = groupLocation.Schedules.FirstOrDefault( s => s.Id == destinationSchedule.Id );
+                        groupLocation.Schedules.Remove( scheduleToRemove );
+                    }
+
+                    // Add the target/destination schedule to any locations with the source schedule, this should enable the same locations as the source schedule.
+                    var targetSchedule = new ScheduleService( RockContext ).Get( destinationSchedule.Id );
+                    foreach ( var item in srcGroupLocations )
+                    {
+                        item.Schedules.Add( targetSchedule );
+                    }
+
+                    var groupScheduleLocationData = GetGroupLocationSchedules( groupLocationQuery.AsQueryable(), groupPaths );
+                    return ActionOk( groupScheduleLocationData );
+                }
+            }
+
+            return ActionBadRequest("The source and destination schedules must be defined.");
+        }
+
+        [BlockAction]
+        public BlockActionResult LoadGroupScheduleLocationData()
+        {
+            // TODO: handle action bad request?
+            var groupLocationQry = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths );
+            var groupScheduleLocationData = GetGroupLocationSchedules( groupLocationQry, groupPaths );
+            return ActionOk(groupScheduleLocationData);
         }
     }
 }
