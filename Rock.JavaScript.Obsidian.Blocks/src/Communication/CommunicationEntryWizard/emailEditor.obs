@@ -57,7 +57,7 @@
                                     </template>
 
                                     <template v-else-if="item === 'Sections'">
-                                        <div v-if="selectedComponentTypeName === 'section' && selectedComponentElement">
+                                        <div v-if="selectedComponentElement && selectedComponentTypeName === 'section'">
                                             <SectionComponentToolset :componentElement="selectedComponentElement"
                                                                      @complete="onCompleteComponent"
                                                                      @delete="onDeleteComponent" />
@@ -422,6 +422,10 @@
         if (newSelectedComponentElement !== oldSelectedComponentElement) {
             if (newSelectedComponentElement) {
                 const componentTypeName = getComponentTypeName(newSelectedComponentElement);
+
+                if (selectedMainMenuItem.value !== "content") {
+                    selectedMainMenuItem.value = "content";
+                }
 
                 if (!["section", "one-column-section", "two-column-section", "three-column-section"].includes(componentTypeName)) {
                     selectedContentTab.value = "Components";
