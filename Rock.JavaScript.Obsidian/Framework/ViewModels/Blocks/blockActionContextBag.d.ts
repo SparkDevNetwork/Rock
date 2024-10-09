@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /**
  * The data structure of the __context parameter included with block
  * action requests.
@@ -28,6 +30,13 @@
 export type BlockActionContextBag = {
     /** Gets or sets the captcha that should be validated by the server. */
     captcha?: string | null;
+
+    /**
+     * Identifies the interaction that represented the original page load.
+     * This is used to correlate actions in this request with the
+     * original interaction.
+     */
+    interactionGuid?: Guid | null;
 
     /**
      * Gets or sets the page parameters that the page was originally

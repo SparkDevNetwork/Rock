@@ -56,7 +56,7 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
-	import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const invokeBlockAction = useInvokeBlockAction();
 

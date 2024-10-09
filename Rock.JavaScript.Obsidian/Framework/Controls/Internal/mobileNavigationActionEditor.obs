@@ -3,7 +3,7 @@
     <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
         <RadioButtonList v-model="actionType" :items="options" disableLabel horizontal />
         <NumberBox v-if="showPageCount" v-model="pageCount" label="Page Count" help="The number of pages that will be removed from the navigation stack." class="input-width-sm" rules="required" />
-        <PagePicker v-if="showPageGuid" v-model="page" label="Path" :help="pagePickerHelp" rules="required" />
+        <PagePicker v-if="showPageGuid" v-model="page" label="Path" :help="pagePickerHelp" rules="required" :siteType="SiteType.Mobile" />
     </RockFormField>
 </template>
 
@@ -14,10 +14,10 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough, updateRefValue } from "@Obsidian/Utility/component";
     import { MobileNavigationActionType, MobileNavigationActionTypeDescription } from "@Obsidian/Enums/Controls/mobileNavigationActionType";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
-    import { Guid } from "@Obsidian/Types";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 
     type MobileNavigationActionTypeStrings = `${typeof MobileNavigationActionType[keyof typeof MobileNavigationActionType]}`;
 
@@ -36,8 +36,8 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const actionType = ref<MobileNavigationActionTypeStrings>(internalValue.value?.type ?? MobileNavigationActionType.None);
-    const pageCount = ref<number | null>(1);
-    const page = ref<PageRouteValueBag | null>(null);
+    const pageCount = ref<number | null>(internalValue.value?.popCount ?? 1);
+    const page = ref<PageRouteValueBag | null>(internalValue.value?.page ?? null);
 
     const fieldProps = useStandardRockFormFieldProps(props);
 
@@ -61,29 +61,42 @@
         return "";
     });
 
-    const pageGuid = computed<Guid | null>(() => page.value?.page?.value ?? null);
-
-    const options: ListItemBag[] = [
-        { value: MobileNavigationActionType.None.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.None] },
-        { value: MobileNavigationActionType.PopPage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.PopPage] },
-        { value: MobileNavigationActionType.ResetToPage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.ResetToPage] },
-        { value: MobileNavigationActionType.ReplacePage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.ReplacePage] },
-        { value: MobileNavigationActionType.PushPage.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.PushPage] },
-        { value: MobileNavigationActionType.DismissCoverSheet.toString(), text: MobileNavigationActionTypeDescription[MobileNavigationActionType.DismissCoverSheet] },
-    ];
+    const options: ListItemBag[] = Object.keys(MobileNavigationActionType).map(key => ({
+        value: MobileNavigationActionType[key].toString(),
+        text: MobileNavigationActionTypeDescription[MobileNavigationActionType[key]]
+    }));
 
     watch([actionType, pageCount, page], () => {
-        internalValue.value = {
-            type: actionType.value,
-            popCount: showPageCount.value ? pageCount.value : null,
-            pageGuid: showPageGuid.value ? pageGuid.value : null
-        };
+        updateInternalValue();
     });
 
     watch(internalValue, () => {
-        actionType.value = internalValue.value?.type ?? MobileNavigationActionType.None;
-        pageCount.value = internalValue.value?.popCount ?? pageCount.value;
-        page.value = internalValue.value?.pageGuid ? { page: { value: internalValue.value?.pageGuid } } : page.value;
+        const ivActionType = internalValue.value?.type?.toString() ?? MobileNavigationActionType.None;
+        if (ivActionType !== actionType.value) {
+            actionType.value = ivActionType;
+        }
+
+        const ivPageCount = internalValue.value?.popCount ?? pageCount.value;
+        if (ivPageCount !== pageCount.value) {
+            pageCount.value = ivPageCount;
+        }
+
+        const ivPage = internalValue.value?.page ?? page.value?.page ?? null;
+        if ((ivPage?.page?.value ?? null) !== (page.value?.page?.value ?? null)) {
+            page.value = { page: ivPage };
+        }
     });
+
+    function updateInternalValue(): void {
+        updateRefValue(internalValue, {
+            type: parseInt(actionType.value, 10),
+            popCount: showPageCount.value ? pageCount.value : null,
+            page: showPageGuid.value ? page.value?.page ?? null : null
+        });
+    }
+
+    if (!internalValue.value || internalValue.value.type == null || internalValue.value.type == undefined) {
+        updateInternalValue();
+    }
 
 </script>

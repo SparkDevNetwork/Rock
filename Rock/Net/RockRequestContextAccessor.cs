@@ -29,6 +29,17 @@ namespace Rock.Net
         /// </summary>
         private static readonly AsyncLocal<RockRequestContextHolder> _rockRequestContext = new AsyncLocal<RockRequestContextHolder>();
 
+        /// <summary>
+        /// <para>
+        /// Gets the current Rock request context active at the time this
+        /// property is accessed.
+        /// </para>
+        /// <para>
+        /// <strong>Only use this property if dependency injection is not available.</strong>
+        /// </para>
+        /// </summary>
+        internal static RockRequestContext Current => _rockRequestContext.Value?.Context;
+
         /// <inheritdoc/>
         public RockRequestContext RockRequestContext
         {

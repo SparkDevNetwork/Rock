@@ -404,6 +404,12 @@ namespace Rock.Transactions
 
         #region Interaction Properties
 
+        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <remarks>
+        /// If this is not specified then a new Guid will be created.
+        /// </remarks>
+        public Guid? InteractionGuid { get; set; }
+
         /// <inheritdoc cref="Interaction.InteractionDateTime"/>
         /// <remarks>
         /// If this is not specified, <see cref="RockDateTime.Now"/> will be used.

@@ -223,7 +223,7 @@ export default defineComponent({
             return await httpCall<T>("POST", url, params, data);
         };
 
-        const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters);
+        const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.interactionGuid);
 
         /**
          * Reload the block by requesting the new initialization data and then

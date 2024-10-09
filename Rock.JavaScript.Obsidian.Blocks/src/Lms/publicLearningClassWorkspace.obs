@@ -331,7 +331,6 @@
     min-width: 350px;
 
     .activity-navigation-item-container {
-        /* padding: 4px; */
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -536,8 +535,8 @@ span.icon-stack-container i.icon {
         return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
     }
 
-    function isActivityUnavailable(activity: LearningActivityCompletionBag): boolean {
-        return !activity.isAvailable;
+    function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
+        return !activity?.isAvailable;
     }
 
     // #endregion
