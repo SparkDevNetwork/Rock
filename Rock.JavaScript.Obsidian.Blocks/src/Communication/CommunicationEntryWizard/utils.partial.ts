@@ -135,7 +135,7 @@ export function createComponentElement(document: Document, componentTypeName: Ed
 
     switch (componentTypeName) {
         case "title":
-            componentElement.innerHTML = `<h1 contenteditable="true">Title</h1>`;
+            componentElement.innerHTML = `<h1 class="rock-runtime-class-contenteditable">Title</h1>`;
             break;
         case "video":
             componentElement.innerHTML = `<a href=""><img src="/Assets/Images/video-placeholder.jpg" style="width: 100%;" data-imgcsswidth="full"></a>`;
@@ -150,7 +150,7 @@ export function createComponentElement(document: Document, componentTypeName: Ed
                                 <tbody>
                                     <tr>
                                         <td align="center" valign="middle" class="button-content" style="border-radius: 3px;background-color:#2baadf">
-                                            <a contenteditable="true" class="button-link" title="Push Me" href="http://" target="_blank" rel="noopener noreferrer" style="display: inline-block; font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #ffffff;background-color: #2baadf; padding: 15px; border: 1px solid #2baadf; border-radius: 3px;">Push Me</a>
+                                            <a class="button-link rock-runtime-class-contenteditable" title="Push Me" href="http://" target="_blank" rel="noopener noreferrer" style="display: inline-block; font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #ffffff;background-color: #2baadf; padding: 15px; border: 1px solid #2baadf; border-radius: 3px;">Push Me</a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -161,21 +161,21 @@ export function createComponentElement(document: Document, componentTypeName: Ed
             </table>`;
             break;
         case "text":
-            componentElement.setAttribute("contenteditable", "true");
+            componentElement.classList.add("rock-runtime-class-contenteditable");
             componentElement.innerHTML = `<p>Can't wait to see what you have to say!</p>`;
             break;
         case "divider":
             componentElement.innerHTML = `<hr />`;
             break;
         case "message":
-            componentElement.setAttribute("contenteditable", "true");
+            componentElement.classList.add("rock-runtime-class-contenteditable");
             componentElement.innerText = "Message";
             break;
         case "image":
             componentElement.innerHTML = `<img src="/Assets/Images/image-placeholder.jpg" style="width: 100%;" data-imgcsswidth="full" alt="">`;
             break;
         case "code":
-            componentElement.setAttribute("contenteditable", "true");
+            componentElement.classList.add("rock-runtime-class-contenteditable");
             componentElement.innerHTML = `Add your code here...`;
             break;
         case "rsvp":
@@ -191,7 +191,7 @@ export function createComponentElement(document: Document, componentTypeName: Ed
                                                 <tbody>
                                                     <tr>
                                                         <td align="center" valign="middle" class="rsvp-accept-content" style="font-family: Arial; font-size: 16px; padding: 15px;">
-                                                            <a contenteditable="true" class="rsvp-accept-link" title="Accept" href="http://" target="_blank" rel="noopener noreferrer" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Accept</a>
+                                                            <a class="rsvp-accept-link rock-runtime-class-contenteditable" title="Accept" href="http://" target="_blank" rel="noopener noreferrer" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Accept</a>
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -202,7 +202,7 @@ export function createComponentElement(document: Document, componentTypeName: Ed
                                                 <tbody>
                                                     <tr>
                                                         <td align="center" valign="middle" class="rsvp-decline-content" style="font-family: Arial; font-size: 16px; padding: 15px;">
-                                                            <a contenteditable="true" class="rsvp-decline-link" title="Decline" href="http://" target="_blank" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Decline</a>
+                                                            <a class="rsvp-decline-link rock-runtime-class-contenteditable" title="Decline" href="http://" target="_blank" style="font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;">Decline</a>
                                                         </td>
                                                     </tr>
                                                 </tbody>

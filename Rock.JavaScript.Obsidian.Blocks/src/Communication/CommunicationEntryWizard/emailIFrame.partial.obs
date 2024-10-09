@@ -111,9 +111,30 @@ iframe {
         iFrameElement.value.contentWindow.postMessage(message, "/");
     }
 
+    function getInlineEditableElements(componentElement: HTMLElement): Element[] {
+        const editableElements: Element[] = [];
+
+        if ([...componentElement.classList].includes("rock-runtime-class-contenteditable")) {
+            editableElements.push(componentElement);
+        }
+
+        editableElements.push(...componentElement.querySelectorAll(".rock-runtime-class-contenteditable"));
+
+        return editableElements;
+    }
+
     function selectComponent(componentElement: HTMLElement): void {
+        // IMPORTANT! This needs to be able to be called multiple times.
+        // The first selection will highlight the component and show its properties.
+        // Subsequent selections will enable inline editing.
         if (internalSelectedComponentElement.value === componentElement) {
-            // Skip if the component is already selected.
+            // The component is already selected. Make editable regions editable.
+            const editableElements = getInlineEditableElements(componentElement);
+            if (editableElements.length) {
+                editableElements.forEach(element => {
+                    element.setAttribute("contenteditable", "true");
+                });
+            }
             return;
         }
         else {
@@ -123,6 +144,14 @@ iframe {
 
     function deselectComponentElement(componentElement: HTMLElement): void {
         componentElement.classList.remove("selected");
+
+        // Remove editable regions.
+        const editableElements = getInlineEditableElements(componentElement);
+        if (editableElements.length) {
+            editableElements.forEach(element => {
+                element.removeAttribute("contenteditable");
+            });
+        }
     }
 
     function getHtml(): string {
@@ -699,7 +728,7 @@ iframe {
     });
 
     watch(internalSelectedComponentElement, (newSelectedComponentElement, oldSelectedComponentElement) => {
-        if (oldSelectedComponentElement) {
+        if (oldSelectedComponentElement && newSelectedComponentElement !== oldSelectedComponentElement) {
             // Deselect the previously selected component.
             deselectComponentElement(oldSelectedComponentElement);
         }
