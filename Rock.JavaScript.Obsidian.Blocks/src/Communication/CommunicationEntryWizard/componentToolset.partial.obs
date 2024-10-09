@@ -1,57 +1,56 @@
 <template>
     <div>
-        <TitleComponentToolset v-if="selectedComponent.componentTypeName === 'title'"
-                               :componentElement="selectedComponent.componentElement"
+        <TitleComponentToolset v-if="componentTypeName === 'title'"
+                               :componentElement="componentElement"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')" />
 
-        <VideoComponentToolset v-else-if="selectedComponent.componentTypeName === 'video'"
-                               :componentElement="selectedComponent.componentElement"
+        <VideoComponentToolset v-else-if="componentTypeName === 'video'"
+                               :componentElement="componentElement"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')" />
 
-        <ButtonComponentToolset v-else-if="selectedComponent.componentTypeName === 'button'"
-                                :componentElement="selectedComponent.componentElement"
+        <ButtonComponentToolset v-else-if="componentTypeName === 'button'"
+                                :componentElement="componentElement"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')" />
 
-        <TextComponentToolset v-else-if="selectedComponent.componentTypeName === 'text'"
-                              :componentElement="selectedComponent.componentElement"
+        <TextComponentToolset v-else-if="componentTypeName === 'text'"
+                              :componentElement="componentElement"
                               @complete="$emit('complete')"
                               @delete="$emit('delete')" />
 
-        <DividerComponentToolset v-else-if="selectedComponent.componentTypeName === 'divider'"
-                                 :componentElement="selectedComponent.componentElement"
+        <DividerComponentToolset v-else-if="componentTypeName === 'divider'"
+                                 :componentElement="componentElement"
                                  @complete="$emit('complete')"
                                  @delete="$emit('delete')" />
 
-        <AdaptiveMessageComponentToolset v-else-if="selectedComponent.componentTypeName === 'message'"
-                                         :componentElement="selectedComponent.componentElement"
+        <AdaptiveMessageComponentToolset v-else-if="componentTypeName === 'message'"
+                                         :componentElement="componentElement"
                                          @complete="$emit('complete')"
                                          @delete="$emit('delete')" />
 
-        <ImageComponentToolset v-else-if="selectedComponent.componentTypeName === 'image'"
-                               :componentElement="selectedComponent.componentElement"
+        <ImageComponentToolset v-else-if="componentTypeName === 'image'"
+                               :componentElement="componentElement"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')" />
 
-        <CodeComponentToolset v-else-if="selectedComponent.componentTypeName === 'code'"
-                              :componentElement="selectedComponent.componentElement"
+        <CodeComponentToolset v-else-if="componentTypeName === 'code'"
+                              :componentElement="componentElement"
                               @complete="$emit('complete')"
                               @delete="$emit('delete')" />
 
-        <RsvpComponentToolset v-else-if="selectedComponent.componentTypeName === 'rsvp'"
-                              :componentElement="selectedComponent.componentElement"
+        <RsvpComponentToolset v-else-if="componentTypeName === 'rsvp'"
+                              :componentElement="componentElement"
                               @complete="$emit('complete')"
                               @delete="$emit('delete')" />
 
-        <div v-else>Unknown component type: {{ selectedComponent.componentTypeName }}.</div>
+        <div v-else>Unknown component type: {{ componentTypeName }}.</div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
-    import { EditorComponent } from "./types.partial";
+    import { computed, PropType } from "vue";
     import AdaptiveMessageComponentToolset from "./toolsets/adaptiveMessageComponentToolset.partial.obs";
     import ButtonComponentToolset from "./toolsets/buttonComponentToolset.partial.obs";
     import CodeComponentToolset from "./toolsets/codeComponentToolset.partial.obs";
@@ -61,13 +60,23 @@
     import TextComponentToolset from "./toolsets/textComponentToolset.partial.obs";
     import TitleComponentToolset from "./toolsets/titleComponentToolset.partial.obs";
     import VideoComponentToolset from "./toolsets/videoComponentToolset.partial.obs";
+    import { EditorComponentTypeName } from "./types.partial";
+    import { getComponentTypeName } from "./utils.partial";
 
-    defineProps({
-        selectedComponent: {
-            type: Object as PropType<EditorComponent>,
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
             required: true
         }
     });
+
+    // #region Computed Values
+
+    const componentTypeName = computed<EditorComponentTypeName>(() => {
+        return getComponentTypeName(props.componentElement);
+    });
+
+    // #endregion Computed Values
 
     defineEmits(["complete", "delete"]);
 </script>

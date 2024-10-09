@@ -2,7 +2,7 @@
     <div class="editor-window">
         <EmailIFrame ref="emailIFrame"
                      :html="html"
-                     v-model:selectedComponent="internalSelectedComponent" />
+                     v-model:selectedComponentElement="internalSelectedComponentElement" />
         <div v-if="isOverlayShown"
              ref="overlayElement"
              class="overlay"
@@ -35,7 +35,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import EmailIFrame from "./emailIFrame.partial.obs";
-    import { EditorComponent, EditorComponentTypeName } from "./types.partial";
+    import { EditorComponentTypeName } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
@@ -45,18 +45,18 @@
             default: ""
         },
 
-        selectedComponent: {
-            type: Object as PropType<EditorComponent | null | undefined>
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:selectedComponent", value: EditorComponent | null | undefined): void;
+        (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
     }>();
 
     // #region Values
 
-    const internalSelectedComponent = useVModelPassthrough(props, "selectedComponent", emit);
+    const internalSelectedComponentElement = useVModelPassthrough(props, "selectedComponentElement", emit);
     const overlayElement = ref<HTMLElement | undefined>();
     const emailIFrame = ref<InstanceType<typeof EmailIFrame> | undefined>();
     const isOverlayShown = ref<boolean>(false);

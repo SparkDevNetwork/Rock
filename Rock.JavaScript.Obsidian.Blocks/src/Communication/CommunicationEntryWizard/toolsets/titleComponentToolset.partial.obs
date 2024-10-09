@@ -13,8 +13,7 @@
                 </Accordion>
 
                 <Accordion title="Typography">
-                    <FontComboTool :element="headingElement"
-                                   :tagName="headingLevel" />
+                    <FontComboTool :element="headingElement" />
                 </Accordion>
             </AccordionGroup>
         </ComponentToolsetBase>

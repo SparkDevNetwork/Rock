@@ -16,9 +16,9 @@ export type EditorComponentTypeName =
     | "code"
     | "rsvp"
     | "section"
-    | "one-column-section"
-    | "two-column-section"
-    | "three-column-section"
+    | "one-column-section"   // this is a special component type
+    | "two-column-section"   // this is a special component type
+    | "three-column-section" // this is a special component type
     | "title";
 
 export type ComponentTypeDragStartMessage = {
@@ -42,11 +42,6 @@ export type ComponentTypeDragOverMessage = {
     type: "COMPONENT_TYPE_DRAG_OVER";
     clientX: number;
     clientY: number;
-};
-
-export type EditorComponent = {
-    componentTypeName: EditorComponentTypeName;
-    componentElement: HTMLElement;
 };
 
 export type AccordionManager = {

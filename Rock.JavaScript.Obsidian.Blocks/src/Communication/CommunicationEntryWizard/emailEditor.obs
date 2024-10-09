@@ -41,8 +41,8 @@
                                            @update:selectedTab="onContentTabSelected($event)">
                                 <template #tabpane="{ item }">
                                     <template v-if="item === 'Components'">
-                                        <ComponentToolset v-if="selectedComponent"
-                                                          :selectedComponent="selectedComponent"
+                                        <ComponentToolset v-if="selectedComponentElement"
+                                                          :componentElement="selectedComponentElement"
                                                           @complete="onCompleteComponent"
                                                           @delete="onDeleteComponent" />
 
@@ -57,8 +57,8 @@
                                     </template>
 
                                     <template v-else-if="item === 'Sections'">
-                                        <div v-if="selectedComponent?.componentTypeName === 'section'">
-                                            <SectionComponentToolset :componentElement="selectedComponent.componentElement"
+                                        <div v-if="selectedComponentTypeName === 'section' && selectedComponentElement">
+                                            <SectionComponentToolset :componentElement="selectedComponentElement"
                                                                      @complete="onCompleteComponent"
                                                                      @delete="onDeleteComponent" />
                                         </div>
@@ -96,7 +96,7 @@
                     <div class="email-designer-container">
                         <EmailDesigner ref="emailDesigner"
                                        :html="editorInnerHtml"
-                                       v-model:selectedComponent="selectedComponent" />
+                                       v-model:selectedComponentElement="selectedComponentElement" />
                     </div>
                 </div>
 
@@ -251,14 +251,14 @@
 
 
 <script setup lang="ts">
-    import { nextTick, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
     import ComponentToolset from "./componentToolset.partial.obs";
     import EmailDesigner from "./emailDesigner.partial.obs";
     import SideMenu from "./sideMenu.partial.obs";
     import MenuItem from "./menuItem.partial.obs";
     import GlobalToolset from "./toolsets/globalToolset.partial.obs";
     import SectionComponentToolset from "./toolsets/sectionComponentToolset.partial.obs";
-    import { EditorComponent, EditorComponentTypeName } from "./types.partial";
+    import { EditorComponentTypeName } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -268,7 +268,7 @@
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { getComponentIconCssClass, getComponentTitle } from "./utils.partial";
+    import { getComponentIconCssClass, getComponentTitle, getComponentTypeName } from "./utils.partial";
 
     const config = useConfigurationValues<{ message?: string | null | undefined; templates?: ListItemBag[] | null | undefined; }>();
 
@@ -278,37 +278,10 @@
         title: string;
     };
 
-    // #region Values
-
-    const editorInnerHtml = ref<string>(config.message ?? "");
-    const emailDesigner = ref<InstanceType<typeof EmailDesigner> | undefined>();
-    const selectedMainMenuItem = ref<"content" | "design">("content");
-    const selectedContentTab = ref<string>("");
-    const sectionCategory = ref<string>("");
-    const sectionCategories = ref<ListItemBag[]>([]);
-    const selectedComponent = ref<EditorComponent | null | undefined>();
-    const areComponentPropertiesShown = ref<boolean>(false);
-    const areSectionPropertiesShown = ref<boolean>(false);
-    const isPreviewOpen = ref<boolean>(false);
-    const previewDevice = ref<string>("desktop");
-    const previewHtml = ref<string>("");
-
-    // #endregion
-
-    // #region Computed Values
-
     const contentTabs: string[] = [
         "Components",
         "Sections"
     ];
-
-    function getComponentTypeListItem(componentTypeName: EditorComponentTypeName): ComponentTypeListItem {
-        return {
-            componentTypeName,
-            iconCssClass: getComponentIconCssClass(componentTypeName),
-            title: getComponentTitle(componentTypeName)
-        };
-    }
 
     const componentTypes: ComponentTypeListItem[] = [
         getComponentTypeListItem("title"),
@@ -329,7 +302,47 @@
         // TODO JMH Add left and right sections.
     ];
 
+    // #region Values
+
+    const editorInnerHtml = ref<string>(config.message ?? "");
+    const emailDesigner = ref<InstanceType<typeof EmailDesigner> | undefined>();
+    const selectedMainMenuItem = ref<"content" | "design">("content");
+    const selectedContentTab = ref<string>("");
+    const sectionCategory = ref<string>("");
+    const sectionCategories = ref<ListItemBag[]>([]);
+    const selectedComponentElement = ref<HTMLElement | null | undefined>();
+    const areComponentPropertiesShown = ref<boolean>(false);
+    const areSectionPropertiesShown = ref<boolean>(false);
+    const isPreviewOpen = ref<boolean>(false);
+    const previewDevice = ref<string>("desktop");
+    const previewHtml = ref<string>("");
+
     // #endregion
+
+    // #region Computed Values
+
+    const selectedComponentTypeName = computed<EditorComponentTypeName | null>(() => {
+        if (!selectedComponentElement.value) {
+            return null;
+        }
+        else {
+            return getComponentTypeName(selectedComponentElement.value);
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getComponentTypeListItem(componentTypeName: EditorComponentTypeName): ComponentTypeListItem {
+        return {
+            componentTypeName,
+            iconCssClass: getComponentIconCssClass(componentTypeName),
+            title: getComponentTitle(componentTypeName)
+        };
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -360,7 +373,7 @@
     }
 
     function onClickPreview(): void {
-        selectedComponent.value = null;
+        selectedComponentElement.value = null;
 
         nextTick(() => {
             previewHtml.value = emailDesigner.value?.getHtml() ?? "";
@@ -369,35 +382,35 @@
     }
 
     function onCompleteComponent(): void {
-        selectedComponent.value = null;
+        selectedComponentElement.value = null;
     }
 
     function onDeleteComponent(): void {
-        if (selectedComponent.value?.componentElement) {
-            const parentElement = selectedComponent.value.componentElement.parentElement;
-            selectedComponent.value.componentElement.remove();
+        if (selectedComponentElement.value) {
+            const parentElement = selectedComponentElement.value.parentElement;
+            selectedComponentElement.value.remove();
             if (parentElement?.children.length === 0 && [...parentElement.childNodes].every(n => !n.nodeValue?.trim())) {
                 // Clear all inner HTML if there are no children nor non-empty text elements.
                 parentElement.innerHTML = "";
             }
         }
 
-        if (selectedComponent.value) {
-            selectedComponent.value = null;
+        if (selectedComponentElement.value) {
+            selectedComponentElement.value = null;
         }
     }
 
     function onMainMenuItemClicked(item: "content" | "design"): void {
         if (selectedMainMenuItem.value !== item) {
             selectedMainMenuItem.value = item;
-            selectedComponent.value = null;
+            selectedComponentElement.value = null;
         }
     }
 
     function onContentTabSelected(item: string): void {
         if (selectedContentTab.value !== item) {
             selectedContentTab.value = item;
-            selectedComponent.value = null;
+            selectedComponentElement.value = null;
         }
     }
 
@@ -405,10 +418,12 @@
 
     // #region Watchers
 
-    watch(selectedComponent, (component, oldComponent) => {
-        if (component !== oldComponent) {
-            if (component) {
-                if (!["section", "one-column-section", "two-column-section", "three-column-section"].includes(component.componentTypeName)) {
+    watch(selectedComponentElement, (newSelectedComponentElement, oldSelectedComponentElement) => {
+        if (newSelectedComponentElement !== oldSelectedComponentElement) {
+            if (newSelectedComponentElement) {
+                const componentTypeName = getComponentTypeName(newSelectedComponentElement);
+
+                if (!["section", "one-column-section", "two-column-section", "three-column-section"].includes(componentTypeName)) {
                     selectedContentTab.value = "Components";
                     areComponentPropertiesShown.value = true;
                     areSectionPropertiesShown.value = false;

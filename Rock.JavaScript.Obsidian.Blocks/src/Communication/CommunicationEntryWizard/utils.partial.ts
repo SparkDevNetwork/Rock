@@ -12,6 +12,31 @@ export function useAccordionGroup(isExpanded: Ref<boolean>): void {
     group?.register(accordionKey, isExpanded);
 }
 
+export function getComponentTypeName(element: HTMLElement): EditorComponentTypeName {
+    const classList = [...element.classList];
+
+    const map: Record<string, EditorComponentTypeName> = {
+        "component-button": "button",
+        "component-code": "code",
+        "component-divider": "divider",
+        "component-image": "image",
+        "component-message": "message",
+        "component-rsvp": "rsvp",
+        "component-section": "section",
+        "component-text": "text",
+        "component-title": "title",
+        "component-video": "video"
+    };
+
+    for (const key in map) {
+        if (classList.includes(key)) {
+            return map[key];
+        }
+    }
+
+    throw new Error("Unable to get component type for element");
+}
+
 export function getComponentIconCssClass(componentTypeName: EditorComponentTypeName): string {
     switch (componentTypeName) {
         case "title":

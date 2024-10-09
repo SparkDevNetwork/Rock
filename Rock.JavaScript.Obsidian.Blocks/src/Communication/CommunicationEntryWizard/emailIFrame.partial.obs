@@ -21,7 +21,7 @@ iframe {
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, ComponentTypeDragStartMessage, EditorComponent, EditorComponentTypeName } from "./types.partial";
+    import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, ComponentTypeDragStartMessage, EditorComponentTypeName } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { createComponentElement, createComponentElementPlaceholder } from "./utils.partial";
 
@@ -32,13 +32,13 @@ iframe {
             default: ""
         },
 
-        selectedComponent: {
-            type: Object as PropType<EditorComponent | null | undefined>
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:selectedComponent", value: EditorComponent | null | undefined): void;
+        (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "componentTypeDragEnd"): void;
     }>();
 
@@ -57,7 +57,7 @@ iframe {
     const draggingComponentPlaceholderElement = ref<HTMLElement | null | undefined>();
     const dragCursorX = ref<number | null | undefined>();
     const dragCursorY = ref<number | null | undefined>();
-    const internalSelectedComponent = useVModelPassthrough(props, "selectedComponent", emit);
+    const internalSelectedComponentElement = useVModelPassthrough(props, "selectedComponentElement", emit);
 
     // #endregion
 
@@ -112,15 +112,13 @@ iframe {
     }
 
     function selectComponent(componentElement: HTMLElement): void {
-        if (internalSelectedComponent.value?.componentElement === componentElement) {
+        if (internalSelectedComponentElement.value === componentElement) {
             // Skip if the component is already selected.
             return;
         }
-
-        internalSelectedComponent.value = {
-            componentElement,
-            componentTypeName: ([...componentElement.classList].find(c => c.startsWith("component-"))?.substring(10) ?? "unknown") as EditorComponentTypeName
-        };
+        else {
+            internalSelectedComponentElement.value = componentElement;
+        }
     }
 
     function deselectComponentElement(componentElement: HTMLElement): void {
@@ -700,14 +698,14 @@ iframe {
         }
     });
 
-    watch(internalSelectedComponent, (newSelectedComponent, oldSelectedComponent) => {
-        if (oldSelectedComponent?.componentElement) {
+    watch(internalSelectedComponentElement, (newSelectedComponentElement, oldSelectedComponentElement) => {
+        if (oldSelectedComponentElement) {
             // Deselect the previously selected component.
-            deselectComponentElement(oldSelectedComponent.componentElement);
+            deselectComponentElement(oldSelectedComponentElement);
         }
 
-        if (newSelectedComponent?.componentElement) {
-            newSelectedComponent.componentElement.classList.add("selected");
+        if (newSelectedComponentElement) {
+            newSelectedComponentElement.classList.add("selected");
         }
     });
 

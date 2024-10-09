@@ -1,5 +1,5 @@
 <template>
-    <FontFamilyToolBase element="fontFamily"
+    <FontFamilyToolBase v-model="fontFamily"
                         :label="label" />
 
     <NumberBox v-model="fontSize"

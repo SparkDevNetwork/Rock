@@ -3,7 +3,7 @@
 
     <ColorPicker v-model="color" label="Text Color" />
 
-    <FontFamilyToolBase element="fontFamily"
+    <FontFamilyToolBase v-model="fontFamily"
                         label="Text" />
 
     <NumberBox v-model="fontSize" :disableLabel="true" />
