@@ -230,7 +230,6 @@ namespace Rock.Model
         /// </returns>
         public TResult GetCourseDefaultClass<TResult>( LearningCourse course, Expression<Func<LearningClass, TResult>> selector )
         {
-
             if ( course == null || course.LearningClasses == null )
             {
                 return default;

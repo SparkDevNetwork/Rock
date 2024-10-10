@@ -250,13 +250,12 @@ namespace Rock.Blocks.Lms
         protected override string GetInitialHtmlContent()
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var rockContext = new RockContext();
-            var program = new LearningProgramService( rockContext )
+            var program = new LearningProgramService( RockContext )
                 .Queryable()
                 .Include( p => p.ImageBinaryFile )
                 .FirstOrDefault( p => p.Id == programId );
 
-            var courses = GetCourses( programId, rockContext );
+            var courses = GetCourses( programId, RockContext );
 
             var queryParams = new Dictionary<string, string>
             {
@@ -294,7 +293,7 @@ namespace Rock.Blocks.Lms
         {
             var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
-            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id, semesterDates.Start, semesterDates.End );
+            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, semesterDates.Start, semesterDates.End );
         }
 
         #endregion

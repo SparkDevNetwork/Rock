@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
-using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.PublicLearningCourseDetail;
@@ -43,7 +41,7 @@ namespace Rock.Blocks.Lms
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.CourseDetailTemplate,
-        Description = "The Lava template to use to render the page. Merge fields include: Course, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The Lava template to use to render the page. Merge fields include: Course, Program, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -305,14 +303,14 @@ namespace Rock.Blocks.Lms
         {
             var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             var currentPerson = GetCurrentPerson();
-            var learningCourseService = new LearningCourseService( new RockContext() );
+            var learningCourseService = new LearningCourseService( RockContext );
             var semesterDateRange = includeNextSessionFiltering ?
                 RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now ) :
                 null;
 
             var course = includeNextSessionFiltering ?
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson.Id, semesterDateRange.Start, semesterDateRange.End ) :
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson.Id );
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, semesterDateRange.Start, semesterDateRange.End ) :
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id );
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
@@ -321,7 +319,7 @@ namespace Rock.Blocks.Lms
                 course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
             var queryParams = new Dictionary<string, string>
             {
-                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningProgramId] = course.Program.IdKey,
                 [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
                 ["LearningClassId"] = enrolledClassIdKey
             };
