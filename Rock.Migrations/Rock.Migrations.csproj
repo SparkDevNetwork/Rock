@@ -172,6 +172,10 @@
     <Compile Include="Migrations\202410082040042_AddInteractionEntityModel.Designer.cs">
       <DependentUpon>202410082040042_AddInteractionEntityModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410101546296_AddDefaultCheckInAdvertisement.cs" />
+    <Compile Include="Migrations\202410101546296_AddDefaultCheckInAdvertisement.Designer.cs">
+      <DependentUpon>202410101546296_AddDefaultCheckInAdvertisement.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2327,6 +2331,9 @@
     <EmbeddedResource Include="Migrations\202410082040042_AddInteractionEntityModel.resx">
       <DependentUpon>202410082040042_AddInteractionEntityModel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410101546296_AddDefaultCheckInAdvertisement.resx">
+      <DependentUpon>202410101546296_AddDefaultCheckInAdvertisement.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
     </EmbeddedResource>
@@ -3898,6 +3905,9 @@
     </Content>
     <None Include="Migrations\Version 16.0\Version 1.16.0\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
     <None Include="Migrations\Version 16.0\Version 1.16.0\202306151802148_UpdateChartShortcode.sql" />
+    <None Include="Migrations\202410101546296_AddDefaultCheckInAdvertisement_Image.jpg">
+      <DependentUpon>202410101546296_AddDefaultCheckInAdvertisement.cs</DependentUpon>
+    </None>
     <Content Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication.sql">
       <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
     </Content>
