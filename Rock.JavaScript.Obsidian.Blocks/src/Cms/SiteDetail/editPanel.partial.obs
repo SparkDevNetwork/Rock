@@ -148,7 +148,7 @@
 
             <div class="panel-body">
                 <div class="grid grid-panel">
-                    <Grid :data="gridData" keyField="key" itemTerm="Page Attribute" liveUpdates light @addItem="onAddItem">
+                    <Grid :data="gridData" keyField="idKey" itemTerm="Page Attribute" liveUpdates light @addItem="onAddItem">
                         <TextColumn name="name" field="name" title="Attribute" />
                         <TextColumn name="description" field="description" title="Description" />
                         <BooleanColumn name="isRequired" field="isRequired" title="Required" />
@@ -157,7 +157,6 @@
                     </Grid>
                 </div>
             </div>
-
 
             <Modal v-model="isModalOpen" title="Page Attributes">
 
@@ -259,8 +258,9 @@
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 
     const props = defineProps({
         modelValue: {
@@ -352,9 +352,12 @@
     // #region Functions
 
     function convertToRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
-        console.log(attribute);
+        if (attribute.key && !reservedKeyNames.value.includes(attribute.key)) {
+            reservedKeyNames.value.push(attribute.key);
+        }
+
         return {
-            key: attribute.key,
+            idKey: attribute.guid,
             name: attribute.name,
             description: attribute.description,
             isRequired: attribute.isRequired
@@ -365,30 +368,32 @@
 
     // #region Event Handlers
 
-    async function onAddItem(): Promise<void> {
-        siteAttribute.value = {} as PublicEditableAttributeBag;
+    function onAddItem(): void {
+        siteAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
         isModalOpen.value = true;
         attributeErrors.value = [];
     }
 
-    const onEditItem = async (key: string): Promise<void> => {
-
+    function onEditItem(key: string): void {
         attributeErrors.value = [];
-        const selectedSiteAttribute = siteAttributes.value.find(x => x.key === key);
+        const selectedSiteAttribute = siteAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
             siteAttribute.value = selectedSiteAttribute;
+            reservedKeyNames.value = reservedKeyNames.value.filter(x => x !== selectedSiteAttribute.key);
             isModalOpen.value = true;
         }
         else {
             onAddItem();
         }
-    };
+    }
 
-    const onDeleteItem = async (key: string): Promise<void> => {
+    function onDeleteItem(key: string): void {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isModalOpen.value = false;
-        siteAttributes.value = siteAttributes.value.filter(s => s.key !== key);
+        siteAttributes.value = siteAttributes.value.filter(s => s.guid !== key);
 
         // Update the grid.
         if (gridData.rows) {
@@ -398,16 +403,16 @@
                 gridData.rows?.splice(index, 1);
             }
         }
-    };
+    }
 
     function onSaveAttribute(): void {
 
         if (siteAttribute.value) {
-            const index = siteAttributes.value.findIndex(a => a.key === siteAttribute.value?.key);
+            const index = siteAttributes.value.findIndex(a => a.guid === siteAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
                 let editedAttribute = siteAttributes.value.find(a => a.guid == siteAttribute.value?.guid);
-                let rowItem = gridData.rows?.find(x => x["idKey"] == siteAttribute.value?.key);
+                let rowItem = gridData.rows?.find(x => x["idKey"] == siteAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -417,12 +422,13 @@
 
                 if (rowItem && gridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = gridData.rows.findIndex(r => r["idKey"] === siteAttribute.value?.key);
+                    const rowIndex = gridData.rows.findIndex(r => r["idKey"] === siteAttribute.value?.guid);
                     rowItem = convertToRowItem(editedAttribute);
                     gridData.rows?.splice(rowIndex, 1, rowItem);
                 }
             }
             else {
+                siteAttribute.value.guid = newGuid();
                 siteAttributes.value.push(siteAttribute.value);
 
                 // Add new RowItem to the grid to represent the newly added attribute.
@@ -430,18 +436,14 @@
                 gridData.rows?.push(newRowItem);
             }
 
-            const key = siteAttribute.value?.key ?? "";
             siteAttribute.value = null;
             isModalOpen.value = false;
-            if (!reservedKeyNames.value.includes(key)) {
-                reservedKeyNames.value.push(key);
-            }
         }
     }
 
     const onStartSaveAttribute = (): void => {
         attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(siteAttribute.value?.key ?? "") && !siteAttribute.value?.guid;
+        const isExistingKey = reservedKeyNames.value.includes(siteAttribute.value?.key ?? "");
         submitEditAttribute.value = !isExistingKey;
         if (isExistingKey) {
             attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
@@ -501,7 +503,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, siteDomains, defaultPage, loginPage, changePasswordPage, communicationPage, registrationPage, pageNotFoundPage, ...propRefs], () => {
+    watch([attributeValues, siteDomains, defaultPage, loginPage, changePasswordPage, communicationPage, registrationPage, pageNotFoundPage, siteAttributes, ...propRefs], () => {
         const newValue: ValidPropertiesBox<SiteBag> = {
             bag: { ...props.modelValue.bag } as SiteBag
         };
