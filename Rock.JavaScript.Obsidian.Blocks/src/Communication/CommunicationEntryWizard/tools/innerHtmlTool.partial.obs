@@ -1,10 +1,14 @@
 <template>
-    <HtmlEditor v-if="mode === 'html'" v-model="innerHtml" :editorHeight="200" />
+    <HtmlEditor v-if="mode === 'html'"
+                v-model="innerHtml"
+                :editorHeight="200"
+                :mergeFields="messageMergeFields" />
     <CodeEditor v-else-if="mode === 'code'" v-model="innerHtml" />
 </template>
 
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
+    import { rockRuntimeClassContentEditable } from "../utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
 
@@ -18,6 +22,19 @@
             default: "html"
         }
     });
+
+    // TODO JMH Figure out if these are the proper merge fields. They were taken from the Simple editor.
+
+    const messageMergeFields: string[] = [
+        "GlobalAttribute",
+        "Rock.Model.Person",
+        "Communication.Subject|Subject",
+        "Communication.FromName|From Name",
+        "Communication.FromEmail|From Address",
+        "Communication.ReplyToEmail|Reply To",
+        "UnsubscribeOption",
+        "Rock.Model.Person"
+    ];
 
     // #region Values
 
@@ -47,7 +64,7 @@
         }
 
         const component = newValue.closest(".component[data-state='component']");
-        if (component?.parentElement && component.parentElement.querySelectorAll("[contenteditable]").length) {
+        if (component?.parentElement && component.parentElement.querySelectorAll(`[contenteditable],.${rockRuntimeClassContentEditable}`).length) {
             newValue.addEventListener("input", onInput);
         }
     }, {

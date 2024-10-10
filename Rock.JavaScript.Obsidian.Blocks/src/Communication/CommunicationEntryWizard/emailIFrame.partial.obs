@@ -554,6 +554,8 @@ iframe {
                 return;
             }
             else {
+                // TODO JMH Add logic to place the component at the front or end of the nearest section, if not hovering over any.
+
                 // Leave the element alone.
             }
         }
