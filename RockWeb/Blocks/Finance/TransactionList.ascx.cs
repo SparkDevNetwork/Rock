@@ -969,6 +969,11 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
             var transaction = transactionService.Get( e.RowKeyId );
+            if ( hfTransactionViewMode.Value == "Transaction Details" )
+            {
+                var transactionDetailService = new FinancialTransactionDetailService( rockContext );
+                transaction = transactionService.Get( transactionDetailService.Get( e.RowKeyId ).TransactionId );
+            }
             if ( transaction != null )
             {
                 string errorMessage;
@@ -1620,7 +1625,8 @@ namespace RockWeb.Blocks.Finance
 
                     query = financialTransactionDetailQuery.Select( a => new FinancialTransactionRow
                     {
-                        Id = a.TransactionId,
+                        Id = a.Id,
+                        TransactionId = a.TransactionId,
                         BatchId = a.Transaction.BatchId,
                         TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
                         ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
@@ -2031,11 +2037,25 @@ namespace RockWeb.Blocks.Finance
                 if ( _availableAttributes.Any() )
                 {
                     gTransactions.ObjectList = new Dictionary<string, object>();
-                    var txns = new FinancialTransactionService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )
-                        .ToList();
-                    txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
+                    if ( hfTransactionViewMode.Value == "Transactions" )
+                    {
+                        gTransactions.EntityIdField = "Id";
+                        var txns = new FinancialTransactionService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )
+                            .ToList();
+                        txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
+                    }
+                    else
+                    {
+                        // Ensure the EntityIdField is set to TransactionId so that the Workflow is created on the Financial Transaction Entity.
+                        gTransactions.EntityIdField = "TransactionId";
+                        var txns = new FinancialTransactionDetailService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )
+                            .ToList();
+                        txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
+                    }
                 }
 
                 gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
@@ -2181,6 +2201,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
+            // Update the id to have the value of the Transaction Id if the View is pointing to the "Transaction Details".
+            if ( hfTransactionViewMode.Value == "Transaction Details" )
+            {
+                id = new FinancialTransactionDetailService( new RockContext() ).Get( id )?.TransactionId ?? 0;
+            }
+
             if ( _batch != null )
             {
                 var qryParams = new Dictionary<string, string>();
@@ -2282,6 +2308,7 @@ namespace RockWeb.Blocks.Finance
         private class FinancialTransactionRow : RockDynamic
         {
             public int Id { get; set; }
+            public int TransactionId { get; set; }
             public int? AuthorizedPersonAliasId { get; internal set; }
             public string AuthorizedPersonLastName { get; set; }
             public string AuthorizedPersonNickName { get; set; }
