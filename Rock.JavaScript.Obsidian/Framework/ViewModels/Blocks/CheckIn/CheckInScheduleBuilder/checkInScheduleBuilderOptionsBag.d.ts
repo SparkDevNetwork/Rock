@@ -22,13 +22,16 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The Check-in Schedule Builder Options Bag */
 export type CheckInScheduleBuilderOptionsBag = {
     /** The list of Areas that can be chosen from */
     areas?: Guid[] | null;
 
+    /** The Default Schedule Category */
+    defaultScheduleCategory?: ListItemBag | null;
+
     /** The list of GroupTypes that can be chosen from */
     groupTypes?: Guid[] | null;
-
-    warningMessage?: string | null;
 };

@@ -7,6 +7,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 {
+    /// <summary>
+    /// The Check-in Schedule Builder Options Bag
+    /// </summary>
     public class CheckInScheduleBuilderOptionsBag
     {
         /// <summary>
@@ -19,6 +22,9 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
         /// </summary>
         public List<Guid> Areas { get; set; }
 
-        public string WarningMessage { get; set; }
+        /// <summary>
+        /// The Default Schedule Category
+        /// </summary>
+        public ListItemBag DefaultScheduleCategory { get; set; }
     }
 }

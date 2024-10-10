@@ -24,8 +24,11 @@
 import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The Check-in Schedule Builder Data Bag */
 export type CheckInScheduleBuilderDataBag = {
+    /** The List of Group Locations to display on the Grid */
     groupLocations?: GroupLocationsBag[] | null;
 
+    /** The list of Schedules to display on the Grid */
     schedules?: ListItemBag[] | null;
 };

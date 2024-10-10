@@ -3,23 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Attribute;
-using Rock.ViewModels.Blocks.Crm.PhotoVerifyList;
-using Rock.ViewModels.Blocks;
 using Rock.Data;
 using Rock.Model;
-using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder;
 using Rock.Web.Cache;
 using Rock.ViewModels.Utility;
-using Rock.Web.UI.Controls;
-using DotLiquid;
 using Rock.Utility;
 using Rock.CheckIn;
 using System.Data.Entity;
-using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Blocks.CheckIn
 {
@@ -29,8 +21,8 @@ namespace Rock.Blocks.CheckIn
     [IconCssClass( "fa fa-clipboard" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
-    //[Rock.SystemGuid.EntityTypeGuid(  )]
-    //[Rock.SystemGuid.BlockTypeGuid(  )]
+    [Rock.SystemGuid.EntityTypeGuid( "28B9DAB2-C58A-4459-9EE7-8D1895C09592" )]
+    [Rock.SystemGuid.BlockTypeGuid( "03C8EA07-DAF5-4B5A-9BB6-3A1AF99BB135" )]
     [CustomizedGrid]
     public class CheckInScheduleBuilder : RockBlockType
     {
@@ -116,7 +108,6 @@ namespace Rock.Blocks.CheckIn
                 Areas = new List<Guid>()
             };
 
-            // TODO: Hide picker on the Obsidian side if the Page Parameter has a value.
             var groupTypes = GetTopGroupTypes();
             foreach ( var groupType in groupTypes )
             {
@@ -124,9 +115,10 @@ namespace Rock.Blocks.CheckIn
             }
 
             var groupTypeService = new GroupTypeService( RockContext );
-            if ( _groupTypeId.HasValue )
+            var groupTypeId = GetGroupTypeIdFromPageParam();
+            if ( groupTypeId.HasValue )
             {
-                bag.Areas = groupTypeService.GetCheckinAreaDescendants( _groupTypeId.Value ).Where( a => a.GroupTypePurposeValue == null || !a.GroupTypePurposeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER.AsGuid() ) ).Select( a => a.Guid ).ToList();
+                bag.Areas = groupTypeService.GetCheckinAreaDescendants( groupTypeId.Value ).Where( a => a.GroupTypePurposeValue == null || !a.GroupTypePurposeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER.AsGuid() ) ).Select( a => a.Guid ).ToList();
             }
             else
             {
@@ -140,9 +132,23 @@ namespace Rock.Blocks.CheckIn
                 bag.Areas = allAreas.Select( a => a.Guid ).ToList();
             }
 
+            var defaultCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
+            if (defaultCategoryId.HasValue)
+            {
+                bag.DefaultScheduleCategory = new ListItemBag
+                {
+                    Text = CategoryCache.Get( defaultCategoryId.Value ).Name,
+                    Value = Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES,
+                };
+            }
+
             return bag;
         }
 
+        /// <summary>
+        /// Gets the list of schedules to display and applies the category filter against the schedules.
+        /// </summary>
+        /// <returns>A list of schedules</returns>
         private List<ListItemBag> GetSchedules()
         {
             if ( _schedules?.Count > 0 )
@@ -164,7 +170,6 @@ namespace Rock.Blocks.CheckIn
             }
             else
             {
-                //TODO: this does not work.
                 // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
             }
@@ -202,7 +207,7 @@ namespace Rock.Blocks.CheckIn
             int? groupTypeId = _groupTypeId;
             if ( !groupTypeId.HasValue )
             {
-                groupTypeId = GetIdFromPageParam( PageParameterKey.GroupTypeId )
+                groupTypeId = GetGroupTypeIdFromPageParam()
                                ?? ( SelectedGroupType != null && Guid.TryParse( SelectedGroupType.Value, out var groupTypeGuid )
                                    ? GroupTypeCache.Get( groupTypeGuid ).Id
                                    : Rock.Constants.All.Id );
@@ -259,7 +264,7 @@ namespace Rock.Blocks.CheckIn
         {
             var groupTypes = new List<GroupType>();
 
-            // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Check-in Template
+            // Populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Check-in Template
             // or with group types that allow multiple locations/schedules and support named locations
             int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             GroupTypeService groupTypeService = new GroupTypeService( RockContext );
@@ -307,13 +312,28 @@ namespace Rock.Blocks.CheckIn
             return groupTypes;
         }
 
-        private int? GetIdFromPageParam( string pageParameterKey )
+        /// <summary>
+        /// Gets the Group Type Id found on the Page Parameter Key
+        /// </summary>
+        /// <returns>The Group Type Id </returns>
+        private int? GetGroupTypeIdFromPageParam()
         {
-            var pageParamId = PageParameter( pageParameterKey );
+            if ( _groupTypeId != null )
+            {
+                return _groupTypeId;
+            }
+
+            var pageParamId = PageParameter( PageParameterKey.GroupTypeId );
             _groupTypeId = Rock.Utility.IdHasher.Instance.GetId( pageParamId ) ?? pageParamId.AsIntegerOrNull();
             return _groupTypeId;
         }
 
+        /// <summary>
+        /// Gets the group location schedules
+        /// </summary>
+        /// <param name="groupLocationQry">The group location queryable</param>
+        /// <param name="groupPaths">The list of group paths</param>
+        /// <returns>A list of group locations</returns>
         private List<GroupLocationsBag> GetGroupLocationSchedules( IQueryable<GroupLocation> groupLocationQry, List<CheckinAreaPath> groupPaths )
         {
             var groupService = new GroupService( RockContext );
@@ -391,14 +411,14 @@ namespace Rock.Blocks.CheckIn
             return bags;
         }
 
+        /// <summary>
+        /// Saves the newly added or removed schedules to their designated group locations.
+        /// </summary>
+        /// <param name="scheduledLocations">The scheduled group locations</param>
+        /// <returns></returns>
         [BlockAction]
         public BlockActionResult Save(List<GroupLocationsBag> scheduledLocations)
         {
-            // Normally we would want to validate all the data to be sure it
-            // only specified valid locations and groups. But in the case of
-            // this block we have decided that we are trusting the client by
-            // way of the pinCode.
-
             // Load all the group locations in a single query, along with the
             // schedule information.
             var groupLocationIds = scheduledLocations
@@ -461,8 +481,13 @@ namespace Rock.Blocks.CheckIn
             return ActionOk();
         }
 
+        /// <summary>
+        /// Processes the cloned schedules
+        /// </summary>
+        /// <param name="bag">The clone schedule bag that contains the source and destination schedules</param>
+        /// <returns>The updated group locations list to the client.</returns>
         [BlockAction]
-        public BlockActionResult SaveClonedSchedule(CloneScheduleBag bag)
+        public BlockActionResult ProcessClonedSchedule(CloneScheduleBag bag)
         {
             var groupLocationQuery = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths ).ToList();
 
@@ -501,10 +526,13 @@ namespace Rock.Blocks.CheckIn
             return ActionBadRequest("The source and destination schedules must be defined.");
         }
 
+        /// <summary>
+        /// Loads the group schedule location data
+        /// </summary>
+        /// <returns>The group schedule location data bag</returns>
         [BlockAction]
         public BlockActionResult LoadGroupScheduleLocationData()
         {
-            // TODO: handle action bad request?
             CheckInScheduleBuilderDataBag bag = new CheckInScheduleBuilderDataBag();
             var groupLocationQry = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths );
             bag.GroupLocations = GetGroupLocationSchedules( groupLocationQry, groupPaths );

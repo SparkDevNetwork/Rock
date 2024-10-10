@@ -23,8 +23,11 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The Clone Schedule Bag */
 export type CloneScheduleBag = {
+    /** The destination schedule for the clone operation */
     destinationSchedule?: ListItemBag | null;
 
+    /** The source schedule for the clone operation */
     sourceSchedule?: ListItemBag | null;
 };

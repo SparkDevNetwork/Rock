@@ -22,9 +22,6 @@ export const enum PreferenceKey {
     SelectedParentLocation = "selected-parent-location"
 }
 
-export type GridSettingsOptions = {
-    selectedGroupType: string | null;
-    selectedArea: string | null;
-    selectedCategory: string | null;
-    selectedParentLocation: string | null;
-};
+export const enum PageParameterKey {
+    GroupTypeId = "GroupTypeId"
+}

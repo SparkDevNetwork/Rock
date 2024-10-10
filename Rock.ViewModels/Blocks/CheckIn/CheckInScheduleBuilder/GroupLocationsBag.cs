@@ -7,6 +7,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
 {
+    /// <summary>
+    /// The Group Locations Bag
+    /// </summary>
     public class GroupLocationsBag
     {
         /// <summary>

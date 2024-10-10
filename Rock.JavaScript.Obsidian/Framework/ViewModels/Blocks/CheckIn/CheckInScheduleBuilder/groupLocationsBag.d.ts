@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** The Group Locations Bag */
 export type GroupLocationsBag = {
     /** The path to the area that contains the group. */
     areaPath?: string | null;

@@ -7,19 +7,29 @@
                 <div class="grid-badges mr-3">
                     <RockButton class="mr-3" @click="showCloneScheduleModal = true">Clone Schedule</RockButton>
                     <span class="label label-default">
-                        <span class="label-value" v-if="groupLocations.length > 0">{{ groupLocations.length }} {{ getCountLabelText }}</span>
+                        <span class="label-value">{{ getCountLabelText }}</span>
                     </span>
+                </div>
+
+                <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchExpanded }">
+                    <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
+                        <i class="fa fa-search fa-fw"></i>
+                    </button>
+
+                    <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
+                        <TextBox v-model="quickFilterValue" placeholder="Search" />
+                    </div>
                 </div>
             </div>
             <div class="margin-b-md">
                 <div class="d-flex flex-row justify-content-evenly">
-                    <div class="col-md-2">
+                    <div class="col-md-2" v-if="!groupTypeIdFromParam">
                         <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]"  />
                     </div>
                     <div class="col-md-2">
                         <LocationItemPicker v-model="parentLocation" label="Parent Location" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-2" v-if="areaItems.length > 0">
                         <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" :groupTypes="[...areaItems]" />
                     </div>
                     <div class="col-md-2">
@@ -41,39 +51,44 @@
                         Location
                     </div>
                 </div>
-                <div class="grid-column-header px-2" style="width: 5%; min-width: 75px; max-width: 100px;" v-for="schedule in schedules">
-                    <div class="d-flex flex-column justify-content-center align-items-center">
+                <div class="grid-column-header px-1" style="width: 5%; min-width: 75px; max-width: 100px;" v-for="schedule in schedules">
+                    <div class="d-flex flex-column align-items-center">
                         <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
-                        <a href='#' style='display: inline; color: inherit' :class="['fa', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'fa-check-square-o' : 'fa-square-o']" @click="onScheduleColumnClick(schedule.value ?? '')"></a>
-                        <!-- <input type="checkbox"
-                                :checked="isColumnEnabled(schedule.value ?? '')"
-                                @change="onScheduleColumnClick(schedule.value ?? '')"> -->
-                        <!-- <CheckBox label="" :modelValue="isColumnEnabled(schedule.value ?? '')" @update:modelValue="onScheduleColumnClick(schedule.value ?? '')" /> -->
+                        <a href='#'
+                           style="display: inline; color: inherit"
+                           :class="['fa', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'fa-check-square-o' : 'fa-square-o']"
+                           @click="onScheduleColumnClick(schedule.value ?? '')">
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="grid-body">
-            <div v-for="(scheduledGroupLocation, index) in groupLocations" :class="['grid-row', isEven(index + 1) ? 'grid-row-even' : 'grid-row-odd']">
+            <div v-for="(groupLocation, index) in filteredGroupLocations" v-if="filteredGroupLocations.length > 0" :class="['grid-row', isEven(index + 1) ? 'grid-row-even' : 'grid-row-odd']">
                 <div class="grid-cell" style="flex: 1 1 20%">
                     <div class="d-flex flex-column">
-                        <div>{{ scheduledGroupLocation.groupPath }}</div>
-                        <small>{{ scheduledGroupLocation.areaPath }}</small>
+                        <div>{{ groupLocation.groupPath }}</div>
+                        <small>{{ groupLocation.areaPath }}</small>
                     </div>
                 </div>
 
                 <div class="grid-cell" style="flex: 1 1 20%">
                     <div class="d-flex flex-column">
-                        <div>{{ scheduledGroupLocation.locationName }}</div>
-                        <small>{{ scheduledGroupLocation.locationPath }}</small>
+                        <div>{{ groupLocation.locationName }}</div>
+                        <small>{{ groupLocation.locationPath }}</small>
                     </div>
                 </div>
 
                 <div v-for="schedule in schedules" class="grid-cell" style="width: 5%; min-width: 75px; max-width: 100px;">
                     <CheckBox label=""
-                                    :modelValue="isScheduleEnabled(scheduledGroupLocation, schedule)"
-                                    @update:modelValue="onScheduleClick(scheduledGroupLocation, schedule)" />
+                                :modelValue="isScheduleEnabled(groupLocation, schedule)"
+                                @change="onScheduleClick(groupLocation, schedule)" />
+                </div>
+            </div>
+            <div v-else-if="!isLoading" class="grid-row">
+                <div class="grid-cell table-empty">
+                    No Schedule Locations found.
                 </div>
             </div>
         </div>
@@ -85,13 +100,13 @@
                         <span v-else>Save</span>
                     </RockButton>
                 </div>
-                <NotificationBox v-if="showSaveSuccess" alertType="success" class="mb-0">Changes have been saved.</NotificationBox>
+                <NotificationBox v-if="showSaveNotification" :alertType="saveNotificationType" class="mb-0">{{ saveNotificationText }}</NotificationBox>
             </div>
         </div>
     </div>
 
     <Modal v-model="showCloneScheduleModal" title="Copy Schedule">
-        <RockForm v-model:submit="submitClonedSchedule" @submit="saveClonedSchedule">
+        <RockForm v-model:submit="submitClonedSchedule" @submit="processClonedSchedule">
             <NotificationBox alertType="info">This will copy all the enabled locations from the source schedule into the destination schedule.</NotificationBox>
             <div class="row">
                 <div class="col-md-3">
@@ -105,7 +120,7 @@
         </RockForm>
 
         <template #customButtons>
-            <RockButton btnType="primary" @click="startCloningSchedule">Save</RockButton>
+            <RockButton btnType="primary" @click="submitClonedSchedule = true">Save</RockButton>
         </template>
     </Modal>
 </template>
@@ -116,35 +131,45 @@
     import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderDataBag";
     import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
     import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CloneScheduleBag";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { computed, nextTick, onMounted, ref, watch } from "vue";
-    import { PreferenceKey } from "./CheckInScheduleBuilder/types.partial";
+    import { PreferenceKey, PageParameterKey } from "./CheckInScheduleBuilder/types.partial";
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
-    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
-    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { alert } from "@Obsidian/Utility/dialogs";
-import { escapeHtml } from "@Obsidian/Utility/stringUtils";
-import RockButton from "@Obsidian/Controls/rockButton.obs";
-import { EntityType } from "@Obsidian/SystemGuids/entityType";
-import Modal from "@Obsidian/Controls/modal.obs";
-import RockForm from "@Obsidian/Controls/rockForm.obs";
-import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
-import { Guid } from "@Obsidian/Types";
+    import { Guid } from "@Obsidian/Types";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
 
     // #region Values
     const config = useConfigurationValues<CheckInScheduleBuilderOptionsBag>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+    const params = new URLSearchParams(window.location.search);
 
-    const showSaveSuccess = ref<boolean>(false);
+    const saveNotificationType = ref<string>("");
+    const saveNotificationText = ref<string>("");
+    const showSaveNotification = ref<boolean>(false);
     const isSaving = ref<boolean>(false);
     const isLoading = ref<boolean>(false);
     const groupLocations = ref<GroupLocationsBag[]>([]);
     const schedules = ref<ListItemBag[]>([]);
 
+    // Grid Search
+    const isSearchExpanded = ref(false);
+    const quickFilterContainerElement = ref<HTMLElement>();
+    const quickFilterValue = ref<string>("");
+
     // Filter Data
+    const groupTypeIdFromParam = ref<string | null>(params.get(PageParameterKey.GroupTypeId));
     const areaItems = ref<Guid[]>(config.areas ?? []);
     const groupTypeItems = ref<Guid[]>(config.groupTypes ?? []);
     const groupType = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedGroupType) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)) : {});
@@ -162,7 +187,122 @@ import { Guid } from "@Obsidian/Types";
 
     // #region Computed Values
 
-    const getCountLabelText = computed(() => groupLocations.value.length === 1 ? "Schedule Location" : "Schedule Locations");
+    const getCountLabelText = computed(() => {
+        if (groupLocations.value.length > filteredGroupLocations.value.length) {
+            return `${filteredGroupLocations.value.length} of ${groupLocations.value.length} Schedule Locations`;
+        }
+        return groupLocations.value.length === 1 ? `${groupLocations.value.length} Schedule Location` : `${groupLocations.value.length} Schedule Locations`;
+    });
+
+    const filteredGroupLocations = computed(() => {
+        return groupLocations.value.filter(location => {
+            const searchTerm = quickFilterValue.value.toLowerCase();
+
+            return (
+                location.groupPath?.toLowerCase().includes(searchTerm) ||
+                location.areaPath?.toLowerCase().includes(searchTerm) ||
+                location.locationPath?.toLowerCase().includes(searchTerm) ||
+                location.locationName?.toLowerCase().includes(searchTerm)
+            );
+        });
+    });
+
+    // #endregion
+
+    // #region Grid Search Functions
+
+    /**
+     * Called when the quick filter search button is clicked. Toggle the
+     * visible state of the search box.
+     */
+    function onSearchClick(): void {
+        // Don't allow hiding the search box if there is content in it.
+        if (isSearchExpanded.value && quickFilterValue.value) {
+            return;
+        }
+
+        isSearchExpanded.value = !isSearchExpanded.value;
+
+        // Focus the search box if it is visible.
+        if (isSearchExpanded.value) {
+            nextTick(() => {
+                const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+                searchBox?.focus();
+            });
+        }
+    }
+
+    /**
+     * Checks if the element or any ancestor can be focused. This is a rough
+     * guess and not 100% accurate, but should be good enough for our uses.
+     *
+     * @param element The element whose ancestor tree is to be checked for focusability.
+     *
+     * @returns `true` if the element or any ancestor is focusable, otherwise `false`.
+     */
+    function isTreeFocusable(element: HTMLElement | null): boolean {
+        while (element != null) {
+            if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+                return true;
+            }
+
+            if (element.isContentEditable) {
+                return true;
+            }
+
+            element = element.parentElement;
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for when a key down event occurs anywhere in the document.
+     *
+     * @param event The keyboard event.
+     */
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        // If it's not any kind of HTML Element, then just ignore it.
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        // If the quick filter has the focus, investigate further.
+        if (quickFilterContainerElement.value?.contains(event.target)) {
+            if (event.key === "Escape") {
+                // If the escape key is pressed then clear the search.
+                if (quickFilterValue.value === "") {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+
+                    searchBox?.blur();
+                    isSearchExpanded.value = false;
+                }
+                else {
+                    quickFilterValue.value = "";
+                }
+            }
+            else if (event.key === "Enter") {
+                // If the enter/return key is pressed, it signifies the individual
+                // is done typing and is ready to "search"; if the event is not
+                // cancelled, this can lead to other grid actions (i.e. row delete)
+                // from trying to handle the event.
+                event.preventDefault();
+            }
+        }
+
+        // If no other input type element has focus and they hit the hotkey
+        // for searching, open the search bar and focus the search box.
+        if (!isTreeFocusable(event.target)) {
+            if (event.key === "F" && event.ctrlKey && event.shiftKey) {
+                isSearchExpanded.value = true;
+
+                nextTick(() => {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+                    searchBox?.focus();
+                });
+            }
+        }
+    }
 
     // #endregion
 
@@ -173,25 +313,27 @@ import { Guid } from "@Obsidian/Types";
      * A column is considered enabled if the scheduleIdKey is present in the scheduleIds for every group location.
      *
      * @param scheduleIdKey - The key of the schedule to check.
-     * @returns `true` if the scheduleIdKey is present in all groupLocations, and false otherwise.
+     * @returns `true` if the scheduleIdKey is present in all filteredGroupLocations, and false otherwise.
      */
     function isColumnEnabled(scheduleIdKey: string): boolean {
-        return groupLocations.value.filter(sgl => sgl.scheduleIds?.includes(scheduleIdKey)).length === groupLocations.value.length && groupLocations.value.length > 0;
+        return filteredGroupLocations.value.filter(g => g.scheduleIds?.includes(scheduleIdKey)).length === filteredGroupLocations.value.length && filteredGroupLocations.value.length > 0;
     }
 
+    /**
+     * Selects or deselects all scheduels in a given schedule column
+     *
+     * @param scheduleIdKey  the unique identifier for the schedule column
+     */
     function onScheduleColumnClick(scheduleIdKey: string): void {
-        if (groupLocations.value.length === 0) {
+        if (filteredGroupLocations.value.length === 0) {
             return;
         }
 
         const isCurrentlyEnabled = isColumnEnabled(scheduleIdKey);
+        // const updatedLocations: typeof filteredGroupLocations.value = [];
 
-        // Prepare a new array to hold the updated locations
-        const updatedLocations: typeof groupLocations.value = [];
-
-        // Process each location
-        for (const sgl of groupLocations.value) {
-            let scheduleIds = sgl.scheduleIds || [];
+        for (const groupLocation of filteredGroupLocations.value) {
+            let scheduleIds = groupLocation.scheduleIds || [];
 
             if (isCurrentlyEnabled) {
                 scheduleIds = scheduleIds.filter(id => id !== scheduleIdKey);
@@ -200,33 +342,16 @@ import { Guid } from "@Obsidian/Types";
                 scheduleIds = [...scheduleIds, scheduleIdKey];
             }
 
-            updatedLocations.push({ ...sgl, scheduleIds });
+            groupLocation.scheduleIds = scheduleIds;
         }
-
-        groupLocations.value = [];
-        // Update the reactive property in the next tick
-        nextTick(() => {
-            groupLocations.value = updatedLocations;
-        });
     }
 
     /**
-     * Determines if the scheduled location is currently enabled for the
-     * specified schedule. This provides the state of the checkbox for a cell.
+     * Determines if a given row in the grid is even or odd.
      *
-     * @param groupLocations The scheduled location.
-     * @param schedule The schedule.
-     *
-     * @returns `true` if the cell checkbox should be checked.
+     * @param index The grid row number.
+     * @returns `true` if the grid row is even.
      */
-    function isScheduleEnabled(groupLocation: GroupLocationsBag, schedule: ListItemBag): boolean {
-        if (!groupLocation.scheduleIds || !schedule.value) {
-            return false;
-        }
-
-        return groupLocation.scheduleIds.includes(schedule.value);
-    }
-
     function isEven(index: number): boolean {
         return index % 2 === 0;
     }
@@ -238,11 +363,24 @@ import { Guid } from "@Obsidian/Types";
      */
     function getScheduleHtml(schedule: ListItemBag): string {
         // Replace spaces with <br> to save horizontal space.
-        return escapeHtml(schedule.text ?? "").replace(" ", "<br>");
+        return escapeHtml(schedule.text ?? "").replace(/ /g, "<br>");
     }
 
-    function startCloningSchedule(): void {
-        submitClonedSchedule.value = true;
+    /**
+     * Determines if the group location is currently enabled for the
+     * specified schedule. This provides the state of the checkbox for a cell.
+     *
+     * @param groupLocation The group location.
+     * @param schedule The schedule.
+     *
+     * @returns `true` if the cell checkbox should be checked.
+     */
+    function isScheduleEnabled(groupLocation: GroupLocationsBag, schedule: ListItemBag): boolean {
+        if (!groupLocation.scheduleIds || !schedule.value) {
+            return false;
+        }
+
+        return groupLocation.scheduleIds.includes(schedule.value);
     }
 
     /**
@@ -264,65 +402,65 @@ import { Guid } from "@Obsidian/Types";
         }
     }
 
+    /**
+     * Loads the schedule builder data.
+     */
     async function loadScheduleBuilderData(): Promise<void> {
         isLoading.value = true;
         const response = await invokeBlockAction<CheckInScheduleBuilderDataBag>("LoadGroupScheduleLocationData");
 
         if (response.isSuccess && response.data) {
-            // groupLocations.value = response.data?.groupLocations ?? [];
-            // schedules.value = response.data?.schedules ?? [];
-            // isLoading.value = false;
-
-            groupLocations.value = [];
-
-            nextTick(() => {
-                groupLocations.value = response.data?.groupLocations ?? [];
-                schedules.value = response.data?.schedules ?? [];
-                isLoading.value = false;
-            });
+            groupLocations.value = response.data?.groupLocations ?? [];
+            schedules.value = response.data?.schedules ?? [];
+            isLoading.value = false;
         }
     }
 
+    /**
+     * Saves the current group's location schedule settings.
+     */
     async function onSaveClick(): Promise<void> {
         isSaving.value = true;
         const data = {
             scheduledLocations: groupLocations.value
         };
-        console.log("Sending ", data.scheduledLocations);
 
         const response = await invokeBlockAction("Save", data);
 
-        if (!response.isSuccess) {
-            isSaving.value = false;
-            await alert(response.errorMessage || "Unknown error while saving schedule information.");
-            return;
+        if (response.isSuccess) {
+            saveNotificationType.value = "success";
+            saveNotificationText.value = "Changes have been saved.";
+        }
+        else {
+            saveNotificationType.value = "danger";
+            saveNotificationText.value = response.errorMessage ?? "Unknown error while saving schedule information.";
         }
 
         isSaving.value = false;
-        showSaveSuccess.value = true;
+        showSaveNotification.value = true;
         setTimeout(() => {
-            showSaveSuccess.value = false;
+            showSaveNotification.value = false;
         }, 3000);
     }
 
-    async function saveClonedSchedule(): Promise<void> {
+    /**
+     * Processes the clone schedule operation and sets the groupLocations value to the
+     * result of the clone process.
+     */
+    async function processClonedSchedule(): Promise<void> {
         const data: CloneScheduleBag = {
             sourceSchedule: sourceSchedule.value,
             destinationSchedule: destinationSchedule.value
         };
 
-        const response = await invokeBlockAction<GroupLocationsBag[]>("SaveClonedSchedule", {
+        const response = await invokeBlockAction<GroupLocationsBag[]>("ProcessClonedSchedule", {
             bag: data
         });
+
         if (response.isSuccess && response.data) {
             submitClonedSchedule.value = false;
             showCloneScheduleModal.value = false;
-            groupLocations.value = [];
-
-            nextTick(() => {
-                groupLocations.value = response.data ?? [];
-            });
-
+            groupLocations.value = response.data ?? [];
             return;
         }
 
@@ -339,17 +477,27 @@ import { Guid } from "@Obsidian/Types";
 
         await preferences.save();
 
-        console.log("Watching");
-
         loadScheduleBuilderData();
     });
 
     onConfigurationValuesChanged(useReloadBlock());
 
-    loadScheduleBuilderData();
+    onMounted(() => {
+        document.addEventListener("keydown", onDocumentKeyDown);
+
+        if (!scheduleCategory.value && config.defaultScheduleCategory) {
+            scheduleCategory.value = config.defaultScheduleCategory;
+            return;
+        }
+
+        loadScheduleBuilderData();
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
 
 </script>
-
 
 <style scoped>
 .grid-obsidian {
@@ -417,15 +565,6 @@ import { Guid } from "@Obsidian/Types";
     color: var(--theme-medium);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
-    color: var(--color-info);
-    font-size: 115%;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add:hover {
-    color: var(--color-info);
-}
-
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
     background-color: var(--theme-light);
 }
@@ -451,12 +590,12 @@ import { Guid } from "@Obsidian/Types";
     color: var(--theme-medium);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > :deep(.control-wrapper) {
     width: 100%;
     height: 100%;
 }
 
-.grid-quick-filter-search > .control-wrapper > div {
+.grid-quick-filter-search > :deep(.control-wrapper > div) {
     width: 100%;
     height: 100%;
     padding: 0;
@@ -464,7 +603,7 @@ import { Guid } from "@Obsidian/Types";
     align-items: center;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > :deep(.control-wrapper .form-control) {
     height: 100%;
     width: 100%;
     border-radius: 0;
@@ -489,119 +628,12 @@ import { Guid } from "@Obsidian/Types";
     background-color: var(--theme-lightest);
 }
 
-.grid-column-header.sortable {
-    cursor: pointer;
-}
-
-.grid-column-header.sortable:hover {
-    background-color: var(--theme-light);
-}
-
 .grid-column-title {
     flex: 1 1 auto;
 }
 
-.grid-sort-direction {
-    display: flex;
-    align-items: center;
-    transition: transform .11s cubic-bezier(.2, 0, .38, .9);
-    accent-color: var(--color-info);
-}
-
-.grid-sort-direction svg {
-    width: 14px;
-    height: 21px;
-}
-
-.grid-sort-direction.sort-desc {
-    /* transform flip */
-    transform: rotate(180deg);
-    /* transform orgin centerr */
-    transform-origin: center;
-}
-
 .grid-column-header.grid-select-field .checkbox label {
     margin: 0;
-}
-
-.grid-column-header > .btn-grid-column-filter {
-    border: 0;
-    text-align: center;
-    background-color: transparent;
-    margin-left: 4px;
-    width: 26px;
-    height: 24px;
-    border-radius: 4px;
-    color: var(--theme-medium);
-    opacity: 0;
-    transition: opacity 250ms, color 250ms;
-    z-index: 10;
-}
-
-.grid-column-heading:hover .btn-grid-column-filter {
-    opacity: 0.5;
-}
-
-.grid-column-header > .btn-grid-column-filter:hover {
-    opacity: 1;
-    background-color: var(--theme-white);
-}
-
-.grid-column-header > .btn-grid-column-filter svg {
-    width: 14px;
-    height: 14px;
-}
-
-.grid-column-header > .btn-grid-column-filter.active {
-    opacity: 1;
-    color: var(--color-info);
-}
-
-.grid-column-header > .grid-filter-popup {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    margin-top: 6px;
-    min-width: 240px;
-    max-width: 320px;
-    max-height: 400px;
-    background-color: var(--theme-white);
-    border: 1px solid var(--theme-light);
-    border-radius: 0;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
-    cursor: initial;
-    font-weight: initial;
-    z-index: 10;
-    /* Temporary Fix Until JS */
-    bottom: 0;
-    transform: translateY(100%);
-}
-
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
-    margin: 10px;
-    padding: 2px;
-    overflow-x: clip;
-}
-
-.grid-column-header > .grid-filter-popup > .actions {
-    display: flex;
-    border-top: 1px solid var(--theme-light);
-    background-color: #fcfcfc;
-    padding: 8px;
-    gap: 8px;
-}
-
-.grid-column-header > .grid-filter-popup .alert {
-    border-top: 0;
-    box-shadow: none;
-    padding: 8px;
 }
 
 .grid-row {
@@ -609,10 +641,6 @@ import { Guid } from "@Obsidian/Types";
     background-color: #fff;
     border-bottom: 1px solid var(--theme-light);
     transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
-}
-
-.grid-row.grid-row-selectable {
-    cursor: pointer;
 }
 
 .grid-striped .grid-row.grid-row-even {
@@ -632,30 +660,6 @@ import { Guid } from "@Obsidian/Types";
     line-height: 1.4;
 }
 
-.grid-select-field:first-child {
-    align-items: center;
-    padding-right: calc(var(--table-cell-padding-x) / 2);
-    flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
-}
-
-.grid-columncommand {
-    --table-cell-padding-y: 0;
-    align-items: center;
-    padding: 0;
-}
-
-.grid-columncommand .btn {
-    opacity: .4;
-}
-
-.grid-columncommand .btn:hover {
-    opacity: 1;
-}
-
-.grid-columnreorder {
-    align-items: center;
-}
-
 .grid-footing {
     color: var(--theme-darkest);
     background-color: var(--theme-white);
@@ -663,86 +667,4 @@ import { Guid } from "@Obsidian/Types";
     overflow: hidden;
 }
 
-.grid-paging-footer {
-    display: flex;
-    padding: 8px var(--table-cell-padding-x);
-    align-items: center;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
-    flex: 1 1 auto;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    font-size: 14px;
-    line-height: 16px;
-    gap: 8px;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes .form-control {
-    flex: 0 0 80px;
-}
-
-.grid-page-size-picker .btn {
-    font-weight: 400;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker {
-    display: inline-flex;
-    justify-content: center;
-    align-items: stretch;
-    line-height: 1;
-    color: var(--theme-darker);
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button {
-    display: inline-flex;
-    justify-content: center;
-    border: 1px solid var(--theme-light);
-    background-color: transparent;
-    padding: 8px 12px;
-    font-size: 14px;
-    line-height: 16px;
-    min-width: 2.75em;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button:hover {
-    background-color: var(--theme-lightest);
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button ~ button {
-    margin-left: -1px;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .prev {
-    border-radius: 4px 0 0 4px;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .next {
-    border-radius: 0 4px 4px 0;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.disabled {
-    color: var(--theme-medium);
-    pointer-events: none;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.active {
-    background-color: var(--theme-light);
-}
-
-.grid-obsidian .grid-cell .highlight-detail {
-    color: var(--theme-medium);
-    font-size: 14px;
-}
-
-.grid-obsidian .grid-cell .highlight-title {
-    font-weight: 600;
-}
-
-@media (max-width: 767px) {
-    .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
-        display: none;
-    }
-}
 </style>
