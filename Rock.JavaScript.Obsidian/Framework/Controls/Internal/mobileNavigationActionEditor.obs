@@ -14,8 +14,9 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough, updateRefValue } from "@Obsidian/Utility/component";
-    import { MobileNavigationActionType, MobileNavigationActionTypeDescription } from "@Obsidian/Enums/Controls/mobileNavigationActionType";
+    import { MobileNavigationActionType, MobileNavigationActionTypeDescription } from "@Obsidian/Enums/Mobile/mobileNavigationActionType";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
     import { MobileNavigationAction } from "@Obsidian/ViewModels/Controls/mobileNavigationAction";
     import { SiteType } from "@Obsidian/Enums/Cms/siteType";
@@ -62,10 +63,7 @@
         return "";
     });
 
-    const options: ListItemBag[] = Object.keys(MobileNavigationActionType).map(key => ({
-        value: MobileNavigationActionType[key].toString(),
-        text: MobileNavigationActionTypeDescription[MobileNavigationActionType[key]]
-    }));
+    const options: ListItemBag[] = enumToListItemBag(MobileNavigationActionTypeDescription);
 
     watch([actionType, pageCount, page], () => {
         updateInternalValue();

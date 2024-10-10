@@ -1744,7 +1744,6 @@
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Mobile\MobileNavigationAction.cs" />
-    <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Model\CMS\PersonalLinkSectionOrder\PersonalLinkSectionOrder.Logic.cs" />
     <Compile Include="Model\CMS\PersonalLinkSection\PersonalLinkSection.Logic.cs" />
     <Compile Include="Model\CMS\PersonalLink\PersonalLink.SaveHook.cs" />

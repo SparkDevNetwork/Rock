@@ -21,7 +21,11 @@
 // </copyright>
 //
 
-/** The type of navigation action to perform on the mobile shell. */
+/**
+ * The type of navigation action to perform on the mobile shell.
+ * This is copied to Rock.Enums.Controls.MobileNavigationActionType.
+ * Any changes there or here should be mirrored.
+ */
 export const MobileNavigationActionType = {
     /** No navigation action should be performed. */
     None: 0,
@@ -42,7 +46,11 @@ export const MobileNavigationActionType = {
     DismissCoverSheet: 5
 } as const;
 
-/** The type of navigation action to perform on the mobile shell. */
+/**
+ * The type of navigation action to perform on the mobile shell.
+ * This is copied to Rock.Enums.Controls.MobileNavigationActionType.
+ * Any changes there or here should be mirrored.
+ */
 export const MobileNavigationActionTypeDescription: Record<number, string> = {
     0: "None",
 
@@ -57,5 +65,9 @@ export const MobileNavigationActionTypeDescription: Record<number, string> = {
     5: "Dismiss Cover Sheet"
 };
 
-/** The type of navigation action to perform on the mobile shell. */
+/**
+ * The type of navigation action to perform on the mobile shell.
+ * This is copied to Rock.Enums.Controls.MobileNavigationActionType.
+ * Any changes there or here should be mirrored.
+ */
 export type MobileNavigationActionType = typeof MobileNavigationActionType[keyof typeof MobileNavigationActionType];
