@@ -367,7 +367,7 @@ export class PageTreeItemProvider implements ITreeItemProvider {
     /**
      * Limit results to given site type if one is provided
      */
-    public siteType?: SiteType | null = null;
+    public siteType?: SiteType | null;
 
     /**
      * Gets the child items of the given parent (or root if no parent given) from the server.

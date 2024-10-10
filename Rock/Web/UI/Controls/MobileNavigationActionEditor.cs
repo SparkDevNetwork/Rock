@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Enums.Mobile;
 using Rock.Mobile;
 using Rock.Web.Cache;
 

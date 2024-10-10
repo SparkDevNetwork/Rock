@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Enums.Mobile;
 using Rock.Mobile;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
