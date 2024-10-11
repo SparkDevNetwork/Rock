@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock;
 using Rock.Web;
 using System;
+using Rock.SystemGuid;
 
 namespace Rock.Blocks.Cms
 {
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]
     [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
     [CustomizedGrid]
-    public class LayoutList : RockEntityListBlockType<Layout>
+    public class LayoutList : RockEntityListBlockType<Rock.Model.Layout>
     {
         #region Keys
 
@@ -103,7 +104,7 @@ namespace Rock.Blocks.Cms
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new Layout();
+            var entity = new Rock.Model.Layout();
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
@@ -113,7 +114,8 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var siteId = PageParameter( PageParameterKey.SiteId );
+            var siteIdParam = PageParameter( PageParameterKey.SiteId );
+            var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ).ToString() ?? siteIdParam;
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
@@ -125,9 +127,10 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Layout> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<Rock.Model.Layout> GetListQueryable( RockContext rockContext )
         {
-            var siteId = PageParameter( PageParameterKey.SiteId ).AsIntegerOrNull();
+            var siteIdParam = PageParameter( PageParameterKey.SiteId );
+            var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ) ?? siteIdParam.AsIntegerOrNull();
             if ( siteId.HasValue )
             {
                 var site = new SiteService( rockContext ).Get( siteId.Value );
@@ -145,7 +148,7 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Layout> GetOrderedListQueryable( IQueryable<Layout> queryable, RockContext rockContext )
+        protected override IQueryable<Rock.Model.Layout> GetOrderedListQueryable( IQueryable<Rock.Model.Layout> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( e => e.Name );
         }
@@ -156,7 +159,7 @@ namespace Rock.Blocks.Cms
         /// <param name="queryable">The queryable.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>A list of layouts.</returns>
-        protected override List<Layout> GetListItems( IQueryable<Layout> queryable, RockContext rockContext )
+        protected override List<Rock.Model.Layout> GetListItems( IQueryable<Rock.Model.Layout> queryable, RockContext rockContext )
         {
             var layouts = queryable.ToList();
             foreach ( var layout in layouts )
@@ -183,9 +186,9 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Layout> GetGridBuilder()
+        protected override GridBuilder<Rock.Model.Layout> GetGridBuilder()
         {
-            return new GridBuilder<Layout>()
+            return new GridBuilder<Rock.Model.Layout>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "id", a => a.Id )
@@ -226,11 +229,11 @@ namespace Rock.Blocks.Cms
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( entity == null )
                 {
-                    return ActionBadRequest( $"{Layout.FriendlyTypeName} not found." );
+                    return ActionBadRequest( $"{Rock.Model.Layout.FriendlyTypeName} not found." );
                 }
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete {Layout.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {Rock.Model.Layout.FriendlyTypeName}." );
                 }
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
