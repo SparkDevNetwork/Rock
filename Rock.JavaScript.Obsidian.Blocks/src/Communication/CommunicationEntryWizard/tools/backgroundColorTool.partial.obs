@@ -19,6 +19,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const backgroundColor = ref<string>(props.element.style.backgroundColor);
@@ -29,6 +33,8 @@
 
     watch(backgroundColor, (value: string) => {
         props.element.style.backgroundColor = value;
+
+        emit("changeShorthand", value);
     });
 
     watch(() => props.element, () => {

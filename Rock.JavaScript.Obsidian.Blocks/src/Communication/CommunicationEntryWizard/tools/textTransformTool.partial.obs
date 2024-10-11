@@ -18,6 +18,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const textTransform = ref<string>(props.element.style.textTransform);
@@ -26,12 +30,14 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        textTransform.value = props.element.style.textTransform;
-    });
-
     watch(textTransform, (value: string) => {
         props.element.style.textTransform = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        textTransform.value = props.element.style.textTransform;
     });
 
     // #endregion

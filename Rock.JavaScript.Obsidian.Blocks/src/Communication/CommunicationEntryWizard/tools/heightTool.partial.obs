@@ -47,6 +47,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const height = ref<number>(parseInt(props.element.style.height || "0"));
@@ -55,17 +59,15 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        height.value = parseInt(props.element.style.height || "0");
+    watch(height, (value: number) => {
+        const heightValue = value ? `${value}px` : "";
+        props.element.style.height = heightValue;
+
+        emit("changeShorthand", heightValue);
     });
 
-    watch(height, (value: number) => {
-        if (value) {
-            props.element.style.height = `${value}px`;
-        }
-        else {
-            props.element.style.height = "";
-        }
+    watch(() => props.element, () => {
+        height.value = parseInt(props.element.style.height || "0");
     });
 
     // #endregion

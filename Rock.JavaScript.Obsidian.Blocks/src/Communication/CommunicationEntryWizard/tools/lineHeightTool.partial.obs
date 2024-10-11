@@ -20,6 +20,10 @@ svg {
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const lineHeight = ref<string>(props.element.style.lineHeight);
@@ -28,12 +32,14 @@ svg {
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        lineHeight.value = props.element.style.lineHeight;
-    });
-
     watch(lineHeight, (value: string) => {
         props.element.style.lineHeight = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        lineHeight.value = props.element.style.lineHeight;
     });
 
     // #endregion

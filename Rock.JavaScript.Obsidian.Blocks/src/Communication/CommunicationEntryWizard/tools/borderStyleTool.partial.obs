@@ -14,6 +14,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const borderStyle = ref<BorderStyle>(props.element.style.borderStyle as BorderStyle);
@@ -22,12 +26,14 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        borderStyle.value = props.element.style.borderStyle as BorderStyle;
-    });
-
     watch(borderStyle, (value: string) => {
         props.element.style.borderStyle = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        borderStyle.value = props.element.style.borderStyle as BorderStyle;
     });
 
     // #endregion

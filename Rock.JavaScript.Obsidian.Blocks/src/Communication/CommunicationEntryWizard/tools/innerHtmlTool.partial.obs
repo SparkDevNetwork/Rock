@@ -19,11 +19,16 @@
             type: Object as PropType<HTMLElement>,
             required: true
         },
+
         mode: {
             type: String as PropType<"html" | "code">,
             default: "html" as const
         }
     });
+
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
 
     // TODO JMH Figure out if these are the proper merge fields. They were taken from the Simple editor.
 
@@ -34,8 +39,7 @@
         "Communication.FromName|From Name",
         "Communication.FromEmail|From Address",
         "Communication.ReplyToEmail|Reply To",
-        "UnsubscribeOption",
-        "Rock.Model.Person"
+        "UnsubscribeOption"
     ];
 
     // #region Values
@@ -49,7 +53,6 @@
 
     function onInput(): void {
         if (innerHtml.value !== props.element.innerHTML) {
-            console.log("updating reactive innerHtml value");
             innerHtml.value = props.element.innerHTML;
         }
     }
@@ -57,6 +60,14 @@
     // #endregion
 
     // #region Watchers
+
+    watch(innerHtml, (value: string) => {
+        if (value !== props.element.innerHTML) {
+            props.element.innerHTML = value;
+
+            emit("changeShorthand", value);
+        }
+    });
 
     watch(() => props.element, (newValue, oldValue) => {
         innerHtml.value = props.element.innerHTML;
@@ -71,13 +82,6 @@
         }
     }, {
         immediate: true
-    });
-
-    watch(innerHtml, (value: string) => {
-        if (value !== props.element.innerHTML) {
-            console.log("updating element's innerHTML");
-            props.element.innerHTML = value;
-        }
     });
 
     // #endregion

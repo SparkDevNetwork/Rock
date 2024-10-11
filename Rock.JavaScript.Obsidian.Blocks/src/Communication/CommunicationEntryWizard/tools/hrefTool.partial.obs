@@ -22,6 +22,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     // Initialized in the immediate watcher below.
@@ -31,10 +35,6 @@
 
     // #region Watchers
 
-    watch(() => props.element, (element: HTMLElement) => {
-        href.value = element.getAttribute("href") ?? "";
-    });
-
     watch(href, (value: string) => {
         if (value) {
             props.element.setAttribute("href", value);
@@ -42,6 +42,12 @@
         else {
             props.element.removeAttribute("href");
         }
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, (element: HTMLElement) => {
+        href.value = element.getAttribute("href") ?? "";
     });
 
     // #endregion

@@ -108,6 +108,14 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changePadding", value: string): void;
+        (e: "changePaddingTop", value: string): void;
+        (e: "changePaddingBottom", value: string): void;
+        (e: "changePaddingRight", value: string): void;
+        (e: "changePaddingLeft", value: string): void;
+    }>();
+
     // #region Values
 
     const padding = ref<string>(props.element.style.padding);
@@ -120,6 +128,40 @@
 
     // #region Watchers
 
+    watch(padding, (value: string) => {
+        props.element.style.padding = value;
+
+        emit("changePadding", value);
+    });
+
+    watch(paddingTop, (value: number) => {
+        const paddingTopValue = value ? `${value}px` : "";
+        props.element.style.paddingTop = paddingTopValue;
+
+        emit("changePaddingTop", paddingTopValue);
+    });
+
+    watch(paddingBottom, (value: number) => {
+        const paddingBottomValue = value ? `${value}px` : "";
+        props.element.style.paddingBottom = paddingBottomValue;
+
+        emit("changePaddingBottom", paddingBottomValue);
+    });
+
+    watch(paddingRight, (value: number) => {
+        const paddingRightValue = value ? `${value}px` : "";
+        props.element.style.paddingRight = paddingRightValue;
+
+        emit("changePaddingRight", paddingRightValue);
+    });
+
+    watch(paddingLeft, (value: number) => {
+        const paddingLeftValue = value ? `${value}px` : "";
+        props.element.style.paddingLeft = paddingLeftValue;
+
+        emit("changePaddingLeft", paddingLeftValue);
+    });
+
     watch([() => props.element, () => props.mode], () => {
         if (props.mode === "numberBox" || props.mode === "numberUpDown") {
             paddingTop.value = parseInt(props.element.style.paddingTop || "0");
@@ -129,46 +171,6 @@
         }
         else if (props.mode === "textBox") {
             padding.value = props.element.style.padding;
-        }
-    });
-
-    watch(padding, (value: string) => {
-        props.element.style.padding = value;
-    });
-
-    watch(paddingTop, (value: number) => {
-        if (value) {
-            props.element.style.paddingTop = `${value}px`;
-        }
-        else {
-            props.element.style.paddingTop = "";
-        }
-    });
-
-    watch(paddingBottom, (value: number) => {
-        if (value) {
-            props.element.style.paddingBottom = `${value}px`;
-        }
-        else {
-            props.element.style.paddingBottom = "";
-        }
-    });
-
-    watch(paddingRight, (value: number) => {
-        if (value) {
-            props.element.style.paddingRight = `${value}px`;
-        }
-        else {
-            props.element.style.paddingRight = "";
-        }
-    });
-
-    watch(paddingLeft, (value: number) => {
-        if (value) {
-            props.element.style.paddingLeft = `${value}px`;
-        }
-        else {
-            props.element.style.paddingLeft = "";
         }
     });
 

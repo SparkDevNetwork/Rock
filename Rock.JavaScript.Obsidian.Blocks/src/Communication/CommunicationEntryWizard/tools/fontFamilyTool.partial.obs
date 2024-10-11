@@ -19,6 +19,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const fontFamily = ref<string>(props.element.style.fontFamily);
@@ -27,12 +31,14 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        fontFamily.value = props.element.style.fontFamily;
-    });
-
     watch(fontFamily, (value: string) => {
         props.element.style.fontFamily = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        fontFamily.value = props.element.style.fontFamily;
     });
 
     // #endregion

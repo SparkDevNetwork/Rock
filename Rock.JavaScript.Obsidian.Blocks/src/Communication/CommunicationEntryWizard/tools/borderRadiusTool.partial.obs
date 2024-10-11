@@ -31,6 +31,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const borderRadius = ref<number>(parseInt(props.element.style.borderRadius || "0"));
@@ -39,17 +43,15 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        borderRadius.value = parseInt(props.element.style.borderRadius || "0");
+    watch(borderRadius, (value: number) => {
+        const borderRadiusValue = value ? `${value}px` : "";
+        props.element.style.borderRadius = borderRadiusValue;
+
+        emit("changeShorthand", borderRadiusValue);
     });
 
-    watch(borderRadius, (value: number) => {
-        if (value) {
-            props.element.style.borderRadius = `${value}px`;
-        }
-        else {
-            props.element.style.borderRadius = "";
-        }
+    watch(() => props.element, () => {
+        borderRadius.value = parseInt(props.element.style.borderRadius || "0");
     });
 
     // #endregion

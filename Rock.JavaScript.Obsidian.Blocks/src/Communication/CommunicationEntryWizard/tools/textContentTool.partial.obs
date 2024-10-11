@@ -13,6 +13,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string | null): void;
+    }>();
+
     // #region Values
 
     // Initialized in the immediate watcher below.
@@ -32,6 +36,15 @@
 
     // #region Watchers
 
+    watch(textContent, (value: string) => {
+        if (value !== props.element.textContent) {
+            const textContentValue = value || null;
+            props.element.textContent = textContentValue;
+
+            emit("changeShorthand", textContentValue);
+        }
+    });
+
     watch(() => props.element, (newValue, oldValue) => {
         textContent.value = props.element.textContent ?? "";
 
@@ -45,12 +58,6 @@
         }
     }, {
         immediate: true
-    });
-
-    watch(textContent, (value: string) => {
-        if (value !== props.element.textContent) {
-            props.element.textContent = value || null;
-        }
     });
 
     // #endregion

@@ -13,6 +13,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const fontColor = ref<string>(props.element.style.color);
@@ -21,12 +25,14 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        fontColor.value = props.element.style.color;
-    });
-
     watch(fontColor, (value: string) => {
         props.element.style.color = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        fontColor.value = props.element.style.color;
     });
 
     // #endregion

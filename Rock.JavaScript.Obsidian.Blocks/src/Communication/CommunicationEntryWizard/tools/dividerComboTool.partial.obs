@@ -2,10 +2,13 @@
     <BorderStyleToolBase v-model="borderTopStyle"
                          label="Style" />
 
-    <NumberUpDown v-model="borderTopWidth"
-                  label="Thickness"
-                  :min="0"
-                  :max="30" />
+    <BorderWidthTool :element="element"
+                     :label="''"
+                     labelTop="Thickness"
+                     :min="0"
+                     :max="30"
+                     showConstituentProperties="top"
+                     @changeTop="onBorderTopWidthChanged" />
 
     <ColorPicker v-model="borderTopColor"
                  label="Color" />
@@ -14,8 +17,8 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import BorderStyleToolBase from "./borderStyleToolBase.partial.obs";
+    import BorderWidthTool from "./borderWidthTool.partial.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import { BorderStyle } from "./types.partial";
 
     const props = defineProps({
@@ -33,27 +36,9 @@
 
     // #endregion
 
-    // #region Watchers
+    // #region Event Handlers
 
-    watch(() => props.element, () => {
-        borderTopStyle.value = props.element.style.borderTopStyle as BorderStyle;
-        borderTopWidth.value = parseInt(props.element.style.borderTopWidth || "0") || parseInt(props.element.style.height || "0");
-        borderTopColor.value = props.element.style.borderTopColor || props.element.style.backgroundColor;
-    });
-
-    watch(borderTopStyle, (value: BorderStyle) => {
-        props.element.style.borderTopStyle = value;
-
-        if (value) {
-            // Explicitly clear the styles on the other sides
-            // so the browser doesn't initialize them.
-            props.element.style.borderBottomStyle = "none";
-            props.element.style.borderRightStyle = "none";
-            props.element.style.borderLeftStyle = "none";
-        }
-    });
-
-    watch(borderTopWidth, (value: number) => {
+    function onBorderTopWidthChanged(value: string): void {
         if (value) {
             props.element.style.borderTopWidth = `${value}px`;
 
@@ -74,6 +59,28 @@
             props.element.style.borderLeftStyle = "";
             props.element.style.boxSizing = "";
             props.element.style.height = "";
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        borderTopStyle.value = props.element.style.borderTopStyle as BorderStyle;
+        borderTopWidth.value = parseInt(props.element.style.borderTopWidth || "0") || parseInt(props.element.style.height || "0");
+        borderTopColor.value = props.element.style.borderTopColor || props.element.style.backgroundColor;
+    });
+
+    watch(borderTopStyle, (value: BorderStyle) => {
+        props.element.style.borderTopStyle = value;
+
+        if (value) {
+            // Explicitly clear the styles on the other sides
+            // so the browser doesn't initialize them.
+            props.element.style.borderBottomStyle = "none";
+            props.element.style.borderRightStyle = "none";
+            props.element.style.borderLeftStyle = "none";
         }
     });
 

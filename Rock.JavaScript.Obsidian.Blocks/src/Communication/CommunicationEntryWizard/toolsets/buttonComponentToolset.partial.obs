@@ -17,24 +17,51 @@
             <Accordion title="Typography">
                 <FontFamilyTool :element="buttonElement" />
 
-                <FontSizeTool :element="buttonElement"
-                              mode="textBox" />
+                <div class="row">
+                    <div class="col-sm-6">
+                        <FontWeightTool :element="buttonElement" />
+                    </div>
 
-                <FontWeightTool :element="buttonElement" />
+                    <div class="col-sm-6">
+                        <FontSizeTool :element="buttonElement"
+                                      mode="textBox" />
+                    </div>
+                </div>
             </Accordion>
 
             <Accordion title="Spacing & Layout">
-                <!-- TODO JMH Need fancy button Width tool. -->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- TODO JMH Need fancy button Width tool. -->
+                    </div>
 
-                <AlignTool :element="buttonInnerWrapElement" />
+                    <div class="col-sm-6">
+                        <AlignTool :element="buttonInnerWrapElement" />
+                    </div>
+                </div>
 
-                <PaddingTool :element="buttonElement"
-                             label="Button Padding"
-                             mode="textBox" />
+                <div class="row">
+                    <div class="col-sm-6">
+                        <PaddingTool :element="buttonElement"
+                                     label="Button Padding"
+                                     mode="textBox" />
+                    </div>
+
+                    <div class="col-sm-6">
+                        <BorderRadiusTool :element="buttonElement"
+                                          mode="textBox" />
+                    </div>
+                </div>
             </Accordion>
         </AccordionGroup>
     </ComponentToolsetBase>
 </template>
+
+<style scoped>
+:deep(.picker-label) {
+    display: none;
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
@@ -43,6 +70,7 @@
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import AlignTool from "../tools/alignTool.partial.obs";
     import BackgroundColorTool from "../tools/backgroundColorTool.partial.obs";
+    import BorderRadiusTool from "../tools/borderRadiusTool.partial.obs";
     import ColorTool from "../tools/colorTool.partial.obs";
     import FontFamilyTool from "../tools/fontFamilyTool.partial.obs";
     import FontSizeTool from "../tools/fontSizeTool.partial.obs";
@@ -67,7 +95,8 @@
 
     const buttonInnerWrapElement = ref<HTMLElement | null | undefined>(props.componentElement.querySelector(".button-innerwrap") as HTMLElement);
     const buttonShellElement = ref<HTMLElement | null | undefined>(buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement);
-    const buttonElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-link") as HTMLElement);
+    const buttonContentElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-content") as HTMLElement);
+    const buttonElement = ref<HTMLElement | null | undefined>(buttonContentElement.value?.querySelector(".button-link") as HTMLElement);
 
     // #endregion
 

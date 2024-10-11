@@ -130,7 +130,6 @@
                 if (ownerNode.classList.contains(props.styleCssClass)) {
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
-                            debugger;
                             if (rule.selectorText === props.cssRulesetSelectors) {
                                 backgroundColor.value = rule.style.backgroundColor;
                                 color.value = rule.style.color;

@@ -18,6 +18,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const fontSize = ref<string>(props.element.style.fontSize);
@@ -26,12 +30,14 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        fontSize.value = props.element.style.fontSize;
-    });
-
     watch(fontSize, (value: string) => {
         props.element.style.fontSize = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        fontSize.value = props.element.style.fontSize;
     });
 
     // #endregion

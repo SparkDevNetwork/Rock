@@ -11,8 +11,7 @@
 
     <TextBox v-else-if="mode === 'textBox'"
              v-model="internalModelText"
-             :disableLabel="true"
-             placeholder="Font Size" />
+             label="Font Size" />
 </template>
 
 <style scoped>

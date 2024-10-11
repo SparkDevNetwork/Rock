@@ -15,6 +15,12 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeFontWeight", value: string): void;
+        (e: "changeTextDecoration", value: string): void;
+        (e: "changeFontStyle", value: string): void;
+    }>();
+
     // #region Values
 
     const fontWeight = ref<string>(props.element.style.fontWeight);
@@ -25,22 +31,28 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        fontWeight.value = props.element.style.fontWeight;
-        textDecoration.value = props.element.style.textDecoration;
-        fontStyle.value = props.element.style.fontStyle;
-    });
-
     watch(fontWeight, (value: string) => {
         props.element.style.fontWeight = value;
+
+        emit("changeFontWeight", value);
     });
 
     watch(textDecoration, (value: string) => {
         props.element.style.textDecoration = value;
+
+        emit("changeTextDecoration", value);
     });
 
     watch(fontStyle, (value: string) => {
         props.element.style.fontStyle = value;
+
+        emit("changeFontStyle", value);
+    });
+
+    watch(() => props.element, () => {
+        fontWeight.value = props.element.style.fontWeight;
+        textDecoration.value = props.element.style.textDecoration;
+        fontStyle.value = props.element.style.fontStyle;
     });
 
     // #endregion

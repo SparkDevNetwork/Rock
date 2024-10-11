@@ -42,6 +42,12 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeBackgroundImage", value: string): void;
+        (e: "changeBackgroundRepeat", value: string): void;
+        (e: "changeBackgroundSize", value: string): void;
+    }>();
+
     // #region Values
 
     const hasBackgroundImage = ref<boolean>(!!props.element.dataset[dataAttributeKey.backgroundImageGuid]);
@@ -54,6 +60,65 @@
     // #endregion
 
     // #region Watchers
+
+    watch(hasBackgroundImage, () => {
+        if (!hasBackgroundImage.value) {
+            // Clear the image properties when "Background Image" is switched off.
+            imageListItemBag.value = null;
+            imageStyle.value = undefined;
+        }
+    });
+
+    watch(imageListItemBag, () => {
+        const fileGuid = toGuidOrNull(imageListItemBag.value?.value);
+
+        if (fileGuid) {
+            const fileName = imageListItemBag.value?.text;
+            const backgroundImageValue = `url('/GetImage.ashx?guid=${fileGuid}')`;
+
+            props.element.style.backgroundImage = backgroundImageValue;
+
+            emit("changeBackgroundImage", backgroundImageValue);
+
+            // These hold data that cannot be easily retrieved from style properties.
+            props.element.dataset[dataAttributeKey.backgroundImageGuid] = fileGuid ?? "";
+            props.element.dataset[dataAttributeKey.backgroundImageFileName] = fileName ?? "";
+        }
+        else {
+            props.element.style.backgroundImage = "";
+
+            emit("changeBackgroundImage", "");
+
+            delete props.element.dataset[dataAttributeKey.backgroundImageGuid];
+            delete props.element.dataset[dataAttributeKey.backgroundImageFileName];
+        }
+    });
+
+    watch(imageStyle, () => {
+        let backgroundRepeatValue: string;
+        let backgroundSizeValue: string;
+
+        if (imageStyle.value === "tile") {
+            backgroundRepeatValue = "repeat";
+            backgroundSizeValue = "";
+        }
+        else if (imageStyle.value === "stretch") {
+            backgroundRepeatValue = "no-repeat";
+            backgroundSizeValue = "cover";
+        }
+        else {
+            backgroundRepeatValue = "";
+            backgroundSizeValue = "";
+        }
+
+        props.element.style.backgroundRepeat = backgroundRepeatValue;
+
+        emit("changeBackgroundRepeat", backgroundRepeatValue);
+
+        props.element.style.backgroundSize = backgroundSizeValue;
+
+        emit("changeBackgroundSize", backgroundSizeValue);
+    });
 
     watch(() => props.element, () => {
         const fileGuid = toGuidOrNull(props.element.dataset[dataAttributeKey.backgroundImageGuid]);
@@ -69,49 +134,6 @@
         else {
             hasBackgroundImage.value = false;
             imageListItemBag.value = null;
-        }
-    });
-
-    watch(hasBackgroundImage, () => {
-        if (!hasBackgroundImage.value) {
-            // Clear the image properties when "Background Image" is switched off.
-            imageListItemBag.value = null;
-            imageStyle.value = undefined;
-        }
-    });
-
-    watch(imageListItemBag, () => {
-        const fileGuid = toGuidOrNull(imageListItemBag.value?.value);
-
-        if (fileGuid) {
-            const fileName = imageListItemBag.value?.text;
-
-            props.element.style.backgroundImage = `url('/GetImage.ashx?guid=${fileGuid}')`;
-
-            // These hold data that cannot be easily retrieved from style properties.
-            props.element.dataset[dataAttributeKey.backgroundImageGuid] = fileGuid ?? "";
-            props.element.dataset[dataAttributeKey.backgroundImageFileName] = fileName ?? "";
-        }
-        else {
-            props.element.style.backgroundImage = "";
-
-            delete props.element.dataset[dataAttributeKey.backgroundImageGuid];
-            delete props.element.dataset[dataAttributeKey.backgroundImageFileName];
-        }
-    });
-
-    watch(imageStyle, () => {
-        if (imageStyle.value === "tile") {
-            props.element.style.backgroundRepeat = "repeat";
-            props.element.style.backgroundSize = "";
-        }
-        else if (imageStyle.value === "stretch") {
-            props.element.style.backgroundRepeat = "no-repeat";
-            props.element.style.backgroundSize = "cover";
-        }
-        else {
-            props.element.style.backgroundRepeat = "";
-            props.element.style.backgroundSize = "";
         }
     });
 

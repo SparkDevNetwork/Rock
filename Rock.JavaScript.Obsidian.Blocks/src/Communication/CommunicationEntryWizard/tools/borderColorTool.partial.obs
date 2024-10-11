@@ -15,7 +15,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "elementBorderColorUpdated"): void;
+        (e: "changeShorthand", value: string): void;
     }>();
 
     // #region Values
@@ -26,13 +26,14 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        borderColor.value = props.element.style.borderColor;
-    });
-
     watch(borderColor, (value: string) => {
         props.element.style.borderColor = value;
-        emit("elementBorderColorUpdated");
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        borderColor.value = props.element.style.borderColor;
     });
 
     // #endregion

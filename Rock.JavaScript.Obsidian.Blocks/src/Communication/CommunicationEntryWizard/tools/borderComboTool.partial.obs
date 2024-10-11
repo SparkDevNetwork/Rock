@@ -8,11 +8,12 @@
         <div v-if="hasBorder">
             <BorderColorTool ref="borderColorTool"
                              :element="element"
-                             @elementBorderColorUpdated="onElementBorderColorUpdated" />
+                             @change="onBorderColorChanged" />
 
             <BorderWidthTool ref="borderWidthTool"
                              :element="element"
-                             @elementBorderWidthUpdated="onElementBorderWidthUpdated" />
+                             mode="numberUpDown"
+                             @change="onBorderWidthChanged" />
         </div>
     </TransitionVerticalCollapse>
 </template>
@@ -35,9 +36,15 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeHasBorder", value: boolean): void;
+        (e: "changeBorderColor", value: string): void;
+        (e: "changeBorderWidth", value: string): void;
+    }>();
+
     // #region Values
 
-    const hasBorder = ref<boolean>(!!(props.element.style.border || props.element.style.borderColor || props.element.style.borderWidth));
+    const hasBorder = ref<boolean>(!!props.element.style.border || !!props.element.style.borderColor || !!props.element.style.borderWidth);
     const borderColorTool = ref<InstanceType<typeof BorderColorTool> | undefined>();
     const borderWidthTool = ref<InstanceType<typeof BorderWidthTool> | undefined>();
 
@@ -45,20 +52,13 @@
 
     // #region Event Handlers
 
-    function onElementBorderColorUpdated(): void {
-        if (props.element.style.borderColor) {
-            if (!props.element.style.borderStyle) {
-                // Ensure the element has a border style if a border color is specified.
-                props.element.style.borderStyle = "solid";
-            }
-        }
-        else {
-            props.element.style.borderStyle = "";
-        }
+    function onBorderColorChanged(value: string): void {
+        emit("changeBorderColor", value);
     }
 
-    function onElementBorderWidthUpdated(): void {
-        if (props.element.style.borderWidth) {
+    function onBorderWidthChanged(value: string): void {
+        // TODO JMH Revisit border stuff.
+        if (value) {
             if (!props.element.style.borderStyle) {
                 // Ensure the element has a border style if a border color is specified.
                 props.element.style.borderStyle = "solid";
@@ -67,23 +67,31 @@
         else {
             props.element.style.borderStyle = "";
         }
+
+        emit("changeBorderWidth", value);
     }
 
     // #endregion
 
     // #region Watchers
 
-    watch(hasBorder, () => {
-        if (!hasBorder.value) {
+    watch(hasBorder, (value: boolean) => {
+        if (!value) {
             // Clear the border properties when "Border" is switched off.
             if (borderColorTool.value) {
                 borderColorTool.value.borderColor = "";
             }
 
             if (borderWidthTool.value) {
-                borderWidthTool.value.borderWidth = 0;
+                borderWidthTool.value.borderWidthNumeric = 0;
             }
         }
+
+        emit("changeHasBorder", value);
+    });
+
+    watch(() => props.element, () => {
+        hasBorder.value = !!props.element.style.border || !!props.element.style.borderColor || !!props.element.style.borderWidth;
     });
 
     // #endregion

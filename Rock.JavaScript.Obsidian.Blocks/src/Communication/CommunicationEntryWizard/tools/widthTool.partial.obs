@@ -22,6 +22,10 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
     // #region Values
 
     const width = ref<number>(parseInt(props.element.style.width || "0"));
@@ -30,17 +34,15 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        width.value = parseInt(props.element.style.width || "0");
+    watch(width, (value: number) => {
+        const widthValue = value ? `${value}px` : "";
+        props.element.style.width = widthValue;
+
+        emit("changeShorthand", widthValue);
     });
 
-    watch(width, (value: number) => {
-        if (value) {
-            props.element.style.width = `${value}px`;
-        }
-        else {
-            props.element.style.width = "";
-        }
+    watch(() => props.element, () => {
+        width.value = parseInt(props.element.style.width || "0");
     });
 
     // #endregion

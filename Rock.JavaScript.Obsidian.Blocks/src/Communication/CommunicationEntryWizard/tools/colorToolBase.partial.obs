@@ -30,12 +30,12 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        color.value = props.modelValue;
-    });
-
     watch(color, (value: string) => {
         emit("update:modelValue", value);
+    });
+
+    watch(() => props.modelValue, () => {
+        color.value = props.modelValue;
     });
 
     // #endregion

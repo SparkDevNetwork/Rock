@@ -49,12 +49,12 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
-        internalValue.value = props.modelValue;
-    });
-
     watch(internalValue, (value: BorderStyle) => {
         emit("update:modelValue", value);
+    });
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
     });
 
     // #endregion

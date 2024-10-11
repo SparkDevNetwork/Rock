@@ -1,81 +1,87 @@
 <template>
-    <RockLabel>Margin</RockLabel>
+    <template v-if="mode === 'numberBox' || mode === 'numberUpDown'">
+        <RockLabel v-if="label">{{ label }}</RockLabel>
 
-    <div class="row">
-        <div class="col-sm-6">
-            <NumberUpDown v-if="mode === 'numberUpDown'"
-                          v-model="marginTop"
-                          label="Top"
-                          :min="0"
-                          :max="99" />
+        <div class="row">
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="marginTop"
+                              label="Top"
+                              :min="0"
+                              :max="99" />
 
-            <NumberBox v-if="mode === 'numberBox'"
-                       v-model="marginTop"
-                       label="Top"
-                       :min="0"
-                       :max="99">
-                <template #inputGroupAppend>
-                    <span class="input-group-addon">px</span>
-                </template>
-            </NumberBox>
+                <NumberBox v-if="mode === 'numberBox'"
+                           v-model="marginTop"
+                           label="Top"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
+
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="marginBottom"
+                              label="Bottom"
+                              :min="0"
+                              :max="99" />
+
+                <NumberBox v-if="mode === 'numberBox'"
+                           v-model="marginBottom"
+                           label="Bottom"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
         </div>
 
-        <div class="col-sm-6">
-            <NumberUpDown v-if="mode === 'numberUpDown'"
-                          v-model="marginBottom"
-                          label="Bottom"
-                          :min="0"
-                          :max="99" />
+        <div class="row">
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="marginRight"
+                              label="Right"
+                              :min="0"
+                              :max="99" />
 
-            <NumberBox v-if="mode === 'numberBox'"
-                       v-model="marginBottom"
-                       label="Bottom"
-                       :min="0"
-                       :max="99">
-                <template #inputGroupAppend>
-                    <span class="input-group-addon">px</span>
-                </template>
-            </NumberBox>
+                <NumberBox v-if="mode === 'numberBox'"
+                           v-model="marginRight"
+                           label="Right"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
+
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="marginLeft"
+                              label="Left"
+                              :min="0"
+                              :max="99" />
+
+                <NumberBox v-else-if="mode === 'numberBox'"
+                           v-model="marginLeft"
+                           label="Left"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
         </div>
-    </div>
+    </template>
 
-    <div class="row">
-        <div class="col-sm-6">
-            <NumberUpDown v-if="mode === 'numberUpDown'"
-                          v-model="marginRight"
-                          label="Right"
-                          :min="0"
-                          :max="99" />
-
-            <NumberBox v-if="mode === 'numberBox'"
-                       v-model="marginRight"
-                       label="Right"
-                       :min="0"
-                       :max="99">
-                <template #inputGroupAppend>
-                    <span class="input-group-addon">px</span>
-                </template>
-            </NumberBox>
-        </div>
-
-        <div class="col-sm-6">
-            <NumberUpDown v-if="mode === 'numberUpDown'"
-                          v-model="marginLeft"
-                          label="Left"
-                          :min="0"
-                          :max="99" />
-
-            <NumberBox v-else-if="mode === 'numberBox'"
-                       v-model="marginLeft"
-                       label="Left"
-                       :min="0"
-                       :max="99">
-                <template #inputGroupAppend>
-                    <span class="input-group-addon">px</span>
-                </template>
-            </NumberBox>
-        </div>
-    </div>
+    <template v-else-if="mode === 'textBox'">
+        <TextBox v-model="margin" :label="label" :disableLabel="!label" />
+    </template>
 </template>
 
 <script setup lang="ts">
@@ -83,6 +89,7 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
 
     const props = defineProps({
         element: {
@@ -90,14 +97,28 @@
             required: true
         },
 
+        label: {
+            type: String as PropType<string>,
+            default: "Margin" as const
+        },
+
         mode: {
-            type: String as PropType<"numberUpDown" | "numberBox">,
+            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
             default: "numberUpDown" as const
         }
     });
 
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+        (e: "changeMarginTop", value: string): void;
+        (e: "changeMarginBottom", value: string): void;
+        (e: "changeMarginRight", value: string): void;
+        (e: "changeMarginLeft", value: string): void;
+    }>();
+
     // #region Values
 
+    const margin = ref<string>(props.element.style.margin);
     const marginTop = ref<number>(parseInt(props.element.style.marginTop || "0"));
     const marginBottom = ref<number>(parseInt(props.element.style.marginBottom || "0"));
     const marginRight = ref<number>(parseInt(props.element.style.marginRight || "0"));
@@ -107,46 +128,49 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        marginTop.value = parseInt(props.element.style.marginTop || "0");
-        marginBottom.value = parseInt(props.element.style.marginBottom || "0");
-        marginRight.value = parseInt(props.element.style.marginRight || "0");
-        marginLeft.value = parseInt(props.element.style.marginLeft || "0");
+    watch(margin, (value: string) => {
+        props.element.style.margin = value;
+
+        emit("changeShorthand", value);
     });
 
     watch(marginTop, (value: number) => {
-        if (value) {
-            props.element.style.marginTop = `${value}px`;
-        }
-        else {
-            props.element.style.marginTop = "";
-        }
+        const marginTopValue = value ? `${value}px` : "";
+        props.element.style.marginTop = marginTopValue;
+
+        emit("changeMarginTop", marginTopValue);
     });
 
     watch(marginBottom, (value: number) => {
-        if (value) {
-            props.element.style.marginBottom = `${value}px`;
-        }
-        else {
-            props.element.style.marginBottom = "";
-        }
+        const marginBottomValue = value ? `${value}px` : "";
+        props.element.style.marginBottom = marginBottomValue;
+
+        emit("changeMarginBottom", marginBottomValue);
     });
 
     watch(marginRight, (value: number) => {
-        if (value) {
-            props.element.style.marginRight = `${value}px`;
-        }
-        else {
-            props.element.style.marginRight = "";
-        }
+        const marginRightValue = value ? `${value}px` : "";
+        props.element.style.marginRight = marginRightValue;
+
+        emit("changeMarginRight", marginRightValue);
     });
 
     watch(marginLeft, (value: number) => {
-        if (value) {
-            props.element.style.marginLeft = `${value}px`;
+        const marginLeftValue = value ? `${value}px` : "";
+        props.element.style.marginLeft = marginLeftValue;
+
+        emit("changeMarginLeft", marginLeftValue);
+    });
+
+    watch([() => props.element, () => props.mode], () => {
+        if (props.mode === "numberBox" || props.mode === "numberUpDown") {
+            marginTop.value = parseInt(props.element.style.marginTop || "0");
+            marginBottom.value = parseInt(props.element.style.marginBottom || "0");
+            marginRight.value = parseInt(props.element.style.marginRight || "0");
+            marginLeft.value = parseInt(props.element.style.marginLeft || "0");
         }
-        else {
-            props.element.style.marginLeft = "";
+        else if (props.mode === "textBox") {
+            margin.value = props.element.style.margin;
         }
     });
 

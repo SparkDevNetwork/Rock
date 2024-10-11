@@ -1,60 +1,222 @@
 <template>
-    <NumberUpDown v-model="borderWidth"
-                  label="Border Size"
-                  :min="0"
-                  :max="99" />
+    <DirectionalShorthandToolBase ref="baseTool"
+                                  :element="element"
+                                  shorthandProperty="border-width"
+                                  topProperty="border-top-width"
+                                  bottomProperty="border-bottom-width"
+                                  rightProperty="border-right-width"
+                                  leftProperty="border-left-width"
+                                  :label="label"
+                                  :labelTop="labelTop"
+                                  :labelBottom="labelBottom"
+                                  :labelRight="labelRight"
+                                  :labelLeft="labelLeft"
+                                  :min="min"
+                                  :max="max"
+                                  :mode="mode"
+                                  :showConstituentProperties="showConstituentProperties"
+                                  @changeShorthand="$emit('change', $event)"
+                                  @changeTop="$emit('changeTop', $event)"
+                                  @changeBottom="$emit('changeBottom', $event)"
+                                  @changeRight="$emit('changeRight', $event)"
+                                  @changeLeft="$emit('changeLeft', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { computed, PropType, ref } from "vue";
+    import DirectionalShorthandToolBase from "./directionalShorthandToolBase.partial.obs";
+    import { DirectionalConstituentProperty } from "./types.partial";
 
-    const props = defineProps({
+    defineProps({
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Border Width" as const
+        },
+
+        labelTop: {
+            type: String as PropType<string>,
+            default: "Top" as const
+        },
+
+        labelBottom: {
+            type: String as PropType<string>,
+            default: "Bottom" as const
+        },
+
+        labelRight: {
+            type: String as PropType<string>,
+            default: "Right" as const
+        },
+
+        labelLeft: {
+            type: String as PropType<string>,
+            default: "Left" as const
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            default: 0 as const
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 99 as const
+        },
+
+        showConstituentProperties: {
+            type: Boolean as PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>,
+            default: false as const
+        },
+
+        mode: {
+            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
+            default: "numberUpDown" as const
         }
     });
 
-    const emit = defineEmits<{
-        (e: "elementBorderWidthUpdated"): void;
+    defineEmits<{
+        (e: "change", value: string): void;
+        (e: "changeTop", value: string): void;
+        (e: "changeBottom", value: string): void;
+        (e: "changeRight", value: string): void;
+        (e: "changeLeft", value: string): void;
     }>();
 
     // #region Values
 
-    const borderWidth = ref<number>(getElementBorderWidth());
+    const baseTool = ref<InstanceType<typeof DirectionalShorthandToolBase> | undefined>();
 
     // #endregion
 
-    function getElementBorderWidth(): number {
-        if (props.element.style.borderWidth.endsWith("px")) {
-            return parseInt(props.element.style.borderWidth);
-        }
-        else {
-            return 0;
-        }
-    }
+    // #region Computed Values
 
-    // #region Watchers
-
-    watch(() => props.element, () => {
-        borderWidth.value = getElementBorderWidth();
+    const borderWidthNumeric = computed<number>({
+        get(): number {
+            return baseTool.value?.numericShorthand ?? 0;
+        },
+        set(value: number): void {
+            if (baseTool.value) {
+                baseTool.value.numericShorthand = value;
+            }
+        }
     });
 
-    watch(borderWidth, (value: number) => {
-        if (value) {
-            props.element.style.borderWidth = `${value}px`;
+    const borderTopWidthNumeric = computed<number>({
+        get(): number {
+            return baseTool.value?.numericTop ?? 0;
+        },
+        set(value: number): void {
+            if (baseTool.value) {
+                baseTool.value.numericTop = value;
+            }
         }
-        else {
-            props.element.style.borderWidth = "";
-        }
+    });
 
-        emit("elementBorderWidthUpdated");
+    const borderBottomWidthNumeric = computed<number>({
+        get(): number {
+            return baseTool.value?.numericBottom ?? 0;
+        },
+        set(value: number): void {
+            if (baseTool.value) {
+                baseTool.value.numericBottom = value;
+            }
+        }
+    });
+
+    const borderRightWidthNumeric = computed<number>({
+        get(): number {
+            return baseTool.value?.numericRight ?? 0;
+        },
+        set(value: number): void {
+            if (baseTool.value) {
+                baseTool.value.numericRight = value;
+            }
+        }
+    });
+
+    const borderLeftWidthNumeric = computed<number>({
+        get(): number {
+            return baseTool.value?.numericLeft ?? 0;
+        },
+        set(value: number): void {
+            if (baseTool.value) {
+                baseTool.value.numericLeft = value;
+            }
+        }
+    });
+
+    const borderWidth = computed<string>({
+        get(): string {
+            return baseTool.value?.shorthand ?? "";
+        },
+        set(value: string): void {
+            if (baseTool.value) {
+                baseTool.value.shorthand = value;
+            }
+        }
+    });
+
+    const borderTopWidth = computed<string>({
+        get(): string {
+            return baseTool.value?.top ?? "";
+        },
+        set(value: string): void {
+            if (baseTool.value) {
+                baseTool.value.top = value;
+            }
+        }
+    });
+
+    const borderBottomWidth = computed<string>({
+        get(): string {
+            return baseTool.value?.bottom ?? "";
+        },
+        set(value: string): void {
+            if (baseTool.value) {
+                baseTool.value.bottom = value;
+            }
+        }
+    });
+
+    const borderRightWidth = computed<string>({
+        get(): string {
+            return baseTool.value?.right ?? "";
+        },
+        set(value: string): void {
+            if (baseTool.value) {
+                baseTool.value.right = value;
+            }
+        }
+    });
+
+    const borderLeftWidth = computed<string>({
+        get(): string {
+            return baseTool.value?.left ?? "";
+        },
+        set(value: string): void {
+            if (baseTool.value) {
+                baseTool.value.left = value;
+            }
+        }
     });
 
     // #endregion
 
     defineExpose({
-        borderWidth
+        borderWidthNumeric,
+        borderTopWidthNumeric,
+        borderBottomWidthNumeric,
+        borderRightWidthNumeric,
+        borderLeftWidthNumeric,
+        borderWidth,
+        borderTopWidth,
+        borderBottomWidth,
+        borderRightWidth,
+        borderLeftWidth,
     });
 </script>
