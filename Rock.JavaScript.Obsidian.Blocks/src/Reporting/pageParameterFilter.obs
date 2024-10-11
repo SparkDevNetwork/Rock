@@ -49,8 +49,9 @@
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { debounceAsync } from "@Obsidian/Utility/util";
     import { PageParameterFilterInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/pageParameterFilterInitializationBox";
     import { GetFilterPageParametersRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/getFilterPageParametersRequestBag";
     import { GetFilterPageParametersResponseBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/getFilterPageParametersResponseBag";
@@ -65,6 +66,8 @@
 
     let isStartingUp = true;
     let lastPublishedQueryString: string;
+
+    // TODO: Convert filterCancellationToken to use `CancellationTokenSource`.
 
     // The updating AND applying of filters will share this cancellation token,
     // so we only use the latest response in the case that multiple, concurrent
@@ -159,8 +162,11 @@
 
     /**
      * Gets updated filters based on the current filter values.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to discard results.
      */
-    async function getUpdatedFilters(): Promise<void> {
+    async function getUpdatedFilters(token: ICancellationToken): Promise<void> {
         const cancellationToken = ref(false);
 
         if (filterCancellationToken) {
@@ -176,7 +182,7 @@
         const result = await invokeBlockAction<GetUpdatedFiltersResponseBag>("GetUpdatedFilters", { bag });
 
         // Check if we have been cancelled.
-        if (cancellationToken.value) {
+        if (token?.isCancellationRequested || cancellationToken.value) {
             return;
         }
 
@@ -199,8 +205,11 @@
 
     /**
      * Applies the current filters by taking action according to block settings.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to discard results.
      */
-    async function applyFilters(): Promise<void> {
+    async function applyFilters(token?: ICancellationToken): Promise<void> {
         const cancellationToken = ref(false);
 
         if (filterCancellationToken) {
@@ -216,7 +225,7 @@
         const result = await invokeBlockAction<GetFilterPageParametersResponseBag>("GetFilterPageParameters", { bag });
 
         // Check if we've been cancelled.
-        if (cancellationToken.value) {
+        if (token?.isCancellationRequested || cancellationToken.value) {
             return;
         }
 
@@ -375,22 +384,25 @@
 
     /**
      * Called when a watched filter's value changes.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * handler to discard results.
      */
-    async function onFilterValueChanged(): Promise<void> {
+    async function onFilterValueChanged(cancellationToken: ICancellationToken): Promise<void> {
         if (ignoreWatchers.value) {
             return;
         }
 
         if (filterSelectionAction.value === FilterSelectionAction.UpdateFilters) {
-            await getUpdatedFilters();
+            await getUpdatedFilters(cancellationToken);
             return;
         }
 
         // If we get here, filter selection action is "Apply Filters".
-        await applyFilters();
+        await applyFilters(cancellationToken);
     }
 
-    const onFilterValueChangedDebounce = debounce(onFilterValueChanged);
+    const onFilterValueChangedDebounce = debounceAsync(onFilterValueChanged);
 
     /**
      * Called when the reset filters button is clicked.

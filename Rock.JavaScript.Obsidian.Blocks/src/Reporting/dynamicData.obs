@@ -63,7 +63,9 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { ColumnFilter, FilterValueFunction } from "@Obsidian/Types/Controls/grid";
+    import { Message, QueryStringChangedData } from "@Obsidian/Types/Utility/browserBus";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
     import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
     import { addQuickReturn } from "@Obsidian/Utility/page";
     import { DynamicDataInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/dynamicDataInitializationBox";
@@ -74,6 +76,7 @@
     const config = useConfigurationValues<DynamicDataInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
+    const browserBus = useBrowserBus();
 
     const columnComponents = {
         "boolean": BooleanColumn,
@@ -285,6 +288,10 @@
         }
     }
 
+    function onQueryStringChanged(message: Message<QueryStringChangedData>): void {
+        console.log(`Query string changed: ${message.data.toString()}`);
+    }
+
     // #endregion Event Handlers
 
     onMounted(() => {
@@ -311,4 +318,6 @@
     }
 
     onConfigurationValuesChanged(reloadBlock);
+
+    browserBus.subscribe(PageMessages.QueryStringChanged, onQueryStringChanged);
 </script>
