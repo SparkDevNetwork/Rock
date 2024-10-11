@@ -29,7 +29,7 @@ iframe {
         /** This is reactive. If it is changed, the inner HTML for the editor will be updated. */
         html: {
             type: String as PropType<string | null | undefined>,
-            default: ""
+            default: "" as const
         },
 
         selectedComponentElement: {

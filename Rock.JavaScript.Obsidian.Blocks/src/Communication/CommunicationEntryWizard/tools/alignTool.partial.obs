@@ -1,6 +1,6 @@
 <template>
-    <DropDownList v-model="textAlign"
-                  :items="textAlignItems"
+    <DropDownList v-model="align"
+                  :items="alignItems"
                   :label="label" />
 </template>
 
@@ -17,13 +17,13 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Text Align" as const
+            default: "Align" as const
         }
     });
 
     // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
     // If quotes are required, add them here.
-    const textAlignItems: ListItemBag[] = [
+    const alignItems: ListItemBag[] = [
         {
             text: "Left",
             value: "left"
@@ -38,18 +38,23 @@
 
     // #region Values
 
-    const textAlign = ref<string>(props.element.style.textAlign);
+    const align = ref<string>(props.element.getAttribute("align") ?? "");
 
     // #endregion
 
     // #region Watchers
 
     watch(() => props.element, () => {
-        textAlign.value = props.element.style.textAlign;
+        align.value = props.element.getAttribute("align") ?? "";
     });
 
-    watch(textAlign, (value: string) => {
-        props.element.style.textAlign = value;
+    watch(align, (value: string) => {
+        if (value) {
+            props.element.setAttribute("align", value);
+        }
+        else {
+            props.element.removeAttribute("align");
+        }
     });
 
     // #endregion

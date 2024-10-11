@@ -18,7 +18,7 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Width"
+            default: "Width" as const
         }
     });
 

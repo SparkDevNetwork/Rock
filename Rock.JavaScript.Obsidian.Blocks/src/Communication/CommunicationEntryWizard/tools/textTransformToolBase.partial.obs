@@ -1,0 +1,58 @@
+<template>
+    <SingleSelectButtonGroup v-model="internalValue" :disableLabel="true">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('capitalize')"
+                        title="Capitalize"
+                        @click="selectValue('capitalize')">Ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('lowercase')"
+                        title="Lowercase"
+                        @click="selectValue('lowercase')">ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('uppercase')"
+                        title="Uppercase"
+                        @click="selectValue('uppercase')">AG</RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import SingleSelectButtonGroup from "../controls/singleSelectButtonGroup.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<string>(props.modelValue);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+    });
+
+    watch(internalValue, (value: string) => {
+        emit("update:modelValue", value);
+    });
+
+    // #endregion
+</script>

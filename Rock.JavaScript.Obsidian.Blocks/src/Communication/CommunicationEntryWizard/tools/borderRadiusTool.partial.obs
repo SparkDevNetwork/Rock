@@ -17,7 +17,7 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Border Radius"
+            default: "Border Radius" as const
         },
 
         min: {

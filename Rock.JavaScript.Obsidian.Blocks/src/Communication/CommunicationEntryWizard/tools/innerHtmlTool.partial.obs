@@ -3,7 +3,9 @@
                 v-model="innerHtml"
                 :editorHeight="200"
                 :mergeFields="messageMergeFields" />
-    <CodeEditor v-else-if="mode === 'code'" v-model="innerHtml" />
+
+    <CodeEditor v-else-if="mode === 'code'"
+                v-model="innerHtml" />
 </template>
 
 <script setup lang="ts">
@@ -19,7 +21,7 @@
         },
         mode: {
             type: String as PropType<"html" | "code">,
-            default: "html"
+            default: "html" as const
         }
     });
 

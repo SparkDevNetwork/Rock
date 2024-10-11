@@ -1,6 +1,6 @@
 <template>
-    <DropDownList v-model="textAlign"
-                  :items="textAlignItems"
+    <DropDownList v-model="fontWeight"
+                  :items="fontWeights"
                   :label="label" />
 </template>
 
@@ -17,39 +17,42 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Text Align" as const
+            default: "Font Weight" as const
         }
     });
 
     // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
     // If quotes are required, add them here.
-    const textAlignItems: ListItemBag[] = [
+    const fontWeights: ListItemBag[] = [
         {
-            text: "Left",
-            value: "left"
+            text: "Normal",
+            value: "normal"
         }, {
-            text: "Center",
-            value: "center"
+            text: "Bold",
+            value: "bold"
         }, {
-            text: "Right",
-            value: "right"
+            text: "Bolder",
+            value: "bolder"
+        }, {
+            text: "Lighter",
+            value: "lighter"
         }
     ];
 
     // #region Values
 
-    const textAlign = ref<string>(props.element.style.textAlign);
+    const fontWeight = ref<string>(props.element.style.fontWeight);
 
     // #endregion
 
     // #region Watchers
 
     watch(() => props.element, () => {
-        textAlign.value = props.element.style.textAlign;
+        fontWeight.value = props.element.style.fontWeight;
     });
 
-    watch(textAlign, (value: string) => {
-        props.element.style.textAlign = value;
+    watch(fontWeight, (value: string) => {
+        props.element.style.fontWeight = value;
     });
 
     // #endregion

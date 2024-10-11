@@ -288,5 +288,7 @@
         }
     });
 
+    // TODO JMH Add watcher for when the component element changes. It should update all refs to the new component element.
+
     // #endregion
 </script>

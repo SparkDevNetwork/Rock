@@ -1,0 +1,47 @@
+<template>
+    <TextFormatToolBase v-model:fontWeight="fontWeight"
+                        v-model:textDecoration="textDecoration"
+                        v-model:fontStyle="fontStyle" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import TextFormatToolBase from "./textFormatToolBase.partial.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const fontWeight = ref<string>(props.element.style.fontWeight);
+    const textDecoration = ref<string>(props.element.style.textDecoration);
+    const fontStyle = ref<string>(props.element.style.fontStyle);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        fontWeight.value = props.element.style.fontWeight;
+        textDecoration.value = props.element.style.textDecoration;
+        fontStyle.value = props.element.style.fontStyle;
+    });
+
+    watch(fontWeight, (value: string) => {
+        props.element.style.fontWeight = value;
+    });
+
+    watch(textDecoration, (value: string) => {
+        props.element.style.textDecoration = value;
+    });
+
+    watch(fontStyle, (value: string) => {
+        props.element.style.fontStyle = value;
+    });
+
+    // #endregion
+</script>

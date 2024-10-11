@@ -28,7 +28,7 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Height"
+            default: "Height" as const
         },
 
         min: {
@@ -43,7 +43,7 @@
 
         mode: {
             type: String as PropType<"rangeSlider" | "numberUpDown">,
-            default: "rangeSlider"
+            default: "rangeSlider" as const
         }
     });
 

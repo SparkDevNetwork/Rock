@@ -1,11 +1,11 @@
 <template>
-    <ColorPicker v-model="backgroundColor"
-                 :label="label" />
+    <BackgroundColorToolBase v-model="backgroundColor"
+                             :label="label" />
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import BackgroundColorToolBase from "./backgroundColorToolBase.partial.obs";
 
     const props = defineProps({
         element: {
@@ -15,7 +15,7 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Background Color"
+            default: "Background Color" as const
         }
     });
 

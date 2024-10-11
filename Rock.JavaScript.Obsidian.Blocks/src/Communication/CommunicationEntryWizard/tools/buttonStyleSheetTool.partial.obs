@@ -1,12 +1,13 @@
 <template>
-    <ColorPicker v-model="backgroundColor" label="Background Color" />
+    <BackgroundColorToolBase v-model="backgroundColor" />
 
-    <ColorPicker v-model="color" label="Text Color" />
+    <ColorToolBase v-model="color"
+                   label="Text Color" />
 
     <FontFamilyToolBase v-model="fontFamily"
                         label="Text" />
 
-    <NumberBox v-model="fontSize" :disableLabel="true" />
+    <FontSizeToolBase v-model="fontSize" />
 
     <NumberUpDown v-model="borderRadius"
                   label="Corner Radius"
@@ -19,19 +20,46 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import BackgroundColorToolBase from "./backgroundColorToolBase.partial.obs";
+    import ColorToolBase from "./colorToolBase.partial.obs";
     import FontFamilyToolBase from "./fontFamilyToolBase.partial.obs";
-    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import FontSizeToolBase from "./fontSizeToolBase.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
 
     const props = defineProps({
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        /**
+         * This CSS class will be added to the &lt;style&gt; element
+         * to help identify it during updates.
+         *
+         * @example
+         * <style class="{{ props.styleCssClass }}">
+         * </style>
+         */
+        styleCssClass: {
+            type: String as PropType<string>,
+            default: "rock-design-button" as const
+        },
+
+        /**
+         * The CSS selectors used in the resulting CSS ruleset.
+         *
+         * @example
+         * <style class="rock-design-divider">
+         * {{ props.cssRulesetSelectors }} {
+         *   border-style: solid;
+         * }
+         * </style>
+         */
+        cssRulesetSelectors: {
+            type: String as PropType<string>,
+            default: ".component-button .button-link" as const
         }
     });
-
-    const tagName: keyof HTMLElementTagNameMap = "button";
 
     // #region Values
 
@@ -39,7 +67,7 @@
     const backgroundColor = ref<string>("");
     const color = ref<string>("");
     const fontFamily = ref<string>("");
-    const fontSize = ref<number | null | undefined>();
+    const fontSize = ref<string>("");
     const borderRadius = ref<number>(0);
     const textStyle = ref<string>("");
 
@@ -63,7 +91,7 @@
         }
 
         if (fontSize.value) {
-            declarations.push(`font-size: ${fontSize.value}px;`);
+            declarations.push(`font-size: ${fontSize.value};`);
         }
 
         if (borderRadius.value) {
@@ -75,7 +103,7 @@
         }
 
         if (declarations.length) {
-            return `${tagName} {\n    ${declarations.join("\n    ")}\n}`;
+            return `${props.cssRulesetSelectors} {\n    ${declarations.join("\n    ")}\n}`;
         }
         else {
             return null;
@@ -99,14 +127,15 @@
             const ownerNode = stylesheet.ownerNode;
 
             if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
-                if (ownerNode.classList.contains(`rock-design-${tagName}`)) {
+                if (ownerNode.classList.contains(props.styleCssClass)) {
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
-                            if (rule.selectorText === tagName) {
+                            debugger;
+                            if (rule.selectorText === props.cssRulesetSelectors) {
                                 backgroundColor.value = rule.style.backgroundColor;
                                 color.value = rule.style.color;
                                 fontFamily.value = rule.style.fontFamily;
-                                fontSize.value = rule.style.fontSize ? parseInt(rule.style.fontSize) : null;
+                                fontSize.value = rule.style.fontSize;
                                 borderRadius.value = parseInt(rule.style.borderRadius || "0");
                                 // TODO JMH textStyle.value = ??
 
@@ -122,7 +151,7 @@
             backgroundColor.value = "";
             color.value = "";
             fontFamily.value = "";
-            fontSize.value = null;
+            fontSize.value = "";
             borderRadius.value = 0;
             textStyle.value = "";
         }
@@ -137,10 +166,10 @@
     // should be added/updated with the new styles.
     watch(cssRuleset, () => {
         if (cssRuleset.value) {
-            const tag = props.element.querySelector(`style.rock-design-${tagName}`);
+            const tag = props.element.querySelector(`style.${props.styleCssClass}`);
             const styleTag = props.element.ownerDocument.createElement("style");
             styleTag.textContent = cssRuleset.value;
-            styleTag.classList.add(`rock-design-${tagName}`);
+            styleTag.classList.add(props.styleCssClass);
             if (tag) {
                 tag.replaceWith(styleTag);
             }
@@ -149,7 +178,7 @@
             }
         }
         else {
-            const tag = props.element.querySelector(`style.rock-design-${tagName}`);
+            const tag = props.element.querySelector(`style.${props.styleCssClass}`);
             if (tag) {
                 tag.remove();
             }

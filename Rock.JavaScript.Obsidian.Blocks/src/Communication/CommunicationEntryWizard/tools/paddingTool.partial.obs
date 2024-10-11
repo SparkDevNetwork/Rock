@@ -1,53 +1,116 @@
 <template>
-    <RockLabel>Padding</RockLabel>
+    <template v-if="mode === 'numberBox' || mode === 'numberUpDown'">
+        <RockLabel v-if="label">{{ label }}</RockLabel>
 
-    <div class="row">
-        <div class="col-sm-6">
-            <NumberUpDown v-model="paddingTop"
-                          label="Top"
-                          :min="0"
-                          :max="99" />
+        <div class="row">
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="paddingTop"
+                              label="Top"
+                              :min="0"
+                              :max="99" />
+
+                <NumberBox v-if="mode === 'numberBox'"
+                           v-model="paddingTop"
+                           label="Top"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
+
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="paddingBottom"
+                              label="Bottom"
+                              :min="0"
+                              :max="99" />
+
+                <NumberBox v-if="mode === 'numberBox'"
+                           v-model="paddingBottom"
+                           label="Bottom"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
         </div>
 
-        <div class="col-sm-6">
-            <NumberUpDown v-model="paddingBottom"
-                          label="Bottom"
-                          :min="0"
-                          :max="99" />
-        </div>
-    </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="paddingRight"
+                              label="Right"
+                              :min="0"
+                              :max="99" />
 
-    <div class="row">
-        <div class="col-sm-6">
-            <NumberUpDown v-model="paddingRight"
-                          label="Right"
-                          :min="0"
-                          :max="99" />
-        </div>
+                <NumberBox v-if="mode === 'numberBox'"
+                           v-model="paddingRight"
+                           label="Right"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
 
-        <div class="col-sm-6">
-            <NumberUpDown v-model="paddingLeft"
-                          label="Left"
-                          :min="0"
-                          :max="99" />
+            <div class="col-sm-6">
+                <NumberUpDown v-if="mode === 'numberUpDown'"
+                              v-model="paddingLeft"
+                              label="Left"
+                              :min="0"
+                              :max="99" />
+
+                <NumberBox v-else-if="mode === 'numberBox'"
+                           v-model="paddingLeft"
+                           label="Left"
+                           :min="0"
+                           :max="99">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
         </div>
-    </div>
+    </template>
+
+    <template v-else-if="mode === 'textBox'">
+        <TextBox v-model="padding" :label="label" :disableLabel="!label" />
+    </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
 
     const props = defineProps({
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Padding" as const
+        },
+
+        mode: {
+            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
+            default: "numberUpDown" as const
         }
     });
 
     // #region Values
 
+    const padding = ref<string>(props.element.style.padding);
     const paddingTop = ref<number>(parseInt(props.element.style.paddingTop || "0"));
     const paddingBottom = ref<number>(parseInt(props.element.style.paddingBottom || "0"));
     const paddingRight = ref<number>(parseInt(props.element.style.paddingRight || "0"));
@@ -57,11 +120,20 @@
 
     // #region Watchers
 
-    watch(() => props.element, () => {
-        paddingTop.value = parseInt(props.element.style.paddingTop || "0");
-        paddingBottom.value = parseInt(props.element.style.paddingBottom || "0");
-        paddingRight.value = parseInt(props.element.style.paddingRight || "0");
-        paddingLeft.value = parseInt(props.element.style.paddingLeft || "0");
+    watch([() => props.element, () => props.mode], () => {
+        if (props.mode === "numberBox" || props.mode === "numberUpDown") {
+            paddingTop.value = parseInt(props.element.style.paddingTop || "0");
+            paddingBottom.value = parseInt(props.element.style.paddingBottom || "0");
+            paddingRight.value = parseInt(props.element.style.paddingRight || "0");
+            paddingLeft.value = parseInt(props.element.style.paddingLeft || "0");
+        }
+        else if (props.mode === "textBox") {
+            padding.value = props.element.style.padding;
+        }
+    });
+
+    watch(padding, (value: string) => {
+        props.element.style.padding = value;
     });
 
     watch(paddingTop, (value: number) => {

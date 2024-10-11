@@ -1,71 +1,28 @@
 <template>
-    <FontFamilyToolBase v-model="fontFamily"
-                        :label="label" />
+    <FontFamilyTool :element="element"
+                    :label="label" />
 
-    <NumberBox v-model="fontSize"
-               :disableLabel="true"
-               placeholder="Font Size"
-               @keydown="onFontSizeKeyDown">
-        <template #inputGroupAppend>
-            <span class="input-group-addon">px</span>
-        </template>
-    </NumberBox>
+    <FontSizeTool :element="element" />
 
-    <ColorPicker v-model="fontColor" :disableLabel="true" placeholder="Font Color" />
+    <FontColorTool :element="element" />
 
-    <MultiSelectButtonGroup v-model="fontStyleGroup" :disableLabel="true">
-        <template #default="{ btnSize, disabled, itemButtonType, toggleValue }">
-            <RockButton :disabled="disabled"
-                        :btnSize="btnSize"
-                        :btnType="itemButtonType('bold')"
-                        @click="toggleValue('bold')"><i class="fa fa-bold"></i></RockButton>
-            <RockButton :disabled="disabled"
-                        :btnSize="btnSize"
-                        :btnType="itemButtonType('underline')"
-                        @click="toggleValue('underline')"><i class="fa fa-underline"></i></RockButton>
-            <RockButton :disabled="disabled"
-                        :btnSize="btnSize"
-                        :btnType="itemButtonType('italic')"
-                        @click="toggleValue('italic')"><i class="fa fa-italic"></i></RockButton>
-        </template>
-    </MultiSelectButtonGroup>
+    <TextFormatTool :element="element" />
 
     <LineHeightTool :element="element" />
 
-    <SingleSelectButtonGroup v-model="textTransform" :disableLabel="true">
-        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
-            <RockButton :disabled="disabled"
-                        :btnSize="btnSize"
-                        :btnType="itemButtonType('capitalize')"
-                        title="Capitalize"
-                        @click="selectValue('capitalize')">Ag</RockButton>
-
-            <RockButton :disabled="disabled"
-                        :btnSize="btnSize"
-                        :btnType="itemButtonType('lowercase')"
-                        title="Lowercase"
-                        @click="selectValue('lowercase')">ag</RockButton>
-
-            <RockButton :disabled="disabled"
-                        :btnSize="btnSize"
-                        :btnType="itemButtonType('uppercase')"
-                        title="Uppercase"
-                        @click="selectValue('uppercase')">AG</RockButton>
-        </template>
-    </SingleSelectButtonGroup>
+    <TextTransformTool :element="element" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import FontFamilyToolBase from "./fontFamilyToolBase.partial.obs";
+    import { PropType } from "vue";
+    import FontColorTool from "./fontColorTool.partial.obs";
+    import FontFamilyTool from "./fontFamilyTool.partial.obs";
+    import FontSizeTool from "./fontSizeTool.partial.obs";
     import LineHeightTool from "./lineHeightTool.partial.obs";
-    import MultiSelectButtonGroup from "../controls/multiSelectButtonGroup.partial.obs";
-    import SingleSelectButtonGroup from "../controls/singleSelectButtonGroup.partial.obs";
-    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextFormatTool from "./textFormatTool.partial.obs";
+    import TextTransformTool from "./textTransformTool.partial.obs";
 
-    const props = defineProps({
+    defineProps({
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
@@ -73,113 +30,7 @@
 
         label: {
             type: String as PropType<string>,
-            default: "Font"
+            default: "Font" as const
         }
     });
-
-    // #region Values
-
-    // These are initialized in the "immediate" props.modelValue watcher below.
-    const fontFamily = ref<string>("");
-    const fontColor = ref<string>("");
-    const fontSize = ref<number | null | undefined>();
-    const fontStyleGroup = ref<("bold" | "underline" | "italic")[]>([]);
-    const textTransform = ref<string>("");
-
-    // #endregion
-
-    // #region Event Handlers
-
-    function onFontSizeKeyDown(event: KeyboardEvent): void {
-        if (event.key === "ArrowUp") {
-            if (fontSize.value !== null && fontSize.value !== undefined && fontSize.value! >= 0) {
-                fontSize.value = fontSize.value + 1;
-            }
-            else {
-                fontSize.value = 0;
-            }
-        }
-        else if (event.key === "ArrowDown") {
-            if (fontSize.value !== null && fontSize.value !== undefined && fontSize.value > 0) {
-                fontSize.value = fontSize.value - 1;
-            }
-            else {
-                fontSize.value = 0;
-            }
-        }
-    }
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(() => props.element, () => {
-        fontFamily.value = props.element.style.fontFamily;
-        fontColor.value = props.element.style.color;
-        fontSize.value = props.element.style.fontSize ? parseInt(props.element.style.fontSize) : null;
-
-        const temp: ("bold" | "underline" | "italic")[] = [];
-        if (props.element.style.fontWeight) {
-            temp.push("bold");
-        }
-        if (props.element.style.fontStyle === "italic") {
-            temp.push("italic");
-        }
-        if (props.element.style.textDecoration === "underline") {
-            temp.push("underline");
-        }
-        fontStyleGroup.value = temp;
-
-        textTransform.value = props.element.style.textTransform;
-    }, {
-        // Since the reactive values are not initialized where defined above,
-        // this needs to be immediate here.
-        immediate: true
-    });
-
-    watch(fontFamily, (value: string) => {
-        props.element.style.fontFamily = value;
-    });
-
-    watch(fontColor, (value: string) => {
-        props.element.style.color = value;
-    });
-
-    watch(fontSize, value => {
-        if (value) {
-            props.element.style.fontSize = `${fontSize.value}px`;
-        }
-        else {
-            props.element.style.fontSize = "";
-        }
-    });
-
-    watch(fontStyleGroup, value => {
-        if (value.includes("bold")) {
-            props.element.style.fontWeight = "bold";
-        }
-        else {
-            props.element.style.fontWeight = "";
-        }
-
-        if (value.includes("italic")) {
-            props.element.style.fontStyle = "italic";
-        }
-        else {
-            props.element.style.fontStyle = "";
-        }
-
-        if (value.includes("underline")) {
-            props.element.style.textDecoration = "underline";
-        }
-        else {
-            props.element.style.textDecoration = "";
-        }
-    });
-
-    watch(textTransform, (value: string) => {
-        props.element.style.textTransform = value;
-    });
-
-    // #endregion
 </script>

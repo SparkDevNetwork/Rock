@@ -89,9 +89,10 @@
             type: Object as PropType<HTMLElement>,
             required: true
         },
+
         mode: {
             type: String as PropType<"numberUpDown" | "numberBox">,
-            default: "numberUpDown"
+            default: "numberUpDown" as const
         }
     });
 

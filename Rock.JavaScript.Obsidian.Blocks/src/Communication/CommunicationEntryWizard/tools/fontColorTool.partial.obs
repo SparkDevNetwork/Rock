@@ -1,0 +1,33 @@
+<template>
+    <FontColorToolBase v-model="fontColor" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import FontColorToolBase from "./fontColorToolBase.partial.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const fontColor = ref<string>(props.element.style.color);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        fontColor.value = props.element.style.color;
+    });
+
+    watch(fontColor, (value: string) => {
+        props.element.style.color = value;
+    });
+
+    // #endregion
+</script>

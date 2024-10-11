@@ -1,21 +1,57 @@
 <template>
-    <ComponentToolsetBase @complete="$emit('complete')"
+    <ComponentToolsetBase v-if="buttonInnerWrapElement && buttonShellElement && buttonElement"
+                          @complete="$emit('complete')"
                           @delete="$emit('delete')">
         <AccordionGroup>
             <Accordion title="General Settings">
-                TBD
+                <TextContentTool :element="buttonElement"
+                                 label="Button Text" />
+
+                <HrefTool :element="buttonElement" />
+
+                <BackgroundColorTool :element="buttonElement" /><!-- TODO JMH This needs to change the border color too! -->
+
+                <ColorTool :element="buttonElement" label="Font Color" />
+            </Accordion>
+
+            <Accordion title="Typography">
+                <FontFamilyTool :element="buttonElement" />
+
+                <FontSizeTool :element="buttonElement"
+                              mode="textBox" />
+
+                <FontWeightTool :element="buttonElement" />
+            </Accordion>
+
+            <Accordion title="Spacing & Layout">
+                <!-- TODO JMH Need fancy button Width tool. -->
+
+                <AlignTool :element="buttonInnerWrapElement" />
+
+                <PaddingTool :element="buttonElement"
+                             label="Button Padding"
+                             mode="textBox" />
             </Accordion>
         </AccordionGroup>
     </ComponentToolsetBase>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, ref, watch } from "vue";
     import ComponentToolsetBase from "./componentToolsetBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import AlignTool from "../tools/alignTool.partial.obs";
+    import BackgroundColorTool from "../tools/backgroundColorTool.partial.obs";
+    import ColorTool from "../tools/colorTool.partial.obs";
+    import FontFamilyTool from "../tools/fontFamilyTool.partial.obs";
+    import FontSizeTool from "../tools/fontSizeTool.partial.obs";
+    import FontWeightTool from "../tools/fontWeightTool.partial.obs";
+    import HrefTool from "../tools/hrefTool.partial.obs";
+    import PaddingTool from "../tools/paddingTool.partial.obs";
+    import TextContentTool from "../tools/textContentTool.partial.obs";
 
-    defineProps({
+    const props = defineProps({
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
@@ -26,4 +62,22 @@
         (e: "complete"): void;
         (e: "delete"): void;
     }>();
+
+    // #region Values
+
+    const buttonInnerWrapElement = ref<HTMLElement | null | undefined>(props.componentElement.querySelector(".button-innerwrap") as HTMLElement);
+    const buttonShellElement = ref<HTMLElement | null | undefined>(buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement);
+    const buttonElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-link") as HTMLElement);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.componentElement, (element: HTMLElement) => {
+        buttonInnerWrapElement.value = element.querySelector(".button-innerwrap") as HTMLElement;
+        buttonShellElement.value = buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement;
+        buttonElement.value = buttonShellElement.value?.querySelector(".button-link") as HTMLElement;
+    });
+
+    // #endregion
 </script>

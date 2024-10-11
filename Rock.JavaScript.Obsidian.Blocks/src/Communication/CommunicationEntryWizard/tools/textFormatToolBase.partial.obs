@@ -1,0 +1,167 @@
+<template>
+    <RockFormField v-bind="standardFieldProps"
+                   :modelValue="internalValue"
+                   :disableLabel="true"
+                   name="textFormatGroup">
+        <div class="btn-group">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalFontWeight === 'bold')"
+                        title="Bold"
+                        @click="toggleFontWeight()"><i class="fa fa-bold"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalTextDecoration === 'underline')"
+                        title="Underline"
+                        @click="toggleTextDecoration()"><i class="fa fa-underline"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalFontStyle === 'italic')"
+                        title="Italic"
+                        @click="toggleFontStyle()"><i class="fa fa-italic"></i></RockButton>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    const props = defineProps({
+        fontWeight: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        textDecoration: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        fontStyle: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        unselectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Default
+        },
+
+        selectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Primary
+        },
+
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:fontWeight", value: string): void;
+        (e: "update:textDecoration", value: string): void;
+        (e: "update:fontStyle", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalFontWeight = ref<string>(props.fontWeight);
+    const internalTextDecoration = ref<string>(props.textDecoration);
+    const internalFontStyle = ref<string>(props.fontStyle);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // This is only used as a one-way binding for the FormGroup modelValue.
+    const internalValue = computed<string[]>(() => {
+        return [
+            props.fontWeight,
+            props.textDecoration,
+            props.fontStyle
+        ];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getItemButtonType(isSelected: boolean): LiteralUnion<BtnType> {
+        return isSelected ? props.selectedBtnType : props.unselectedBtnType;
+    }
+
+    function toggleFontWeight(): void {
+        if (internalFontWeight.value) {
+            internalFontWeight.value = "";
+        }
+        else {
+            internalFontWeight.value = "bold";
+        }
+    }
+
+    function toggleTextDecoration(): void {
+        if (internalTextDecoration.value) {
+            internalTextDecoration.value = "";
+        }
+        else {
+            internalTextDecoration.value = "underline";
+        }
+    }
+
+    function toggleFontStyle(): void {
+        if (internalFontStyle.value) {
+            internalFontStyle.value = "";
+        }
+        else {
+            internalFontStyle.value = "italic";
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.fontWeight, (value: string) => {
+        internalFontWeight.value = value;
+    });
+
+    watch(() => props.textDecoration, (value: string) => {
+        internalTextDecoration.value = value;
+    });
+
+    watch(() => props.fontStyle, (value: string) => {
+        internalFontStyle.value = value;
+    });
+
+    watch(internalFontWeight, (value: string) => {
+        emit("update:fontWeight", value);
+    });
+
+    watch(internalTextDecoration, (value: string) => {
+        emit("update:textDecoration", value);
+    });
+
+    watch(internalFontStyle, (value: string) => {
+        emit("update:fontStyle", value);
+    });
+
+    // #endregion
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+</script>

@@ -1,0 +1,115 @@
+<template>
+    <NumberBox v-if="mode === 'numberBox'"
+               v-model="internalModel"
+               :disableLabel="true"
+               placeholder="Font Size"
+               @keydown="onFontSizeKeyDown">
+        <template #inputGroupAppend>
+            <span class="input-group-addon">px</span>
+        </template>
+    </NumberBox>
+
+    <TextBox v-else-if="mode === 'textBox'"
+             v-model="internalModelText"
+             :disableLabel="true"
+             placeholder="Font Size" />
+</template>
+
+<style scoped>
+svg {
+    height: 16px;
+    width: 16px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        mode: {
+            type: String as PropType<"numberBox" | "textBox">,
+            default: "numberBox" as const
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalModel = ref<number | null | undefined>(props.mode === "numberBox" ? getFontSizeAsNumber() : null);
+    const internalModelText = ref<string>(props.mode === "textBox" ? props.modelValue : "");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onFontSizeKeyDown(event: KeyboardEvent): void {
+        if (event.key === "ArrowUp") {
+            if (internalModel.value !== null && internalModel.value !== undefined && internalModel.value! >= 0) {
+                internalModel.value = internalModel.value + 1;
+            }
+            else {
+                internalModel.value = 0;
+            }
+        }
+        else if (event.key === "ArrowDown") {
+            if (internalModel.value !== null && internalModel.value !== undefined && internalModel.value > 0) {
+                internalModel.value = internalModel.value - 1;
+            }
+            else {
+                internalModel.value = 0;
+            }
+        }
+    }
+
+    function getFontSizeAsNumber(): number | null {
+        return props.modelValue ? parseInt(props.modelValue) : null;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([() => props.modelValue, () => props.mode], () => {
+        if (props.mode === "numberBox") {
+            const fontSize = getFontSizeAsNumber();
+
+            if (internalModel.value !== fontSize) {
+                internalModel.value = fontSize;
+            }
+        }
+        else if (props.mode === "textBox") {
+            if (internalModelText.value !== props.modelValue) {
+                internalModelText.value = props.modelValue;
+            }
+        }
+    });
+
+    watch(internalModel, (value: number | null | undefined, oldValue: number | null | undefined) => {
+        if (value !== oldValue) {
+            if (value) {
+                emit("update:modelValue", `${value}px`);
+            }
+            else {
+                emit("update:modelValue", "");
+            }
+        }
+    });
+
+    watch(internalModelText, (value: string, oldValue: string) => {
+        if (value !== oldValue) {
+            emit("update:modelValue", value);
+        }
+    });
+
+    // #endregion
+</script>

@@ -1,0 +1,38 @@
+<template>
+    <FontSizeToolBase v-model="fontSize" :mode="mode" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import FontSizeToolBase from "./fontSizeToolBase.partial.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        mode: {
+            type: String as PropType<"numberBox" | "textBox">,
+            default: "numberBox" as const
+        }
+    });
+
+    // #region Values
+
+    const fontSize = ref<string>(props.element.style.fontSize);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        fontSize.value = props.element.style.fontSize;
+    });
+
+    watch(fontSize, (value: string) => {
+        props.element.style.fontSize = value;
+    });
+
+    // #endregion
+</script>
