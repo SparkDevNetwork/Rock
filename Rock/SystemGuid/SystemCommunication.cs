@@ -264,5 +264,10 @@ namespace Rock.SystemGuid
         public const string LEARNING_ACTIVITY_NOTIFICATIONS = "d40a9c32-f179-4e5e-9b0d-ce208c5d1870";
 
         #endregion
+
+        /// <summary>
+        /// Gets the template guid for a Login Confirmation Alert.
+        /// </summary>
+        public const string LOGIN_CONFIRMATION_ALERT = "90D986D4-F3B5-4B28-B731-5A3F35172BA9";
     }
 }
