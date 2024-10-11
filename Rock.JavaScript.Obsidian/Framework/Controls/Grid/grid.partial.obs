@@ -13,67 +13,66 @@
                              :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
                              :isSearchVisible="isSearchVisible" />
+        </div>
 
+        <div style="overflow-x: auto">
             <slot name="gridHeaderPrepend" />
-
             <ColumnHeaderRow :columns="visibleColumnDefinitions"
-                             v-model:columnFilters="columnFilterValues"
-                             v-model:columnSort="columnSortDirection"
-                             :grid="gridState"
-                             :light="light" />
-
+                            v-model:columnFilters="columnFilterValues"
+                            v-model:columnSort="columnSortDirection"
+                            :grid="gridState"
+                            :light="light" />
             <slot name="gridHeaderAppend" />
-        </div>
+            <div class="grid-body" v-if="loadingData">
+                <SkeletonRows :columns="visibleColumnDefinitions"
+                            :grid="gridState"
+                            :count="skeletonRowCount" />
+            </div>
 
-        <div class="grid-body" v-if="loadingData">
-            <SkeletonRows :columns="visibleColumnDefinitions"
-                          :grid="gridState"
-                          :count="skeletonRowCount" />
-        </div>
+            <div class="grid-body" v-else-if="gridErrorMessage">
+                <NotificationBox alertType="warning">{{ gridErrorMessage }}</NotificationBox>
+            </div>
 
-        <div class="grid-body" v-else-if="gridErrorMessage">
-            <NotificationBox alertType="warning">{{ gridErrorMessage }}</NotificationBox>
-        </div>
+            <div class="grid-body" v-else-if="dragOptions" v-dragSource="dragOptions" v-dragTarget="dragOptions">
+                <DataRows
+                        :columns="visibleColumnDefinitions"
+                        :rows="visibleRows"
+                        :grid="gridState"
+                        :tooltipField="tooltipField"
+                        :isSelectable="isSelectionEnabled"
+                        :itemTerm="gridState.itemTerm"
+                        :markInactiveRows="markInactiveRows"
+                        :rowClass="rowClass"
+                        :emptyDataText="emptyDataText"
+                        @click="onRowClick" />
+            </div>
 
-        <div class="grid-body" v-else-if="dragOptions" v-dragSource="dragOptions" v-dragTarget="dragOptions">
-            <DataRows
-                      :columns="visibleColumnDefinitions"
-                      :rows="visibleRows"
-                      :grid="gridState"
-                      :tooltipField="tooltipField"
-                      :isSelectable="isSelectionEnabled"
-                      :itemTerm="gridState.itemTerm"
-                      :markInactiveRows="markInactiveRows"
-                      :rowClass="rowClass"
-                      :emptyDataText="emptyDataText"
-                      @click="onRowClick" />
-        </div>
+            <div class="grid-body" v-else-if="!keyField || light">
+                <DataRows
+                        :columns="visibleColumnDefinitions"
+                        :rows="visibleRows"
+                        :grid="gridState"
+                        :tooltipField="tooltipField"
+                        :isSelectable="isSelectionEnabled"
+                        :itemTerm="gridState.itemTerm"
+                        :markInactiveRows="markInactiveRows"
+                        :rowClass="rowClass"
+                        :emptyDataText="emptyDataText"
+                        @click="onRowClick" />
+            </div>
 
-        <div class="grid-body" v-else-if="!keyField || light">
-            <DataRows
-                      :columns="visibleColumnDefinitions"
-                      :rows="visibleRows"
-                      :grid="gridState"
-                      :tooltipField="tooltipField"
-                      :isSelectable="isSelectionEnabled"
-                      :itemTerm="gridState.itemTerm"
-                      :markInactiveRows="markInactiveRows"
-                      :rowClass="rowClass"
-                      :emptyDataText="emptyDataText"
-                      @click="onRowClick" />
+            <VirtualDataRows v-else
+                            :columns="visibleColumnDefinitions"
+                            :rows="visibleRows"
+                            :grid="gridState"
+                            :tooltipField="tooltipField"
+                            :isSelectable="isSelectionEnabled"
+                            :itemTerm="gridState.itemTerm"
+                            :markInactiveRows="markInactiveRows"
+                            :rowClass="rowClass"
+                            :emptyDataText="emptyDataText"
+                            @click="onRowClick" />
         </div>
-
-        <VirtualDataRows v-else
-                         :columns="visibleColumnDefinitions"
-                         :rows="visibleRows"
-                         :grid="gridState"
-                         :tooltipField="tooltipField"
-                         :isSelectable="isSelectionEnabled"
-                         :itemTerm="gridState.itemTerm"
-                         :markInactiveRows="markInactiveRows"
-                         :rowClass="rowClass"
-                         :emptyDataText="emptyDataText"
-                         @click="onRowClick" />
 
         <div class="grid-footing">
             <slot name="gridFooterPrepend" />
@@ -122,6 +121,12 @@
     top: var(--sticky-element-offset);
     z-index: 10;
 }
+
+/* .grid-obsidian.grid-sticky .sticky-header {
+    position: sticky;
+    top: var(--sticky-element-offset);
+    z-index: 10;
+} */
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
     display: flex;
@@ -225,9 +230,12 @@
 .grid-column-header {
     position: relative;
     display: flex;
+    justify-content: center;
     align-items: center;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+
+    min-width: 120px;
 }
 
 .grid-bordered .grid-column-header {
@@ -244,6 +252,10 @@
 
 .grid-column-title {
     flex: 1 1 auto;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .grid-sort-direction {
@@ -369,12 +381,18 @@
 }
 
 .grid-cell {
-    display: flex;
-    align-items: flex-start;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-    overflow-x: hidden;
-    align-self: center;
     line-height: 1.4;
+    align-self: stretch;
+    background-color: inherit;
+    min-width: 120px;
+    white-space:nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.grid-select-field {
+    min-width: 60px;
 }
 
 .grid-select-field:first-child {
