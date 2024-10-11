@@ -40,8 +40,6 @@
 
     function onBorderTopWidthChanged(value: string): void {
         if (value) {
-            props.element.style.borderTopWidth = `${value}px`;
-
             // Explicitly clear the styles on the other sides
             // so the browser doesn't initialize them.
             props.element.style.borderBottomWidth = "0";
@@ -53,7 +51,6 @@
             props.element.style.height = `${value}px`;
         }
         else {
-            props.element.style.borderTopWidth = "";
             props.element.style.borderBottomWidth = "";
             props.element.style.borderRightStyle = "";
             props.element.style.borderLeftStyle = "";

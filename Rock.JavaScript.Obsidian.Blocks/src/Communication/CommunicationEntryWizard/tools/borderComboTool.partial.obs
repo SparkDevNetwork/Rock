@@ -13,7 +13,7 @@
             <BorderWidthTool ref="borderWidthTool"
                              :element="element"
                              mode="numberUpDown"
-                             @change="onBorderWidthChanged" />
+                             @changeShorthand="onBorderWidthChanged" />
         </div>
     </TransitionVerticalCollapse>
 </template>
@@ -83,7 +83,10 @@
             }
 
             if (borderWidthTool.value) {
-                borderWidthTool.value.borderWidthNumeric = 0;
+                // TODO JMH Figure out if there is a better way to maintain this...
+                // TODO JMH When the mode is set to "textBox", the borderWidth property should be used.
+                // TODO JMH Should we only expose string properties?
+                borderWidthTool.value.borderWidth = "";
             }
         }
 

@@ -125,32 +125,15 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
+    import { standardDirectionalShorthandProps } from "./utils.partial";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
 
-    type ConstituentProperty = "top" | "bottom" | "right" | "left";
-
-    // Utility type to convert a string from camel case to kebab case
-    type ToKebabCase<S extends string> =
-        S extends `${infer T}${infer U}`
-        ? U extends Uncapitalize<U>
-        ? `${Uncapitalize<T>}${ToKebabCase<U>}`
-        : `${Uncapitalize<T>}-${ToKebabCase<Uncapitalize<U>>}`
-        : S;
-
-    // Filter out numeric keys
-    type StringOnlyKeys<T> = T extends string ? T : never;
-
-    // Apply the filtering and conversion to kebab case
-    type CSSStyleDeclarationKebabKey = ToKebabCase<StringOnlyKeys<keyof CSSStyleDeclaration>>;
-
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
-        },
+        ...standardDirectionalShorthandProps,
 
         shorthandProperty: {
             type: String as PropType<CSSStyleDeclarationKebabKey>,
@@ -176,56 +159,6 @@
         leftProperty: {
             type: String as PropType<CSSStyleDeclarationKebabKey>,
             required: true
-        },
-
-        /**
-         * Used as both the shorthand property label and the group label for constituent properties.
-         *
-         * Set to "" to hide this label.
-         */
-        label: {
-            type: String as PropType<string>,
-            required: true
-        },
-
-        labelTop: {
-            type: String as PropType<string>,
-            default: "Top" as const
-        },
-
-        labelBottom: {
-            type: String as PropType<string>,
-            default: "Bottom" as const
-        },
-
-        labelRight: {
-            type: String as PropType<string>,
-            default: "Right" as const
-        },
-
-        labelLeft: {
-            type: String as PropType<string>,
-            default: "Left" as const
-        },
-
-        min: {
-            type: Number as PropType<number>,
-            default: 0 as const
-        },
-
-        max: {
-            type: Number as PropType<number>,
-            default: 99 as const
-        },
-
-        showConstituentProperties: {
-            type: Boolean as PropType<boolean | ConstituentProperty | ConstituentProperty[]>,
-            default: false as const
-        },
-
-        mode: {
-            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
-            default: "numberUpDown" as const
         }
     });
 
@@ -240,7 +173,7 @@
     // #region Computed Props
 
 
-    const constituentProperties = computed<ConstituentProperty[]>(() => {
+    const constituentProperties = computed<DirectionalConstituentProperty[]>(() => {
         if (props.showConstituentProperties === false) {
             return [];
         }

@@ -1,178 +1,55 @@
 <template>
-    <template v-if="mode === 'numberBox' || mode === 'numberUpDown'">
-        <RockLabel v-if="label">{{ label }}</RockLabel>
-
-        <div class="row">
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="paddingTop"
-                              label="Top"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-if="mode === 'numberBox'"
-                           v-model="paddingTop"
-                           label="Top"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="paddingBottom"
-                              label="Bottom"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-if="mode === 'numberBox'"
-                           v-model="paddingBottom"
-                           label="Bottom"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="paddingRight"
-                              label="Right"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-if="mode === 'numberBox'"
-                           v-model="paddingRight"
-                           label="Right"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="paddingLeft"
-                              label="Left"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-else-if="mode === 'numberBox'"
-                           v-model="paddingLeft"
-                           label="Left"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-        </div>
-    </template>
-
-    <template v-else-if="mode === 'textBox'">
-        <TextBox v-model="padding" :label="label" :disableLabel="!label" />
-    </template>
+    <DirectionalShorthandToolBase v-bind="baseProps"
+                                  ref="baseTool"
+                                  shorthandProperty="padding"
+                                  topProperty="padding-top"
+                                  bottomProperty="padding-bottom"
+                                  rightProperty="padding-right"
+                                  leftProperty="padding-left"
+                                  @changeShorthand="$emit('changeShorthand', $event)"
+                                  @changeTop="$emit('changeTop', $event)"
+                                  @changeBottom="$emit('changeBottom', $event)"
+                                  @changeRight="$emit('changeRight', $event)"
+                                  @changeLeft="$emit('changeLeft', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, ref } from "vue";
+    import DirectionalShorthandToolBase from "./directionalShorthandToolBase.partial.obs";
+    import { standardDirectionalShorthandProps, useStandardDirectionalShorthandProps } from "./utils.partial";
 
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
-        },
+        ...standardDirectionalShorthandProps,
 
         label: {
             type: String as PropType<string>,
             default: "Padding" as const
         },
 
-        mode: {
-            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
-            default: "numberUpDown" as const
+        min: {
+            type: Number as PropType<number>,
+            default: 0 as const
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 99 as const
         }
     });
 
-    const emit = defineEmits<{
-        (e: "changePadding", value: string): void;
-        (e: "changePaddingTop", value: string): void;
-        (e: "changePaddingBottom", value: string): void;
-        (e: "changePaddingRight", value: string): void;
-        (e: "changePaddingLeft", value: string): void;
+    const baseProps = useStandardDirectionalShorthandProps(props);
+
+    defineEmits<{
+        (e: "changeShorthand", value: string): void;
+        (e: "changeTop", value: string): void;
+        (e: "changeBottom", value: string): void;
+        (e: "changeRight", value: string): void;
+        (e: "changeLeft", value: string): void;
     }>();
 
     // #region Values
 
-    const padding = ref<string>(props.element.style.padding);
-    const paddingTop = ref<number>(parseInt(props.element.style.paddingTop || "0"));
-    const paddingBottom = ref<number>(parseInt(props.element.style.paddingBottom || "0"));
-    const paddingRight = ref<number>(parseInt(props.element.style.paddingRight || "0"));
-    const paddingLeft = ref<number>(parseInt(props.element.style.paddingLeft || "0"));
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(padding, (value: string) => {
-        props.element.style.padding = value;
-
-        emit("changePadding", value);
-    });
-
-    watch(paddingTop, (value: number) => {
-        const paddingTopValue = value ? `${value}px` : "";
-        props.element.style.paddingTop = paddingTopValue;
-
-        emit("changePaddingTop", paddingTopValue);
-    });
-
-    watch(paddingBottom, (value: number) => {
-        const paddingBottomValue = value ? `${value}px` : "";
-        props.element.style.paddingBottom = paddingBottomValue;
-
-        emit("changePaddingBottom", paddingBottomValue);
-    });
-
-    watch(paddingRight, (value: number) => {
-        const paddingRightValue = value ? `${value}px` : "";
-        props.element.style.paddingRight = paddingRightValue;
-
-        emit("changePaddingRight", paddingRightValue);
-    });
-
-    watch(paddingLeft, (value: number) => {
-        const paddingLeftValue = value ? `${value}px` : "";
-        props.element.style.paddingLeft = paddingLeftValue;
-
-        emit("changePaddingLeft", paddingLeftValue);
-    });
-
-    watch([() => props.element, () => props.mode], () => {
-        if (props.mode === "numberBox" || props.mode === "numberUpDown") {
-            paddingTop.value = parseInt(props.element.style.paddingTop || "0");
-            paddingBottom.value = parseInt(props.element.style.paddingBottom || "0");
-            paddingRight.value = parseInt(props.element.style.paddingRight || "0");
-            paddingLeft.value = parseInt(props.element.style.paddingLeft || "0");
-        }
-        else if (props.mode === "textBox") {
-            padding.value = props.element.style.padding;
-        }
-    });
+    const baseTool = ref<InstanceType<typeof DirectionalShorthandToolBase> | undefined>();
 
     // #endregion
 </script>

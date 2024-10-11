@@ -1,21 +1,12 @@
 <template>
-    <DirectionalShorthandToolBase ref="baseTool"
-                                  :element="element"
+    <DirectionalShorthandToolBase v-bind="baseProps"
+                                  ref="baseTool"
                                   shorthandProperty="border-width"
                                   topProperty="border-top-width"
                                   bottomProperty="border-bottom-width"
                                   rightProperty="border-right-width"
                                   leftProperty="border-left-width"
-                                  :label="label"
-                                  :labelTop="labelTop"
-                                  :labelBottom="labelBottom"
-                                  :labelRight="labelRight"
-                                  :labelLeft="labelLeft"
-                                  :min="min"
-                                  :max="max"
-                                  :mode="mode"
-                                  :showConstituentProperties="showConstituentProperties"
-                                  @changeShorthand="$emit('change', $event)"
+                                  @changeShorthand="$emit('changeShorthand', $event)"
                                   @changeTop="$emit('changeTop', $event)"
                                   @changeBottom="$emit('changeBottom', $event)"
                                   @changeRight="$emit('changeRight', $event)"
@@ -23,39 +14,16 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { PropType, ref } from "vue";
     import DirectionalShorthandToolBase from "./directionalShorthandToolBase.partial.obs";
-    import { DirectionalConstituentProperty } from "./types.partial";
+    import { standardDirectionalShorthandProps, useReactiveDirectionalShorthandProperties, useStandardDirectionalShorthandProps } from "./utils.partial";
 
-    defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
-        },
+    const props = defineProps({
+        ...standardDirectionalShorthandProps,
 
         label: {
             type: String as PropType<string>,
             default: "Border Width" as const
-        },
-
-        labelTop: {
-            type: String as PropType<string>,
-            default: "Top" as const
-        },
-
-        labelBottom: {
-            type: String as PropType<string>,
-            default: "Bottom" as const
-        },
-
-        labelRight: {
-            type: String as PropType<string>,
-            default: "Right" as const
-        },
-
-        labelLeft: {
-            type: String as PropType<string>,
-            default: "Left" as const
         },
 
         min: {
@@ -66,21 +34,13 @@
         max: {
             type: Number as PropType<number>,
             default: 99 as const
-        },
-
-        showConstituentProperties: {
-            type: Boolean as PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>,
-            default: false as const
-        },
-
-        mode: {
-            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
-            default: "numberUpDown" as const
         }
     });
 
+    const baseProps = useStandardDirectionalShorthandProps(props);
+
     defineEmits<{
-        (e: "change", value: string): void;
+        (e: "changeShorthand", value: string): void;
         (e: "changeTop", value: string): void;
         (e: "changeBottom", value: string): void;
         (e: "changeRight", value: string): void;
@@ -93,126 +53,15 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    const borderWidthNumeric = computed<number>({
-        get(): number {
-            return baseTool.value?.numericShorthand ?? 0;
-        },
-        set(value: number): void {
-            if (baseTool.value) {
-                baseTool.value.numericShorthand = value;
-            }
-        }
-    });
-
-    const borderTopWidthNumeric = computed<number>({
-        get(): number {
-            return baseTool.value?.numericTop ?? 0;
-        },
-        set(value: number): void {
-            if (baseTool.value) {
-                baseTool.value.numericTop = value;
-            }
-        }
-    });
-
-    const borderBottomWidthNumeric = computed<number>({
-        get(): number {
-            return baseTool.value?.numericBottom ?? 0;
-        },
-        set(value: number): void {
-            if (baseTool.value) {
-                baseTool.value.numericBottom = value;
-            }
-        }
-    });
-
-    const borderRightWidthNumeric = computed<number>({
-        get(): number {
-            return baseTool.value?.numericRight ?? 0;
-        },
-        set(value: number): void {
-            if (baseTool.value) {
-                baseTool.value.numericRight = value;
-            }
-        }
-    });
-
-    const borderLeftWidthNumeric = computed<number>({
-        get(): number {
-            return baseTool.value?.numericLeft ?? 0;
-        },
-        set(value: number): void {
-            if (baseTool.value) {
-                baseTool.value.numericLeft = value;
-            }
-        }
-    });
-
-    const borderWidth = computed<string>({
-        get(): string {
-            return baseTool.value?.shorthand ?? "";
-        },
-        set(value: string): void {
-            if (baseTool.value) {
-                baseTool.value.shorthand = value;
-            }
-        }
-    });
-
-    const borderTopWidth = computed<string>({
-        get(): string {
-            return baseTool.value?.top ?? "";
-        },
-        set(value: string): void {
-            if (baseTool.value) {
-                baseTool.value.top = value;
-            }
-        }
-    });
-
-    const borderBottomWidth = computed<string>({
-        get(): string {
-            return baseTool.value?.bottom ?? "";
-        },
-        set(value: string): void {
-            if (baseTool.value) {
-                baseTool.value.bottom = value;
-            }
-        }
-    });
-
-    const borderRightWidth = computed<string>({
-        get(): string {
-            return baseTool.value?.right ?? "";
-        },
-        set(value: string): void {
-            if (baseTool.value) {
-                baseTool.value.right = value;
-            }
-        }
-    });
-
-    const borderLeftWidth = computed<string>({
-        get(): string {
-            return baseTool.value?.left ?? "";
-        },
-        set(value: string): void {
-            if (baseTool.value) {
-                baseTool.value.left = value;
-            }
-        }
-    });
-
-    // #endregion
+    const {
+        shorthand: borderWidth,
+        top: borderTopWidth,
+        bottom: borderBottomWidth,
+        right: borderRightWidth,
+        left: borderLeftWidth
+    } = useReactiveDirectionalShorthandProperties(baseTool);
 
     defineExpose({
-        borderWidthNumeric,
-        borderTopWidthNumeric,
-        borderBottomWidthNumeric,
-        borderRightWidthNumeric,
-        borderLeftWidthNumeric,
         borderWidth,
         borderTopWidth,
         borderBottomWidth,

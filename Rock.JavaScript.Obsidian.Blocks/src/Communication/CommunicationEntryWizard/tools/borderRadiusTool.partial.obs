@@ -1,19 +1,25 @@
 <template>
-    <NumberUpDown v-model="borderRadius"
-                  :label="label"
-                  :min="min"
-                  :max="max" />
+    <DirectionalShorthandToolBase v-bind="baseProps"
+                                  ref="baseTool"
+                                  shorthandProperty="border-radius"
+                                  topProperty="border-top-left-radius"
+                                  bottomProperty="border-bottom-right-radius"
+                                  rightProperty="border-top-right-radius"
+                                  leftProperty="border-bottom-left-radius"
+                                  @changeShorthand="$emit('changeShorthand', $event)"
+                                  @changeTop="$emit('changeTop', $event)"
+                                  @changeBottom="$emit('changeBottom', $event)"
+                                  @changeRight="$emit('changeRight', $event)"
+                                  @changeLeft="$emit('changeLeft', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { PropType, ref } from "vue";
+    import DirectionalShorthandToolBase from "./directionalShorthandToolBase.partial.obs";
+    import { standardDirectionalShorthandProps, useStandardDirectionalShorthandProps } from "./utils.partial";
 
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
-        },
+        ...standardDirectionalShorthandProps,
 
         label: {
             type: String as PropType<string>,
@@ -22,37 +28,28 @@
 
         min: {
             type: Number as PropType<number>,
-            default: 0
+            default: 0 as const
         },
 
         max: {
             type: Number as PropType<number>,
-            default: 700
+            default: 99 as const
         }
     });
 
-    const emit = defineEmits<{
+    const baseProps = useStandardDirectionalShorthandProps(props);
+
+    defineEmits<{
         (e: "changeShorthand", value: string): void;
+        (e: "changeTop", value: string): void;
+        (e: "changeBottom", value: string): void;
+        (e: "changeRight", value: string): void;
+        (e: "changeLeft", value: string): void;
     }>();
 
     // #region Values
 
-    const borderRadius = ref<number>(parseInt(props.element.style.borderRadius || "0"));
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(borderRadius, (value: number) => {
-        const borderRadiusValue = value ? `${value}px` : "";
-        props.element.style.borderRadius = borderRadiusValue;
-
-        emit("changeShorthand", borderRadiusValue);
-    });
-
-    watch(() => props.element, () => {
-        borderRadius.value = parseInt(props.element.style.borderRadius || "0");
-    });
+    const baseTool = ref<InstanceType<typeof DirectionalShorthandToolBase> | undefined>();
 
     // #endregion
 </script>

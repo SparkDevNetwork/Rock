@@ -1,178 +1,55 @@
 <template>
-    <template v-if="mode === 'numberBox' || mode === 'numberUpDown'">
-        <RockLabel v-if="label">{{ label }}</RockLabel>
-
-        <div class="row">
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="marginTop"
-                              label="Top"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-if="mode === 'numberBox'"
-                           v-model="marginTop"
-                           label="Top"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="marginBottom"
-                              label="Bottom"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-if="mode === 'numberBox'"
-                           v-model="marginBottom"
-                           label="Bottom"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="marginRight"
-                              label="Right"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-if="mode === 'numberBox'"
-                           v-model="marginRight"
-                           label="Right"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-
-            <div class="col-sm-6">
-                <NumberUpDown v-if="mode === 'numberUpDown'"
-                              v-model="marginLeft"
-                              label="Left"
-                              :min="0"
-                              :max="99" />
-
-                <NumberBox v-else-if="mode === 'numberBox'"
-                           v-model="marginLeft"
-                           label="Left"
-                           :min="0"
-                           :max="99">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">px</span>
-                    </template>
-                </NumberBox>
-            </div>
-        </div>
-    </template>
-
-    <template v-else-if="mode === 'textBox'">
-        <TextBox v-model="margin" :label="label" :disableLabel="!label" />
-    </template>
+    <DirectionalShorthandToolBase v-bind="baseProps"
+                                  ref="baseTool"
+                                  shorthandProperty="margin"
+                                  topProperty="margin-top"
+                                  bottomProperty="margin-bottom"
+                                  rightProperty="margin-right"
+                                  leftProperty="margin-left"
+                                  @changeShorthand="$emit('changeShorthand', $event)"
+                                  @changeTop="$emit('changeTop', $event)"
+                                  @changeBottom="$emit('changeBottom', $event)"
+                                  @changeRight="$emit('changeRight', $event)"
+                                  @changeLeft="$emit('changeLeft', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, ref } from "vue";
+    import DirectionalShorthandToolBase from "./directionalShorthandToolBase.partial.obs";
+    import { standardDirectionalShorthandProps, useStandardDirectionalShorthandProps } from "./utils.partial";
 
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
-        },
+        ...standardDirectionalShorthandProps,
 
         label: {
             type: String as PropType<string>,
             default: "Margin" as const
         },
 
-        mode: {
-            type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
-            default: "numberUpDown" as const
+        min: {
+            type: Number as PropType<number>,
+            default: 0 as const
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 99 as const
         }
     });
+    
+    const baseProps = useStandardDirectionalShorthandProps(props);
 
-    const emit = defineEmits<{
+    defineEmits<{
         (e: "changeShorthand", value: string): void;
-        (e: "changeMarginTop", value: string): void;
-        (e: "changeMarginBottom", value: string): void;
-        (e: "changeMarginRight", value: string): void;
-        (e: "changeMarginLeft", value: string): void;
+        (e: "changeTop", value: string): void;
+        (e: "changeBottom", value: string): void;
+        (e: "changeRight", value: string): void;
+        (e: "changeLeft", value: string): void;
     }>();
 
     // #region Values
 
-    const margin = ref<string>(props.element.style.margin);
-    const marginTop = ref<number>(parseInt(props.element.style.marginTop || "0"));
-    const marginBottom = ref<number>(parseInt(props.element.style.marginBottom || "0"));
-    const marginRight = ref<number>(parseInt(props.element.style.marginRight || "0"));
-    const marginLeft = ref<number>(parseInt(props.element.style.marginLeft || "0"));
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(margin, (value: string) => {
-        props.element.style.margin = value;
-
-        emit("changeShorthand", value);
-    });
-
-    watch(marginTop, (value: number) => {
-        const marginTopValue = value ? `${value}px` : "";
-        props.element.style.marginTop = marginTopValue;
-
-        emit("changeMarginTop", marginTopValue);
-    });
-
-    watch(marginBottom, (value: number) => {
-        const marginBottomValue = value ? `${value}px` : "";
-        props.element.style.marginBottom = marginBottomValue;
-
-        emit("changeMarginBottom", marginBottomValue);
-    });
-
-    watch(marginRight, (value: number) => {
-        const marginRightValue = value ? `${value}px` : "";
-        props.element.style.marginRight = marginRightValue;
-
-        emit("changeMarginRight", marginRightValue);
-    });
-
-    watch(marginLeft, (value: number) => {
-        const marginLeftValue = value ? `${value}px` : "";
-        props.element.style.marginLeft = marginLeftValue;
-
-        emit("changeMarginLeft", marginLeftValue);
-    });
-
-    watch([() => props.element, () => props.mode], () => {
-        if (props.mode === "numberBox" || props.mode === "numberUpDown") {
-            marginTop.value = parseInt(props.element.style.marginTop || "0");
-            marginBottom.value = parseInt(props.element.style.marginBottom || "0");
-            marginRight.value = parseInt(props.element.style.marginRight || "0");
-            marginLeft.value = parseInt(props.element.style.marginLeft || "0");
-        }
-        else if (props.mode === "textBox") {
-            margin.value = props.element.style.margin;
-        }
-    });
+    const baseTool = ref<InstanceType<typeof DirectionalShorthandToolBase> | undefined>();
 
     // #endregion
 </script>
