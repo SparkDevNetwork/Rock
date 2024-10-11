@@ -255,5 +255,10 @@ namespace Rock.SystemGuid
         public const string SIGNUP_GROUP_REGISTRATION_CONFIRMATION = "B546C11D-6C92-400F-BA56-AAA22D7BAC01";
 
         #endregion
+
+        /// <summary>
+        /// Gets the template guid for a Login Confirmation Alert.
+        /// </summary>
+        public const string LOGIN_CONFIRMATION_ALERT = "90D986D4-F3B5-4B28-B731-5A3F35172BA9";
     }
 }
