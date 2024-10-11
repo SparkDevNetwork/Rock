@@ -88,6 +88,7 @@
     <Modal v-model="isSendTestModalVisible"
            title="Send Test Email"
            @save="sendTest"
+           @closeModal="onCloseModal"
            saveText="Send"
            :isSaveButtonDisabled="isDisabled">
         <div v-if="emailError">
@@ -275,6 +276,11 @@
     function updateEmailFrom(newFromName: string, newFromEmail: string): void {
         fromName.value = newFromName;
         fromEmail.value = newFromEmail;
+    }
+
+    function onCloseModal(): void {
+        emailSuccess.value = false;
+        emailError.value = false;
     }
 
     /**
