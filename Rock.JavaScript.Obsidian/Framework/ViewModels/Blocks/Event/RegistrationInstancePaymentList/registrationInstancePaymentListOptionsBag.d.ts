@@ -21,8 +21,13 @@
 // </copyright>
 //
 
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+
 /** The additional configuration options for the Registration Instance Payment List block. */
 export type RegistrationInstancePaymentListOptionsBag = {
+    /** Gets or sets the currency information. */
+    currencyInfo?: CurrencyInfoBag | null;
+
     /** Gets or sets the name for the exported excel or csv file. */
     exportFileName?: string | null;
 
