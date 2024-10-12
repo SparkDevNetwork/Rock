@@ -852,6 +852,10 @@ namespace Rock.Web.Cache
         /// </value>
         public DefinedTypeCache GroupStatusDefinedType => GroupStatusDefinedTypeId.HasValue ? DefinedTypeCache.Get( this.GroupStatusDefinedTypeId.Value ) : null;
 
+        /// <inheritdoc cref="Rock.Model.Group.ScheduleCoordinatorNotificationTypes" />
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -1045,6 +1049,7 @@ namespace Rock.Web.Cache
             ScheduleConfirmationLogic = groupType.ScheduleConfirmationLogic;
             IsCapacityRequired = groupType.IsCapacityRequired;
             GroupsRequireCampus = groupType.GroupsRequireCampus;
+            ScheduleCoordinatorNotificationTypes = groupType.ScheduleCoordinatorNotificationTypes;
         }
 
         /// <summary>

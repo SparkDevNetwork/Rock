@@ -15,37 +15,37 @@
 // </copyright>
 //
 
+using System;
 using System.ComponentModel;
 
-namespace Rock.Enums.Blocks.Group.Scheduling
+using Rock.Enums;
+
+namespace Rock.Model
 {
     /// <summary>
-    /// The action types that can be performed for a schedule row within the group schedule toolbox.
+    /// The types of notifications a group schedule coordinator can receive about changes to scheduled individuals.
     /// </summary>
-    public enum ToolboxScheduleRowActionType
+    [Flags]
+    [EnumDomain( "Group" )]
+    public enum ScheduleCoordinatorNotificationType
     {
         /// <summary>
-        /// Accept a pending, scheduled attendance.
+        /// Don't sent any notifications.
         /// </summary>
-        Accept = 0,
+        None = 0,
 
         /// <summary>
-        /// Decline a pending, scheduled attendance.
+        /// Send a notification when a person accepts a schedule.
         /// </summary>
-        Decline = 1,
+        Accept = 1,
 
         /// <summary>
-        /// Cancel a confirmed, scheduled attendance.
+        /// Send a notification when a person declines a schedule.
         /// </summary>
-        Cancel = 2,
+        Decline = 2,
 
         /// <summary>
-        /// Delete a person schedule exclusion.
-        /// </summary>
-        Delete = 3,
-
-        /// <summary>
-        /// Schedule oneself (or one's family member).
+        /// Send a notification when a person self-schedules (e.g. using the Group Schedule Toolbox to sign up for additional times).
         /// </summary>
         [Description( "Self-Schedule" )]
         SelfSchedule = 4

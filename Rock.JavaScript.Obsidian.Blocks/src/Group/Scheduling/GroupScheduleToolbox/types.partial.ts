@@ -37,6 +37,16 @@ export const SelectedPersonGuid: InjectionKey<Ref<string>> = Symbol("selected-pe
 export const SelectedGroup: InjectionKey<Ref<GroupBag | null | undefined>> = Symbol("selected-group");
 
 /**
+ * An injection key to provide the selected sign-up key.
+ */
+export const SelectedSignUpKey: InjectionKey<Ref<string>> = Symbol("selected-sign-up-key");
+
+/**
+ * An injection key to provide whether a sign-up is currently being saved.
+ */
+export const IsSavingSignUp: InjectionKey<Ref<boolean>> = Symbol("is-saving-sign-up");
+
+/**
  * An injection key to provide the save sign-up error message.
  */
 export const SaveSignUpErrorMessage: InjectionKey<Ref<string>> = Symbol("save-sign-up-error-message");

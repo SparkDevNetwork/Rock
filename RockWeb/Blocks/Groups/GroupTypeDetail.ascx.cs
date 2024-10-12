@@ -567,6 +567,20 @@ namespace RockWeb.Blocks.Groups
             groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderOffsetDays.Text.AsIntegerOrNull();
             groupType.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnum<ScheduleConfirmationLogic>();
 
+            ScheduleCoordinatorNotificationType? notificationTypes = null;
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                if ( li.Selected )
+                {
+                    var selectedType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                    notificationTypes = notificationTypes.HasValue
+                        ? notificationTypes | selectedType
+                        : selectedType;
+                }
+            }
+
+            groupType.ScheduleCoordinatorNotificationTypes = notificationTypes;
+
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
             if ( groupType.EnableGroupHistory && cbEnableGroupHistory.Checked == false )
@@ -997,6 +1011,12 @@ namespace RockWeb.Blocks.Groups
             wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
             ddlScheduleReminderSystemCommunication.SetValue( groupType.ScheduleReminderSystemCommunicationId );
             nbScheduleReminderOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
+
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                li.Selected = ( groupType.ScheduleCoordinatorNotificationTypes & notificationType ) == notificationType;
+            }
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
