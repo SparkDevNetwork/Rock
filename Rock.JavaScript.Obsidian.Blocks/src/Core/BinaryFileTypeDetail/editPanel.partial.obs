@@ -249,6 +249,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
         binaryFileTypeAttributes.value = binaryFileTypeAttributes.value.filter(s => s.guid !== key);
+        reservedKeyNames.value = binaryFileTypeAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (attributesGridData.rows) {

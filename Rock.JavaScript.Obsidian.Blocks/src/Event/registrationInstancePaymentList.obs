@@ -107,7 +107,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./RegistrationInstancePaymentList/types.partial";
     import { reactive, ref } from "vue";
-    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstancePaymentListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -177,22 +177,9 @@
      * @param row the targeted row.
      */
     function getTotalAmountQuickFilterValue(row: Record<string, unknown>): string {
-        return getCurrencyAsDecimal(row.feeTotal as string);
-    }
-
-    /**
-     * Formats the amount as a decimal value for the grid's quick search since raw value might
-     * not include decimal places with will be added by the Currency Column when formatting as currency.
-     * @param value the amount as string
-     */
-    function getCurrencyAsDecimal(value: string | null): string {
-        let numberValue = toNumberOrNull(value);
-
-        if (numberValue) {
-            return asFormattedString(numberValue, 2);
-        }
-
-        return "";
+        const value = row.totalAmount as number;
+        const currencyDecimalPlaces = config.options?.currencyInfo?.decimalPlaces ?? 2;
+        return value ? asFormattedString(value, currencyDecimalPlaces) : "";
     }
 
     // #endregion

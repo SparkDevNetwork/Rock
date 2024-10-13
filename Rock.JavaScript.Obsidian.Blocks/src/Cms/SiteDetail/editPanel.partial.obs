@@ -382,7 +382,6 @@
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
             siteAttribute.value = selectedSiteAttribute;
-            reservedKeyNames.value = reservedKeyNames.value.filter(x => x !== selectedSiteAttribute.key);
             isModalOpen.value = true;
         }
         else {
@@ -394,6 +393,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isModalOpen.value = false;
         siteAttributes.value = siteAttributes.value.filter(s => s.guid !== key);
+        reservedKeyNames.value = siteAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (gridData.rows) {
@@ -443,7 +443,7 @@
 
     const onStartSaveAttribute = (): void => {
         attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(siteAttribute.value?.key ?? "");
+        const isExistingKey = reservedKeyNames.value.includes(siteAttribute.value?.key ?? "") && !siteAttribute.value?.guid;
         submitEditAttribute.value = !isExistingKey;
         if (isExistingKey) {
             attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");

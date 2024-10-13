@@ -67,7 +67,8 @@
         <DateTimeColumn name="sendDateTime"
                         title="Sent"
                         field="sendDateTime"
-                        itemClass="grid-item-pull-left"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
 
@@ -111,13 +112,6 @@
                        :communcationTypeItems="config.options?.communicationTypeItems ?? []"
                        :statusItems="config.options?.statusItems ?? []" />
 </template>
-
-<style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
