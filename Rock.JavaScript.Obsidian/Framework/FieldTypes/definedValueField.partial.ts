@@ -174,7 +174,6 @@ export class DefinedValueFieldType extends FieldTypeBase {
 
     public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {
         const clientValue = JSON.parse(value || "{}") as ClientValue;
-        const selectedValues = (filterValue.value ?? "").split(",").filter(v => v !== "").map(v => v.toLowerCase());
         let comparisonType = filterValue.comparisonType;
 
         if (comparisonType === ComparisonType.EqualTo) {
@@ -192,6 +191,9 @@ export class DefinedValueFieldType extends FieldTypeBase {
         else if (comparisonType === ComparisonType.IsNotBlank) {
             return (clientValue.value ?? "") !== "";
         }
+
+        const filterValueGuids = (JSON.parse(filterValue?.value || "{}") as ClientValue).value;
+        const selectedValues = (filterValueGuids ?? "").split(",").filter(v => v !== "").map(v => v.toLowerCase());
 
         if (selectedValues.length > 0) {
             const userValues = (clientValue.value ?? "").toLowerCase().split(",").filter(v => v !== "");
