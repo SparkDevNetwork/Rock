@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Hosting;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.Data;
 using Rock.Model;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
@@ -130,7 +131,7 @@ namespace Rock.Blocks.CheckIn
                 IsManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean(),
                 IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
                 GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
-                Campuses = GetCampusesAndKiosks(),
+                Campuses = GetCampusesAndKiosks( RockContext ),
                 CurrentTheme = PageParameter( PageParameterKey.Theme )?.ToLower()
                     .IfEmpty( PageCache.Layout?.Site?.Theme?.ToLower() ),
                 Templates = director.GetConfigurationTemplateBags(),
@@ -165,21 +166,21 @@ namespace Rock.Blocks.CheckIn
         /// manual configuration.
         /// </summary>
         /// <returns>A collection of <see cref="CampusBag"/> objects.</returns>
-        private List<CampusBag> GetCampusesAndKiosks()
+        internal static List<CampusBag> GetCampusesAndKiosks( RockContext rockContext )
         {
-            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), RockContext )?.Id;
+            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), rockContext )?.Id;
 
             if ( !kioskDeviceTypeValueId.HasValue )
             {
                 throw new Exception( "Device type Check-in Kiosk defined value not found." );
             }
 
-            var campuses = CampusCache.All( RockContext )
+            var campuses = CampusCache.All( rockContext )
                 .Where( c => c.IsActive == true )
                 .OrderBy( c => c.Order )
                 .ToList();
 
-            var kiosks = DeviceCache.All( RockContext )
+            var kiosks = DeviceCache.All( rockContext )
                 .Where( k => k.IsActive && k.DeviceTypeValueId == kioskDeviceTypeValueId.Value )
                 .OrderBy( k => k.Name )
                 .Select( k => new
@@ -651,10 +652,5 @@ namespace Rock.Blocks.CheckIn
         }
 
         #endregion
-
-        private class CampusBag : CheckInItemBag
-        {
-            public List<WebKioskBag> Kiosks { get; set; }
-        }
     }
 }
