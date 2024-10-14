@@ -33,13 +33,15 @@ using Rock.ViewModels.Blocks.Tv.RokuPageDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using static System.Net.Mime.MediaTypeNames;
+
 namespace Rock.Blocks.Tv
 {
     /// <summary>
     /// Displays the details of a particular page.
     /// </summary>
 
-    [DisplayName( "Roku TV Page Detail" )]
+    [DisplayName( "Roku Page Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Displays the details of a particular page." )]
     [IconCssClass( "fa fa-question" )]
@@ -371,7 +373,14 @@ namespace Rock.Blocks.Tv
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<RokuPageBag> box )
         {
+            var applicationId = PageParameter( PageParameterKey.SiteId );
             var entityService = new PageService( RockContext );
+            var site = SiteCache.Get( applicationId, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( site == null )
+            {
+                return ActionBadRequest( "Please provide the Roku Application this page belongs to." );
+            }
 
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
@@ -392,19 +401,27 @@ namespace Rock.Blocks.Tv
 
             var isNew = entity.Id == 0;
 
+            if ( isNew )
+            {
+                entity.ParentPageId = site.DefaultPageId;
+                entity.LayoutId = site.DefaultPage.LayoutId;
+
+                // Set the order of the new page to be the last one
+                var currentMaxOrder = entityService.GetByParentPageId( site.DefaultPageId )
+                    .OrderByDescending( p => p.Order )
+                    .Select( p => p.Order )
+                    .FirstOrDefault();
+                entity.Order = currentMaxOrder + 1;
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
+                RockContext.SaveChanges();
             } );
 
-            if ( isNew )
-            {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.SitePageId] = entity.IdKey
-                } ) );
-            }
+            RockContext.SaveChanges();
 
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
