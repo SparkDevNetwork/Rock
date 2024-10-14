@@ -35,7 +35,7 @@
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";;
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
 
     const props = defineProps({

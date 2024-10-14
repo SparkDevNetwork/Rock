@@ -14,8 +14,8 @@
             </div>
         </div>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
-    
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" :showCategoryLabel="false" />
+
 </fieldset>
 </template>
 
@@ -57,8 +57,20 @@
             return valueBuilder.build();
         }
 
+        if (props.modelValue.name) {
+            valueBuilder.addTextValue("Name", props.modelValue.name);
+        }
+
         if (props.modelValue.description) {
             valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        if (props.modelValue.deviceType?.text) {
+            valueBuilder.addTextValue("Device Type", props.modelValue.deviceType?.text);
+        }
+
+        if (props.modelValue.ipAddress) {
+            valueBuilder.addTextValue("IP Address / Hostname", props.modelValue.ipAddress);
         }
 
         return valueBuilder.build();
