@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class LoginConfirmationAlert : Rock.Migrations.RockMigration
+    public partial class FixLoginConfirmationAlert : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
