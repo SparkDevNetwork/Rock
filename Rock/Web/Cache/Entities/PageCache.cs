@@ -436,6 +436,30 @@ namespace Rock.Web.Cache
         /// </value>
         public virtual int SiteId => Layout?.SiteId ?? 0;
 
+        
+        /// <summary>
+        /// Gets the child pages.
+        /// </summary>
+        /// <value>
+        /// The child pages.
+        /// </value>
+        public List<PageCache> ChildPages
+        {
+            get
+            {
+                if ( _childPagesCache == null )
+                {
+                    if ( _childPagesCache == null )
+                    {
+                        _childPagesCache = GetPages( new RockContext() );
+                    }
+                }
+                return _childPagesCache;
+            }
+        }
+
+        private List<PageCache> _childPagesCache;
+
         /// <summary>
         /// Gets a List of child <see cref="PageCache" /> objects.
         /// </summary>
