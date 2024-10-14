@@ -126,6 +126,7 @@
                         , center: centerLatLng
                         , zoom: zoom
                         , streetViewControl: false
+                        , mapId: 'dynamic_heat_map'
                     }
 
                     // Display a map on the page
@@ -171,24 +172,16 @@
                     var campusMarkersData = [
 <%=this.CampusMarkersData%>]
 
-                    var pinImage = {
-                        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-                        fillColor: '#FE7569',
-                        fillOpacity: 1,
-                        strokeColor: '#000',
-                        strokeWeight: 1,
-                        scale: 1,
-                        labelOrigin: new google.maps.Point(0,-28)
-
-                    };
+                    const pinGlyph = new google.maps.marker.PinElement({
+                        glyphColor: 'black',
+                    });
 
                     campusMarkersData.forEach( function (c) {
-                        marker = new google.maps.Marker({
+                        marker = new google.maps.marker.AdvancedMarkerElement({
                             position: c.location,
                             map: map,
                             title: c.campusName,
-                            icon: pinImage,
-                            label: String.fromCharCode(9679)
+                            content: pinGlyph.element
                         });
                     });
 

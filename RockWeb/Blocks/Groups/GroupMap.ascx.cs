@@ -239,6 +239,7 @@ namespace RockWeb.Blocks.Groups
         var map;
         var bounds = new google.maps.LatLngBounds();
         var infoWindow = new google.maps.InfoWindow();
+        var parser = new DOMParser();
 
         var mapStyle = {1};
 
@@ -263,6 +264,7 @@ namespace RockWeb.Blocks.Groups
                 ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,zoom: {9}
+                ,mapId: '{13}'
             }};
 
             // Display a map on the page
@@ -369,32 +371,45 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                var pinImage = {{
-                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-                    fillColor: '#' + color,
-                    fillOpacity: 1,
-                    strokeColor: '#000',
-                    strokeWeight: 1,
-                    scale: 1,
-                    labelOrigin: new google.maps.Point(0,-28)
-                }};
+                const pinGlyph = new google.maps.marker.PinElement({{
+                  glyphColor: 'black',
+                }});
 
-                marker = new google.maps.Marker({{
+                marker = {{
                     position: position,
                     map: map,
                     title: htmlDecode(mapItem.Name),
-                    icon: pinImage,
-                    label: String.fromCharCode(9679)
-                }});
+                    marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                        id: mapItem.EntityId,
+                        position: position,
+                        map: map,
+                        title: htmlDecode(mapItem.Name),
+                        content: pinGlyph.element
+                    }}),
+                    setMap: function(map) {{
+                        this.map = map;
+                        this.marker_element.map = map;
+                    }},
+                    getPosition: function() {{
+                        return this.position;
+                    }},
+                    setPosition: function(position) {{
+                        this.position = position;
+                        this.marker_element.position = position;
+                    }}
+                }}
 
                 items.push(marker);
                 allMarkers.push(marker);
 
-                google.maps.event.addListener(marker, 'click', (function (marker, i) {{
+                google.maps.event.addListener(marker.marker_element, 'click', (function (marker, i) {{
                     return function () {{
                         $.post( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfoWindow/' + mapItem.EntityId + '/' + mapItem.LocationId, infoWindowRequest, function( data ) {{
                             infoWindow.setContent( data.Result );
-                            infoWindow.open(map, marker);
+                            infoWindow.open({{
+                                anchor: marker.marker_element,
+                                map
+                            }});
                         }});
                     }}
                 }})(marker, i));
@@ -747,6 +762,7 @@ namespace RockWeb.Blocks.Groups
 
             // write script to page
             string mapScriptFormat = MAP_SCRIPT_FORMAT_NAME;
+            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
 
             string mapScript = string.Format( mapScriptFormat,
                     groupId.Value, // {0}
@@ -761,7 +777,8 @@ namespace RockWeb.Blocks.Groups
                     zoom, // {9}
                     cbShowAllGroups.Checked.ToTrueFalse(), // {10}
                     gtpGroupType.SelectedGroupTypeIds.AsDelimited(","), // {11}
-                    GroupMemberStatus.Active // {12}
+                    GroupMemberStatus.Active, // {12}
+                    mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId // {13}
                 );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );

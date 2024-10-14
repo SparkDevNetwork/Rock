@@ -817,7 +817,8 @@ namespace Rock.Web.UI.Controls
             }
             catch { } // oh well...
 
-            string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}", this.ClientID, this.DrawingMode, markerColor, mapStyle );
+            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
+            string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}, mapId: '{4}'", this.ClientID, this.DrawingMode, markerColor, mapStyle, mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId );
 
             DbGeography centerPoint = CenterPoint;
             if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )

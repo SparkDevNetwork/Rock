@@ -4247,6 +4247,7 @@ namespace Rock.Rest.v2
 
             // Google API Key
             string googleApiKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
+            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
 
             // Default map location
             double? centerLatitude = null;
@@ -4269,7 +4270,8 @@ namespace Rock.Rest.v2
                 MarkerColor = markerColor,
                 GoogleApiKey = googleApiKey,
                 CenterLatitude = centerLatitude,
-                CenterLongitude = centerLongitude
+                CenterLongitude = centerLongitude,
+                GoogleMapId = mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId
             } );
         }
 
