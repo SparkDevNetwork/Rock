@@ -111,6 +111,7 @@
 
     const emit = defineEmits<{
         (e: "click", key: string): void
+        (e: "width", width: { offsetWidth: number, scrollWidth: number }): void
     }>();
 
     // NOTE: Currently this only supports page scrolling. In the future
@@ -317,6 +318,8 @@
         if (getScrollOffset() > 0) {
             onScroll();
         }
+
+        emit("width", {offsetWidth: element.value?.offsetWidth, scrollWidth:element.value?.scrollWidth});
 
         document.addEventListener("scroll", onScroll, { passive: false });
     });

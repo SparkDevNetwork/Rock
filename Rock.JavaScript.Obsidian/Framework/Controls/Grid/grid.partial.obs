@@ -15,14 +15,18 @@
                              :isSearchVisible="isSearchVisible" />
         </div>
 
-        <div style="overflow-x: auto">
-            <slot name="gridHeaderPrepend" />
-            <ColumnHeaderRow :columns="visibleColumnDefinitions"
-                            v-model:columnFilters="columnFilterValues"
-                            v-model:columnSort="columnSortDirection"
-                            :grid="gridState"
-                            :light="light" />
-            <slot name="gridHeaderAppend" />
+        <div :style="toggleOverflow">
+
+            <div :class="{stickycolumnheader: !overflow}">
+                <slot name="gridHeaderPrepend" />
+                <ColumnHeaderRow :columns="visibleColumnDefinitions"
+                                v-model:columnFilters="columnFilterValues"
+                                v-model:columnSort="columnSortDirection"
+                                :grid="gridState"
+                                :light="light" />
+                <slot name="gridHeaderAppend" />
+            </div>
+
             <div class="grid-body" v-if="loadingData">
                 <SkeletonRows :columns="visibleColumnDefinitions"
                             :grid="gridState"
@@ -71,6 +75,7 @@
                             :markInactiveRows="markInactiveRows"
                             :rowClass="rowClass"
                             :emptyDataText="emptyDataText"
+                            @width="logWidth"
                             @click="onRowClick" />
         </div>
 
@@ -122,11 +127,11 @@
     z-index: 10;
 }
 
-/* .grid-obsidian.grid-sticky .sticky-header {
+.grid-obsidian.grid-sticky .stickycolumnheader {
     position: sticky;
-    top: var(--sticky-element-offset);
+    top: calc(var(--sticky-element-offset) + 57px);
     z-index: 10;
-} */
+}
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
     display: flex;
@@ -954,6 +959,7 @@
 
     // #region Values
 
+    const overflow = ref(false);
     const currentPage = ref(1);
     const pageSize = ref(50);
     const pageSizes = [50, 500, 5000];
@@ -978,6 +984,13 @@
     // #endregion
 
     // #region Computed Values
+
+    const toggleOverflow = computed(()=> {
+        if (overflow.value) {
+            return "overflow: auto";
+        }
+        return "";
+    });
 
     /**
      * The columns that have been configured in the template of this grid.
@@ -2099,6 +2112,14 @@
             isRowSelectionInProgress.value = false;
         }
     }
+
+    function logWidth(width: { offsetWidth: number, scrollWidth: number }):void {
+        if (width.offsetWidth < width.scrollWidth) {
+            overflow.value = !overflow.value;
+        }
+    }
+
+
 
     // #endregion
 
