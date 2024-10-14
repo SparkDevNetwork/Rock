@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.DocumentTypeDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "ee4f6524-c311-4f73-ba4f-18152148297e" )]
     [Rock.SystemGuid.BlockTypeGuid( "fd3eb724-1afa-4507-8850-c3aee170c83b" )]
-    public class DocumentTypeDetail : RockDetailBlockType
+    public class DocumentTypeDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -80,6 +81,23 @@ namespace Rock.Blocks.Core
 
                 return box;
             }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            var documentTypeId = pageReference.GetPageParameter( PageParameterKey.DocumentTypeId );
+            var title = new DocumentTypeService( RockContext ).Get( documentTypeId )?.Name ?? "New Document Type";
+            var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         /// <summary>
