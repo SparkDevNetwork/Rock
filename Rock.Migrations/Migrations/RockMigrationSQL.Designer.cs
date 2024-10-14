@@ -1468,11 +1468,21 @@ namespace Rock.Migrations.Migrations {
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
         ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
         ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
-        ///    series. Let’s look at each o [rest of string was truncated]&quot;;.
+        ///    series. Let’s look at e [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202306151802148_UpdateChartShortcode {
             get {
                 return ResourceManager.GetString("_202306151802148_UpdateChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202410101546296_AddDefaultCheckInAdvertisement_Image {
+            get {
+                object obj = ResourceManager.GetObject("_202410101546296_AddDefaultCheckInAdvertisement_Image", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

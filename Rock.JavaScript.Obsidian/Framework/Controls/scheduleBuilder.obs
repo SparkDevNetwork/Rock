@@ -572,9 +572,9 @@
         const event = new Event();
 
         let start = RockDateTime.parseISO(startDateTime.value ?? "");
-        if (!start && specificDates.value.length) {
-            // If they set some specific dates but no start date, assume the min
-            // specific date is the start date.
+        if ((props.hideStartDateTime || !start) && specificDates.value.length) {
+            // If they set some specific dates but no start date, or chose to hide startdate
+            // assume the min specific date is the start date.
             start = specificDates.value[0];
         }
 

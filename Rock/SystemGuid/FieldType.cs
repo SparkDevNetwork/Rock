@@ -562,6 +562,11 @@ namespace Rock.SystemGuid
         public const string MEDIA_SELECTOR = "243E40FC-04D0-48AD-B379-25A400CB0CAC";
 
         /// <summary>
+        /// Mobile Navigation Action field type
+        /// </summary>
+        public const string MOBILE_NAVIGATION_ACTION = "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8";
+
+        /// <summary>
         /// Month Day field type
         /// </summary>
         public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";

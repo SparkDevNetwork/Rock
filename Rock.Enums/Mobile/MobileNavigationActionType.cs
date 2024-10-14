@@ -1,5 +1,4 @@
-﻿
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.Enums.Controls
+namespace Rock.Enums.Mobile
 {
+
     /// <summary>
     /// The type of navigation action to perform on the mobile shell.
-    /// This is copied from Rock.Mobile.MobileNavigationActionType.
+    /// This is copied to Rock.Enums.Controls.MobileNavigationActionType.
     /// Any changes there or here should be mirrored.
     /// </summary>
     public enum MobileNavigationActionType
