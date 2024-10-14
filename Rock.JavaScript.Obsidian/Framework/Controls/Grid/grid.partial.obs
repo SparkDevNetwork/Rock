@@ -15,9 +15,9 @@
                              :isSearchVisible="isSearchVisible" />
         </div>
 
-        <div :style="toggleOverflow">
+        <div :class="{'grid-overflow': overflow}">
 
-            <div :class="{stickycolumnheader: !overflow}">
+            <div :class="{'sticky-column-header': !overflow}">
                 <slot name="gridHeaderPrepend" />
                 <ColumnHeaderRow :columns="visibleColumnDefinitions"
                                 v-model:columnFilters="columnFilterValues"
@@ -75,7 +75,7 @@
                             :markInactiveRows="markInactiveRows"
                             :rowClass="rowClass"
                             :emptyDataText="emptyDataText"
-                            @width="logWidth"
+                            @width="calculateOverflow"
                             @click="onRowClick" />
         </div>
 
@@ -101,6 +101,10 @@
 </template>
 
 <style>
+
+.grid-overflow {
+    overflow-x: auto;
+}
 .grid-obsidian {
     --table-cell-padding-x: 16px;
     --table-cell-padding-y: 16px;
@@ -127,10 +131,10 @@
     z-index: 10;
 }
 
-.grid-obsidian.grid-sticky .stickycolumnheader {
+.grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
     top: calc(var(--sticky-element-offset) + 57px);
-    z-index: 10;
+    z-index: 9;
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
@@ -511,6 +515,12 @@
 @media (max-width: 767px) {
     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
         display: none;
+    }
+}
+
+@media (max-width:992px) {
+    .grid-obsidian.grid-sticky .sticky-column-header {
+        top: calc(var(--sticky-element-offset) + 114px);
     }
 }
 </style>
@@ -984,13 +994,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const toggleOverflow = computed(()=> {
-        if (overflow.value) {
-            return "overflow: auto";
-        }
-        return "";
-    });
 
     /**
      * The columns that have been configured in the template of this grid.
@@ -2113,9 +2116,9 @@
         }
     }
 
-    function logWidth(width: { offsetWidth: number, scrollWidth: number }):void {
+    function calculateOverflow(width: { offsetWidth: number, scrollWidth: number }):void {
         if (width.offsetWidth < width.scrollWidth) {
-            overflow.value = !overflow.value;
+            overflow.value = true;
         }
     }
 

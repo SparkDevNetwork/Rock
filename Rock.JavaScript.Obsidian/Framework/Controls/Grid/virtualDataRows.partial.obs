@@ -110,7 +110,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "click", key: string): void
+        (e: "click", key: string): void,
         (e: "width", width: { offsetWidth: number, scrollWidth: number }): void
     }>();
 
@@ -314,12 +314,21 @@
 
     onMounted(() => {
         virtualScroller = createVirtualScroller();
+        let resizeObserver: ResizeObserver | undefined;
+
+        if (typeof ResizeObserver !== "undefined" && element.value) {
+
+            resizeObserver = new ResizeObserver(()=>{
+                emit("width", {offsetWidth: element.value?.offsetWidth ?? 0, scrollWidth:element.value?.scrollWidth ?? 0});
+            });
+
+            resizeObserver.observe(element.value);
+        }
 
         if (getScrollOffset() > 0) {
             onScroll();
         }
 
-        emit("width", {offsetWidth: element.value?.offsetWidth, scrollWidth:element.value?.scrollWidth});
 
         document.addEventListener("scroll", onScroll, { passive: false });
     });
