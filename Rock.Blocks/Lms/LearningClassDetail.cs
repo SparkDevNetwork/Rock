@@ -539,34 +539,6 @@ namespace Rock.Blocks.Lms
         #region Block Actions
 
         /// <summary>
-        /// Gets the box that will contain all the information needed to begin
-        /// the clone operation.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be cloned.</param>
-        /// <returns>A box that contains the entity and any other information required.</returns>
-        [BlockAction]
-        public BlockActionResult Clone( string key )
-        {
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            var bag = GetEntityBagForEdit( entity );
-
-            // Remove the id and update the name.
-            // GetEntityBagForEdit expects to know the Entity.Id so we can't use CloneWithoutIdentity.
-            bag.IdKey = string.Empty;
-            bag.Name += " - Copy";
-
-            return ActionOk( new ValidPropertiesBox<LearningClassBag>
-            {
-                Bag = bag,
-                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-            } );
-        }
-
-        /// <summary>
         /// Copy the Class to create as a new Class
         /// </summary>
         [BlockAction]

@@ -637,11 +637,7 @@ namespace Rock.Blocks.Cms
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
 
-                if ( box.Bag.SiteAttributes.Count > 0 )
-                {
-
-                    SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Bag.SiteAttributes, RockContext );
-                }
+                SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Bag.SiteAttributes, RockContext );
 
                 if ( existingIconId.HasValue && existingIconId.Value != entity.FavIconBinaryFileId )
                 {

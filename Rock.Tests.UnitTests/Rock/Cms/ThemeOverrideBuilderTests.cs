@@ -33,7 +33,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddVariable( expectedVariable, string.Empty );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.DoesNotContain( content, expectedVariable );
         }
@@ -46,7 +46,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddVariable( expectedVariable, null );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.DoesNotContain( content, expectedVariable );
         }
@@ -61,7 +61,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddVariable( expectedVariable, expectedValue );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.Contains( content, expectedContent );
         }
@@ -78,7 +78,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddCustomContent( expectedContent );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.Contains( content, expectedContent );
         }
@@ -94,7 +94,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddImport( string.Empty );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.IsEmpty( content );
         }
@@ -106,7 +106,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddImport( null );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.IsEmpty( content );
         }
@@ -120,7 +120,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddImport( expectedUrl );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.Contains( content, expectedContent );
         }
@@ -136,7 +136,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             using ( TestHelper.CreateScopedRockApp() )
             {
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, expectedContent );
             }
@@ -160,7 +160,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddFontIconSets( themeDefinition, customization );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.IsEmpty( content );
         }
@@ -181,7 +181,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "fontawesome" );
                 Assert.That.Contains( content, "tabler" );
@@ -204,7 +204,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-icon.css" );
             }
@@ -227,7 +227,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-solid.css" );
             }
@@ -250,7 +250,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-regular.css" );
             }
@@ -273,7 +273,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-light.css" );
             }
@@ -299,7 +299,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-solid.css" );
             }
@@ -325,7 +325,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-regular.css" );
             }
@@ -351,7 +351,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-light.css" );
             }
@@ -373,7 +373,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
                 builder.AddFontIconSets( themeDefinition, customization );
 
-                var content = builder.Build();
+                var content = builder.Build( string.Empty );
 
                 Assert.That.Contains( content, "/Styles/style-v2/icons/tabler-icon.css" );
             }
@@ -388,7 +388,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
         {
             var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.IsEmpty( content );
         }
@@ -400,7 +400,7 @@ namespace Rock.Tests.UnitTests.Rock.Cms
 
             builder.AddVariable( "test-var", "none" );
 
-            var content = builder.Build();
+            var content = builder.Build( string.Empty );
 
             Assert.That.Contains( content, ":root {" );
         }
@@ -410,14 +410,19 @@ namespace Rock.Tests.UnitTests.Rock.Cms
         {
             using ( TestHelper.CreateScopedRockApp() )
             {
-                var expectedContent = @"@import url('on.css');
+                var expectedContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
+@import url('on.css');
 @import url('/Styles/style-v2/icons/tabler-icon.css');
+{ThemeOverrideBuilder.TopOverrideEndMarker}
 
-:root {
+
+{ThemeOverrideBuilder.BottomOverrideStartMarker}
+:root {{
     --test-var: none;
-}
+}}
 
-div { display: none; }";
+div {{ display: none; }}
+{ThemeOverrideBuilder.BottomOverrideEndMarker}";
 
                 // Fix newlines to match what the builder uses.
                 expectedContent = expectedContent
@@ -434,9 +439,56 @@ div { display: none; }";
                 builder.AddFontIconSets( themeDefinition, new ThemeCustomizationSettings() );
                 builder.AddCustomContent( "div { display: none; }" );
 
-                var content = builder.Build().Trim();
+                var content = builder.Build( string.Empty ).Trim();
 
                 Assert.That.AreEqual( expectedContent, content );
+            }
+        }
+
+        [TestMethod]
+        public void Build_WithNoOptions_PreservesUserContent()
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                var expectedContent = @".body { color: white; }";
+                var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+                var content = builder.Build( expectedContent ).Trim();
+
+                Assert.That.Contains( content, expectedContent );
+            }
+        }
+
+        [TestMethod]
+        public void Build_WithNoOptionsAndOldMarkers_StripsOldMarkers()
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                var expectedContent = @".body { color: white; }";
+                var originalContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
+@import url('on.css');
+@import url('/Styles/style-v2/icons/tabler-icon.css');
+{ThemeOverrideBuilder.TopOverrideEndMarker}
+
+{expectedContent}
+
+{ThemeOverrideBuilder.BottomOverrideStartMarker}
+:root {{
+    --test-var: none;
+}}
+
+div {{ display: none; }}
+{ThemeOverrideBuilder.BottomOverrideEndMarker}";
+
+                var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+
+                var content = builder.Build( originalContent ).Trim();
+
+                Assert.That.Contains( content, expectedContent );
+                Assert.That.DoesNotContain( content, ThemeOverrideBuilder.TopOverrideStartMarker );
+                Assert.That.DoesNotContain( content, ThemeOverrideBuilder.TopOverrideEndMarker );
+                Assert.That.DoesNotContain( content, ThemeOverrideBuilder.BottomOverrideStartMarker );
+                Assert.That.DoesNotContain( content, ThemeOverrideBuilder.BottomOverrideEndMarker );
             }
         }
 

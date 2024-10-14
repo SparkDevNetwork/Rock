@@ -233,7 +233,7 @@
 
     function onSaveItemAttribute(): void {
         itemAttributeErrors.value = [];
-        const isExistingKey = itemAttributesReservedKeyNames.value.includes(itemAttribute.value?.key ?? "");
+        const isExistingKey = itemAttributesReservedKeyNames.value.includes(itemAttribute.value?.key ?? "") && !itemAttribute.value?.guid;
 
         if (isExistingKey) {
             itemAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
@@ -352,7 +352,7 @@
 
     function onSaveChannelAttribute(): void {
         channelAttributeErrors.value = [];
-        const isExistingKey = channelAttributesReservedKeyNames.value.includes(channelAttribute.value?.key ?? "");
+        const isExistingKey = channelAttributesReservedKeyNames.value.includes(channelAttribute.value?.key ?? "") && !channelAttribute.value?.guid;
 
         if (isExistingKey) {
             channelAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");

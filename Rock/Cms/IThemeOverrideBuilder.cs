@@ -65,9 +65,16 @@ namespace Rock.Cms
         void AddCustomContent( string content );
 
         /// <summary>
+        /// <para>
         /// Builds the CSS file from all the data provided to the builder.
+        /// </para>
+        /// <para>
+        /// This will take an existing theme.css and insert override content
+        /// at the top and bottom, replacing any existing override content.
+        /// </para>
         /// </summary>
+        /// <param name="originalThemeCss">The content of the theme.css file to be updated.</param>
         /// <returns>The content of the CSS file.</returns>
-        string Build();
+        string Build( string originalThemeCss );
     }
 }

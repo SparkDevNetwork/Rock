@@ -137,10 +137,10 @@ namespace Rock.Model
         public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, params Guid[] categoryGuids )
         {
             var baseQuery = Queryable()
-                    .AsNoTracking()
-                    .Include( p => p.ImageBinaryFile )
-                    .Include( p => p.Category )
-                    .Where( p => p.IsActive && p.IsPublic );
+                .AsNoTracking()
+                .Include( p => p.ImageBinaryFile )
+                .Include( p => p.Category )
+                .Where( p => p.IsActive && p.IsPublic );
 
             if ( categoryGuids.Any() )
             {

@@ -178,6 +178,7 @@
         isAttributeModalOpen.value = false;
 
         const deletedAttribute = definedTypeAttributes.value.find(a => a.key == key);
+        reservedKeyNames.value = definedTypeAttributes.value.map(k => k.key!);
 
         if (deletedAttribute) {
             if (deletedAttribute.guid) {

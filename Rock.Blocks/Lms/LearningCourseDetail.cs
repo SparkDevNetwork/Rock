@@ -1113,7 +1113,14 @@ namespace Rock.Blocks.Lms
         {
             var classService = new LearningClassService( RockContext );
             var classIdKey = PageParameter( PageParameterKey.LearningClassId );
-            var classId = classService.GetSelect( classIdKey, p => p.Id );
+
+            // If the course doesn't explicitly specify which Class we're looking at
+            // then get the default class for the course.
+            var classId = classIdKey.IsNullOrWhiteSpace() ?
+                classService.GetCourseDefaultClass(
+                    RequestContext.GetPageParameter( PageParameterKey.LearningCourseId ),
+                    c => c.Id ) :
+                classService.GetSelect( classIdKey, p => p.Id );
 
             var isNew = participantBag.IdKey.IsNullOrWhiteSpace();
             var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;

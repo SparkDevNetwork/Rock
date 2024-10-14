@@ -18,7 +18,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <NumberBox v-model="minimumDaysToRetake" label="Minimum Days To Retake" help="The minimum number of days after the test has been taken before it can be taken again.">
+                <NumberBox v-model="minimumDaysToRetake"
+                    label="Minimum Days To Retake"
+                    help="The minimum number of days after the test has been taken before it can be taken again."
+                    :minimumValue="0" >
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>

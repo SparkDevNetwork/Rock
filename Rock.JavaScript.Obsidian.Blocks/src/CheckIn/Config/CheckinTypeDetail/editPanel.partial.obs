@@ -103,24 +103,27 @@
                         <div class="row">
                             <div class="col-sm-4 col-xs-12">
                                 <TextBox v-model="codeAlphaNumericLength"
-                                           label="Alpha-Numeric"
-                                           :rules="[validateNumberValue, minZeroMaxten]"/>
+                                         label="Alpha-Numeric"
+                                         :rules="[validateNumberValue, minZeroMaxten]" />
                             </div>
                             <div class="col-sm-4 col-xs-6">
                                 <TextBox v-model="codeAlphaLength"
-                                           label="Alpha"
-                                           :rules="[validateNumberValue, minZeroMaxten]" />
+                                         label="Alpha"
+                                         :rules="[validateNumberValue, minZeroMaxten]" />
                             </div>
                             <div class="col-sm-4 col-xs-6">
                                 <TextBox v-model="codeNumericLength"
-                                           label="Numeric"
-                                           :rules="[validateNumberValue, minZeroMaxten]" />
+                                         label="Numeric"
+                                         :rules="[validateNumberValue, minZeroMaxten]" />
                             </div>
                         </div>
-                        <CheckBox v-model="codeRandom"
-                                  label=""
-                                  text="Random Numeric Values"
-                                  help="Should the numbers be randomized (vs. generated in order)." />
+                        <div class="checkbox">
+                            <label title="">
+                                <input type="checkbox" v-model="codeRandom">
+                                <span class="label-text ">Random Numeric Values</span>
+                            </label>
+                            <HelpBlock text="Should the numbers be randomized (vs. generated in order)." />
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -144,21 +147,21 @@
                                   :showBlankItem="false"
                                   help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the individual can also always check-in using a scanned barcode, fingerprint, RFID card, etc. if the scanner is attached and configured for keyboard wedge mode." />
                     <TextBox v-model="maxResults"
-                               label="Maximum Number of Results"
-                               help="The maximum number of search results to return when searching (default is 100)."
-                               :rules="validateNumberValue"/>
+                             label="Maximum Number of Results"
+                             help="The maximum number of search results to return when searching (default is 100)."
+                             :rules="validateNumberValue" />
                 </div>
                 <div class="col-md-6">
                     <TextBox v-if="showPhoneFields"
-                               v-model="minPhoneLength"
-                               label="Minimum Phone Number Length"
-                               :rules="[validateNumberValue, minOneMaxten]"
-                               help="The minimum number of digits that needs to be entered for a phone number search (default is 4)." />
+                             v-model="minPhoneLength"
+                             label="Minimum Phone Number Length"
+                             :rules="[validateNumberValue, minOneMaxten]"
+                             help="The minimum number of digits that needs to be entered for a phone number search (default is 4)." />
                     <TextBox v-if="showPhoneFields"
-                               v-model="maxPhoneLength"
-                               label="Maximum Phone Number Length"
-                               :rules="[validateNumberValue, minOneMaxten]"
-                               help="The maximum number of digits that can to be entered for a phone number search (default is 10)." />
+                             v-model="maxPhoneLength"
+                             label="Maximum Phone Number Length"
+                             :rules="[validateNumberValue, minOneMaxten]"
+                             help="The maximum number of digits that can to be entered for a phone number search (default is 10)." />
                     <DropDownList v-if="showPhoneFields"
                                   v-model="phoneSearchType"
                                   label="Phone Search Type"
@@ -322,9 +325,9 @@
                              help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
 
                     <TextBox v-model="refreshInterval"
-                               label="Refresh Interval"
-                               help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information."
-                               :rules="validateNumberValue"/>
+                             label="Refresh Interval"
+                             help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information."
+                             :rules="validateNumberValue" />
 
                     <CheckBoxList v-model="specialNeedsValues"
                                   :items="specialNeedsOptions"
@@ -374,6 +377,7 @@
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

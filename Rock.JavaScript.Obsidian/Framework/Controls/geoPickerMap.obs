@@ -19,6 +19,7 @@
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import Loading from "@Obsidian/Controls/loading.obs";
     import { confirm } from "@Obsidian/Utility/dialogs";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
 
     /**
      * The types of shapes Google Maps uses internally
@@ -109,6 +110,7 @@
     let styles: google.maps.MapTypeStyle[] = [];
     let shape: Shape | null = null;
     let marker: google.maps.Symbol | null = null;
+    let mapId: string | null = null;
 
     // #endregion
 
@@ -181,7 +183,8 @@
             fullscreenControl: false,
             mapTypeControlOptions: {
                 mapTypeIds: [google.maps.MapTypeId.ROADMAP, "map_style"],
-            }
+            },
+            mapId: mapId
         };
 
         map = new google.maps.Map(mapContainer.value as HTMLElement, mapOptions);
@@ -226,12 +229,25 @@
                 });
             }
             else {
-                shape = new google.maps.Marker({
-                    position: new google.maps.LatLng(...internalValue.value[0]),
+                const position = new google.maps.LatLng(...internalValue.value[0]);
+                shape = {
+                    position: position,
                     map: map,
-                    clickable: true,
-                    icon: marker
-                });
+                    marker_element: new google.maps.marker.AdvancedMarkerElement({
+                        position: position,
+                        map: map
+                    }),
+                    getPosition: function () {
+                        return this.position;
+                    },
+                    getPath: function () {
+                        return this.position.toUrlValue();
+                    },
+                    setPosition: function (position) {
+                        this.position = position;
+                        this.marker_element.position = position;
+                    }
+                };
             }
 
             setCurrentShape(shape);
@@ -469,6 +485,11 @@
 
         centerLatitude = centerLatitude ?? googleMapSettings.centerLatitude ?? 33.590795;
         centerLongitude = centerLongitude ?? googleMapSettings.centerLongitude ?? -112.126459;
+        let geoPickerGoogleMapSettingsBag = googleMapSettings as GeoPickerGoogleMapSettingsBag;
+
+        if (geoPickerGoogleMapSettingsBag) {
+            mapId = geoPickerGoogleMapSettingsBag.googleMapId || "DEFAULT_MAP_ID";
+        }
 
         try {
             styles = JSON.parse(googleMapSettings.mapStyle ?? "");
@@ -485,7 +506,7 @@
         isMounted.value = true;
     });
 
-        // #endregion
+    // #endregion
 </script>
 
 <style>

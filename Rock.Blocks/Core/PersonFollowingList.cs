@@ -110,7 +110,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a )
                 .AddDateTimeField( "birthDate", a => a.BirthDate )
-                .AddTextField( "email", a => a.Email )
+                .AddTextField( "email", a => a.Email ?? "" )
                 .AddField( "guid", a => a.Guid )
                 .AddTextField( "homePhone", a => GetHomePhone( a ) )
                 .AddTextField( "cellPhone", a => GetCellPhone( a ) )

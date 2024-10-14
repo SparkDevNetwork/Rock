@@ -266,11 +266,11 @@ namespace Rock.Blocks.Lms
 
                 if (categoryGuids.Contains( onlyCategoryGuid ) )
                 {
-                    return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson().Id, onlyCategoryGuid ).ToList();
+                    return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson()?.Id ?? 0, onlyCategoryGuid ).ToList();
                 }
             }
 
-            return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson().Id, categoryGuids ).ToList();
+            return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson()?.Id ?? 0, categoryGuids ).ToList();
         }
 
         #endregion

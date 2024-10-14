@@ -28,6 +28,8 @@
                     title="Birthdate"
                     field="birthDate"
                     :filter="dateValueFilter"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     visiblePriority="md" />
 
         <TextColumn name="email"

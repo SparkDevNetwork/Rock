@@ -51,7 +51,8 @@
                     title="Date Started"
                     field="dateStarted"
                     :filter="dateValueFilter"
-                    itemClass="grid-item-pull-right"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     width="20%"
                     visiblePriority="md" />
 
@@ -59,7 +60,8 @@
                     title="Date Completed"
                     field="dateCompleted"
                     :filter="dateValueFilter"
-                    itemClass="grid-item-pull-left"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     width="170"
                     visiblePriority="xs" />
 
@@ -117,14 +119,10 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
 </template>
 
 <style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
-}
+
 .grid-item-pull-right {
     flex-direction: column;
     align-items: start;

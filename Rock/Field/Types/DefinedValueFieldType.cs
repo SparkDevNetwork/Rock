@@ -455,6 +455,36 @@ namespace Rock.Field.Types
             return string.Format( format, titleJs );
         }
 
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+            if ( values?.Count == 2 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains ),
+                    Value = GetPublicEditValue( values[1], privateConfigurationValues )
+                };
+            }
+            else if ( values?.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = ComparisonType.Contains,
+                    Value = GetPublicEditValue( values[0], privateConfigurationValues )
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
+        }
+
         /// <summary>
         /// Gets a filter expression for an entity property value.
         /// </summary>

@@ -381,15 +381,10 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        const deletedAttribute = stepProgramAttributes.value.find(s => s.key == key);
         stepProgramAttributes.value = stepProgramAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = stepProgramAttributes.value.map(k => k.key!);
 
         workflows.value = workflows.value.filter(s => s.idKey !== key);
-
-        if (deletedAttribute && !deletedAttribute.guid) {
-            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.key);
-        }
-
 
         // Update the grid.
         if (attributesGridData.rows) {
