@@ -11,7 +11,7 @@
                      maxTagCount="responsive"
                      :multiple="true">
         <template #suffixIcon>
-            <i v-if="!isAddHidden" class="fa fa-plus" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
+            <i v-if="!isAddHidden" class="fa fa-plus-square" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
             <i v-else></i>
         </template>
 
@@ -55,6 +55,17 @@
 
 .item:not(.show-more-button) {
     margin-right: 8px;
+}
+
+.ant-select-arrow:has(.fa.fa-plus-square) {
+  font-size: 24px !important;
+  color: var(--color-info-strong);
+  top: 35%;
+  right: 17px;
+  transition: ease-in-out 0.2s;
+}
+.ant-select-arrow:has(.fa.fa-plus-square):hover {
+  color: var(--color-info-soft);
 }
 </style>
 
