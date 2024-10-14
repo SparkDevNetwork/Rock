@@ -29,7 +29,9 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16"">BLANK</svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.HTML )]
     public class HtmlFieldType : FieldType
     {
