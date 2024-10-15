@@ -36,7 +36,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request Entry" )]
     [Category( "Prayer" )]
     [Description( "Allows prayer requests to be added via visitors on the website." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
