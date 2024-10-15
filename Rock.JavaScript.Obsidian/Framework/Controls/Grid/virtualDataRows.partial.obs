@@ -124,6 +124,7 @@
     const element = ref<HTMLElement>();
     const range = ref<Range>({ startIndex: 0, endIndex: 0, padBefore: 0, padAfter: 0 });
     let virtualScroller: VirtualScroller | undefined;
+    let resizeObserver: ResizeObserver | undefined;
 
     // #endregion
 
@@ -310,11 +311,15 @@
             virtualScroller.destroy();
             virtualScroller = undefined;
         }
+
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+            resizeObserver = undefined;
+        }
     });
 
     onMounted(() => {
         virtualScroller = createVirtualScroller();
-        let resizeObserver: ResizeObserver | undefined;
 
         if (typeof ResizeObserver !== "undefined" && element.value) {
 
@@ -333,4 +338,5 @@
 
         document.addEventListener("scroll", onScroll, { passive: false });
     });
+
 </script>
