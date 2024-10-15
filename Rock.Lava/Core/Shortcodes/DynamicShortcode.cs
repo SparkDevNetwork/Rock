@@ -514,7 +514,6 @@ namespace Rock.Lava
                     if ( scopeObject != null )
                     {
                         parameters.AddOrReplace( itemParts[0].Trim().ToLower(), scopeObject );
-                        break;
                     }
                 }
             }

@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.Login;
+using Rock.IpAddress;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
@@ -286,6 +287,23 @@ namespace Rock.Blocks.Security
         Category = AttributeCategory.Captions,
         Order = 23 )]
 
+    [SystemCommunicationField(
+        "Login Confirmation Alert System Communication",
+        Key = AttributeKey.LoginConfirmationAlertSystemCommunication,
+        Description = "The system communication to use for sending login confirmation alerts when a user successfully logs in using a new browser. Merge fields include: UserAgent, IPAddress, LoginDateTime, Location, etc.<span class='tip tip-lava'></span>",
+        DefaultSystemCommunicationGuid = SystemGuid.SystemCommunication.LOGIN_CONFIRMATION_ALERT,
+        IsRequired = true,
+        Category = AttributeCategory.CommunicationTemplates,
+        Order = 24 )]
+
+    [EnumsField(
+        "Account Protection Profiles for Login Confirmation Alerts",
+        Key = AttributeKey.AccountProtectionProfilesForLoginConfirmationAlerts,
+        IsRequired = false,
+        EnumSourceType = typeof( AccountProtectionProfile ),
+        Category = AttributeCategory.CommunicationTemplates,
+        Order = 25 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "D9482EF9-F774-4E37-AC84-8B340CBCA364" )]
@@ -461,6 +479,16 @@ namespace Rock.Blocks.Security
             /// The two factor not supported by authentication method message
             /// </summary>
             public const string TwoFactorNotSupportedByAuthenticationMethod = "TwoFactorNotSupportedByAuthenticationMethod";
+
+            /// <summary>
+            /// Login Confirmation Alert System Communication
+            /// </summary>
+            public const string LoginConfirmationAlertSystemCommunication = "LoginConfirmationAlertSystemCommunication";
+
+            /// <summary>
+            /// Account Protection Profiles for Login Confirmation Alerts
+            /// </summary>
+            public const string AccountProtectionProfilesForLoginConfirmationAlerts = "AccountProtectionProfilesForLoginConfirmationAlerts";
         }
 
         #endregion
@@ -607,7 +635,7 @@ namespace Rock.Blocks.Security
                 {
                     // Authenticate the user in Rock if credentials were valid and 2FA is not required.
                     Authenticate(
-                        userLogin.UserName,
+                        userLogin,
                         bag.RememberMe,
                         isTwoFactorAuthenticated: false );
                     return ActionOk( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
@@ -625,7 +653,7 @@ namespace Rock.Blocks.Security
                         RockLogger.Log.Error( RockLogDomains.Core, "Two-Factor Authentication is required but Passwordless authentication is not configured {Errors}.", errors.JoinStrings( " " ) );
 
                         Authenticate(
-                            userLogin.UserName,
+                            userLogin,
                             bag.RememberMe,
                             isTwoFactorAuthenticated: true );
                         return ActionOk( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
@@ -667,7 +695,7 @@ namespace Rock.Blocks.Security
                 if ( mfaTicket.HasMinimumRequiredFactors )
                 {
                     Authenticate(
-                        userLogin.UserName,
+                        userLogin,
                         mfaTicket.AuthCookieSettings.IsPersisted,
                         isTwoFactorAuthenticated: true,
                         mfaTicket.AuthCookieSettings.ExpiresIn );
@@ -851,7 +879,7 @@ namespace Rock.Blocks.Security
 
                 // Authenticate the user in Rock.
                 Authenticate(
-                    passwordlessAuthenticationResult.AuthenticatedUser.UserName,
+                    passwordlessAuthenticationResult.AuthenticatedUser,
                     isPersisted: true,
                     isTwoFactorAuthenticated: false,
                     expiresIn: TimeSpan.FromMinutes( new SecuritySettingsService().SecuritySettings.PasswordlessSignInSessionDuration ) );
@@ -898,7 +926,7 @@ namespace Rock.Blocks.Security
             if ( mfaTicket.HasMinimumRequiredFactors )
             {
                 Authenticate(
-                    passwordlessAuthenticationResult.AuthenticatedUser.UserName,
+                    passwordlessAuthenticationResult.AuthenticatedUser,
                     mfaTicket.AuthCookieSettings.IsPersisted,
                     isTwoFactorAuthenticated: true,
                     mfaTicket.AuthCookieSettings.ExpiresIn );
@@ -967,21 +995,129 @@ namespace Rock.Blocks.Security
         /// <summary>
         /// Authenticates a Rock end-user.
         /// </summary>
-        /// <param name="userName">The username of the account to authenticate.</param>
+        /// <param name="userLogin">The <see cref="UserLogin"> associated with the account to authenticate.</param>
         /// <param name="isPersisted">Whether the individual should be authenticated across browsing sessions.</param>
         /// <param name="isTwoFactorAuthenticated">Whether the individual is two-factor authenticated.</param>
         /// <param name="expiresIn">The duration that the authentication is valid.</param>
-        private void Authenticate( string userName, bool isPersisted, bool isTwoFactorAuthenticated, TimeSpan? expiresIn = null )
+        private void Authenticate( UserLogin userLogin, bool isPersisted, bool isTwoFactorAuthenticated, TimeSpan? expiresIn = null )
         {
-            UserLoginService.UpdateLastLogin( userName );
+            UserLoginService.UpdateLastLogin( userLogin.UserName );
 
             if ( expiresIn.HasValue )
             {
-                Authorization.SetAuthCookie( userName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated, expiresIn.Value );
+                Authorization.SetAuthCookie( userLogin.UserName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated, expiresIn.Value );
             }
             else
             {
-                Authorization.SetAuthCookie( userName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated );
+                Authorization.SetAuthCookie( userLogin.UserName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated );
+            }
+
+            CheckBrowserRecognition( userLogin.Person );
+        }
+
+        /// <summary>
+        /// Checks to see if the a <see cref="Person"/> who has just authenticated is using a previously recognized browser and sends an alert if appropriate.
+        /// </summary>
+        /// <param name="person">The <see cref="Person"/> who just authenticated.</param>
+        private void CheckBrowserRecognition( Person person )
+        {
+            var personRecognitionValue = Rock.Utility.GuidHelper.ToShortString( person.Guid );
+
+            if ( !Authorization.IsBrowserRecognized( personRecognitionValue ) )
+            {
+                var profilesForNotification = GetAttributeValue( AttributeKey.AccountProtectionProfilesForLoginConfirmationAlerts );
+                if ( string.IsNullOrEmpty( profilesForNotification ) )
+                {
+                    return;
+                }
+
+                foreach ( var profile in profilesForNotification.SplitDelimitedValues() )
+                {
+                    if ( !string.IsNullOrWhiteSpace( profile ) )
+                    {
+                        var profileType = profile.ConvertToEnum<AccountProtectionProfile>();
+                        if ( person.AccountProtectionProfile == profileType )
+                        {
+                            SendLoginConfirmationAlert( person );
+                            break;
+                        }
+                    }
+                }    
+            }
+        }
+
+        /// <summary>
+        /// Sends the configured login confirmation alert.
+        /// </summary>
+        /// <param name="person">The <see cref="Person"/> who just authenticated.</param>
+        private void SendLoginConfirmationAlert( Person person )
+        {
+            var systemCommunicationGuid = GetAttributeValue( AttributeKey.LoginConfirmationAlertSystemCommunication ).AsGuidOrNull();
+            if ( !systemCommunicationGuid.HasValue )
+            {
+                return;
+            }
+
+            var systemCommunication = new SystemCommunicationService( new RockContext() ).Get( systemCommunicationGuid.Value );
+            if ( systemCommunication == null )
+            {
+                RockLogger.Log.Error( RockLogDomains.Core, $"Login Confirmation Alert could not be sent for person {person.Id} because the System Communication {systemCommunicationGuid} does not exist. Please check the login block configuration." );
+            }
+
+            var location = string.Empty;
+
+            // If an active IP Address Lookup component is configured, try using it to look up the location.
+            var ipLookupComponent = IpAddressLookupContainer.Instance.Components.Select( a => a.Value.Value ).Where( x => x.IsActive ).FirstOrDefault();
+            if ( ipLookupComponent != null )
+            {
+                try
+                {
+                    var lookupResult = ipLookupComponent.Lookup( RequestContext.ClientInformation.IpAddress, out var resultMsg );
+                    if ( string.IsNullOrEmpty( resultMsg ) )
+                    {
+                        location = lookupResult.Location;
+                    }
+                    else
+                    {
+                        RockLogger.Log.Error( RockLogDomains.Core, $"Error processing IP Lookup for Login Confirmation Alert: {resultMsg}." );
+                    }
+                }
+                catch ( SystemException ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            var mergeFields = GetMergeFields( new Dictionary<string, object>
+            {
+                { "Person", person },
+                { "UserAgent", RequestContext.ClientInformation.UserAgent },
+                { "IPAddress", RequestContext.ClientInformation.IpAddress },
+                { "LoginDateTime", RockDateTime.Now },
+                { "Location", location },
+            } );
+
+            // Send the message.
+            try
+            {
+
+                var message = new RockEmailMessage( systemCommunication )
+                {
+                    AppRoot = "/",
+                    ThemeRoot = this.RequestContext.ResolveRockUrl( "~~/" ),
+                    CreateCommunicationRecord = false,
+                };
+
+                message.SetRecipients( new List<RockEmailMessageRecipient>
+                {
+                    new RockEmailMessageRecipient( person, mergeFields )
+                } );
+
+                message.Send();
+            }
+            catch ( SystemException ex )
+            {
+                ExceptionLogService.LogException( ex );
             }
         }
 
@@ -1530,7 +1666,7 @@ namespace Rock.Blocks.Security
 
                 // Authenticate the end-user in Rock and redirect.
                 Authenticate(
-                    userLogin.UserName,
+                    userLogin,
                     isPersisted: true,
                     isTwoFactorAuthenticated );
 

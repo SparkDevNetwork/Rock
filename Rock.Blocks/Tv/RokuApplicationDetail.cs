@@ -218,6 +218,11 @@ namespace Rock.Blocks.Tv
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
+            if( entity.Id == 0 )
+            {
+                bag.RokuComponents = RokuConstants.DEFAULT_ROKU_COMPONENTS;
+            }
+
             return bag;
         }
 
@@ -497,6 +502,7 @@ namespace Rock.Blocks.Tv
                 // Create/Modify API Key
                 additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, entity.Name, box.Bag.ApiKey, $"tv_application_{entity.Id}", RockContext );
                 additionalSettings.RockComponents = box.Bag.RokuComponents;
+                entity.AdditionalSettings = additionalSettings.ToJson();
 
                 RockContext.SaveChanges();
             } );

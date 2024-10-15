@@ -17,9 +17,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Enums.Mobile;
 using Rock.Mobile;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+
+
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -38,11 +43,67 @@ namespace Rock.Field.Types
     /// </remarks>
     /// <seealso cref="Rock.Field.FieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MOBILE_NAVIGATION_ACTION )]
     public sealed class MobileNavigationActionFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var action = privateValue.FromJsonOrNull<MobileNavigationAction>();
+            MobileNavigationActionBag bag;
+
+            if ( action != null )
+            {
+                ListItemBag pageBag = null;
+
+                if ( action.PageGuid != null && !action.PageGuid.Value.IsEmpty() )
+                {
+                    var page = PageCache.Get( action.PageGuid.Value );
+                    pageBag = page.ToListItemBag();
+                }
+
+                bag = new MobileNavigationActionBag
+                {
+                    Type = action.Type,
+                    PopCount = action.PopCount,
+                    Page = pageBag
+                };
+
+                return bag.ToCamelCaseJson( false, true ) ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var bag = publicValue.FromJsonOrNull<MobileNavigationActionBag>();
+            MobileNavigationAction action;
+
+            if ( bag != null )
+            {
+                action = new MobileNavigationAction
+                {
+                    Type = bag.Type,
+                    PopCount = bag.PopCount,
+                    PageGuid = bag.Page == null ? null : bag.Page.Value.AsGuidOrNull(),
+                };
+
+                return action.ToJson( false, true ) ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )

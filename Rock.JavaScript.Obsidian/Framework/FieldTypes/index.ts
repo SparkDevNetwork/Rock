@@ -152,14 +152,17 @@ registerFieldType(FieldTypeGuids.Location, new LocationFieldType());
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
+import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
+registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
+
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 
+import { MobileNavigationActionFieldType } from "./mobileNavigationActionField.partial";
+registerFieldType(FieldTypeGuids.MobileNavigationAction, new MobileNavigationActionFieldType());
+
 import { MonthDayFieldType } from "./monthDayField.partial";
 registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
-
-import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
-registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
 
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());

@@ -21,19 +21,17 @@
 // </copyright>
 //
 
-import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+import { MobileNavigationActionType } from "@Obsidian/Enums/Mobile/mobileNavigationActionType";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The additional configuration options for the Registration Instance Payment List block. */
-export type RegistrationInstancePaymentListOptionsBag = {
-    /** Gets or sets the currency information. */
-    currencyInfo?: CurrencyInfoBag | null;
+/** An item bag used by the Mobile Navigation Action Editor to represents it's value. */
+export type MobileNavigationActionBag = {
+    /** The page to put on the stack where indicated by the action type. */
+    page?: ListItemBag | null;
 
-    /** Gets or sets the name for the exported excel or csv file. */
-    exportFileName?: string | null;
+    /** The number of pages to pop off the stack (if Pop action type). */
+    popCount?: number | null;
 
-    /** Gets or sets the title for the exported excel or csv file. */
-    exportTitle?: string | null;
-
-    /** Gets or sets the registration template identifier key. */
-    registrationTemplateIdKey?: string | null;
+    /** The type of navigation to perform. */
+    type: MobileNavigationActionType;
 };

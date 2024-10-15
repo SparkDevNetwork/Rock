@@ -214,7 +214,7 @@
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FundraisingDonationList\FundraisingDonationListOptionsBag.cs" />
-	<Compile Include="Blocks\Event\RegistrationInstanceList\RegistrationInstanceListOptionsBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationInstanceList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstancePaymentList\RegistrationInstancePaymentListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessContactList\BusinessContactListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\SavedAccountList\SavedAccountListOptionsBag.cs" />
@@ -584,6 +584,7 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Reporting\FieldFilterPublicPropertyBag.cs" />

@@ -14,41 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using Rock.Enums.Mobile;
 
-namespace Rock.Mobile
+using Rock.Enums.Mobile;
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
-    /// A single navigation action for the mobile shell.
+    /// An item bag used by the Mobile Navigation Action Editor to represents it's value.
     /// </summary>
-    /// <remarks>
-    /// This needs to move somewhere else before it is marked as public.
-    /// </remarks>
-    internal class MobileNavigationAction
+    public class MobileNavigationActionBag
     {
         /// <summary>
-        /// Gets or sets the type of navigation to perform.
-        /// </summary>
-        /// <value>
         /// The type of navigation to perform.
-        /// </value>
+        /// </summary>
         public MobileNavigationActionType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of pages to pop off the stack.
+        /// The number of pages to pop off the stack (if Pop action type).
         /// </summary>
-        /// <value>
-        /// The number of pages to pop off the stack.
-        /// </value>
         public int? PopCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the page unique identifier.
+        /// The page to put on the stack where indicated by the action type.
         /// </summary>
-        /// <value>
-        /// The page unique identifier.
-        /// </value>
-        public Guid? PageGuid { get; set; }
+        public ListItemBag Page { get; set; }
     }
 }

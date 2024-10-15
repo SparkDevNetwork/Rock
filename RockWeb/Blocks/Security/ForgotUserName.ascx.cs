@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Security
                     .Select( d => d.Domain )
                     .ToList();
 
-                return siteHostNames.Contains( hostName );
+                return siteHostNames.Exists( s => s.Equals( hostName, StringComparison.OrdinalIgnoreCase ) );
             }
         }
 
