@@ -446,15 +446,20 @@
      * Takes a Google Polygon path and converts it into a Coordinate array
      */
     function pathToCoordinates(path: google.maps.MVCArray<google.maps.LatLng>): Coordinate[] {
-        const coordinates: Coordinate[] = [];
+        const coordinates: string[] = [];
 
         // Iterate over the vertices of the shape's path
         for (let i = 0; i < path.getLength(); i++) {
             const xy = path.getAt(i);
-            coordinates[i] = toCoordinate(xy);
+            coordinates[i] = xy.toUrlValue();
         }
 
-        return coordinates;
+        // if the last vertex is not already the first, then add the first vertex to the end of the path.
+        if (path.getAt(0).toUrlValue() != coordinates[coordinates.length - 1]) {
+            coordinates.push(path.getAt(0).toUrlValue());
+        }
+
+        return coordinates.map(coord => toCoordinate(coord, false));
     }
 
     // #endregion
@@ -485,7 +490,7 @@
         isMounted.value = true;
     });
 
-        // #endregion
+    // #endregion
 </script>
 
 <style>
