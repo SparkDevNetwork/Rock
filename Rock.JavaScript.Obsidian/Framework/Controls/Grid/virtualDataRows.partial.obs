@@ -319,7 +319,8 @@
         if (typeof ResizeObserver !== "undefined" && element.value) {
 
             resizeObserver = new ResizeObserver(()=>{
-                emit("width", {offsetWidth: element.value?.offsetWidth ?? 0, scrollWidth:element.value?.scrollWidth ?? 0});
+                const payload = {offsetWidth: element.value?.offsetWidth ?? 0, scrollWidth: element.value?.scrollWidth ?? 0};
+                emit("width", payload);
             });
 
             resizeObserver.observe(element.value);

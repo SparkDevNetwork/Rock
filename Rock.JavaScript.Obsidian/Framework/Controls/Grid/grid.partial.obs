@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
+    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
         <div class="grid-heading">
             <FilterHeaderRow v-if="!light"
                              v-model:quickFilterValue="quickFilterValue"
@@ -15,7 +15,7 @@
                              :isSearchVisible="isSearchVisible" />
         </div>
 
-        <div :class="{'grid-overflow': overflow}">
+        <div :class="{'grid-overflow': overflow,}">
 
             <div :class="{'sticky-column-header': !overflow}">
                 <slot name="gridHeaderPrepend" />
@@ -2116,6 +2116,9 @@
         }
     }
 
+    /**
+     * Called when a new width has been emit from the DataRow or VirtualDataRow.
+     */
     function calculateOverflow(width: { offsetWidth: number, scrollWidth: number }):void {
         if (width.offsetWidth < width.scrollWidth) {
             overflow.value = true;
