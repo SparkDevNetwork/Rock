@@ -107,7 +107,7 @@
                                             Help="The location selection modes to allow when adding locations to groups of this type." />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow"
+                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations"
                                             Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules"
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
