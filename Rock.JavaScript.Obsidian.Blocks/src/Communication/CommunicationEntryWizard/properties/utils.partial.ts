@@ -1,5 +1,5 @@
 import DirectionalShorthandPropertyBase from "./directionalShorthandPropertyBase.partial.obs";
-import { computed, ExtractPropTypes, PropType, reactive, Ref, WritableComputedRef } from "vue";
+import { computed, ComputedRef, ExtractPropTypes, PropType, reactive, Ref, toRefs, unref, watch, WritableComputedRef } from "vue";
 import { DirectionalConstituentProperty, StandardDirectionalShorthandProps, StandardLengthProps } from "./types.partial";
 
 type ReactiveDirectionalShorthandProperties = {
@@ -185,9 +185,65 @@ export function useStandardDirectionalShorthandProps(props: ExtractPropTypes<Sta
         element: props.element,
     });
 
-    // watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {
-    //     copyStandardRockFormFieldProps(props, propValues);
-    // });
+    watch(() => props.label, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.label = value;
+        }
+    });
+
+    watch(() => props.labelBottom, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.labelBottom = value;
+        }
+    });
+
+    watch(() => props.labelLeft, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.labelLeft = value;
+        }
+    });
+
+    watch(() => props.labelRight, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.labelRight = value;
+        }
+    });
+
+    watch(() => props.labelTop, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.labelTop = value;
+        }
+    });
+
+    watch(() => props.max, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.max = value;
+        }
+    });
+
+    watch(() => props.min, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.min = value;
+        }
+    });
+
+    watch(() => props.mode, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.mode = value;
+        }
+    });
+
+    watch(() => props.showConstituentProperties, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.showConstituentProperties = value;
+        }
+    });
+
+    watch(() => props.element, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.element = value;
+        }
+    });
 
     return propValues;
 }
@@ -203,16 +259,42 @@ export function useStandardDirectionalShorthandProps(props: ExtractPropTypes<Sta
  */
 export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthProps>): ExtractPropTypes<StandardLengthProps> {
     const propValues = reactive<ExtractPropTypes<StandardLengthProps>>({
-        label: props.label,
-        max: props.max,
-        min: props.min,
-        mode: props.mode,
         element: props.element,
+        min: props.min,
+        max: props.max,
+        mode: props.mode,
+        label: props.label,
     });
 
-    // watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {
-    //     copyStandardRockFormFieldProps(props, propValues);
-    // });
+    watch(() => props.label, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.label = value;
+        }
+    });
+
+    watch(() => props.max, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.max = value;
+        }
+    });
+
+    watch(() => props.min, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.min = value;
+        }
+    });
+
+    watch(() => props.mode, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.mode = value;
+        }
+    });
+
+    watch(() => props.element, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.element = value;
+        }
+    });
 
     return propValues;
 }

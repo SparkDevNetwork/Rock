@@ -55,7 +55,6 @@
 
     // #region Computed Props
 
-
     const isNumeric = computed<boolean>(() => {
         return props.mode === "numberBox" || props.mode === "numberUpDown";
     });
