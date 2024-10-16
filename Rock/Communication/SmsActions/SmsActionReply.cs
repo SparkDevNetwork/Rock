@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Field.Types;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
@@ -48,6 +51,14 @@ namespace Rock.Communication.SmsActions
         Category = AttributeCategories.Response,
         Order = 2 )]
 
+    [FileField( Rock.SystemGuid.BinaryFiletype.DEFAULT,
+        "Attachment",
+        Description = "An attached file that will be sent. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.",
+        IsRequired = false,
+        Key = AttributeKeys.Attachment,
+        Order = 3,
+        Category = AttributeCategories.Response )]
+
     #endregion Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "029085A7-5750-4055-BC37-2272BD194E1D")]
@@ -69,6 +80,11 @@ namespace Rock.Communication.SmsActions
             /// The response.
             /// </summary>
             public const string Response = "Response";
+
+            /// <summary>
+            /// The attachment.
+            /// </summary>
+            public const string Attachment = "Attachment";
         }
 
         /// <summary>
@@ -168,16 +184,32 @@ namespace Rock.Communication.SmsActions
             };
             var responseMessage = action.GetAttributeValue( AttributeKeys.Response ).ResolveMergeFields( mergeObjects, message.FromPerson );
 
+            // Add the attachment (if one was specified)
+            var attachmentBinaryFileGuid = GetAttributeValue( action, "Attachment").AsGuidOrNull();
+            BinaryFile binaryFile = null;
+
+            if ( attachmentBinaryFileGuid.HasValue && attachmentBinaryFileGuid != Guid.Empty )
+            {
+                binaryFile = new BinaryFileService( new RockContext() ).Get( attachmentBinaryFileGuid.Value );
+            }
+
             // If there is no response message then return null.
             if ( string.IsNullOrWhiteSpace( responseMessage ) )
             {
                 return null;
             }
 
-            return new SmsMessage
+            var smsMessage = new SmsMessage
             {
                 Message = responseMessage.Trim()
             };
+
+            if (binaryFile != null )
+            {
+                smsMessage.Attachments.Add( binaryFile );
+            }
+
+            return smsMessage;
         }
 
         #endregion Base Method Overrides
