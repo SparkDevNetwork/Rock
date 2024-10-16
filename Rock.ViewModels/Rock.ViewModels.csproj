@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -51,6 +51,8 @@
     <Compile Include="Blocks\Bus\ConsumerList\ConsumerListOptionsBag.cs" />
     <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\CustomSettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInAdvancedSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInBarcodeSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInDisplaySettingsBag.cs" />
@@ -722,6 +724,7 @@
     <Compile Include="CheckIn\AchievementBag.cs" />
     <Compile Include="CheckIn\AttendanceRequestBag.cs" />
     <Compile Include="CheckIn\AttendanceSessionRequestBag.cs" />
+    <Compile Include="CheckIn\CampusBag.cs" />
     <Compile Include="CheckIn\CheckInResultBag.cs" />
     <Compile Include="CheckIn\CheckoutResultBag.cs" />
     <Compile Include="CheckIn\CloudPrintProxyConnectionStatusBag.cs" />
