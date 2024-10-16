@@ -184,6 +184,10 @@
     <Compile Include="Migrations\202410141551500_FixLoginConfirmationAlert.Designer.cs">
       <DependentUpon>202410141551500_FixLoginConfirmationAlert.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs" />
+    <Compile Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.Designer.cs">
+      <DependentUpon>202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2347,6 +2351,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202410141551500_FixLoginConfirmationAlert.resx">
       <DependentUpon>202410141551500_FixLoginConfirmationAlert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.resx">
+      <DependentUpon>202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
