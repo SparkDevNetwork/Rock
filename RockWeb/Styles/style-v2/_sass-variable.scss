@@ -20,7 +20,7 @@ $custom-radio-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csv
 
 // Dropdown
 $caret-width-base:          4px;
-$zindex-dropdown:           1000;
+$zindex-dropdown:           1050;
 $dropdown-min-width:        160px;
 $dropdown-border:           rgba(0, 0, 0, .15);
 
@@ -95,8 +95,8 @@ $input-height-base:         34px;
 $smartsearch-input-padding: 15px 0 15px 34px;
 
 // Date Picker
-$datepicker-today-bg:       #ffbd42;
-$datepicker-today-focus:    #b87700;
+$datepicker-today-bg:       var(--color-critical-soft);
+$datepicker-today-focus:    var(--color-critical-strong);
 $datepicker-selected-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
 $datepicker-active-text-shadow:     0 -1px 0 rgba(0,0,0,.25);
 $datepicker-disabled-text-shadow:   0 -1px 0 rgba(0,0,0,.25);

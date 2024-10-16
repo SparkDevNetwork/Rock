@@ -300,7 +300,7 @@
   }
 
   .btn-overflow {
-    height:         var(--font-size-small);
+    height:         16px; // Need to be hard coded, to align the three dot in the timeline block.
     padding:        0;
     line-height:    var(--font-size-small);
     color:          var(--color-interface-strong);

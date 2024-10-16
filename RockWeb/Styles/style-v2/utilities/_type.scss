@@ -88,6 +88,12 @@ mark,
   background-color: var(--color-warning-soft);
 }
 
+// Text size
+.text-lg { font-size: var(--font-size-h5); }
+.text-md { font-size: var(--font-size-regular); }
+.text-sm { font-size: var(--font-size-xsmall); }
+.text-xs { font-size: var(--font-size-xsmall); }
+
 // Alignment
 .text-left           { text-align: left; }
 .text-right          { text-align: right; }
@@ -287,6 +293,14 @@ dd {
 abbr[title],
 abbr[data-original-title] {
   cursor: help;
+}
+
+th[align="center"] {
+  text-align: center;
+}
+
+th[align="right"] {
+  text-align: right;
 }
 
 .initialism {

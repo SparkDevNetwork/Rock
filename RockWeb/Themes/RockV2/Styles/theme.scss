@@ -1080,3 +1080,71 @@ $hamburger-spacing: 4px;
   }
 }
 
+.card-profile-bio-condensed {
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+
+  .protection-profile {
+    padding: 14px 18px;
+  }
+
+  .profile-image {
+    position: relative;
+    flex-shrink: 0;
+    width: 25%;
+    height: 100%;
+
+    img {
+      border-radius: var(--rounded-normal) 0 0 var(--rounded-normal);
+    }
+  }
+
+  .profile-data {
+    width: 75%;
+    padding: 14px 18px;
+  }
+
+  .person-name {
+    margin: 0;
+  }
+
+  .dropdown {
+    padding-right: 32px;
+  }
+
+  .profile-toggle {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    color: var(--color-interface-stronger) !important;
+
+    &::after {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      bottom: -4px;
+      left: -4px;
+      z-index: -1;
+      content: '';
+      background: #eee;
+      border-radius: 4px;
+      opacity: 0;
+    }
+    .person-name {
+      flex: 1 1 auto;
+    }
+
+    .dropdown-icon {
+      margin: 0 4px 0 12px;
+    }
+  }
+
+  .profile-toggle:hover::after,
+  .open .profile-toggle::after {
+    opacity: 1;
+  }
+}

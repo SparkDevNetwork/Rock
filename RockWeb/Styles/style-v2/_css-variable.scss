@@ -193,9 +193,9 @@
 
   --border-radius-base: var(--rounded-small);
   --color-base-primary: @color-base-primary;
-  --focus-state-border: 1px solid @input-border-focus;
+  --focus-state-border: 1px solid var(--color-primary); // it is used by the "Write a note" in someone profile.
   --focus-state-border-color: @input-border-focus;
-  --focus-state-shadow: @input-focus-box-shadow;
+  --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
   --input-bg-disabled: @input-bg-disabled;
   --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
   --input-border-radius: @input-border-radius;

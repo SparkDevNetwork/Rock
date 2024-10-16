@@ -100,7 +100,7 @@ th {
         font-weight:    var(--font-weight-bold);
         color:          var(--color-interface-strong);
         text-decoration: none;
-        content:        '/f0dc';
+        content:        '\f0dc';
         opacity:        0;
       }
     }
@@ -118,7 +118,7 @@ th {
   
     &.ascending a:not(.btn)::after {
       color:    var(--color-interface-stronger);
-      content:  '/f0de';
+      content:  '\f0de';
       opacity:  1;
     }
   }
