@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="showBlock"
+    <Grid
           :class="visibleCssClass"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
@@ -127,7 +127,6 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const showBlock = ref(config.options?.showBlock || false);
     const hasValidCourse = ref(config.options?.hasValidCourse || false);
 
     // Use the browser bus to listen for changes to edit mode for any blocks on the page.

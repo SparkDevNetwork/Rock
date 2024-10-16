@@ -27,6 +27,30 @@
         </template>
         <template #edit>
             <EditPanel v-model="learningActivityEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
+
+            <Modal
+                v-model="showDueDateChangeConfirmation"
+                title="Confirm Due Date Change"
+                saveText="Update All"
+                saveThenAddText="Update Matching"
+                :onSave="onSaveWithUpdateAllDueDates"
+                @saveThenAdd="onSaveWithUpdateMatchingDueDates"
+            >
+                You are about to change the due date for this assignment.
+                Please select how you want these changes applied.
+                You can update the due date for all students, only those with the original due date, or cancel if you don't want to proceed.
+            </Modal>
+
+            <Modal
+                v-model="showAvailabilityChangeConfirmation"
+                title="Confirm Availability Change"
+                saveText="Update All"
+                :onSave="onSaveInternal"
+            >
+                You are about to change the availability date for this assignment.
+                This update will apply to all students in the class.
+                Please confirm if you would like to proceed or cancel.
+            </Modal>
         </template>
     </DetailBlock>
 </template>
@@ -34,6 +58,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -47,6 +72,7 @@
     import ViewPanel from "./LearningActivityDetail/viewPanel.partial.obs";
     import { NavigationUrlKey } from "./LearningActivityDetail/types.partial";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { DueDateChangeType } from "@Obsidian/Enums/Lms/dueDateChangeType";
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityBag, LearningActivityDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -60,6 +86,8 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const showDueDateChangeConfirmation = ref(false);
+    const showAvailabilityChangeConfirmation = ref(false);
 
     const learningActivityViewBag = ref(config.entity);
     const learningActivityEditBag = ref<ValidPropertiesBox<LearningActivityBag>>({
@@ -70,6 +98,17 @@
         blockConfig: config,
         entity: learningActivityEditBag
     });
+
+    // If the due or available date criteria is changed
+    // we will compare the new values to the original
+    // and prompt the individual to confirm the change
+    // as well the method for updating (Due Dates only).
+    const originalDueDateCriteria = computed(() => learningActivityViewBag.value?.dueDateCriteria);
+    const originalDueDateDefault = computed(() => learningActivityViewBag.value?.dueDateDefault);
+    const originalDueDateOffset = computed(() => learningActivityViewBag.value?.dueDateOffset);
+    const originalAvailabilityCriteria = computed(() => learningActivityViewBag.value?.availabilityCriteria);
+    const originalAvailableDateDefault = computed(() => learningActivityViewBag.value?.availableDateDefault);
+    const originalAvailableDateOffset = computed(() => learningActivityViewBag.value?.availableDateOffset);
 
     // #endregion
 
@@ -175,7 +214,6 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-
         if (!learningActivityEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
@@ -211,6 +249,38 @@
         }
     }
 
+    const hasAvailabilityChanges = computed((): boolean => {
+        return learningActivityEditBag.value?.bag?.availabilityCriteria !== originalAvailabilityCriteria.value ||
+            learningActivityEditBag.value?.bag?.availableDateDefault !== originalAvailableDateDefault.value ||
+            learningActivityEditBag.value?.bag?.availableDateOffset !== originalAvailableDateOffset.value;
+    });
+
+    const hasDueDateChanges = computed((): boolean => {
+        return learningActivityEditBag.value?.bag?.dueDateCriteria !== originalDueDateCriteria.value ||
+            learningActivityEditBag.value?.bag?.dueDateDefault !== originalDueDateDefault.value ||
+            learningActivityEditBag.value?.bag?.dueDateOffset !== originalDueDateOffset.value;
+    });
+
+    async function onSaveWithUpdateAllDueDates(): Promise<void> {
+        if (!learningActivityEditBag.value?.bag) {
+            showDueDateChangeConfirmation.value = false;
+            return;
+        }
+
+        learningActivityEditBag.value.bag.dueDateChangeType = DueDateChangeType.UpdateAll;
+        await onSaveInternal();
+    }
+
+    async function onSaveWithUpdateMatchingDueDates(): Promise<void> {
+        if (!learningActivityEditBag.value?.bag) {
+            showDueDateChangeConfirmation.value = false;
+            return;
+        }
+
+        learningActivityEditBag.value.bag.dueDateChangeType = DueDateChangeType.UpdateMatching;
+        await onSaveInternal();
+    }
+
     /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
@@ -220,6 +290,22 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
+        if (hasDueDateChanges.value){
+            showDueDateChangeConfirmation.value = true;
+            return false;
+        }
+        else if (hasAvailabilityChanges.value){
+            showAvailabilityChangeConfirmation.value = true;
+            return false;
+        }
+
+        await onSaveInternal();
+        const hasError = errorMessage.value;
+
+        return !hasError;
+    }
+
+    async function onSaveInternal(): Promise<void> {
         const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityBag> | string>("Save", {
             box: learningActivityEditBag.value
         });
@@ -227,17 +313,17 @@
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 learningActivityViewBag.value = result.data.bag;
-
-                return true;
-            }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
-                return result.data;
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning activity.";
+        if (!result.isSuccess){
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the learning activity.";
+        }
 
-        return false;
+        showDueDateChangeConfirmation.value = false;
+        showAvailabilityChangeConfirmation.value = false;
+
+        panelMode.value = DetailPanelMode.View;
     }
 
     // #endregion

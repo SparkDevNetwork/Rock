@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass">
+    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass" v-if="!backButtonClicked">
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
                 <LearningPlanGrid :isAddEnabled="isEditable"
@@ -84,7 +84,7 @@
     import { useBlockBrowserBus, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
@@ -125,12 +125,12 @@
 
     const isEditable = ref(props.isEditable ?? false);
     const navigationUrls = ref(props.navigationUrls ?? {});
+    const backButtonClicked = ref(false);
 
     const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators", "Content", "Announcements"];
 
     // Open the selected tab if one is specified.
-    const params = new URLSearchParams(window.location.search);
-    const selectedTab = ref(params.get("tab") ?? "");
+    const selectedTab = ref(new URLSearchParams(window.location.search).get("tab") ?? "");
 
     // Participant Modal properties.
     const participantModalError = ref("");
@@ -300,6 +300,7 @@
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
      async function onReorderActivity(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        console.warn("reorder", item, beforeItem);
         const result = await invokeBlockAction<string>("ReorderActivity", {
             key: item["idKey"],
             beforeKey: beforeItem?.["idKey"] ?? null
@@ -364,5 +365,12 @@
     });
 
     // #endregion
+
+    // Listen for the browser back button click and update the selected tab if necessary.
+    window.addEventListener("popstate", function (_) {
+        backButtonClicked.value = true;
+        selectedTab.value = new URLSearchParams(window.location.search).get("tab") ?? "";
+        nextTick(() => backButtonClicked.value = false);
+    });
 
 </script>

@@ -179,7 +179,15 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
         bool AreGradesShown => GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
+
+        /// <summary>
+        /// The Lava template to use for the header.
+        /// </summary>
         string HeaderTemplate => GetAttributeValue( AttributeKey.HeaderTemplate ) ?? AttributeDefault.HeaderTemplate;
+
+        /// <summary>
+        /// The number of notifications to show.
+        /// </summary>
         int NumberOfNotificationsToShow => GetAttributeValue( AttributeKey.NumberOfNotificationsToShow ).AsInteger();
 
         #endregion
@@ -229,31 +237,30 @@ namespace Rock.Blocks.Lms
         {
             var studentActivities = new List<LearningActivityCompletionBag>();
 
-            var rockContext = new RockContext();
+            var learningParticipantService = new LearningParticipantService( RockContext );
 
-            var bags = new LearningParticipantService( rockContext )
+            var bags = learningParticipantService
                 .GetParticipantBags( classId, false, currentPerson.Id );
 
-            var currentPersonBag = bags.FirstOrDefault();
+            var currentPersonParticipantBag = bags.FirstOrDefault();
 
-            var scales = new LearningClassService( rockContext )
+            var scales = new LearningClassService( RockContext )
                 .GetClassScales( classId )
                 .ToList()
                 .OrderByDescending( s => s.ThresholdPercentage );
 
             var now = RockDateTime.Now;
 
-            var activityCompletionService = new LearningActivityCompletionService( rockContext );
+            var activityCompletionService = new LearningActivityCompletionService( RockContext );
 
-            var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId )
-                .Include( c => c.LearningActivity.LearningClass )
-                .Include( c => c.LearningActivity.LearningClass.LearningSemester )
-                .ToList()
-                .OrderBy( a => a.LearningActivity.Order );
+            var activities = learningParticipantService
+                .GetStudentLearningPlan( classId, currentPerson.Id );
+
+            var participantId = IdHasher.Instance.GetId( currentPersonParticipantBag.IdKey ).ToIntSafe();
 
             // Get the necessary properties for all the binary files at once.
             var binaryFileIds = activities.Where( a => a.BinaryFileId.HasValue && a.BinaryFileId > 0 ).Select( a => a.BinaryFileId.Value ).ToList();
-            var binaryFiles = new BinaryFileService( rockContext ).GetByIds( binaryFileIds ).Select( b => new
+            var binaryFiles = new BinaryFileService( RockContext ).GetByIds( binaryFileIds ).Select( b => new
             {
                 b.Id,
                 b.FileName,
@@ -306,7 +313,7 @@ namespace Rock.Blocks.Lms
                     AvailabilityCriteria = activity.LearningActivity.AvailabilityCriteria,
                     AvailableDateDefault = activity.LearningActivity.AvailableDateDefault,
                     AvailableDateOffset = activity.LearningActivity.AvailableDateOffset,
-                    CurrentPerson = currentPersonBag,
+                    CurrentPerson = currentPersonParticipantBag,
                     Description = activity.LearningActivity.Description,
                     DescriptionAsHtml = activityDescriptionAsHtml,
                     DueDateCalculated = activity.LearningActivity.DueDateCalculated,
@@ -351,8 +358,9 @@ namespace Rock.Blocks.Lms
                     IsGradePassing = activity.LearningActivity.Points == 0 || activity.GetGrade( scales ).IsPassing,
                     IsFacilitatorCompleted = activity.IsFacilitatorCompleted,
                     IsStudentCompleted = activity.IsStudentCompleted,
+                    LearningActivityIdKey = activity.LearningActivity.IdKey,
                     PointsEarned = activity.PointsEarned,
-                    Student = currentPersonBag,
+                    Student = currentPersonParticipantBag,
                     StudentComment = activity.StudentComment,
                     WasCompletedOnTime = activity.WasCompletedOnTime
                 };
@@ -573,81 +581,97 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult CompleteActivity( LearningActivityCompletionBag activityCompletionBag )
         {
-            using ( var rockContext = new RockContext() )
+            var completionId = IdHasher.Instance.GetId( activityCompletionBag.IdKey ).ToIntSafe();
+            var activityId = IdHasher.Instance.GetId( activityCompletionBag.LearningActivityIdKey ).ToIntSafe();
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var currentPersonId = GetCurrentPerson().Id;
+
+            var activityCompletionService = new LearningActivityCompletionService( RockContext );
+            var participantService = new LearningParticipantService( RockContext );
+
+            var isNew = completionId == 0;
+
+            // Verify that the current person is the student for this activity completion.
+            var activity = isNew ?
+                participantService.GetStudentActivity( classId, currentPersonId, activityId ) :
+                activityCompletionService.Queryable()
+                .Include( a => a.LearningActivity )
+                .Include( a => a.Student )
+                .FirstOrDefault( a => a.Id == completionId && a.Student.PersonId == currentPersonId );
+
+            if ( activity == null )
             {
-                var completionId = IdHasher.Instance.GetId( activityCompletionBag.IdKey );
-                var currentPersonId = GetCurrentPerson().Id;
-
-                // Verify that the current person is the student for this activity completion.
-                var activity = new LearningActivityCompletionService( rockContext ).Queryable()
-                    .Include( a => a.LearningActivity )
-                    .Include( a => a.Student )
-                    .FirstOrDefault( a => a.Id == completionId && a.Student.PersonId == currentPersonId );
-
-                if ( activity == null )
-                {
-                    return ActionBadRequest( $"No {LearningActivityCompletion.FriendlyTypeName} was found." );
-                }
-
-                activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( rockContext );
-                activity.StudentComment = activityCompletionBag.StudentComment;
-
-                // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
-                if ( !activity.GradedByPersonAliasId.HasValue )
-                {
-                    var components = LearningActivityContainer.Instance.Components;
-                    var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
-
-                    activity.ActivityComponentCompletionJson = activityComponent.GetCompletionJsonToPersist(
-                        activityCompletionBag.ActivityComponentCompletionJson,
-                        activity.LearningActivity.ActivityComponentSettingsJson );
-
-                    activity.PointsEarned = activityComponent.CalculatePointsEarned(
-                        activity.LearningActivity.ActivityComponentSettingsJson,
-                        activityCompletionBag.ActivityComponentCompletionJson,
-                        activity.LearningActivity.Points
-                    );
-                }
-                
-                if ( !activity.CompletedByPersonAliasId.HasValue )
-                {
-                    activity.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
-
-                    if ( activity.LearningActivity.AssignTo == AssignTo.Student )
-                    {
-                        activity.IsStudentCompleted = true;
-                        activityCompletionBag.IsStudentCompleted = true;
-                    }
-                    else
-                    {
-                        activity.IsFacilitatorCompleted = true;
-                        activityCompletionBag.IsFacilitatorCompleted = true;
-                    }
-                }
-
-                if ( !activity.CompletedDateTime.HasValue )
-                {
-                    var now = RockDateTime.Now;
-                    activity.CompletedDateTime = now;
-                    activity.WasCompletedOnTime = activity.DueDate.HasValue && activity.DueDate >= now;
-                }
-
-                rockContext.SaveChanges();
-
-                activityCompletionBag.CompletedDate = activity.CompletedDateTime;
-                activityCompletionBag.WasCompletedOnTime = activity.WasCompletedOnTime;
-                activityCompletionBag.GradeName = activity.GetGrade()?.Name;
-
-                // Return the raw component settings so a grade can be computed (if applicable).
-                activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
-
-                // Include the updated activity completion in the response.
-                // if the activity checks the completion JSON for historical configuration
-                // we'll want to ensure it's provided.
-                activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
-
-                return ActionOk( activityCompletionBag );
+                return ActionBadRequest( $"No {LearningActivityCompletion.FriendlyTypeName} was found." );
             }
+
+            activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( RockContext );
+            activity.StudentComment = activityCompletionBag.StudentComment;
+
+            // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
+            if ( !activity.GradedByPersonAliasId.HasValue )
+            {
+                var components = LearningActivityContainer.Instance.Components;
+                var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
+
+                activity.ActivityComponentCompletionJson = activityComponent.GetCompletionJsonToPersist(
+                    activityCompletionBag.ActivityComponentCompletionJson,
+                    activity.LearningActivity.ActivityComponentSettingsJson );
+
+                activity.PointsEarned = activityComponent.CalculatePointsEarned(
+                    activity.LearningActivity.ActivityComponentSettingsJson,
+                    activityCompletionBag.ActivityComponentCompletionJson,
+                    activity.LearningActivity.Points
+                );
+            }
+                
+            if ( !activity.CompletedByPersonAliasId.HasValue )
+            {
+                activity.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+
+                if ( activity.LearningActivity.AssignTo == AssignTo.Student )
+                {
+                    activity.IsStudentCompleted = true;
+                    activityCompletionBag.IsStudentCompleted = true;
+                }
+                else
+                {
+                    activity.IsFacilitatorCompleted = true;
+                    activityCompletionBag.IsFacilitatorCompleted = true;
+                }
+            }
+
+            if ( !activity.CompletedDateTime.HasValue )
+            {
+                var now = RockDateTime.Now;
+                activity.CompletedDateTime = now;
+                activity.WasCompletedOnTime = activity.DueDate.HasValue && activity.DueDate >= now;
+            }
+
+            if ( isNew )
+            {
+                activityCompletionService.Add( activity );
+            }
+
+            RockContext.SaveChanges();
+
+            var scales = new LearningClassService( RockContext )
+                .GetClassScales( classId )
+                .ToList()
+                .OrderByDescending( s => s.ThresholdPercentage );
+
+            activityCompletionBag.CompletedDate = activity.CompletedDateTime;
+            activityCompletionBag.WasCompletedOnTime = activity.WasCompletedOnTime;
+            activityCompletionBag.GradeName = activity.GetGrade( scales )?.Name;
+
+            // Return the raw component settings so a grade can be computed (if applicable).
+            activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
+
+            // Include the updated activity completion in the response.
+            // if the activity checks the completion JSON for historical configuration
+            // we'll want to ensure it's provided.
+            activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
+
+            return ActionOk( activityCompletionBag );
         }
 
         #endregion

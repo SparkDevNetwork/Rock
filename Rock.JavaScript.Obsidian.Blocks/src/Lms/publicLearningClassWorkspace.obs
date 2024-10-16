@@ -115,11 +115,15 @@
                     v-model="viewingCompletionBag"
                     :items="activities"
                     wrapperClass="workspace-navigation-pane"
-                    itemKey="idKey"
+                    itemKey="learningActivityIdKey"
                     :itemClass="getActivityContainerClasses"
                     :disabledKey="isActivityUnavailable"
+                    :mobileThreshold="767"
                     selectedClass="is-selected"
                 >
+                    <template #placeholder>
+                        <p class="text-muted">Tap here to select an activity</p>
+                    </template>
                     <template #default="{ item }">
                         <div>
                             <span class="icon-stack-container fa-stack">
@@ -141,9 +145,6 @@
                                 </span>
                             </div>
                         </div>
-                    </template>
-                    <template #placeholder>
-                        <p class="text-muted ">Tap here to select an activity</p>
                     </template>
                 </CustomSelect>
                 <div class="workspace-main-content">
@@ -425,7 +426,7 @@ span.icon-stack-container i.icon {
 
     const viewingCompletionBag = ref((
         selectedActivityIdKey.length > 0 ?
-            activities.value?.find(a => a.idKey === selectedActivityIdKey) :
+            activities.value?.find(a => a.learningActivityIdKey === selectedActivityIdKey) :
             activities.value?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
@@ -491,7 +492,7 @@ span.icon-stack-container i.icon {
 
         classes.push("activity-navigation-item-container");
 
-        if (activity.idKey === viewingCompletionBag.value.idKey) {
+        if (activity.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey) {
             classes.push("is-selected");
         }
 
@@ -560,7 +561,7 @@ span.icon-stack-container i.icon {
                 viewingCompletionBag.value = result.data;
 
                 // If the result was successful, update the activity with the new values.
-                const index = activities.value?.findIndex(a => a.activityBag?.idKey === viewingCompletionBag.value.activityBag?.idKey) ?? -1;
+                const index = activities.value?.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey) ?? -1;
 
                 if (activities.value && index >= 0) {
                     activities.value[index] = viewingCompletionBag.value;
@@ -604,13 +605,14 @@ span.icon-stack-container i.icon {
      * activityType component are in-sync.
      */
     watch(viewingCompletionBag, (cur, prev) => {
-        if (cur.idKey === prev.idKey) {
+        const prevousIdKey = toValue(prev)?.learningActivityIdKey;
+        const currentIdKey = toValue(cur)?.learningActivityIdKey;
+
+        if (prevousIdKey === currentIdKey) {
             return;
         }
 
-        const prevousIdKey = toValue(prev)?.idKey;
-        const currentIdKey = toValue(cur)?.idKey;
-        const previousSelectedIndex = activities.value.findIndex(a => a.idKey === prevousIdKey);
+        const previousSelectedIndex = activities.value.findIndex(a => a.learningActivityIdKey === prevousIdKey);
 
         // Update the current selection before moving to the new selection.
         // This ensures that any work completed by the student isn't lost when clicking to another task.
@@ -646,4 +648,12 @@ span.icon-stack-container i.icon {
         ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? overviewTab.value) :
         activitiesTab;
 
+    // Listen for the browser back button click and update the selected tab if necessary.
+    window.addEventListener("popstate", function (_) {
+        const activityIdKey = new URLSearchParams(window.location.search).get("activity") ?? "";
+        const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === activityIdKey);
+        if (newActivitySelection){
+            viewingCompletionBag.value = newActivitySelection;
+        }
+    });
 </script>

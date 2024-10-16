@@ -22,7 +22,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Enums.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -77,19 +76,10 @@ namespace Rock.Blocks.Lms
         DefaultValue = "No",
         Order = 3 )]
 
-    [CustomDropdownListField(
-        "Display Mode",
-        Key = AttributeKey.DisplayMode,
-        Description = "Select 'Show only Academic Calendar Mode' to show the block only when the configuration mode is 'Academic Calendar'.",
-        ListSource = DisplayModeListSource,
-        IsRequired = true,
-        DefaultValue = "AcademicCalendarOnly",
-        Order = 4 )]
-
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning class details.",
         Key = AttributeKey.DetailPage,
-        Order = 5 )]
+        Order = 4 )]
 
     #endregion
 
@@ -101,7 +91,6 @@ namespace Rock.Blocks.Lms
         #region Keys
 
         private const string ShowHideListSource = "Yes^Show,No^Hide";
-        private const string DisplayModeListSource = "AcademicCalendarOnly^Show only Academic Calendar Mode,Always^Always show";
 
         private static class DisplayMode
         {
@@ -115,7 +104,6 @@ namespace Rock.Blocks.Lms
             public const string ShowSemesterColumn = "ShowSemesterColumn";
             public const string ShowLocationColumn = "ShowLocationColumn";
             public const string ShowScheduleColumn = "ShowScheduleColumn";
-            public const string DisplayMode = "DisplayMode";
         }
 
         private static class NavigationUrlKey
@@ -173,12 +161,6 @@ namespace Rock.Blocks.Lms
             options.ShowLocationColumn = GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean();
             options.ShowScheduleColumn = GetAttributeValue( AttributeKey.ShowScheduleColumn ).AsBoolean();
             options.ShowSemesterColumn = GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean();
-
-            // Show the block if the block setting for ShowOnlyInAcademicCalendarMode is false
-            // or the program context entity is academic calendar mode.
-            var isProgramAcademicCalendarMode = program?.ConfigurationMode == ConfigurationMode.AcademicCalendar;
-            var showOnlyForAcademicCalendarMode = GetAttributeValue( AttributeKey.DisplayMode ).ToStringSafe() == DisplayMode.AcademicCalendarOnly;
-            options.ShowBlock = !isNewCourse && !isNewProgram && ( !showOnlyForAcademicCalendarMode || isProgramAcademicCalendarMode );
 
             return options;
         }

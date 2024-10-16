@@ -21,19 +21,30 @@
 // </copyright>
 //
 
-export type LearningClassListOptionsBag = {
-    /** Gets or sets whether the block has a valid course parameter. */
-    hasValidCourse: boolean;
+/**
+ * Determines the method for updating the due date of LearningActivityCompletion
+ * records when the LearningActivity.DueDate is modified.
+ */
+export const DueDateChangeType = {
+    /** Update only LearningActivityCompletion records whose due date exactly matches the previous value. */
+    UpdateMatching: 0,
 
-    /** Gets or sets whether the course column is shown. */
-    showCourseColumn: boolean;
+    /** Update all LearningActivityCompletion records to use the new due date. */
+    UpdateAll: 1
+} as const;
 
-    /** Gets or sets whether the location column is shown. */
-    showLocationColumn: boolean;
+/**
+ * Determines the method for updating the due date of LearningActivityCompletion
+ * records when the LearningActivity.DueDate is modified.
+ */
+export const DueDateChangeTypeDescription: Record<number, string> = {
+    0: "Update Matching",
 
-    /** Gets or sets whether the schedule column is shown. */
-    showScheduleColumn: boolean;
-
-    /** Gets or sets whether the semester column is shown. */
-    showSemesterColumn: boolean;
+    1: "Update All"
 };
+
+/**
+ * Determines the method for updating the due date of LearningActivityCompletion
+ * records when the LearningActivity.DueDate is modified.
+ */
+export type DueDateChangeType = typeof DueDateChangeType[keyof typeof DueDateChangeType];

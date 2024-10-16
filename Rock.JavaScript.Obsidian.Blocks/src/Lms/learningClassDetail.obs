@@ -88,13 +88,7 @@
     /**
      * The entity name to display in the block panel.
      */
-    const panelName = computed((): string => {
-        return [
-            learningClassViewBag.value?.courseCode ?? "",
-            learningClassViewBag.value?.semester?.text ?? "",
-            learningClassViewBag.value?.schedule?.text ?? ""
-        ].filter(s => s.length > 0).join(" | ");
-    });
+    const panelName = computed((): string => learningClassViewBag.value?.name ?? "Class");
 
     /**
      * The identifier key value for this entity.
@@ -185,7 +179,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0 };
     });
 
     // #endregion

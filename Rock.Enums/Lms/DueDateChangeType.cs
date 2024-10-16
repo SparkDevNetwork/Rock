@@ -14,31 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Collections.Generic;
-
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
+namespace Rock.Enums.Lms
 {
     /// <summary>
-    /// The options bag containing the necessary configuration data for the LearningProgram Detail block.
+    /// Determines the method for updating the due date of LearningActivityCompletion
+    /// records when the LearningActivity.DueDate is modified.
     /// </summary>
-    public class LearningProgramDetailOptionsBag
+    public enum DueDateChangeType
     {
         /// <summary>
-        /// Gets or sets the available grading systems.
+        /// Update only LearningActivityCompletion records whose due date exactly matches the previous value.
         /// </summary>
-        public List<ListItemBag> GradingSystems { get; set; }
+        UpdateMatching = 0,
 
         /// <summary>
-        /// Gets or sets the available system communications.
+        /// Update all LearningActivityCompletion records to use the new due date.
         /// </summary>
-        public List<ListItemBag> SystemCommunications { get; set; }
-
-        /// <summary>
-        /// Gets or sets the DisplayMode of the block, "Summary" or "Detail".
-        /// </summary>
-        public string DisplayMode { get; set; }
+        UpdateAll = 1
     }
 }

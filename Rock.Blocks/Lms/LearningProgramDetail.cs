@@ -56,19 +56,24 @@ namespace Rock.Blocks.Lms
     [CustomDropdownListField(
         "Display Mode",
         Key = AttributeKey.DisplayMode,
-        Description = "Select 'Summary' to show only attributes that are 'Show on Grid'. Select 'Full' to show all attributes.",
-        ListSource = "Full,Summary",
+        Description = "Select 'Summary' to show the summary page with (optional) KPIs and the gear icon that navigates to the traditional 'Detail' view.",
+        ListSource = "Summary,Detail",
         IsRequired = true,
         DefaultValue = "Summary",
         Order = 2 )]
 
-    [LinkedPage( "Courses Page",
-        Description = "The page that will show the courses for the learning program.",
-        Key = AttributeKey.CoursesPage, IsRequired = false, Order = 4 )]
+    [CustomDropdownListField(
+        "Attribute Display Mode",
+        Key = AttributeKey.AttributeDisplayMode,
+        Description = "Select 'Is Grid Column' to show only attributes that are 'Show on Grid'. Select 'All' to show all attributes.",
+        ListSource = "Is Grid Column,All",
+        IsRequired = true,
+        DefaultValue = "Is Grid Column",
+        Order = 3 )]
 
-    [LinkedPage( "Completion Detail Page",
-        Description = "The page that will show the program completion detail.",
-        Key = AttributeKey.CompletionDetailPage, IsRequired = false, Order = 5 )]
+    [LinkedPage( "Detail Page",
+        Description = "The page that will show the Detail view for the learning program (if Display Mode is 'Summary').",
+        Key = AttributeKey.DetailPage, IsRequired = false, Order = 4 )]
 
     #endregion
 
@@ -80,9 +85,8 @@ namespace Rock.Blocks.Lms
 
         private static class AttributeKey
         {
-            public const string Category = "Category";
-            public const string CompletionDetailPage = "CompletionDetailPage";
-            public const string CoursesPage = "CoursesPage";
+            public const string AttributeDisplayMode = "AttributeDisplayMode";
+            public const string DetailPage = "DetailPage";
             public const string DisplayMode = "DisplayMode";
             public const string ShowKPIs = "ShowKPIs";
         }
@@ -96,14 +100,13 @@ namespace Rock.Blocks.Lms
         private static class PageParameterKey
         {
             public const string LearningProgramId = "LearningProgramId";
-            public const string LearningProgramCompletionId = "LearningProgramCompletionId";
+            public const string ReturnUrl = "returnUrl";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
-            public const string CoursesPage = "CoursesPage";
-            public const string CompletionDetailPage = "CompletionDetailPage";
+            public const string DetailPage = "DetailPage";
         }
 
         #endregion Keys
@@ -133,6 +136,7 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramDetailOptionsBag();
 
+            options.DisplayMode = GetAttributeValue( AttributeKey.DisplayMode );
             options.SystemCommunications = isEditable ? GetCommunicationTemplates() : new List<ListItemBag>();
             options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable()
                 .Where( g => g.IsActive )
@@ -442,7 +446,7 @@ namespace Rock.Blocks.Lms
                 initialEntity.SystemCommunication = defaultSystemCommunication;
                 initialEntity.HighlightColor = infoColor;
             }
-
+            
             return initialEntity;
         }
 
@@ -452,22 +456,10 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls( string idKey )
         {
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = idKey
-            };
-
-            var completionDetailPageParams = new Dictionary<string, string>()
-            {
-                [PageParameterKey.LearningProgramId] = idKey,
-                [PageParameterKey.LearningProgramCompletionId] = "((Key))"
-            };
-
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.CoursesPage] = this.GetLinkedPageUrl( AttributeKey.CoursesPage, queryParams ),
-                [NavigationUrlKey.CompletionDetailPage] = this.GetLinkedPageUrl( AttributeKey.CompletionDetailPage, completionDetailPageParams ),
+                [NavigationUrlKey.ParentPage] = PageParameter(PageParameterKey.ReturnUrl) ?? this.GetParentPageUrl(),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.LearningProgramId, idKey ),
             };
         }
 
