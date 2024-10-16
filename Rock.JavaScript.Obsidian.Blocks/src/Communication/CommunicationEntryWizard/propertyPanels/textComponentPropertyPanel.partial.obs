@@ -1,0 +1,53 @@
+<template>
+    <ComponentPropertyPanelBase @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <InnerHtmlProperty :element="componentElement"
+                                   mode="html" />
+            </Accordion>
+
+            <Accordion title="Typography">
+                <FontPropertyGroup :element="componentElement" />
+            </Accordion>
+
+            <Accordion title="Spacing & Layout">
+                <TextAlignProperty :element="componentElement" />
+                <PaddingProperty :element="componentElement" />
+            </Accordion>
+
+            <Accordion title="Borders & Effects">
+                <BorderPropertyGroup :element="componentElement" />
+            </Accordion>
+
+            <Accordion title="Background">
+                <BackgroundColorProperty :element="componentElement" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import TextAlignProperty from "../properties/textAlignProperty.partial.obs";
+
+    defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+</script>

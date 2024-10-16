@@ -1,0 +1,55 @@
+<template>
+    <DirectionalShorthandPropertyBase v-bind="baseProps"
+                                      ref="baseProperty"
+                                      shorthandProperty="margin"
+                                      topProperty="margin-top"
+                                      bottomProperty="margin-bottom"
+                                      rightProperty="margin-right"
+                                      leftProperty="margin-left"
+                                      @changeShorthand="$emit('changeShorthand', $event)"
+                                      @changeTop="$emit('changeTop', $event)"
+                                      @changeBottom="$emit('changeBottom', $event)"
+                                      @changeRight="$emit('changeRight', $event)"
+                                      @changeLeft="$emit('changeLeft', $event)" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import DirectionalShorthandPropertyBase from "./directionalShorthandPropertyBase.partial.obs";
+    import { standardDirectionalShorthandProps, useStandardDirectionalShorthandProps } from "./utils.partial";
+
+    const props = defineProps({
+        ...standardDirectionalShorthandProps,
+
+        label: {
+            type: String as PropType<string>,
+            default: "Margin" as const
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            default: 0 as const
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 99 as const
+        }
+    });
+
+    const baseProps = useStandardDirectionalShorthandProps(props);
+
+    defineEmits<{
+        (e: "changeShorthand", value: string): void;
+        (e: "changeTop", value: string): void;
+        (e: "changeBottom", value: string): void;
+        (e: "changeRight", value: string): void;
+        (e: "changeLeft", value: string): void;
+    }>();
+
+    // #region Values
+
+    const baseProperty = ref<InstanceType<typeof DirectionalShorthandPropertyBase> | undefined>();
+
+    // #endregion
+</script>

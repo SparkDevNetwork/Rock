@@ -1,0 +1,36 @@
+<template>
+    <FontFamilyProperty :element="element"
+                        :label="label" />
+
+    <FontSizeProperty :element="element" />
+
+    <FontColorProperty :element="element" />
+
+    <TextFormatProperty :element="element" />
+
+    <LineHeightProperty :element="element" />
+
+    <TextTransformProperty :element="element" />
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import FontColorProperty from "./fontColorProperty.partial.obs";
+    import FontFamilyProperty from "./fontFamilyProperty.partial.obs";
+    import FontSizeProperty from "./fontSizeProperty.partial.obs";
+    import LineHeightProperty from "./lineHeightProperty.partial.obs";
+    import TextFormatProperty from "./textFormatProperty.partial.obs";
+    import TextTransformProperty from "./textTransformProperty.partial.obs";
+
+    defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Font" as const
+        }
+    });
+</script>

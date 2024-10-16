@@ -1,0 +1,42 @@
+<template>
+    <ComponentPropertyPanelBase @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <template v-if="hrElement">
+                    <DividerPropertyGroup :element="hrElement" />
+                    <MarginProperty :element="hrElement" />
+                </template>
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import DividerPropertyGroup from "../properties/dividerPropertyGroup.partial.obs";
+    import MarginProperty from "../properties/marginProperty.partial.obs";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Computed Values
+
+    const hrElement = computed<HTMLHRElement | null | undefined>(() => {
+        return props.componentElement.querySelector("hr");
+    });
+
+    // #endregion
+</script>

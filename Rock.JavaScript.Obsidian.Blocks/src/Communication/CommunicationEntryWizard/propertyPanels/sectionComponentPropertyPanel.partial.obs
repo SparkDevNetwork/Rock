@@ -1,0 +1,51 @@
+<template>
+    <ComponentPropertyPanelBase @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="Row Settings">
+                <BackgroundColorProperty :element="componentElement" />
+                <BorderPropertyGroup :element="componentElement" />
+            </Accordion>
+
+            <Accordion title="Columns">
+                {{ columnElements.length }}
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Values
+
+    const backgroundColor = ref<string>(props.componentElement.style.backgroundColor ?? "");
+    const columnElements = ref<HTMLElement[]>([...props.componentElement.querySelectorAll(".dropzone")].map(e => <HTMLElement>e));
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        backgroundColor.value = props.componentElement.style.backgroundColor ?? "";
+    });
+
+    // #endregion
+</script>

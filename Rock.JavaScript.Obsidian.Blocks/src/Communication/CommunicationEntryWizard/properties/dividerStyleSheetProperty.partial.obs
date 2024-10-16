@@ -1,0 +1,184 @@
+<template>
+    <BorderStylePropertyBase v-model="borderTopStyle"
+                             label="Style" />
+
+    <NumberUpDown v-model="borderTopWidth"
+                  label="Thickness"
+                  :min="0"
+                  :max="30" />
+
+    <ColorPicker v-model="borderTopColor"
+                 label="Color" />
+
+    <NumberUpDown v-model="marginY"
+                  label="Vertical Margin Size"
+                  :min="0"
+                  :max="99" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import BorderStylePropertyBase from "./borderStylePropertyBase.partial.obs";
+    import { BorderStyle } from "./types.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        /**
+         * This CSS class will be added to the &lt;style&gt; element
+         * to help identify it during updates.
+         *
+         * @example
+         * <style class="{{ props.styleCssClass }}">
+         * </style>
+         */
+        styleCssClass: {
+            type: String as PropType<string>,
+            default: "rock-design-divider" as const
+        },
+
+        /**
+         * The CSS selectors used in the resulting CSS ruleset.
+         *
+         * @example
+         * <style class="rock-design-divider">
+         * {{ props.cssRulesetSelectors }} {
+         *   border-style: solid;
+         * }
+         * </style>
+         */
+        cssRulesetSelectors: {
+            type: String as PropType<string>,
+            default: ".component-divider hr" as const
+        }
+    });
+
+    // #region Values
+
+    // These are initialized in the "immediate" props.modelValue watcher below.
+    const borderTopStyle = ref<BorderStyle>("");
+    const borderTopWidth = ref<number>(0);
+    const borderTopColor = ref<string>("");
+    const marginY = ref<number>(0);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const cssRuleset = computed<string | null>(() => {
+        const declarations: string[] = [];
+
+        if (borderTopStyle.value) {
+            declarations.push(`border-top-style: ${borderTopStyle.value};`);
+            declarations.push("border-bottom-style: none;");
+            declarations.push("border-right-style: none;");
+            declarations.push("border-left-style: none;");
+        }
+
+        if (borderTopColor.value) {
+            declarations.push(`border-top-color: ${borderTopColor.value};`);
+            declarations.push("border-bottom-color: transparent;");
+            declarations.push("border-right-color: transparent;");
+            declarations.push("border-left-color: transparent;");
+        }
+
+        if (borderTopWidth.value) {
+            declarations.push(`border-top-width: ${borderTopWidth.value}px;`);
+            declarations.push("border-bottom-width: 0;");
+            declarations.push("border-right-width: 0;");
+            declarations.push("border-left-width: 0;");
+        }
+
+        if (marginY.value) {
+            declarations.push(`margin-top: ${marginY.value}px;`);
+            declarations.push(`margin-bottom: ${marginY.value}px;`);
+        }
+
+        if (declarations.length) {
+            return `${props.cssRulesetSelectors} {\n    ${declarations.join("\n    ")}\n}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        const ownerDocument = props.element.ownerDocument;
+        const ownerWindow = ownerDocument.defaultView;
+
+        if (!ownerWindow) {
+            throw "The element is not a child of an active window";
+        }
+
+        let loaded = false;
+        for (const stylesheet of props.element.ownerDocument.styleSheets) {
+            const ownerNode = stylesheet.ownerNode;
+
+            if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
+                if (ownerNode.classList.contains(props.styleCssClass)) {
+                    for (const rule of stylesheet.cssRules) {
+                        if (rule instanceof ownerWindow.CSSStyleRule) {
+                            if (rule.selectorText === props.cssRulesetSelectors) {
+                                borderTopStyle.value = rule.style.borderTopStyle as BorderStyle;
+                                borderTopWidth.value = parseInt(rule.style.borderTopWidth || "0");
+                                borderTopColor.value = rule.style.borderTopColor;
+                                marginY.value = parseInt(rule.style.marginTop || "0");
+
+                                loaded = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!loaded) {
+            borderTopStyle.value = "";
+            borderTopWidth.value = 0;
+            borderTopColor.value = "";
+            marginY.value = 0;
+        }
+    }, {
+        // Since the reactive values are not initialized where defined above,
+        // this needs to be immediate here.
+        immediate: true
+    });
+
+    // Whenever the CSS ruleset changes based on the font properties,
+    // the style tag associated with this component's bound element
+    // should be added/updated with the new styles.
+    watch(cssRuleset, () => {
+        if (cssRuleset.value) {
+            const newStyleElement = props.element.ownerDocument.createElement("style");
+            newStyleElement.textContent = cssRuleset.value;
+            newStyleElement.classList.add(props.styleCssClass);
+
+            const currentStyleElement = props.element.querySelector(`style.${props.styleCssClass}`);
+
+            if (currentStyleElement) {
+                currentStyleElement.replaceWith(newStyleElement);
+            }
+            else {
+                props.element.append(newStyleElement);
+            }
+        }
+        else {
+            const currentStyleElement = props.element.querySelector(`style.${props.styleCssClass}`);
+
+            if (currentStyleElement) {
+                currentStyleElement.remove();
+            }
+        }
+    });
+
+    // #endregion
+</script>

@@ -1,0 +1,40 @@
+<template>
+    <BorderStylePropertyBase v-model="borderStyle" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import BorderStylePropertyBase from "./borderStylePropertyBase.partial.obs";
+    import { BorderStyle } from "./types.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "changeShorthand", value: string): void;
+    }>();
+
+    // #region Values
+
+    const borderStyle = ref<BorderStyle>(props.element.style.borderStyle as BorderStyle);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(borderStyle, (value: string) => {
+        props.element.style.borderStyle = value;
+
+        emit("changeShorthand", value);
+    });
+
+    watch(() => props.element, () => {
+        borderStyle.value = props.element.style.borderStyle as BorderStyle;
+    });
+
+    // #endregion
+</script>

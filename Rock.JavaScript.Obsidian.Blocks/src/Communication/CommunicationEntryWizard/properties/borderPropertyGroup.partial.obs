@@ -1,0 +1,101 @@
+<template>
+    <div class="form-group">
+        <InlineSwitch v-model="hasBorder"
+                      :label="label" />
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="hasBorder">
+            <BorderColorProperty ref="borderColorProperty"
+                                 :element="element"
+                                 @change="onBorderColorChanged" />
+
+            <BorderWidthProperty ref="borderWidthProperty"
+                                 :element="element"
+                                 mode="numberUpDown"
+                                 @changeShorthand="onBorderWidthChanged" />
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import BorderColorProperty from "./borderColorProperty.partial.obs";
+    import BorderWidthProperty from "./borderWidthProperty.partial.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+        label: {
+            type: String as PropType<string>,
+            default: "Border" as const
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "changeHasBorder", value: boolean): void;
+        (e: "changeBorderColor", value: string): void;
+        (e: "changeBorderWidth", value: string): void;
+    }>();
+
+    // #region Values
+
+    const hasBorder = ref<boolean>(!!props.element.style.border || !!props.element.style.borderColor || !!props.element.style.borderWidth);
+    const borderColorProperty = ref<InstanceType<typeof BorderColorProperty> | undefined>();
+    const borderWidthProperty = ref<InstanceType<typeof BorderWidthProperty> | undefined>();
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onBorderColorChanged(value: string): void {
+        emit("changeBorderColor", value);
+    }
+
+    function onBorderWidthChanged(value: string): void {
+        // TODO JMH Revisit border stuff.
+        if (value) {
+            if (!props.element.style.borderStyle) {
+                // Ensure the element has a border style if a border color is specified.
+                props.element.style.borderStyle = "solid";
+            }
+        }
+        else {
+            props.element.style.borderStyle = "";
+        }
+
+        emit("changeBorderWidth", value);
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(hasBorder, (value: boolean) => {
+        if (!value) {
+            // Clear the border properties when "Border" is switched off.
+            if (borderColorProperty.value) {
+                borderColorProperty.value.borderColor = "";
+            }
+
+            if (borderWidthProperty.value) {
+                // TODO JMH Figure out if there is a better way to maintain this...
+                // TODO JMH When the mode is set to "textBox", the borderWidth property should be used.
+                // TODO JMH Should we only expose string properties?
+                borderWidthProperty.value.borderWidth = "";
+            }
+        }
+
+        emit("changeHasBorder", value);
+    });
+
+    watch(() => props.element, () => {
+        hasBorder.value = !!props.element.style.border || !!props.element.style.borderColor || !!props.element.style.borderWidth;
+    });
+
+    // #endregion
+</script>

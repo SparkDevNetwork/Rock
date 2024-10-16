@@ -1,0 +1,117 @@
+<template>
+    <DropDownList v-model="buttonWidth"
+                  :items="buttonWidthItems"
+                  :label="label" />
+
+    <TransitionVerticalCollapse>
+        <div v-if="buttonWidth === 'fixed'">
+            <WidthProperty ref="fixedWidthProperty"
+                           :element="buttonShellElement"
+                           label="Fixed Width"
+                           mode="textBox"
+                           @change="onButtonShellFixedWidthChanged" />
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import WidthProperty from "./widthProperty.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        buttonShellElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        buttonElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Width" as const
+        }
+    });
+
+    type ButtonWidth = "fitToText" | "full" | "fixed";
+
+    const buttonWidthItems: ListItemBag[] = [
+        {
+            text: "Fit To Text",
+            value: get<ButtonWidth>("fitToText")
+        }, {
+            text: "Full Width",
+            value: get<ButtonWidth>("full")
+        }, {
+            text: "Fixed Width",
+            value: get<ButtonWidth>("fixed")
+        }
+    ];
+
+    // #region Values
+
+    const buttonWidth = ref<ButtonWidth>("fitToText"); // TODO JMH Figure out how to initialize
+    const fixedWidthProperty = ref<InstanceType<typeof WidthProperty> | undefined>();
+
+    // #endregion
+
+    // #region Functions
+
+    function get<T>(value: T): T {
+        return value;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onButtonShellFixedWidthChanged(value: string): void {
+        // Keep the wrapped button updated.
+        props.buttonElement.style.width = value;
+
+        // Keep the shell's width attribute updated.
+        if (value) {
+            props.buttonShellElement.setAttribute("width", value);
+        }
+        else {
+            props.buttonShellElement.removeAttribute("width");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(buttonWidth, (value: ButtonWidth) => {
+        if (value === "fitToText") {
+            // Remove fixed width.
+            // This will also trigger the 'change' event and clear the rest of the width values.
+            fixedWidthProperty.value?.setValue("");
+        }
+        else if (value === "full") {
+            fixedWidthProperty.value?.setValue("100%");
+        }
+    });
+
+    // watch(buttonWidth, (value: string) => {
+    //     if (value) {
+    //         props.buttonShellElement.setAttribute("align", value);
+    //     }
+    //     else {
+    //         props.buttonShellElement.removeAttribute("align");
+    //     }
+
+    //     emit("changeShorthand", value);
+    // });
+
+    // watch(() => props.buttonShellElement, () => {
+    //     buttonWidth.value = props.buttonShellElement.getAttribute("align") ?? "";
+    // });
+
+    // #endregion
+</script>

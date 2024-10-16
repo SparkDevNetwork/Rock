@@ -1,0 +1,109 @@
+<template>
+    <template v-if="headingElement">
+        <ComponentPropertyPanelBase @complete="$emit('complete')"
+                                    @delete="$emit('delete')">
+            <AccordionGroup>
+                <Accordion title="General Settings">
+                    <TextContentProperty :element="headingElement" />
+
+                    <DropDownList v-model="headingLevel"
+                                  :items="headingLevels"
+                                  label="Level"
+                                  :showBlankItem="false" />
+                </Accordion>
+
+                <Accordion title="Typography">
+                    <FontPropertyGroup :element="headingElement" />
+                </Accordion>
+            </AccordionGroup>
+        </ComponentPropertyPanelBase>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import TextContentProperty from "../properties/textContentProperty.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    const headingLevels: ListItemBag[] = [
+        {
+            text: "Heading 1",
+            value: "h1"
+        }, {
+            text: "Heading 2",
+            value: "h2"
+        }, {
+            text: "Heading 3",
+            value: "h3"
+        }, {
+            text: "Heading 4",
+            value: "h4"
+        }, {
+            text: "Heading 5",
+            value: "h5"
+        }, {
+            text: "Heading 6",
+            value: "h6"
+        },
+    ];
+
+    type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+    // #region Values
+
+    const headingElement = ref<HTMLHeadingElement | null | undefined>(getHeadingElement());
+    const headingLevel = ref<HeadingLevel>(headingElement.value?.tagName?.toLowerCase() as HeadingLevel ?? "h1");
+
+    // #endregion
+
+    // #region Functions
+
+    function getHeadingElement(): HTMLHeadingElement | null {
+        return props.componentElement.querySelector("h1,h2,h3,h4,h5,h6") ?? null;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(headingLevel, (value: HeadingLevel) => {
+        if (!value || !headingElement.value || headingElement.value?.tagName.toLowerCase() === value) {
+            // No need to change heading level.
+            return;
+        }
+
+        const newHeadingElement = props.componentElement.ownerDocument.createElement(value);
+
+        // Copy attributes from old to new heading element.
+        [...headingElement.value.attributes].forEach(attr => {
+            newHeadingElement.setAttribute(attr.name, attr.value);
+        });
+
+        // Copy the inner content from old to new heading element.
+        newHeadingElement.innerHTML = headingElement.value.innerHTML;
+
+        // Replace the old heading element with the new one.
+        headingElement.value.parentNode?.replaceChild(newHeadingElement, headingElement.value);
+
+        headingElement.value = newHeadingElement;
+    });
+
+    // #endregion
+</script>

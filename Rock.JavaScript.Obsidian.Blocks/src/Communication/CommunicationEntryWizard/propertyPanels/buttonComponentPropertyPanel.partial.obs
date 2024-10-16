@@ -1,0 +1,114 @@
+<template>
+    <ComponentPropertyPanelBase v-if="buttonInnerWrapElement && buttonShellElement && buttonElement"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <TextContentProperty :element="buttonElement"
+                                     label="Button Text" />
+
+                <HrefProperty :element="buttonElement" />
+
+                <BackgroundColorProperty :element="buttonElement" /><!-- TODO JMH This needs to change the border color too! -->
+
+                <ColorProperty :element="buttonElement" label="Font Color" />
+            </Accordion>
+
+            <Accordion title="Typography">
+                <FontFamilyProperty :element="buttonElement" />
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <FontWeightProperty :element="buttonElement" />
+                    </div>
+
+                    <div class="col-sm-6">
+                        <FontSizeProperty :element="buttonElement"
+                                          mode="textBox" />
+                    </div>
+                </div>
+            </Accordion>
+
+            <Accordion title="Spacing & Layout">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <ButtonWidthProperty :buttonShellElement="buttonShellElement"
+                                             :buttonElement="buttonElement" />
+                    </div>
+
+                    <div class="col-sm-6">
+                        <AlignProperty :element="buttonInnerWrapElement" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <PaddingProperty :element="buttonElement"
+                                         label="Button Padding"
+                                         mode="textBox" />
+                    </div>
+
+                    <div class="col-sm-6">
+                        <BorderRadiusProperty :element="buttonElement"
+                                              mode="textBox" />
+                    </div>
+                </div>
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<style scoped>
+:deep(.picker-label) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../controls/accordion.partial.obs";
+    import AccordionGroup from "../controls/accordionGroup.partial.obs";
+    import AlignProperty from "../properties/alignProperty.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
+    import ColorProperty from "../properties/colorProperty.partial.obs";
+    import FontFamilyProperty from "../properties/fontFamilyProperty.partial.obs";
+    import FontSizeProperty from "../properties/fontSizeProperty.partial.obs";
+    import FontWeightProperty from "../properties/fontWeightProperty.partial.obs";
+    import HrefProperty from "../properties/hrefProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import TextContentProperty from "../properties/textContentProperty.partial.obs";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Values
+
+    const buttonInnerWrapElement = ref<HTMLElement | null | undefined>(props.componentElement.querySelector(".button-innerwrap") as HTMLElement);
+    const buttonShellElement = ref<HTMLElement | null | undefined>(buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement);
+    const buttonContentElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-content") as HTMLElement);
+    const buttonElement = ref<HTMLElement | null | undefined>(buttonContentElement.value?.querySelector(".button-link") as HTMLElement);
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.componentElement, (element: HTMLElement) => {
+        buttonInnerWrapElement.value = element.querySelector(".button-innerwrap") as HTMLElement;
+        buttonShellElement.value = buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement;
+        buttonElement.value = buttonShellElement.value?.querySelector(".button-link") as HTMLElement;
+    });
+
+    // #endregion
+</script>

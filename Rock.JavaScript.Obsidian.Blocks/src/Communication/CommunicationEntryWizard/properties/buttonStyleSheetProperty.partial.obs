@@ -1,0 +1,188 @@
+<template>
+    <BackgroundColorPropertyBase v-model="backgroundColor" />
+
+    <ColorPropertyBase v-model="color"
+                       label="Text Color" />
+
+    <FontFamilyPropertyBase v-model="fontFamily"
+                            label="Text" />
+
+    <FontSizePropertyBase v-model="fontSize" />
+
+    <NumberUpDown v-model="borderRadius"
+                  label="Corner Radius"
+                  :min="0" />
+
+    <DropDownList v-model="textStyle"
+                  :items="[]"
+                  label="Text Style" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import BackgroundColorPropertyBase from "./backgroundColorPropertyBase.partial.obs";
+    import ColorPropertyBase from "./colorPropertyBase.partial.obs";
+    import FontFamilyPropertyBase from "./fontFamilyPropertyBase.partial.obs";
+    import FontSizePropertyBase from "./fontSizePropertyBase.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        /**
+         * This CSS class will be added to the &lt;style&gt; element
+         * to help identify it during updates.
+         *
+         * @example
+         * <style class="{{ props.styleCssClass }}">
+         * </style>
+         */
+        styleCssClass: {
+            type: String as PropType<string>,
+            default: "rock-design-button" as const
+        },
+
+        /**
+         * The CSS selectors used in the resulting CSS ruleset.
+         *
+         * @example
+         * <style class="rock-design-divider">
+         * {{ props.cssRulesetSelectors }} {
+         *   border-style: solid;
+         * }
+         * </style>
+         */
+        cssRulesetSelectors: {
+            type: String as PropType<string>,
+            default: ".component-button .button-link" as const
+        }
+    });
+
+    // #region Values
+
+    // These are initialized in the "immediate" props.modelValue watcher below.
+    const backgroundColor = ref<string>("");
+    const color = ref<string>("");
+    const fontFamily = ref<string>("");
+    const fontSize = ref<string>("");
+    const borderRadius = ref<number>(0);
+    const textStyle = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const cssRuleset = computed<string | null>(() => {
+        const declarations: string[] = [];
+
+        if (backgroundColor.value) {
+            declarations.push(`background-color: ${backgroundColor.value};`);
+        }
+
+        if (color.value) {
+            declarations.push(`color: ${color.value};`);
+        }
+
+        if (fontFamily.value) {
+            declarations.push(`font-family: ${fontFamily.value};`);
+        }
+
+        if (fontSize.value) {
+            declarations.push(`font-size: ${fontSize.value};`);
+        }
+
+        if (borderRadius.value) {
+            declarations.push(`border-radius: ${borderRadius.value}px;`);
+        }
+
+        if (textStyle.value) {
+            // TODO JMH Do something?
+        }
+
+        if (declarations.length) {
+            return `${props.cssRulesetSelectors} {\n    ${declarations.join("\n    ")}\n}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        const ownerDocument = props.element.ownerDocument;
+        const ownerWindow = ownerDocument.defaultView;
+
+        if (!ownerWindow) {
+            throw "The element is not a child of an active window";
+        }
+
+        let loaded = false;
+        for (const stylesheet of props.element.ownerDocument.styleSheets) {
+            const ownerNode = stylesheet.ownerNode;
+
+            if (ownerNode instanceof ownerWindow.HTMLStyleElement) {
+                if (ownerNode.classList.contains(props.styleCssClass)) {
+                    for (const rule of stylesheet.cssRules) {
+                        if (rule instanceof ownerWindow.CSSStyleRule) {
+                            if (rule.selectorText === props.cssRulesetSelectors) {
+                                backgroundColor.value = rule.style.backgroundColor;
+                                color.value = rule.style.color;
+                                fontFamily.value = rule.style.fontFamily;
+                                fontSize.value = rule.style.fontSize;
+                                borderRadius.value = parseInt(rule.style.borderRadius || "0");
+                                // TODO JMH textStyle.value = ??
+
+                                loaded = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!loaded) {
+            backgroundColor.value = "";
+            color.value = "";
+            fontFamily.value = "";
+            fontSize.value = "";
+            borderRadius.value = 0;
+            textStyle.value = "";
+        }
+    }, {
+        // Since the reactive values are not initialized where defined above,
+        // this needs to be immediate here.
+        immediate: true
+    });
+
+    // Whenever the CSS ruleset changes based on the font properties,
+    // the style tag associated with this component's bound element
+    // should be added/updated with the new styles.
+    watch(cssRuleset, () => {
+        if (cssRuleset.value) {
+            const tag = props.element.querySelector(`style.${props.styleCssClass}`);
+            const styleTag = props.element.ownerDocument.createElement("style");
+            styleTag.textContent = cssRuleset.value;
+            styleTag.classList.add(props.styleCssClass);
+            if (tag) {
+                tag.replaceWith(styleTag);
+            }
+            else {
+                props.element.append(styleTag);
+            }
+        }
+        else {
+            const tag = props.element.querySelector(`style.${props.styleCssClass}`);
+            if (tag) {
+                tag.remove();
+            }
+        }
+    });
+
+    // #endregion
+</script>

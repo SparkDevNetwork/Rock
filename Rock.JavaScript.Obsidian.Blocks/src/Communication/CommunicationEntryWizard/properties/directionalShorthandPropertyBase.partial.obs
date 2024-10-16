@@ -1,0 +1,131 @@
+<template>
+    <template v-if="!showConstituentProperties">
+        <LengthPropertyBase :element="element"
+                            :label="label"
+                            :property="shorthandProperty"
+                            :min="min"
+                            :max="max"
+                            :mode="mode"
+                            @change="$emit('changeShorthand', $event)" />
+    </template>
+
+    <template v-else>
+        <RockLabel v-if="label">{{ label }}</RockLabel>
+
+        <div class="row">
+            <div class="col-sm-6" v-if="constituentProperties.includes('top')">
+                <LengthPropertyBase :element="element"
+                                    :label="labelTop"
+                                    :property="topProperty"
+                                    :min="min"
+                                    :max="max"
+                                    :mode="mode"
+                                    @change="$emit('changeTop', $event)" />
+            </div>
+
+            <div class="col-sm-6" v-if="constituentProperties.includes('bottom')">
+                <LengthPropertyBase :element="element"
+                                    :label="labelBottom"
+                                    :property="bottomProperty"
+                                    :min="min"
+                                    :max="max"
+                                    :mode="mode"
+                                    @change="$emit('changeBottom', $event)" />
+            </div>
+
+            <div class="col-sm-6" v-if="constituentProperties.includes('right')">
+                <LengthPropertyBase :element="element"
+                                    :label="labelRight"
+                                    :property="rightProperty"
+                                    :min="min"
+                                    :max="max"
+                                    :mode="mode"
+                                    @change="$emit('changeRight', $event)" />
+            </div>
+
+            <div class="col-sm-6" v-if="constituentProperties.includes('left')">
+                <LengthPropertyBase :element="element"
+                                    :label="labelLeft"
+                                    :property="leftProperty"
+                                    :min="min"
+                                    :max="max"
+                                    :mode="mode"
+                                    @change="$emit('changeLeft', $event)" />
+            </div>
+        </div>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import LengthPropertyBase from "./lengthPropertyBase.partial.obs";
+    import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
+    import { standardDirectionalShorthandProps } from "./utils.partial";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    const props = defineProps({
+        ...standardDirectionalShorthandProps,
+
+        shorthandProperty: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        topProperty: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        bottomProperty: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        rightProperty: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+
+        leftProperty: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "changeShorthand", value: string): void;
+        (e: "changeTop", value: string): void;
+        (e: "changeBottom", value: string): void;
+        (e: "changeRight", value: string): void;
+        (e: "changeLeft", value: string): void;
+    }>();
+
+    // #region Computed Props
+
+    const constituentProperties = computed<DirectionalConstituentProperty[]>(() => {
+        if (props.showConstituentProperties === false) {
+            return [];
+        }
+        else if (props.showConstituentProperties === true) {
+            return ["top", "bottom", "right", "left"];
+        }
+        else if (props.showConstituentProperties === "top") {
+            return ["top"];
+        }
+        else if (props.showConstituentProperties === "bottom") {
+            return ["bottom"];
+        }
+        else if (props.showConstituentProperties === "right") {
+            return ["right"];
+        }
+        else if (props.showConstituentProperties === "left") {
+            return ["left"];
+        }
+        else {
+            return props.showConstituentProperties;
+        }
+    });
+
+    // #endregion
+</script>

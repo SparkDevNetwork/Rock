@@ -41,10 +41,10 @@
                                            @update:selectedTab="onContentTabSelected($event)">
                                 <template #tabpane="{ item }">
                                     <template v-if="item === 'Components'">
-                                        <ComponentToolset v-if="selectedComponentElement"
-                                                          :componentElement="selectedComponentElement"
-                                                          @complete="onCompleteComponent"
-                                                          @delete="onDeleteComponent" />
+                                        <ComponentPropertyPanel v-if="selectedComponentElement"
+                                                                :componentElement="selectedComponentElement"
+                                                                @complete="onCompleteComponent"
+                                                                @delete="onDeleteComponent" />
 
                                         <div v-else class="component-list">
                                             <div v-for="componentType in componentTypes"
@@ -58,9 +58,9 @@
 
                                     <template v-else-if="item === 'Sections'">
                                         <div v-if="selectedComponentElement && selectedComponentTypeName === 'section'">
-                                            <SectionComponentToolset :componentElement="selectedComponentElement"
-                                                                     @complete="onCompleteComponent"
-                                                                     @delete="onDeleteComponent" />
+                                            <SectionComponentPropertyPanel :componentElement="selectedComponentElement"
+                                                                           @complete="onCompleteComponent"
+                                                                           @delete="onDeleteComponent" />
                                         </div>
 
                                         <div v-else class="submenu-content">
@@ -89,7 +89,7 @@
 
                         <div v-else-if="selectedMainMenuItem === 'design' && emailDesigner?.emailDocument" class="email-editor-toolbox-tray">
 
-                            <GlobalToolset :document="emailDesigner.emailDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
+                            <GlobalPropertyPanel :document="emailDesigner.emailDocument" @setEditorInnerHtml="editorInnerHtml = $event" />
                         </div>
                     </div>
 
@@ -252,12 +252,12 @@
 
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
-    import ComponentToolset from "./componentToolset.partial.obs";
+    import ComponentPropertyPanel from "./componentPropertyPanel.partial.obs";
     import EmailDesigner from "./emailDesigner.partial.obs";
     import SideMenu from "./sideMenu.partial.obs";
     import MenuItem from "./menuItem.partial.obs";
-    import GlobalToolset from "./toolsets/globalToolset.partial.obs";
-    import SectionComponentToolset from "./toolsets/sectionComponentToolset.partial.obs";
+    import GlobalPropertyPanel from "./propertyPanels/globalPropertyPanel.partial.obs";
+    import SectionComponentPropertyPanel from "./propertyPanels/sectionComponentPropertyPanel.partial.obs";
     import { EditorComponentTypeName } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

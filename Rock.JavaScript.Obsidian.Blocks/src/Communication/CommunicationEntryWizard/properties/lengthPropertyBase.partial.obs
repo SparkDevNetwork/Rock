@@ -1,0 +1,123 @@
+<template>
+    <NumberUpDown v-if="mode === 'numberUpDown'"
+                  v-model="internalNumericValue"
+                  :disableLabel="!label"
+                  :label="label"
+                  :min="min"
+                  :max="max" />
+
+    <NumberBox v-else-if="mode === 'numberBox'"
+               v-model="internalNumericValue"
+               :disableLabel="!label"
+               :label="label"
+               :min="min"
+               :max="max">
+        <template #inputGroupAppend>
+            <span class="input-group-addon">px</span>
+        </template>
+    </NumberBox>
+
+    <RangeSlider v-else-if="mode === 'rangeSlider'"
+                 v-model="internalNumericValue"
+                 :disableLabel="!label"
+                 :label="label"
+                 :min="min"
+                 :max="max"
+                 :showValueBar="true" />
+
+    <TextBox v-else-if="mode === 'textBox'"
+             v-model="internalValue"
+             :disableLabel="!label"
+             :label="label" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
+    import { standardLengthProps } from "./utils.partial";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const props = defineProps({
+        ...standardLengthProps,
+
+        property: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "change", value: string): void;
+    }>();
+
+    // #region Computed Props
+
+
+    const isNumeric = computed<boolean>(() => {
+        return props.mode === "numberBox" || props.mode === "numberUpDown";
+    });
+
+    // #endregion
+
+    // #region Values
+
+    const internalValue = ref<string>(!isNumeric.value ? getElementValue(props.property) : "");
+    const internalNumericValue = ref<number>(isNumeric.value ? getElementPixelValue(props.property) : 0);
+
+    // #endregion
+
+    // #region Functions
+
+    function getElementValue(key: CSSStyleDeclarationKebabKey): string {
+        return props.element.style.getPropertyValue(key);
+    }
+
+    function getElementPixelValue(key: CSSStyleDeclarationKebabKey): number {
+        const value = props.element.style.getPropertyValue(key);
+
+        if (value.endsWith("px")) {
+            return parseInt(value);
+        }
+        else {
+            return 0;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(internalNumericValue, (newValue: number, oldValue: number) => {
+        if (newValue !== oldValue) {
+            internalValue.value = newValue ? `${newValue}px` : "";
+        }
+    });
+
+    watch(internalValue, (newValue: string, oldValue: string) => {
+        if (newValue !== oldValue) {
+            props.element.style.setProperty(props.property, newValue);
+
+            emit("change", newValue);
+        }
+    });
+
+    watch([() => props.element, () => props.mode], () => {
+        if (isNumeric.value) {
+            internalNumericValue.value = getElementPixelValue(props.property);
+        }
+        else {
+            internalValue.value = getElementValue(props.property);
+        }
+    });
+
+    // #endregion
+
+    defineExpose({
+        setValue(value: string): void {
+            internalValue.value = value;
+        }
+    });
+</script>
