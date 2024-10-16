@@ -1338,7 +1338,7 @@ namespace RockWeb.Blocks.WorkFlow
                  See https://app.asana.com/0/1121505495628584/1200153314028124/f
                  */
 
-                cpPersonEntryCampus.IncludeInactive = true;
+                cpPersonEntryCampus.IncludeInactive = formPersonEntrySettings.IncludeInactiveCampus;
                 if ( formPersonEntrySettings.CampusStatusValueId.HasValue )
                 {
                     cpPersonEntryCampus.CampusStatusFilter = new List<int> { formPersonEntrySettings.CampusStatusValueId.Value };
