@@ -37,6 +37,7 @@ namespace Rock.Blocks.Prayer
 
     #region Block Attributes
 
+    // Category Selection
     [CategoryField( "Category Selection",
         Description = "A top level category. This controls which categories the person can choose from when entering their prayer request.",
         AllowMultiple = false,
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         DefaultValue = "",
         Category = AttributeCategory.CategorySelection,
-        Order = 0,
+        Order = 1,
         Key = AttributeKey.GroupCategoryId )]
 
     [CategoryField( "Default Category",
@@ -58,57 +59,58 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         DefaultValue = "4B2D88F5-6E45-4B4B-8776-11118C8E8269",
         Category = AttributeCategory.CategorySelection,
-        Order = 1,
+        Order = 2,
         Key = AttributeKey.DefaultCategory )]
 
+    // Features
     [BooleanField( "Enable Auto Approve",
         Description = "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.",
         DefaultBooleanValue = true,
         Category = AttributeCategory.Features,
-        Order = 2,
+        Order = 3,
         Key = AttributeKey.EnableAutoApprove )]
 
     [IntegerField( "Expires After (Days)",
-        Description = "Number of days until the request will expire (only applies when auto-approve is enabled).",
+        Description = "Number of days until the request will expire (only applies when auto-approved is enabled).",
         IsRequired = false,
         DefaultIntegerValue = 14,
         Category = AttributeCategory.Features,
-        Order = 3,
+        Order = 4,
         Key = AttributeKey.ExpireDays )]
+
+    [BooleanField( "Default Allow Comments Setting",
+        Description = "This is the default setting for the 'Allow Comments' on prayer requests. If you enable the 'Comments Flag' below, the requestor can override this default setting.",
+        DefaultBooleanValue = true,
+        Category = AttributeCategory.Features,
+        Order = 5,
+        Key = AttributeKey.DefaultAllowCommentsSetting )]
 
     [BooleanField( "Enable Urgent Flag",
         Description = "If enabled, requesters will be able to flag prayer requests as urgent.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
-        Order = 4,
+        Order = 6,
         Key = AttributeKey.EnableUrgentFlag )]
 
     [BooleanField( "Enable Comments Flag",
         Description = "If enabled, requesters will be able to set whether or not they want to allow comments on their requests.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
-        Order = 5,
+        Order = 7,
         Key = AttributeKey.EnableCommentsFlag )]
-
-    [BooleanField( "Default Allow Comments Setting",
-        Description = "This is the default setting for 'Allow Comments' on prayer requests. If the 'Enable Comments Flag' setting is enabled, the requester can override this default setting.",
-        DefaultBooleanValue = true,
-        Category = AttributeCategory.Features,
-        Order = 6,
-        Key = AttributeKey.DefaultAllowCommentsSetting )]
 
     [BooleanField( "Enable Public Display Flag",
         Description = "If enabled, requesters will be able set whether or not they want their request displayed on the public website.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
-        Order = 7,
+        Order = 8,
         Key = AttributeKey.EnablePublicDisplayFlag )]
 
     [BooleanField( "Default To Public",
         Description = "If enabled, all prayers will be set to public by default",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
-        Order = 8,
+        Order = 9,
         Key = AttributeKey.DefaultToPublic )]
 
     [IntegerField( "Character Limit",
@@ -116,42 +118,62 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         DefaultIntegerValue = 250,
         Category = AttributeCategory.Features,
-        Order = 9,
+        Order = 10,
         Key = AttributeKey.CharacterLimit )]
 
     [BooleanField( "Require Last Name",
-        Description = "Require that a last name be entered.",
+        Description = "Require that a last name be entered",
         DefaultBooleanValue = true,
         Category = AttributeCategory.Features,
-        Order = 10,
+        Order = 11,
         Key = AttributeKey.RequireLastName )]
 
     [BooleanField( "Show Campus",
         Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
         DefaultBooleanValue = true,
         Category = AttributeCategory.Features,
-        Order = 11,
+        Order = 12,
         Key = AttributeKey.ShowCampus )]
 
     [BooleanField( "Require Campus",
         Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
-        Order = 12,
+        Order = 13,
         Key = AttributeKey.RequireCampus )]
+
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        Category = AttributeCategory.Features,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 14 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        Category = AttributeCategory.Features,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 15 )]
 
     [BooleanField( "Enable Person Matching",
         Description = "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
-        Order = 13,
+        Order = 16,
         Key = AttributeKey.EnablePersonMatching )]
 
     [BooleanField( "Create Person If No Match Found",
         Description = "When person matching is enabled this setting determines if a person should be created if a matched record is not found. This setting has no impact if person matching is disabled.",
         DefaultBooleanValue = true,
         Category = AttributeCategory.Features,
-        Order = 14,
+        Order = 17,
         Key = AttributeKey.CreatePersonIfNoMatchFound )]
 
     [DefinedValueField( "Connection Status",
@@ -161,7 +183,7 @@ namespace Rock.Blocks.Prayer
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT,
         Category = AttributeCategory.Features,
-        Order = 15,
+        Order = 18,
         Key = AttributeKey.ConnectionStatus )]
 
     [DefinedValueField( "Record Status",
@@ -171,21 +193,22 @@ namespace Rock.Blocks.Prayer
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Category = AttributeCategory.Features,
-        Order = 16,
+        Order = 19,
         Key = AttributeKey.RecordStatus )]
 
+    // On Save Behavior
     [BooleanField( "Navigate To Parent On Save",
         Description = "If enabled, on successful save control will redirect back to the parent page.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.OnSaveBehavior,
-        Order = 17,
+        Order = 20,
         Key = AttributeKey.NavigateToParentOnSave )]
 
     [BooleanField( "Refresh Page On Save",
         Description = "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.OnSaveBehavior,
-        Order = 18,
+        Order = 21,
         Key = AttributeKey.RefreshPageOnSave )]
 
     [CodeEditorField( "Save Success Text",
@@ -196,7 +219,7 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         DefaultValue = "<p>Thank you for allowing us to pray for you.</p>",
         Category = AttributeCategory.OnSaveBehavior,
-        Order = 19,
+        Order = 22,
         Key = AttributeKey.SaveSuccessText )]
 
     [WorkflowTypeField( "Workflow",
@@ -205,7 +228,7 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         DefaultValue = "",
         Category = AttributeCategory.OnSaveBehavior,
-        Order = 20,
+        Order = 23,
         Key = AttributeKey.Workflow )]
 
     #endregion
@@ -252,6 +275,8 @@ namespace Rock.Blocks.Prayer
             public const string RequireLastName = "RequireLastName";
             public const string ShowCampus = "ShowCampus";
             public const string RequireCampus = "RequireCampus";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string EnablePersonMatching = "EnablePersonMatching";
             public const string CreatePersonIfNoMatchFound = "CreatePersonIfNoMatchFound";
             public const string ConnectionStatus = "ConnectionStatus";
@@ -739,6 +764,24 @@ namespace Rock.Blocks.Prayer
                 {
                     box.DefaultCampus = campus.ToListItemBag();
                 }
+            }
+
+            var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                .SplitDelimitedValues( true )
+                .AsGuidList();
+
+            if ( selectedCampusTypeIds.Any() )
+            {
+                box.CampusTypeFilter = selectedCampusTypeIds;
+            }
+
+            var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                .SplitDelimitedValues( true )
+                .AsGuidList();
+
+            if ( selectedCampusStatusIds.Any() )
+            {
+                box.CampusStatusFilter = selectedCampusStatusIds;
             }
 
             // Load the attributes.

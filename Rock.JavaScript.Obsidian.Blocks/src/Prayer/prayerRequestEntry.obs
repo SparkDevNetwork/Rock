@@ -41,6 +41,8 @@
                                           :disabled="isSaving || isNavigating"
                                           :includeInactive="false"
                                           label="Campus"
+                                          :campusStatusFilter="campusStatusFilter"
+                                          :campusTypeFilter="campusTypeFilter"
                                           :rules="config.isCampusRequired ? 'required' : ''" />
                         </div>
 
@@ -154,6 +156,8 @@
     const isNavigating = ref<boolean>(false);
     const attributes = ref<Record<string, PublicAttributeBag> | null>(config.attributes || null);
     const attributeValues = ref<Record<string, string>>({});
+    const campusTypeFilter = ref<string[] | undefined>(config.campusTypeFilter ?? undefined);
+    const campusStatusFilter = ref<string[] | undefined>(config.campusStatusFilter ?? undefined);
 
     //#endregion
 
