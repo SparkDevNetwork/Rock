@@ -668,7 +668,10 @@ namespace Rock.Blocks.Group
                 var isCurrentPerson = RequestContext.CurrentPerson != null
                     && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
                     && RequestContext.CurrentPerson.LastName.IsNotNullOrWhiteSpace()
-                    && groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    && (
+                        groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(),StringComparison.OrdinalIgnoreCase )
+                        || groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    )
                     && groupRegistrationBag.LastName.Trim().Equals( RequestContext.CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase );
 
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
