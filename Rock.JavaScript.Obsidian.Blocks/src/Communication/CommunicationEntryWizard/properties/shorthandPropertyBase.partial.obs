@@ -60,11 +60,11 @@
     import { computed, PropType } from "vue";
     import LengthPropertyBase from "./lengthPropertyBase.partial.obs";
     import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
-    import { standardDirectionalShorthandProps } from "./utils.partial";
+    import { standardShorthandProps } from "./utils.partial";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
-        ...standardDirectionalShorthandProps,
+        ...standardShorthandProps,
 
         shorthandProperty: {
             type: String as PropType<CSSStyleDeclarationKebabKey>,

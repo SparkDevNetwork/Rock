@@ -1,8 +1,8 @@
-import DirectionalShorthandPropertyBase from "./directionalShorthandPropertyBase.partial.obs";
+import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
 import { computed, ComputedRef, ExtractPropTypes, PropType, reactive, Ref, toRefs, unref, watch, WritableComputedRef } from "vue";
-import { DirectionalConstituentProperty, StandardDirectionalShorthandProps, StandardLengthProps } from "./types.partial";
+import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps } from "./types.partial";
 
-type ReactiveDirectionalShorthandProperties = {
+type ReactiveShorthandProperties = {
     shorthand: WritableComputedRef<string>;
     top: WritableComputedRef<string>;
     bottom: WritableComputedRef<string>;
@@ -10,7 +10,7 @@ type ReactiveDirectionalShorthandProperties = {
     left: WritableComputedRef<string>;
 };
 
-export function useReactiveDirectionalShorthandProperties(component: Ref<InstanceType<typeof DirectionalShorthandPropertyBase> | undefined>): ReactiveDirectionalShorthandProperties {
+export function useReactiveShorthandProperties(component: Ref<InstanceType<typeof ShorthandPropertyBase> | undefined>): ReactiveShorthandProperties {
     const shorthand = computed<string>({
         get(): string {
             return component.value?.shorthand ?? "";
@@ -105,7 +105,7 @@ export const standardLengthProps: StandardLengthProps = {
 };
 
 /** The standard component props that should be included when using RockFormField. */
-export const standardDirectionalShorthandProps: StandardDirectionalShorthandProps = {
+export const standardShorthandProps: StandardShorthandProps = {
     element: {
         type: Object as PropType<HTMLElement>,
         required: true
@@ -163,16 +163,16 @@ export const standardDirectionalShorthandProps: StandardDirectionalShorthandProp
 };
 
 /**
- * Configures the basic properties that should be passed to the DirectionalShorthandPropertyBase
+ * Configures the basic properties that should be passed to the ShorthandPropertyBase
  * component. The value returned by this function should be used with v-bind on
- * the DirectionalShorthandPropertyBase in order to pass all the defined prop values to it.
+ * the ShorthandPropertyBase in order to pass all the defined prop values to it.
  *
- * @param props The props of the component that will be using the DirectionalShorthandPropertyBase.
+ * @param props The props of the component that will be using the ShorthandPropertyBase.
  *
  * @returns An object of prop values that can be used with v-bind.
  */
-export function useStandardDirectionalShorthandProps(props: ExtractPropTypes<StandardDirectionalShorthandProps>): ExtractPropTypes<StandardDirectionalShorthandProps> {
-    const propValues = reactive<ExtractPropTypes<StandardDirectionalShorthandProps>>({
+export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorthandProps>): ExtractPropTypes<StandardShorthandProps> {
+    const propValues = reactive<ExtractPropTypes<StandardShorthandProps>>({
         label: props.label,
         labelBottom: props.labelBottom,
         labelLeft: props.labelLeft,

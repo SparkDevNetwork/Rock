@@ -50,7 +50,8 @@
 
                     <div class="col-sm-6">
                         <BorderRadiusProperty :element="buttonElement"
-                                              mode="textBox" />
+                                              mode="textBox"
+                                              @changeShorthand="onBorderRadiusShorthandChanged" />
                     </div>
                 </div>
             </Accordion>
@@ -99,6 +100,16 @@
     const buttonShellElement = ref<HTMLElement | null | undefined>(buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement);
     const buttonContentElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-content") as HTMLElement);
     const buttonElement = ref<HTMLElement | null | undefined>(buttonContentElement.value?.querySelector(".button-link") as HTMLElement);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onBorderRadiusShorthandChanged(value: string): void {
+        if (buttonContentElement.value) {
+            buttonContentElement.value.style.borderRadius = value;
+        }
+    }
 
     // #endregion
 

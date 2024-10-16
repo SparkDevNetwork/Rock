@@ -4,7 +4,7 @@ export type BorderStyle = "solid" | "dashed" | "dotted" | "";
 
 export type DirectionalConstituentProperty = "top" | "bottom" | "right" | "left";
 
-export type DirectionalShorthandPropertyMode = "numberUpDown" | "numberBox" | "rangeSlider" | "textBox";
+export type ShorthandPropertyMode = "numberUpDown" | "numberBox" | "rangeSlider" | "textBox";
 
 // Utility type to convert a string from camel case to kebab case
 type ToKebabCase<S extends string> =
@@ -20,7 +20,7 @@ type StringOnlyKeys<T> = T extends string ? T : never;
 // Apply the filtering and conversion to kebab case
 export type CSSStyleDeclarationKebabKey = ToKebabCase<StringOnlyKeys<keyof CSSStyleDeclaration>>;
 
-export type StandardDirectionalShorthandProps = {
+export type StandardShorthandProps = {
     element: {
         type: PropType<HTMLElement>;
         required: true;
@@ -72,8 +72,8 @@ export type StandardDirectionalShorthandProps = {
     };
 
     mode: {
-        type: PropType<DirectionalShorthandPropertyMode>;
-        default: DirectionalShorthandPropertyMode;
+        type: PropType<ShorthandPropertyMode>;
+        default: ShorthandPropertyMode;
     };
 };
 
@@ -99,7 +99,7 @@ export type StandardLengthProps = {
     };
 
     mode: {
-        type: PropType<DirectionalShorthandPropertyMode>;
-        default: DirectionalShorthandPropertyMode;
+        type: PropType<ShorthandPropertyMode>;
+        default: ShorthandPropertyMode;
     };
 };
