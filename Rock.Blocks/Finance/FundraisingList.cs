@@ -33,7 +33,7 @@ namespace Rock.Blocks.Finance
     [Category( "Fundraising" )]
     [Description( "Lists Fundraising Opportunities (Groups) that have the ShowPublic attribute set to true" )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [DefinedValueField( "Fundraising Opportunity Types",
         DefinedTypeGuid = "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D",

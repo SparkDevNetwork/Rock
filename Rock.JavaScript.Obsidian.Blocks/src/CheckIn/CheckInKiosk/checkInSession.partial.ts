@@ -686,7 +686,7 @@ export class CheckInSession {
             });
         }
 
-        const newPropertyValues: Mutable<CheckInSessionProperties> = {
+        return new CheckInSession(this, {
             currentAttendeeId: attendeeId,
             currentAttendeeSelectedTimestamp: Date.now(),
             attendeeOpportunities: response.data.opportunities,
@@ -695,47 +695,7 @@ export class CheckInSession {
             selectedGroup: undefined,
             selectedLocation: undefined,
             selectedSchedules: undefined
-        };
-
-        // Set default selections if any items have only one choice.
-        if (this.attendeeOpportunities) {
-            if (this.attendeeOpportunities.abilityLevels?.length === 1) {
-                newPropertyValues.selectedAbilityLevel = {
-                    id: this.attendeeOpportunities.abilityLevels[0].id,
-                    name: this.attendeeOpportunities.abilityLevels[0].name
-                };
-            }
-
-            if (this.attendeeOpportunities.areas?.length === 1) {
-                newPropertyValues.selectedArea = {
-                    id: this.attendeeOpportunities.areas[0].id,
-                    name: this.attendeeOpportunities.areas[0].name
-                };
-            }
-
-            if (this.attendeeOpportunities.groups?.length === 1) {
-                newPropertyValues.selectedGroup = {
-                    id: this.attendeeOpportunities.groups[0].id,
-                    name: this.attendeeOpportunities.groups[0].name
-                };
-            }
-
-            if (this.attendeeOpportunities.locations?.length === 1) {
-                newPropertyValues.selectedLocation = {
-                    id: this.attendeeOpportunities.locations[0].id,
-                    name: this.attendeeOpportunities.locations[0].name
-                };
-            }
-
-            if (this.attendeeOpportunities.schedules?.length === 1) {
-                newPropertyValues.selectedSchedules = [{
-                    id: this.attendeeOpportunities.schedules[0].id,
-                    name: this.attendeeOpportunities.schedules[0].name
-                }];
-            }
-        }
-
-        return new CheckInSession(this, newPropertyValues);
+        });
     }
 
     /**
@@ -1792,7 +1752,7 @@ export class CheckInSession {
             }
 
             // If there are no groups that filter by ability level then we
-            // can also skip the ability levle screen.
+            // can also skip the ability level screen.
             const groupsWithAbilityLevels = familySession.attendeeOpportunities
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];

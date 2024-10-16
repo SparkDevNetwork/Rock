@@ -1,0 +1,238 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Check-in Settings"
+           saveText="Save"
+           @save="onSave">
+
+        <NotificationBox v-if="errorMessage"
+                         v-text="errorMessage"
+                         alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+            <DropDownList label="Configuration Template"
+                          v-model="checkInConfiguration"
+                          :items="checkInConfigurationListItems"
+                          placeholder="Select Configuration" />
+
+            <DropDownList label="Kiosk"
+                          v-model="checkInKiosk"
+                          :items="checkInKioskListItems"
+                          placeholder="Select Kiosk" />
+
+            <!-- Primary areas are areas that match the current
+             check-in configuration. -->
+            <CheckBoxList label="Primary Areas"
+                          v-model="primaryCheckInAreas"
+                          :items="checkInPrimaryAreaListItems"
+                          horizontal
+                          help="These are the areas directly tied to the selected check-in configuration." />
+
+            <!-- Display a message if no primary areas are available -->
+            <p v-if="checkInPrimaryAreaListItems.length === 0" class="text-muted text-sm">
+                No primary areas available.
+            </p>
+
+            <!-- Secondary areas are areas that do match the current
+             check-in configuration. -->
+            <CheckBoxList label="Secondary Areas"
+                          v-model="secondaryCheckInAreas"
+                          :items="checkInSecondaryAreaListItems"
+                          horizontal
+                          help="These are the areas that are not directly related to the selected check-in configuration." />
+
+            <!-- Display a message if no secondary areas are available -->
+            <p v-if="checkInSecondaryAreaListItems.length === 0" class="text-muted text-sm">
+                No secondary areas available.
+            </p>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+
+    import { computed, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useInvokeBlockAction, setCustomSettingsBoxValue } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { CustomCheckInSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/customCheckInSettingsBag";
+    import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/customSettingsOptionsBag";
+    import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+    const isLoading = ref(true);
+    const firstLoadComplete = ref(false);
+    const isModalOpen = ref(true);
+    const checkInConfiguration = ref("");
+    const checkInConfigurationItems = ref<ListItemBag[]>([]);
+    const checkInAreaItems = ref<ConfigurationAreaBag[]>([]);
+
+    const primaryCheckInAreas = ref<string[]>([]);
+    const secondaryCheckInAreas = ref<string[]>([]);
+
+    const checkInKiosk = ref("");
+    const checkInKioskItems = ref<ListItemBag[]>([]);
+    const errorMessage = ref("");
+
+    // #region Computed Values
+    const checkInConfigurationListItems = computed((): ListItemBag[] => {
+        return checkInConfigurationItems.value.map(t => ({
+            value: t.value,
+            text: t.text
+        }));
+    });
+
+    const checkInPrimaryAreaListItems = computed((): ListItemBag[] => {
+        // If there's no configuration selected, return all areas as primary.
+        if (!checkInConfiguration.value) {
+            return checkInAreaItems.value.map(t => ({
+                value: t.id,
+                text: t.name
+            }));
+        }
+
+        // Filter for primary areas matching the selected configuration.
+        return checkInAreaItems.value
+            .filter(t => t.primaryTemplateIds?.includes(checkInConfiguration.value))
+            .map(t => ({
+                value: t.id,
+                text: t.name
+            }));
+    });
+
+    const checkInSecondaryAreaListItems = computed(() => {
+        // If there's no configuration selected, return an empty array for secondary.
+        if (!checkInConfiguration.value) {
+            return [];
+        }
+
+        // Filter for secondary areas not matching the selected configuration.
+        return checkInAreaItems.value
+            .filter(t => !t.primaryTemplateIds?.includes(checkInConfiguration.value))
+            .map(t => ({
+                value: t.id,
+                text: t.name
+            }));
+    });
+
+    const checkInKioskListItems = computed(() => {
+        return checkInKioskItems.value.map(t => ({
+            value: t.value,
+            text: t.text
+        }));
+    });
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI
+     * can be displayed.
+     */
+    async function startLoading(): Promise<void> {
+        await getCustomSettings();
+        isLoading.value = false;
+        firstLoadComplete.value = true;
+    }
+
+    async function getCustomSettings(): Promise<void> {
+        const args = {
+            kioskId: checkInKiosk.value ?? "",
+            checkInConfigurationTemplateId: "",
+        };
+        const result = await invokeBlockAction<CustomSettingsBox<CustomCheckInSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings", args);
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            // Set the values for the UI.
+            checkInConfigurationItems.value = result.data.options.checkInConfigurationOptions?.map(t => ({
+                value: t.id,
+                text: t.name
+            })) ?? [];
+
+            // The list of pre-selected areas is just a list of strings (IDs).
+            const selectedAreaIds = result.data.settings.checkInAreas ?? [];
+            checkInAreaItems.value = result.data.options.checkInAreas ?? [];
+
+            // Populate kiosk list.
+            const kioskItems: ListItemBag[] = [];
+            if (result.data.options.campusesAndKiosks) {
+                for (const campus of result.data.options.campusesAndKiosks) {
+                    if (!campus.kiosks) continue;
+                    for (const kiosk of campus.kiosks) {
+                        kioskItems.push({ value: kiosk.id, text: kiosk.name });
+                    }
+                }
+            }
+            checkInKioskItems.value = kioskItems;
+
+            if (!firstLoadComplete.value) {
+                checkInConfiguration.value = result.data.settings.checkInConfiguration ?? "";
+
+                primaryCheckInAreas.value = checkInAreaItems.value
+                    .filter(area => selectedAreaIds.includes(area.id ?? "") && area.primaryTemplateIds?.includes(checkInConfiguration.value))
+                    .map(area => area.id)
+                    .filter((id): id is string => id !== null && id !== undefined) ?? [];
+
+                secondaryCheckInAreas.value = checkInAreaItems.value
+                    .filter(area => selectedAreaIds.includes(area.id ?? "") && !area.primaryTemplateIds?.includes(checkInConfiguration.value))
+                    .map(area => area.id)
+                    .filter((id): id is string => id !== null && id !== undefined) ?? [];
+
+                checkInKiosk.value = result.data.settings.kiosk ?? "";
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+    }
+
+
+    /**
+  * Event handler for when the person clicks the Save button and all
+  * components have validated their values.
+  */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<CustomCheckInSettingsBag, CustomSettingsOptionsBag> = {};
+
+        const selectedAreas = primaryCheckInAreas.value.concat(secondaryCheckInAreas.value);
+        setCustomSettingsBoxValue(box, "checkInAreas", selectedAreas);
+        setCustomSettingsBoxValue(box, "checkInConfiguration", checkInConfiguration.value);
+        setCustomSettingsBoxValue(box, "kiosk", checkInKiosk.value);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while saving custom settings.";
+        }
+    }
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    watch(checkInKiosk, () => {
+        getCustomSettings();
+    });
+
+    startLoading();
+</script>

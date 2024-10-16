@@ -355,13 +355,6 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            // Verify the phone number is valid.
-            if ( !IsPhoneNumberValid( campus.PhoneNumber ) )
-            {
-                errorMessage = $"The phone number '{campus.PhoneNumber}' is not a valid phone number.";
-                return false;
-            }
-
             // Verify the campus URL is valid.
             if ( !IsUrlValid( campus.Url ) )
             {

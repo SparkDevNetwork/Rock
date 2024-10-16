@@ -64,6 +64,9 @@
     });
 
     const abilityLevels = computed((): AbilityLevelOpportunityBag[] => {
+        // We don't call .getAvailableAbilityLevels() here
+        // because to keep check in V2 consistent with check in V1, we need to show all ability levels
+        // and disable the buttons that are not available.
         return props.session.attendeeOpportunities?.abilityLevels ?? [];
     });
 

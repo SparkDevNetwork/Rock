@@ -315,7 +315,9 @@ WHERE [Guid] = 'F4951A42-9F71-4CB1-A46E-2A7ED84CD923'
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17();
+
+            // Commenting out as the job has been updated in later migrations.
+            // ChopBlockTypesv17();
         }
 
         private void RegisterBlockAttributesForChop()

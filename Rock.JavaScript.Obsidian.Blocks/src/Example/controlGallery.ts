@@ -6969,9 +6969,9 @@ const categorizedValuePickerGallery = defineComponent({
             multiple: ref(true),
             value: ref(null),
             required: ref(false),
-            definedType: ref<Guid>(DefinedType.PowerbiAccounts),
+            definedType: ref<Guid>(DefinedType.CampusType),
             importCode: getSfcControlImportPath("categorizedValuePicker"),
-            exampleCode: `<CategorizedValuePicker label="Categorized Defined Value" v-model="value" :definedTypeGuid="DefinedType.PowerbiAccounts" />`
+            exampleCode: `<CategorizedValuePicker label="Categorized Defined Value" v-model="value" :definedTypeGuid="DefinedType.CampusType" />`
         };
     },
     template: `
@@ -6989,6 +6989,9 @@ const categorizedValuePickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Defined Type" v-model="definedType" />
             </div>
         </div>
         <p class="my-4">

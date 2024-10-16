@@ -1,32 +1,40 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PopupPicker v-model="recipientListItems"
-                 :disabled="disabled"
-                 :getLabelTypeRef="personAliasGuid => getLabelTypeRef(findRecipient(personAliasGuid), mediumType)"
-                 :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid), mediumType)"
-                 :isAddHidden="isAddHidden"
-                 :label="label"
-                 :rules="rules"
-                 validationTitle="At least one recipient"
-                 @openPopup="onOpenPopup"
-                 @showMore="onShowMore">
-        <template #itemImage="{ label, value: personAliasGuid, closable, disabled }">
-            <img :src="findRecipient(personAliasGuid)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
-        </template>
-    </PopupPicker>
-
-    <PersonPanelPicker v-if="isPersonPickerShown" @cancel="onPersonSearchCanceled" @select="onPersonSelected" />
-
-    <RecipientModal v-model="isRecipientModalShown" :recipients="modelValue" @update:recipients="$emit('update:modelValue', $event)" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
+    <div class="recipient-picker">
+        <PopupPicker v-model="recipientListItems"
+                     :disabled="disabled"
+                     :getLabelTypeRef="personAliasGuid => getLabelTypeRef(findRecipient(personAliasGuid), mediumType)"
+                     :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid), mediumType)"
+                     :isAddHidden="isAddHidden"
+                     :label="label"
+                     :rules="rules"
+                     validationTitle="At least one recipient"
+                     @openPopup="onOpenPopup"
+                     @showMore="onShowMore">
+            <template #itemImage="{ label, value: personAliasGuid, closable, disabled }">
+                <img :src="findRecipient(personAliasGuid)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
+            </template>
+        </PopupPicker>
+        <PersonPicker v-if="isPersonPickerShown"
+                      v-model:isSearchModeOpen="isPersonPickerShown"
+                      @update:modelValue="onPersonSelected" />
+        <RecipientModal v-model="isRecipientModalShown" :recipients="modelValue" @update:recipients="$emit('update:modelValue', $event)" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
+    </div>
 </template>
+
+<style scoped>
+.recipient-picker :deep(.picker-label) {
+    display: none;
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
-    import PersonPanelPicker from "./personPanelPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { LabelType, MediumType } from "./types.partial";
     import { updateArray } from "./utils.partial";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import { ValidationRule } from "@Obsidian/Types/validationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -161,11 +169,11 @@
         }
     }
 
-    function onPersonSearchCanceled(): void {
-        isPersonPickerShown.value = false;
-    }
+    async function onPersonSelected(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
 
-    async function onPersonSelected(value: ListItemBag): Promise<void> {
         // Get communication data for the selected person.
         const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", {
             personAliasGuid: toGuidOrNull(value.value) ?? emptyGuid
