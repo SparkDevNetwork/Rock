@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Obsidian.UI;
 using Rock.ViewModels.Core.Grid;
@@ -29,12 +28,6 @@ namespace Rock.Blocks
     /// Base for a standard List block type. This is a block that will
     /// display a list of items and usually links to a detail page.
     /// </summary>
-    /// <strong>This is an internal API</strong> that supports the Rock
-    /// infrastructure and not subject to the same compatibility standards
-    /// as public APIs. It may be changed or removed without notice in any
-    /// release and should therefore not be directly used in any plug-ins.
-    /// </remarks>
-    [RockInternal( "1.16" )]
     public abstract class RockListBlockType<T> : RockBlockType
         where T : class
     {
