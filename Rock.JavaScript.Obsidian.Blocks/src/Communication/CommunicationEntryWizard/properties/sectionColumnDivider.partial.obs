@@ -1,5 +1,7 @@
 <template>
-    <div class="divider" @mousedown="startDrag"></div>
+    <div class="divider" @mousedown="startDrag">
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -12,9 +14,9 @@
     }>();
 
     let startX = 0;
-    const pixelsUntilChange = 15; // TODO JMH Should this be a prop that is the total width of the parent / 12?
+    const pixelsUntilChange = 26; // TODO JMH Should this be a prop that is the total width of the parent / 12?
 
-    function startDrag(event: MouseEvent) {
+    function startDrag(event: MouseEvent): void {
         event.preventDefault(); // Prevent unwanted text selection
         startX = event.clientX;
 
@@ -22,7 +24,7 @@
         window.addEventListener("mouseup", stopDrag);
     }
 
-    function onDrag(event: MouseEvent) {
+    function onDrag(event: MouseEvent): void {
         const delta = event.clientX - startX; // Normalize the delta
         if (Math.abs(delta) > pixelsUntilChange) {
             emit("dragged", props.index, Math.round(delta / pixelsUntilChange));
@@ -30,7 +32,7 @@
         }
     }
 
-    function stopDrag() {
+    function stopDrag(): void {
         window.removeEventListener("mousemove", onDrag);
         window.removeEventListener("mouseup", stopDrag);
     }

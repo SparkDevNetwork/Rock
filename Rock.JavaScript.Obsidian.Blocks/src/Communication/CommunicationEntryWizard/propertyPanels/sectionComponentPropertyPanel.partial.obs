@@ -9,7 +9,10 @@
             </Accordion>
 
             <Accordion title="Columns">
-                <ColumnStructure :columnElements="columnElements" @select="onColumnElementSelected" />
+                <SectionColumnsPropertyGroup :columnElements="columnElements"
+                                             :selectedColumnElement="selectedColumnElement"
+                                             @add="onAddColumn"
+                                             @select="onColumnElementSelected" />
 
                 <SectionColumnPropertyGroup v-if="selectedColumnElement" :element="selectedColumnElement" />
             </Accordion>
@@ -26,7 +29,7 @@
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import SectionColumnPropertyGroup from "../properties/sectionColumnPropertyGroup.partial.obs";
-    import ColumnStructure from "../properties/columnStructure.partial.obs";
+    import SectionColumnsPropertyGroup from "../properties/sectionColumnsPropertyGroup.partial.obs";
 
     const props = defineProps({
         componentElement: {
@@ -61,6 +64,24 @@
         else {
             selectedColumnElement.value = columnElement;
         }
+    }
+
+    function onAddColumn(): void {
+        const lastColumnElement = columnElements.value[columnElements.value.length - 1];
+        lastColumnElement.classList.remove("last");
+
+        const td = props.componentElement.ownerDocument.createElement("td");
+        td.classList.add("dropzone", "columns", "small-12", "last");
+
+        // TODO JMH Calculate this.
+        const cols = 1;
+        td.classList.add(`large-${cols}`);
+        td.setAttribute("width", `${100 * (cols / 12)}%`);
+        td.setAttribute("valign", "top");
+        lastColumnElement.parentNode?.replaceChild(td, lastColumnElement);
+        td.parentNode?.insertBefore(lastColumnElement, td);
+
+        columnElements.value = getChildDropzones(props.componentElement);
     }
 
     // #endregion

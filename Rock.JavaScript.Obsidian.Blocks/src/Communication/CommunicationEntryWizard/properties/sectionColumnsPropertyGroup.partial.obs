@@ -1,57 +1,80 @@
 <template>
-    <div class="column-structure">
-        <template v-for="(column, index) in columnValues" :key="'column-' + index">
-            <div class="column"
-                 :style="{ flexBasis: getColumnPercentage(column) }"
-                 @click="$emit('select', columnElements[index])">
-                <div class="content">{{ getCols(columnElements[index]) }}</div>
-            </div>
+    <div class="form-group">
+        <div class="columns-header">
+            <RockLabel>Columns</RockLabel>
+            <RockButton btnSize="xs" btnType="link" @click="$emit('add')"><i class="fa fa-plus" aria-hidden="true"></i> Add Column</RockButton>
+        </div>
 
-            <!-- Add a divider after each column, except the last one -->
-            <Divider v-if="index < columnValues.length - 1"
-                     :index="index"
-                     @dragged="onDragged" />
-        </template>
+        <div class="column-structure">
+            <template v-for="(columns, index) in columnValues" :key="'column-' + index">
+                <div :class="['column', selectedColumnElement === columnElements[index] ? 'selected' : '']"
+                     :style="{ flexBasis: getColumnPercentage(columns) }"
+
+                     @click="$emit('select', columnElements[index])">
+                    <div class="content">{{ columns }}</div>
+                </div>
+
+                <!-- Add a divider after each column, except the last one -->
+                <Divider v-if="index < columnValues.length - 1"
+                         :index="index"
+                         @dragged="onDragged" />
+            </template>
+        </div>
     </div>
 </template>
 
 <style scoped>
+.columns-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .column-structure {
     display: flex;
     width: 100%;
     align-items: stretch;
-    gap: 4px;
-    /* Space between columns and dividers */
 }
 
 .column {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f0;
     border: 1px solid #ddd;
     transition: flex-basis 0.2s;
+    cursor: pointer;
 }
 
 .content {
     text-align: center;
     width: 100%;
 }
+
+.column.selected {
+    border: 2px solid var(--color-primary);
+}
 </style>
 
 <script lang="ts" setup>
     import { PropType, ref, watch } from "vue";
     import Divider from "./sectionColumnDivider.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
         columnElements: {
             type: Object as PropType<HTMLElement[]>,
             required: true
+        },
+
+        selectedColumnElement: {
+            type: Object as PropType<HTMLElement | null | undefined>
         }
     });
 
     defineEmits<{
         (e: "select", value: HTMLElement): void;
+        (e: "add"): void;
     }>();
 
     // #region Values
