@@ -13,7 +13,7 @@
             <BorderWidthProperty ref="borderWidthProperty"
                                  :element="element"
                                  mode="numberUpDown"
-                                 @changeShorthand="onBorderWidthChanged" />
+                                 @change="onBorderWidthChanged" />
         </div>
     </TransitionVerticalCollapse>
 </template>

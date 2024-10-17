@@ -23,7 +23,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
     }>();
 
     const documentBody = document.body;
@@ -59,7 +59,7 @@
             props.element.removeAttribute("align");
         }
 
-        emit("changeShorthand", value);
+        emit("change", value);
     });
 
     watch(() => props.element, () => {

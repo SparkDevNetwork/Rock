@@ -5,7 +5,7 @@
                                      propertyBottom="border-top-right-radius"
                                      propertyRight="border-bottom-right-radius"
                                      propertyLeft="border-bottom-left-radius"
-                                     @changeShorthand="$emit('changeShorthand', $event)"
+                                     @change="$emit('change', $event)"
                                      @changeTop="$emit('changeTopLeft', $event)"
                                      @changeBottom="$emit('changeTopRight', $event)"
                                      @changeRight="$emit('changeBottomRight', $event)"
@@ -51,7 +51,7 @@
     const lengthProps = useStandardLengthProps(props);
 
     defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
         (e: "changeTopLeft", value: string): void;
         (e: "changeTopRight", value: string): void;
         (e: "changeBottomRight", value: string): void;

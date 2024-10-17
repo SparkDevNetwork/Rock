@@ -77,7 +77,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
         (e: "changeTop", value: string): void;
         (e: "changeBottom", value: string): void;
         (e: "changeRight", value: string): void;
@@ -87,7 +87,7 @@
     // #region Event Handlers
 
     function onChangeShorthand(value: string): void {
-        emit("changeShorthand", value);
+        emit("change", value);
 
         // Whenever the shorthand property is changed, emit the constituent property changes.
         emit("changeTop", props.element.style.getPropertyValue(props.propertyTop));
@@ -100,28 +100,28 @@
         emit("changeTop", value);
 
         // Whenever the constituent property is changed, emit the shorthand property changes.
-        emit("changeShorthand", props.element.style.getPropertyValue(props.propertyShorthand));
+        emit("change", props.element.style.getPropertyValue(props.propertyShorthand));
     }
 
     function onChangeBottom(value: string): void {
         emit("changeBottom", value);
 
         // Whenever the constituent property is changed, emit the shorthand property changes.
-        emit("changeShorthand", props.element.style.getPropertyValue(props.propertyShorthand));
+        emit("change", props.element.style.getPropertyValue(props.propertyShorthand));
     }
 
     function onChangeRight(value: string): void {
         emit("changeRight", value);
 
         // Whenever the constituent property is changed, emit the shorthand property changes.
-        emit("changeShorthand", props.element.style.getPropertyValue(props.propertyShorthand));
+        emit("change", props.element.style.getPropertyValue(props.propertyShorthand));
     }
 
     function onChangeLeft(value: string): void {
         emit("changeLeft", value);
 
         // Whenever the constituent property is changed, emit the shorthand property changes.
-        emit("changeShorthand", props.element.style.getPropertyValue(props.propertyShorthand));
+        emit("change", props.element.style.getPropertyValue(props.propertyShorthand));
     }
 
     // #endregion

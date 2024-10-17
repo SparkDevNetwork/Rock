@@ -6,7 +6,7 @@
                                 propertyBottom="border-bottom-color"
                                 propertyRight="border-right-color"
                                 propertyLeft="border-left-color"
-                                @changeShorthand="$emit('changeShorthand', $event)"
+                                @change="$emit('change', $event)"
                                 @changeTop="$emit('changeTop', $event)"
                                 @changeBottom="$emit('changeBottom', $event)"
                                 @changeRight="$emit('changeRight', $event)"
@@ -30,7 +30,7 @@
     const baseProps = useStandardShorthandProps(props);
 
     defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
         (e: "changeTop", value: string): void;
         (e: "changeBottom", value: string): void;
         (e: "changeRight", value: string): void;

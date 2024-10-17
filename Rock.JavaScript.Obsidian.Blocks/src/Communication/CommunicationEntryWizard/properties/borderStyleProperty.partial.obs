@@ -15,7 +15,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
     }>();
 
     // #region Values
@@ -29,7 +29,7 @@
     watch(borderStyle, (value: string) => {
         props.element.style.borderStyle = value;
 
-        emit("changeShorthand", value);
+        emit("change", value);
     });
 
     watch(() => props.element, () => {

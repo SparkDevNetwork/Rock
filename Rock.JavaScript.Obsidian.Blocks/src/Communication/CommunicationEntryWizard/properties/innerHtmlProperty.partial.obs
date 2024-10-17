@@ -27,7 +27,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
     }>();
 
     // TODO JMH Figure out if these are the proper merge fields. They were taken from the Simple editor.
@@ -65,7 +65,7 @@
         if (value !== props.element.innerHTML) {
             props.element.innerHTML = value;
 
-            emit("changeShorthand", value);
+            emit("change", value);
         }
     });
 

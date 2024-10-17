@@ -23,7 +23,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
     }>();
 
     const documentBody = document.body;
@@ -54,7 +54,7 @@
     watch(textAlign, (value: string) => {
         props.element.style.textAlign = value;
 
-        emit("changeShorthand", value);
+        emit("change", value);
     });
 
     watch(() => props.element, () => {

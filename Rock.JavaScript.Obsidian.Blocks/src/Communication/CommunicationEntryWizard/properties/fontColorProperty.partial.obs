@@ -14,7 +14,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
     }>();
 
     // #region Values
@@ -28,7 +28,7 @@
     watch(fontColor, (value: string) => {
         props.element.style.color = value;
 
-        emit("changeShorthand", value);
+        emit("change", value);
     });
 
     watch(() => props.element, () => {

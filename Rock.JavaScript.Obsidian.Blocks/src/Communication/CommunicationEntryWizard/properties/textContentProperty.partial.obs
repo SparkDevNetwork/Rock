@@ -14,7 +14,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string | null): void;
+        (e: "change", value: string | null): void;
     }>();
 
     // #region Values
@@ -41,7 +41,7 @@
             const textContentValue = value || null;
             props.element.textContent = textContentValue;
 
-            emit("changeShorthand", textContentValue);
+            emit("change", textContentValue);
         }
     });
 
