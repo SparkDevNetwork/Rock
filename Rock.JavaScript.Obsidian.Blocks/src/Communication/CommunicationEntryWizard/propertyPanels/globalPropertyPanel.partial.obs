@@ -1,9 +1,9 @@
 <template>
     <AccordionGroup>
         <Accordion title="General Settings">
-            <DropDownList v-model="communicationTemplateGuidOrEmptyString"
-                          :items="communicationTemplateItems"
-                          label="Template" />
+            <CommunicationTemplateProperty v-model:communicationTemplateGuid="communicationTemplateGuid"
+                                           :communicationTemplates="config.templates ?? []" />
+
             <WidthProperty :element="document.body"
                            label="Content Area Width"
                            mode="rangeSlider"
@@ -57,15 +57,16 @@
     import BackgroundImagePropertyGroup from "../properties/backgroundImagePropertyGroup.partial.obs";
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
     import ButtonStyleSheetProperty from "../properties/buttonStyleSheetProperty.partial.obs";
+    import CommunicationTemplateProperty from "../properties/communicationTemplateProperty.partial.obs";
     import DividerStyleSheetProperty from "../properties/dividerStyleSheetProperty.partial.obs";
     import FontStyleSheetProperty from "../properties/fontStyleSheetProperty.partial.obs";
     import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import WidthProperty from "../properties/widthProperty.partial.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     defineProps({
         document: {
@@ -80,19 +81,18 @@
         (e: "setEditorInnerHtml", value: string): void;
     }>();
 
-    const config = useConfigurationValues<{ message?: string | null | undefined; templates?: ListItemBag[] | null | undefined; }>();
+    const config = useConfigurationValues<{ message?: string | null | undefined; templates?: ListItemBag[] | null | undefined; communicationTemplateGuid: Guid | null | undefined; }>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
-    const communicationTemplateGuidOrEmptyString = ref<string>("");
-    const communicationTemplateItems = ref<ListItemBag[]>(config.templates ?? []);
+    const communicationTemplateGuid = ref<Guid | null | undefined>(config.communicationTemplateGuid);
 
     // #endregion
 
     // #region Watchers
 
-    watch(communicationTemplateGuidOrEmptyString, async guidOrEmptyString => {
+    watch(communicationTemplateGuid, async guidOrEmptyString => {
         const guid = toGuidOrNull(guidOrEmptyString);
 
         if (guid) {

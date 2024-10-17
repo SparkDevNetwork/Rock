@@ -2,6 +2,7 @@
     <DropDownList v-model="buttonWidth"
                   :items="buttonWidthItems"
                   :label="label"
+                  :popupContainerOverride="documentBody"
                   :showBlankItem="false" />
 
     <TransitionVerticalCollapse>
@@ -38,6 +39,8 @@
             default: "Width" as const
         }
     });
+
+    const documentBody = document.body;
 
     type ButtonWidth = "fitToText" | "full" | "fixed";
 

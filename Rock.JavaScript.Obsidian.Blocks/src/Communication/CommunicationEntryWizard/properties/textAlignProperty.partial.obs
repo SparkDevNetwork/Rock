@@ -1,7 +1,8 @@
 <template>
     <DropDownList v-model="textAlign"
                   :items="textAlignItems"
-                  :label="label" />
+                  :label="label"
+                  :popupContainerOverride="documentBody" />
 </template>
 
 <script setup lang="ts">
@@ -24,6 +25,8 @@
     const emit = defineEmits<{
         (e: "changeShorthand", value: string): void;
     }>();
+
+    const documentBody = document.body;
 
     // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
     // If quotes are required, add them here.

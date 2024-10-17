@@ -1,12 +1,10 @@
 <template>
-    <LengthPropertyBase ref="lengthPropertyBase"
-                        v-bind="baseProps"
+    <LengthPropertyBase v-bind="baseProps"
                         property="width"
                         @change="$emit('change', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
     import LengthPropertyBase from "./lengthPropertyBase.partial.obs";
     import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
 
@@ -19,18 +17,4 @@
     defineEmits<{
         (e: "change", value: string): void;
     }>();
-
-    // #region Values
-
-    const lengthPropertyBase = ref<InstanceType<typeof LengthPropertyBase> | undefined>();
-
-    // #endregion
-
-    defineExpose({
-        setValue(value: string): void {
-            if (lengthPropertyBase.value) {
-                lengthPropertyBase.value.setValue(value);
-            }
-        }
-    });
 </script>

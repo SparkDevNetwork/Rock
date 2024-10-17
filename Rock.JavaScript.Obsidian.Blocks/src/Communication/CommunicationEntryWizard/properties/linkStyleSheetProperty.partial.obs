@@ -4,7 +4,8 @@
 
     <DropDownList v-model="linkStyle"
                   :items="[]"
-                  label="Link Style" />
+                  label="Link Style"
+                  :popupContainerOverride="documentBody" />
 </template>
 
 <script setup lang="ts">
@@ -19,6 +20,7 @@
         }
     });
 
+    const documentBody = document.body;
     const tagName: keyof HTMLElementTagNameMap = "a";
 
     // #region Values

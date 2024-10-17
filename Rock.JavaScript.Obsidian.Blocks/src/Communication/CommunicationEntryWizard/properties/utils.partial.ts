@@ -111,11 +111,6 @@ export const standardShorthandProps: StandardShorthandProps = {
         required: true
     },
 
-    /**
-     * Used as both the shorthand property label and the group label for constituent properties.
-     *
-     * Set to "" to hide this label.
-     */
     label: {
         type: String as PropType<string>,
         required: true
@@ -141,24 +136,9 @@ export const standardShorthandProps: StandardShorthandProps = {
         default: "Left" as const
     },
 
-    min: {
-        type: Number as PropType<number>,
-        default: 0 as const
-    },
-
-    max: {
-        type: Number as PropType<number>,
-        default: 99 as const
-    },
-
     showConstituentProperties: {
         type: Boolean as PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>,
         default: false as const
-    },
-
-    mode: {
-        type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
-        default: "numberUpDown" as const
     }
 };
 
@@ -178,9 +158,6 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
         labelLeft: props.labelLeft,
         labelRight: props.labelRight,
         labelTop: props.labelTop,
-        max: props.max,
-        min: props.min,
-        mode: props.mode,
         showConstituentProperties: props.showConstituentProperties,
         element: props.element,
     });
@@ -212,24 +189,6 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
     watch(() => props.labelTop, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.labelTop = value;
-        }
-    });
-
-    watch(() => props.max, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.max = value;
-        }
-    });
-
-    watch(() => props.min, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.min = value;
-        }
-    });
-
-    watch(() => props.mode, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.mode = value;
         }
     });
 

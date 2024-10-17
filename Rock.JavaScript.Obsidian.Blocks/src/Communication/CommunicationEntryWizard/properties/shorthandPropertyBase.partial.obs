@@ -1,56 +1,26 @@
 <template>
     <template v-if="!showConstituentProperties">
-        <LengthPropertyBase :element="element"
-                            :label="label"
-                            :property="shorthandProperty"
-                            :min="min"
-                            :max="max"
-                            :mode="mode"
-                            @change="$emit('changeShorthand', $event)" />
+        <slot name="shorthandProperty"></slot>
     </template>
 
     <template v-else>
-        <RockLabel v-if="label">{{ label }}</RockLabel>
+        <RockLabel v-if="constituentPropertyGroupLabel">{{ constituentPropertyGroupLabel }}</RockLabel>
 
         <div class="row">
             <div class="col-sm-6" v-if="constituentProperties.includes('top')">
-                <LengthPropertyBase :element="element"
-                                    :label="labelTop"
-                                    :property="topProperty"
-                                    :min="min"
-                                    :max="max"
-                                    :mode="mode"
-                                    @change="$emit('changeTop', $event)" />
+                <slot name="topProperty"></slot>
             </div>
 
             <div class="col-sm-6" v-if="constituentProperties.includes('bottom')">
-                <LengthPropertyBase :element="element"
-                                    :label="labelBottom"
-                                    :property="bottomProperty"
-                                    :min="min"
-                                    :max="max"
-                                    :mode="mode"
-                                    @change="$emit('changeBottom', $event)" />
+                <slot name="bottomProperty"></slot>
             </div>
 
             <div class="col-sm-6" v-if="constituentProperties.includes('right')">
-                <LengthPropertyBase :element="element"
-                                    :label="labelRight"
-                                    :property="rightProperty"
-                                    :min="min"
-                                    :max="max"
-                                    :mode="mode"
-                                    @change="$emit('changeRight', $event)" />
+                <slot name="rightProperty"></slot>
             </div>
 
             <div class="col-sm-6" v-if="constituentProperties.includes('left')">
-                <LengthPropertyBase :element="element"
-                                    :label="labelLeft"
-                                    :property="leftProperty"
-                                    :min="min"
-                                    :max="max"
-                                    :mode="mode"
-                                    @change="$emit('changeLeft', $event)" />
+                <slot name="leftProperty"></slot>
             </div>
         </div>
     </template>
@@ -58,48 +28,19 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import LengthPropertyBase from "./lengthPropertyBase.partial.obs";
-    import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
-    import { standardShorthandProps } from "./utils.partial";
+    import { DirectionalConstituentProperty } from "./types.partial";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
-        ...standardShorthandProps,
-
-        shorthandProperty: {
-            type: String as PropType<CSSStyleDeclarationKebabKey>,
-            required: true
+        showConstituentProperties: {
+            type: Boolean as PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>,
+            default: false as const
         },
 
-        topProperty: {
-            type: String as PropType<CSSStyleDeclarationKebabKey>,
-            required: true
-        },
-
-        bottomProperty: {
-            type: String as PropType<CSSStyleDeclarationKebabKey>,
-            required: true
-        },
-
-        rightProperty: {
-            type: String as PropType<CSSStyleDeclarationKebabKey>,
-            required: true
-        },
-
-
-        leftProperty: {
-            type: String as PropType<CSSStyleDeclarationKebabKey>,
-            required: true
+        constituentPropertyGroupLabel: {
+            type: String as PropType<string | null | undefined>
         }
     });
-
-    defineEmits<{
-        (e: "changeShorthand", value: string): void;
-        (e: "changeTop", value: string): void;
-        (e: "changeBottom", value: string): void;
-        (e: "changeRight", value: string): void;
-        (e: "changeLeft", value: string): void;
-    }>();
 
     // #region Computed Props
 

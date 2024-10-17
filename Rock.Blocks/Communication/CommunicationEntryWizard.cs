@@ -182,7 +182,8 @@ namespace Rock.Blocks.Communication
             return new
             {
                 Message = ResolveCommunicationTemplateMessage( emailCommunicationTemplates?.FirstOrDefault() ),
-                Templates = emailCommunicationTemplates?.ToListItemBagList()
+                Templates = emailCommunicationTemplates?.ToListItemBagList(),
+                CommunicationTemplateGuid = emailCommunicationTemplates.Select( t => t.Guid ).FirstOrDefault()
             };
         }
 

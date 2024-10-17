@@ -26,11 +26,6 @@ export type StandardShorthandProps = {
         required: true;
     };
 
-    /**
-     * Used as both the shorthand property label and the group label for constituent properties.
-     *
-     * Set to "" to hide this label.
-     */
     label: {
         type: PropType<string>;
         required: boolean;
@@ -56,24 +51,9 @@ export type StandardShorthandProps = {
         default: string;
     };
 
-    min: {
-        type: PropType<number>;
-        default: number;
-    };
-
-    max: {
-        type: PropType<number>;
-        default: number;
-    };
-
     showConstituentProperties: {
         type: PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>;
         default: boolean;
-    };
-
-    mode: {
-        type: PropType<ShorthandPropertyMode>;
-        default: ShorthandPropertyMode;
     };
 };
 

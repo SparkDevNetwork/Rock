@@ -15,7 +15,8 @@
 
     <DropDownList v-model="textStyle"
                   :items="[]"
-                  label="Text Style" />
+                  label="Text Style"
+                  :popupContainerOverride="documentBody" />
 </template>
 
 <script setup lang="ts">
@@ -60,6 +61,8 @@
             default: ".component-button .button-link" as const
         }
     });
+
+    const documentBody = document.body;
 
     // #region Values
 
