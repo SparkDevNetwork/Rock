@@ -73,19 +73,14 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Interaction> GetListQueryable( RockContext rockContext )
         {
-            string shortLinkIdKey = RequestContext?.PageParameters?["ShortLinkId"]?.ToString() ?? string.Empty;
-            if ( string.IsNullOrWhiteSpace( shortLinkIdKey ) )
-            {
-                return Enumerable.Empty<Interaction>().AsQueryable();
-            }
-
             var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER );
             if ( dv == null )
             {
                 return Enumerable.Empty<Interaction>().AsQueryable();
             }
 
-            var shortLinkId = IdHasher.Instance.GetId(shortLinkIdKey);
+            var shortLinkIdParam = RequestContext?.PageParameters?["ShortLinkId"];
+            var shortLinkId = Rock.Utility.IdHasher.Instance.GetId( shortLinkIdParam ) ?? shortLinkIdParam.AsIntegerOrNull();
 
             var interactions = new InteractionService( rockContext )
                 .Queryable().AsNoTracking()

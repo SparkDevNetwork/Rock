@@ -53,15 +53,27 @@
                     </tr>
                     <tr>
                         <td><code>itemClass</code></td>
-                        <td>String</td>
+                        <td><code>String | (item: TItem | null) => boolean</code></td>
                         <td>""</td>
-                        <td>CSS class(es) that will be applied to the element wrapping the individual items. Useful for custom styling.</td>
+                        <td>a string or a function that returns the CSS class(es) that will be applied to the element wrapping the individual items. Useful for custom styling.</td>
                     </tr>
                     <tr>
                         <td><code>selectedClass</code></td>
                         <td>String</td>
                         <td>"selected"</td>
                         <td>CSS class(es) that will be applied to the element wrapping the individual item that is selected. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>mobileThreshold</code></td>
+                        <td>Number</td>
+                        <td>480</td>
+                        <td>The viewport width at which to switch to a mobile-friendly display.</td>
+                    </tr>
+                    <tr>
+                        <td><code>disabledKey</code></td>
+                        <td><code>String | (item: TItem | null) => boolean</code></td>
+                        <td>"isDisabled"</td>
+                        <td>The name of a property or a function accepting the item that returns a boolean signifying this item should not be selectable.</td>
                     </tr>
                 </tbody>
             </table>

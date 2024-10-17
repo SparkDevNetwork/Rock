@@ -21,15 +21,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
+/** Additional Configuration details for the Binary File Type Detail */
 export type BinaryFileTypeDetailOptionsBag = {
-    /** Gets or sets the preferred color depth options for the client dropdown. */
-    preferredColorDepthOptions?: ListItemBag[] | null;
-
-    /** Gets or sets the preferred format options for the client dropdown. */
-    preferredFormatOptions?: ListItemBag[] | null;
-
-    /** Gets or sets the preferred resolution options for the client dropdown. */
-    preferredResolutionOptions?: ListItemBag[] | null;
 };

@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstancePaymentList;
 using Rock.Web.Cache;
@@ -119,11 +120,20 @@ namespace Rock.Blocks.Event
         private RegistrationInstancePaymentListOptionsBag GetBoxOptions()
         {
             var registrationInstance = GetRegistrationInstance();
+            var currencyInfo = new RockCurrencyCodeInfo();
+            var currencyInfoBag = new ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
+
             var options = new RegistrationInstancePaymentListOptionsBag()
             {
                 RegistrationTemplateIdKey = registrationInstance?.RegistrationTemplate?.IdKey,
                 ExportFileName = $"{registrationInstance?.Name} RegistrationPayments",
-                ExportTitle = $"{registrationInstance?.Name} - Registration Payments"
+                ExportTitle = $"{registrationInstance?.Name} - Registration Payments",
+                CurrencyInfo = currencyInfoBag
             };
             return options;
         }

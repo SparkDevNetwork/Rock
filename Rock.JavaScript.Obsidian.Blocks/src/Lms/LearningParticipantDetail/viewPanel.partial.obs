@@ -43,6 +43,7 @@
                 <DateColumn
                             name="dateCompleted"
                             title="Date Completed"
+                            field="dateCompleted"
                             visiblePriority="sm">
                 </DateColumn>
 
@@ -50,18 +51,21 @@
                 <DateColumn
                             name="dateAvailable"
                             title="Date Available"
+                            field="dateAvailable"
                             visiblePriority="sm">
                 </DateColumn>
 
                 <DateColumn
                             name="dueDate"
                             title="Due Date"
+                            field="dueDate"
                             visiblePriority="sm">
                 </DateColumn>
 
                 <TextColumn
                             name="grade"
                             title="Grade"
+                            field="grade"
                             visiblePriority="sm">
                 </TextColumn>
             </Grid>

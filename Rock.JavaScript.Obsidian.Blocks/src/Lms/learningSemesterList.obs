@@ -3,14 +3,12 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :isTitleHidden="true"
-          :isSearchVisible="false"
-          :isCountMessageVisible="false"
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
           :showExport="false"
           :entityTypeGuid="EntityType.LearningSemester"
           :expectedRowCount="config.expectedRowCount ?? undefined"
+          itemTerm="Semester"
           tooltipField="name"
           stickyHeader
           liveUpdates
@@ -95,7 +93,7 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
         }
     }
 
@@ -104,7 +102,7 @@
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", `0?returnUrl=${encodeURIComponent(window.location.href)}`);
         }
     }
 

@@ -48,3 +48,31 @@ export function useScreenSize(mobileThreshold: number = 480): { isMobile: Ref<bo
         screenSize
     };
 }
+
+export function useViewportWidth(mobileThreshold: number = 480): { isMobile: Ref<boolean>, viewportWidth: Ref<number> } {
+    const isMobile = ref(false);
+    const viewportWidth = ref(window.innerWidth);
+
+    function onResize(): void {
+        viewportWidth.value = window.innerWidth;
+        isMobile.value = viewportWidth.value <= mobileThreshold;
+    }
+
+    onMounted(() => {
+        // Bit of a wait to make sure everything is fully initialized first.
+        nextTick(() => {
+            onResize();
+        });
+
+        window.addEventListener("resize", onResize);
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener("resize", onResize);
+    });
+
+    return {
+        isMobile,
+        viewportWidth: viewportWidth
+    };
+}

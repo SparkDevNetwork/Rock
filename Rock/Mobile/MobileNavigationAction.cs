@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Enums.Mobile;
 
 namespace Rock.Mobile
 {

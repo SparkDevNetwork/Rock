@@ -65,36 +65,33 @@ namespace Rock.Field.Types
             {
                 var workflowTypeGuid = configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) ? configurationValues[WORKFLOW_TYPE_KEY].AsGuidOrNull() : null;
 
-                WorkflowType workflowType = null;
+                WorkflowTypeCache workflowTypeCache = null;
 
-                using ( var rockContext = new RockContext() )
+                if ( workflowTypeGuid.HasValue )
                 {
-                    if ( workflowTypeGuid.HasValue )
-                    {
-                        var workflowTypeService = new WorkflowTypeService( rockContext );
-                        workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                    }
+                    workflowTypeCache = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                }
 
-                    if ( workflowType == null )
-                    {
-                        workflowType = GetContextWorkflowType();
-                    }
+                if ( workflowTypeCache == null )
+                {
+                    var workflowType = GetContextWorkflowType();
+                    workflowTypeCache = WorkflowTypeCache.Get( workflowType?.Id ?? 0 );
+                }
 
-                    if ( workflowType != null )
-                    {
-                        var workflowActivityTypes = workflowType.ActivityTypes;
+                if ( workflowTypeCache != null )
+                {
+                    var workflowActivityTypes = workflowTypeCache.ActivityTypes;
 
-                        if ( workflowActivityTypes?.Any() == true )
+                    if ( workflowActivityTypes?.Any() == true )
+                    {
+                        var activityTypes = new List<ListItemBag>();
+
+                        foreach ( var activityType in workflowActivityTypes.OrderBy( a => a.Order ) )
                         {
-                            var activityTypes = new List<ListItemBag>();
-
-                            foreach ( var activityType in workflowActivityTypes.OrderBy( a => a.Order ) )
-                            {
-                                activityTypes.Add( new ListItemBag() { Text = activityType.Name ?? "[New Activity]", Value = activityType.Guid.ToString().ToUpper() } );
-                            }
-
-                            configurationValues[CLIENT_VALUES_KEY] = activityTypes.ToCamelCaseJson( false, true );
+                            activityTypes.Add( new ListItemBag() { Text = activityType.Name ?? "[New Activity]", Value = activityType.Guid.ToString().ToUpper() } );
                         }
+
+                        configurationValues[CLIENT_VALUES_KEY] = activityTypes.ToCamelCaseJson( false, true );
                     }
                 }
             }
@@ -135,15 +132,7 @@ namespace Rock.Field.Types
 
                 if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        formattedValue = new WorkflowActivityTypeService( rockContext )
-                            .Queryable()
-                            .AsNoTracking()
-                            .Where( a => a.Guid.Equals( guid ) )
-                            .Select( a => a.Name )
-                            .FirstOrDefault();
-                    }
+                    formattedValue = WorkflowActivityTypeCache.Get( guid )?.Name ?? string.Empty;
                 }
             }
 

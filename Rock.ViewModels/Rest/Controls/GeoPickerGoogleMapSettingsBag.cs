@@ -29,5 +29,13 @@ namespace Rock.ViewModels.Rest.Controls
         /// API key for using Google Maps
         /// </summary>
         public string GoogleApiKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the google map identifier.
+        /// </summary>
+        /// <value>
+        /// The google map identifier.
+        /// </value>
+        public string GoogleMapId { get; set; }
     }
 }

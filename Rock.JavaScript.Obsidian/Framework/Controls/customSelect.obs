@@ -88,7 +88,7 @@
 
 <script setup lang="ts" generic="TItem, TKey extends keyof TItem">
     import { PropType, Ref, ref } from "vue";
-    import { useScreenSize } from "@Obsidian/Utility/screenSize";
+    import { useViewportWidth } from "@Obsidian/Utility/screenSize";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -135,6 +135,11 @@
             default: "selected"
         },
 
+        mobileThreshold: {
+            type: Number as PropType<number>,
+            default: 480
+        },
+
         /**
          * property name of the item to use to determine if the item is disabled.
          * If you supply a string, will apply that directly. You can also use a
@@ -157,7 +162,7 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit) as Ref<TItem | null>;
     const fieldProps = useStandardRockFormFieldProps(props);
-    const { isMobile } = useScreenSize();
+    const { isMobile } = useViewportWidth(props.mobileThreshold);
     const showOverlay = ref(false);
 
     // #endregion

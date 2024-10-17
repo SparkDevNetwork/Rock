@@ -25,7 +25,10 @@
             "description": "The font icon sets that are supported by this theme. If not specified then default values will be provided by Rock.",
             "items": {
                 "type": "string",
-                "enum": ["fontawesome", "tabler"]
+                "enum": [
+                    "fontawesome",
+                    "tabler"
+                ]
             }
         },
         "fields": {
@@ -309,6 +312,36 @@
                 "offValue": {
                     "type": "string",
                     "description": "The literal value to set the variable to when the value is off."
+                },
+                "onImport": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "The bare Rock URL to add as a CSS @import. This may start with ~ and ~~."
+                        },
+                        {
+                            "type": "array",
+                            "description": "The bare Rock URLs to add as a CSS @import. These may start with ~ and ~~.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "offImport": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "The bare Rock URL to add as a CSS @import. This may start with ~ and ~~."
+                        },
+                        {
+                            "type": "array",
+                            "description": "The bare Rock URLs to add as a CSS @import. These may start with ~ and ~~.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
                 }
             },
             "description": "A field that will include one of two custom CSS content templates.",

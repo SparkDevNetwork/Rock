@@ -31,7 +31,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Photo Upload" )]
     [Category( "CRM" )]
     [Description( "Allows a photo to be uploaded for the given person (logged in person) and optionally their family members." )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

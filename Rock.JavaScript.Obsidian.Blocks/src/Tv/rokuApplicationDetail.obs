@@ -16,6 +16,7 @@
                  :isFollowVisible="false"
                  :isFullScreenVisible="false"
                  :isSecurityHidden="true"
+                 entityTypeName="Roku Application"
                  @cancelEdit="onCancelEdit"
                  @edit="onEdit"
                  @save="onSave">

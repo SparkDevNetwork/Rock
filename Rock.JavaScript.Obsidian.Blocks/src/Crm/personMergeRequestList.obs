@@ -13,7 +13,9 @@
                         title="Date"
                         field="date"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="xs"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"/>
 
         <TextColumn name="requestor"
                     title="Requestor"
@@ -25,6 +27,7 @@
                 title="Merge Records"
                 :filter="textValueFilter"
                 :filterValue="getMergeRecordsRowFilterValue"
+                :quickFilterValue="getMergeRecordsRowFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">

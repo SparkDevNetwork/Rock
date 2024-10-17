@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -66,6 +67,20 @@ namespace Rock.Utility
                     Name = bt.Name,
                     Path = bt.Path,
                 } ).ToList();
+
+            // Set FileCreationTime and FileLastWriteTime
+            foreach ( var item in sparkLinkRequest.PluginBlockTypes )
+            {
+                var itemPath = item.Path.Substring( 2 );
+                var filePath = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, itemPath );
+                var fileInfo = new FileInfo( filePath );
+
+                if ( fileInfo.Exists )
+                {
+                    item.FileCreationTime = fileInfo.CreationTime;
+                    item.FileLastWriteTime = fileInfo.LastWriteTime;
+                }
+            }
 
             // Fetch the organization address
             var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
@@ -311,6 +326,22 @@ namespace Rock.Utility
             /// The modified date time.
             /// </value>
             public DateTime? ModifiedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the file creation time of the block's file on disk.
+            /// </summary>
+            /// <value>
+            /// The file creation time.
+            /// </value>
+            public DateTime? FileCreationTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the file last write time of the block's file on disk.
+            /// </summary>
+            /// <value>
+            /// The file last write time.
+            /// </value>
+            public DateTime? FileLastWriteTime { get; set; }
         }
 
         #endregion

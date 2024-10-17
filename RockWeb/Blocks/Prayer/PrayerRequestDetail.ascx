@@ -91,7 +91,7 @@
                             <asp:LinkButton ID="lbCancel" runat="server" data-shortcut-key="c" Text="Cancel" ToolTip="Alt+c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                         </div>
 
-                        <Rock:ModalDialog ID="mdAIAutomationsAlertModal" runat="server" Title="Pending AI Automations" SaveButtonText="Ok" OnSaveClick="mdAIAutomationsAlertModal_SaveClick" Visible="false">
+                        <Rock:ModalDialog ID="mdAIAutomationsAlertModal" runat="server" CancelLinkVisible="false" Title="Pending AI Automations" SaveButtonText="Ok" OnSaveClick="mdAIAutomationsAlertModal_SaveClick" Visible="false">
                             <Content>
                                 <Rock:NotificationBox ID="nbAIAlertMessage" runat="server" NotificationBoxType="Info" Title="Pending AI Automations"
                                     Text="There are AI automations configured for this Prayer Request Category - it may take a minute for the automations to complete."></Rock:NotificationBox>

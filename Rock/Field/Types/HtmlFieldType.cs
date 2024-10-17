@@ -22,6 +22,8 @@ using System.Web.UI;
 #endif
 using Rock.Attribute;
 using Rock.Reporting;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -29,9 +31,11 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16"">BLANK</svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.HTML )]
-    public class HtmlFieldType : FieldType
+    public class HtmlFieldType : FieldType, ISecurityGrantFieldType
     {
         #region Configuration
 
@@ -39,10 +43,45 @@ namespace Rock.Field.Types
         private const string DOCUMENT_FOLDER_ROOT = "documentfolderroot";
         private const string IMAGE_FOLDER_ROOT = "imagefolderroot";
         private const string USER_SPECIFIC_ROOT = "userspecificroot";
+        private const string CONDENSED_HTML = "condensedHtml";
+        private const string ENCRYPTED_DOCUMENT_FOLDER_ROOT = "encrypteddocumentfolderroot";
+        private const string ENCRYPTED_IMAGE_FOLDER_ROOT = "encryptedimagefolderroot";
 
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var publicConfig = new Dictionary<string, string>( privateConfigurationValues );
+
+            publicConfig.AddOrReplace( CONDENSED_HTML, GetCondensedHtmlValue( value, privateConfigurationValues ) );
+            publicConfig.AddOrReplace( ENCRYPTED_DOCUMENT_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
+            publicConfig.AddOrReplace( ENCRYPTED_IMAGE_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
+
+            return publicConfig;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var privateConfig = new Dictionary<string, string>( publicConfigurationValues );
+
+            privateConfig.Remove( CONDENSED_HTML );
+            privateConfig.Remove( ENCRYPTED_DOCUMENT_FOLDER_ROOT );
+            privateConfig.Remove( ENCRYPTED_IMAGE_FOLDER_ROOT );
+
+            return privateConfig;
+        }
 
         #endregion
 
@@ -310,5 +349,19 @@ namespace Rock.Field.Types
 
 #endif
         #endregion
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            AddRulesToSecurityGrant( grant );
+        }
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant )
+        {
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+        }
     }
 }

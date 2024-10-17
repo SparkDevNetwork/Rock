@@ -238,8 +238,11 @@ namespace Rock.Blocks.Cms
             var customization = entity.GetAdditionalSettings<ThemeCustomizationSettings>();
             var themeDefinition = GetThemeDefinition( entity.Name );
 
-            box.IfValidProperty( nameof( box.Bag.VariableValues ),
-                () => customization.VariableValues = box.Bag.VariableValues );
+            box.IfValidProperty( nameof( box.Bag.VariableValues ), () =>
+            {
+                UpdateReferencedFiles( entity.Id, themeDefinition, customization.VariableValues, box.Bag.VariableValues );
+                customization.VariableValues = box.Bag.VariableValues;
+            } );
 
             box.IfValidProperty( nameof( box.Bag.CustomOverrides ),
                 () => customization.CustomOverrides = box.Bag.CustomOverrides );
@@ -267,6 +270,102 @@ namespace Rock.Blocks.Cms
             entity.ModifiedDateTime = RockDateTime.Now;
 
             return true;
+        }
+
+        /// <summary>
+        /// Update any referenced files. This will mark any old files for removal
+        /// and mark any new files as persisted. This also updates RelatedEntity
+        /// with records to link this theme to that file.
+        /// </summary>
+        /// <param name="themeId">The identifier of the theme.</param>
+        /// <param name="themeDefinition">The theme definition used to find the fields.</param>
+        /// <param name="originalValues">The original values before we update them.</param>
+        /// <param name="newValues">The new values that are about to be saved.</param>
+        private void UpdateReferencedFiles( int themeId, ThemeDefinition themeDefinition, Dictionary<string, string> originalValues, Dictionary<string, string> newValues )
+        {
+            var binaryFileService = new BinaryFileService( RockContext );
+            var relatedEntityService = new RelatedEntityService( RockContext );
+
+            var themeEntityTypeId = EntityTypeCache.Get<Theme>( true, RockContext ).Id;
+            var binaryFileEntityTypeId = EntityTypeCache.Get<BinaryFile>( true, RockContext ).Id;
+
+            var nestedFileOrImageFields = themeDefinition.Fields
+                .Where( f => f is PanelThemeField )
+                .Cast<PanelThemeField>()
+                .SelectMany( f => f.Fields )
+                .Where( f => f.Type == ThemeFieldType.Image || f.Type == ThemeFieldType.File );
+            var fileOrImageFields = themeDefinition.Fields
+                .Where( f => f.Type == ThemeFieldType.Image || f.Type == ThemeFieldType.File )
+                .Union( nestedFileOrImageFields )
+                .ToList();
+
+            foreach ( var field in fileOrImageFields.Cast<VariableThemeField>() )
+            {
+                if ( originalValues?.TryGetValue( field.Variable, out var originalValue ) != true )
+                {
+                    originalValue = string.Empty;
+                }
+
+                if ( newValues?.TryGetValue( field.Variable, out var newValue ) != true )
+                {
+                    newValue = string.Empty;
+                }
+
+                var oldFileGuid = originalValue.AsGuidOrNull();
+                var newFileGuid = newValue.AsGuidOrNull();
+
+                // If the values are the same then we don't need to do anything.
+                if ( oldFileGuid == newFileGuid )
+                {
+                    continue;
+                }
+
+                // If there was an old value, we need to mark it as temporary
+                // so it will be cleaned up and also remove the reference to
+                // the file.
+                if ( oldFileGuid.HasValue )
+                {
+                    var oldBinaryFile = binaryFileService.Get( oldFileGuid.Value );
+
+                    if ( oldBinaryFile != null )
+                    {
+                        oldBinaryFile.IsTemporary = true;
+
+                        var oldRelatedEntities = relatedEntityService.Queryable()
+                            .Where( r => r.SourceEntityTypeId == themeEntityTypeId
+                                && r.SourceEntityId == themeId
+                                && r.TargetEntityTypeId == binaryFileEntityTypeId
+                                && r.TargetEntityId == oldBinaryFile.Id
+                                && r.PurposeKey == "THEME-FILE" )
+                            .ToList();
+
+                        relatedEntityService.DeleteRange( oldRelatedEntities );
+                    }
+                }
+
+                // If there was a new value, we need to mark it as not temporary
+                // so it will be persisted and also add a reference to the file.
+                if ( newFileGuid.HasValue )
+                {
+                    var newBinaryFile = binaryFileService.Get( newFileGuid.Value );
+
+                    if ( newBinaryFile != null )
+                    {
+                        newBinaryFile.IsTemporary = false;
+
+                        var newRelatedEntity = new RelatedEntity
+                        {
+                            SourceEntityTypeId = themeEntityTypeId,
+                            SourceEntityId = themeId,
+                            TargetEntityTypeId = binaryFileEntityTypeId,
+                            TargetEntityId = newBinaryFile.Id,
+                            PurposeKey = "THEME-FILE"
+                        };
+
+                        relatedEntityService.Add( newRelatedEntity );
+                    }
+                }
+            }
         }
 
         /// <inheritdoc/>

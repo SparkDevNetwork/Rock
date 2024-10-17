@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Event.RegistrationInstancePaymentList
 {
     /// <summary>
@@ -45,5 +47,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstancePaymentList
         /// The name of the export file.
         /// </value>
         public string ExportFileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency information.
+        /// </summary>
+        /// <value>
+        /// The currency information.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

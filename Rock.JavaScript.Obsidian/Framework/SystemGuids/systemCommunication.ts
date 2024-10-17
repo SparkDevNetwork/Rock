@@ -74,6 +74,8 @@ export const SystemCommunication = {
     KioskInfoUpdate: "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
     /** Gets the template guid for the Learning Activity Notifications system communication. */
     LearningActivityNotifications: "d40a9c32-f179-4e5e-9b0d-ce208c5d1870",
+    /** Gets the template guid for a Login Confirmation Alert. */
+    LoginConfirmationAlert: "90D986D4-F3B5-4B28-B731-5A3F35172BA9",
     /** Gets the template guid for a note approval notification */
     NoteApprovalNotification: "B2E3D75F-681E-430F-82C9-D0D681040FAF",
     /** Gets the template guid for a notewatch notification */

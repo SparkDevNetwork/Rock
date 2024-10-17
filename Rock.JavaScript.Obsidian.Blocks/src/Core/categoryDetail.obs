@@ -90,7 +90,6 @@
     import EditPanel from "./CategoryDetail/editPanel.partial.obs";
     import ViewPanel from "./CategoryDetail/viewPanel.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
-    import { NavigationUrlKey } from "./CategoryDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
     import { CategoryDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryDetailOptionsBag";
@@ -179,12 +178,12 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!categoryEditBag.value?.bag?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
+        const params = new URLSearchParams(window.location.search);
+        const categoryId = params.get("CategoryId");
 
-            return false;
+        if (categoryId == "0") {
+            params.delete("CategoryId");
+            window.location.search = params.toString();
         }
 
         return true;

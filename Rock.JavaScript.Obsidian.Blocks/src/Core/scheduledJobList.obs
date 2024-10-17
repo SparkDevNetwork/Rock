@@ -18,7 +18,7 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="30%" />
+                    width="25%" />
 
         <DateTimeColumn name="lastSuccessfulRun"
                         title="Last Successful Run"
@@ -26,7 +26,7 @@
                         :filter="dateValueFilter"
                         visiblePriority="md"
                         headerClass="text-right"
-                        itemClass="justify-content-end text-right" />
+                        itemClass="no-x-padding" />
 
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date"
@@ -34,7 +34,7 @@
                         :filter="dateValueFilter"
                         visiblePriority="md"
                         headerClass="text-right"
-                        itemClass="justify-content-end text-right" />
+                        itemClass="no-x-padding" />
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
@@ -50,8 +50,8 @@
                 visiblePriority="md"
                 :filter="pickExistingValueFilter"
                 :filterValue="getlastStatusFilterValue"
-                headerClass="text-center"
-                itemClass="justify-content-center text-center">
+                :quickFilterValue="getlastStatusFilterValue"
+                width="7%">
             <template #format="{ row }">
                 <span :class='getStatusClass(row)'>{{ row.lastStatus === "Exception" ? "Failed" : row.lastStatus }}</span>
             </template>
@@ -67,6 +67,7 @@
                 width="20%"
                 :filter="textValueFilter"
                 :filterValue="getlastStatusMessageFilterValue"
+                :quickFilterValue="getlastStatusMessageFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div v-html="row.lastStatusMessageAsHtml">
@@ -77,26 +78,24 @@
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
-                       visiblePriority="md"
                        :filter="booleanValueFilter"
+                       visiblePriority="md"
                        headerClass="text-center"
-                       itemClass="justify-content-center text-center"
-                       width="5%" />
+                       itemClass="justify-content-center text-center" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       visiblePriority="md"
-                       headerClass="text-center"
-                       itemClass="justify-content-center text-center"
                        :filter="booleanValueFilter"
-                       width="5%" />
+                       visiblePriority="md"
+                       width="5%"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center" />
 
         <Column name="history"
-                width="52px"
+                width="5%"
                 title="History"
                 disableSort
-                itemClass="grid-columncommand justify-content-center text-center"
                 headerClass="text-center">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
@@ -109,11 +108,9 @@
         </Column>
 
         <Column name="runJob"
-                width="52px"
+                width="5%"
                 title="Run Now"
-                disableSort
-                itemClass="grid-columncommand justify-content-center text-center"
-                headerClass="text-center">
+                disableSort>
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onRunNowClick(row, $event)"
@@ -127,6 +124,12 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.no-x-padding {
+    padding: var(--table-cell-padding-y) 0 !important;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

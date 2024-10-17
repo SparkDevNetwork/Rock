@@ -137,6 +137,6 @@ export const ConfigurationComponent = defineComponent({
     },
 
     template: `
-<CheckBox v-model="includeGlobalOption" label="Include Global Attributes Option" text="Yes" help="Should the 'Global Attributes' entity option be included." />
+<CheckBox v-model="includeGlobalOption" label="Include Global Attributes Option" help="Should the 'Global Attributes' entity option be included." />
 `
 });

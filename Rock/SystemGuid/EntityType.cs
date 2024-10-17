@@ -279,6 +279,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The guid for the <see cref="Rock.Model.InteractionEntity"/> entity.
+        /// </summary>
+        public const string INTERACTION_ENTITY = "AB3AC547-CCEF-4662-9646-64F16813DAC4";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/>
         /// </summary>
         public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";

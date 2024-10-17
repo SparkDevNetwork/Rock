@@ -121,6 +121,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public bool IsStudentCompleted { get; set; }
 
         /// <summary>
+        /// Gets or sets the IdKey of the <see cref="ActivityBag"/>.
+        /// </summary>
+        public string LearningActivityIdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of points the student earned by completing the activity.
         /// </summary>
         public int PointsEarned { get; set; }

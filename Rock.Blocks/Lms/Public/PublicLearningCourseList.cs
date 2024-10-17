@@ -37,10 +37,9 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
-        Description = "The lava template to use to render the page. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The Lava template to use to render the page. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -250,13 +249,12 @@ namespace Rock.Blocks.Lms
         protected override string GetInitialHtmlContent()
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var rockContext = new RockContext();
-            var program = new LearningProgramService( rockContext )
+            var program = new LearningProgramService( RockContext )
                 .Queryable()
                 .Include( p => p.ImageBinaryFile )
                 .FirstOrDefault( p => p.Id == programId );
 
-            var courses = GetCourses( programId, rockContext );
+            var courses = GetCourses( programId, RockContext );
 
             var queryParams = new Dictionary<string, string>
             {
@@ -294,7 +292,7 @@ namespace Rock.Blocks.Lms
         {
             var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
-            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id, semesterDates.Start, semesterDates.End );
+            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, semesterDates.Start, semesterDates.End );
         }
 
         #endregion

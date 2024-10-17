@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="emptyDefinition"
+          :data="gridDataSource"
           keyField="idKey"
           title="Learning Plan"
           :entityTypeGuid="EntityType.LearningActivity"
@@ -103,9 +105,11 @@
     import Grid, { Column, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const invokeBlockAction = useInvokeBlockAction();
+    const emptyDefinition = {} as GridDefinitionBag;
 
     const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
     const assignToColors: Array<string> = ["var(--color-info-strong)", "var(--color-warning-strong)"];
