@@ -1595,6 +1595,7 @@
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
     <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
+    <Compile Include="Plugin\HotFixes\211_MigrationRollupsForV17_0_17.cs" />
     <Compile Include="Plugin\HotFixes\210_LMSPageChanges.cs" />
     <Compile Include="Plugin\HotFixes\209_MigrationRollupsForV17_0_16.cs" />
     <Compile Include="Plugin\HotFixes\208_MigrationRollupsForV17_0_15.cs" />
