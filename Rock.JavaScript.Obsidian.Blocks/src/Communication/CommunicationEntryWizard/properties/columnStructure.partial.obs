@@ -1,13 +1,17 @@
 <template>
     <div class="column-structure">
-        <Column
-                v-for="(value, index) in columnValues"
-                :key="index"
-                :value="value"
-                :index="index"
-                :isDraggable="index < columnValues.length - 1"
-                @dragged="onDragged"
-                @click="$emit('select', columnElements[index])" />
+        <template v-for="(column, index) in columnValues" :key="'column-' + index">
+            <div class="column"
+                 :style="{ flexBasis: getColumnPercentage(column) }"
+                 @click="$emit('select', columnElements[index])">
+                <div class="content">{{ getCols(columnElements[index]) }}</div>
+            </div>
+
+            <!-- Add a divider after each column, except the last one -->
+            <Divider v-if="index < columnValues.length - 1"
+                     :index="index"
+                     @dragged="onDragged" />
+        </template>
     </div>
 </template>
 
@@ -15,14 +19,29 @@
 .column-structure {
     display: flex;
     width: 100%;
-    gap: 8px;
+    align-items: stretch;
+    gap: 4px;
+    /* Space between columns and dividers */
+}
+
+.column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    transition: flex-basis 0.2s;
+}
+
+.content {
+    text-align: center;
+    width: 100%;
 }
 </style>
 
 <script lang="ts" setup>
     import { PropType, ref, watch } from "vue";
-    import Column from "./column.partial.obs";
-
+    import Divider from "./sectionColumnDivider.partial.obs";
 
     const props = defineProps({
         columnElements: {
@@ -70,6 +89,10 @@
 
     // #region Functions
 
+    function getColumnPercentage(cols: number): string {
+        return `${(cols / 12) * 100}%`;
+    }
+
     function setColumnValue(columnElement: HTMLElement, cols: number): void {
         // Remove all "large-x" classes.
         columnElement.classList.remove(...[...columnElement.classList].filter(cls => cls.startsWith("large-")));
@@ -78,7 +101,7 @@
         columnElement.classList.add(`large-${cols}`);
 
         // Set the width.
-        columnElement.setAttribute("width", `${(cols / 12) * 100}%`);
+        columnElement.setAttribute("width", getColumnPercentage(cols));
     }
 
     function getColumnValues(columnElements: HTMLElement[]): number[] {
@@ -96,10 +119,6 @@
             // If the large-x CSS class isn't found, default to 2 columns.
             return 2;
         }
-    }
-
-    function getColSmCssClass(columnElement: HTMLElement): string {
-        return `col-sm-${getCols(columnElement)}`;
     }
 
     // #endregion
