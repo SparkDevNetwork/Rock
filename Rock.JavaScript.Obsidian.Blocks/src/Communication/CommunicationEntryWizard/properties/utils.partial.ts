@@ -153,13 +153,14 @@ export const standardShorthandProps: StandardShorthandProps = {
  */
 export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorthandProps>): ExtractPropTypes<StandardShorthandProps> {
     const propValues = reactive<ExtractPropTypes<StandardShorthandProps>>({
-        label: props.label,
-        labelBottom: props.labelBottom,
-        labelLeft: props.labelLeft,
-        labelRight: props.labelRight,
-        labelTop: props.labelTop,
-        showConstituentProperties: props.showConstituentProperties,
         element: props.element,
+        label: props.label,
+        labelShorthand: props.labelShorthand,
+        labelTop: props.labelTop,
+        labelBottom: props.labelBottom,
+        labelRight: props.labelRight,
+        labelLeft: props.labelLeft,
+        showConstituentProperties: props.showConstituentProperties,
     });
 
     watch(() => props.label, (value, oldValue) => {

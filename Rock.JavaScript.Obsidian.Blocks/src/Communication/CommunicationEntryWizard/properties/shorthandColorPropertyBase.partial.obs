@@ -3,7 +3,7 @@
                            :label="label">
         <template #shorthandProperty>
             <ColorTypePropertyBase :element="element"
-                                   :label="labelShorthand || label"
+                                   :label="label"
                                    :property="propertyShorthand"
                                    @change="onChangeShorthand" />
         </template>

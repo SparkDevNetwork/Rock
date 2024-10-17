@@ -2,25 +2,31 @@
     <ComponentPropertyPanelBase @complete="$emit('complete')"
                                 @delete="$emit('delete')">
         <AccordionGroup>
-            <Accordion title="Row Settings">
+            <Accordion title="Section Settings">
                 <BackgroundColorProperty :element="componentElement" />
                 <BorderPropertyGroup :element="componentElement" />
+                <PaddingProperty :element="componentElement" />
             </Accordion>
 
             <Accordion title="Columns">
-                {{ columnElements.length }}
+                <ColumnStructure :columnElements="columnElements" @select="onColumnElementSelected" />
+
+                <SectionColumnPropertyGroup v-if="selectedColumnElement" :element="selectedColumnElement" />
             </Accordion>
         </AccordionGroup>
     </ComponentPropertyPanelBase>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
     import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import SectionColumnPropertyGroup from "../properties/sectionColumnPropertyGroup.partial.obs";
+    import ColumnStructure from "../properties/columnStructure.partial.obs";
 
     const props = defineProps({
         componentElement: {
@@ -37,7 +43,47 @@
     // #region Values
 
     const backgroundColor = ref<string>(props.componentElement.style.backgroundColor ?? "");
-    const columnElements = ref<HTMLElement[]>([...props.componentElement.querySelectorAll(".dropzone")].map(e => <HTMLElement>e));
+    const columnElements = ref<HTMLElement[]>(getChildDropzones(props.componentElement));
+    const selectedColumnElement = ref<HTMLElement | null | undefined>();
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onColumnElementSelected(columnElement: HTMLElement): void {
+        if (selectedColumnElement.value) {
+            selectedColumnElement.value = null;
+
+            nextTick(() => {
+                selectedColumnElement.value = columnElement;
+            });
+        }
+        else {
+            selectedColumnElement.value = columnElement;
+        }
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    function getChildDropzones(componentElement: HTMLElement): HTMLElement[] {
+        return [...componentElement.querySelectorAll(".dropzone")]
+            .filter(el => !isNestedInAnotherDropzone(<HTMLElement>el, componentElement))
+            .map(e => <HTMLElement>e);
+    }
+
+    function isNestedInAnotherDropzone(element: HTMLElement, parent: HTMLElement): boolean {
+        let ancestor = element.parentElement;
+
+        while (ancestor && ancestor !== parent) {
+            if (ancestor.classList.contains("dropzone")) {
+                return true; // It's nested in another dropzone within the parent
+            }
+            ancestor = ancestor.parentElement;
+        }
+        return false; // No other dropzone ancestors within the parent
+    }
 
     // #endregion
 
@@ -45,6 +91,8 @@
 
     watch(() => props.componentElement, () => {
         backgroundColor.value = props.componentElement.style.backgroundColor ?? "";
+        columnElements.value = getChildDropzones(props.componentElement);
+        selectedColumnElement.value = null;
     });
 
     // #endregion

@@ -4,7 +4,7 @@
         <template #shorthandProperty>
             <LengthTypePropertyBase v-bind="lengthProps"
                                     :element="element"
-                                    :label="labelShorthand || label"
+                                    :label="label"
                                     :property="propertyShorthand"
                                     @change="onChangeShorthand" />
         </template>

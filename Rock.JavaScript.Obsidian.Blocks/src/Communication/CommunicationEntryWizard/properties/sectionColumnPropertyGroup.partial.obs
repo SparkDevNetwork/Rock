@@ -1,0 +1,15 @@
+<template>
+    <PaddingProperty :element="element" :showConstituentProperties="true" label="Column Padding" />
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import PaddingProperty from "./paddingProperty.partial.obs";
+
+    defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+</script>
