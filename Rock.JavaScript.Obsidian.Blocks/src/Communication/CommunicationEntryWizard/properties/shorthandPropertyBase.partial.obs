@@ -15,14 +15,15 @@
                 <slot name="bottomProperty"></slot>
             </div>
 
-            <div class="col-sm-6" v-if="constituentProperties.includes('right')">
-                <slot name="rightProperty"></slot>
-            </div>
-
             <div class="col-sm-6" v-if="constituentProperties.includes('left')">
                 <slot name="leftProperty"></slot>
             </div>
+            
+            <div class="col-sm-6" v-if="constituentProperties.includes('right')">
+                <slot name="rightProperty"></slot>
+            </div>
         </div>
+
     </template>
 </template>
 

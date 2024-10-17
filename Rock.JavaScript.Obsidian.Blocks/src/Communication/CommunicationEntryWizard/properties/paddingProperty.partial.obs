@@ -1,20 +1,20 @@
 <template>
-    <ShorthandLengthPropertyBase v-bind="mergedProps"
-                                 propertyShorthand="padding"
-                                 propertyTop="padding-top"
-                                 propertyBottom="padding-bottom"
-                                 propertyRight="padding-right"
-                                 propertyLeft="padding-left"
-                                 @changeShorthand="$emit('changeShorthand', $event)"
-                                 @changeTop="$emit('changeTop', $event)"
-                                 @changeBottom="$emit('changeBottom', $event)"
-                                 @changeRight="$emit('changeRight', $event)"
-                                 @changeLeft="$emit('changeLeft', $event)" />
+    <ShorthandLengthTypePropertyBase v-bind="mergedProps"
+                                     propertyShorthand="padding"
+                                     propertyTop="padding-top"
+                                     propertyBottom="padding-bottom"
+                                     propertyRight="padding-right"
+                                     propertyLeft="padding-left"
+                                     @changeShorthand="$emit('changeShorthand', $event)"
+                                     @changeTop="$emit('changeTop', $event)"
+                                     @changeBottom="$emit('changeBottom', $event)"
+                                     @changeRight="$emit('changeRight', $event)"
+                                     @changeLeft="$emit('changeLeft', $event)" />
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import ShorthandLengthPropertyBase from "./shorthandLengthPropertyBase.partial.obs";
+    import ShorthandLengthTypePropertyBase from "./shorthandLengthTypePropertyBase.partial.obs";
     import { standardLengthProps, standardShorthandProps, useStandardLengthProps, useStandardShorthandProps } from "./utils.partial";
 
     const props = defineProps({

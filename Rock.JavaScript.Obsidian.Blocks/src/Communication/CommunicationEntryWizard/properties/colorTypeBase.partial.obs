@@ -1,22 +1,24 @@
 <template>
-    <LengthTypeBase v-bind="lengthProps" v-model="internalValue" />
+    <ColorPicker v-model="internalValue"
+                 :disableLabel="!label"
+                 :label="label" />
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import LengthTypeBase from "./lengthTypeBase.partial.obs";
-    import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 
     const props = defineProps({
-        ...standardLengthProps,
-
         modelValue: {
             type: String as PropType<string>,
             required: true
+        },
+
+        label: {
+            type: String as PropType<string | undefined>,
+            required: false
         }
     });
-
-    const lengthProps = useStandardLengthProps(props);
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string): void;
@@ -30,9 +32,9 @@
 
     // #region Watchers
 
-    watch(internalValue, (value: string, oldValue: string) => {
-        if (value !== oldValue) {
-            emit("update:modelValue", value);
+    watch(internalValue, (newValue: string, oldValue: string) => {
+        if (newValue !== oldValue) {
+            emit("update:modelValue", newValue);
         }
     });
 

@@ -1,26 +1,19 @@
 <template>
-    <RangeSlider v-if="mode === 'rangeSlider'"
-                 v-model="height"
-                 :label="label"
-                 :min="min"
-                 :max="max"
-                 :showValueBar="true" />
-
-    <NumberUpDown v-else-if="mode === 'numberUpDown'"
-                  v-model="height"
-                  :label="label"
-                  :min="min"
-                  :max="max" />
-
-    <div v-else>'{{ mode }}' is an invalid mode for the height property.</div>
+    <LengthTypePropertyBase v-bind="lengthProps"
+                            :element="element"
+                            property="height"
+                            @change="$emit('change', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import { PropType } from "vue";
+    import LengthTypePropertyBase from "./lengthTypePropertyBase.partial.obs";
+    import { ShorthandPropertyMode } from "./types.partial";
+    import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
 
     const props = defineProps({
+        ...standardLengthProps,
+
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
@@ -42,33 +35,14 @@
         },
 
         mode: {
-            type: String as PropType<"rangeSlider" | "numberUpDown">,
+            type: String as PropType<ShorthandPropertyMode>,
             default: "rangeSlider" as const
         }
     });
 
-    const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+    const lengthProps = useStandardLengthProps(props);
+
+    defineEmits<{
+        (e: "change", value: string): void;
     }>();
-
-    // #region Values
-
-    const height = ref<number>(parseInt(props.element.style.height || "0"));
-
-    // #endregion
-
-    // #region Watchers
-
-    watch(height, (value: number) => {
-        const heightValue = value ? `${value}px` : "";
-        props.element.style.height = heightValue;
-
-        emit("changeShorthand", heightValue);
-    });
-
-    watch(() => props.element, () => {
-        height.value = parseInt(props.element.style.height || "0");
-    });
-
-    // #endregion
 </script>

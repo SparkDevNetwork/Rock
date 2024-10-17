@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { CSSStyleDeclarationKebabKey } from "./types.partial";
     import { standardLengthProps } from "./utils.partial";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
@@ -43,40 +42,34 @@
     const props = defineProps({
         ...standardLengthProps,
 
-        property: {
-            type: String as PropType<CSSStyleDeclarationKebabKey>,
+        modelValue: {
+            type: String as PropType<string>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "change", value: string): void;
+        (e: "update:modelValue", value: string): void;
     }>();
 
     // #region Computed Props
 
     const isNumeric = computed<boolean>(() => {
-        return props.mode === "numberBox" || props.mode === "numberUpDown";
+        return props.mode === "numberBox" || props.mode === "numberUpDown" || props.mode === "rangeSlider";
     });
 
     // #endregion
 
     // #region Values
 
-    const internalValue = ref<string>(!isNumeric.value ? getElementValue(props.property) : "");
-    const internalNumericValue = ref<number>(isNumeric.value ? getElementPixelValue(props.property) : 0);
+    const internalValue = ref<string>(!isNumeric.value ? props.modelValue : "");
+    const internalNumericValue = ref<number>(isNumeric.value ? getPixelValue(props.modelValue) : 0);
 
     // #endregion
 
     // #region Functions
 
-    function getElementValue(key: CSSStyleDeclarationKebabKey): string {
-        return props.element.style.getPropertyValue(key);
-    }
-
-    function getElementPixelValue(key: CSSStyleDeclarationKebabKey): number {
-        const value = props.element.style.getPropertyValue(key);
-
+    function getPixelValue(value: string): number {
         if (value.endsWith("px")) {
             return parseInt(value);
         }
@@ -97,26 +90,18 @@
 
     watch(internalValue, (newValue: string, oldValue: string) => {
         if (newValue !== oldValue) {
-            props.element.style.setProperty(props.property, newValue);
-
-            emit("change", newValue);
+            emit("update:modelValue", newValue);
         }
     });
 
-    watch([() => props.element, () => props.mode], () => {
+    watch([() => props.modelValue, () => props.mode], () => {
         if (isNumeric.value) {
-            internalNumericValue.value = getElementPixelValue(props.property);
+            internalNumericValue.value = getPixelValue(props.modelValue);
         }
         else {
-            internalValue.value = getElementValue(props.property);
+            internalValue.value = props.modelValue;
         }
     });
 
     // #endregion
-
-    defineExpose({
-        setValue(value: string): void {
-            internalValue.value = value;
-        }
-    });
 </script>

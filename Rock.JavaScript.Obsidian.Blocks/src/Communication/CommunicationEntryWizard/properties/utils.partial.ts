@@ -73,11 +73,6 @@ export function useReactiveShorthandProperties(component: Ref<InstanceType<typeo
 
 /** The standard component props that should be included when using RockFormField. */
 export const standardLengthProps: StandardLengthProps = {
-    element: {
-        type: Object as PropType<HTMLElement>,
-        required: true
-    },
-
     /**
      * Used as both the shorthand property label and the group label for constituent properties.
      *
@@ -208,17 +203,16 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
 }
 
 /**
- * Configures the basic properties that should be passed to the LengthPropertyBase
+ * Configures the basic properties that should be passed to the LengthTypePropertyBase
  * component. The value returned by this function should be used with v-bind on
- * the LengthPropertyBase in order to pass all the defined prop values to it.
+ * the LengthTypePropertyBase in order to pass all the defined prop values to it.
  *
- * @param props The props of the component that will be using the LengthPropertyBase.
+ * @param props The props of the component that will be using the LengthTypePropertyBase.
  *
  * @returns An object of prop values that can be used with v-bind.
  */
 export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthProps>): ExtractPropTypes<StandardLengthProps> {
     const propValues = reactive<ExtractPropTypes<StandardLengthProps>>({
-        element: props.element,
         min: props.min,
         max: props.max,
         mode: props.mode,
@@ -246,12 +240,6 @@ export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthPro
     watch(() => props.mode, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.mode = value;
-        }
-    });
-
-    watch(() => props.element, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.element = value;
         }
     });
 

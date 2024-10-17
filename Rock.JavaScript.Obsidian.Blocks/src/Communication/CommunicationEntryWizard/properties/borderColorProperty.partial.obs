@@ -1,22 +1,22 @@
 <template>
-    <ShorthandPropertyBase v-bind="baseProps"
-                           ref="baseProperty"
-                           shorthandProperty="border-color"
-                           topProperty="border-top-color"
-                           bottomProperty="border-bottom-color"
-                           rightProperty="border-right-color"
-                           leftProperty="border-left-color"
-                           @changeShorthand="$emit('changeShorthand', $event)"
-                           @changeTop="$emit('changeTop', $event)"
-                           @changeBottom="$emit('changeBottom', $event)"
-                           @changeRight="$emit('changeRight', $event)"
-                           @changeLeft="$emit('changeLeft', $event)" />
+    <ShorthandColorPropertyBase v-bind="baseProps"
+                                ref="baseProperty"
+                                propertyShorthand="border-color"
+                                propertyTop="border-top-color"
+                                propertyBottom="border-bottom-color"
+                                propertyRight="border-right-color"
+                                propertyLeft="border-left-color"
+                                @changeShorthand="$emit('changeShorthand', $event)"
+                                @changeTop="$emit('changeTop', $event)"
+                                @changeBottom="$emit('changeBottom', $event)"
+                                @changeRight="$emit('changeRight', $event)"
+                                @changeLeft="$emit('changeLeft', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
-    import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
-    import { standardShorthandProps, useReactiveShorthandProperties, useStandardShorthandProps } from "./utils.partial";
+    import { PropType } from "vue";
+    import ShorthandColorPropertyBase from "./shorthandColorPropertyBase.partial.obs";
+    import { standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
 
     const props = defineProps({
         ...standardShorthandProps,
@@ -24,16 +24,6 @@
         label: {
             type: String as PropType<string>,
             default: "Border Color" as const
-        },
-
-        min: {
-            type: Number as PropType<number>,
-            default: 0 as const
-        },
-
-        max: {
-            type: Number as PropType<number>,
-            default: 99 as const
         }
     });
 
@@ -46,26 +36,4 @@
         (e: "changeRight", value: string): void;
         (e: "changeLeft", value: string): void;
     }>();
-
-    // #region Values
-
-    const baseProperty = ref<InstanceType<typeof ShorthandPropertyBase> | undefined>();
-
-    // #endregion
-
-    const {
-        shorthand: borderColor,
-        top: borderTopColor,
-        bottom: borderBottomColor,
-        right: borderRightColor,
-        left: borderLeftColor
-    } = useReactiveShorthandProperties(baseProperty);
-
-    defineExpose({
-        borderColor,
-        borderTopColor,
-        borderBottomColor,
-        borderRightColor,
-        borderLeftColor,
-    });
 </script>

@@ -1,0 +1,51 @@
+<template>
+    <ColorTypeBase v-model="internalValue" :label="label" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ColorTypeBase from "./colorTypeBase.partial.obs";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        property: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "change", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<string>(props.element.style.getPropertyValue(props.property));
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(internalValue, (newValue: string, oldValue: string) => {
+        if (newValue !== oldValue) {
+            props.element.style.setProperty(props.property, newValue);
+
+            emit("change", newValue);
+        }
+    });
+
+    watch(() => props.element, () => {
+        props.element.style.getPropertyValue(props.property);
+    });
+
+    // #endregion
+</script>

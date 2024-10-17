@@ -79,14 +79,16 @@
         if (!value) {
             // Clear the border properties when "Border" is switched off.
             if (borderColorProperty.value) {
-                borderColorProperty.value.borderColor = "";
+                // TODO JMH Is this the proper fix; set the style directly instead of an exposed ref? borderColorProperty.value.borderColor = "";
+                props.element.style.borderColor = "";
             }
 
             if (borderWidthProperty.value) {
                 // TODO JMH Figure out if there is a better way to maintain this...
                 // TODO JMH When the mode is set to "textBox", the borderWidth property should be used.
                 // TODO JMH Should we only expose string properties?
-                borderWidthProperty.value.borderWidth = "";
+                // TODO JMH Is this the proper fix; set the style directly instead of an exposed ref? borderWidthProperty.value.borderWidth = "";
+                props.element.style.borderWidth = "";
             }
         }
 

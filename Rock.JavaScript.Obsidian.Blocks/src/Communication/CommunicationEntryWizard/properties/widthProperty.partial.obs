@@ -1,15 +1,22 @@
 <template>
-    <LengthPropertyBase v-bind="baseProps"
-                        property="width"
-                        @change="$emit('change', $event)" />
+    <LengthTypePropertyBase v-bind="baseProps"
+                            :element="element"
+                            property="width"
+                            @change="$emit('change', $event)" />
 </template>
 
 <script setup lang="ts">
-    import LengthPropertyBase from "./lengthPropertyBase.partial.obs";
+    import { PropType } from "vue";
+    import LengthTypePropertyBase from "./lengthTypePropertyBase.partial.obs";
     import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
 
     const props = defineProps({
-        ...standardLengthProps
+        ...standardLengthProps,
+
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
     });
 
     const baseProps = useStandardLengthProps(props);

@@ -1,48 +1,71 @@
 <template>
-    <ShorthandPropertyBase v-bind="baseProps"
-                           shorthandProperty="border-radius"
-                           topProperty="border-top-left-radius"
-                           bottomProperty="border-bottom-right-radius"
-                           rightProperty="border-top-right-radius"
-                           leftProperty="border-bottom-left-radius"
-                           @changeShorthand="$emit('changeShorthand', $event)"
-                           @changeTop="$emit('changeTop', $event)"
-                           @changeBottom="$emit('changeBottom', $event)"
-                           @changeRight="$emit('changeRight', $event)"
-                           @changeLeft="$emit('changeLeft', $event)" />
+    <ShorthandLengthTypePropertyBase v-bind="mergedProps"
+                                     propertyShorthand="border-radius"
+                                     propertyTop="border-top-left-radius"
+                                     propertyBottom="border-top-right-radius"
+                                     propertyRight="border-bottom-right-radius"
+                                     propertyLeft="border-bottom-left-radius"
+                                     @changeShorthand="$emit('changeShorthand', $event)"
+                                     @changeTop="$emit('changeTopLeft', $event)"
+                                     @changeBottom="$emit('changeTopRight', $event)"
+                                     @changeRight="$emit('changeBottomRight', $event)"
+                                     @changeLeft="$emit('changeBottomLeft', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
-    import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
-    import { standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
+    import { computed, PropType } from "vue";
+    import ShorthandLengthTypePropertyBase from "./shorthandLengthTypePropertyBase.partial.obs";
+    import { standardLengthProps, standardShorthandProps, useStandardLengthProps, useStandardShorthandProps } from "./utils.partial";
 
     const props = defineProps({
         ...standardShorthandProps,
+        ...standardLengthProps,
 
         label: {
             type: String as PropType<string>,
             default: "Border Radius" as const
         },
 
-        min: {
-            type: Number as PropType<number>,
-            default: 0 as const
+        labelTop: {
+            type: String as PropType<string>,
+            default: "Top Left" as const
         },
 
-        max: {
-            type: Number as PropType<number>,
-            default: 99 as const
+        labelBottom: {
+            type: String as PropType<string>,
+            default: "Top Right" as const
+        },
+
+        labelLeft: {
+            type: String as PropType<string>,
+            default: "Bottom Left" as const
+        },
+
+        labelRight: {
+            type: String as PropType<string>,
+            default: "Bottom Right" as const
         }
     });
 
-    const baseProps = useStandardShorthandProps(props);
+    const shorthandProps = useStandardShorthandProps(props);
+    const lengthProps = useStandardLengthProps(props);
 
     defineEmits<{
         (e: "changeShorthand", value: string): void;
-        (e: "changeTop", value: string): void;
-        (e: "changeBottom", value: string): void;
-        (e: "changeRight", value: string): void;
-        (e: "changeLeft", value: string): void;
+        (e: "changeTopLeft", value: string): void;
+        (e: "changeTopRight", value: string): void;
+        (e: "changeBottomRight", value: string): void;
+        (e: "changeBottomLeft", value: string): void;
     }>();
+
+    // #region Computed Values
+
+    const mergedProps = computed(() => {
+        return {
+            ...shorthandProps,
+            ...lengthProps
+        };
+    });
+
+    // #endregion
 </script>

@@ -58,11 +58,6 @@ export type StandardShorthandProps = {
 };
 
 export type StandardLengthProps = {
-    element: {
-        type: PropType<HTMLElement>;
-        required: true;
-    };
-
     label: {
         type: PropType<string>;
         required: boolean;

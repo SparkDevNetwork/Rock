@@ -1,25 +1,26 @@
 <template>
-    <FontSizePropertyBase v-model="fontSize" :mode="mode" />
+    <FontSizePropertyBase v-bind="lengthProps"
+                          v-model="fontSize" />
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import FontSizePropertyBase from "./fontSizePropertyBase.partial.obs";
+    import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
 
     const props = defineProps({
+        ...standardLengthProps,
+
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
-        },
-
-        mode: {
-            type: String as PropType<"numberBox" | "textBox">,
-            default: "numberBox" as const
         }
     });
 
+    const lengthProps = useStandardLengthProps(props);
+
     const emit = defineEmits<{
-        (e: "changeShorthand", value: string): void;
+        (e: "change", value: string): void;
     }>();
 
     // #region Values
@@ -33,7 +34,7 @@
     watch(fontSize, (value: string) => {
         props.element.style.fontSize = value;
 
-        emit("changeShorthand", value);
+        emit("change", value);
     });
 
     watch(() => props.element, () => {
