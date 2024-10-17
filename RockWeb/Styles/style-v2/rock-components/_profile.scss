@@ -682,11 +682,7 @@
 }
 
 .rockbadge-assessment .fa-stack-2x {
-    color: var(--color-interface-soft) !important;
-}
-
-.rockbadge-assessment.not-requested {
-    color: fade(var(--color-interface-medium), 20%) !important;
+    color: currentColor !important;
 }
 
 .rockbadge-assessment.requested {

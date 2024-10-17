@@ -48,7 +48,9 @@
   --color-link-tint:          color-mix(in srgb, var(--color-link) 50%, #FFF var(--tint-white-percentage));
   --color-link-shade:         color-mix(in srgb, var(--color-link) 100%, #000 var(--shade-black-percentage));
   
-  --color-campus:           #83758f;
+  --color-secondary:           #83758f;
+  --color-secondary-tint:     color-mix(in srgb, var(--color-secondary) 50%, #FFF var(--tint-white-percentage));
+  --color-secondary-shade:    color-mix(in srgb, var(--color-secondary) 100%, #000 var(--shade-black-percentage));
 
   // CATEGORICAL COLORS 
   --color-categorial-1: #007aff;

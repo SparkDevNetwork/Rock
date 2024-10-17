@@ -575,7 +575,7 @@
 
   & > .panel-heading {
     color:                  var(--color-interface-stronger);
-    background-color:       var(--color-interface-softer);
+    background-color:       var(--color-interface-soft);
     border-color:           var(--color-interface-softer);
 
     + .panel-collapse > .panel-body {
@@ -654,7 +654,7 @@
       font-size:    var(--font-size-small);
       font-weight:  var(--font-weight-semibold);
       color:        var(--color-interface-strong);
-      background:   var(--color-interface-soft);
+      background:   var(--color-interface-softer);
     }
 
     .form-group + h4 {

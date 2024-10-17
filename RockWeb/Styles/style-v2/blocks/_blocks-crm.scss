@@ -432,7 +432,7 @@ $badge-count-width: 18px;
 
   // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
   &.not-requested {
-    color:    fade(var(--color-interface-medium), 20%) !important;
+    color:    var(--color-interface-soft) !important;
   }
 
   &.requested {
