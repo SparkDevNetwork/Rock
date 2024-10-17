@@ -28,22 +28,22 @@
 
         labelTop: {
             type: String as PropType<string>,
-            default: "Top Left" as const
+            default: "Top-left" as const
         },
 
         labelBottom: {
             type: String as PropType<string>,
-            default: "Top Right" as const
+            default: "Top-right" as const
         },
 
         labelLeft: {
             type: String as PropType<string>,
-            default: "Bottom Left" as const
+            default: "Bottom-left" as const
         },
 
         labelRight: {
             type: String as PropType<string>,
-            default: "Bottom Right" as const
+            default: "Bottom-right" as const
         }
     });
 

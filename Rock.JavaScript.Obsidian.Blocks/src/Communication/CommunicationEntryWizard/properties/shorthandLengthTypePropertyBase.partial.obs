@@ -1,10 +1,10 @@
 <template>
     <ShorthandPropertyBase :showConstituentProperties="showConstituentProperties"
-                           :constituentPropertyGroupLabel="label">
+                           :label="label">
         <template #shorthandProperty>
             <LengthTypePropertyBase v-bind="lengthProps"
                                     :element="element"
-                                    :label="label"
+                                    :label="labelShorthand || label"
                                     :property="propertyShorthand"
                                     @change="onChangeShorthand" />
         </template>

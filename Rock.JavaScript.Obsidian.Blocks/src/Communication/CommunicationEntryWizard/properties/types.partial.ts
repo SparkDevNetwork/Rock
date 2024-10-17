@@ -31,6 +31,11 @@ export type StandardShorthandProps = {
         required: boolean;
     };
 
+    labelShorthand: {
+        type: PropType<string>;
+        default: string;
+    };
+
     labelTop: {
         type: PropType<string>;
         default: string;

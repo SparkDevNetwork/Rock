@@ -1,5 +1,5 @@
 import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
-import { computed, ComputedRef, ExtractPropTypes, PropType, reactive, Ref, toRefs, unref, watch, WritableComputedRef } from "vue";
+import { computed, ExtractPropTypes, PropType, reactive, Ref, watch, WritableComputedRef } from "vue";
 import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps } from "./types.partial";
 
 type ReactiveShorthandProperties = {
@@ -109,6 +109,11 @@ export const standardShorthandProps: StandardShorthandProps = {
     label: {
         type: String as PropType<string>,
         required: true
+    },
+
+    labelShorthand: {
+        type: String as PropType<string>,
+        default: "All" as const
     },
 
     labelTop: {

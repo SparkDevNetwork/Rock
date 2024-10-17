@@ -1,9 +1,9 @@
 <template>
     <ShorthandPropertyBase :showConstituentProperties="showConstituentProperties"
-                           :constituentPropertyGroupLabel="label">
+                           :label="label">
         <template #shorthandProperty>
             <ColorTypePropertyBase :element="element"
-                                   :label="label"
+                                   :label="labelShorthand || label"
                                    :property="propertyShorthand"
                                    @change="onChangeShorthand" />
         </template>

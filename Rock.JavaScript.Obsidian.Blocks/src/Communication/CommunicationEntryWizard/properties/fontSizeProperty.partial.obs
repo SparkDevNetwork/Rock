@@ -14,6 +14,11 @@
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Font Size" as const
         }
     });
 
