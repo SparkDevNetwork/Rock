@@ -188,6 +188,10 @@
     <Compile Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.Designer.cs">
       <DependentUpon>202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410171119512_UpdateScheduleToolboxActionsLabelLava.cs" />
+    <Compile Include="Migrations\202410171119512_UpdateScheduleToolboxActionsLabelLava.Designer.cs">
+      <DependentUpon>202410171119512_UpdateScheduleToolboxActionsLabelLava.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2354,6 +2358,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.resx">
       <DependentUpon>202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410171119512_UpdateScheduleToolboxActionsLabelLava.resx">
+      <DependentUpon>202410171119512_UpdateScheduleToolboxActionsLabelLava.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
