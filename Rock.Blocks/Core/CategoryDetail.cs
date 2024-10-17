@@ -473,6 +473,21 @@ namespace Rock.Blocks.Core
                 }
                 entity.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
                 entity.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
+                int nextOrder = 0;
+
+                if ( entity.ParentCategoryId.HasValue && entity.ParentCategoryId > 0 )
+                {
+
+                    var parentGuid = entityService.GetSelect( entity.ParentCategoryId.Value, c => c.Guid );
+                    nextOrder = entityService
+                        .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
+                        {
+                            ParentGuid = parentGuid
+                        } )
+                        .Max( siblingCategory => siblingCategory.Order ) + 1;
+                }
+
+                entity.Order = nextOrder;
             }
 
             // Ensure everything is valid before saving.
@@ -499,7 +514,7 @@ namespace Rock.Blocks.Core
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
 
-            var bag = GetEntityBagForEdit( entity );
+            var bag = GetEntityBagForView( entity );
 
             return ActionOk( new ValidPropertiesBox<CategoryBag>
             {
@@ -673,7 +688,7 @@ namespace Rock.Blocks.Core
             var categoryService = new CategoryService( rockContext );
             var parentGuid = categoryService.GetSelect( idKey, c => c.Guid );
 
-            return categoryService
+            var categories = categoryService
                 .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
                 {
                     ParentGuid = parentGuid
@@ -683,6 +698,11 @@ namespace Rock.Blocks.Core
                 .ThenBy( c => c.Name )
                 .ThenBy( c => c.Id )
                 .ToList();
+
+            // Need to load attributes in case there are any grid attributes to display.
+            categories.LoadAttributes( rockContext );
+
+            return categories;
         }
 
         /// <summary>
