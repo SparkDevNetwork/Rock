@@ -1448,12 +1448,20 @@ namespace Rock.Model
                 nameParts = fullName.Split( ',' ).ToList();
                 if ( nameParts.Count >= 1 )
                 {
-                    lastNames.Add( nameParts[0].Trim() );
+                    var lastName = nameParts[0];
+                    if ( !string.IsNullOrWhiteSpace( lastName ) )
+                    {
+                        lastNames.Add( lastName.Trim() );
+                    }
                 }
 
                 if ( nameParts.Count >= 2 )
                 {
-                    firstNames.Add( nameParts[1].Trim() );
+                    var firstName = nameParts[1];
+                    if ( !string.IsNullOrWhiteSpace( firstName ) )
+                    {
+                        firstNames.Add( firstName.Trim() );
+                    }
                 }
             }
             else if ( fullName.Contains( ' ' ) )
@@ -1555,7 +1563,10 @@ namespace Rock.Model
                     {
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
-                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
+                        if ( !string.IsNullOrWhiteSpace( lastName ) )
+                        {
+                            qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
+                        }
                     }
 
                     // If searching for businesses, search by the full name as well to handle "," in the name
@@ -1568,11 +1579,16 @@ namespace Rock.Model
                     // initially by the GetByFirstLastName() call.
                     return Queryable( includeDeceased, includeBusinesses ).Where( p => qry.Contains( p.Id ) );
                 }
-                else
+                else if ( allowFirstNameOnly && firstNames.Any() )
                 {
-                    // Blank string was used, return empty list
-                    return new List<Person>().AsQueryable();
+                    return GetByFirstLastName( firstNames[0], string.Empty, includeDeceased, includeBusinesses );
                 }
+                else if ( lastNames.Any() && !string.IsNullOrWhiteSpace( lastNames[0] ) )
+                {
+                    return GetByLastName( lastNames[0], includeDeceased, includeBusinesses );
+                }
+
+                return new List<Person>().AsQueryable();
             }
         }
 
