@@ -26,7 +26,7 @@
   }
 
   > .modal-footer {
-    padding: var(--spacing-small) var(--spacing-large);
+    padding: var(--spacing-xsmall) var(--spacing-large);
     margin-right: -15px;
     margin-left: -15px;
     color: var(--color-interface-softest);
@@ -44,7 +44,7 @@
   }
 
   > .modal-footer {
-    padding: var(--spacing-small) var(--spacing-medium);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     margin-right: -15px;
     margin-left: -15px;
     color: var(--color-primary);      // TODO darken by 20% when available.

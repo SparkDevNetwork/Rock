@@ -16,7 +16,7 @@
     background-color: var(--color-interface-softest);
   
     .btn {
-      margin-left:    var(--spacing-small);
+      margin-left:    var(--spacing-xsmall);
     }
     
     &:hover {
@@ -40,7 +40,7 @@
     }
   
     .btn-grid-custom-action {
-      margin-bottom: var(--spacing-small);
+      margin-bottom: var(--spacing-xsmall);
     }
 }
 
@@ -99,7 +99,7 @@
 .grid-columncommand {
     .btn {
         width:    34px;
-        padding:  var(--spacing-small) 0;
+        padding:  var(--spacing-xsmall) 0;
     }
 
     .btn-default,

@@ -23,10 +23,10 @@
 }
 
 .custom-switch {
-  padding-left:   calc($custom-switch-width + var(--spacing-small));
+  padding-left:   calc($custom-switch-width + var(--spacing-xsmall));
 
   .custom-switch-centered & {
-    padding-top:  var(--spacing-small) !important;
+    padding-top:  var(--spacing-xsmall) !important;
   }
 
   .custom-control-label {
@@ -41,7 +41,7 @@
     &::before {
       position:       absolute;
       top:            $caret-width-base;
-      left:           calc(($custom-switch-width + var(--spacing-small))* -1);
+      left:           calc(($custom-switch-width + var(--spacing-xsmall))* -1);
       display:        block;
       width:          $custom-switch-width;
       height:         $custom-switch-height;
@@ -55,7 +55,7 @@
     &::after {
       position:           absolute;
       top:                $caret-width-base + $custom-switch-indicator-padding;
-      left:               calc((($custom-switch-width + var(--spacing-small)) * -1) + $custom-switch-indicator-padding);
+      left:               calc((($custom-switch-width + var(--spacing-xsmall)) * -1) + $custom-switch-indicator-padding);
       display:            block;
       width:              $custom-switch-indicator-size;
       height:             $custom-switch-indicator-size;

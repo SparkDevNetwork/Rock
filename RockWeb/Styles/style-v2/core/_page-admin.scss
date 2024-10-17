@@ -130,7 +130,7 @@
   z-index:      $zindex-modal - 1;
   width:        100%;
   height:       36px;
-  padding:      var(--spacing-small) 12px 0;
+  padding:      var(--spacing-xsmall) 12px 0;
   margin-right: 0;
   color:      #fff;
   background:   var(--color-interface-stronger);
@@ -171,7 +171,7 @@
   }
 
   .button-bar {
-    margin-top:   calc(var(--spacing-small) * -1);
+    margin-top:   calc(var(--spacing-xsmall) * -1);
     margin-left:  12px;
     text-align:   center;
   }

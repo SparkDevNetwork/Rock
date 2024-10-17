@@ -28,7 +28,7 @@
 
   i.fa-times {
     float:                left;
-    padding:              var(--spacing-small);
+    padding:              var(--spacing-xsmall);
     margin-top:           var(--spacing-tiny);
     cursor:               pointer;
     opacity:              0;
@@ -111,7 +111,7 @@
       a {
         display:    inline-block;
         width:      100%;
-        padding:    var(--spacing-small) 0;
+        padding:    var(--spacing-xsmall) 0;
         margin:     0;
         color:      var(--color-interface-stronger);
         border:     1px transparent solid;
@@ -131,7 +131,7 @@
 
       input {
         width:          45px;
-        padding:        var(--spacing-small) var(--spacing-tiny);
+        padding:        var(--spacing-xsmall) var(--spacing-tiny);
         margin:         0;
         font-size:      var(--font-size-xsmall);
         text-align:     center;

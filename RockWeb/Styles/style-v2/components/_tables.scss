@@ -34,8 +34,8 @@ table {
 }
 
 caption {
-  padding-top:    var(--spacing-small);
-  padding-bottom: var(--spacing-small);
+  padding-top:    var(--spacing-xsmall);
+  padding-bottom: var(--spacing-xsmall);
   color:          var(--color-interface-soft);
   text-align:     left;
 }
@@ -56,7 +56,7 @@ th {
     > tr {
       > th,
       > td {
-        padding:        var(--spacing-small);
+        padding:        var(--spacing-xsmall);
         line-height:    var(--line-height-normal);
         vertical-align: top;
         border-top:     1px solid var(--color-interface-soft);
@@ -644,7 +644,7 @@ tr.row-highlight {
 .grid-columncommand {
   .btn {
     width:    34px;
-    padding:  var(--spacing-small) 0;
+    padding:  var(--spacing-xsmall) 0;
   }
 
   .btn-default,
@@ -705,7 +705,7 @@ tr.row-highlight {
 
     h3 {
       display:      inline;
-      margin:       0 var(--spacing-tiny) 0 var(--spacing-small);
+      margin:       0 var(--spacing-tiny) 0 var(--spacing-xsmall);
       font-size:    var(--font-size-small);
       font-weight:  var(--font-weight-light);
       line-height:  16px;
@@ -719,7 +719,7 @@ tr.row-highlight {
   .btn-filter-toggle {
     position:   absolute;
     z-index:    9; // Stack behind Calendars
-    margin:     var(--spacing-small);
+    margin:     var(--spacing-xsmall);
     color:      var(--color-interface-medium);
     text-decoration: none;
     background: var(--color-interface-softest);
@@ -781,7 +781,7 @@ tr.row-highlight {
       > a {
         min-width:  23px;
         padding:    var(--spacing-tiny) var(--spacing-medium);
-        margin:     0 var(--spacing-small) 0 0;
+        margin:     0 var(--spacing-xsmall) 0 0;
         color:      var(--color-interface-stronger);
         text-align: center;
         background-color: transparent;
@@ -812,7 +812,7 @@ tr.row-highlight {
 
   .grid-itemcount {
     float:        left;
-    margin-top:   var(--spacing-small);
+    margin-top:   var(--spacing-xsmall);
     margin-left:  10px;
     font-size:    var(--font-size-small);
   }
@@ -828,7 +828,7 @@ td.grid-col-actions {
   background-color:   var(--color-interface-softest);
 
   .btn {
-    margin-left:      var(--spacing-small);
+    margin-left:      var(--spacing-xsmall);
   }
   
   &:hover {
@@ -852,7 +852,7 @@ td.grid-col-actions {
   }
 
   .btn-grid-custom-action {
-    margin-bottom: var(--spacing-small);
+    margin-bottom: var(--spacing-xsmall);
   }
 }
 
@@ -977,7 +977,7 @@ td.grid-actions {
 
     // Remove padding offset on center
     &[align="center"] {
-      padding: var(--spacing-medium) var(--spacing-small);
+      padding: var(--spacing-medium) var(--spacing-xsmall);
     }
   }
   > thead > tr.grid-header-bold > th {
@@ -1036,7 +1036,7 @@ td.grid-actions {
   }
 
   > tbody > tr > td.grid-columncommand {
-    padding: var(--spacing-small);
+    padding: var(--spacing-xsmall);
   }
 }
 
@@ -1046,7 +1046,7 @@ td.grid-actions {
     width:            var(--spacing-large);
     height:           var(--spacing-large);
     vertical-align:   top;
-    margin-right:     var(--spacing-small);
+    margin-right:     var(--spacing-xsmall);
 
   }
 

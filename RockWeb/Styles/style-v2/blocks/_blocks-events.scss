@@ -106,7 +106,7 @@
   .feetype-allowmultiples {
     > .control-label {
       display:          block;
-      margin-bottom:    var(--spacing-small);
+      margin-bottom:    var(--spacing-xsmall);
     }
 
     .form-group {
@@ -170,7 +170,7 @@
 
   .payment-method .payment-method-image {
     height:            1.4em;
-    margin-right:      var(--spacing-small);
+    margin-right:      var(--spacing-xsmall);
   }
 
   .payment-method-account {
@@ -179,7 +179,7 @@
   }
 
   .payment-method .payment-method-name {
-    margin-right:      var(--spacing-small);
+    margin-right:      var(--spacing-xsmall);
     font-weight:       600;
   }
 

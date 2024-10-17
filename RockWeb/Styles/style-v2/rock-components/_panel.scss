@@ -76,7 +76,7 @@
         grid-column:      1;
         /* Child buttons should have margins */
         > * {
-          margin-right:   var(--spacing-small);
+          margin-right:   var(--spacing-xsmall);
         }
       }
       /* justify the secondary footer actions to the right-hand side (end) of the grid. */
@@ -257,8 +257,8 @@
     }
 
     > .panel-labels {
-      margin-top:     calc(var(--spacing-small) * -1);
-      margin-bottom:  calc(var(--spacing-small) * -1);
+      margin-top:     calc(var(--spacing-xsmall) * -1);
+      margin-bottom:  calc(var(--spacing-xsmall) * -1);
 
       .btn {
         vertical-align: baseline;

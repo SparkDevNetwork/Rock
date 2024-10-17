@@ -46,7 +46,7 @@
     margin:     0;
 
     .treeview-scroll {
-      padding: var(--spacing-small) 0;
+      padding: var(--spacing-xsmall) 0;
 
       .overview {
         min-width: 100%;
@@ -59,7 +59,7 @@
   }
 
   .treeview-actions {
-    margin-bottom:    var(--spacing-small);
+    margin-bottom:    var(--spacing-xsmall);
 
     .btn {
       margin-bottom:  var(--spacing-tiny);
@@ -219,7 +219,7 @@ ul.rocktree-children {
 
   .label-tree {
     display:          inline-block;
-    margin-left:      var(--spacing-small);
+    margin-left:      var(--spacing-xsmall);
     font-size:        var(--font-size-xsmall);
     background-color: var(--color-interface-softest);
     border-radius:    var(--rounded-tiny);
@@ -230,7 +230,7 @@ ul.rocktree-children {
 
 // ======================== PREVIEW TREE ========================
 .preview-item {
-  padding:        var(--spacing-small) 6px;
+  padding:        var(--spacing-xsmall) 6px;
   line-height:    var(--line-height-tight);
   border-radius:  var(--rounded-small);
   cursor:         default;

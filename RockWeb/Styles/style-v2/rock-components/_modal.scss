@@ -27,7 +27,7 @@ body.rock-modal {
 
   .modal-header {
     min-height:       34px;
-    padding:          var(--spacing-small) var(--spacing-large);
+    padding:          var(--spacing-xsmall) var(--spacing-large);
     color:            var(--color-interface-softest);
     background-color: var(--color-primary);
 
@@ -57,12 +57,12 @@ body.rock-modal {
     }
 
     .label {
-      margin-top:       var(--spacing-small);
+      margin-top:       var(--spacing-xsmall);
     }
 
     small {
       display:      block;
-      margin-top:   var(--spacing-small);
+      margin-top:   var(--spacing-xsmall);
       color:        var(--color-interface-softest); // TODO darken by 10% when available
     }
 
@@ -93,7 +93,7 @@ body.rock-modal {
   }
 
   .modal-footer {
-    padding:            var(--spacing-small) var(--spacing-large);
+    padding:            var(--spacing-xsmall) var(--spacing-large);
     margin-top:         0;
     color:              var(--color-interface-softest);
     background-color:   var(--color-interface-softer);

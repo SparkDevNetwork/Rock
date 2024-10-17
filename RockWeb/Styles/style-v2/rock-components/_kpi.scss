@@ -19,11 +19,11 @@
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  margin: 0 calc(var(--spacing-small) * -1);
+  margin: 0 calc(var(--spacing-xsmall) * -1);
 
   > .kpi {
     min-width:                var(--kpi-min-width, 220px);
-    margin:                   var(--spacing-small);
+    margin:                   var(--spacing-xsmall);
   }
 
   @media (min-width: $screen-small) {
@@ -61,7 +61,7 @@
   flex-basis:               100%;
   flex-grow:                1;
   align-items:              center;
-  margin:                   0 var(--spacing-small) var(--spacing-medium);
+  margin:                   0 var(--spacing-xsmall) var(--spacing-medium);
   overflow-y:               hidden;
   font-size:                var(--font-size-h3);
   color:                    var(--color-primary);
@@ -145,16 +145,16 @@
   flex:                     1 1 0;
   align-self:               flex-start;
   min-width:                0;
-  padding:                  var(--spacing-small) 0;
+  padding:                  var(--spacing-xsmall) 0;
   overflow:                 hidden;
 
   .kpi-icon + & {
     align-self:             center;
-    padding:                var(--spacing-small) var(--spacing-medium);
+    padding:                var(--spacing-xsmall) var(--spacing-medium);
   }
 
   .kpi-card & {
-    padding:                var(--spacing-small) var(--spacing-medium);
+    padding:                var(--spacing-xsmall) var(--spacing-medium);
   }
 }
 
@@ -234,7 +234,7 @@
   }
 
   .kpi-stat {
-    padding:                var(--spacing-small) var(--spacing-medium);
+    padding:                var(--spacing-xsmall) var(--spacing-medium);
   }
 }
 

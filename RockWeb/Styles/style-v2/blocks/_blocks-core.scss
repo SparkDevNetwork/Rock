@@ -379,7 +379,7 @@
   }
 
   .flag {
-    padding:    var(--spacing-tiny) var(--spacing-small) 6px;
+    padding:    var(--spacing-tiny) var(--spacing-xsmall) 6px;
     margin:     -16px -24px 12px;
     font-size:  var(--font-size-xsmall);
     color:      var(--color-danger-strong);
@@ -428,7 +428,7 @@
     }
 
     .note-attributes {
-      padding:    var(--spacing-small) 0 0;
+      padding:    var(--spacing-xsmall) 0 0;
       margin:     var(--spacing-large) 0 0;
       border-top: 1px solid fade(var(--color-interface-soft), 60%);
     }
@@ -574,7 +574,7 @@
       float:          right;
 
       > .btn {
-        margin-left:  var(--spacing-small);
+        margin-left:  var(--spacing-xsmall);
       }
     }
   }
@@ -878,7 +878,7 @@
   }
 
   .workflow-action-name::before {
-    margin-right: var(--spacing-small);
+    margin-right: var(--spacing-xsmall);
     font-family:  'FontAwesome';
     font-weight:  var(--font-weight-black);
     content:      "\f1b2";
@@ -985,7 +985,7 @@
 
   .btn-checkbox {
     width:    calc(50% - 16px);
-    margin:   0 var(--spacing-small) 16px;
+    margin:   0 var(--spacing-xsmall) 16px;
 
     @media (min-width: $screen-small) {
       width:  calc(33.333% - 16px);
@@ -1096,7 +1096,7 @@
   .property {
     display:        flex;
     flex-direction: column;
-    margin-left:    var(--spacing-small);
+    margin-left:    var(--spacing-xsmall);
   }
 }
 

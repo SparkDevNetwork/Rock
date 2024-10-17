@@ -48,7 +48,7 @@
 .input-group-lg > .form-control,
 .input-group-lg > .input-group-addon,
 .input-group-lg > .input-group-btn > .btn {
-  padding:          var(--spacing-small) var(--spacing-medium);
+  padding:          var(--spacing-xsmall) var(--spacing-medium);
   font-size:        var(--font-size-h5);
   border-radius:    var(rounded-small);
 }
@@ -56,7 +56,7 @@
 .input-group-sm > .form-control,
 .input-group-sm > .input-group-addon,
 .input-group-sm > .input-group-btn > .btn {
-  padding:        var(--spacing-tiny) var(--spacing-small);
+  padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-small);
   border-radius:  var(--rounded-small);
 }
@@ -124,12 +124,12 @@
 
   // Sizing
   &.input-sm {
-    padding:        var(--spacing-tiny) var(--spacing-small);
+    padding:        var(--spacing-tiny) var(--spacing-xsmall);
     font-size:      var(--font-size-small);
     border-radius:  var(--rounded-small);
   }
   &.input-lg {
-    padding:          var(--spacing-small) var(--spacing-medium);
+    padding:          var(--spacing-xsmall) var(--spacing-medium);
     font-size:        var(--font-size-h5);
     border-radius:    var(rounded-small);
   }

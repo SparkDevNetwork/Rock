@@ -208,8 +208,8 @@ $navbar-element-height: 40px;
 
     .navbar-brand-corner {
       border-radius:  var(--rounded-large) var(--rounded-large) 0 0;
-      margin-top:     var(--spacing-small);
-      margin-left:    var(--spacing-small);
+      margin-top:     var(--spacing-xsmall);
+      margin-left:    var(--spacing-xsmall);
     }
 
     .header-content {
@@ -575,7 +575,7 @@ $navbar-element-height: 40px;
         line-height: 1.4;
         display: flex;
         align-items: center;
-        margin: var(--spacing-small) 0;
+        margin: var(--spacing-xsmall) 0;
         color: var(--color-interface-strong);
 
         &:last-child{
@@ -705,7 +705,7 @@ $navbar-element-height: 40px;
     height: calc(100% - $navbar-top-height) !important; // Overrides collapse if window is resized
     width: $navbarside-width;
     top: $navbar-top-height;
-    margin-left:    var(--spacing-small);
+    margin-left:    var(--spacing-xsmall);
     height:         calc(100% - 88px) !important;
     border-radius: 0 0 12px 12px;
 
@@ -727,10 +727,10 @@ $navbar-element-height: 40px;
 
     .navbar-side .nav-item-top {
       border: 0;
-      margin: var(--spacing-tiny) var(--spacing-small) var(--spacing-tiny) var(--spacing-small);
+      margin: var(--spacing-tiny) var(--spacing-xsmall) var(--spacing-tiny) var(--spacing-xsmall);
       height: 70px;
       font-size: 24px;
-      padding: var(--spacing-large) var(--spacing-small);
+      padding: var(--spacing-large) var(--spacing-xsmall);
 
       &:last-child {
         border: 0;
@@ -767,8 +767,8 @@ $navbar-element-height: 40px;
       left: calc($navbarside-width + 9px);
       width: 280px;
       border-radius: 0 14px 14px 0;
-      margin-top:     var(--spacing-small);
-      margin-bottom:  var(--spacing-small);
+      margin-top:     var(--spacing-xsmall);
+      margin-bottom:  var(--spacing-xsmall);
 
       .title {
         padding-top: 24px;

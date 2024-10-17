@@ -17,7 +17,7 @@
   display:      flex;
   flex-wrap:    wrap;
   align-items:  center;
-  gap:          var(--spacing-tiny) var(--spacing-small);
+  gap:          var(--spacing-tiny) var(--spacing-xsmall);
 
   .ui-autocomplete {
     position:           absolute;
@@ -106,7 +106,7 @@
 .taglist {
   display:    flex;
   flex-wrap:  wrap;
-  gap:        calc($grid-gutter-width * .25) var(--spacing-small);
+  gap:        calc($grid-gutter-width * .25) var(--spacing-xsmall);
 
   .tag {
     position:           relative;

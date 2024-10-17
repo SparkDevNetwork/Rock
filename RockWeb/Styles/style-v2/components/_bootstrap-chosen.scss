@@ -47,7 +47,7 @@
     position: relative;
     max-height: 240px;
     padding: 0;
-    margin: var(--spacing-small) 0;
+    margin: var(--spacing-xsmall) 0;
     overflow-x: hidden;
     overflow-y: auto;
     color: var(--color-interface-strong);
@@ -105,7 +105,7 @@
 
     .no-results {
       display:  list-item;
-      padding:  var(--spacing-small);
+      padding:  var(--spacing-xsmall);
       color:    var(--color-interface-soft);
     }
   }
@@ -191,7 +191,7 @@
       display:        block;
       width:          36px;
       height:         38px;
-      padding-left:   var(--spacing-small);
+      padding-left:   var(--spacing-xsmall);
 
       background-image:     url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
       background-repeat:    no-repeat;
@@ -217,7 +217,7 @@
   }
 
   .chosen-search {
-    padding:      var(--spacing-small) var(--spacing-tiny) 0;
+    padding:      var(--spacing-xsmall) var(--spacing-tiny) 0;
     white-space:  nowrap;
 
     &::after {

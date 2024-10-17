@@ -23,7 +23,7 @@
 // ======================== HEADER ========================
 .originate-call {
   &::before {
-    margin-right:     var(--spacing-small);
+    margin-right:     var(--spacing-xsmall);
     font-family:      'FontAwesome';
     font-weight:      var(--font-weight-bold);
     content:          '\f098';
@@ -450,7 +450,7 @@ $badge-count-width: 18px;
 }
 
 .assessment-tooltip-value {
-  margin:         2px 0 0 var(--spacing-small);
+  margin:         2px 0 0 var(--spacing-xsmall);
 
   .assessment-name {
     display:      block;
@@ -801,14 +801,14 @@ tr.inactive {
 // ======================== DISC & ASSESSMENTS ========================
 .disc-assessment {
   th {
-    padding:          var(--spacing-small);
+    padding:          var(--spacing-xsmall);
 
     &:last-child {
       border-radius:  0 var(--rounded-small) 0 0;
     }
 
     &.disc-question {
-      padding:        var(--spacing-small);
+      padding:        var(--spacing-xsmall);
       font-weight:    var(--font-weight-bold);
       border-radius:  var(--rounded-small) 0 0 0;
     }
@@ -842,14 +842,14 @@ tr.inactive {
 }
 
 .question-row {
-  margin-bottom:      calc(var(--spacing-small) * 8);
+  margin-bottom:      calc(var(--spacing-xsmall) * 8);
 
   .answered {
     color:            var(--color-interface-medium);
   }
 
   .likert > .control-label {
-    margin-bottom:    calc(var(--spacing-small) * 1.5);
+    margin-bottom:    calc(var(--spacing-xsmall) * 1.5);
   }
 
   .likert {

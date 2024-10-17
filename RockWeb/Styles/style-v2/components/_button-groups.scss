@@ -125,13 +125,13 @@
 
 // ========================== BUTTON GROUP SIZING ==========================
 .btn-group-xs > .btn { 
-  padding:        var(--spacing-small) var(--spacing-medium);
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-h5);
   line-height:    var(--line-height-tight);
   border-radius:  var(--rounded-small);
 }
 .btn-group-sm > .btn { 
-  padding:        var(--spacing-tiny) var(--spacing-small);
+  padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-small);
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-small);
@@ -146,8 +146,8 @@
 
 
 .btn-group > .btn + .dropdown-toggle {
-  padding-right:  var(--spacing-small);
-  padding-left:   var(--spacing-small);
+  padding-right:  var(--spacing-xsmall);
+  padding-left:   var(--spacing-xsmall);
 }
 
 .btn-group > .btn-lg + .dropdown-toggle {
