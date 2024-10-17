@@ -14,28 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.Field
+namespace Rock.Enums.Lms
 {
     /// <summary>
-    /// Defines the way configuration values are intended to be used.
+    /// Determines the method for updating the due date of LearningActivityCompletion
+    /// records when the LearningActivity.DueDate is modified.
     /// </summary>
-    public enum ConfigurationValueUsage
+    public enum DueDateChangeType
     {
         /// <summary>
-        /// The configuration values are intended to be used to view an existing value.
+        /// Update only LearningActivityCompletion records whose due date exactly matches the previous value.
         /// </summary>
-        View = 0,
+        UpdateMatching = 0,
 
         /// <summary>
-        /// The configuration values are intended to be used to edit or create a new value.
+        /// Update all LearningActivityCompletion records to use the new due date.
         /// </summary>
-        Edit = 1,
-
-        /// <summary>
-        /// The configuration values are intended to be used in editing the
-        /// configuraiton values to change the behavior of the field.
-        /// </summary>
-        Configure = 2
+        UpdateAll = 1
     }
 }

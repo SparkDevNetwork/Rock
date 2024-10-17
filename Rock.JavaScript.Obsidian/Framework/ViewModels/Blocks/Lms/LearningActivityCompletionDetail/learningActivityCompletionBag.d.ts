@@ -94,6 +94,9 @@ export type LearningActivityCompletionBag = {
     /** Indicates whether or not the related activity instance has been completed by the student. */
     isStudentCompleted: boolean;
 
+    /** Gets or sets the IdKey of the Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail.LearningActivityCompletionBag.ActivityBag. */
+    learningActivityIdKey?: string | null;
+
     /** Gets or sets the number of points the student earned by completing the activity. */
     pointsEarned: number;
 

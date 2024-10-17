@@ -22,7 +22,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassList
     /// </summary>
     public class LearningClassListOptionsBag
     {
-
         /// <summary>
         /// Gets or sets whether the block has a valid course parameter.
         /// </summary>
@@ -50,11 +49,5 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassList
         /// Gets or sets whether the semester column is shown.
         /// </summary>
         public bool ShowSemesterColumn { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the secondary lists block should be shown.
-        /// </summary>
-        public bool ShowBlock { get; set; }
-
     }
 }

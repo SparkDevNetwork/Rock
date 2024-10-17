@@ -42,6 +42,12 @@ namespace Rock.Model
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
         public string GetGradeText( IEnumerable<LearningGradingSystemScale> scales = null, int decimalPlaces = 0 )
         {
+            if ( !IsStudentCompleted && !IsFacilitatorCompleted )
+            {
+                // If incomplete return an empty string.
+                return string.Empty;
+            }
+
             var percent = Math.Round( GradePercent, decimalPlaces );
             var grade = GetGrade( scales );
             var percentString = decimalPlaces == 0 ? percent.ToIntSafe().ToString() : percent.ToString();
@@ -149,7 +155,8 @@ namespace Rock.Model
         public bool RequiresScoring =>
             LearningActivity?.Points > 0
             && LearningActivity?.AssignTo == AssignTo.Student
-            && IsStudentCompleted && !GradedByPersonAliasId.HasValue;
+            && IsStudentCompleted
+            && !GradedByPersonAliasId.HasValue;
 
         /// <summary>
         /// The activity has points, is assigned to the facilitator and hasn't been completed.

@@ -97,12 +97,15 @@ namespace Rock.Blocks.Lms
 
             var progamInfo = new LearningProgramService(RockContext).GetSelect(PageParameter(PageParameterKey.LearningProgramId), p => new
             {
-                p.IdKey,
+                p.Id,
                 p.Name
             } );
 
-            options.LearningProgramIdKey = progamInfo?.IdKey;
-            options.LearningProgramName = progamInfo?.Name;
+            if ( progamInfo != null )
+            {
+                options.LearningProgramIdKey = Rock.Utility.IdHasher.Instance.GetHash( progamInfo.Id );
+                options.LearningProgramName = progamInfo.Name;
+            }
 
             return options;
         }

@@ -104,8 +104,8 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
-                .Where( c => c.LearningSemester.EndDate >= now )
-                .Where( c => c.LearningSemester.StartDate <= now )
+                .Where( c => ( !c.LearningSemester.EndDate.HasValue || c.LearningSemester.EndDate >= now) )
+                .Where( c => ( !c.LearningSemester.StartDate.HasValue || c.LearningSemester.StartDate <= now) )
                 .Select( c => new
                 {
                     ClassId = c.Id,

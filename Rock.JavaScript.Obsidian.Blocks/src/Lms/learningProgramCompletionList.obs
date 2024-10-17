@@ -3,12 +3,10 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :isSearchVisible="false"
-          :isTitleHidden="true"
-          :isCountMessageVisible="false"
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
           :showExport="false"
+          itemTerm="Completion"
           :entityTypeGuid="EntityType.LearningProgramCompletion"
           stickyHeader
           liveUpdates

@@ -14,28 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.Field
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// Defines the way configuration values are intended to be used.
+    ///
     /// </summary>
-    public enum ConfigurationValueUsage
+    public partial class AddAdditionalSettingsJSONToWorkflowActionForm : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// The configuration values are intended to be used to view an existing value.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        View = 0,
-
+        public override void Up()
+        {
+            AddColumn("dbo.WorkflowActionForm", "AdditionalSettingsJson", c => c.String());
+        }
+        
         /// <summary>
-        /// The configuration values are intended to be used to edit or create a new value.
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        Edit = 1,
-
-        /// <summary>
-        /// The configuration values are intended to be used in editing the
-        /// configuraiton values to change the behavior of the field.
-        /// </summary>
-        Configure = 2
+        public override void Down()
+        {
+            DropColumn("dbo.WorkflowActionForm", "AdditionalSettingsJson");
+        }
     }
 }

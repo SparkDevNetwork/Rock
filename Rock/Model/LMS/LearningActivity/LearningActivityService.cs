@@ -83,21 +83,11 @@ namespace Rock.Model
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
         /// </summary>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
-        /// <param name="includeCompletions">Whether the LearningActivityCompletions for each LearningActivity should be included.</param>
         /// <returns>A <c>Queryable</c> of LearningActivity for the specified LearningClass identifier.</returns>
-        public IQueryable<LearningActivity> GetClassLearningPlan( int classId, bool includeCompletions = true )
+        public IQueryable<LearningActivity> GetClassLearningPlan( int classId )
         {
-            return
-                includeCompletions ?
-                Queryable()
+            return Queryable()
                     .Include( a => a.LearningActivityCompletions )
-                    .Include( a => a.LearningClass )
-                    .Include( a => a.LearningClass.LearningSemester )
-                    .Include( a => a.LearningClass.LearningSemester.LearningProgram )
-                    .Where( a => a.LearningClassId == classId )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id ) :
-                Queryable()
                     .Include( a => a.LearningClass )
                     .Include( a => a.LearningClass.LearningSemester )
                     .Include( a => a.LearningClass.LearningSemester.LearningProgram )
@@ -113,24 +103,31 @@ namespace Rock.Model
         /// <returns>An object containing completion statistics for the LearningActivity.</returns>
         public LearningActivityCompletionStatistics GetCompletionStatistics( LearningActivity learningActivity )
         {
-            return GetCompletionStatistics( learningActivity.Id, learningActivity.Points );
+            return GetCompletionStatistics( learningActivity.LearningClassId, learningActivity.Id, learningActivity.Points );
         }
 
         /// <summary>
         /// Calculates completion statistics for a <see cref="LearningActivity"/>.
         /// </summary>
+        /// <param name="learningClassId">The identifier of the learning class the statistics are for.</param>
         /// <param name="learningActivityId">The identifier of the learning activity to get statistics for.</param>
         /// <param name="points">The points possible for the learning activity.</param>
         /// <returns>An object containing completion statistics for the LearningActivity.</returns>
-        public LearningActivityCompletionStatistics GetCompletionStatistics( int learningActivityId, int points )
+        public LearningActivityCompletionStatistics GetCompletionStatistics( int learningClassId, int learningActivityId, int points )
         {
             if ( learningActivityId == 0 )
             {
                 return new LearningActivityCompletionStatistics();
             }
 
+            var rockContext = ( RockContext ) Context;
+
+            // Get the count of total students for determining incomplete activities.
+            var studentCount = new LearningParticipantService( rockContext )
+                .GetStudents( learningClassId ).Count();
+
             // Get all of the completions records for the activity.
-            var activityCompletions = new LearningActivityCompletionService( ( RockContext ) Context )
+            var activityCompletions = new LearningActivityCompletionService( rockContext )
                 .Queryable()
                 .Include( a => a.LearningActivity )
                 .Include( a => a.LearningActivity.LearningClass )
@@ -147,13 +144,16 @@ namespace Rock.Model
             // If there weren't any completions there are no statistics to calculate.
             if ( !activityCompletions.Any() )
             {
-                return new LearningActivityCompletionStatistics();
+                return new LearningActivityCompletionStatistics
+                {
+                    Incomplete = studentCount
+                };
             }
 
             var gradingSystemId = activityCompletions.Select( a => a.LearningGradingSystemId ).FirstOrDefault();
             var complete = ( double ) activityCompletions.Count( a => a.IsStudentCompleted );
-            var incomplete = ( double ) activityCompletions.Count( a => !a.IsStudentCompleted );
-            var percentComplete = complete / ( complete + incomplete ) * 100;
+            var incomplete = studentCount - complete;
+            var percentComplete = complete / studentCount * 100;
 
             // For all point averages only consider activities that have been completed.
             var completedActivities = activityCompletions.Where( a => a.IsStudentCompleted ).ToList();
@@ -175,7 +175,7 @@ namespace Rock.Model
             // If there are no points treat it as a passing grade (100%).
             var averagePercent = points > 0 ? averagePoints / points * 100 : 100;
 
-            var averageGrade = new LearningGradingSystemScaleService( ( RockContext ) Context )
+            var averageGrade = new LearningGradingSystemScaleService( rockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.LearningGradingSystemId == gradingSystemId )

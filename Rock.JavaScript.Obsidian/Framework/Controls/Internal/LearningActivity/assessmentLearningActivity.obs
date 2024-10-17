@@ -534,8 +534,8 @@ div.summary-sub-title {
             "";
 
         return hasShortAnswerQuestions.value === true ?
-            `${questionsCorrectSentence} ${missedQuestionSentence}` :
-            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.`;
+            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.` :
+            `${questionsCorrectSentence} ${missedQuestionSentence}`;
     });
 
     /** Contains the custom style values to apply to the icon. */

@@ -22,6 +22,8 @@ using System.Web.UI;
 #endif
 using Rock.Attribute;
 using Rock.Reporting;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +35,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16"">BLANK</svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.HTML )]
-    public class HtmlFieldType : FieldType
+    public class HtmlFieldType : FieldType, ISecurityGrantFieldType
     {
         #region Configuration
 
@@ -80,8 +82,6 @@ namespace Rock.Field.Types
 
             return privateConfig;
         }
-
-
 
         #endregion
 
@@ -349,5 +349,19 @@ namespace Rock.Field.Types
 
 #endif
         #endregion
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            AddRulesToSecurityGrant( grant );
+        }
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant )
+        {
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+        }
     }
 }

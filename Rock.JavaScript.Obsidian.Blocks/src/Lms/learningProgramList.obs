@@ -183,7 +183,7 @@
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0") + "?returnUrl=" + window.location.href;
         }
     }
 

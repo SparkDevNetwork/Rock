@@ -836,7 +836,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <returns>A response that contains the new security grant token or an empty string.</returns>
         [BlockAction( "RenewSecurityGrantToken" )]
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public BlockActionResult RenewSecurityGrantTokenAction()
         {
             return ActionOk( RenewSecurityGrantToken() );
@@ -849,7 +849,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <returns>An action result that contains the block configuration data.</returns>
         [BlockAction]
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public async Task<BlockActionResult> RefreshObsidianBlockInitialization()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";

@@ -120,6 +120,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public DateTime? DueDateCalculated { get; set; }
 
         /// <summary>
+        /// The method for updating LearningActivityCompletion.DueDate properties when the
+        /// LearningActivity's due date criteria is changed.
+        /// </summary>
+        public DueDateChangeType? DueDateChangeType { get; set; }
+
+        /// <summary>
         /// Gets or sets the default date the activity is due.
         /// </summary>
         public DateTime? DueDateDefault { get; set; }

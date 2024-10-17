@@ -23,6 +23,7 @@
 
 import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
 import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
+import { DueDateChangeType } from "@Obsidian/Enums/Lms/dueDateChangeType";
 import { DueDateCriteria } from "@Obsidian/Enums/Lms/dueDateCriteria";
 import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
 import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
@@ -90,6 +91,12 @@ export type LearningActivityBag = {
 
     /** Gets or sets the calculated due date for the activity. */
     dueDateCalculated?: string | null;
+
+    /**
+     * The method for updating LearningActivityCompletion.DueDate properties when the
+     * LearningActivity's due date criteria is changed.
+     */
+    dueDateChangeType?: DueDateChangeType | null;
 
     /** The criteria used for determining the DueDate of the activity. */
     dueDateCriteria: DueDateCriteria;
