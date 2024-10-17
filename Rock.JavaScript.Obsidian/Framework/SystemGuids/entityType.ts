@@ -369,6 +369,8 @@ export const EntityType = {
     InteractionComponent: "ACE6145B-57D6-4694-972F-EC43AF776DE7",
     /** The EntityType Guid for Rock.Model.InteractionDeviceType  */
     InteractionDeviceType: "C1A24534-C77F-41A8-BCA9-73ABA57348E3",
+    /** The guid for the Rock.Model.InteractionEntity entity. */
+    InteractionEntity: "AB3AC547-CCEF-4662-9646-64F16813DAC4",
     /** The EntityType Guid for Rock.Model.InteractionSession  */
     InteractionSession: "338025DE-C16F-47BB-BA31-6DE0C59E59AA",
     /** The EntityType Guid for Rock.Model.InteractionSessionLocation  */
