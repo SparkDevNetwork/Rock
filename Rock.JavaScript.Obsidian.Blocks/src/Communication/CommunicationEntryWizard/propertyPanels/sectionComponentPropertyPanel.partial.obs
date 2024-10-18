@@ -67,26 +67,64 @@
     }
 
     function onAddColumn(): void {
-        const lastColumnElement = columnElements.value[columnElements.value.length - 1];
-        lastColumnElement.classList.remove("last");
+        const insertAfterColumnIndex = columnElements.value.length - 1;
+        const lastColumnElement = columnElements.value[insertAfterColumnIndex];
 
         const td = props.componentElement.ownerDocument.createElement("td");
-        td.classList.add("dropzone", "columns", "small-12", "last");
-
-        // TODO JMH Calculate this.
-        const cols = 1;
-        td.classList.add(`large-${cols}`);
-        td.setAttribute("width", `${100 * (cols / 12)}%`);
+        td.classList.add("dropzone", "columns", "small-12");
         td.setAttribute("valign", "top");
-        lastColumnElement.parentNode?.replaceChild(td, lastColumnElement);
-        td.parentNode?.insertBefore(lastColumnElement, td);
+        setCols(td, 1);
 
-        columnElements.value = getChildDropzones(props.componentElement);
+        let columnHunterIndex = columnElements.value.length - 1;
+        while (columnHunterIndex >= 0) {
+            const column = columnElements.value[columnHunterIndex];
+            columnHunterIndex--;
+            
+            const cols = getCols(column);
+            if (cols > 1) {
+                // Found the column to take a col from!
+                setCols(column, cols - 1);
+
+                td.classList.add("last");
+                lastColumnElement.classList.remove("last");
+                lastColumnElement.insertAdjacentElement("afterend", td);
+
+                columnElements.value = getChildDropzones(props.componentElement);
+
+                // Stop processing.
+                return;
+            }
+        }
     }
 
     // #endregion
 
     // #region Functions
+
+    function getCols(columnElement: HTMLElement): number {
+        const classes = [...columnElement.classList];
+        const sizeClass = classes.find(cls => cls.startsWith("large-"));
+
+        if (sizeClass) {
+            return parseInt(sizeClass.substring(6));
+        }
+        else {
+            // If the large-x CSS class isn't found, default to 2 columns.
+            return 2;
+        }
+    }
+
+    function setCols(columnElement: HTMLElement, cols: number): void {
+        const classes = [...columnElement.classList];
+        const sizeClasses = classes.filter(cls => cls.startsWith("large-"));
+
+        if (sizeClasses) {
+            columnElement.classList.remove(...sizeClasses);
+        }
+
+        columnElement.classList.add(`large-${cols}`);
+        columnElement.setAttribute("width", `${100 * (cols / 12)}%`);
+    }
 
     function getChildDropzones(componentElement: HTMLElement): HTMLElement[] {
         return [...componentElement.querySelectorAll(".dropzone")]
