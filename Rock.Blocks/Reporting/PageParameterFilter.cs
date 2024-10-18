@@ -592,8 +592,8 @@ namespace Rock.Blocks.Reporting
 
             var (
                 publicFilterValues,
-                filterPageParameters
-            ) = GetFilterValuesFromURLOrDefaults( filterAttributes );
+                privateFilterValues
+            ) = GetStartupFilterValues( filterAttributes );
 
             var box = new PageParameterFilterInitializationBox
             {
@@ -605,9 +605,9 @@ namespace Rock.Blocks.Reporting
                 IsFilterButtonVisible = settings.IsFilterButtonVisible,
                 IsResetFiltersButtonVisible = settings.IsResetFiltersButtonVisible,
                 FiltersPerRow = settings.FiltersPerRow,
-                PublicFilters = GetPublicFilters( filterAttributes ),
+                PublicFilters = GetStartupPublicFilters( filterAttributes ),
                 PublicFilterValues = publicFilterValues,
-                FilterPageParameters = filterPageParameters,
+                FilterPageParameters = privateFilterValues,
                 FilterSelectionAction = settings.FilterSelectionAction,
                 IsLegacyReloadEnabled = settings.IsLegacyReloadEnabled,
                 SecurityGrantToken = customSettingsBox.SecurityGrantToken,
@@ -820,69 +820,139 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the public filters available for selection.
+        /// Gets the public and private filter value for each filter, from the URL or default values.
+        /// </summary>
+        /// <param name="filterAttributes">The filter attributes.</param>
+        /// <returns>The public and private filter value for each filter, from the URL or default values.</returns>
+        private (
+            Dictionary<string, string> publicFilterValues,
+            Dictionary<string, string> privateFilterValues
+        ) GetStartupFilterValues( List<AttributeCache> filterAttributes )
+        {
+            // Start by getting the default values.
+            var (
+                publicFilterValues,
+                privateFilterValues
+            ) = GetDefaultFilterValues( filterAttributes );
+
+            foreach ( var filterAttribute in filterAttributes )
+            {
+                var filterKey = filterAttribute.Key;
+
+                // Look in the URL for a value to override the default.
+                var startupFilterValue = PageParameter( filterKey );
+
+                if ( startupFilterValue.IsNotNullOrWhiteSpace() )
+                {
+                    // Overwrite the editable filter value.
+                    publicFilterValues.AddOrReplace( filterKey, PublicAttributeHelper.GetPublicEditValue( filterAttribute, startupFilterValue ) );
+
+                    // Overwrite the private filter value.
+                    privateFilterValues.AddOrReplace( filterKey, startupFilterValue );
+                }
+            }
+
+            return (
+                publicFilterValues,
+                privateFilterValues
+            );
+        }
+
+        /// <summary>
+        /// Gets the public and private filter value for each filter, from block settings default values.
+        /// </summary>
+        /// <param name="filterAttributes">The filter attributes.</param>
+        /// <returns>The public and private filter value for each filter, from block settings default values.</returns>
+        private (
+            Dictionary<string, string> publicFilterValues,
+            Dictionary<string, string> privateFilterValues
+        ) GetDefaultFilterValues( List<AttributeCache> filterAttributes )
+        {
+            var values = (
+                publicFilterValues: new Dictionary<string, string>(),
+                privateFilterValues: new Dictionary<string, string>()
+            );
+
+            foreach ( var filterAttribute in filterAttributes )
+            {
+                var filterKey = filterAttribute.Key;
+                var defaultFilterValue = GetAttributeValue( filterKey );
+
+                // Add the editable filter value, so the individual can make selections using each filter's field type.
+                values.publicFilterValues.Add( filterKey, PublicAttributeHelper.GetPublicEditValue( filterAttribute, defaultFilterValue ) );
+
+                // Add the private filter value, so the client can properly convey filters to other blocks.
+                values.privateFilterValues.Add( filterKey, defaultFilterValue );
+            }
+
+            return values;
+        }
+
+        // TODO: Add a method that takes filterAttributes, publicFilterValues, privateFilterValues and:
+        //  1. sets the privateFilterValues on the request context;
+        //  2. builds and returns the public filters (Dictionary<string, PublicAttributeBag>);
+        //  3. modifies the privateFilterValues and publicFilterValues IN PLACE to remove selections that might no longer
+        //     be available (think: FilterSelectionAction.UpdateFilters mode).
+        //
+        // This new method will be used in many places: on startup, when updating or applying filters, when resetting filters...
+
+        /// <summary>
+        /// Gets the startup public filters available for selection.
         /// <para>
         /// For each filter, any configuration values (e.g. values to be used within a drop down list's source) will
         /// also be provided here.
         /// </para>
         /// </summary>
         /// <param name="filterAttributes">The filter attributes.</param>
-        /// <returns>The public filters available for selection.</returns>
-        private Dictionary<string, PublicAttributeBag> GetPublicFilters( List<AttributeCache> filterAttributes )
+        /// <returns>The startup public filters available for selection.</returns>
+        private Dictionary<string, PublicAttributeBag> GetStartupPublicFilters( List<AttributeCache> filterAttributes )
         {
             return this.BlockCache.GetPublicAttributesForEdit( this.RequestContext.CurrentPerson, enforceSecurity: true, a => filterAttributes.Any( f => f.Key == a.Key ) );
         }
 
         /// <summary>
-        /// Gets the editable filter value and page parameter for each filter, from the URL or default values.
+        /// Gets the private filter values from the public filter values.
+        /// <para>
+        /// The public filter values will sometimes be a serialized JSON object, for example. What we need for the query
+        /// string, however, are simple string values. These will often be entity identifiers (e.g. Guids).
+        /// </para>
         /// </summary>
         /// <param name="filterAttributes">The filter attributes.</param>
-        /// <returns>The editable filter value and page parameter for each filter, from the URL or default values.</returns>
-        private (
-            Dictionary<string, string> publicFilterValues,
-            Dictionary<string, string> filterPageParameters
-        ) GetFilterValuesFromURLOrDefaults( List<AttributeCache> filterAttributes )
+        /// <param name="publicFilterValues">The public filter values for which to get private filter values.</param>
+        /// <returns>The private filter values.</returns>
+        private Dictionary<string, string> GetPrivateFilterValuesFromPublicFilterValues( List<AttributeCache> filterAttributes, Dictionary<string, string> publicFilterValues )
         {
-            var values = (
-                publicFilterValues: new Dictionary<string, string>(),
-                filterPageParameters: new Dictionary<string, string>()
-            );
+            var filterParameters = new Dictionary<string, string>();
 
-            foreach ( var filterAttribute in filterAttributes )
+            if ( publicFilterValues?.Any() != true )
             {
-                var filterKey = filterAttribute.Key;
-
-                // Look in the URL for a value first.
-                var privateFilterValue = PageParameter( filterKey );
-
-                if ( privateFilterValue.IsNullOrWhiteSpace() )
-                {
-                    // Fall back to the default value, if any;
-                    privateFilterValue = GetAttributeValue( filterKey );
-                }
-
-                // Add the editable filter value, so the individual can make selections using each filter's field type.
-                values.publicFilterValues.Add( filterKey, PublicAttributeHelper.GetPublicEditValue( filterAttribute, privateFilterValue ) );
-
-                // Add the private filter value as a page parameter, so the client can properly convey filters to other blocks.
-                values.filterPageParameters.Add( filterKey, privateFilterValue );
+                return filterParameters;
             }
 
-            return values;
+            foreach ( var publicFilterValue in publicFilterValues )
+            {
+                var key = publicFilterValue.Key;
+                var attributeCache = filterAttributes.FirstOrDefault( a => a.Key == key );
+                if ( attributeCache == null )
+                {
+                    continue;
+                }
+
+                filterParameters.Add( key, PublicAttributeHelper.GetPrivateValue( attributeCache, publicFilterValue.Value ) );
+            }
+
+            return filterParameters;
         }
 
         /// <summary>
-        /// Sets page parameters on the rock request context, using the provided public filter values.
+        /// Sets page parameters on the rock request context, using the provided private filter values.
         /// </summary>
         /// <param name="filterAttributes">The filter attributes.</param>
-        /// <param name="publicFilterValues">The public filter values to use when setting page parameters.</param>
-        private void SetPageParametersFromFilters( List<AttributeCache> filterAttributes, Dictionary<string, string> publicFilterValues )
+        /// <param name="publicFilterValues">The private filter values to use when setting page parameters.</param>
+        private void SetPageParametersFromPrivateFilterValues( List<AttributeCache> filterAttributes, Dictionary<string, string> privateFilterValues )
         {
-            // Get the private filter parameters using the public filter values.
-            var filterParameters = GetFilterPageParametersFromPublicFilterValues( filterAttributes, publicFilterValues );
-
             var pageParameters = this.RequestContext.GetPageParameters();
-            foreach ( var filterParameter in filterParameters )
+            foreach ( var filterParameter in privateFilterValues )
             {
                 var filterKey = filterParameter.Key;
                 var filterValue = filterParameter.Value;
@@ -918,40 +988,6 @@ namespace Rock.Blocks.Reporting
                 Reason: Provide alternative approach for unconventional page parameter manipulation.
              */
             this.RequestContext.SetPageParameters( pageParameters );
-        }
-
-        /// <summary>
-        /// Gets the filter page parameters from the public filter values.
-        /// <para>
-        /// The public filter values will sometimes be a serialized JSON object, for example. What we need for the query
-        /// string, however, are simple string values. These will often be entity identifiers (e.g. Guids).
-        /// </para>
-        /// </summary>
-        /// <param name="filterAttributes">The filter attributes.</param>
-        /// <param name="publicFilterValues">The public filter values for which to get filter parameters.</param>
-        /// <returns>The filter page parameters from the public filter values.</returns>
-        private Dictionary<string, string> GetFilterPageParametersFromPublicFilterValues( List<AttributeCache> filterAttributes, Dictionary<string, string> publicFilterValues )
-        {
-            var filterParameters = new Dictionary<string, string>();
-
-            if ( publicFilterValues?.Any() != true )
-            {
-                return filterParameters;
-            }
-
-            foreach ( var publicFilterValue in publicFilterValues )
-            {
-                var key = publicFilterValue.Key;
-                var attributeCache = filterAttributes.FirstOrDefault( a => a.Key == key );
-                if ( attributeCache == null )
-                {
-                    continue;
-                }
-
-                filterParameters.Add( key, PublicAttributeHelper.GetPrivateValue( attributeCache, publicFilterValue.Value ) );
-            }
-
-            return filterParameters;
         }
 
         /// <summary>
@@ -1276,13 +1312,16 @@ namespace Rock.Blocks.Reporting
 
             var filterAttributes = GetOrderedFilterAttributes();
 
+            // Get the private filter values from the public filter values.
+            var privateFilterValues = GetPrivateFilterValuesFromPublicFilterValues( filterAttributes, bag.PublicFilterValues );
+
             // Overwrite the page parameter values on the rock request context using the currently-selected filter values.
             // This will allow the `GetPublicFilters()` call below to properly set the available values on each filter.
-            SetPageParametersFromFilters( filterAttributes, bag.PublicFilterValues );
+            SetPageParametersFromPrivateFilterValues( filterAttributes, bag.PublicFilterValues );
 
             var response = new GetUpdatedFiltersResponseBag
             {
-                PublicFilters = GetPublicFilters( filterAttributes )
+                PublicFilters = GetStartupPublicFilters( filterAttributes )
             };
 
             // For each of the currently-selected filter values, ensure they're still allowed based on each filter's
@@ -1316,7 +1355,7 @@ namespace Rock.Blocks.Reporting
 
             var response = new GetFilterPageParametersResponseBag
             {
-                FilterPageParameters = GetFilterPageParametersFromPublicFilterValues( filterAttributes, bag.PublicFilterValues )
+                FilterPageParameters = GetPrivateFilterValuesFromPublicFilterValues( filterAttributes, bag.PublicFilterValues )
             };
 
             return ActionOk( response );
