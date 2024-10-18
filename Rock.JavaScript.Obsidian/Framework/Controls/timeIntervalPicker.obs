@@ -2,7 +2,7 @@
 <template>
     <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
         <div class="input-group d-flex">
-            <NumberBox v-model="value" inputClasses="input-width-md min-w-0 border-right-0 rounded-left" />
+            <NumberBox v-model="value" inputClasses="input-width-md min-w-0 border-right-0 rounded-left" :rules="greaterThanZeroRule" />
             <DropDownList v-model="unit" :items="options" inputClasses="rounded-0 rounded-right input-width-sm" :showBlankItem="false" />
         </div>
     </RockFormField>
@@ -14,10 +14,11 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
     import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -64,6 +65,22 @@
             };
         }
     });
+
+    /* This rule was added here instead of using gte:0 because the lable on the NumberBox is empty, thus the validation message will not contain the correct label name. */
+    function greaterThanZeroRule(value: unknown): string | boolean {
+        if (isNullOrWhiteSpace(value)) {
+            return true;
+        }
+
+        const number = toNumberOrNull(value as string);
+        if (number !== null) {
+            if (number >= 0) {
+                return true;
+            }
+        }
+
+        return `${standardFieldProps.label} must not be less than 0`;
+    }
 
     const options: ListItemBag[] = [
         { text: "Secs", value: TimeIntervalUnit.Seconds.toString() },
