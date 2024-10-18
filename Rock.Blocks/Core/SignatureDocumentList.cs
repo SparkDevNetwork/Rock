@@ -83,27 +83,6 @@ namespace Rock.Blocks.Core
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
 
-            //int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
-            //if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
-            //{
-            //    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
-            //    var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
-
-            //    //Legacy Add is No Longer Supported in Webform Block
-            //    //var isLegacyTemplate = signatureDocumentTemplateService.GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
-            //    //box.IsAddEnabled = isLegacyTemplate && new SignatureDocument().IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-
-            //    // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
-            //    bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
-            //    bool canView = canEdit || ( signatureDocumentTemplate?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ?? false );
-
-            //    if ( !canView )
-            //    {
-            //        //box.ErrorMessage
-            //        //pnlContent.Visible = false;
-            //    }
-            //}
-
             return box;
         }
 

@@ -144,15 +144,6 @@ namespace Rock.Blocks.Core
             {
                 // Creating Signature Documents in this way is not allowed
                 box.ErrorMessage = EditModeMessage.ReadOnlyEditActionNotAllowed(SignatureDocument.FriendlyTypeName );
-                //// New entity is being created, prepare for edit mode by default.
-                //if ( box.IsEditable )
-                //{
-                //    box.Entity = GetEntityBagForEdit( entity );
-                //}
-                //else
-                //{
-                //    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( SignatureDocument.FriendlyTypeName );
-                //}
             }
 
             PrepareDetailBox( box, entity );
@@ -228,6 +219,8 @@ namespace Rock.Blocks.Core
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            bag.IsLegacyDocument = entity.UsesLegacyDocumentProvider();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 

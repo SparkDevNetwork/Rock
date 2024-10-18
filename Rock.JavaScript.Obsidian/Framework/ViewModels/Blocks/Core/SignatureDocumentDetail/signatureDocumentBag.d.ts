@@ -71,6 +71,9 @@ export type SignatureDocumentBag = {
     /** Gets or sets the invite count. */
     inviteCount: number;
 
+    /** Gets or sets whether we are dealing with a legacy template. */
+    isLegacyDocument: boolean;
+
     /** Gets or sets the request date. */
     lastInviteDate?: string | null;
 

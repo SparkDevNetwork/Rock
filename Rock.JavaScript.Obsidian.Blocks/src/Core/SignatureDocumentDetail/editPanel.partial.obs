@@ -4,11 +4,13 @@
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="name"
+                         :readonly="!isLegacyDocument"
                          label="Name"
                          rules="required" />
             </div>
             <div class="col-md-6">
                 <RadioButtonList v-model="status"
+                                 :disabled="!isLegacyDocument"
                                  :items="items"
                                  :horizontal="true"
                                  label="Status" />
@@ -17,22 +19,38 @@
         <div class="row">
             <div class="col-md-6">
                 <FileUploader v-model="binaryFile"
+                              :disabled="!isLegacyDocument"
                               label="Document" />
             </div>
             <div class="col-md-6">
                 <PersonPicker v-model="appliesToPersonAlias"
+                              v-if="isLegacyDocument"
                               label="Applies To"
                               help="The person that this document applies to."
                               rules="required" />
+                <template v-else>
+                    <RockLabel>Applies To</RockLabel> <br/>
+                    {{ appliesToPersonAlias?.text }} <br/>
+                </template>
 
                 <PersonPicker v-model="assignedToPersonAlias"
+                              v-if="isLegacyDocument"
                               label="Assigned To"
                               help="The person that this document was assigned to for getting a signature."
                               rules="required" />
+                <template v-else>
+                    <RockLabel>Assigned To</RockLabel> <br/>
+                    {{ assignedToPersonAlias?.text }} <br/>
+                </template>
 
                 <PersonPicker v-model="signedByPersonAlias"
+                              v-if="isLegacyDocument"
                               label="Signed By"
                               help="The person that signed this." />
+                <template v-else>
+                    <RockLabel>Signed By</RockLabel> <br/>
+                    {{ signedByPersonAlias?.text }}
+                </template>
             </div>
         </div>
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -43,6 +61,7 @@
     import { PropType, ref, computed, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
@@ -81,6 +100,7 @@
     const appliesToPersonAlias = propertyRef(props.modelValue.bag?.appliesToPersonAlias ?? {}, "AppliesToPersonAlias");
     const assignedToPersonAlias = propertyRef(props.modelValue.bag?.assignedToPersonAlias ?? {}, "AssignedToPersonAlias");
     const signedByPersonAlias = propertyRef(props.modelValue.bag?.signedByPersonAlias ?? {}, "SignedByPersonAlias");
+    const isLegacyDocument = propertyRef(props.modelValue.bag?.isLegacyDocument ?? false, "IsLegacyDocument")
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().

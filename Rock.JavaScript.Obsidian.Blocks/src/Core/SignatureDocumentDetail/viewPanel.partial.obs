@@ -103,7 +103,10 @@
         if(props.modelValue.signedByEmail) {
             valueBuilder.addTextValue("Completion Email", props.modelValue.signedByEmail);
             if(props.modelValue.completionEmailSentDateTime) {
-                valueBuilder.addTextValue("", props.modelValue.completionEmailSentDateTime);
+                let date = RockDateTime.parseISO(props.modelValue.completionEmailSentDateTime);
+                if(date) {
+                    valueBuilder.addTextValue("", date.toASPString("G"));
+                }
             }
         }
 
@@ -119,7 +122,7 @@
         }
 
         if(props.modelValue.signedDateTime) {
-            const date = RockDateTime.parseISO(props.modelValue.signedDateTime);
+            let date = RockDateTime.parseISO(props.modelValue.signedDateTime);
             let signedOnInformation = "";
             if (date) {
                 signedOnInformation = date.toString();

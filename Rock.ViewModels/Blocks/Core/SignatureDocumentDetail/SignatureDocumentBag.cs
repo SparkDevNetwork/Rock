@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -167,5 +167,10 @@ namespace Rock.ViewModels.Blocks.Core.SignatureDocumentDetail
         /// Gets or sets the status.
         /// </summary>
         public SignatureDocumentStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether we are dealing with a legacy template.
+        /// </summary>
+        public bool IsLegacyDocument { get; set; }
     }
 }
