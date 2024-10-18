@@ -26,6 +26,16 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         /// <summary>
+        /// Rounds the <c>decimal</c> value to the nearest decimal place for the organization's configured currency.
+        /// </summary>
+        /// <param name="value">the <c>decimal</c> to round.</param>
+        /// <returns>The rounded <c>decimal</c> value.</returns>
+        public static decimal AsCurrency( this decimal value )
+        {
+            return Math.Round( value, RockCurrencyCodeInfo.GetDecimalPlaces() );
+        }
+
+        /// <summary>
         /// Applies the <paramref name="discountPercentage"/> as a discount to the <paramref name="value"/>
         /// and rounds the resulting value to the number of decimal places specified by the organization's configured currency.
         /// </summary>
@@ -35,20 +45,10 @@ namespace Rock
         /// <param name="value">The value to apply the discount to.</param>
         /// <param name="discountPercentage">The percentage to discount (0 - 1).</param>
         /// <returns>The new currency amount after applying the discount percentage.</returns>
-        public static decimal GetAsDiscountedPercentage( this decimal value, decimal discountPercentage )
+        public static decimal AsDiscountedPercentage( this decimal value, decimal discountPercentage )
         {
             var discountedValue = Math.Round( value - ( value * discountPercentage ), RockCurrencyCodeInfo.GetDecimalPlaces() );
             return discountedValue > 0 ? discountedValue : 0;
-        }
-
-        /// <summary>
-        /// Rounds the <c>decimal</c> value to the nearest decimal place for the organization's configured currency.
-        /// </summary>
-        /// <param name="value">the <c>decimal</c> to round.</param>
-        /// <returns>The rounded <c>decimal</c> value.</returns>
-        public static decimal AsCurrency ( this decimal value )
-        {
-            return Math.Round( value, RockCurrencyCodeInfo.GetDecimalPlaces() );
         }
     }
 }
