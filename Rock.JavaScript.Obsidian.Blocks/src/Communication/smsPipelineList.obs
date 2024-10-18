@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="SMS Pipeline List"
           itemTerm="Sms Pipeline"
           :entityTypeGuid="EntityType.SmsPipeline"
           stickyHeader
@@ -13,19 +14,25 @@
         <TextColumn name="name"
                     title="Name"
                     field="name"
+                    width="10%"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
+                    width="40%"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       visiblePriority="xs" />
+                       :filter="booleanValueFilter"
+                       width="150"
+                       visiblePriority="xs"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"  />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -34,7 +41,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SmsPipelineListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineList/smsPipelineListOptionsBag";
