@@ -14,18 +14,18 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -147,7 +147,7 @@ namespace Rock.Model
         {
             get
             {
-                return DiscountedCost - TotalPaid;
+                return ( DiscountedCost - TotalPaid ).AsCurrency();
             }
         }
 
