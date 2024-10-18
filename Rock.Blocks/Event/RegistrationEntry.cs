@@ -434,6 +434,8 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
+                // Ensure the arguments provided are in their proper format
+                // before use (e.g. proper currency formatting of amounts).
                 FixRegistrationArguments( args );
 
                 var context = GetContext( rockContext, args, out var errorMessage );
