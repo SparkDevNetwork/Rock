@@ -21,6 +21,10 @@
                 <EmailBox label="Email" v-model="email" rules="required" />
             </div>
 
+            <template v-for="(value, key) in phoneNumbers">
+                <PhoneNumberDetails v-model="phoneNumbers[key]" />
+            </template>
+
             <DropDownList v-if="selectGroupTypeGuidOrEmptyString"
                           :label="groupsLabel"
                           v-model="groupGuidOrEmptyString"
@@ -63,8 +67,10 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
     import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
     import { FinancialPledgeEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryOptionsBag";
+    import { FinancialPledgeEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryPhoneNumberBag";
 
     const props = defineProps({
         modelValue: {
@@ -104,7 +110,8 @@
     const pledgeFrequencies = ref(props.options.pledgeFrequencies ?? []);
     const duplicatePledgeWarningText = ref(props.modelValue.duplicatePledgeWarningText);
     const account = propertyRef(props.modelValue.account ?? {}, "AccountId");
-    const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
+    const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value || new Date().toISOString(), upperValue: endDate.value } : undefined);
+    const phoneNumbers = ref<FinancialPledgeEntryPhoneNumberBag[]>(props.modelValue?.phoneNumbers ?? []);
     const showDateRange = ref(props.options.showDateRange);
     const pledgeTerm = ref(props.options.pledgeTerm);
 
@@ -132,6 +139,9 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
+        if (selectedDateRange.value?.upperValue && !selectedDateRange.value?.lowerValue) {
+            selectedDateRange.value.lowerValue = new Date().toISOString();
+        }
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");
@@ -147,7 +157,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, selectedDateRange, firstName, lastName, email, ...propRefs], () => {
+    watch([attributeValues, selectedDateRange, firstName, lastName, email, phoneNumbers, ...propRefs], () => {
         const newValue: FinancialPledgeEntryBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -164,11 +174,12 @@
             startDate: selectedDateRange.value?.lowerValue,
             endDate: selectedDateRange.value?.upperValue,
             personAlias: personAlias.value,
-            account: account.value
+            account: account.value,
+            phoneNumbers: phoneNumbers.value
         };
 
         emit("update:modelValue", newValue);
-    });
+    }, { deep: true });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
