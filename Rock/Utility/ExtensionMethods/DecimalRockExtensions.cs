@@ -47,7 +47,8 @@ namespace Rock
         /// <returns>The new currency amount after applying the discount percentage.</returns>
         public static decimal AsDiscountedPercentage( this decimal value, decimal discountPercentage )
         {
-            var discountedValue = Math.Round( value - ( value * discountPercentage ), RockCurrencyCodeInfo.GetDecimalPlaces() );
+            var asCurrency = value.AsCurrency();
+            var discountedValue = ( asCurrency - ( asCurrency * discountPercentage ) ).AsCurrency();
             return discountedValue > 0 ? discountedValue : 0;
         }
     }
