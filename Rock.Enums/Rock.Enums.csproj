@@ -202,6 +202,7 @@
     <Compile Include="Group\RelationshipTrend.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
+    <Compile Include="Group\ScheduleCoordinatorNotificationType.cs" />
     <Compile Include="Lms\CommunicationMode.cs" />
     <Compile Include="Lms\ConfigurationMode.cs" />
     <Compile Include="Lms\AssignTo.cs" />

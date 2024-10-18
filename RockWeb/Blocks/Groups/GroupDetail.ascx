@@ -186,22 +186,38 @@
                         <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
                             <div class="row">
                                 <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                     <Rock:RockCheckBox ID="cbSchedulingMustMeetRequirements" runat="server" Label="Scheduling Must Meet Requirements" Help="Indicates whether group members must meet the group member requirements before they can be scheduled." />
-
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlAttendanceRecordRequiredForCheckIn" runat="server" Label="Check-in Requirements" Help="Determines if the person must be scheduled prior to checking in." />
-
-                                    <Rock:PersonPicker ID="ppScheduleCancellationPerson" runat="server" EnableSelfSelection="true" Label="Schedule Cancellation Person to Notify" Help="The person to notify when a person cancels." />
                                 </div>
                                 <div class="col-md-6">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                     <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline, or if their request will be auto accepted. This setting overrides the group type's setting." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:PersonPicker ID="ppScheduleCoordinatorPerson" runat="server" EnableSelfSelection="true" Label="Schedule Coordinator" Help="The person who receives notifications about changes to scheduled individuals." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBoxList ID="cblScheduleCoordinatorNotificationTypes" runat="server" Label="Schedule Coordinator Notification Options" RepeatDirection="Horizontal" Help='Specifies the types of notifications the coordinator receives about scheduled individuals. Leave blank to use the Group Type settings, or select one or more options to override them.' OnSelectedIndexChanged="cblScheduleCoordinatorNotificationTypes_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Value="0" Text="None" />
+                                        <asp:ListItem Value="1" Text="Accept" />
+                                        <asp:ListItem Value="2" Text="Decline" />
+                                        <asp:ListItem Value="4" Text="Self-Schedule" />
+                                    </Rock:RockCheckBoxList>
                                 </div>
                             </div>
                         </Rock:PanelWidget>
