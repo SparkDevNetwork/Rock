@@ -19,24 +19,32 @@
         </Accordion>
 
         <Accordion title="Typography">
-            <FontPropertyGroup :element="document.body"
-                               label="Global Font" />
-            <hr />
-            <FontStyleSheetProperty :element="document.body"
-                                    label="Heading 1 Font"
-                                    tagName="h1" />
-            <hr />
-            <FontStyleSheetProperty :element="document.body"
-                                    label="Heading 2 Font"
-                                    tagName="h2" />
-            <hr />
-            <FontStyleSheetProperty :element="document.body"
-                                    label="Heading 3 Font"
-                                    tagName="h3" />
-            <hr />
-            <FontStyleSheetProperty :element="document.body"
-                                    label="Paragraph Font"
-                                    tagName="p" />
+            <AccordionGroup>
+                <Accordion title="Global">
+                    <FontPropertyGroup :element="document.body" />
+                </Accordion>
+
+                <Accordion title="Heading 1">
+                    <FontStyleSheetProperty :element="document.body"
+                                            tagName="h1" />
+                </Accordion>
+
+                <Accordion title="Heading 2">
+                    <FontStyleSheetProperty :element="document.body"
+                                            tagName="h2" />
+                </Accordion>
+
+                <Accordion title="Heading 3">
+                    <FontStyleSheetProperty :element="document.body"
+                                            tagName="h3" />
+                </Accordion>
+
+                <Accordion title="Paragraph">
+                    <FontStyleSheetProperty :element="document.body"
+                                            tagName="p" />
+                </Accordion>
+
+            </AccordionGroup>
         </Accordion>
 
         <Accordion title="Button Styling">

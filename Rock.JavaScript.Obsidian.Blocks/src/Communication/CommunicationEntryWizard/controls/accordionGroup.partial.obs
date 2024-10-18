@@ -1,12 +1,37 @@
 <template>
-    <slot></slot>
+    <div class="accordion-group">
+        <slot></slot>
+    </div>
 </template>
+
+<style>
+.accordion-group .accordion .panel {
+    height: auto;
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.accordion-group .accordion .panel-body[data-has-accordion-group="true"] {
+    padding: 0;
+}
+
+.accordion-group .accordion .panel-heading {
+    background-color: white;
+    border-radius: 0;
+}
+
+.accordion-group .accordion .accordion-group .accordion .panel-heading {
+    background-color: #eee;
+}
+</style>
 
 <script setup lang="ts">
     import { onMounted, provide, Ref, watch } from "vue";
     import { AccordionGroupInjectionKey } from "../utils.partial";
 
     const accordions: Record<string, Ref<boolean>> = {};
+
+    // #region Functions
 
     function register(key: string, isExpanded: Ref<boolean>): void {
         // This will overwrite other accordions that use the same key.
@@ -24,6 +49,10 @@
         });
     }
 
+    // #endregion
+
+    // #region Hooks
+
     onMounted(() => {
         const accordionKeys = Object.keys(accordions);
 
@@ -31,6 +60,8 @@
             accordions[accordionKeys[0]].value = true;
         }
     });
+
+    // #endregion
 
     provide(AccordionGroupInjectionKey, {
         register

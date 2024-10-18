@@ -1,22 +1,15 @@
 <template>
-    <Panel v-model="isExpanded"
-           :hasCollapse="true"
-           :title="title"
-           :type="type">
-        <slot></slot>
-    </Panel>
+    <div ref="accordion" class="accordion">
+        <Panel v-model="isExpanded"
+               :hasCollapse="true"
+               :title="title">
+            <slot></slot>
+        </Panel>
+    </div>
 </template>
 
-<style scoped>
-:deep(.panel) {
-    margin-bottom: 0 !important;
-    /* Needed so that panel-block can collapse. */
-    height: auto !important;
-}
-</style>
-
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { onMounted, PropType, ref } from "vue";
     import { useAccordionGroup } from "../utils.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
@@ -24,16 +17,29 @@
         title: {
             type: String as PropType<string | undefined>,
             required: false
-        },
-        type: {
-            type: String as PropType<"default" | "primary" | "danger" | "warning" | "success" | "info" | "block" | undefined>,
-            default: "block"
         }
     });
 
     // #region Values
 
     const isExpanded = ref<boolean>(false);
+    const accordion = ref<HTMLElement | undefined>();
+
+    // #endregion
+
+    // #region Hooks
+
+    onMounted(() => {
+        if (accordion.value?.querySelector(".accordion-group")) {
+            const panelBody = accordion.value.querySelector(".panel-body") as HTMLElement;
+            if (panelBody) {
+                // Use a data attribute here to avoid clashes with classes managed by the Panel component.
+                // This attribute is used by the AccordionGroup styles
+                // to apply styling for nested accordion groups.
+                panelBody.dataset.hasAccordionGroup = "true";
+            }
+        }
+    });
 
     // #endregion
 
