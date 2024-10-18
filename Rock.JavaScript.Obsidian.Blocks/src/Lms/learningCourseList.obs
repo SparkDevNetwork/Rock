@@ -11,7 +11,7 @@
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
           :showExport="false"
-          tooltipField="publicName"
+          tooltipField="course"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"

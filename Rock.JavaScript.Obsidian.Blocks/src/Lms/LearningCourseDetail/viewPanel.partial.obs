@@ -38,6 +38,7 @@
     import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
+	import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const props = defineProps({
         modelValue: {
@@ -61,6 +62,8 @@
     // #endregion
 
     // #region Computed Values
+
+    const isOnDemandMode = ref(props.options?.configurationMode === ConfigurationMode.OnDemandLearning);
 
     /** The values to display full-width at the top of the block. */
     const topValues = computed((): ValueDetailListItem[] => {
@@ -90,7 +93,11 @@
             valueBuilder.addTextValue("Public Name", publicName);
         }
 
-        valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
+		// On-Demand mode doesn't allow  course credits.
+        if (isOnDemandMode.value === false){
+            valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
+        }
+
         valueBuilder.addTextValue("Enable Announcements", props.modelValue.enableAnnouncements === true ? "Yes" : "No");
 
         const completionWorkflowText = props.modelValue.completionWorkflowType?.text ?? "";
@@ -110,7 +117,10 @@
         }
         const emptyValue = "<br />";
 
-        valueBuilder.addTextValue("Course Code", props.modelValue.courseCode ?? "");
+        const courseCode = props.modelValue.courseCode ?? "";
+        if (courseCode.length > 0){
+            valueBuilder.addTextValue("Course Code", courseCode);
+        }
 
         valueBuilder.addTextValue("Allow Historical Access", asYesNoOrNull(props.modelValue.allowHistoricalAccess) ?? "No");
 

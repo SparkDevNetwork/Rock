@@ -65,6 +65,9 @@ export type CustomSettingsBag = {
      */
     groupResultsBySource: boolean;
 
+    /** Whether or not to include unapproved items in the search results. */
+    includeUnapproved: boolean;
+
     /**
      * Gets or sets the template that will be used to render each individual
      * search result item.

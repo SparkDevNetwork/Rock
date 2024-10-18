@@ -214,7 +214,7 @@
         try {
             isProcessing.value = true;
 
-            let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value);
+            let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value, true);
 
             newSession = await newSession.withAttendee(null);
 

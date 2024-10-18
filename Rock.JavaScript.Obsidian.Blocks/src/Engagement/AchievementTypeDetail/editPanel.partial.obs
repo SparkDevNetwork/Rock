@@ -33,7 +33,6 @@
 
             <div class="col-md-3">
                 <CheckBox v-model="allowOverAchievement"
-                          text="Yes"
                           label="Allow Overachievement"
                           help="When enabled, achievement beyond the defined goal will be tracked so it is possible for progress to be greater than 100%. Only one achievement is allowed when this is enabled." />
             </div>

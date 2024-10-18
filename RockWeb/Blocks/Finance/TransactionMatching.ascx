@@ -325,7 +325,7 @@
                     <div class="row">
                         <div class="col-sm-6">
                             <Rock:AccountPicker ID="apDisplayedPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Displayed Accounts" DisplayActiveOnly="true" />
-                            <Rock:RockCheckBox ID="cbOnlyShowSelectedAccounts" runat="server" Label="Limit to Existing" Text="Yes"
+                            <Rock:RockCheckBox ID="cbOnlyShowSelectedAccounts" runat="server" Label="Limit to Existing"
                                 Help="If a transaction already has allocated amounts (i.e teller import), should only the accounts with values be displayed by default." />
                             <Rock:AccountPicker ID="apOptionalPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Optional Accounts" DisplayActiveOnly="true" />
                         </div>

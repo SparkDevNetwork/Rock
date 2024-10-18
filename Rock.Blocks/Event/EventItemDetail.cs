@@ -80,7 +80,7 @@ namespace Rock.Blocks.Event
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions();
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<EventItem>();
 
                 return box;
@@ -91,12 +91,22 @@ namespace Rock.Blocks.Event
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private EventItemDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private EventItemDetailOptionsBag GetBoxOptions()
         {
-            var options = new EventItemDetailOptionsBag();
+            var audiences = new List<ListItemBag>();
+
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+
+            if ( definedType != null )
+            {
+                audiences = definedType.DefinedValues.ConvertAll( dv => dv.ToListItemBag() );
+            }
+
+            var options = new EventItemDetailOptionsBag()
+            {
+                Audiences = audiences
+            };
 
             return options;
         }
@@ -339,9 +349,18 @@ namespace Rock.Blocks.Event
             if ( entity.Id == 0 )
             {
                 var idParam = PageParameter( PageParameterKey.EventCalendarId );
-                var calendarId = IdHasher.Instance.GetId( idParam ) ?? PageParameter( PageParameterKey.EventCalendarId ).AsInteger();
-                var calendarItem = new EventCalendarItem { EventCalendarId = calendarId };
-                entity.EventCalendarItems.Add( calendarItem );
+                var calendarId = IdHasher.Instance.GetId( idParam ) ?? PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
+
+                if ( calendarId.HasValue )
+                {
+                    var eventCalendarService = new EventCalendarService( rockContext );
+                    var eventCalendar = eventCalendarService.Get( calendarId.Value );
+
+                    if ( eventCalendar != null )
+                    {
+                        entity.EventCalendarItems.Add( new EventCalendarItem() { EventCalendarId = eventCalendar.Id, EventCalendar = eventCalendar } );
+                    }
+                }
             }
 
             return entity;

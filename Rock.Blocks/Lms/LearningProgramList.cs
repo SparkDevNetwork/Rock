@@ -133,6 +133,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "highlightColor", a => a.HighlightColor ?? string.Empty )
                 .AddTextField( "category", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.Name : null )
                 .AddTextField( "categoryColor", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.HighlightColor : null )
+                .AddField( "configurationMode", a => a.ConfigurationMode )
                 .AddField( "isPublic", a => a.IsPublic )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );

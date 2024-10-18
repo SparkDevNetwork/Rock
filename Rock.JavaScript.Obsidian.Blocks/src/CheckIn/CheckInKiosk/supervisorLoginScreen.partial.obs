@@ -133,7 +133,7 @@
                     const locationCounts: AttendanceCountGroup = {
                         id: location.id,
                         name: location.name,
-                        count: data.attendance?.filter(a => a.areaId === area.id && a.groupId === group.id && a.locationId === location.id).length ?? 0,
+                        count: data.attendance?.filter(a => a.groupId === group.id && a.locationId === location.id).length ?? 0,
                         children: []
                     };
 
@@ -234,5 +234,5 @@
         else {
             counts.value = getCountsByLocation(props.supervisorData.counts ?? {});
         }
-    });
+    }, { deep: true });
 </script>

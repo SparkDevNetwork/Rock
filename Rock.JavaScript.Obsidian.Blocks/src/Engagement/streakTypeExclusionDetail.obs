@@ -6,7 +6,8 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
+                 name="Streak Type Exclusion"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -17,6 +18,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -32,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -46,6 +48,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakTypeExclusionBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionBag";
     import { StreakTypeExclusionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionDetailOptionsBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<StreakTypeExclusionBag, StreakTypeExclusionDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -55,6 +58,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const store = useStore();
 
     const streakTypeExclusionViewBag = ref(config.entity);
     const streakTypeExclusionEditBag = ref<StreakTypeExclusionBag>({} as StreakTypeExclusionBag);
@@ -88,7 +92,16 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return streakTypeExclusionViewBag.value?.streakType?.text ?? "";
+        switch (panelMode.value) {
+            case DetailPanelMode.Add:
+                return "Add Streak Type Exclusion";
+            case DetailPanelMode.Edit:
+                return "Edit Streak Type Exclusion";
+            case DetailPanelMode.View:
+                return "View Streak Type Exclusion";
+            default:
+                return streakTypeExclusionViewBag.value?.streakType?.text ?? "";
+        }
     });
 
     /**
@@ -118,10 +131,6 @@
     const options = computed((): StreakTypeExclusionDetailOptionsBag => {
         return config.options ?? {};
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 
@@ -181,7 +190,6 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             streakTypeExclusionEditBag.value = result.data.entity;
-
             return true;
         }
         else {
@@ -258,5 +266,14 @@
     }
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        if (config.entity?.idKey) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 
 </script>

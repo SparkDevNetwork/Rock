@@ -24,14 +24,12 @@
 
             <div class="col-md-4">
                 <CheckBox v-model="excludeSystemTypes"
-                          label="Exclude 'System' Types?"
-                          text="Yes" />
+                          label="Exclude 'System' Types?" />
             </div>
 
             <div class="col-md-4">
                 <CheckBox v-model="showOnlyObsidian"
-                          label="Show Obsidian only?"
-                          text="Yes" />
+                          label="Show Obsidian only?" />
             </div>
         </div>
     </Modal>

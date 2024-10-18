@@ -47,14 +47,12 @@
                         <div class="col-md-6">
                             <CheckBox v-model="requiresApprovals"
                                     label="Enabled Approvals"
-                                    @click="toggleRequiresApprovals()"
-                                    text="Yes" />
+                                    @click="toggleRequiresApprovals()" />
                         </div>
                         <div class="col-md-6" v-if="requiresApprovals">
                             <CheckBox v-model="enabledAIApprovals"
                                     label="Enabled AI Approvals"
-                                    help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note."
-                                    text="Yes" />
+                                    help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note." />
 
                         </div>
                     </div>
@@ -76,22 +74,18 @@
             <div class="col-md-6">
 
                 <CheckBox v-model="userSelectable"
-                          label="User Selectable"
-                          text="Yes" />
+                          label="User Selectable" />
 
                 <CheckBox v-model="allowsWatching"
                           label="Allows Watching"
-                          text="Yes"
                           help="If enabled, an option to watch individual notes will appear, and note watch notifications will be sent on watched notes." />
 
                 <CheckBox v-model="autoWatchAuthors"
                           label="Auto Watch Authors"
-                          text="Yes"
                           help="If enabled, the author of a note will get notifications for direct replies to the note. In other words, a 'watch' will be automatically enabled on the note." />
 
                 <CheckBox v-model="allowsReplies"
-                          label="Allow Replies"
-                          text="Yes" />
+                          label="Allow Replies" />
 
                 <TransitionVerticalCollapse>
                     <div v-if="allowsReplies">
@@ -104,7 +98,6 @@
 
                 <CheckBox v-model="allowsAttachments"
                           label="Allows Attachments"
-                          text="Yes"
                           help="If enabled, then this note type will allow attachments. However, not all UI components will currently allow file uploads." />
 
                 <TransitionVerticalCollapse>
@@ -120,7 +113,6 @@
                     <div v-if="showEnableMentions">
                         <CheckBox v-model="isMentionEnabled"
                                   label="Enable Mentions"
-                                  text="Yes"
                                   help="Mentions allow a person to be mentioned in the text of a note. Once saved the mentioned person will be notified." />
                     </div>
                 </TransitionVerticalCollapse>

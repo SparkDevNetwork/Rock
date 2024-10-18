@@ -34,22 +34,46 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request Transfer" )]
 
-    [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
-    [WorkflowAttribute( "Connection Opportunity Attribute", "The attribute that contains the type of the new connection opportunity.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
-    [WorkflowTextOrAttribute("Transfer Note", "Transfer Note Attribute", "The note to include with the transfer activity.", false, "", "", 2 )]
+    [WorkflowAttribute( "Connection Request Attribute",
+        Description = "The attribute that contains the connection request.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 0,
+        Key = AttributeKey.ConnectionRequestAttribute,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+
+    [WorkflowAttribute( "Connection Opportunity Attribute",
+        Description = "The attribute that contains the type of the new connection opportunity.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.ConnectionOpportunityAttribute,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
+
+    [WorkflowTextOrAttribute("Transfer Note",
+        "Transfer Note Attribute",
+        Description = "The note to include with the transfer activity.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.TransferNote )]
+
     [EnumField( "Connection State",
         Description = "The connection State to set the connection request.",
         EnumSourceType = typeof( ConnectionState ),
         IsRequired = false,
         Order = 3,
         Key = AttributeKey.ConnectionState )]
+
     [IntegerField( "Connection Status Id",
         Description = "The connection status id that request apply to",
         IsRequired = false,
         Order = 4,
         Key = AttributeKey.ConnectionStatusId )]
+
     [Rock.SystemGuid.EntityTypeGuid( "308B46FD-6D87-471B-AA98-AAE1894B0D49")]
     public class TransferConnectionRequest : ActionComponent
     {
@@ -69,6 +93,21 @@ namespace Rock.Workflow.Action
             /// The connection status identifier
             /// </summary>
             public const string ConnectionStatusId = "ConnectionStatusId";
+
+            /// <summary>
+            /// The connection opportunity attribute key
+            /// </summary>
+            public const string ConnectionOpportunityAttribute = "ConnectionOpportunityAttribute";
+
+            /// <summary>
+            /// The connection request attribute key
+            /// </summary>
+            public const string ConnectionRequestAttribute = "ConnectionRequestAttribute";
+
+            /// <summary>
+            /// The transfer note attribute key.
+            /// </summary>
+            public const string TransferNote = "TransferNote|TransferNoteAttribute";
         }
 
         #endregion Workflow Attributes
@@ -87,7 +126,7 @@ namespace Rock.Workflow.Action
 
             // Get the connection request
             ConnectionRequest request = null;
-            Guid connectionRequestGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid() ).AsGuid();
+            Guid connectionRequestGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, AttributeKey.ConnectionRequestAttribute ).AsGuid() ).AsGuid();
             var connectionRequestService = new ConnectionRequestService( rockContext );
             request = connectionRequestService.Get( connectionRequestGuid );
             if ( request == null )
@@ -98,7 +137,7 @@ namespace Rock.Workflow.Action
 
             // Get the opportunity
             ConnectionOpportunity opportunity = null;
-            Guid opportunityTypeGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionOpportunityAttribute" ).AsGuid() ).AsGuid();
+            Guid opportunityTypeGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, AttributeKey.ConnectionOpportunityAttribute ).AsGuid() ).AsGuid();
             opportunity = new ConnectionOpportunityService( rockContext )
                 .Queryable( "ConnectionType.ConnectionStatuses" )
                 .AsNoTracking()
@@ -117,7 +156,7 @@ namespace Rock.Workflow.Action
             }
 
             // Get the transfer note
-            string note = GetAttributeValue( action, "TransferNote", true );
+            string note = GetAttributeValue( action, AttributeKey.TransferNote, true );
 
             if ( request != null && opportunity != null )
             {
@@ -158,6 +197,7 @@ namespace Rock.Workflow.Action
                 connectionRequestActivity.ConnectionOpportunityId = opportunity.Id;
                 connectionRequestActivity.ConnectionActivityTypeId = transferredActivityId;
                 connectionRequestActivity.Note = note;
+                connectionRequestActivity.ConnectorPersonAliasId = request.ConnectorPersonAliasId;
                 new ConnectionRequestActivityService( rockContext ).Add( connectionRequestActivity );
 
                 rockContext.SaveChanges();

@@ -26,6 +26,12 @@ import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
 /** Details about a single attendee being considered for check-in. */
 export type AttendeeBag = {
+    /**
+     * Gets or sets a value indicating whether this attendee is in the
+     * primary family matched during the search operation.
+     */
+    isInPrimaryFamily: boolean;
+
     /** Gets or sets a value indicating whether this attendee has multiple selections available. */
     isMultipleSelectionsAvailable: boolean;
 

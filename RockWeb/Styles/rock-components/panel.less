@@ -30,13 +30,15 @@
   background: @panel-bg;
   border: 1px solid @panel-default-border;
   border-radius: @panel-border-radius;
+  margin-bottom: var(--spacing-large);
+
   /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
   > .panel-sidebar-content {
     grid-column: 1;
     grid-row: 1;
     /* Include margins for the top and left. */
-    margin-top: 12px;
-    left: 12px;
+    margin-top: @panel-body-padding;
+    margin-left: @panel-body-padding;
   }
   /* The main panel content spans 3 of the 4 columns of the 1st row. */
   > .panel {

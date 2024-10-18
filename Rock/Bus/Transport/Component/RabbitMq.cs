@@ -79,7 +79,7 @@ namespace Rock.Bus.Transport
             return MassTransit.Bus.Factory.CreateUsingRabbitMq( configurator =>
             {
                 var user = GetUser();
-                var url = $"amqp://{user}:{GetPassword()}@{GetHost()}/{user}";
+                var url = $"amqps://{user}:{GetPassword()}@{GetHost()}/{user}";
                 configurator.Host( new Uri( url ), host => { } );
                 configureEndpoints( configurator );
             } );
@@ -111,7 +111,7 @@ namespace Rock.Bus.Transport
         /// <inheritdoc/>
         public override Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
         {
-            return new Uri( $"rabbitmq://{GetHost()}:5672/{GetUser()}/{queueName}" );
+            return new Uri( $"rabbitmq://{GetHost()}:5671/{GetUser()}/{queueName}" );
         }
 
         /// <summary>

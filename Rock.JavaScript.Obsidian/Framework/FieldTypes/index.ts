@@ -33,7 +33,10 @@ import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
 import { AIProviderFieldType } from "./aiProviderField.partial";
-registerFieldType(FieldTypeGuids.AIProvider, new AIProviderFieldType());
+registerFieldType(FieldTypeGuids.AiProvider, new AIProviderFieldType());
+
+import { AssetFieldType } from "./assetField.partial";
+registerFieldType(FieldTypeGuids.Asset, new AssetFieldType());
 
 import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
 registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
@@ -260,6 +263,9 @@ registerFieldType(FieldTypeGuids.GroupTypes, new GroupTypesFieldType());
 import { GroupTypeGroupField } from "./groupTypeGroupField.partial";
 registerFieldType(FieldTypeGuids.GroupTypeGroup, new GroupTypeGroupField());
 
+import { HtmlFieldType } from "./htmlField.partial";
+registerFieldType(FieldTypeGuids.Html, new HtmlFieldType());
+
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 
@@ -299,14 +305,11 @@ registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 import { MatrixFieldType } from "./matrixField.partial";
 registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
 
-import { MemoFieldType } from "./memoField.partial";
-registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
-
-import { MonthDayFieldType } from "./monthDayField.partial";
-registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
-
 import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
 registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
+
+import { MemoFieldType } from "./memoField.partial";
+registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 
 import { MergeTemplateFieldType } from "./mergeTemplateField.partial";
 registerFieldType(FieldTypeGuids.MergeTemplate, new MergeTemplateFieldType());
@@ -316,6 +319,12 @@ registerFieldType(FieldTypeGuids.MetricCategories, new MetricCategoriesFieldType
 
 import { MetricFieldType } from "./metricField.partial";
 registerFieldType(FieldTypeGuids.Metric, new MetricFieldType());
+
+import { MobileNavigationActionFieldType } from "./mobileNavigationActionField.partial";
+registerFieldType(FieldTypeGuids.MobileNavigationAction, new MobileNavigationActionFieldType());
+
+import { MonthDayFieldType } from "./monthDayField.partial";
+registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());

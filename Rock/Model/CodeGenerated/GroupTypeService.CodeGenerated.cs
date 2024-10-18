@@ -168,6 +168,7 @@ namespace Rock.Model
             target.AllowMultipleLocations = source.AllowMultipleLocations;
             target.AllowSpecificGroupMemberAttributes = source.AllowSpecificGroupMemberAttributes;
             target.AllowSpecificGroupMemberWorkflows = source.AllowSpecificGroupMemberWorkflows;
+            target.AlreadyEnrolledMatchingLogic = source.AlreadyEnrolledMatchingLogic;
             target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
             target.AttendanceReminderFollowupDays = source.AttendanceReminderFollowupDays;
@@ -220,6 +221,7 @@ namespace Rock.Model
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
+            target.ScheduleCoordinatorNotificationTypes = source.ScheduleCoordinatorNotificationTypes;
             target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             target.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
             target.SendAttendanceReminder = source.SendAttendanceReminder;

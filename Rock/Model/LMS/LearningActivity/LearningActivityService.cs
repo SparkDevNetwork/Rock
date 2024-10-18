@@ -14,131 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Lms;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
     public partial class LearningActivityService
     {
-        /// <summary>
-        /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
-        /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
-        /// </summary>
-        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
-        /// <param name="includeCompletions">Whether the LearningActivityCompletions for each LearningActivity should be included.</param>
-        /// <returns>A <c>Queryable</c> of LearningActivity matched by the predicate.</returns>
-        public IQueryable<LearningActivity> GetClassLearningPlan( int classId, bool includeCompletions = true )
-        {
-            return
-                includeCompletions ?
-                Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.LearningActivityCompletions )
-                    .Include( a => a.LearningClass )
-                    .Include( a => a.LearningClass.LearningSemester )
-                    .Include( a => a.LearningClass.LearningSemester.LearningProgram )
-                    .Where( a => a.LearningClassId == classId )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id ) :
-                Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.LearningClass )
-                    .Include( a => a.LearningClass.LearningSemester )
-                    .Include( a => a.LearningClass.LearningSemester.LearningProgram )
-                    .Where( a => a.LearningClassId == classId )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id );
-        }
-
-        /// <summary>
-        /// Calculates completion statistics for a <see cref="LearningActivity"/>.
-        /// </summary>
-        /// <param name="learningActivity">The learning activity to get statistics for.</param>
-        /// <returns>An object containing completion statistics for the LearningActivity.</returns>
-        public LearningActivityCompletionStatistics GetCompletionStatistics( LearningActivity learningActivity )
-        {
-            return GetCompletionStatistics( learningActivity.Id, learningActivity.Points );
-        }
-
-        /// <summary>
-        /// Calculates completion statistics for a <see cref="LearningActivity"/>.
-        /// </summary>
-        /// <param name="learningActivityId">The identifier of the learning activity to get statistics for.</param>
-        /// <param name="points">The points possible for the learning activity.</param>
-        /// <returns>An object containing completion statistics for the LearningActivity.</returns>
-        public LearningActivityCompletionStatistics GetCompletionStatistics( int learningActivityId, int points )
-        {
-            if ( learningActivityId == 0 )
-            {
-                return new LearningActivityCompletionStatistics();
-            }
-
-            // Get all of the completions records for the activity.
-            var activityCompletions = new LearningActivityCompletionService( ( RockContext ) Context )
-                .Queryable()
-                .Include( a => a.LearningActivity )
-                .Include( a => a.LearningActivity.LearningClass )
-                .Where( a => a.LearningActivityId == learningActivityId )
-                .AsNoTracking()
-                .Select( a => new
-                {
-                    a.IsStudentCompleted,
-                    a.PointsEarned,
-                    a.LearningActivity.LearningClass.LearningGradingSystemId
-                } )
-                .ToList();
-
-            // If there weren't any completions there are no statistics to calculate.
-            if ( !activityCompletions.Any() )
-            {
-                return new LearningActivityCompletionStatistics();
-            }
-
-            var gradingSystemId = activityCompletions.Select( a => a.LearningGradingSystemId ).FirstOrDefault();
-            var complete = ( double ) activityCompletions.Count( a => a.IsStudentCompleted );
-            var incomplete = ( double ) activityCompletions.Count( a => !a.IsStudentCompleted );
-            var percentComplete = complete / ( complete + incomplete ) * 100;
-
-            // For all point averages only consider activities that have been completed.
-            var completedActivities = activityCompletions.Where( a => a.IsStudentCompleted ).ToList();
-
-            // If there aren't any completed activities there's no need for additional calculations
-            // return the data we've collected so far.
-            if ( !completedActivities.Any() )
-            {
-                return new LearningActivityCompletionStatistics
-                {
-                    Complete = complete.ToIntSafe(),
-                    Incomplete = incomplete.ToIntSafe(),
-                    PercentComplete = percentComplete
-                };
-            }
-
-            var averagePoints = completedActivities.Average( a => a.PointsEarned );
-            var averagePercent = points > 0 ? averagePoints / points * 100 : 0;
-
-            var averageGrade = new LearningGradingSystemScaleService( ( RockContext ) Context )
-                .Queryable()
-                .AsNoTracking()
-                .Where( a => a.LearningGradingSystemId == gradingSystemId )
-                .OrderByDescending( a => a.ThresholdPercentage )
-                .ThenBy( a => a.Id )
-                .FirstOrDefault( a => a.ThresholdPercentage.HasValue && averagePercent >= ( double ) a.ThresholdPercentage.Value );
-
-            return new LearningActivityCompletionStatistics
-            {
-                Complete = complete.ToIntSafe(),
-                Incomplete = incomplete.ToIntSafe(),
-                PercentComplete = percentComplete,
-                AveragePoints = averagePoints.ToIntSafe(),
-                AverageGrade = averageGrade,
-                AverageGradePercent = averagePercent
-            };
-        }
-
         /// <summary>
         /// Creates a new Activity with Attributes by copying values from the specified activity.
         /// </summary>
@@ -165,6 +53,168 @@ namespace Rock.Model
                 newActivity.SaveAttributeValues( rockContext );
             } );
             return newActivity;
+        }
+
+        /// <summary>
+        /// Gets the availability criteria based on the configuration mode.
+        /// </summary>
+        /// <remarks>
+        /// Program ConfigurationMode's that don't have the concept of a <see cref="LearningSemester"/>
+        /// should not allow calculations based on the 'ClassStartOffset' (the <see cref="LearningSemester.StartDate"/>)..
+        /// </remarks>
+        /// <param name="configurationMode">The <see cref="LearningProgram.ConfigurationMode"/> for the parent <see cref="LearningClass"/>.</param>
+        /// <returns>The list of <see cref="AvailabilityCriteria"/> options available for the <see cref="LearningActivity"/>.</returns>
+        public List<ListItemBag> GetAvailabilityCriteria( ConfigurationMode configurationMode )
+        {
+            var onDemandExclusions = new []{ AvailabilityCriteria.ClassStartOffset };
+            return Enum.GetValues( typeof( AvailabilityCriteria ) )
+                .Cast<AvailabilityCriteria>()
+                .Where( value => configurationMode != ConfigurationMode.OnDemandLearning || !onDemandExclusions.Contains( value ) )
+                .Select( value => new ListItemBag
+                {
+                    Value = value.ConvertToInt().ToString(),
+                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
+        /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivity for the specified LearningClass identifier.</returns>
+        public IQueryable<LearningActivity> GetClassLearningPlan( int classId )
+        {
+            return Queryable()
+                    .Include( a => a.LearningActivityCompletions )
+                    .Include( a => a.LearningClass )
+                    .Include( a => a.LearningClass.LearningSemester )
+                    .Include( a => a.LearningClass.LearningSemester.LearningProgram )
+                    .Where( a => a.LearningClassId == classId )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Id );
+        }
+
+        /// <summary>
+        /// Calculates completion statistics for a <see cref="LearningActivity"/>.
+        /// </summary>
+        /// <param name="learningActivity">The learning activity to get statistics for.</param>
+        /// <returns>An object containing completion statistics for the LearningActivity.</returns>
+        public LearningActivityCompletionStatistics GetCompletionStatistics( LearningActivity learningActivity )
+        {
+            return GetCompletionStatistics( learningActivity.LearningClassId, learningActivity.Id, learningActivity.Points );
+        }
+
+        /// <summary>
+        /// Calculates completion statistics for a <see cref="LearningActivity"/>.
+        /// </summary>
+        /// <param name="learningClassId">The identifier of the learning class the statistics are for.</param>
+        /// <param name="learningActivityId">The identifier of the learning activity to get statistics for.</param>
+        /// <param name="points">The points possible for the learning activity.</param>
+        /// <returns>An object containing completion statistics for the LearningActivity.</returns>
+        public LearningActivityCompletionStatistics GetCompletionStatistics( int learningClassId, int learningActivityId, int points )
+        {
+            if ( learningActivityId == 0 )
+            {
+                return new LearningActivityCompletionStatistics();
+            }
+
+            var rockContext = ( RockContext ) Context;
+
+            // Get the count of total students for determining incomplete activities.
+            var studentCount = new LearningParticipantService( rockContext )
+                .GetStudents( learningClassId ).Count();
+
+            // Get all of the completions records for the activity.
+            var activityCompletions = new LearningActivityCompletionService( rockContext )
+                .Queryable()
+                .Include( a => a.LearningActivity )
+                .Include( a => a.LearningActivity.LearningClass )
+                .Where( a => a.LearningActivityId == learningActivityId )
+                .AsNoTracking()
+                .Select( a => new
+                {
+                    a.IsStudentCompleted,
+                    a.PointsEarned,
+                    a.LearningActivity.LearningClass.LearningGradingSystemId
+                } )
+                .ToList();
+
+            // If there weren't any completions there are no statistics to calculate.
+            if ( !activityCompletions.Any() )
+            {
+                return new LearningActivityCompletionStatistics
+                {
+                    Incomplete = studentCount
+                };
+            }
+
+            var gradingSystemId = activityCompletions.Select( a => a.LearningGradingSystemId ).FirstOrDefault();
+            var complete = ( double ) activityCompletions.Count( a => a.IsStudentCompleted );
+            var incomplete = studentCount - complete;
+            var percentComplete = complete / studentCount * 100;
+
+            // For all point averages only consider activities that have been completed.
+            var completedActivities = activityCompletions.Where( a => a.IsStudentCompleted ).ToList();
+
+            // If there aren't any completed activities there's no need for additional calculations
+            // return the data we've collected so far.
+            if ( !completedActivities.Any() )
+            {
+                return new LearningActivityCompletionStatistics
+                {
+                    Complete = complete.ToIntSafe(),
+                    Incomplete = incomplete.ToIntSafe(),
+                    PercentComplete = percentComplete
+                };
+            }
+
+            var averagePoints = completedActivities.Average( a => a.PointsEarned );
+
+            // If there are no points treat it as a passing grade (100%).
+            var averagePercent = points > 0 ? averagePoints / points * 100 : 100;
+
+            var averageGrade = new LearningGradingSystemScaleService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a => a.LearningGradingSystemId == gradingSystemId )
+                .OrderByDescending( a => a.ThresholdPercentage )
+                .ThenBy( a => a.Id )
+                .FirstOrDefault( a => a.ThresholdPercentage.HasValue && averagePercent >= ( double ) a.ThresholdPercentage.Value );
+
+            return new LearningActivityCompletionStatistics
+            {
+                Complete = complete.ToIntSafe(),
+                Incomplete = incomplete.ToIntSafe(),
+                PercentComplete = percentComplete,
+                AveragePoints = averagePoints.ToIntSafe(),
+                AverageGrade = averageGrade,
+                AverageGradePercent = averagePercent
+            };
+        }
+
+        /// <summary>
+        /// Gets the due date criteria based on the configuration mode.
+        /// </summary>
+        /// <remarks>
+        /// Program ConfigurationMode's that don't have the concept of a <see cref="LearningSemester"/>
+        /// should not allow calculations based on the 'ClassStartOffset' (the <see cref="LearningSemester.StartDate"/>)..
+        /// </remarks>
+        /// <param name="configurationMode">The <see cref="LearningProgram.ConfigurationMode"/> for the parent <see cref="LearningClass"/>.</param>
+        /// <returns>The list of <see cref="DueDateCriteria"/> options available for the <see cref="LearningActivity"/>.</returns>
+        public List<ListItemBag> GetDueDateCriteria( ConfigurationMode configurationMode )
+        {
+            var onDemandExclusions = new[] { DueDateCriteria.ClassStartOffset };
+            return Enum.GetValues( typeof( DueDateCriteria ) )
+                .Cast<DueDateCriteria>()
+                .Where( value => configurationMode != ConfigurationMode.OnDemandLearning || !onDemandExclusions.Contains( value ) )
+                .Select( value => new ListItemBag
+                {
+                    Value = value.ConvertToInt().ToString(),
+                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                } )
+                .ToList();
         }
     }
 }

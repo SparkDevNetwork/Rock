@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the Learning Course List block. */
 export type LearningCourseListOptionsBag = {
 };

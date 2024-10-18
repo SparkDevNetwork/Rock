@@ -70,7 +70,7 @@
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.EventCalendar, Rock" PropertyName="IconCssClass" Label="Calendar CSS Class" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIndexCalendar" runat="server" Label="Indexing Enabled" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbIndexCalendar" runat="server" Label="Indexing Enabled" />
                         </div>
                     </div>
 

@@ -33,10 +33,16 @@ export const AbilityLevelDeterminationMode = {
     DoNotAsk: 1,
 
     /**
-     * Only ask for an ability level if they already have one on file.
+     * Only ask for an ability level if they don't already have one on file.
      * This lets them update an ability level but not set it initially.
      */
-    DoNotAskIfThereIsNoAbilityLevel: 2
+    DoNotAskIfThereIsNoAbilityLevel: 2,
+
+    /**
+     * Only ask for an ability level if they already have one on file.
+     * This lets them set an initial ability level but not update one.
+     */
+    DoNotAskIfThereIsAnAbilityLevel: 3
 } as const;
 
 /**
@@ -48,7 +54,9 @@ export const AbilityLevelDeterminationModeDescription: Record<number, string> = 
 
     1: "Do Not Ask",
 
-    2: "Do Not Ask If There Is No Ability Level"
+    2: "Do Not Ask If There Is No Ability Level",
+
+    3: "Do Not Ask If There Is An Ability Level"
 };
 
 /**

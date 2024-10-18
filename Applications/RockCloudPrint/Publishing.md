@@ -24,7 +24,7 @@ Now the desktop application needs to be code signed.
 This is because it will self-elevate to administrator when launched and we want it to show a proper UAC dialog.
 
 ```
-signtool.exe /f SparkDevelopmentNetwork.cer /d "Rock Cloud Print" Rock.CloudPrint.Desktop\bin\Release\net8.0-windows\publish\Rock.CloudPrint.Desktop.exe
+signtool.exe sign /f SparkDevelopmentNetwork.cer /d "Rock Cloud Print" Rock.CloudPrint.Desktop\bin\Release\net8.0-windows\publish\Rock.CloudPrint.Desktop.exe
 ```
 
 ## Building Installer
@@ -35,7 +35,7 @@ Then build the Rock.CloudPrint.Installer project.
 Now the MSI needs to be code signed.
 
 ```
-signtool.exe /f SparkDevelopmentNetwork.cer /d "Rock Cloud Print" Rock.CloudPrint.Installer\bin\x64\Rock.CloudPrint.Installer.msi
+signtool.exe sign /f SparkDevelopmentNetwork.cer /d "Rock Cloud Print" Rock.CloudPrint.Installer\bin\x64\Release\Rock.CloudPrint.Installer.msi
 ```
 
 ## Docker Image

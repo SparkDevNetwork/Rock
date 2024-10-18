@@ -1,0 +1,125 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { ThemeBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeBag";
+    import { ThemeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeDetailOptionsBag";
+    import { ThemeFontAwesomeWeightDescription } from "@Obsidian/Enums/Cms/themeFontAwesomeWeight";
+    import { ThemeIconSet, ThemeIconSetDescription } from "@Obsidian/Enums/Cms/themeIconSet";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ThemeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<ThemeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.purpose) {
+            valueBuilder.addTextValue("Purpose", props.modelValue.purpose);
+        }
+
+        const enabledIconSets: string[] = [];
+
+        for (const iconValue of Object.keys(ThemeIconSetDescription)) {
+            if (props.modelValue.enabledIconSets & toNumber(iconValue)) {
+                enabledIconSets.push(ThemeIconSetDescription[iconValue]);
+            }
+        }
+
+        valueBuilder.addTextValue("Icon Sets", enabledIconSets.join(", "));
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.enabledIconSets & ThemeIconSet.FontAwesome) {
+            valueBuilder.addTextValue("Default Font Awesome Weight",
+                ThemeFontAwesomeWeightDescription[props.modelValue.defaultFontAwesomeWeight]);
+
+            if (props.modelValue.additionalFontAwesomeWeights && props.modelValue.additionalFontAwesomeWeights.length > 0) {
+                const weights = props.modelValue.additionalFontAwesomeWeights
+                    .map(w => ThemeFontAwesomeWeightDescription[w]);
+
+                weights.sort((a, b) => a.localeCompare(b));
+
+                valueBuilder.addTextValue("Additional Font Awesome Weights", weights.join(", "));
+            }
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

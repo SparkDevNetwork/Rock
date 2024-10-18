@@ -246,7 +246,7 @@ namespace Rock.Blocks.Core
             var noteQry = noteService.Queryable()
                 .Include( n => n.CreatedByPersonAlias.Person )
                 .Include( n => n.EditedByPersonAlias.Person )
-                .AreViewableBy( currentPerson.Id )
+                .AreViewableBy( currentPerson?.Id )
                 .AsNoTracking()
                 .Where( n => n.NoteType.EntityTypeId == entityTypeId && n.EntityId == entity.Id );
 

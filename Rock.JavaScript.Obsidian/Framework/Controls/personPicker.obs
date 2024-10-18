@@ -13,53 +13,56 @@
                         <b class="fa fa-caret-down"></b>
                     </a>
 
-                    <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search" @keydown.esc.stop="onCancel">
-                        <template #headerActions>
-                            <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
-                                <i class="fa fa-user" aria-hidden></i>
-                            </RockButton>
-                            <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
-                                <i class="fa fa-search-plus" aria-hidden></i>
-                            </RockButton>
-                            <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
-                                <i class="fa fa-times" aria-hidden></i>
-                            </button>
-                        </template>
-
-                        <div tabindex="0">
-                            <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row form-row': isAdvancedSearch }">
-                                <TextBox v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel :disableAutocomplete="true" type="search">
-                                    <template #inputGroupPrepend>
-                                        <span class="input-group-addon">Name</span>
-                                    </template>
-                                </TextBox>
-                                <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="tel">
-                                    <template #inputGroupPrepend>
-                                        <span class="input-group-addon">Phone</span>
-                                    </template>
-                                </TextBox>
-                                <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true">
-                                    <template #inputGroupPrepend>
-                                        <span class="input-group-addon">Address</span>
-                                    </template>
-                                </TextBox>
-                                <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="email">
-                                    <template #inputGroupPrepend>
-                                        <span class="input-group-addon">Email</span>
-                                    </template>
-                                </TextBox>
+                    <div v-if="showPopup" class="absolute-panel picker" @keydown.esc.stop="onCancel">
+                        <div class="action-header d-flex align-items-center justify-content-between">
+                            <h4>Person Search</h4>
+                            <div class="d-flex align-items-center">
+                                <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
+                                    <i class="fa fa-user" aria-hidden></i>
+                                </RockButton>
+                                <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
+                                    <i class="fa fa-gears" aria-hidden></i>
+                                </RockButton>
+                                <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
+                                    <i class="fa fa-times" aria-hidden></i>
+                                </button>
                             </div>
+                        </div>
+                        <div class="person-picker-body">
+                            <div tabindex="0">
+                                <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row form-row': isAdvancedSearch }">
+                                    <TextBox id="autoFocusInput" v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel :disableAutocomplete="true" type="search">
+                                        <template #inputGroupPrepend>
+                                            <span class="input-group-addon">Name</span>
+                                        </template>
+                                    </TextBox>
+                                    <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="tel">
+                                        <template #inputGroupPrepend>
+                                            <span class="input-group-addon">Phone</span>
+                                        </template>
+                                    </TextBox>
+                                    <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true">
+                                        <template #inputGroupPrepend>
+                                            <span class="input-group-addon">Address</span>
+                                        </template>
+                                    </TextBox>
+                                    <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="email">
+                                        <template #inputGroupPrepend>
+                                            <span class="input-group-addon">Email</span>
+                                        </template>
+                                    </TextBox>
+                                </div>
 
-                            <div class="personpicker-results">
-                                <div v-for="result in searchResults"
-                                     :key="result.primaryAliasGuid!"
-                                     class="personpicker-item"
-                                     :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
-                                     tabindex="0"
-                                     @click="selectPerson(result)"
-                                     @keypress.enter="selectPerson(result)"
-                                     :class="{ 'o-60': !result.isActive }"
-                                     role="button">
+                                <div class="personpicker-results">
+                                    <div v-for="result in searchResults"
+                                        :key="result.primaryAliasGuid!"
+                                        class="personpicker-item"
+                                        :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
+                                        tabindex="0"
+                                        @click="selectPerson(result)"
+                                        @keypress.enter="selectPerson(result)"
+                                        :class="{ 'o-60': !result.isActive }"
+                                        role="button">
                                         <div class="main d-flex gap flex-fill flex-shrink-0">
                                             <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
                                             <div class="data flex-fill">
@@ -73,9 +76,6 @@
                                         </div>
 
                                         <div class="item-meta">
-                                            <div class="taglist justify-content-end">
-                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
-                                            </div>
 
                                             <div class="address-email">
                                                 <div v-html="result.address"></div>
@@ -84,24 +84,97 @@
                                             <ul class="phones list-unstyled m-0">
                                                 <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type.charAt(0) }}</small></li>
                                             </ul>
+                                            <div class="taglist justify-content-end">
+                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
+                                            </div>
                                         </div>
 
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </Panel>
+                    </div>
+
                 </div>
             </div>
         </template>
     </RockFormField>
 </template>
 
+<style scoped>
+.absolute-panel {
+    position: fixed;
+    left: 22.5%;
+    top: 25%;
+    width: 55%;
+    height: 55%;
+    overflow-y: auto;
+    z-index: 1060;
+    box-shadow:0 5px 15px rgba(0,0,0,0.5);
+    border-radius: var(--rounded-small);
+}
+
+.action-header {
+    padding-left: 15px;
+    padding-right: 15px;
+    height: 10%;
+    background-color: var(--body-background, #fff);
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.ant-select-selector .ant-select-selection-overflow .btn-link {
+    color: var(--color-interface-soft);
+}
+
+.absolute-panel .action-header .btn-link {
+    color: var(--color-interface-medium);
+}
+
+.absolute-panel > .action-header > h4 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.person-picker-body {
+    background-color:#fff;
+    padding-top:15px;
+    padding-left:15px;
+    padding-right:15px;
+    height: 90%;
+    width: 100%;
+}
+
+.personpicker-item {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--body-background);
+    margin-bottom:8px;
+    padding: 10px;
+    border: 1px solid var(--color-interface-soft);
+}
+
+@media screen and (max-width: 768px) {
+    .absolute-panel {
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .action-header {
+        height: 7%;
+    }
+    .person-picker-body {
+        height: 93%;
+    }
+}
+
+</style>
+
 <script setup lang="ts">
     import { computed, PropType, Ref, ref, watch } from "vue";
     import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
-    import Panel from "./panel.obs";
     import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
     import Tag from "./Internal/tag.obs";
@@ -120,6 +193,7 @@
     }
 
     type PersonSearchResult = {
+        idKey?: string | null;
         guid?: string | null;
         primaryAliasGuid?: string | null;
         name?: string | null;
@@ -189,11 +263,17 @@
         isSearchModeOpen: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "update:selectedPersonChanged", person: ListItemBag | undefined, personIdKey: string | undefined): void;
         (e: "update:isSearchModeOpen", value: boolean): void;
     }>();
 
@@ -201,7 +281,7 @@
     const internalValue = ref(props.modelValue);
 
     /** Determines if the clear button should be shown. */
-    const showClear = computed(() => props.modelValue?.value);
+    const showClear = computed(() => props.modelValue?.value && props.isClearable);
 
     /** True if the popup person picker should be visible. */
     const showPopup = ref(false);
@@ -374,6 +454,7 @@
      */
     function onClear(): void {
         emit("update:modelValue", undefined);
+        emit("update:selectedPersonChanged", undefined, undefined);
     }
 
     /**
@@ -382,6 +463,7 @@
      */
     function togglePopup(): void {
         showPopup.value = !showPopup.value;
+        const body = document.getElementsByTagName("body")[0];
 
         if (showPopup.value) {
             // After popup is shown, focus on the first search input
@@ -390,6 +472,14 @@
                     const input = nameSearchTextBox.value.querySelector("input");
 
                     input?.focus();
+                }
+
+                // When the modal popup, disable scrolling.
+                if (showPopup.value == true) {
+                    body.style.overflowY = "hidden";
+                }
+                else {
+                    body.style.overflowY = "";
                 }
             });
         }
@@ -417,6 +507,7 @@
 
         // Emit the new value and close the popup.
         emit("update:modelValue", internalValue.value);
+        emit("update:selectedPersonChanged", internalValue.value, person.idKey ?? undefined);
         showPopup.value = false;
     }
 
@@ -451,7 +542,7 @@
 
     // Watch for changes in our provided value and update the UI.
     watch(() => props.modelValue, () => internalValue.value = props.modelValue);
-    
+
     watch(showPopup, () => {
         emit("update:isSearchModeOpen", showPopup.value);
     });

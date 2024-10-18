@@ -59,39 +59,22 @@
                                     </template>
                                 </NumberBox>
                             </div>
-                            <CheckBox v-model="isMark48Month"
-                                      label="Mark 48 Month Move as Previous Address"
-                                      help="Mark moves in the 19-48 month category as a previous address." />
-                            <CheckBox v-model="isMarkInvalidAddresses"
-                                      label="Mark Invalid Addresses as Previous Address"
-                                      help="Mark Invalid Addresses as Previous Addresses" />
+                            <CheckBox v-model="isMark48Month" label="Mark 48 Month Move as Previous Address" help="Mark moves in the 19-48 month category as a previous address." />
+                            <CheckBox v-model="isMarkInvalidAddresses" label="Mark Invalid Addresses as Previous Address" help="Mark Invalid Addresses as Previous Addresses" />
                             <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
-                                <DefinedValuePicker
-                                                    v-model="selectedInactiveReason"
-                                                    label="Inactive Record Reason"
-                                                    :definedTypeGuid="DefinedType.PersonRecordStatusReason"
-                                                    help="The reason to use when inactivating people due to moving beyond the configured number of miles."
-                                                    rules="required" />
+                                <DefinedValuePicker v-model="selectedInactiveReason" label="Inactive Record Reason" :definedTypeGuid="DefinedType.PersonRecordStatusReason" help="The reason to use when inactivating people due to moving beyond the configured number of miles." rules="required" />
                             </div>
                         </div>
                     </div>
                     <div class="ml-2">
-                        <RockButton
-                                    :btnSize="BtnSize.Default"
-                                    :btnType="BtnType.Primary"
-                                    :disabled="isStep2Loading"
-                                    type="submit">
+                        <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isStep2Loading" type="submit">
                             Import File
                         </RockButton>
                     </div>
                 </RockForm>
                 <div class="col-md-10 col-sm-10 col-xs-12">
-                    <NotificationBox v-if="successMessage"
-                                     alertType="success"
-                                     v-html="successMessage" />
-                    <NotificationBox v-if="errorMessage"
-                                     v-text="errorMessage"
-                                     alertType="warning" />
+                    <NotificationBox v-if="successMessage" alertType="success" v-html="successMessage" />
+                    <NotificationBox v-if="errorMessage" v-text="errorMessage" alertType="warning" />
                 </div>
             </div>
         </div>
@@ -117,7 +100,7 @@
     import { NcoaProcessBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Workbook } from "@Obsidian/Libs/exceljs";
-    import { downloadWorkbook } from "@Obsidian/Utility/file";
+    import { downloadFile } from "@Obsidian/Utility/file";
     import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessPersonAddressBag";
 
     const box = useConfigurationValues<NcoaProcessSavedSettingsBag>();
@@ -142,7 +125,14 @@
         // Generate Excel file and download
         if (result.isSuccess && result.data?.addresses != null) {
             const workbook = generateDataForFile(result.data.addresses);
-            await downloadWorkbook(workbook, "ExportedAddresses", "xlsx").then(() => {
+
+            // Get the export data.
+            const buffer = await workbook.xlsx.writeBuffer();
+            const data = new Blob([buffer], {
+                type: "application/octet-stream"
+            });
+
+            await downloadFile(data, "ExportedAddresses.xlsx").then(() => {
                 successMessage.value = result.data?.successMessage || "Success";
             });
         }

@@ -46,21 +46,38 @@ namespace Rock.Lms
         #endregion
 
         /// <summary>
-        /// A method which performs scrubbing of any configuration data that the student should not know before completion.
+        /// Scrubs the configuration data, removing anything the student should not know before completion.
         /// </summary>
         /// <remarks>
         ///     This method should be used to remove any indication of correct answers from the configuration
         ///     before the configuration data is sent to the <see cref="Model.LearningParticipant">Student</see> for completion.
         /// </remarks>
+        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
         /// <returns>The configuration data scrubbed of sensitive content as a JSON <c>string</c></returns>
         public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
 
         /// <summary>
-        /// 
+        /// Gets the completion JSON string that should be persisted to the database.
         /// </summary>
         /// <remarks>
+        /// By default the rawCompletionJsonString is returned, but if the StudentScrubbedConfiguration method removed something that
+        /// should be persisted with the final completion JSON string, this method could be overridden to re-add those values from the rawConfigurationJsonString.
         /// </remarks>
-        /// <returns></returns>
+        /// <param name="rawCompletionJsonString"> The unparsed activity completion data.</param>
+        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
+        /// <returns>The unparsed completion data that should be persisted to the database.</returns>
+        public virtual string GetCompletionJsonToPersist( string rawCompletionJsonString, string rawConfigurationJsonString ) => rawCompletionJsonString;
+
+        /// <summary>
+        /// Calculates the points earned based on the configuration and completion JSON's and the maximum points possible.
+        /// </summary>
+        /// <remarks>
+        /// This method returns all points by default. To change this behavior, override the <see cref="CalculatePointsEarned"/> method.
+        /// </remarks>
+        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
+        /// <param name="rawCompletionJsonString"> The unparsed activity completion data.</param>
+        /// <param name="pointsPossible">The maximum points possible for the activity./></param>
+        /// <returns>The actual points earned.</returns>
         public virtual int CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible ) => pointsPossible;
 
         /// <summary>
@@ -102,6 +119,5 @@ namespace Rock.Lms
         /// </value>
         public virtual string Name { get; set; }
 
-        //#endregion Abstract Methods
     }
 }

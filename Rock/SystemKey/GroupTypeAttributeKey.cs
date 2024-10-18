@@ -172,6 +172,13 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER = "core_checkin_AllowCheckout_Manager";
 
         /// <summary>
+        /// Attribute key for GroupTypes that allows for a "can check-in"
+        /// relationship to be removed on the person select screen during
+        /// check-in at a kiosk.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK = "core_AllowRemoveFromFamily_Kiosk";
+
+        /// <summary>
         /// Attribute key for GroupTypes that have presence enabled
         /// </summary>
         public const string CHECKIN_GROUPTYPE_ENABLE_PRESENCE = "core_checkin_EnablePresence";
@@ -186,6 +193,22 @@ namespace Rock.SystemKey
         /// Attribute key for grouptypes location selection strategy (Ask, Fill in order, balance).
         /// </summary>
         public const string CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY = "core_LocationSelectionStrategy";
+
+        /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// groups marked as special needs should be removed from the opportunity
+        /// list if the person is not also marked as special needs.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS = "core_RemoveSpecialNeedsGroups";
+
+        /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// groups <strong>not</strong> marked as special needs should be removed
+        /// from the opportunity list if the person <strong>is</strong> marked as
+        /// special needs.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS = "core_RemoveNonSpecialNeedsGroups";
+
         #endregion
 
         #region Display

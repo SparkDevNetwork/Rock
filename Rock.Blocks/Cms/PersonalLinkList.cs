@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of personal links." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "06f055e8-d396-4ad6-b542-342ee5907d74" )]
     [Rock.SystemGuid.BlockTypeGuid( "6c9e7ebf-8f27-48ef-94c4-900ac3a2c167" )]

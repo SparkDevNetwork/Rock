@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
@@ -105,8 +104,8 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
-                .Where( c => c.LearningSemester.EndDate >= now )
-                .Where( c => c.LearningSemester.StartDate <= now )
+                .Where( c => ( !c.LearningSemester.EndDate.HasValue || c.LearningSemester.EndDate >= now) )
+                .Where( c => ( !c.LearningSemester.StartDate.HasValue || c.LearningSemester.StartDate <= now) )
                 .Select( c => new
                 {
                     ClassId = c.Id,
@@ -138,10 +137,10 @@ namespace Rock.Model
         public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, params Guid[] categoryGuids )
         {
             var baseQuery = Queryable()
-                    .AsNoTracking()
-                    .Include( p => p.ImageBinaryFile )
-                    .Include( p => p.Category )
-                    .Where( p => p.IsActive && p.IsPublic );
+                .AsNoTracking()
+                .Include( p => p.ImageBinaryFile )
+                .Include( p => p.Category )
+                .Where( p => p.IsActive && p.IsPublic );
 
             if ( categoryGuids.Any() )
             {

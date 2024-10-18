@@ -17,6 +17,8 @@
 
 using System;
 using System.Linq;
+
+using Rock.CheckIn.v2;
 using Rock.Data;
 
 namespace Rock.Model
@@ -76,6 +78,17 @@ namespace Rock.Model
                 }
 
                 base.PreSave();
+            }
+
+            /// <inheritdoc/>
+            protected override void PostSave()
+            {
+                if ( PreSaveState == EntityContextState.Modified )
+                {
+                    CheckInDirector.SendRefreshKioskConfiguration();
+                }
+
+                base.PostSave();
             }
         }
     }

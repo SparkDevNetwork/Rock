@@ -279,6 +279,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The guid for the <see cref="Rock.Model.InteractionEntity"/> entity.
+        /// </summary>
+        public const string INTERACTION_ENTITY = "AB3AC547-CCEF-4662-9646-64F16813DAC4";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/>
         /// </summary>
         public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";
@@ -506,6 +511,16 @@ namespace Rock.SystemGuid
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.SmartSearch" />.
         /// </summary>
         public const string MOBILE_CORE_SMART_SEARCH_BLOCK_TYPE = "45BE4816-3F5B-4AD1-BA89-819325D7E8CF";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.QuickNote" />.
+        /// </summary>
+        public const string MOBILE_CORE_QUICK_NOTE_BLOCK_TYPE = "9AA328FB-8FBB-4C5D-A898-C9B355051ADD";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.MyNotes" />.
+        /// </summary>
+        public const string MOBILE_CORE_MY_NOTES_BLOCK_TYPE = "1CCC09C4-2994-4009-813F-2F4B86C13BFE";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList

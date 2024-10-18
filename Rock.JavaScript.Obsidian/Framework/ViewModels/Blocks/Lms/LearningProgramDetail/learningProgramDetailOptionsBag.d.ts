@@ -23,7 +23,14 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The options bag containing the necessary configuration data for the LearningProgram Detail block. */
 export type LearningProgramDetailOptionsBag = {
+    /** Gets or sets the DisplayMode of the block, "Summary" or "Detail". */
+    displayMode?: string | null;
+
+    /** Gets or sets the available grading systems. */
+    gradingSystems?: ListItemBag[] | null;
+
     /** Gets or sets the available system communications. */
     systemCommunications?: ListItemBag[] | null;
 };

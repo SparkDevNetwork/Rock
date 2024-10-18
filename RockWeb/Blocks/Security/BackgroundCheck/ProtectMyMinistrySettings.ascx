@@ -155,7 +155,7 @@
                         <Rock:RockTextBox ID="tbDefaultCounty" runat="server" Label="County Criminal Search Default County" ValidationGroup="Package" Help="Include a valid county name to request a County Criminal Search (a default county or state is required when using the PLUS package)." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSendCounty" runat="server" Label="Use Home Address County" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a county, use that instead of the default county." />
+                        <Rock:RockCheckBox ID="cbSendCounty" runat="server" Label="Use Home Address County" ValidationGroup="Package" Help="If the person's home address includes a county, use that instead of the default county." />
                     </div>
                 </div>
 
@@ -164,7 +164,7 @@
                         <Rock:RockTextBox ID="tbDefaultState" runat="server" Label="Statewide Criminal Search Default State" ValidationGroup="Package" Help="Include a valid state to request a Statewide Criminal Search (a default state or county is required when using the PLUS package)." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSendState" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of the default state." />
+                        <Rock:RockCheckBox ID="cbSendState" runat="server" Label="Use Home Address State" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of the default state." />
                     </div>
                 </div>
 
@@ -173,7 +173,7 @@
                         <Rock:DefinedValuePicker ID="dvpMVRJurisdiction" runat="server" Label="MVR Jurisdiction Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdiction code." />
+                        <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdiction code." />
                     </div>
                 </div>
 

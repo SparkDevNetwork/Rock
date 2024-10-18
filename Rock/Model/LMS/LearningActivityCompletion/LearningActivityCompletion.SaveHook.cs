@@ -57,7 +57,7 @@ namespace Rock.Model
                         typeof( LearningActivityCompletion ),
                         SystemGuid.Category.HISTORY_LEARNING_ACTIVITY_COMPLETION.AsGuid(),
                         this.Entity.Id,
-                        HistoryChanges,
+                        this.HistoryChanges,
                         caption,
                         null,
                         null,
@@ -71,8 +71,10 @@ namespace Rock.Model
             /// </summary>
             private void UpdateClassGrades()
             {
-                var completionDetails = new LearningParticipantService( RockContext ).GetActivityCompletions( Entity.StudentId )
-                    .Where( a => a.Student.LearningCompletionStatus == Enums.Lms.LearningCompletionStatus.Incomplete )
+                // Get the student specific learning plan (this will include completion
+                // records for all activities in the class - even if the completions aren't persisted).
+                var completionDetails = new LearningParticipantService( RockContext )
+                    .GetStudentLearningPlan( Entity.StudentId )
                     .Select( a => new
                     {
                         // Convert to decimal for proper precision when calculating grade percent.
@@ -80,34 +82,48 @@ namespace Rock.Model
                         Earned = ( decimal ) a.PointsEarned,
 
                         // For determining overall class completion and calculating grade based on (facilitator) completed activities.
-                        HasBeenGraded = a.IsFacilitatorCompleted,
+                        IsStudentOrFacilitatorCompleted = a.IsStudentCompleted || a.IsFacilitatorCompleted,
 
                         // For getting list of grade scales available.
                         GradingSystemId = a.LearningActivity.LearningClass.LearningGradingSystemId,
 
                         // For updating grade and completion status.
-                        a.Student
+                        a.Student,
+
+                        // Some activities (assessment) may not clearly indicate if the Facilitator must
+                        // grade the activity before it can be considered complete.
+                        // Therefore; we are always evaluating grades until the class is considered over.
+                        ClassEndDate = a.LearningActivity.LearningClass.LearningSemester.EndDate
                     } );
 
-                var participant = completionDetails.FirstOrDefault().Student;
+                var anyCompletionRecord = completionDetails.FirstOrDefault();
+                var participant = anyCompletionRecord.Student;
+                var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
+
+                // If the class has ended don't recalculate the grade.
+                if ( isClassOver )
+                {
+                    return;
+                }
+
                 var gradingSystemId = completionDetails.FirstOrDefault().GradingSystemId;
 
-                var gradedActivities = completionDetails.Where( a => a.HasBeenGraded ).ToList();
+                var gradedActivities = completionDetails.Where( a => a.IsStudentOrFacilitatorCompleted ).ToList();
                 var possiblePoints = gradedActivities.Sum( a => a.Possible );
                 var earnedPoints = gradedActivities.Sum( a => a.Earned );
                 var gradePercent = possiblePoints > 0 ? earnedPoints / possiblePoints * 100 : 0;
 
                 var gradeScaleEarned = new LearningGradingSystemScaleService( RockContext ).GetEarnedScale( gradingSystemId, gradePercent );
-                var currentGradePassFailStatus = gradeScaleEarned.IsPassing ? Enums.Lms.LearningCompletionStatus.Pass : Enums.Lms.LearningCompletionStatus.Fail;
-                var hasUngradedAssignments = completionDetails.Any( a => !a.HasBeenGraded );
+                var currentGradePassFailStatus = gradeScaleEarned != null && gradeScaleEarned.IsPassing ? Enums.Lms.LearningCompletionStatus.Pass : Enums.Lms.LearningCompletionStatus.Fail;
+                var hasIncompleteAssignments = completionDetails.Any( a => !a.IsStudentOrFacilitatorCompleted );
 
-                // Set the LearningParticipant class grade values.
+                // Set the LearningParticipant current class grade values.
                 participant.LearningGradePercent = gradePercent;
                 participant.LearningGradingSystemScaleId = gradeScaleEarned.Id;
-                participant.LearningCompletionStatus = hasUngradedAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
+                participant.LearningCompletionStatus = hasIncompleteAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
 
                 // If all assignments have been graded (by a facilitator) and the completion date time hasn't yet been set then set it.
-                if ( !hasUngradedAssignments && !participant.LearningCompletionDateTime.HasValue )
+                if ( !hasIncompleteAssignments && !participant.LearningCompletionDateTime.HasValue )
                 {
                     participant.LearningCompletionDateTime = RockDateTime.Now;
                 }
@@ -137,6 +153,8 @@ namespace Rock.Model
                             History.EvaluateChange( HistoryChanges, "CompletedDateTime", null, Entity.CompletedDateTime );
                             History.EvaluateChange( HistoryChanges, "FacilitatorComment", null, Entity.FacilitatorComment );
                             History.EvaluateChange( HistoryChanges, "StudentComment", null, Entity.StudentComment );
+                            History.EvaluateChange( HistoryChanges, "GradedByPersonAliasId", null, Entity.GradedByPersonAliasId );
+                            History.EvaluateChange( HistoryChanges, "GradedByPersonAlias", null, Entity.GradedByPersonAlias?.Name );
                             History.EvaluateChange( HistoryChanges, "PointsEarned", null, Entity.PointsEarned );
                             History.EvaluateChange( HistoryChanges, "IsStudentCompleted", null, Entity.IsStudentCompleted );
                             History.EvaluateChange( HistoryChanges, "IsFacilitatorCompleted", null, Entity.IsFacilitatorCompleted );
@@ -153,26 +171,33 @@ namespace Rock.Model
                         }
                     case EntityContextState.Modified:
                         {
-                            var originalDueDate = (DateTime?)this.Entry.OriginalValues["DueDate"];
+                            var originalDueDate = ( DateTime? ) this.Entry.OriginalValues["DueDate"];
                             History.EvaluateChange( HistoryChanges, "DueDate", originalDueDate, Entity.DueDate );
 
-                            var originalPointsEarned =this.Entry.OriginalValues["PointsEarned"].ToIntSafe();
+                            var originalPointsEarned = this.Entry.OriginalValues["PointsEarned"].ToIntSafe();
                             History.EvaluateChange( HistoryChanges, "PointsEarned", originalPointsEarned, Entity.PointsEarned );
 
-                            var originalCompletionJson = (string)this.Entry.OriginalValues["ActivityComponentCompletionJson"];
+                            var originalCompletionJson = ( string ) this.Entry.OriginalValues["ActivityComponentCompletionJson"];
                             History.EvaluateChange( HistoryChanges, "ActivityComponentCompletionJson", originalCompletionJson, Entity.ActivityComponentCompletionJson );
 
-                            var originalIsFacilitatorCompleted = this.Entry.OriginalValues["IsFacilitatorCompleted"].ConvertToBooleanOrDefault(false);
+                            var originalIsFacilitatorCompleted = this.Entry.OriginalValues["IsFacilitatorCompleted"].ConvertToBooleanOrDefault( false );
                             History.EvaluateChange( HistoryChanges, "IsFacilitatorCompleted", originalIsFacilitatorCompleted, Entity.IsFacilitatorCompleted );
+
+                            if ( this.Entry.OriginalValues.ContainsKey( "GradedByPersonAlias" ) )
+                            {
+                                var originalGradedByPersonAlias = ( this.Entry.OriginalValues["GradedByPersonAlias"] as PersonAlias )?.Name ?? string.Empty;
+                                History.EvaluateChange( HistoryChanges, "GradedByPersonAlias", originalGradedByPersonAlias, Entity.GradedByPersonAlias?.Name ?? string.Empty );
+                            }
+
+                            var originalGradedByPersonAliasId = this.Entry.OriginalValues["GradedByPersonAliasId"] as int?;
+                            History.EvaluateChange( HistoryChanges, "GradedByPersonAliasId", originalGradedByPersonAliasId, Entity.GradedByPersonAliasId );
 
                             var originalFacilitatorComment = ( string ) this.Entry.OriginalValues["FacilitatorComment"];
                             History.EvaluateChange( HistoryChanges, "FacilitatorComment", originalFacilitatorComment, Entity.FacilitatorComment );
 
                             break;
                         }
-
                 }
-
             }
         }
     }

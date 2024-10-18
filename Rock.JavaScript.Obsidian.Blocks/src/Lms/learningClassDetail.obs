@@ -31,11 +31,7 @@
         </template>
     </DetailBlock>
 
-    <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View"
-                                 :isEditable="isEditable"
-                                 :navigationUrls="config.navigationUrls"
-                                 :showAbsences="takesAttendance"
-                                 v-model="learningClassViewBag" />
+    <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View" :isEditable="isEditable" :navigationUrls="config.navigationUrls" :showAbsences="takesAttendance" v-model="learningClassViewBag" />
 </template>
 
 <script setup lang="ts">
@@ -46,6 +42,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./LearningClassDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningClassDetail/viewPanel.partial.obs";
+    import { confirm } from "@Obsidian/Utility/dialogs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import LearningClassSecondaryLists from "./LearningClassSecondaryLists/learningClassSecondaryLists.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -55,6 +52,7 @@
     import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { isValidGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<DetailBlockBox<LearningClassBag, LearningClassDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -80,6 +78,8 @@
     });
 
     const takesAttendance = ref(learningClassViewBag.value?.takesAttendance);
+    const activeClassesUsingDefaultGradingSystem = ref(config.options?.activeClassesUsingDefaultGradingSystem ?? 0);
+    let initialGradingSystemGuid = learningClassViewBag.value?.gradingSystem?.value ?? "";
 
     // #endregion
 
@@ -88,13 +88,7 @@
     /**
      * The entity name to display in the block panel.
      */
-    const panelName = computed((): string => {
-        return [
-            learningClassViewBag.value?.courseCode ?? "",
-            learningClassViewBag.value?.semester?.text ?? "",
-            learningClassViewBag.value?.schedule?.text ?? ""
-        ].filter(s => s.length > 0).join(" | ");
-    });
+    const panelName = computed((): string => learningClassViewBag.value?.name ?? "Class");
 
     /**
      * The identifier key value for this entity.
@@ -185,7 +179,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { };
+        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0 };
     });
 
     // #endregion
@@ -261,6 +255,26 @@
      */
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
+        const saveGuid = learningClassEditBag.value?.bag?.gradingSystem?.value ?? "";
+        const hasGradingSystemChanged = saveGuid !== initialGradingSystemGuid;
+        const promptToUpdateAllClassGradingSystems = hasGradingSystemChanged
+            && activeClassesUsingDefaultGradingSystem.value > 0;
+
+        const confirmationMessage = activeClassesUsingDefaultGradingSystem.value == 1 ?
+            "Do you want to update the Grading System for the other active class?" :
+            `Do you want to update the Grading System for the other ${activeClassesUsingDefaultGradingSystem.value} active classes?`;
+
+        const updateAllClasses = promptToUpdateAllClassGradingSystems && await confirm(confirmationMessage);
+        if (updateAllClasses) {
+            const updateGradingSystemWasSuccessful = await onUpdateAllActiveClassGradingSystems();
+
+            if (!updateGradingSystemWasSuccessful) {
+                return false;
+            }
+
+            // Update the value of the initial Grading System.
+            initialGradingSystemGuid = saveGuid;
+        }
 
         const result = await invokeBlockAction<ValidPropertiesBox<LearningClassBag> | string>("Save", {
             box: learningClassEditBag.value
@@ -275,6 +289,26 @@
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 return result.data;
             }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning class.";
+
+        return false;
+    }
+
+    async function onUpdateAllActiveClassGradingSystems(): Promise<boolean | string> {
+        const newGuid = learningClassEditBag.value?.bag?.gradingSystem?.value ?? "";
+
+        if (!isValidGuid(newGuid)) {
+            return false;
+        }
+
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningClassBag> | string>("UpdateActiveClassGradingSystems", {
+            newGradingSystemGuid: newGuid
+        });
+
+        if (result.isSuccess) {
+            return true;
         }
 
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning class.";

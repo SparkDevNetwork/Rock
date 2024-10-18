@@ -15,7 +15,6 @@
                 const firstNameTextBox = document.getElementById(this.options.id);
                 const notAllowedStrings = this.options.notAllowedStrings;
                 let firstName = undefined;
-
                 if (firstNameTextBox) {
                     firstName = firstNameTextBox.value.toUpperCase();
                 }
@@ -34,7 +33,11 @@
                 }
                 if (!isValid) {
                     const labelText = firstNameTextBox.dataset.itemLabel;
-                    validator.innerHTML =  `${labelText} cannot contain: ${invalidString}`;
+                    validator.errormessage = `${labelText} cannot contain: ${invalidString}`;
+
+                    if (this.options.displayInlineValidationError) {
+                        validator.innerHTML = validator.errormessage;
+                    }
                 }
 
                 args.IsValid = isValid;

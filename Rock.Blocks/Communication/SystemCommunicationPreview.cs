@@ -78,12 +78,11 @@ namespace Rock.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "C28368CA-5218-4B59-8BD8-75BD78AA9BE9" )]
-    [Rock.SystemGuid.EntityTypeGuid( "D61A57A2-C067-435F-99F6-7B6BB9534058")]
+    [Rock.SystemGuid.EntityTypeGuid( "D61A57A2-C067-435F-99F6-7B6BB9534058" )]
     public class SystemCommunicationPreview : RockBlockType
     {
         #region Fields
 
-        internal bool HasSendDate { get; set; }
         internal bool HasSystemCommunication = false;
         internal bool HasTargetPerson = false;
 
@@ -104,7 +103,7 @@ namespace Rock.Blocks.Communication
         {
             public const string SystemCommunicationId = "SystemCommunicationId";
             public const string PublicationDate = "PublicationDate";
-            public const string TargetPersonId = "TargetPersonId";
+            public const string TargetPersonIdKey = "TargetPersonIdKey";
         }
 
         #endregion Page Parameter Keys
@@ -133,17 +132,6 @@ namespace Rock.Blocks.Communication
 
         #endregion Merge Field Keys
 
-        #region ViewState Keys
-
-        private static class ViewStateKey
-        {
-            public const string SystemCommunicationGuid = "SystemCommunicationGuid";
-            public const string TargetPersonId = "TargetPersonId";
-            public const string SelectedDate = "SelectedDate";
-        }
-
-        #endregion ViewState Keys
-
         #region Properties
 
         protected string EnabledLavaCommands => GetAttributeValue( AttributeKey.EnabledLavaCommands );
@@ -167,6 +155,13 @@ namespace Rock.Blocks.Communication
                 {
                     systemCommunicationGuid = new SystemCommunicationService( rockContext ).GetGuid( systemCommunicationId.Value );
                 }
+                else
+                {
+                    return new SystemCommunicationPreviewInitializationBox
+                    {
+                        ErrorMessage = "A communication template was not specified in the block setting or using the [SystemCommunicationId] url parameter."
+                    };
+                }
             }
 
             var systemCommunicationService = new SystemCommunicationService( rockContext );
@@ -175,11 +170,37 @@ namespace Rock.Blocks.Communication
             if ( systemCommunication != null )
             {
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
-                string bodyHtml = systemCommunication.Body.ResolveMergeFields( mergeFields );
-                string subjectHtml = systemCommunication.Subject.ResolveMergeFields( mergeFields );
                 var hasSendDate = systemCommunication.Body.Contains( "{{ SendDateTime }}" );
 
-                DateTime publicationDate = DateTime.Now;
+                ListItemBag targetPersonBag;
+                var targetPersonIdKey = RequestContext.GetPageParameter( "TargetPersonIdKey" );
+                var personService = new PersonService( rockContext );
+
+                if ( targetPersonIdKey.IsNotNullOrWhiteSpace() )
+                {
+                    var person = personService.Get( targetPersonIdKey );
+                    targetPersonBag = person.PrimaryAlias.ToListItemBag();
+                }
+                else
+                {
+                    targetPersonBag = RequestContext.CurrentPerson.PrimaryAlias.ToListItemBag();
+                    targetPersonIdKey = RequestContext.CurrentPerson.IdKey;
+                }
+
+                var dateOptions = GetDateOptions();
+                var publicationDateValue = string.Empty;
+
+                if ( hasSendDate )
+                {
+                    var publicationDate = GetDateInfo( dateOptions );
+                    mergeFields.AddOrReplace( MergeFieldKey.SendDateTime, publicationDate.Text );
+                    publicationDateValue = publicationDate.Value;
+                }
+
+                var targetPerson = new PersonService( rockContext ).Get( targetPersonIdKey );
+                mergeFields.AddOrReplace( MergeFieldKey.Person, targetPerson );
+                string bodyHtml = systemCommunication.Body.ResolveMergeFields(mergeFields, null, EnabledLavaCommands );
+                string subjectHtml = systemCommunication.Subject.ResolveMergeFields( mergeFields );
 
                 var systemCommunicationPreviewInitializationBox = new SystemCommunicationPreviewInitializationBox
                 {
@@ -188,14 +209,124 @@ namespace Rock.Blocks.Communication
                     FromName = systemCommunication.FromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : systemCommunication.FromName,
                     Subject = subjectHtml,
                     Body = bodyHtml,
-                    Date = publicationDate.ToString( "MMMM d, yyy" ),
+                    PublicationDate = publicationDateValue,
+                    DateOptions = dateOptions,
                     HasSendDate = hasSendDate,
+                    TargetPersonBag = targetPersonBag,
+                    TargetPersonIdKey = targetPersonIdKey,
                 };
 
                 return systemCommunicationPreviewInitializationBox;
             }
 
-            return null;
+            return ActionBadRequest( "A communication template was not specified in the block setting or using the [SystemCommunicationId] url parameter." );
+        }
+
+        /// <summary>
+        /// Gets the date info based on the Page Parameter.
+        /// </summary>
+        /// <param name="dateOptions">The possible date options</param>
+        /// <returns>A ListItemBag of the selected Date</returns>
+        private ListItemBag GetDateInfo( List<ListItemBag> dateOptions )
+        {
+            // Attempt to get the send date from the URL params
+            string sendDateParam = RequestContext.GetPageParameter( "PublicationDate" );
+
+            if ( DateTime.TryParse( sendDateParam, out DateTime publicationDate ) )
+            {
+                var publicationDateValue = publicationDate.ToString( "yyyy-MM-dd" );
+
+                if ( dateOptions.Count > 0 )
+                {
+                    var incomingDateItem = dateOptions.AsQueryable().Where( d => d.Value == publicationDateValue ).FirstOrDefault();
+
+                    if ( incomingDateItem != null )
+                    {
+                        return incomingDateItem;
+                    }
+
+                    return GetClosestDateToSelection( publicationDate, dateOptions );
+                }
+
+                return new ListItemBag { Text = publicationDate.ToString( "MMMM d, yyyy" ), Value = publicationDateValue };
+            }
+
+            var currentDate = RockDateTime.Now;
+
+            if ( dateOptions.Count > 0 )
+            {
+                return GetClosestDateToSelection( currentDate, dateOptions );
+            }
+
+            return new ListItemBag { Text = currentDate.ToString( "MMMM d, yyyy" ), Value = currentDate.ToString( "yyyy-MM-dd" ) };
+        }
+
+        /// <summary>
+        /// Compares the selected date to the date options and finds the closest match.
+        /// </summary>
+        /// <param name="publicationDate">The selected DateTime</param>
+        /// <param name="dateOptions">The date options</param>
+        /// <returns>The closest date as a ListItemBag</returns>
+        private ListItemBag GetClosestDateToSelection(DateTime publicationDate, List<ListItemBag> dateOptions = null )
+        {
+            if (dateOptions == null)
+            {
+                dateOptions = GetDateOptions();
+            }
+
+            // Find the closest date
+            var allDates = new List<DateTime>();
+
+            foreach ( ListItemBag dateItem in dateOptions )
+            {
+                DateTime dateItemValue = DateTime.MinValue;
+
+                if ( DateTime.TryParse( dateItem.Text, out dateItemValue ) )
+                {
+                    allDates.Add( dateItemValue );
+                }
+            }
+
+            allDates = allDates.OrderBy( d => d ).ToList();
+
+            var closestDate = publicationDate >= allDates.Last()
+                ? allDates.Last()
+                : publicationDate <= allDates.First()
+            ? allDates.First()
+                    : allDates.First( d => d.ToDateKey() >= publicationDate.ToDateKey() );
+
+            return new ListItemBag { Text = closestDate.ToString( "MMMM d, yyyy" ), Value = closestDate.ToString( "yyyy-MM-dd" ) };
+        }
+
+        /// <summary>
+        /// Gets the date options that should be displayed in the dropdown based on the block settings.
+        /// </summary>
+        /// <returns>List of ListItemBag's that contain the date options</returns>
+        private List<ListItemBag> GetDateOptions()
+        {
+            var dayOfWeeks = GetAttributeValues( AttributeKey.SendDaysOfTheWeek )
+                .Select( dow => ( DayOfWeek ) Enum.Parse( typeof( DayOfWeek ), dow ) ).ToList();
+
+            var previousWeeks = GetAttributeValue( AttributeKey.PreviousWeeksToShow ).AsIntegerOrNull() ?? 6;
+            var futureWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 1;
+
+            var dateOptions = new List<ListItemBag>();
+            var startDate = RockDateTime.Today.AddDays( -( previousWeeks * 7 ) );
+            var endDate = RockDateTime.Today.AddDays( futureWeeks * 7 );
+
+            for ( var dt = startDate; dt <= endDate; dt = dt.AddDays( 1 ) )
+            {
+                if ( dayOfWeeks.Contains( dt.DayOfWeek ) )
+                {
+                    dateOptions.Add( new ListItemBag
+                    {
+                        Text = dt.ToString( "MMMM d, yyyy" ),
+                        Value = dt.ToString( "yyyy-MM-dd" )
+                    } );
+                }
+            }
+
+            return dateOptions;
         }
 
         private void SetEmailFromDetails( RockEmailMessage rockEmailMessage, SystemCommunication systemCommunication )
@@ -250,28 +381,57 @@ namespace Rock.Blocks.Communication
                     rockEmailMessage.Message = appendTemplate + rockEmailMessage.Message;
                 }
 
-                if ( !DateTime.TryParse( box.PublicationDate, out DateTime publicationDate ) )
+                var publicationDate = string.Empty;
+                var formattedPublicationDate = string.Empty;
+
+                if ( box.HasSendDate )
                 {
-                    publicationDate = DateTime.Now;
+                    if ( DateTime.TryParse( box.PublicationDate, out var dateItemValue ) )
+                    {
+                        publicationDate = box.PublicationDate;
+                        formattedPublicationDate = dateItemValue.ToString( "MMMM d, yyyy" );
+                    }
+                    else
+                    {
+                        DateTime currentDate = RockDateTime.Now;
+                        var dateOptions = GetDateOptions();
+
+                        if ( dateOptions.Count > 0 )
+                        {
+                            var publicationDateBag = GetClosestDateToSelection( currentDate );
+                            publicationDate = publicationDateBag.Value;
+                            formattedPublicationDate = publicationDateBag.Text;
+                        }
+                        else
+                        {
+                            publicationDate = currentDate.ToString( "yyyy-MM-dd" );
+                            formattedPublicationDate = currentDate.ToString( "MMMM d, yyyy" );
+                        }
+                    }
                 }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                mergeFields.AddOrReplace( MergeFieldKey.SendDateTime, formattedPublicationDate );
 
-                if ( box.TargetPersonId > 0 )
+                if ( box.TargetPersonIdKey.IsNotNullOrWhiteSpace() )
                 {
-                    var person = new PersonService( rockContext ).Get( box.TargetPersonId );
+                    var person = new PersonService( rockContext ).Get( box.TargetPersonIdKey );
                     if ( person == null )
                     {
                         return ActionBadRequest( "Target person not found." );
                     }
                     else
                     {
-                        mergeFields.Add( "Person", person );
+                        mergeFields.AddOrReplace( MergeFieldKey.Person, person );
                     }
                 }
+                else
+                {
+                    mergeFields.AddOrReplace( MergeFieldKey.Person, RequestContext.CurrentPerson );
+                }
 
-                string bodyHtml = systemCommunication.Body.ResolveMergeFields( mergeFields );
-                string subjectHtml = systemCommunication.Subject.ResolveMergeFields( mergeFields );
+                string bodyHtml = systemCommunication.Body.ResolveMergeFields( mergeFields, null, EnabledLavaCommands );
+                string subjectHtml = systemCommunication.Subject.ResolveMergeFields( mergeFields, null, EnabledLavaCommands );
 
                 var systemCommunicationPreviewInitializationBox = new SystemCommunicationPreviewInitializationBox
                 {
@@ -281,7 +441,7 @@ namespace Rock.Blocks.Communication
                     FromName = systemCommunication.FromName.IsNullOrWhiteSpace() ? GlobalAttributesCache.Get().GetValue( "OrganizationName" ) : systemCommunication.FromName,
                     Subject = subjectHtml,
                     Body = bodyHtml,
-                    Date = publicationDate.ToString( "MMMM d, yyyy" )
+                    PublicationDate = publicationDate
                 };
 
                 return ActionOk( systemCommunicationPreviewInitializationBox );
@@ -291,72 +451,42 @@ namespace Rock.Blocks.Communication
         }
 
         [BlockAction]
-        public BlockActionResult GetDateOptions()
-        {
-            var dayOfWeeks = GetAttributeValues( AttributeKey.SendDaysOfTheWeek )
-                .Select( dow => ( DayOfWeek ) Enum.Parse( typeof( DayOfWeek ), dow ) ).ToList();
-
-            var previousWeeks = GetAttributeValue( AttributeKey.PreviousWeeksToShow ).AsIntegerOrNull() ?? 6;
-            var futureWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 1;
-
-            var dateOptions = new List<ListItemBag>();
-            var startDate = RockDateTime.Today.AddDays( -( previousWeeks * 7 ) );
-            var endDate = RockDateTime.Today.AddDays( futureWeeks * 7 );
-
-            for ( var dt = startDate; dt <= endDate; dt = dt.AddDays( 1 ) )
-            {
-                if ( dayOfWeeks.Contains( dt.DayOfWeek ) )
-                {
-                    dateOptions.Add( new ListItemBag
-                    {
-                        Text = dt.ToString( "MMMM d, yyyy" ),
-                        Value = dt.ToString( "yyyyMMdd" )
-                    } );
-                }
-            }
-
-            return ActionOk( dateOptions );
-        }
-
-        [BlockAction]
-        public BlockActionResult GetTargetPerson( GetTargetPersonRequestBag bag )
-        {
-            var rockContext = new RockContext();
-            if ( Guid.TryParse( bag.PersonAliasGuid, out Guid guid ) )
-            {
-                var personAlias = new PersonAliasService( rockContext ).Get( guid );
-                if ( personAlias != null )
-                {
-                    var personId = personAlias.PersonId;
-                    return ActionOk( new { Id = personId } );
-                }
-
-                return ActionNotFound( $"Person not found for alias GUID: { bag.PersonAliasGuid }" );
-            }
-
-            return ActionBadRequest( "Invalid person GUID for person alias or person not found." );
-        }
-
-        [BlockAction]
         public BlockActionResult SendTestEmail( SystemCommunicationPreviewInitializationBox box )
         {
             using ( var rockContext = new RockContext() )
             {
                 var systemCommunicationService = new SystemCommunicationService( rockContext );
                 var personService = new PersonService( rockContext );
+                SystemCommunication systemCommunication = null;
 
                 // Fetch the system communication
-                var systemCommunication = systemCommunicationService.Get( box.Id );
+                var systemCommunicationGuid = GetAttributeValue( AttributeKey.SystemCommunication ).AsGuid();
+                if ( !systemCommunicationGuid.IsEmpty() )
+                {
+                    systemCommunication = systemCommunicationService.Get( systemCommunicationGuid );
+                }
+                else if ( box.Id > 0 )
+                {
+                    systemCommunication = systemCommunicationService.Get( box.Id );
+                }
                 if ( systemCommunication == null )
                 {
                     return ActionNotFound( "System Communication not found" );
                 }
 
                 // Fetch the target person
-                var targetPerson = personService.Get( box.TargetPersonId );
-                if ( targetPerson == null )
+                Person targetPerson;
+                if ( box.TargetPersonIdKey.IsNotNullOrWhiteSpace() )
                 {
-                    return ActionNotFound( "Target person not found." );
+                    targetPerson = new PersonService( rockContext ).Get( box.TargetPersonIdKey );
+                    if ( targetPerson == null )
+                    {
+                        return ActionBadRequest( "Target person not found." );
+                    }
+                }
+                else
+                {
+                    targetPerson = RequestContext.CurrentPerson;
                 }
 
                 // Temporarily change the person's email address
@@ -382,13 +512,11 @@ namespace Rock.Blocks.Communication
                     // Prepare merge fields
                     var mergeFields = new Dictionary<string, object> { { MergeFieldKey.Person, targetPerson } };
 
-                    // Attempt to get the send data from the URL params
-                    string sendDateParam = RequestContext.GetPageParameter( "PublicationDate" );
-                    DateTime sendDate;
-                    if ( DateTime.TryParse( sendDateParam, out sendDate ) )
+                    // Get the Publication Date
+                    if ( DateTime.TryParse( box.PublicationDate, out var dateItemValue ) )
                     {
                         // Add the "SendDateTime" merge field if a valid date is provided
-                        mergeFields.Add( MergeFieldKey.SendDateTime, sendDate.ToString( "MMMM d, yyyy" ) );
+                        mergeFields.AddOrReplace( MergeFieldKey.SendDateTime, dateItemValue.ToString( "MMMM d, yyyy" ) );
                     }
 
                     // Set the recipient with merge fields
@@ -430,15 +558,6 @@ namespace Rock.Blocks.Communication
 
                 return ActionOk( "Test email sent successfully." );
             }
-        }
-
-        #endregion
-
-        #region Helper Classes
-
-        public class GetTargetPersonRequestBag
-        {
-            public string PersonAliasGuid { get; set; }
         }
 
         #endregion

@@ -304,6 +304,7 @@ namespace Rock.CheckIn.v2
                         AreaId = g.AreaId,
                         CheckInData = g.CheckInData,
                         CheckInAreaData = g.CheckInAreaData,
+                        IsPreferredGroup = g.IsPreferredGroup,
                         LocationIds = g.LocationIds.ToList(),
                         OverflowLocationIds = g.OverflowLocationIds.ToList()
                     } )

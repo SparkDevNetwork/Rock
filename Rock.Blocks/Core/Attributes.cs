@@ -147,6 +147,7 @@ namespace Rock.Blocks.Core
                 AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean(),
             };
             box.GridDefinition = builder.BuildDefinition();
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
         }
@@ -402,9 +403,36 @@ namespace Rock.Blocks.Core
             return gridData.Rows[0];
         }
 
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var fieldTypes = FieldTypeCache.All();
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            foreach ( var fieldType in fieldTypes )
+            {
+                if ( fieldType.Field is Rock.Field.ISecurityGrantFieldType grantFieldType )
+                {
+                    grantFieldType.AddRulesToSecurityGrant( securityGrant );
+                }
+            }
+
+            return securityGrant.ToToken();
+        }
+
         #endregion
 
         #region Block Actions
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
 
         /// <summary>
         /// Gets the attribute value representation for editing purposes.

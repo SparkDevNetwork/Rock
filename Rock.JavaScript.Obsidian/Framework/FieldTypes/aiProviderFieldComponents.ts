@@ -20,7 +20,6 @@ import AIProviderPicker from "@Obsidian/Controls/aiProviderPicker.obs";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-
 export const EditComponent = defineComponent({
     name: "AIProviderField.Edit",
 

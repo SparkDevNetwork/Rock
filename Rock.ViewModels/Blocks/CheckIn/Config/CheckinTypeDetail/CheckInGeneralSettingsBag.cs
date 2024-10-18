@@ -87,7 +87,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The automatic select days back.
         /// </value>
-        public int AutoSelectDaysBack { get; set; }
+        public string AutoSelectDaysBack { get; set; }
 
         /// <summary>
         /// Gets or sets the automatic select options.

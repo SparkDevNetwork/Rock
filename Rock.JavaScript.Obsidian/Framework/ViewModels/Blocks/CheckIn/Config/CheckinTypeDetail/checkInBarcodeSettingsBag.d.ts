@@ -24,13 +24,13 @@
 /** The item details for the Check-In Type Detail block Barcode Settings. */
 export type CheckInBarcodeSettingsBag = {
     /** Gets or sets the length of the code alpha. */
-    codeAlphaLength: number;
+    codeAlphaLength?: string | null;
 
     /** Gets or sets the length of the code alpha numeric. */
-    codeAlphaNumericLength: number;
+    codeAlphaNumericLength?: string | null;
 
     /** Gets or sets the length of the code numeric. */
-    codeNumericLength: number;
+    codeNumericLength?: string | null;
 
     /** Gets or sets a value indicating whether [code random]. */
     codeRandom: boolean;

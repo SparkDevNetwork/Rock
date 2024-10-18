@@ -48,7 +48,6 @@
 
                 <CheckBox v-model="isGeoPointLocked"
                           label="Location Locked"
-                          text="Yes"
                           help="Locks the location to prevent verification services (standardization/geocoding) from updating the address or point." />
 
                 <div class="row">

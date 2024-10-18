@@ -568,7 +568,6 @@ namespace Rock.Field.Types
             var cbDisplayDiff = new RockCheckBox();
             controls.Add( cbDisplayDiff );
             cbDisplayDiff.Label = "Display as Elapsed Time";
-            cbDisplayDiff.Text = "Yes";
             cbDisplayDiff.Help = "Display value as an elapsed time.";
 
             var ddlDatePickerMode = new RockDropDownList();
@@ -586,7 +585,6 @@ namespace Rock.Field.Types
             cbDisplayCurrent.AutoPostBack = true;
             cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
             cbDisplayCurrent.Label = "Display Current Option";
-            cbDisplayCurrent.Text = "Yes";
             cbDisplayCurrent.Help = "Include option to specify value as the current date.";
 
             var nbFutureYearCount = new NumberBox();

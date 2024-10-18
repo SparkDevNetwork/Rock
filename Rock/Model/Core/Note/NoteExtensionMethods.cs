@@ -1,5 +1,20 @@
-﻿using System;
-using System.Data.Entity;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Linq;
 
 namespace Rock.Model
@@ -21,14 +36,23 @@ namespace Rock.Model
         /// and filtered to only those notes where the specified person
         /// created the note or the note is approved.
         /// </returns>
-        public static IQueryable<Note> AreViewableBy( this IQueryable<Note> notes, int viewerPersonId )
+        public static IQueryable<Note> AreViewableBy( this IQueryable<Note> notes, int? viewerPersonId )
         {
             // The viewer is the creator of the note and the approval status is not denied.
             // OR the note is not private and is either approved or not required to be approved.
-            return notes
-                .Where( n =>
-                ( ( viewerPersonId == n.CreatedByPersonAlias.PersonId && n.ApprovalStatus != NoteApprovalStatus.Denied )
-                || ( !n.IsPrivateNote && ( !n.NoteType.RequiresApprovals || n.ApprovalStatus == NoteApprovalStatus.Approved ) ) ) );
+            if ( viewerPersonId.HasValue && viewerPersonId.Value > 0 )
+            {
+                return notes
+                    .Where( n =>
+                    ( ( viewerPersonId == n.CreatedByPersonAlias.PersonId && n.ApprovalStatus != NoteApprovalStatus.Denied )
+                    || ( !n.IsPrivateNote && ( !n.NoteType.RequiresApprovals || n.ApprovalStatus == NoteApprovalStatus.Approved ) ) ) );
+            }
+            else
+            {
+                return notes
+                    .Where( n =>
+                    ( ( !n.IsPrivateNote && ( !n.NoteType.RequiresApprovals || n.ApprovalStatus == NoteApprovalStatus.Approved ) ) ) );
+            }
         }
 
         /// <summary>

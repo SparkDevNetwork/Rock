@@ -161,5 +161,10 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionView
         /// Gets or sets the site type for the block.
         /// </summary>
         public string SiteType { get; set; }
+
+        /// <summary>
+        /// Whether or not to include unapproved items in the search results.
+        /// </summary>
+        public bool IncludeUnapproved { get; set; }
     }
 }

@@ -68,6 +68,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities associated with a <see cref="Rock.Model.Site" />.
+        /// </summary>
+        /// <param name="siteId">The IdKey or Guid of the site.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<Page> GetBySiteIdKey( string siteId )
+        {
+            var site = SiteCache.Get( siteId, false );
+
+            if( site == null )
+            {
+                return null;
+            }
+
+            return GetBySiteId( site.Id );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Page">Pages</see> that are descendants of a <see cref="Rock.Model.Page"/>
         /// </summary>
         /// <param name="parentPageId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Page"/></param>

@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,6 +40,7 @@ namespace Rock.Web.UI.Controls
 
         private DataTextBox _tbGroupName;
         private RockCheckBox _cbIsActive;
+        private RockCheckBox _cbIsSpecialNeeds;
         private PlaceHolder _phGroupAttributes;
         private Grid _gLocations;
         private Grid _gOverflowLocations;
@@ -261,6 +263,7 @@ namespace Rock.Web.UI.Controls
         {
             group.Name = _tbGroupName.Text;
             group.IsActive = _cbIsActive.Checked;
+            group.IsSpecialNeeds = _cbIsSpecialNeeds.Checked;
             Rock.Attribute.Helper.GetEditValues( _phGroupAttributes, group );
         }
 
@@ -284,6 +287,17 @@ namespace Rock.Web.UI.Controls
                 _hfGroupTypeId.Value = value.GroupTypeId.ToString();
                 _tbGroupName.Text = value.Name;
                 _cbIsActive.Checked = value.IsActive;
+                _cbIsSpecialNeeds.Checked = value.IsSpecialNeeds;
+
+                var checkInConfiguration = GroupTypeCache.Get( value.GroupTypeId, rockContext )?.GetCheckInConfiguration( rockContext );
+
+                // The "Special Needs" checkbox should only show up if the
+                // configuration has enabled special needs logic.
+                if ( checkInConfiguration != null )
+                {
+                    _cbIsSpecialNeeds.Visible = checkInConfiguration.AreNonSpecialNeedsGroupsRemoved
+                        || checkInConfiguration.AreSpecialNeedsGroupsRemoved;
+                }
 
                 CreateGroupAttributeControls( value, rockContext );
             }
@@ -321,6 +335,13 @@ namespace Rock.Web.UI.Controls
             _tbGroupName.SourceTypeName = "Rock.Model.Group, Rock";
             _tbGroupName.PropertyName = "Name";
 
+            _cbIsSpecialNeeds = new RockCheckBox
+            {
+                ID = $"{ID}_cbIsSpecialNeeds",
+                Label = "Special Needs",
+                Help = "Only used by next-gen check-in. This will indicate that the group is intended for people with the Special Needs attribute set to true."
+            };
+
             _phGroupAttributes = new PlaceHolder();
             _phGroupAttributes.ID = this.ID + "_phGroupAttributes";
 
@@ -330,6 +351,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lblGroupName );
             Controls.Add( _tbGroupName );
             Controls.Add( _cbIsActive );
+            Controls.Add( _cbIsSpecialNeeds );
             Controls.Add( _phGroupAttributes );
 
             // Locations Grid
@@ -425,6 +447,7 @@ namespace Rock.Web.UI.Controls
 
                 _tbGroupName.RenderControl( writer );
                 _cbIsActive.RenderBaseControl( writer );
+                _cbIsSpecialNeeds.RenderControl( writer );
                 _phGroupAttributes.RenderControl( writer );
 
                 writer.WriteLine( "<h3>Locations</h3>" );

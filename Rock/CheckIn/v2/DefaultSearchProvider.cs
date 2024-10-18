@@ -155,7 +155,7 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the family member query that contains all the family members
+        /// Gets the family member query that contains all the family members that
         /// are valid for check-in and a member of one of the specified families.
         /// </summary>
         /// <param name="familyIdQry">The family identifier query specifying which families to include.</param>
@@ -183,7 +183,7 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Gets the family search item bags from the queryable.
         /// </summary>
-        /// <param name="familyMemberQry">The family member query.</param>
+        /// <param name="familyMemberQry">The family member query, this should only contain people in the primary family and not "can check-in" relationships.</param>
         /// <returns>A list of <see cref="FamilyBag"/> instances.</returns>
         public virtual List<FamilyBag> GetFamilySearchItemBags( IQueryable<GroupMember> familyMemberQry )
         {
@@ -226,6 +226,7 @@ namespace Rock.CheckIn.v2
                             .Select( member => new FamilyMemberBag
                             {
                                 Person = Session.Director.ConversionProvider.GetPersonBag( member.Person ),
+                                IsInPrimaryFamily = true,
                                 FamilyId = IdHasher.Instance.GetHash( member.GroupId ),
                                 RoleOrder = member.RoleOrder
                             } )

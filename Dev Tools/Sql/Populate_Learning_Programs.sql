@@ -257,7 +257,7 @@ DECLARE
     @availableAfterPreviousComplete INT = 4;
 
 /* Create the Activities for the Class */
-INSERT [LearningActivity] ( [LearningClassId], [Name], [Order], [ActivityComponentId], [AssignTo], [DueDateCalculationMethod], [DueDateDefault], [DueDateOffset], [AvailableDateCalculationMethod], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], [Guid], [Description], [ActivityComponentSettingsJson] )
+INSERT [LearningActivity] ( [LearningClassId], [Name], [Order], [ActivityComponentId], [AssignTo], [DueDateCriteria], [DueDateDefault], [DueDateOffset], [AvailabilityCriteria], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], [Guid], [Description], [ActivityComponentSettingsJson] )
 SELECT g.[Id], seed.[Name], seed.[Order], [ActivityComponentId], [AssignTo], [DueCalculationMethod], [DueDateDefault], [DueDateOffset], [AvailableCalculationMethod], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], NEWID() [Guid], seed.[Description], [SettingsJson]
 FROM (
     SELECT 'Assessment 1' [Name], 1 [Order], @assessmentComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 2 [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 10 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @assessment1Description [Description], @assessment1Settings [SettingsJson]
@@ -339,16 +339,16 @@ SELECT [a].[Id],
     0 [IsFacilitatorCompleted],
     NEWID() [Guid],
     CASE 
-        WHEN [AvailableDateCalculationMethod] = @specificDate THEN [AvailableDateDefault] 
-        WHEN [AvailableDateCalculationMethod] = @classStartOffset THEN DATEADD(DAY, [AvailableDateOffset], [RandomDateTimeAdded])
-        WHEN [AvailableDateCalculationMethod] = @enrollmentOffset THEN DATEADD(DAY, [AvailableDateOffset], [DateTimeAdded])
-        WHEN [AvailableDateCalculationMethod] = @availableAfterPreviousComplete THEN NULL
+        WHEN [AvailabilityCriteria] = @specificDate THEN [AvailableDateDefault] 
+        WHEN [AvailabilityCriteria] = @classStartOffset THEN DATEADD(DAY, [AvailableDateOffset], [RandomDateTimeAdded])
+        WHEN [AvailabilityCriteria] = @enrollmentOffset THEN DATEADD(DAY, [AvailableDateOffset], [DateTimeAdded])
+        WHEN [AvailabilityCriteria] = @availableAfterPreviousComplete THEN NULL
         ELSE @now
     END [AvailableDate],
     CASE 
-        WHEN [DueDateCalculationMethod] = @specificDate THEN [DueDateDefault] 
-        WHEN [DueDateCalculationMethod] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-        WHEN [DueDateCalculationMethod] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+        WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
+        WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+        WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
         ELSE NULL
     END [DueDate],
     IIF(
@@ -363,17 +363,17 @@ SELECT [a].[Id],
         WHEN gm.[Id] % 5 = 0 THEN  
             /* DueDate - 24 hours and some additional random hours */
             DATEADD(HOUR, -(24 + (FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7))), CASE 
-                WHEN [DueDateCalculationMethod] = @specificDate THEN DueDateDefault 
-                WHEN [DueDateCalculationMethod] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-                WHEN [DueDateCalculationMethod] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+                WHEN [DueDateCriteria] = @specificDate THEN DueDateDefault 
+                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
                 ELSE NULL
             END)
         WHEN gm.[Id] % 5 = 1 THEN  
             /* DueDate + 1 */
             DATEADD(HOUR, 24 + FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7), CASE 
-                WHEN [DueDateCalculationMethod] = @specificDate THEN [DueDateDefault] 
-                WHEN [DueDateCalculationMethod] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-                WHEN [DueDateCalculationMethod] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+                WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
+                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
                 ELSE NULL
         END)
     END [CompletedDate],

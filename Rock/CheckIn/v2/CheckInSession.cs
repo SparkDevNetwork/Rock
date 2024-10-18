@@ -196,7 +196,7 @@ namespace Rock.CheckIn.v2
             var groupMemberQry = GetGroupMembersQueryForFamily( familyId );
             var members = GetFamilyMemberBags( familyId, groupMemberQry );
 
-            LoadAttendees( members.Select( fm => fm.Person ).ToList(), opportunities );
+            LoadAttendees( members, opportunities );
             PrepareAttendees();
         }
 
@@ -214,9 +214,9 @@ namespace Rock.CheckIn.v2
         {
             var checkInOpportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var familyMembersQry = GetGroupMemberQueryForPerson( personId, familyId );
-            var members = GetFamilyMemberBags( null, familyMembersQry );
+            var members = GetFamilyMemberBags( familyId, familyMembersQry );
 
-            LoadAttendees( members.Select( fm => fm.Person ).ToList(), checkInOpportunities );
+            LoadAttendees( members, checkInOpportunities );
             PrepareAttendees();
         }
 
@@ -316,18 +316,18 @@ namespace Rock.CheckIn.v2
         /// gathers all required information to later perform filtering on the
         /// attendees.
         /// </summary>
-        /// <param name="people">The <see cref="PersonBag"/> objects to be used when constructing the <see cref="Attendee"/> objects that will wrap them.</param>
+        /// <param name="members">The <see cref="FamilyMemberBag"/> objects to be used when constructing the <see cref="Attendee"/> objects that will wrap them.</param>
         /// <param name="baseOpportunities">The opportunity collection to clone onto each attendee.</param>
-        public void LoadAttendees( IReadOnlyCollection<PersonBag> people, OpportunityCollection baseOpportunities )
+        public void LoadAttendees( IReadOnlyCollection<FamilyMemberBag> members, OpportunityCollection baseOpportunities )
         {
             using ( var activity = ObservabilityHelper.StartActivity( $"Get Attendee Items" ) )
             {
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 var preSelectCutoff = RockDateTime.Today.AddDays( Math.Min( -1, 0 - TemplateConfiguration.AutoSelectDaysBack ) );
-                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Id ).ToList(), RockContext );
+                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, members.Select( fm => fm.Person.Id ).ToList(), RockContext );
 
-                var attendees = Director.ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
+                var attendees = Director.ConversionProvider.GetAttendeeItems( members, baseOpportunities, recentAttendance );
 
                 Attendees = attendees;
             }

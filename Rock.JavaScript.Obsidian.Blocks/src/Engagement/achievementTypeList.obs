@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Achievement Types"
           itemTerm="Achievement Type"
           :entityTypeGuid="EntityType.AchievementType"
           stickyHeader
@@ -35,7 +36,10 @@
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       width="120"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center" />
 
         <TextColumn name="componentName"
                     title="Achievement Type"

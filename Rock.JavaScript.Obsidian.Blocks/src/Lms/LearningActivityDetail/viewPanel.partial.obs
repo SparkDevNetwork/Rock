@@ -56,8 +56,9 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.description) {
-            valueBuilder.addHtmlValue("", props.modelValue?.descriptionAsHtml ?? "");
+        const descriptionAsHtml = props.modelValue?.descriptionAsHtml ?? "";
+        if (descriptionAsHtml.length > 0) {
+            valueBuilder.addHtmlValue("", descriptionAsHtml);
         }
 
         return valueBuilder.build();
@@ -73,13 +74,19 @@
 
         const averageGradePercentText = props.modelValue?.averageGradePercent?.toFixed(1).toString() ?? "0";
         const labelType = props.modelValue.averageGradeIsPassing ? "success" : "warning";
-        const averageScoreText = `<span class="label label-${labelType}">${props.modelValue.averageGrade ?? ""} (${averageGradePercentText}%)</span>`;
+        const averageScoreHtml = `<span class="label label-${labelType}">${props.modelValue.averageGrade ?? ""} (${averageGradePercentText}%)</span>`;
 
-        valueBuilder.addHtmlValue("Average Score", averageScoreText);
-        valueBuilder.addTextValue("Available", props.modelValue?.availableDateDescription ?? "");
+        valueBuilder.addHtmlValue("Average Score", averageScoreHtml);
+
+        const availableDateText = props.modelValue?.availableDateDescription ?? "";
+        if (availableDateText.length > 0){
+            valueBuilder.addTextValue("Available", availableDateText);
+        }
 
         const checkmarkIconOrEmpty = props.modelValue.isStudentCommentingEnabled ? "<i class='fa fa-check'></i>" : "";
-        valueBuilder.addHtmlValue("Student Commenting Enabled", checkmarkIconOrEmpty);
+        if (checkmarkIconOrEmpty.length > 0){
+            valueBuilder.addHtmlValue("Student Commenting Enabled", checkmarkIconOrEmpty);
+        }
 
         return valueBuilder.build();
     });
@@ -92,8 +99,15 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Points", props.modelValue?.points.toString() ?? "");
-        valueBuilder.addTextValue("Due Date", props.modelValue?.dueDateDescription ?? "");
+        const pointsText = props.modelValue?.points.toString() ?? "";
+        if (pointsText.length > 0) {
+            valueBuilder.addTextValue("Points", pointsText);
+        }
+
+        const dueDateDescription = props.modelValue?.dueDateDescription ?? "";
+        if (dueDateDescription.length > 0){
+            valueBuilder.addTextValue("Due Date", dueDateDescription);
+        }
 
         return valueBuilder.build();
     });

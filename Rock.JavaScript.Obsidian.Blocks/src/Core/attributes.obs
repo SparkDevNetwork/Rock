@@ -98,7 +98,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { emptyGuid, normalize as normalizeGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -143,6 +143,8 @@
 
     const config = useConfigurationValues<ListBlockBox<AttributesOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    provideSecurityGrant(securityGrant);
     const preferences = usePersonPreferences().blockPreferences;
 
     /** True if the entity type picker should be visible on the page. */

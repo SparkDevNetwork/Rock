@@ -1,9 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Document Template"
+          title="Document Templates"
           :entityTypeGuid="EntityType.SignatureDocumentTemplate"
           stickyHeader
           liveUpdates
@@ -22,19 +24,20 @@
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="md"
-                    width="30%" />
+                    width="45%" />
 
         <TextColumn name="binaryFileType"
                     title="File Type"
                     field="binaryFileType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <NumberColumn name="documents"
                       title="Requested Documents"
                       field="documents"
                       :filter="numberValueFilter"
-                      visiblePriority="md" />
+                      visiblePriority="md"
+                      width="250" />
 
         <SecurityColumn />
 
@@ -45,21 +48,31 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, numberValueFilter, DeleteColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, numberValueFilter, pickExistingValueFilter, DeleteColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SignatureDocumentTemplateListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateList/signatureDocumentTemplateListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./SignatureDocumentTemplateList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<SignatureDocumentTemplateListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return store.state.areSecondaryBlocksShown;
+    });
 
     // #endregion
 

@@ -65,5 +65,10 @@ namespace Rock.SystemGuid
         /// Gets the Model layout ()
         /// </summary>
         public const string MODAL = "8F15C679-D757-4225-839E-2589A80F7180";
+
+        /// <summary>
+        /// Gets the Checkin layout (Next-gen Check-in Site).
+        /// </summary>
+        public const string NEXT_GEN_CHECK_IN_CHECKIN = "BC067A3C-1257-4D19-BAD7-505FD28F916B";
     }
 }

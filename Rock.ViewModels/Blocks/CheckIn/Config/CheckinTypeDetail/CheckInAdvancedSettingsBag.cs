@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
 {
     /// <summary>
@@ -36,7 +40,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// <value>
         /// The refresh interval.
         /// </value>
-        public int? RefreshInterval { get; set; }
+        public string RefreshInterval { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [age required].
@@ -69,5 +73,13 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         ///   <c>true</c> if [display loc count]; otherwise, <c>false</c>.
         /// </value>
         public bool DisplayLocCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the special needs values.
+        /// </summary>
+        /// <value>
+        /// The special needs values.
+        /// </value>
+        public List<string> SpecialNeedsValues { get; set; }
     }
 }

@@ -39,6 +39,13 @@ namespace Rock.CheckIn.v2
         public AreaConfigurationData CheckInAreaData { get; set; }
 
         /// <summary>
+        /// Determines if this group is preferred. This may be set during the
+        /// filtering process. If any group is marked as preferred then all
+        /// non-preferred groups will be excluded.
+        /// </summary>
+        public bool IsPreferredGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the overflow location identifiers. These are in
         /// proper order of location priority.
         /// </summary>

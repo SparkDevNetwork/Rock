@@ -24,6 +24,7 @@
 import { RequirementType } from "@Obsidian/Enums/Lms/requirementType";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** A bag containing Learning Course Requirement information. */
 export type LearningCourseRequirementBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

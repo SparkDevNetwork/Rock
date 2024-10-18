@@ -79,6 +79,8 @@ export const DefinedValue = {
     BlockTemplateMobileGroupView: "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
     /** The block template for the mobile group finder. */
     BlockTemplateMobileGroupsGroupFinder: "1B6D540A-2E40-44F6-8AE9-2857DE913459",
+    /** The block template for the mobile my notes block. */
+    BlockTemplateMobileMyNotes: "652A4E12-6C15-407D-9620-ED39190899A5",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests: "198F3006-5F0F-48AB-9EA0-2FA56F633753",
     /** The block template for the mobile notes block. */
@@ -187,6 +189,8 @@ export const DefinedValue = {
     DeviceTypeGivingKiosk: "64A1DBE5-10AD-42F1-A9BA-646A781D4112",
     /** Printer device type */
     DeviceTypePrinter: "8284B128-E73B-4863-9FC2-43E6827B65E6",
+    /** Proxy device type */
+    DeviceTypeProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Entity Set for the purpose of doing a Person Merge request */
     EntitySetPurposePersonMergeRequest: "214EB26F-5493-4540-B2EF-F0887C8FBB9E",
     /** Amazon External Link Type */

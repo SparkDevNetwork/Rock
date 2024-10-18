@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Hosting;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.Data;
 using Rock.Model;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
@@ -112,28 +113,6 @@ namespace Rock.Blocks.CheckIn
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The web host environment for this block.
-        /// </summary>
-        private readonly IWebHostEnvironment _environment;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CheckInKioskSetup"/> class.
-        /// </summary>
-        /// <param name="environment">The environment.</param>
-        public CheckInKioskSetup( IWebHostEnvironment environment )
-        {
-            _environment = environment;
-        }
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -152,7 +131,7 @@ namespace Rock.Blocks.CheckIn
                 IsManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean(),
                 IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
                 GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
-                Campuses = GetCampusesAndKiosks(),
+                Campuses = GetCampusesAndKiosks( RockContext ),
                 CurrentTheme = PageParameter( PageParameterKey.Theme )?.ToLower()
                     .IfEmpty( PageCache.Layout?.Site?.Theme?.ToLower() ),
                 Templates = director.GetConfigurationTemplateBags(),
@@ -187,21 +166,21 @@ namespace Rock.Blocks.CheckIn
         /// manual configuration.
         /// </summary>
         /// <returns>A collection of <see cref="CampusBag"/> objects.</returns>
-        private List<CampusBag> GetCampusesAndKiosks()
+        internal static List<CampusBag> GetCampusesAndKiosks( RockContext rockContext )
         {
-            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), RockContext )?.Id;
+            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), rockContext )?.Id;
 
             if ( !kioskDeviceTypeValueId.HasValue )
             {
                 throw new Exception( "Device type Check-in Kiosk defined value not found." );
             }
 
-            var campuses = CampusCache.All( RockContext )
+            var campuses = CampusCache.All( rockContext )
                 .Where( c => c.IsActive == true )
                 .OrderBy( c => c.Order )
                 .ToList();
 
-            var kiosks = DeviceCache.All( RockContext )
+            var kiosks = DeviceCache.All( rockContext )
                 .Where( k => k.IsActive && k.DeviceTypeValueId == kioskDeviceTypeValueId.Value )
                 .OrderBy( k => k.Name )
                 .Select( k => new
@@ -246,14 +225,18 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
         private List<ListItemBag> GetThemes()
         {
-            var di = new DirectoryInfo( Path.Combine( _environment.WebRootPath, "Themes" ) );
+            var checkInPurposeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.THEME_PURPOSE_CHECKIN.AsGuid(), RockContext ).Id;
 
-            return di.EnumerateDirectories()
-                .OrderBy( d => d.Name )
-                .Select( d => new ListItemBag
+            return new ThemeService( RockContext )
+                .Queryable()
+                .Where( t => t.PurposeValueId == checkInPurposeValueId )
+                .OrderBy( t => t.Name )
+                .Select( t => t.Name )
+                .ToList()
+                .Select( n => new ListItemBag
                 {
-                    Value = d.Name.ToLower(),
-                    Text = d.Name.SplitCase()
+                    Value = n.ToLower(),
+                    Text = n.SplitCase()
                 } )
                 .ToList();
         }
@@ -669,10 +652,5 @@ namespace Rock.Blocks.CheckIn
         }
 
         #endregion
-
-        private class CampusBag : CheckInItemBag
-        {
-            public List<WebKioskBag> Kiosks { get; set; }
-        }
     }
 }

@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
+using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -23,6 +24,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         public void Constructor_WithGroupTypeCache_InitializesProperties()
         {
             var expectedAttendanceRule = AttendanceRule.AddOnCheckIn;
+            var expectedAlreadyEnrolledMatchingLogic = AlreadyEnrolledMatchingLogic.PreferEnrolledGroups;
             var expectedPrintTo = PrintTo.Location;
 
             var rockContextMock = GetRockContextMock();
@@ -30,6 +32,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
 
             groupType.Object.AttendanceRule = expectedAttendanceRule;
             groupType.Object.AttendancePrintTo = expectedPrintTo;
+            groupType.Object.AlreadyEnrolledMatchingLogic = expectedAlreadyEnrolledMatchingLogic;
 
             var groupTypeCache = new GroupTypeCache();
             groupTypeCache.SetFromEntity( groupType.Object );
@@ -37,6 +40,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             var instance = new AreaConfigurationData( groupTypeCache, rockContextMock.Object );
 
             Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
+            Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
             Assert.AreEqual( expectedPrintTo, instance.PrintTo );
         }
 
@@ -47,7 +51,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( AreaConfigurationData );
-            var expectedPropertyCount = 2;
+            var expectedPropertyCount = 3;
 
             var propertyCount = type.GetProperties().Length;
 

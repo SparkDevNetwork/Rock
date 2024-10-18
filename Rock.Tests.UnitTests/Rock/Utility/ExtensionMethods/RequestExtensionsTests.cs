@@ -178,6 +178,8 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             public string Method => throw new NotImplementedException();
 
+            public bool CookiesValuesAreUrlDecoded => throw new NotImplementedException();
+
             public Request( string uri )
             {
                 RequestUri = new Uri( uri );

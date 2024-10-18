@@ -82,6 +82,7 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
         "gradeRequired",
         "refreshInterval",
         "searchRegex",
+        "specialNeedsValues",
 
         // BarcodeSettings
         "codeAlphaLength",

@@ -26,6 +26,7 @@ export type VideoWatchActivityConfiguration = {
 
 export type VideoWatchActivityCompletion = {
     watchedPercentage: number;
+    pointsPossibleAtCompletion?: number;
 };
 
 export class VideoWatchActivityDefaults

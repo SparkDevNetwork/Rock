@@ -22,6 +22,7 @@
                       title="Watcher Person"
                       field="watcher"
                       :filter="textValueFilter"
+                      :filterValue="getWatcherRowValue"
                       visiblePriority="xs" />
 
         <TextColumn name="watcherGroup"
@@ -65,6 +66,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./NoteWatchList/types.partial";
     import { reactive, ref } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<NoteWatchListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -91,6 +93,11 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function getWatcherRowValue(row: Record<string, unknown>): string {
+        const watcher = row["watcher"] as PersonFieldBag;
+        return `${watcher?.nickName} ${watcher.lastName}`;
     }
 
     // #endregion

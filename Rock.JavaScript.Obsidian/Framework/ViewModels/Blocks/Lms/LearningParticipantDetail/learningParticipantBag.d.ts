@@ -52,6 +52,9 @@ export type LearningParticipantBag = {
     /** Gets or sets whether the particpiant is a facilitator. */
     isFacilitator: boolean;
 
+    /** Gets or sets the note specific to this class participant. */
+    note?: string | null;
+
     /** Gets or sets the (group type) role of the participant. */
     participantRole?: ListItemBag | null;
 

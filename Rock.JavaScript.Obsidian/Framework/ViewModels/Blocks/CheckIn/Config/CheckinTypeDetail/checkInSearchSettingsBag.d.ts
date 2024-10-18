@@ -24,13 +24,13 @@
 /** The item details for the Check-In Type Detail block Search Settings. */
 export type CheckInSearchSettingsBag = {
     /** Gets or sets the maximum length of the phone. */
-    maxPhoneLength: number;
+    maxPhoneLength?: string | null;
 
     /** Gets or sets the maximum results. */
-    maxResults: number;
+    maxResults?: string | null;
 
     /** Gets or sets the minimum length of the phone. */
-    minPhoneLength: number;
+    minPhoneLength?: string | null;
 
     /** Gets or sets the type of the phone search. */
     phoneSearchType?: string | null;

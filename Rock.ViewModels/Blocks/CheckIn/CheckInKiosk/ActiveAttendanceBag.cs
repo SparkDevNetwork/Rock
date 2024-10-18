@@ -30,11 +30,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
         public string Id { get; set; }
 
         /// <summary>
-        /// The encrypted identifier of the area used for check-in.
-        /// </summary>
-        public string AreaId { get; set; }
-
-        /// <summary>
         /// The encrypted identifier of the group used for check-in.
         /// </summary>
         public string GroupId { get; set; }

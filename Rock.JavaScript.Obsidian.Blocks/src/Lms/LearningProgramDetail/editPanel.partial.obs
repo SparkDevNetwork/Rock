@@ -32,7 +32,7 @@
 
                             <CheckBox
                                       v-model="isCompletionStatusTracked"
-                                      help="Determines if program start and end dates will be automatically tracked for students as they start/complete classes."
+                                      help="Determines if program start and end dates will be automatically tracked for individuals as they start/complete classes."
                                       label="Track Program Status" />
 
                             <DropDownList
@@ -76,6 +76,13 @@
                                            label="Image"
                                            :binaryFileTypeGuid="imageFileTypeGuid" />
 
+                            <DropDownList
+                                          label="Default Grading System"
+                                          v-model="gradingSystem"
+                                          :grouped="false"
+                                          :items="gradingSystems"
+                                          :multiple="false"
+                                          :showBlankItem="true" />
                             <!-- <NumberBox
                                        v-model="absencesWarningCount"
                                        label="Absences Warning Count"
@@ -151,7 +158,9 @@
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
     const systemCommunications = ref(props.options.systemCommunications ?? []);
+    const gradingSystems = ref(props.options.gradingSystems ?? []);
 
+    const gradingSystem = propertyRef(props.modelValue.bag?.defaultGradingSystem?.value ?? "", "DefaultGradingSystem");
     const systemCommunicationValue = propertyRef(props.modelValue.bag?.systemCommunication?.value ?? "", "SystemCommunication");
     const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? {}, "CompletionWorkflowType");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
@@ -187,7 +196,8 @@
         isActive,
         isPublic,
         name,
-        publicName
+        publicName,
+        gradingSystem
     ];
 
     // #endregion
@@ -224,6 +234,7 @@
         updateRefValue(absencesWarningCount, props.modelValue.bag?.absencesWarningCount ?? null);
         updateRefValue(absencesCriticalCount, props.modelValue.bag?.absencesCriticalCount ?? null);
         updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? {});
+        updateRefValue(gradingSystem, props.modelValue.bag?.defaultGradingSystem?.value ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -253,6 +264,7 @@
         setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);
         setPropertiesBoxValue(newValue, "absencesWarningCount", absencesWarningCount.value);
         setPropertiesBoxValue(newValue, "absencesCriticalCount", absencesCriticalCount.value);
+        setPropertiesBoxValue(newValue, "defaultGradingSystem", { value: gradingSystem.value });
 
         emit("update:modelValue", newValue);
     });

@@ -113,6 +113,12 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         public FamilyPreRegistrationSmsOptInFieldBag DisplaySmsOptIn { get; set; }
 
         /// <summary>
+        /// Moves the Child panel above the Adult Information panel and starts
+        /// with one child to be filled in.
+        /// </summary>
+        public bool PrioritizeChildEntry { get; set; }
+
+        /// <summary>
         /// Gets or sets the campus field.
         /// </summary>
         public FamilyPreRegistrationFieldBag CampusField { get; set; }

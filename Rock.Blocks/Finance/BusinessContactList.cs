@@ -45,7 +45,6 @@ namespace Rock.Blocks.Finance
 
     [SystemGuid.EntityTypeGuid( "49ef69c9-b893-4684-be71-8d8bc8905b06" )]
     [SystemGuid.BlockTypeGuid( "5e72c18d-f459-4226-820b-b47f88efeb0f" )]
-    [CustomizedGrid]
     public class BusinessContactList : RockEntityListBlockType<Person>
     {
         #region Keys
@@ -137,6 +136,12 @@ namespace Rock.Blocks.Finance
             }
 
             return businesses.AsQueryable();
+        }
+
+        protected override List<Person> GetListItems( IQueryable<Person> queryable, RockContext rockContext )
+        {
+            var items = base.GetListItems( queryable, rockContext );
+            return items;
         }
 
         /// <inheritdoc/>

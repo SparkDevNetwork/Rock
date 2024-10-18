@@ -34,9 +34,15 @@ namespace Rock.Enums.CheckIn
         DoNotAsk = 1,
 
         /// <summary>
-        /// Only ask for an ability level if they already have one on file.
+        /// Only ask for an ability level if they don't already have one on file.
         /// This lets them update an ability level but not set it initially.
         /// </summary>
-        DoNotAskIfThereIsNoAbilityLevel = 2
+        DoNotAskIfThereIsNoAbilityLevel = 2,
+
+        /// <summary>
+        /// Only ask for an ability level if they already have one on file.
+        /// This lets them set an initial ability level but not update one.
+        /// </summary>
+        DoNotAskIfThereIsAnAbilityLevel = 3
     }
 }

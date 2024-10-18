@@ -135,6 +135,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BinaryFileType target, BinaryFileType source )
         {
             target.Id = source.Id;
+            target.AllowAnonymous = source.AllowAnonymous;
             target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.CacheToServerFileSystem = source.CacheToServerFileSystem;
             target.Description = source.Description;

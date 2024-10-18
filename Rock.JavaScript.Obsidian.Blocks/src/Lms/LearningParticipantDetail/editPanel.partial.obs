@@ -9,14 +9,12 @@
                       label="Participant"
                       rules="required" />
 
-        <DropDownList :show-blank-item="false"
-                      formControlClasses="input-width-md margin-l-sm"
-                      v-model="roleValue"
-                      label="Participant Role"
-                      help="The role the participant will play in the class."
-                      :items="classRoles"
-                      horizontal
-                      rules="required" />
+        <TextBox
+                 v-model="note"
+                 label="Note"
+                 textMode="multiline"
+                 :rows="4" />
+
     </fieldset>
 </template>
 
@@ -24,7 +22,7 @@
     import { PropType, ref, watch } from "vue";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -43,8 +41,6 @@
         }
     });
 
-    const classRoles = ref(props.options?.classRoles ?? []);
-
     const emit = defineEmits<{
         (e: "update:modelValue", value: ValidPropertiesBox<LearningParticipantBag>): void,
         (e: "propertyChanged", value: string): void
@@ -55,7 +51,7 @@
     const personAlias = propertyRef<ListItemBag>(props.modelValue.bag?.personAlias ?? {}, "PersonAlias");
     const participantRole = propertyRef(props.modelValue.bag?.participantRole ?? {}, "ParticipantRole");
     const isFacilitator = ref(props.modelValue.bag?.isFacilitator ?? false);
-
+    const note = ref(props.modelValue.bag?.note ?? "");
     const roleValue = ref(participantRole.value.value ?? "");
 
     // #endregion

@@ -19,6 +19,8 @@
                     title="Date"
                     field="date"
                     :filter="dateValueFilter"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Campus)"
@@ -121,6 +123,8 @@
                         title="Total Amount"
                         field="totalAmount"
                         :filter="numberValueFilter"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />

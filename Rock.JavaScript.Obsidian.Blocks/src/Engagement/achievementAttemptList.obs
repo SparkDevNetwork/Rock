@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="itemTerm"
+          itemTerm="Attempt"
+          :title="itemTerm"
           :entityTypeGuid="EntityType.AchievementAttempt"
           stickyHeader
           liveUpdates

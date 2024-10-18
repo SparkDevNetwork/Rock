@@ -21,6 +21,7 @@ import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningAct
 import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { isValidGuid } from "@Obsidian/Utility/guid";
 
 /** Determines what screen should be shown. */
 export enum ComponentScreen {
@@ -150,6 +151,9 @@ type LearningComponentBaseProps = {
     /** The URL for the binaryFile if one was provided. */
     fileUrl: ComputedRef<string>;
 
+    /** Determines if the actiivty has been graded by a facilitator. */
+    hasBeenGraded: ComputedRef<boolean>;
+
     /** The title of the panel to display in the template. */
     panelTitle: ComputedRef<string>;
 
@@ -237,10 +241,11 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         }
     });
 
-    /**
-     * The binary file related to the activity (e.g. an uploaded assignment).
-     */
+    /** The binary file related to the activity (e.g. an uploaded assignment). */
     const binaryFile = ref<ListItemBag | null>(toValue(completionBag)?.binaryFile ?? null);
+
+    /** Determines if the actiivty has been graded by a facilitator. */
+    const hasBeenGraded = computed(() => isValidGuid(toValue(completionBag)?.gradedByPersonAlias?.value ?? ""));
 
     /**
      * The default title of the panel to display.
@@ -265,8 +270,11 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
      * The file URL to the binary file if one was provided.
      */
     const fileUrl = computed((): string => {
+        const securityGrantToken = toValue(completionBag).binaryFileSecurityGrant ?? "";
+        const securityGrantQueryParam = securityGrantToken.length > 0? `&securitygrant=${securityGrantToken}` : "";
+
         if (toValue(completionBag)?.binaryFile?.value) {
-            return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}`;
+            return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}${securityGrantQueryParam}`;
         }
 
         return "";
@@ -314,6 +322,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         defaultAssigneeDescription,
         ...dynamicProps,
         fileUrl,
+        hasBeenGraded,
         panelTitle,
         student
     } as LearningComponent<TConfig, TCompletion>;

@@ -97,7 +97,7 @@ namespace Rock.Blocks.Security
                 .AddTextField( "postAllowOrDeny", a => a.PostAllowOrDeny )
                 .AddTextField( "group", a => a.Group?.Name )
                 .AddTextField( "individual", a => a.PersonAlias?.Person?.ToString() )
-                .AddTextField( "specialRole", a => a.SpecialRole.ToStringSafe() )
+                .AddTextField( "specialRole", a => a.SpecialRole.ConvertToStringSafe() )
                 .AddField( "preOrder", a => a.PreOrder )
                 .AddField( "postOrder", a => a.PostOrder )
                 .AddField( "change", a => ( int ) a.ChangeType );

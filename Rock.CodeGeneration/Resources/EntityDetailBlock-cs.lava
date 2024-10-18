@@ -122,9 +122,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             }
 
             var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );{% if UseAttributeValues == true %}
-
-            entity.LoadAttributes( RockContext );{% endif %}
+            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -183,6 +181,11 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
             var bag = GetCommonEntityBag( entity );{% if UseAttributeValues == true %}
 
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );{% endif %}
 
             return bag;
@@ -197,6 +200,11 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             }
 
             var bag = GetCommonEntityBag( entity );{% if UseAttributeValues == true %}
+
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );{% endif %}
 

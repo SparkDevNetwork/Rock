@@ -371,6 +371,8 @@ export const EntityType = {
     InteractionComponent: "ACE6145B-57D6-4694-972F-EC43AF776DE7",
     /** The EntityType Guid for Rock.Model.InteractionDeviceType  */
     InteractionDeviceType: "C1A24534-C77F-41A8-BCA9-73ABA57348E3",
+    /** The guid for the Rock.Model.InteractionEntity entity. */
+    InteractionEntity: "AB3AC547-CCEF-4662-9646-64F16813DAC4",
     /** The EntityType Guid for Rock.Model.InteractionSession  */
     InteractionSession: "338025DE-C16F-47BB-BA31-6DE0C59E59AA",
     /** The EntityType Guid for Rock.Model.InteractionSessionLocation  */
@@ -479,8 +481,12 @@ export const EntityType = {
     MobileContentChannelItemViewBlockType: "44A8B647-E0A7-42E7-9A75-276310F7E7BB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.AttributeValues. */
     MobileCoreAttributeValues: "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.MyNotes. */
+    MobileCoreMyNotesBlockType: "1CCC09C4-2994-4009-813F-2F4B86C13BFE",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes */
     MobileCoreNotesBlockType: "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.QuickNote. */
+    MobileCoreQuickNoteBlockType: "9AA328FB-8FBB-4C5D-A898-C9B355051ADD",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType: "F81015CD-EBA9-4358-B930-4F1AB29AF879",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.SmartSearch. */

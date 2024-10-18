@@ -44,9 +44,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public AssignTo AssignTo { get; set; }
 
         /// <summary>
-        /// The calculation method used for determing the AvailableDate of the activity.
+        /// The criteria used for determining the AvailableDate of the activity.
         /// </summary>
-        public AvailableDateCalculationMethod AvailableDateCalculationMethod { get; set; }
+        public AvailabilityCriteria AvailabilityCriteria { get; set; }
 
         /// <summary>
         /// Gets or sets the calculated available date for the activity.
@@ -110,14 +110,20 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public string DescriptionAsHtml { get; set; }
 
         /// <summary>
-        /// The calculation method used for determing the DueDate of the activity.
+        /// The criteria used for determining the DueDate of the activity.
         /// </summary>
-        public DueDateCalculationMethod DueDateCalculationMethod { get; set; }
+        public DueDateCriteria DueDateCriteria { get; set; }
 
         /// <summary>
         /// Gets or sets the calculated due date for the activity.
         /// </summary>
         public DateTime? DueDateCalculated { get; set; }
+
+        /// <summary>
+        /// The method for updating LearningActivityCompletion.DueDate properties when the
+        /// LearningActivity's due date criteria is changed.
+        /// </summary>
+        public DueDateChangeType? DueDateChangeType { get; set; }
 
         /// <summary>
         /// Gets or sets the default date the activity is due.
@@ -160,7 +166,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of students who are assigned this activity.
+        /// Gets or sets the percentage of students who have completed this activity.
         /// </summary>
         public double PercentComplete { get; set; }
 

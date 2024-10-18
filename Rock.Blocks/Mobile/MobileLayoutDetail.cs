@@ -36,7 +36,7 @@ namespace Rock.Blocks.Mobile
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of a mobile layout." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "e83c989b-5ecb-4de4-b5bf-11af7fc2cca3" )]
     [SystemGuid.BlockTypeGuid( "c64f92cc-38a6-4562-8eae-d4f30b4af017" )]
@@ -198,7 +198,7 @@ namespace Rock.Blocks.Mobile
         {
             var layout = GetInitialEntity<Layout, LayoutService>( rockContext, PageParameterKey.LayoutId );
 
-            if ( layout.Id == 0 )
+            if ( layout?.Id == 0 )
             {
                 var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId )?.AsIntegerOrNull();
                 if ( siteId.HasValue )
@@ -392,7 +392,11 @@ namespace Rock.Blocks.Mobile
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    { "SiteId", PageParameter( "SiteId" ) },
+                    { "Tab", "Layouts" }
+                } ) );
             }
         }
 

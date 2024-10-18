@@ -140,7 +140,6 @@ namespace Rock.Blocks.Event
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) || entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() );
                 }
                 else
                 {
@@ -182,7 +181,8 @@ namespace Rock.Blocks.Event
                 IsActive = entity.IsActive,
                 IsIndexEnabled = entity.IsIndexEnabled,
                 Name = entity.Name,
-                ExportFeedUrl = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ), entity.Id )
+                ExportFeedUrl = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ), entity.Id ),
+                CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) || entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() )
             };
         }
 

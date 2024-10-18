@@ -38,6 +38,16 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public List<LearningActivityComponentBag> ActivityTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the list of availability criteria options.
+        /// </summary>
+        public List<ListItemBag> AvailabilityCriteriaOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of due date criteria options.
+        /// </summary>
+        public List<ListItemBag> DueDateCriteriaOptions { get; set; }
+
+        /// <summary>
         /// Gets or sets whether any students have completed this activity yet.
         /// </summary>
         public bool HasCompletions { get; set; }

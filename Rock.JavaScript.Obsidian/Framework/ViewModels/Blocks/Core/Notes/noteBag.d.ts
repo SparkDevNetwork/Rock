@@ -28,6 +28,9 @@ export type NoteBag = {
     /** Gets or sets the unique anchor identifier used to link to this note. */
     anchorId?: string | null;
 
+    /** Gets or sets the approval status of this note. */
+    approvalStatus: NoteApprovalStatus;
+
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
@@ -81,7 +84,4 @@ export type NoteBag = {
 
     /** Gets or sets the text of the note. */
     text?: string | null;
-
-    /** Gets or sets the approval status of this note. */
-    approvalStatus: NoteApprovalStatus;
 };

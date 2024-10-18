@@ -65,7 +65,7 @@ export type DocumentTypeBag = {
     isSystem: boolean;
 
     /** Gets or sets the maximum documents per entity.  This would limit the documents of that type per entity. A blank value means no limit. */
-    maxDocumentsPerEntity?: number | null;
+    maxDocumentsPerEntity?: string | null;
 
     /** Gets or sets the given Name of the DocumentType. */
     name?: string | null;

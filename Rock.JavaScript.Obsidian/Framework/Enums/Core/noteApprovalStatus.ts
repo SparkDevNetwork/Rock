@@ -22,7 +22,6 @@
 //
 
 /** Represents the approval status of a note */
-/** @deprecated This enum is no longer used and will be removed in the future. */
 export const NoteApprovalStatus = {
     /** The Note is pending approval. */
     PendingApproval: 0,

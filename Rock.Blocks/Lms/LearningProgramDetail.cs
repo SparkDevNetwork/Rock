@@ -56,19 +56,24 @@ namespace Rock.Blocks.Lms
     [CustomDropdownListField(
         "Display Mode",
         Key = AttributeKey.DisplayMode,
-        Description = "Select 'Summary' to show only attributes that are 'Show on Grid'. Select 'Full' to show all attributes.",
-        ListSource = "Full,Summary",
+        Description = "Select 'Summary' to show the summary page with (optional) KPIs and the gear icon that navigates to the traditional 'Detail' view.",
+        ListSource = "Summary,Detail",
         IsRequired = true,
         DefaultValue = "Summary",
         Order = 2 )]
 
-    [LinkedPage( "Courses Page",
-        Description = "The page that will show the courses for the learning program.",
-        Key = AttributeKey.CoursesPage, IsRequired = false, Order = 4 )]
+    [CustomDropdownListField(
+        "Attribute Display Mode",
+        Key = AttributeKey.AttributeDisplayMode,
+        Description = "Select 'Is Grid Column' to show only attributes that are 'Show on Grid'. Select 'All' to show all attributes.",
+        ListSource = "Is Grid Column,All",
+        IsRequired = true,
+        DefaultValue = "Is Grid Column",
+        Order = 3 )]
 
-    [LinkedPage( "Completion Detail Page",
-        Description = "The page that will show the program completion detail.",
-        Key = AttributeKey.CompletionDetailPage, IsRequired = false, Order = 5 )]
+    [LinkedPage( "Detail Page",
+        Description = "The page that will show the Detail view for the learning program (if Display Mode is 'Summary').",
+        Key = AttributeKey.DetailPage, IsRequired = false, Order = 4 )]
 
     #endregion
 
@@ -80,9 +85,8 @@ namespace Rock.Blocks.Lms
 
         private static class AttributeKey
         {
-            public const string Category = "Category";
-            public const string CompletionDetailPage = "CompletionDetailPage";
-            public const string CoursesPage = "CoursesPage";
+            public const string AttributeDisplayMode = "AttributeDisplayMode";
+            public const string DetailPage = "DetailPage";
             public const string DisplayMode = "DisplayMode";
             public const string ShowKPIs = "ShowKPIs";
         }
@@ -96,14 +100,13 @@ namespace Rock.Blocks.Lms
         private static class PageParameterKey
         {
             public const string LearningProgramId = "LearningProgramId";
-            public const string LearningProgramCompletionId = "LearningProgramCompletionId";
+            public const string ReturnUrl = "returnUrl";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
-            public const string CoursesPage = "CoursesPage";
-            public const string CompletionDetailPage = "CompletionDetailPage";
+            public const string DetailPage = "DetailPage";
         }
 
         #endregion Keys
@@ -133,7 +136,12 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramDetailOptionsBag();
 
+            options.DisplayMode = GetAttributeValue( AttributeKey.DisplayMode );
             options.SystemCommunications = isEditable ? GetCommunicationTemplates() : new List<ListItemBag>();
+            options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable()
+                .Where( g => g.IsActive )
+                .OrderBy( g => g.Name )
+                .ToListItemBagList();
 
             return options;
         }
@@ -257,6 +265,7 @@ namespace Rock.Blocks.Lms
                 CompletionWorkflowTypeId = entity.CompletionWorkflowTypeId,
                 Completions = kpis.Completions,
                 ConfigurationMode = entity.Id > 0 ? ( ConfigurationMode? ) entity.ConfigurationMode : null,
+                DefaultGradingSystem = entity.DefaultLearningGradingSystem?.ToListItemBag(),
                 Description = entity.Description,
                 HighlightColor = entity.HighlightColor,
                 IconCssClass = entity.IconCssClass,
@@ -369,6 +378,9 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.ConfigurationMode ),
                 () => entity.ConfigurationMode = box.Bag.ConfigurationMode.Value );
 
+            box.IfValidProperty( nameof( box.Bag.DefaultGradingSystem ),
+                () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ) );
+
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
 
@@ -420,7 +432,10 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningProgram"/> to be viewed or edited on the page.</returns>
         protected override LearningProgram GetInitialEntity()
         {
-            var initialEntity = GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
+            var disablePredicatbleIds = this.PageCache.Layout.Site.DisablePredictableIds;
+            var initialEntity = new LearningProgramService( RockContext )
+                .GetInclude( PageParameter( PageParameterKey.LearningProgramId ), p => p.DefaultLearningGradingSystem, !disablePredicatbleIds )
+                ?? new LearningProgram();
 
             if ( initialEntity.Id == 0 )
             {
@@ -431,7 +446,7 @@ namespace Rock.Blocks.Lms
                 initialEntity.SystemCommunication = defaultSystemCommunication;
                 initialEntity.HighlightColor = infoColor;
             }
-
+            
             return initialEntity;
         }
 
@@ -441,22 +456,10 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls( string idKey )
         {
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = idKey
-            };
-
-            var completionDetailPageParams = new Dictionary<string, string>()
-            {
-                [PageParameterKey.LearningProgramId] = idKey,
-                [PageParameterKey.LearningProgramCompletionId] = "((Key))"
-            };
-
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.CoursesPage] = this.GetLinkedPageUrl( AttributeKey.CoursesPage, queryParams ),
-                [NavigationUrlKey.CompletionDetailPage] = this.GetLinkedPageUrl( AttributeKey.CompletionDetailPage, completionDetailPageParams ),
+                [NavigationUrlKey.ParentPage] = PageParameter(PageParameterKey.ReturnUrl) ?? this.GetParentPageUrl(),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.LearningProgramId, idKey ),
             };
         }
 
@@ -478,7 +481,7 @@ namespace Rock.Blocks.Lms
             {
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                entity = entityService.GetInclude( idKey, p => p.DefaultLearningGradingSystem, !PageCache.Layout.Site.DisablePredictableIds );
             }
             else
             {
@@ -506,9 +509,10 @@ namespace Rock.Blocks.Lms
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
+            var pageParams = pageReference.Parameters.Where( p => p.Key == PageParameterKey.LearningProgramId ).ToDictionary( p => p.Key, p => p.Value );
 
             var entityName = entityKey.Length > 0 ? new LearningProgramService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
-            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageParams );
             var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
 
             return new BreadCrumbResult

@@ -105,11 +105,27 @@ namespace Rock.ViewModels.CheckIn
         public bool IsPhotoHidden { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether removing people with a "can check-in"
+        /// relationship from the family is allowed. This does not allow
+        /// full family members to be removed.
+        /// </summary>
+        /// <value><c>true</c> if can check-in relationship can be removed; otherwise, <c>false</c>.</value>
+        public bool IsRemoveFromFamilyAtKioskAllowed { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether the supervisor screen is available
         /// to kiosks after entering a pin number.
         /// </summary>
         /// <value><c>true</c> if the supervisor screen is available; otherwise, <c>false</c>.</value>
         public bool IsSupervisorEnabled { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether to attempt to use the same options
+        /// from the first service when a person is checking into more than one
+        /// service schedule.
+        /// </summary>
+        /// <value><c>true</c> if the same options from the first service will be used; otherwise, <c>false</c>.</value>
+        public virtual bool IsSameOptionUsed { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum length of the phone number during

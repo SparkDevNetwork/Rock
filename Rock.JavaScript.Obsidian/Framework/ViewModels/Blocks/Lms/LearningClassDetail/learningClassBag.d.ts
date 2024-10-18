@@ -42,13 +42,16 @@ export type LearningClassBag = {
     /** Gets or sets the related LearningCourse name. */
     courseName?: string | null;
 
+    /** Gets or sets the default LearningGradingSystem defined by the LearningProgram. */
+    defaultGradingSystem?: ListItemBag | null;
+
     /** Gets or sets the optional description of the group. */
     description?: string | null;
 
     /** Gets or sets the list of facilitators for this learning class. */
     facilitators?: LearningClassFacilitatorBag[] | null;
 
-    /** Gets or sets the related Rock.Model.LearningGradingSystem. */
+    /** Gets or sets the related LearningGradingSystem. */
     gradingSystem?: ListItemBag | null;
 
     /** Gets or sets the identifier key of this entity. */
@@ -60,7 +63,7 @@ export type LearningClassBag = {
     /** Gets or sets a value indicating whether the group should be shown in group finders */
     isPublic: boolean;
 
-    /** Gets or Sets the Location that is associated with the Class. */
+    /** Gets or Sets the Location that is associated with the LearningClass. */
     location?: ListItemBag | null;
 
     /** Gets or sets the Name of the Group. This property is required. */

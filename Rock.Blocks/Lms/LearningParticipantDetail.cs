@@ -186,8 +186,9 @@ namespace Rock.Blocks.Lms
                 IdKey = entity.IdKey,
                 Absences = absences,
                 AbsencesLabelStyle = entity.LearningClass?.AbsencesLabelStyle( absences ?? 0 ),
-                CurrentGradePercent = entity.LearningGradePercent,
+                CurrentGradePercent = Math.Round( entity.LearningGradePercent, 1),
                 CurrentGradeText = entity.LearningGradingSystemScale?.Name,
+                Note = entity.Note,
                 ParticipantRole = entity.GroupRole?.ToListItemBag(),
                 PersonAlias = entity.Person?.PrimaryAlias?.ToListItemBag(),
                 IsFacilitator = entity.GroupRole?.IsLeader ?? false
@@ -618,21 +619,19 @@ namespace Rock.Blocks.Lms
             }
 
             var now = DateTime.Now;
+            var participantService = new LearningParticipantService( RockContext );
 
             // Get the grade scales first since we'll need them for the grade caluculations.
-            var gradeScales = new LearningParticipantService( RockContext ).Queryable()
+            var gradeScales = participantService.Queryable()
                 .Where( p => p.Id == entity.Id )
                 .Include( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
                 .SelectMany( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
                 .ToList()
                 .OrderByDescending( g => g.ThresholdPercentage );
 
-            var learningPlan = new LearningActivityCompletionService( RockContext ).Queryable()
-                .Include( a => a.LearningActivity )
-                .Where( a => a.StudentId == entity.Id )
-                .AsNoTracking()
-                .ToList()
-                .OrderBy( a => a.LearningActivity.Order );
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var personId = GetCurrentPerson()?.Id ?? 0;
+            var learningPlan = participantService.GetStudentLearningPlan( classId, personId );
 
             var components = LearningActivityContainer.Instance.Components;
 

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Shows high-level statistics of the tithing overview." )]
     [IconCssClass( "fa fa-question" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -397,7 +397,7 @@ namespace Rock.Blocks.Reporting
                     .Select( x => new ChartDatasetInfo
                     {
                         MetricValueCampusIds = x.Key.MetricValuePartitionEntityIds,
-                        DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
+                        DateTime = x.Key.DateKey.GetDateKeyDate(),
                         CampusId = x.PartitionEntityId,
                         Value = x.Value.FirstOrDefault(),
                     } )

@@ -30,6 +30,7 @@ using System.Web;
 
 using Rock.Bus.Message;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -245,23 +246,29 @@ namespace Rock.Data
         /// </summary>
         private void ExecuteAfterCommitActions()
         {
-            // Create a new array for committed actions. This is so that if
-            // some action registers yet another action (not supported) then
-            // it will go into the next save rather than cause an enumeration error.
-            var actions = _commitedActions;
-            _commitedActions = new List<Action>();
-
-            foreach ( var action in actions )
+            // An executed action might not know that it is already in the after
+            // commit state and try to enqueue another ExecuteAfterCommit call.
+            // This will allow us to catch those and execute them.
+            while ( _commitedActions.Any() )
             {
-                try
+                // Create a new array for committed actions. This is so that if
+                // some action registers yet another action then it will go into
+                // the new queue rather than cause an enumeration error.
+                var actions = _commitedActions;
+                _commitedActions = new List<Action>();
+
+                foreach ( var action in actions )
                 {
-                    action();
-                }
-                catch ( Exception ex )
-                {
-                    // Log but do not throw, this ensures all commit
-                    // actions get executed.
-                    ExceptionLogService.LogException( ex );
+                    try
+                    {
+                        action();
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Log but do not throw, this ensures all commit
+                        // actions get executed.
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
             }
         }
@@ -749,6 +756,9 @@ namespace Rock.Data
 
             List<ITransaction> indexTransactions = new List<ITransaction>();
             var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
+            var addInteractionEntityTransactions = new List<AddInteractionEntityTransaction>();
+            var interactionGuid = RockRequestContextAccessor.Current?.RelatedInteractionGuid;
+
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -777,8 +787,9 @@ namespace Rock.Data
                     }
                 }
 
-                // Check if this item should be processed by the content collection.
                 var itemEntityTypeCache = EntityTypeCache.Get( item.Entity.TypeId );
+
+                // Check if this item should be processed by the content collection.
                 if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentCollectionIndexingEnabled )
                 {
                     // We only handle deleted states here. The detail blocks where
@@ -824,10 +835,20 @@ namespace Rock.Data
                         };
                     }, TaskContinuationOptions.ExecuteSynchronously );
                 }
+
+                // If we are supposed to track this entity and the Interaction
+                // that it's creation is related to then prepare the transaction
+                // that will be queued up later.
+                if ( interactionGuid.HasValue && itemEntityTypeCache?.IsRelatedToInteractionTrackedOnCreate == true && item.PreSaveState == EntityContextState.Added )
+                {
+                    var transaction = new AddInteractionEntityTransaction( itemEntityTypeCache.Id, item.Entity.Id, interactionGuid.Value );
+
+                    addInteractionEntityTransactions.Add( transaction );
+                }
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( indexTransactions.Any() )
+            if ( indexTransactions.Any() || deleteContentCollectionIndexingMsgs.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
@@ -837,6 +858,16 @@ namespace Rock.Data
                         indexTransactions.ForEach( t => t.Enqueue() );
                         deleteContentCollectionIndexingMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
+                } );
+            }
+
+            // If we had any InteractionEntity transactions to process then
+            // queue them up now.
+            if ( addInteractionEntityTransactions.Any() )
+            {
+                ExecuteAfterCommit( () =>
+                {
+                    addInteractionEntityTransactions.ForEach( t => t.Enqueue() );
                 } );
             }
         }

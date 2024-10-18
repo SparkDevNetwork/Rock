@@ -27,14 +27,12 @@ export const FieldType = {
     AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
     /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
-    /** AI Provider field type */
-    AIProvider: "2BAA190B-3EF7-47CE-AF70-C7613ED344AB",
-    /** AI provider picker field type. */
-    AiProviderPicker: "2BAA190B-3EF7-47CE-AF70-C7613ED344AB",
+    /** AI provider field type. */
+    AiProvider: "2BAA190B-3EF7-47CE-AF70-C7613ED344AB",
     /** Assessment field type */
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
     /** Asset field type */
-    Asset: "FC27D395-8F57-467E-91FF-E648F807110E",
+    Asset: "4E4E8692-23B4-49EA-88B4-2AB07899E0EE",
     /** Asset storage provider field type */
     AssetStorageProvider: "1596F562-E8D0-4C5F-9A00-23B5594F17E2",
     /** Asset Storage System field type */
@@ -241,6 +239,8 @@ export const FieldType = {
     MetricEntity: "3A7FB32E-1CCD-4F79-B085-BDBADEB56CCF",
     /** Metrics field type */
     Metrics: "3AF9AD35-9F3E-4497-BFDE-60C6C1827653",
+    /** Mobile Navigation Action field type */
+    MobileNavigationAction: "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8",
     /** Month Day field type */
     MonthDay: "8BED8DD8-8167-4052-B807-A1E72C133611",
     /** Multi-Select field type */

@@ -166,7 +166,7 @@
             year += props.futureYearCount;
         }
 
-        while (year >= 1900) {
+        while (year >= props.startYear) {
             years.push(year.toString());
             year--;
         }

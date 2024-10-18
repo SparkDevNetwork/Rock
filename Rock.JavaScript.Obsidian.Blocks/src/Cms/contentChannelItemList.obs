@@ -20,7 +20,7 @@
                     :filter="config?.options?.showFilters ? textValueFilter : undefined" />
 
         <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn && config?.options?.includeTime"
-                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         name="startDateTime"
                         :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                         field="startDateTime"
@@ -28,7 +28,7 @@
                         width="250" />
 
         <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
-                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     name="startDateTime"
                     :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                     field="startDateTime"
@@ -45,45 +45,15 @@
         </Column>
 
 
-        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime"
-                        headerClass="text-right"
-                        name="expireDateTime"
-                        title="Expire"
-                        field="expireDateTime"
-                        :filter="config?.options?.showFilters ? dateValueFilter : undefined"
-                        width="250" />
+        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime" itemClass="justify-content-end text-right" name="expireDateTime" title="Expire" field="expireDateTime" :filter="config?.options?.showFilters ? dateValueFilter : undefined" width="250" />
 
-        <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime"
-                    headerClass="text-right"
-                    name="expireDateTime"
-                    title="Expire"
-                    field="expireDateTime"
-                    :filter="config?.options?.showFilters ? dateValueFilter : undefined"
-                    width="250" />
+        <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime" itemClass="justify-content-end text-right" name="expireDateTime" title="Expire" field="expireDateTime" :filter="config?.options?.showFilters ? dateValueFilter : undefined" width="250" />
 
-        <NumberColumn v-if="config?.options?.showPriorityColumn"
-                      headerClass="text-right"
-                      itemClass="justify-content-end text-right"
-                      name="priority"
-                      title="Priority"
-                      field="priority"
-                      :filter="config?.options?.showFilters ? numberValueFilter : undefined"
-                      width="125" />
+        <NumberColumn v-if="config?.options?.showPriorityColumn" itemClass="justify-content-end text-right" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="125" />
 
-        <BooleanColumn v-if="showOccurrencesColumn"
-                       headerClass="text-center"
-                       itemClass="justify-content-center text-center"
-                       name="occurrences"
-                       title="Event Occurrences"
-                       field="occurrences"
-                       :filter="config?.options?.showFilters ? booleanValueFilter : undefined"
-                       width="120" />
+        <BooleanColumn v-if="showOccurrencesColumn" itemClass="justify-content-center text-center" name="occurrences" title="Event Occurrences" field="occurrences" :filter="config?.options?.showFilters ? booleanValueFilter : undefined" width="120" />
 
-        <Column v-if="config.options?.isContentLibraryEnabled"
-                itemClass="grid-columncommand justify-content-center"
-                name="library"
-                title="Library"
-                width="80">
+        <Column v-if="config.options?.isContentLibraryEnabled" itemClass="grid-columncommand justify-content-center" name="library" title="Library" width="80">
             <template #format="{ row }">
                 <RockButton v-if="row.isUploadedToContentLibrary"
                             title="Update"
@@ -119,25 +89,13 @@
 
         <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" :filter="undefined" />
 
-        <LabelColumn v-if="config?.options?.showStatusColumn"
-                     name="status"
-                     title="Status"
-                     field="status"
-                     :filter="config?.options?.showFilters ? pickExistingValueFilter : undefined"
-                     :textSource="ContentChannelItemStatusDescription"
-                     :classSource="statusLabelColors"
-                     width="150" />
+        <LabelColumn v-if="config?.options?.showStatusColumn" name="status" title="Status" field="status" :filter="config?.options?.showFilters ? pickExistingValueFilter : undefined" :textSource="ContentChannelItemStatusDescription" :classSource="statusLabelColors" width="150" />
 
         <SecurityColumn v-if="config?.options?.showSecurityColumn" />
 
         <DeleteColumn v-if="config?.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-    <Modal v-model="isUpdateModalVisible"
-           title="Send to Library"
-           saveText="Update"
-           :isSaveButtonDisabled="isLoading"
-           @save="onUpdateModalSave"
-           @closeModal="onUpdateModalCancel">
+    <Modal v-model="isUpdateModalVisible" title="Send to Library" saveText="Update" :isSaveButtonDisabled="isLoading" @save="onUpdateModalSave" @closeModal="onUpdateModalCancel">
         <Loading :isLoading="isLoading">
             <p>Are you sure you would like to update the item "{{ currentRow?.title }}" in the library? Updating an item will temporarily remove it from the library until it can be re-approved.</p>
         </Loading>
@@ -145,12 +103,7 @@
             <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
         </template>
     </Modal>
-    <Modal v-model="isRedownloadModalVisible"
-           title="Re-download from Library"
-           saveText="Re-download"
-           :isSaveButtonDisabled="isLoading"
-           @save="onRedownloadModalSave"
-           @closeModal="onRedownloadModalCancel">
+    <Modal v-model="isRedownloadModalVisible" title="Re-download from Library" saveText="Re-download" :isSaveButtonDisabled="isLoading" @save="onRedownloadModalSave" @closeModal="onRedownloadModalCancel">
         <Loading :isLoading="isLoading">
             <div class="alert alert-warning">
                 <span class="js-notification-text">The action you are about to perform will overwrite the existing content of the item "Beta Test ChatGPT on Biblical New Years Resolutions.". Any changes will be lost. Are you sure you want to proceed with the update? </span>
@@ -160,12 +113,7 @@
             <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
         </template>
     </Modal>
-    <Modal v-model="isUploadModalVisible"
-           title="Send to Library"
-           saveText="Upload"
-           :isSaveButtonDisabled="isLoading"
-           @save="onUploadModalSave"
-           @closeModal="onUploadModalCancel">
+    <Modal v-model="isUploadModalVisible" title="Send to Library" saveText="Upload" :isSaveButtonDisabled="isLoading" @save="onUploadModalSave" @closeModal="onUploadModalCancel">
         <Loading :isLoading="isLoading">
             <p>Are you sure you would like to upload the item "{{ currentRow?.title }}" to the library? This will be shared with the <a href="https://rockrms.com/library/licenses?utm_source=rock-item-uploaded" target="_blank">{{ config.options?.libraryLicenseName }} License</a></p>
         </Loading>

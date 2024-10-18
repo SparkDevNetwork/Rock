@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Business Contacts"
+          itemTerm="Contacts"
+          title="Business Contacts"
           :entityTypeGuid="EntityType.Person"
           stickyHeader
           liveUpdates
@@ -123,6 +124,7 @@
      * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
+        contact.value = undefined;
         isModalOpen.value = true;
     }
 

@@ -24,5 +24,5 @@
 /** The additional configuration options for the User Login List block. */
 export type UserLoginListOptionsBag = {
     /** Gets or sets a value indicating whether the block has a person context entity. */
-    isContextEntityPerson: boolean;
+    hasPersonContextEntity: boolean;
 };

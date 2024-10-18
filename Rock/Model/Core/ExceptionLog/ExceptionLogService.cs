@@ -370,6 +370,43 @@ namespace Rock.Model
                 }
             }
 
+#if WEBFORMS
+            if ( request.Properties["MS_HttpContext"] is System.Web.HttpContextWrapper httpContext )
+            {
+                var serverVars = new StringBuilder();
+
+                // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists,
+                // so make a copy of the request server variables to help avoid that error
+                var serverVarList = new NameValueCollection( httpContext.Request.ServerVariables );
+                var serverVarListString = serverVarList.ToString();
+
+                var serverVarKeys = httpContext.Request.ServerVariables.AllKeys;
+                if ( serverVarList.Count > 0 )
+                {
+                    serverVars.Append( "<table class=\"server-variables exception-table\">" );
+
+                    foreach ( string serverVar in serverVarList )
+                    {
+                        string val = string.Empty;
+                        try
+                        {
+                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+
+                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                    }
+
+                    serverVars.Append( "</table>" );
+
+                    exceptionLog.ServerVariables = serverVars.ToString();
+                }
+            }
+#endif
+
             try
             {
                 ex.Data.Add( "ExceptionLogGuid", exceptionLog.Guid );

@@ -33,6 +33,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn.Configuration
@@ -57,7 +58,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
     [Rock.SystemGuid.EntityTypeGuid( "e61908fc-ec33-4b55-b3b9-d83e32a1f064" )]
     [Rock.SystemGuid.BlockTypeGuid( "3299706f-2bb8-49db-831b-86a2b282bb02" )]
-    public class CheckInLabelDetail : RockEntityDetailBlockType<CheckInLabel, CheckInLabelBag>
+    public class CheckInLabelDetail : RockEntityDetailBlockType<CheckInLabel, CheckInLabelBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -352,6 +353,36 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
 
             return true;
+        }
+
+        #endregion
+
+        #region IBreadCrumbBlock
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.CheckInLabelId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new CheckInLabelService( rockContext )
+                    .GetSelect( key, l => l.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.CheckInLabelId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Label", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
         }
 
         #endregion

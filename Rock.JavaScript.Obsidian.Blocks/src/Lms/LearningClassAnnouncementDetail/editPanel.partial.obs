@@ -5,7 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="title"
                          label="Title"
-                         placeholder="Welcome to Introduction to the New Testament!"
+                         help="The title for the announcement that will be shown to class participants."
                          rules="required" />
             </div>
 
@@ -13,7 +13,7 @@
                 <DatePicker v-model="publishDateTime"
                             rules="required"
                             label="Publish Date"
-                            helpText="The date when the announcement will be displayed and sent." />
+                            help="The date when the announcement will be displayed and sent." />
             </div>
         </div>
         <div class="row">

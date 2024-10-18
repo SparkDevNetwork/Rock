@@ -338,10 +338,25 @@ namespace Rock.Blocks.Finance
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            return new Dictionary<string, string>
+            var parentAccountId = PageParameter( PageParameterKey.ParentAccountId ).AsIntegerOrNull();
+            if ( parentAccountId.HasValue )
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-            };
+                var qryParams = new Dictionary<string, string>();
+                if ( parentAccountId != 0 )
+                {
+                    qryParams["AccountId"] = parentAccountId.ToString();
+                }
+
+                qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+                return new Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = this.GetCurrentPageUrl( qryParams )
+                };
+            }
+            else
+            {
+                return new Dictionary<string, string> { [NavigationUrlKey.ParentPage] = this.GetCurrentPageUrl() };
+            }
         }
 
         /// <inheritdoc/>

@@ -19,7 +19,8 @@
                                      label="Course Code"
                                      rules="required" />
 
-                            <NumberBox v-model="credits"
+                            <NumberBox v-if="!isOnDemandMode"
+                                       v-model="credits"
                                        class="input-width-sm"
                                        label="Credits"
                                        rules="required" />
@@ -154,6 +155,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -234,6 +236,8 @@
             rows: [...courseRequirements.value]
         };
     });
+
+    const isOnDemandMode = ref(props.options?.configurationMode === ConfigurationMode.OnDemandLearning);
 
     // #endregion
 

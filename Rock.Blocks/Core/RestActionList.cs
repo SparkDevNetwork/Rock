@@ -29,6 +29,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.RestActionList;
 using Rock.ViewModels.Controls;
+using Rock.Web;
 
 namespace Rock.Blocks.Core
 {
@@ -49,7 +50,7 @@ namespace Rock.Blocks.Core
     [Rock.SystemGuid.EntityTypeGuid( "c8ee0e9b-7f66-488c-b3a6-357ebc62b174" )]
     [Rock.SystemGuid.BlockTypeGuid( "2eafa987-79c6-4477-a181-63392aa24d20" )]
     [CustomizedGrid]
-    public class RestActionList : RockEntityListBlockType<RestAction>
+    public class RestActionList : RockEntityListBlockType<RestAction>, IBreadCrumbBlock
     {
         #region Keys
         private static class AttributeKey
@@ -60,6 +61,11 @@ namespace Rock.Blocks.Core
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string Controller = "Controller";
         }
 
         #endregion
@@ -88,7 +94,8 @@ namespace Rock.Blocks.Core
         private RestActionListOptionsBag GetBoxOptions()
         {
             var options = new RestActionListOptionsBag();
-            int controllerId = PageParameter( "Controller" ).AsInteger();
+            var controllerIdParam = PageParameter( PageParameterKey.Controller );
+            int controllerId = Rock.Utility.IdHasher.Instance.GetId( controllerIdParam ) ?? controllerIdParam.AsInteger();
             var controller = new RestControllerService( new RockContext() ).Get( controllerId );
 
             if ( controller != null )
@@ -134,7 +141,8 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<RestAction> GetListQueryable( RockContext rockContext )
         {
-            int controllerId = PageParameter( "Controller" ).AsInteger();
+            var controllerIdParam = PageParameter( PageParameterKey.Controller );
+            int controllerId = Rock.Utility.IdHasher.Instance.GetId( controllerIdParam ) ?? controllerIdParam.AsInteger();
 
             var query = new RestActionService( rockContext ).Queryable()
                 .Where( a => a.ControllerId == controllerId )
@@ -184,6 +192,34 @@ namespace Rock.Blocks.Core
         }
 
         #endregion
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var controllerId = pageReference.GetPageParameter( PageParameterKey.Controller );
+                var controller = new RestControllerService( rockContext ).Get( controllerId );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+                var breadCrumbName = "";
+                if ( controller == null || controller.Id == 0 )
+                {
+                    breadCrumbName = "Rest Actions";
+                }
+                else
+                {
+                    breadCrumbName = controller.Name.SplitCase();
+                }
+                var breadCrumb = new BreadCrumbLink( breadCrumbName, breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
+            }
+        }
     }
 
     #region Helper Classes

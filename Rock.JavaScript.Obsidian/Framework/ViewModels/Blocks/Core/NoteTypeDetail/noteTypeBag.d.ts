@@ -26,8 +26,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type NoteTypeBag = {
-
-    /** Gets or sets the criteria for AI to automatically approve notes.   */
+    /** Gets or sets the criteria for AI to automatically approve notes.  */
     aiApprovalGuidelines?: string | null;
 
     /** Gets or sets the AI provider to use for AI approvals. */

@@ -132,6 +132,11 @@ type StandardRockFormFieldProps = {
         default: ""
     },
 
+    disableLabel: {
+        type: PropType<boolean>,
+        default: false
+    },
+
     help: {
         type: PropType<string>,
         default: ""
@@ -160,6 +165,11 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
     label: {
         type: String as PropType<string>,
         default: ""
+    },
+
+    disableLabel: {
+        type: Boolean,
+        default: false
     },
 
     help: {
@@ -215,6 +225,7 @@ function copyStandardRockFormFieldProps(source: ExtractPropTypes<StandardRockFor
 export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRockFormFieldProps>): ExtractPropTypes<StandardRockFormFieldProps> {
     const propValues = reactive<ExtractPropTypes<StandardRockFormFieldProps>>({
         label: props.label,
+        disableLabel: props.disableLabel,
         help: props.help,
         rules: props.rules,
         formGroupClasses: props.formGroupClasses,

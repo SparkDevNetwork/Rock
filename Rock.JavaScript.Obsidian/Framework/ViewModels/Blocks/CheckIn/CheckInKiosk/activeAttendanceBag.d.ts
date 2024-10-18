@@ -28,9 +28,6 @@ import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
  * counts.
  */
 export type ActiveAttendanceBag = {
-    /** The encrypted identifier of the area used for check-in. */
-    areaId?: string | null;
-
     /** The encrypted identifier of the group used for check-in. */
     groupId?: string | null;
 

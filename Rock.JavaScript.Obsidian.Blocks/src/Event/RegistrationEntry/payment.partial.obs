@@ -69,7 +69,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockValidation from "@Obsidian/Controls/rockValidation.obs";
-    import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+    import { provideSubmitPayment, usePaymentEvents } from "@Obsidian/Core/Controls/financialGateway";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -80,6 +80,7 @@
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
     const submitPayment = provideSubmitPayment();
+    const dispatchPaymentEvent = usePaymentEvents();
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
@@ -308,15 +309,22 @@
             captchaElement.value.refreshToken();
         }
 
+        dispatchPaymentEvent({ type: "submitting" });
+
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
         }, actionContext);
 
         if (result.isError || !result.data) {
-            submitErrorMessage.value = result.errorMessage || "Unknown error";
+            const errorMessage = result.errorMessage || "Unknown error";
+            submitErrorMessage.value = errorMessage;
+
+            dispatchPaymentEvent({ type: "failure", errorMessage });
         }
         else {
             registrationEntryState.successViewModel = result.data;
+
+            dispatchPaymentEvent({ type: "success" });
         }
 
         return result.isSuccess;

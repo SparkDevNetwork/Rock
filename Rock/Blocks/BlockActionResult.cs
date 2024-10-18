@@ -15,7 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Results;
 
 namespace Rock.Blocks
 {
@@ -94,6 +103,63 @@ namespace Rock.Blocks
             StatusCode = statusCode;
             Content = content;
             ContentClrType = clrType;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Executes the result and returns an object understood by the API controller.
+        /// </summary>
+        /// <param name="controller">The API controller handling the request.</param>
+        /// <param name="defaultContentNegotiator">The content negotiator that will handle encoding JSON data.</param>
+        /// <param name="validFormatters">The valid formatters for the negotiator.</param>
+        /// <param name="cancellationToken">A token that specifies when the request was aborted.</param>
+        /// <returns>A result that describes the HTTP response.</returns>
+        internal virtual Task<IHttpActionResult> ExecuteAsync( ApiController controller, IContentNegotiator defaultContentNegotiator, List<MediaTypeFormatter> validFormatters, CancellationToken cancellationToken )
+        {
+            var isErrorStatusCode = ( int ) StatusCode >= 400;
+
+            if ( isErrorStatusCode && Content is string )
+            {
+                return Task.FromResult<IHttpActionResult>( new NegotiatedContentResult<HttpError>( StatusCode, new HttpError( Content.ToString() ), defaultContentNegotiator, controller.Request, validFormatters ) );
+            }
+            else if ( Error != null )
+            {
+                return Task.FromResult<IHttpActionResult>( new NegotiatedContentResult<HttpError>( StatusCode, new HttpError( Error ), defaultContentNegotiator, controller.Request, validFormatters ) );
+            }
+            else if ( Content is HttpContent httpContent )
+            {
+                var response = controller.Request.CreateResponse( StatusCode );
+                response.Content = httpContent;
+                return Task.FromResult<IHttpActionResult>( new ResponseMessageResult( response ) );
+            }
+            else if ( Content is Stream stream )
+            {
+                if ( !( stream is MemoryStream ms ) || !ms.TryGetBuffer( out var buffer ) )
+                {
+                    buffer = new ArraySegment<byte>( stream.ReadBytesToEnd() );
+                }
+
+                var response = new HttpResponseMessage( HttpStatusCode.OK )
+                {
+                    Content = new ByteArrayContent( buffer.Array )
+                };
+
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+
+                return Task.FromResult<IHttpActionResult>( new ResponseMessageResult( response ) );
+            }
+            else if ( ContentClrType != null )
+            {
+                var genericType = typeof( NegotiatedContentResult<> ).MakeGenericType( ContentClrType );
+                return Task.FromResult( ( IHttpActionResult ) Activator.CreateInstance( genericType, StatusCode, Content, controller ) );
+            }
+            else
+            {
+                return Task.FromResult<IHttpActionResult>( new StatusCodeResult( StatusCode, controller ) );
+            }
         }
 
         #endregion

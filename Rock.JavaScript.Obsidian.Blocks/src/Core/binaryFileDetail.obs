@@ -284,9 +284,9 @@
      * Redirects the user to the Edit Label page is the page has been configured via the block settings.
      */
     function onEditLabelClick(): void {
-        if (isEditable.value === true && binaryFileEditBag.value.file?.value) {
+        if (isEditable.value === true && binaryFileEditBag.value.fileId) {
             if (config.navigationUrls?.[NavigationUrlKey.EditLabelPage]) {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.EditLabelPage]);
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.EditLabelPage].replace("((Key))", binaryFileEditBag.value.fileId));
             }
         }
     }

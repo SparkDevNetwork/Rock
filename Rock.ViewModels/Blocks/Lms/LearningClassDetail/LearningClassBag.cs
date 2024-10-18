@@ -42,6 +42,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public string CourseName { get; set; }
 
         /// <summary>
+        /// Gets or sets the default LearningGradingSystem defined by the LearningProgram.
+        /// </summary>
+        public ListItemBag DefaultGradingSystem { get; set; }
+
+        /// <summary>
         /// Gets or sets the optional description of the group.
         /// </summary>
         public string Description { get; set; }
@@ -52,7 +57,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public List<LearningClassFacilitatorBag> Facilitators { get; set; }
 
         /// <summary>
-        /// Gets or sets the related Rock.Model.LearningGradingSystem.
+        /// Gets or sets the related LearningGradingSystem.
         /// </summary>
         public ListItemBag GradingSystem { get; set; }
 
@@ -67,7 +72,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or Sets the Location that is associated with the Class.
+        /// Gets or Sets the Location that is associated with the LearningClass.
         /// </summary>
         public ListItemBag Location { get; set; }
 

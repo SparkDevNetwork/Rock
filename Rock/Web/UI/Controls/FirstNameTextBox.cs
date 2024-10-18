@@ -103,6 +103,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Should an inline validation error be diplayed if validation fails.
+        /// </summary>
+        /// <value>
+        /// The display inline validation error.
+        /// </value>
+        public bool DisplayInlineValidationError
+        {
+            get { return ViewState["DisplayInlineValidationError"] as bool? ?? false; }
+            set { ViewState["DisplayInlineValidationError"] = value; }
+        }
+
+        /// <summary>
         /// Gets the custom validator.
         /// </summary>
         /// <value>
@@ -145,6 +157,12 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
 
             RegisterJavaScript();
+        }
+
+        /// <inheritdoc/>
+        protected override void RenderDataValidator( HtmlTextWriter writer )
+        {
+            base.RenderDataValidator( writer );
 
             _customValidator.RenderControl( writer );
         }
@@ -157,7 +175,8 @@ namespace Rock.Web.UI.Controls
             var script = $@"Rock.controls.firstNameTextBox.initialize(
                 {{
                     id: '{this.ClientID}',
-                    notAllowedStrings: {GetNotAllowedStrings().ToJson()}
+                    notAllowedStrings: {GetNotAllowedStrings().ToJson()},
+                    displayInlineValidationError: {DisplayInlineValidationError.ToJavaScriptValue()}
                 }});";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "first_name_textbox-" + this.ClientID, script, true );

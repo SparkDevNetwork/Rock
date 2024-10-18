@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -32,6 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Update Persisted Datasets" )]
     [Description( "This job will update the persisted data in any Persisted Datasets that need to be refreshed." )]
 
+    [RockLoggingCategory]
     public class UpdatePersistedDatasets : RockJob
     {
 

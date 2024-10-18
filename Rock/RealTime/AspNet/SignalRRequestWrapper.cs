@@ -49,6 +49,9 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public string Method { get; }
 
+        /// <inheritdoc/>
+        public bool CookiesValuesAreUrlDecoded => true;
+
         #endregion
 
         #region Constructors

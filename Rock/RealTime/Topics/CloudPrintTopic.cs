@@ -18,8 +18,8 @@
 namespace Rock.RealTime.Topics
 {
     /// <summary>
-    /// Describes the messages that can be received from clients on this topic
-    /// as well as helpful methods to facilitate communication.
+    /// Describes the messages that can be received from clients for the cloud
+    /// print service as well as helpful methods to facilitate communication.
     /// </summary>
     [RealTimeTopic]
     internal sealed class CloudPrintTopic : Topic<ICloudPrint>

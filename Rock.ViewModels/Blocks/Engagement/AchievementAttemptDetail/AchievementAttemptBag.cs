@@ -30,12 +30,12 @@ namespace Rock.ViewModels.Blocks.Engagement.AchievementAttemptDetail
         /// <summary>
         /// Gets or sets the achievement attempt end date time.
         /// </summary>
-        public DateTime? AchievementAttemptEndDateTime { get; set; }
+        public DateTimeOffset? AchievementAttemptEndDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the achievement attempt start date time.
         /// </summary>
-        public DateTime AchievementAttemptStartDateTime { get; set; }
+        public DateTimeOffset AchievementAttemptStartDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.AchievementType of this attempt.

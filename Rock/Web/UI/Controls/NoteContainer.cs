@@ -971,7 +971,7 @@ namespace Rock.Web.UI.Controls
                 var qry = new NoteService( rockContext ).Queryable()
                     .Include( a => a.ChildNotes )
                     .Include( a => a.CreatedByPersonAlias.Person )
-                    .AreViewableBy( currentPerson.Id )
+                    .AreViewableBy( currentPerson?.Id )
                     .Where( n =>
                         configuredNoteTypeIds.Contains( n.NoteTypeId )
                         && n.EntityId == entityId.Value

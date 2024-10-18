@@ -267,7 +267,8 @@
      * @param key The key of the configuration value that was changed.
      * @param value The new value of the configuration value.
      */
-    function onUpdateConfigurationValue(_key: string, _value: string): void {
+    function onUpdateConfigurationValue(key: string, value: string): void {
+        editConfigurationValues.value[key] = value;
         updateModelValue();
     }
 

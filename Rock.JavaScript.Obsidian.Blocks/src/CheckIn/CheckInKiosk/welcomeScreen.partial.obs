@@ -327,12 +327,12 @@
                 window.clearTimeout(updateKioskStatusTimer);
             }
 
-            // Update the status once per minute. This can probably be changed
-            // to once every 10 minutes once we have RealTime hooked up.
+            // Update the status once every 15 minutes. RealTime engine will
+            // handle more immediate updates, so this just catches rare issues.
             updateKioskStatusTimer = window.setTimeout(() => {
                 updateKioskStatusTimer = undefined;
                 updateKioskStatus();
-            }, 60000);
+            }, 15 * 60 * 1000);
         }
     }
 

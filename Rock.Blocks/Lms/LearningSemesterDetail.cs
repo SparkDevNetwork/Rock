@@ -39,11 +39,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning semester." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
-
-    #region Block Attributes
-
-    #endregion
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "78bcf0d7-b5ac-4429-8055-b436652083a7" )]
     [Rock.SystemGuid.BlockTypeGuid( "97b2e57f-3a03-490d-834f-cd3640c7ff1e" )]

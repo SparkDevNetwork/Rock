@@ -8,7 +8,7 @@
                             btnType="primary"
                             class="attendee-button illustrated-button"
                             :disabled="attendee.isUnavailable || isProcessing"
-                            @click="onAttendeeClick(attendee)">
+                            @click="onAttendeeClick(attendee, $event)">
                     <span v-if="isFamilyMode" class="selection">
                         <i v-if="isAttendeeSelected(attendee)" class="fa fa-check-square"></i>
                         <i v-else class="fa fa-square-o"></i>
@@ -32,9 +32,15 @@
                         {{ attendee.unavailableMessage }}
                     </span>
 
+                    <span v-if="canRemoveAttendee(attendee)"
+                          class="btn btn-danger remove-attendee-button"
+                          @click="onRemoveAttendee(attendee)">
+                        Remove
+                    </span>
+
                     <span v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
                           class="btn btn-info change-selection-button"
-                          @click.stop="onChangeSelection(attendee)">
+                          @click="onChangeSelection(attendee)">
                         Change
                     </span>
                 </RockButton>
@@ -60,6 +66,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
     import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registrationPersonBag";
+    import { confirm } from "@Obsidian/Utility/dialogs";
 
     // This screen supports 3 distinct modes of operation depending on various
     // settings:
@@ -100,6 +107,7 @@
 
     const emit = defineEmits<{
         (event: "next", session: CheckInSession): void;
+        (event: "replaceSession", session: CheckInSession): void;
         (event: "editFamily", data: RegistrationScreenData): void;
         (event: "updateActions", actions: KioskButton[]): void;
     }>();
@@ -250,11 +258,36 @@
     }
 
     /**
+     * Checks if the attendee can be removed from the family.
+     *
+     * @param attendee The attendee to be checked.
+     *
+     * @returns `true` if the attendee can be removed; otherwise `false`.
+     */
+    function canRemoveAttendee(attendee: AttendeeBag): boolean {
+        if (!props.configuration.template?.isRemoveFromFamilyAtKioskAllowed) {
+            return false;
+        }
+
+        return !attendee.isInPrimaryFamily;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
      * Handles the click event for a family button.
      *
      * @param family The family that was selected.
      */
-    async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
+    async function onAttendeeClick(attendee: AttendeeBag, event: MouseEvent): Promise<void> {
+        // Check if the user clicked our button or one of the nested buttons.
+        if (!(event.target instanceof HTMLElement) || event.target.closest(".btn") !== event.currentTarget) {
+            console.log("skip");
+            return;
+        }
+
         if (isFamilyMode.value) {
             if (isAttendeeSelected(attendee)) {
                 selections.value = selections.value.filter(s => s !== attendee.person?.id);
@@ -303,6 +336,45 @@
         }
         finally {
             isProcessing.value = false;
+        }
+    }
+
+    /**
+     * Called when the Remove button for an attendee has been clicked. This
+     * will attempt to remove the person from the family.
+     */
+    async function onRemoveAttendee(attendee: AttendeeBag): Promise<void> {
+        if (!await confirm(`Remove ${attendee.person?.nickName} from showing up in your family at check-in?`)) {
+            return;
+        }
+
+        if (attendee.person?.id && !isProcessing.value) {
+            try {
+                isProcessing.value = true;
+
+                const data = {
+                    templateId: props.configuration.template?.id,
+                    familyId: props.session.currentFamilyId,
+                    attendeeId: attendee.person.id
+                };
+
+                const result = await invokeBlockAction("RemoveAttendee", data);
+
+                if (!result.isSuccess) {
+                    await alert(result.errorMessage || "Unable to remove person from family.");
+                    return;
+                }
+
+                const newSession = props.session.withRemovedAttendee(attendee.person?.id);
+
+                emit("replaceSession", newSession);
+            }
+            catch (error) {
+                await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+            }
+            finally {
+                isProcessing.value = false;
+            }
         }
     }
 
@@ -366,7 +438,14 @@
                 emit("next", await props.session.withNextScreen());
             }
             else {
-                let newSession = props.session.withSelectedAttendees(selections.value);
+                // This makes sure our selections are in the same order as they
+                // are displayed on screen so when we start asking for details
+                // of attendees the order isn't random.
+                const familySelections = attendees.value
+                    .filter(a => selections.value.includes(a.person?.id ?? ""))
+                    .map(a => a.person?.id ?? "");
+
+                let newSession = props.session.withSelectedAttendees(familySelections);
 
                 emit("next", await newSession.withNextScreen());
             }
