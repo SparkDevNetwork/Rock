@@ -67,19 +67,47 @@
     }
 
     function onAddColumn(): void {
-        const insertAfterColumnIndex = columnElements.value.length - 1;
-        const lastColumnElement = columnElements.value[insertAfterColumnIndex];
+        let columns = [...columnElements.value];
+
+        // Before adding a new column, ensure the section component is a <table>.
+        if (columns.length === 1 && columns[0].tagName !== "td") {
+            // Overwrite the array element with the new HTML element.
+            columns[0] = replaceTagName(columns[0], "td");
+
+            // If the element is not already in a table, then create one.
+            const soleColumn = columns[0];
+
+            if (soleColumn.parentElement?.tagName !== "tr") {
+                const tableElement = soleColumn.ownerDocument.createElement("table");
+                tableElement.classList.add("row");
+                tableElement.setAttribute("width", "100%");
+                const tbodyElement = soleColumn.ownerDocument.createElement("tbody");
+                const trElement = soleColumn.ownerDocument.createElement("tr");
+
+                tableElement.appendChild(tbodyElement);
+                tbodyElement.appendChild(trElement);
+
+                soleColumn.replaceWith(tableElement);
+                trElement.appendChild(soleColumn);
+
+                soleColumn.classList.add("columns", "small-12", "start");
+                setCols(soleColumn, 12);
+            }
+        }
+
+        const insertAfterColumnIndex = columns.length - 1;
+        const lastColumnElement = columns[insertAfterColumnIndex];
 
         const td = props.componentElement.ownerDocument.createElement("td");
         td.classList.add("dropzone", "columns", "small-12");
         td.setAttribute("valign", "top");
         setCols(td, 1);
 
-        let columnHunterIndex = columnElements.value.length - 1;
+        let columnHunterIndex = columns.length - 1;
         while (columnHunterIndex >= 0) {
-            const column = columnElements.value[columnHunterIndex];
+            const column = columns[columnHunterIndex];
             columnHunterIndex--;
-            
+
             const cols = getCols(column);
             if (cols > 1) {
                 // Found the column to take a col from!
@@ -95,6 +123,25 @@
                 return;
             }
         }
+    }
+
+    function replaceTagName(oldElement: HTMLElement, newTagName: string): HTMLElement {
+        const newElement = oldElement.ownerDocument.createElement(newTagName);
+
+        // Copy attributes from the old element
+        Array.from(oldElement.attributes).forEach((attr) =>
+            newElement.setAttribute(attr.name, attr.value)
+        );
+
+        // Move children to the new element
+        while (oldElement.firstChild) {
+            newElement.appendChild(oldElement.firstChild);
+        }
+
+        // Replace the old element with the new one in the DOM
+        oldElement.replaceWith(newElement);
+
+        return newElement;
     }
 
     // #endregion

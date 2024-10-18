@@ -6,18 +6,27 @@
         </div>
 
         <div class="column-structure">
-            <template v-for="(columns, index) in columnValues" :key="'column-' + index">
-                <div :class="['column', selectedColumnElement === columnElements[index] ? 'selected' : '']"
-                     :style="{ flexBasis: getColumnPercentage(columns) }"
-
-                     @click="$emit('select', columnElements[index])">
-                    <div class="content">{{ columns }}</div>
+            <template v-if="columnValues.length === 1">
+                <div :class="['column', selectedColumnElement === columnElements[0] ? 'selected' : '']"
+                     style="flexBasis: 100%"
+                     @click="$emit('select', columnElements[0])">
+                    <div class="content">12</div>
                 </div>
+            </template>
+            
+            <template v-else>
+                <template v-for="(columns, index, sfd) in columnValues" :key="'column-' + index">
+                    <div :class="['column', selectedColumnElement === columnElements[index] ? 'selected' : '']"
+                         :style="{ flexBasis: getColumnPercentage(columns) }"
+                         @click="$emit('select', columnElements[index])">
+                        <div class="content">{{ columns }}</div>
+                    </div>
 
-                <!-- Add a divider after each column, except the last one -->
-                <Divider v-if="index < columnValues.length - 1"
-                         :index="index"
-                         @dragged="onDragged" />
+                    <!-- Add a divider after each column, except the last one -->
+                    <Divider v-if="index < columnValues.length - 1"
+                             :index="index"
+                             @dragged="onDragged" />
+                </template>
             </template>
         </div>
     </div>
