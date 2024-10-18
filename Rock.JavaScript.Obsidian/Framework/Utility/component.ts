@@ -211,6 +211,8 @@ function copyStandardRockFormFieldProps(source: ExtractPropTypes<StandardRockFor
     destination.label = source.label;
     destination.rules = source.rules;
     destination.validationTitle = source.validationTitle;
+    destination.disableLabel = source.disableLabel;
+    destination.isRequiredIndicatorHidden = source.isRequiredIndicatorHidden;
 }
 
 /**
@@ -233,9 +235,16 @@ export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRo
         isRequiredIndicatorHidden: props.isRequiredIndicatorHidden
     });
 
-    watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {
-        copyStandardRockFormFieldProps(props, propValues);
-    });
+    watch([
+        () => props.formGroupClasses,
+        () => props.help,
+        () => props.label,
+        () => props.rules,
+        () => props.validationTitle,
+        () => props.disableLabel,
+        () => props.isRequiredIndicatorHidden], () => {
+            copyStandardRockFormFieldProps(props, propValues);
+        });
 
     return propValues;
 }

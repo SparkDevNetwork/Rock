@@ -12,7 +12,11 @@
 
             <BorderWidthProperty ref="borderWidthProperty"
                                  :element="element"
-                                 mode="numberUpDown"
+                                 :mode="{
+                                     type: 'numberUpDown',
+                                     min: 0,
+                                     max: 99
+                                 }"
                                  @change="onBorderWidthChanged" />
         </div>
     </TransitionVerticalCollapse>

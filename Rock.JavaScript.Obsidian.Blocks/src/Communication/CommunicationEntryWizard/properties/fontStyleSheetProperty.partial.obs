@@ -1,24 +1,61 @@
 <template>
-    <FontFamilyPropertyBase v-model="fontFamily"
-                            :label="label" />
+    <div class="d-flex">
+        <div class="font-family-container">
+            <FontFamilyPropertyBase v-model="fontFamily"
+                                    :label="label" />
+        </div>
 
-    <FontSizePropertyBase v-model="fontSize" />
+        <div class="font-size-container">
+            <FontSizePropertyBase v-model="fontSize" :mode="{ type: 'dropDownList', items: fontSizeItems }" />
+        </div>
+    </div>
 
-    <FontColorPropertyBase v-model="fontColor" />
+    <FontColorPropertyBase v-model="fontColor" label="" />
 
-    <TextFormatPropertyBase v-model:fontWeight="fontWeight"
-                            v-model:fontStyle="fontStyle"
-                            v-model:textDecoration="textDecoration" />
+    <div class="button-groups">
+        <TextFormatPropertyBase v-model:fontWeight="fontWeight"
+                                v-model:fontStyle="fontStyle"
+                                v-model:textDecoration="textDecoration" />
 
-    <LineHeightPropertyBase v-model="lineHeight" />
+        <LineHeightPropertyBase v-model="lineHeight" />
 
-    <TextTransformPropertyBase v-model="textTransform" />
+        <TextTransformPropertyBase v-model="textTransform" />
+    </div>
 </template>
 
 <style scoped>
 svg {
     height: 16px;
     width: 16px;
+}
+
+.font-family-container {
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+
+.font-size-container {
+    min-width: 100px;
+}
+</style>
+
+<style>
+.button-groups {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    /* Adjust for spacing on wrapped rows */
+    margin-right: -16px;
+}
+
+.button-groups > .form-group {
+    /* Horizontal gap */
+    margin-right: 16px;
+}
+
+.button-groups > .form-group:last-child {
+    /* No extra margin on the last item */
+    margin-right: 0;
 }
 </style>
 
@@ -30,6 +67,7 @@ svg {
     import LineHeightPropertyBase from "./lineHeightPropertyBase.partial.obs";
     import TextFormatPropertyBase from "./textFormatPropertyBase.partial.obs";
     import TextTransformPropertyBase from "./textTransformPropertyBase.partial.obs";
+    import { ListItemBag } from "@Obsidian/Utility";
 
     const props = defineProps({
         element: {
@@ -46,6 +84,24 @@ svg {
         }
     });
 
+    const fontSizeItems: ListItemBag[] = [
+        { text: "8px", value: "8px" },
+        { text: "9px", value: "9px" },
+        { text: "10px", value: "10px" },
+        { text: "11px", value: "11px" },
+        { text: "12px", value: "12px" },
+        { text: "14px", value: "14px" },
+        { text: "16px", value: "16px" },
+        { text: "18px", value: "18px" },
+        { text: "20px", value: "20px" },
+        { text: "24px", value: "24px" },
+        { text: "28px", value: "28px" },
+        { text: "32px", value: "32px" },
+        { text: "36px", value: "36px" },
+        { text: "48px", value: "48px" },
+        { text: "60px", value: "60px" },
+        { text: "72px", value: "72px" }
+    ];
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.

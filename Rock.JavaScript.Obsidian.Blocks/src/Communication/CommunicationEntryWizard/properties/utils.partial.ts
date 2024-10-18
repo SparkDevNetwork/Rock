@@ -1,6 +1,6 @@
 import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
 import { computed, ExtractPropTypes, PropType, reactive, Ref, watch, WritableComputedRef } from "vue";
-import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps } from "./types.partial";
+import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps, LengthControlType } from "./types.partial";
 
 type ReactiveShorthandProperties = {
     shorthand: WritableComputedRef<string>;
@@ -80,22 +80,12 @@ export const standardLengthProps: StandardLengthProps = {
      */
     label: {
         type: String as PropType<string>,
-        required: true
-    },
-
-    min: {
-        type: Number as PropType<number>,
-        default: 0 as const
-    },
-
-    max: {
-        type: Number as PropType<number>,
-        default: 99 as const
+        required: true as const
     },
 
     mode: {
-        type: String as PropType<"numberUpDown" | "numberBox" | "textBox">,
-        default: "numberUpDown" as const
+        type: Object as PropType<LengthControlType>,
+        default: { type: "numberUpDown", min: 0, max: 99 } as const
     }
 };
 
@@ -103,12 +93,12 @@ export const standardLengthProps: StandardLengthProps = {
 export const standardShorthandProps: StandardShorthandProps = {
     element: {
         type: Object as PropType<HTMLElement>,
-        required: true
+        required: true as const
     },
 
     label: {
         type: String as PropType<string>,
-        required: true
+        required: true as const
     },
 
     labelShorthand: {
@@ -219,8 +209,6 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
  */
 export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthProps>): ExtractPropTypes<StandardLengthProps> {
     const propValues = reactive<ExtractPropTypes<StandardLengthProps>>({
-        min: props.min,
-        max: props.max,
         mode: props.mode,
         label: props.label,
     });
@@ -228,18 +216,6 @@ export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthPro
     watch(() => props.label, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.label = value;
-        }
-    });
-
-    watch(() => props.max, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.max = value;
-        }
-    });
-
-    watch(() => props.min, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.min = value;
         }
     });
 

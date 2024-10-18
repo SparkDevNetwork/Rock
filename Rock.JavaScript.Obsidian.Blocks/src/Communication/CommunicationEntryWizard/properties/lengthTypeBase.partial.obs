@@ -1,39 +1,46 @@
 <template>
-    <NumberUpDown v-if="mode === 'numberUpDown'"
+    <NumberUpDown v-if="mode.type === 'numberUpDown'"
                   v-model="internalNumericValue"
                   :disableLabel="!label"
                   :label="label"
-                  :min="min"
-                  :max="max" />
+                  :min="mode.min"
+                  :max="mode.max" />
 
-    <NumberBox v-else-if="mode === 'numberBox'"
+    <NumberBox v-else-if="mode.type === 'numberBox'"
                v-model="internalNumericValue"
                :disableLabel="!label"
                :label="label"
-               :min="min"
-               :max="max">
+               :min="mode.min"
+               :max="mode.max">
         <template #inputGroupAppend>
             <span class="input-group-addon">px</span>
         </template>
     </NumberBox>
 
-    <RangeSlider v-else-if="mode === 'rangeSlider'"
+    <RangeSlider v-else-if="mode.type === 'rangeSlider'"
                  v-model="internalNumericValue"
                  :disableLabel="!label"
                  :label="label"
-                 :min="min"
-                 :max="max"
+                 :min="mode.min"
+                 :max="mode.max"
                  :showValueBar="true" />
 
-    <TextBox v-else-if="mode === 'textBox'"
+    <TextBox v-else-if="mode.type === 'textBox'"
              v-model="internalValue"
              :disableLabel="!label"
              :label="label" />
+
+    <DropDownList v-else-if="mode.type === 'dropDownList'"
+                  v-model="internalValue"
+                  :disableLabel="!label"
+                  :label="label"
+                  :items="mode.items" />
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { standardLengthProps } from "./utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
@@ -55,7 +62,7 @@
     // #region Computed Props
 
     const isNumeric = computed<boolean>(() => {
-        return props.mode === "numberBox" || props.mode === "numberUpDown" || props.mode === "rangeSlider";
+        return props.mode.type === "numberBox" || props.mode.type === "numberUpDown" || props.mode.type === "rangeSlider";
     });
 
     // #endregion

@@ -10,7 +10,7 @@
             <WidthProperty ref="fixedWidthProperty"
                            :element="buttonShellElement"
                            label="Fixed Width"
-                           mode="textBox"
+                           :mode="{ type: 'textBox' }"
                            @change="onButtonShellWidthChanged" />
         </div>
     </TransitionVerticalCollapse>

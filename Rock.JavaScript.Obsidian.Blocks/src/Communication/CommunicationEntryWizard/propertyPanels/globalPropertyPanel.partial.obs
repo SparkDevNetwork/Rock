@@ -6,9 +6,11 @@
 
             <WidthProperty :element="document.body"
                            label="Content Area Width"
-                           mode="rangeSlider"
-                           :min="480"
-                           :max="900" />
+                           :mode="{
+                               type: 'rangeSlider',
+                               min: 480,
+                               max: 900
+                           }" />
             <PaddingProperty :element="document.body" />
             <BackgroundColorProperty :element="document.documentElement" />
             <BackgroundColorProperty :element="document.body"

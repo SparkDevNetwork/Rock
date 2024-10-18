@@ -24,7 +24,7 @@
 
                     <div class="col-sm-6">
                         <FontSizeProperty :element="buttonElement"
-                                          mode="textBox" />
+                                          :mode="{ type: 'textBox' }" />
                     </div>
                 </div>
             </Accordion>
@@ -45,12 +45,12 @@
                     <div class="col-sm-6">
                         <PaddingProperty :element="buttonElement"
                                          label="Button Padding"
-                                         mode="textBox" />
+                                         :mode="{ type: 'textBox' }" />
                     </div>
 
                     <div class="col-sm-6">
                         <BorderRadiusProperty :element="buttonElement"
-                                              mode="textBox"
+                                              :mode="{ type: 'textBox' }"
                                               @change="onBorderRadiusShorthandChanged" />
                     </div>
                 </div>

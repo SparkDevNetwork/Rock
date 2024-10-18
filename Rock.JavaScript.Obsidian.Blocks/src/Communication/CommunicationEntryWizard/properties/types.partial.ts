@@ -1,10 +1,28 @@
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PropType } from "vue";
 
 export type BorderStyle = "solid" | "dashed" | "dotted" | "";
 
 export type DirectionalConstituentProperty = "top" | "bottom" | "right" | "left";
 
-export type ShorthandPropertyMode = "numberUpDown" | "numberBox" | "rangeSlider" | "textBox";
+export type LengthControlType =
+    | {
+        type: "numberUpDown";
+        min: number;
+        max: number;
+    }
+    | {
+        type: "numberBox";
+        min: number;
+        max: number;
+    }
+    | {
+        type: "rangeSlider";
+        min: number;
+        max: number;
+    }
+    | { type: "textBox" }
+    | { type: "dropDownList", items: ListItemBag[] };
 
 // Utility type to convert a string from camel case to kebab case
 type ToKebabCase<S extends string> =
@@ -68,18 +86,8 @@ export type StandardLengthProps = {
         required: boolean;
     };
 
-    min: {
-        type: PropType<number>;
-        default: number;
-    };
-
-    max: {
-        type: PropType<number>;
-        default: number;
-    };
-
     mode: {
-        type: PropType<ShorthandPropertyMode>;
-        default: ShorthandPropertyMode;
+        type: PropType<LengthControlType>;
+        default: LengthControlType;
     };
 };

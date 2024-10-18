@@ -60,7 +60,12 @@
                     </div>
                 </div>
 
-                <MarginProperty :element="componentElement" mode="numberBox" />
+                <MarginProperty :element="componentElement"
+                                :mode="{
+                                    type: 'numberBox',
+                                    min: 0,
+                                    max: 99
+                                }" />
             </Accordion>
         </AccordionGroup>
     </ComponentPropertyPanelBase>

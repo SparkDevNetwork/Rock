@@ -1,10 +1,14 @@
 <template>
+    <TextAlignProperty :element="element" label="Column Align" />
     <PaddingProperty :element="element" :showConstituentProperties="true" label="Column Padding" />
+    <BackgroundColorProperty :element="element" label="Column Background" />
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import BackgroundColorProperty from "./backgroundColorProperty.partial.obs";
     import PaddingProperty from "./paddingProperty.partial.obs";
+    import TextAlignProperty from "./textAlignProperty.partial.obs";
 
     defineProps({
         element: {
