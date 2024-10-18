@@ -18,11 +18,9 @@
                                  label="Body Border" />
         </Accordion>
 
-        <Accordion title="Typography">
+        <Accordion title="Typography" removeBottomPadding>
             <AccordionGroup>
-                <Accordion title="Global">
-                    <FontPropertyGroup :element="document.body" />
-                </Accordion>
+                <FontFamilyProperty :element="document.body" label="Global Font" />
 
                 <Accordion title="Heading 1">
                     <FontStyleSheetProperty :element="document.body"
@@ -67,8 +65,8 @@
     import ButtonStyleSheetProperty from "../properties/buttonStyleSheetProperty.partial.obs";
     import CommunicationTemplateProperty from "../properties/communicationTemplateProperty.partial.obs";
     import DividerStyleSheetProperty from "../properties/dividerStyleSheetProperty.partial.obs";
+    import FontFamilyProperty from "../properties/fontFamilyProperty.partial.obs";
     import FontStyleSheetProperty from "../properties/fontStyleSheetProperty.partial.obs";
-    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import WidthProperty from "../properties/widthProperty.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

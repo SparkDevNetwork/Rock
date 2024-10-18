@@ -1,5 +1,5 @@
 <template>
-    <div ref="accordion" class="accordion">
+    <div :class="['accordion', removeBottomPadding ? 'accordion-pb-0' : '']">
         <Panel v-model="isExpanded"
                :hasCollapse="true"
                :title="title">
@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref } from "vue";
+    import { PropType, ref } from "vue";
     import { useAccordionGroup } from "../utils.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
@@ -17,29 +17,16 @@
         title: {
             type: String as PropType<string | undefined>,
             required: false
+        },
+
+        removeBottomPadding: {
+            type: Boolean as PropType<boolean | undefined>
         }
     });
 
     // #region Values
 
     const isExpanded = ref<boolean>(false);
-    const accordion = ref<HTMLElement | undefined>();
-
-    // #endregion
-
-    // #region Hooks
-
-    onMounted(() => {
-        if (accordion.value?.querySelector(".accordion-group")) {
-            const panelBody = accordion.value.querySelector(".panel-body") as HTMLElement;
-            if (panelBody) {
-                // Use a data attribute here to avoid clashes with classes managed by the Panel component.
-                // This attribute is used by the AccordionGroup styles
-                // to apply styling for nested accordion groups.
-                panelBody.dataset.hasAccordionGroup = "true";
-            }
-        }
-    });
 
     // #endregion
 

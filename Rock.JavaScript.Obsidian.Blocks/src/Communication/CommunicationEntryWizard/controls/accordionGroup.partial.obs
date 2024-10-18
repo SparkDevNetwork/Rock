@@ -11,10 +11,6 @@
     border-radius: 0;
 }
 
-.accordion-group .accordion .panel-body[data-has-accordion-group="true"] {
-    padding: 0;
-}
-
 .accordion-group .accordion .panel-heading {
     background-color: white;
     border-radius: 0;
@@ -22,6 +18,16 @@
 
 .accordion-group .accordion .accordion-group .accordion .panel-heading {
     background-color: #eee;
+}
+
+.accordion-group .accordion .accordion-group .panel {
+    margin-left: -18px;
+    margin-right: -18px;
+}
+
+.accordion-pb-0 > div > .panel > .panel-body,
+.accordion-pb-0 > .panel > .panel-body {
+    padding-bottom: 0;
 }
 </style>
 
