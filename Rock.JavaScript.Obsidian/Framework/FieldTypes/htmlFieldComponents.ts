@@ -20,8 +20,6 @@ import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
-import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 import { ConfigurationValueKey } from "./htmlField.partial";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -86,7 +84,7 @@ export const EditComponent = defineComponent({
     template: `
 <HtmlEditor v-model="internalValue"
             :key="refreshKey"
-            editorHeight="200px"
+            :editorHeight="200"
             :toolbar="toolbar"
             :encryptedDocumentRootFolder="documentFolderRoot"
             :encryptedImageRootFolder="imageFolderRoot"
