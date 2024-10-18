@@ -21,21 +21,18 @@
 // </copyright>
 //
 
-/**
- * The additional information required to build the custom settings UI
- * for the Category Detail View block.
- */
+import { CampusBag } from "@Obsidian/ViewModels/CheckIn/campusBag";
+import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
-import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
-import { WebKioskBag } from "../CheckInKiosk/webKioskBag";
-import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 
+/** The Custom Settings Options Bag */
 export type CustomSettingsOptionsBag = {
-    checkInConfigurationOptions?: ConfigurationTemplateBag[];
-    checkInAreas?: AreaOpportunityBag[];
-    campusesAndKiosks?: CampusBag[];
-};
+    /** Gets or sets a list of the Campuses and Kiosks */
+    campusesAndKiosks?: CampusBag[] | null;
 
-export type CampusBag = CheckInItemBag & {
-    kiosks?: WebKioskBag[] | null;
+    /** Gets or sets a list of the CheckIn Areas */
+    checkInAreas?: ConfigurationAreaBag[] | null;
+
+    /** Gets or sets a list of CheckIn Configuration Options */
+    checkInConfigurationOptions?: ConfigurationTemplateBag[] | null;
 };

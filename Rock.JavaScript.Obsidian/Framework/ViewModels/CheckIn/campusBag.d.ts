@@ -21,13 +21,16 @@
 // </copyright>
 //
 
-import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
+import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 
-/** A bag that contains information about the outcome of a "save sign-up" request for the group schedule toolbox block. */
-export type SaveSignUpResponseBag = {
-    /** Gets or sets a friendly error message to describe any problems encountered while saving. */
-    saveError?: string | null;
+/** The Campus Bag */
+export type CampusBag = {
+    /** Gets or sets the identifier of this item. */
+    id?: string | null;
 
-    /** Gets or sets the updated sign-ups after the save attempt. */
-    signUps?: SignUpsBag | null;
+    /** Gets or sets a list of Kiosks */
+    kiosks?: WebKioskBag[] | null;
+
+    /** Gets or sets the display name of this item. */
+    name?: string | null;
 };

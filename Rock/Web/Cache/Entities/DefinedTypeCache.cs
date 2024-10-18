@@ -267,6 +267,39 @@ namespace Rock.Web.Cache
             return Name;
         }
 
+        /// <summary>
+        /// Creates a <see cref="DefinedType"/> instance and sets its properties from this cached object's properties.
+        /// </summary>
+        /// <param name="includeInactiveValues"><c>true</c> to include inactive DefinedValues for the DefinedType; otherwise <c>false</c>.</param>
+        /// <returns>An <see cref="DefinedType"/> instance representing this cached object.</returns>
+        public DefinedType ToEntity( bool includeInactiveValues = false )
+        {
+            var definedValues = DefinedValues.Where( v => includeInactiveValues || v.IsActive )
+                .Select( v => new DefinedValue
+                {
+                    Id = v.Id,
+                    Guid = v.Guid,
+                    IsSystem = v.IsSystem,
+                    IsActive = v.IsActive,
+                    Value = v.Value,
+                    Description = v.Description,
+                    CategoryId = v.CategoryId
+                } ).ToList();
+
+            return new DefinedType
+            {
+                IsSystem = IsSystem,
+                FieldTypeId = FieldTypeId,
+                Order = Order,
+                CategoryId = CategoryId,
+                Name = Name,
+                Description = Description,
+                IsActive = IsActive,
+                CategorizedValuesEnabled = CategorizedValuesEnabled,
+                DefinedValues = definedValues
+            };
+        }
+
         #endregion
     }
 }

@@ -610,6 +610,7 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( errorMessage );
                 }
 
+                LavaService.DeregisterShortcode( entity.TagName );
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 

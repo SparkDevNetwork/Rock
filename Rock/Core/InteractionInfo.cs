@@ -78,7 +78,7 @@ namespace Rock.Core
 
         #region Interaction Properties
 
-        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <inheritdoc cref="Guid"/>
         /// <remarks>
         /// If this is not specified then a new Guid will be created.
         /// </remarks>

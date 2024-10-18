@@ -21,13 +21,14 @@
 // </copyright>
 //
 
-import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
+/** The Custom Settings Bag */
+export type CustomSettingsBag = {
+    /** Gets or sets the CheckIn Areas */
+    checkInAreas?: string[] | null;
 
-/** A bag that contains information about the outcome of a "save sign-up" request for the group schedule toolbox block. */
-export type SaveSignUpResponseBag = {
-    /** Gets or sets a friendly error message to describe any problems encountered while saving. */
-    saveError?: string | null;
+    /** Gets or sets the CheckIn Configuration */
+    checkInConfiguration?: string | null;
 
-    /** Gets or sets the updated sign-ups after the save attempt. */
-    signUps?: SignUpsBag | null;
+    /** Gets or sets the Kiosk */
+    kiosk?: string | null;
 };

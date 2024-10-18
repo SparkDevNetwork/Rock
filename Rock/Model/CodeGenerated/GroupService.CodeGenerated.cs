@@ -263,8 +263,12 @@ namespace Rock.Model
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
+            #pragma warning disable 612, 618
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
+            #pragma warning restore 612, 618
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
+            target.ScheduleCoordinatorNotificationTypes = source.ScheduleCoordinatorNotificationTypes;
+            target.ScheduleCoordinatorPersonAliasId = source.ScheduleCoordinatorPersonAliasId;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             target.StatusValueId = source.StatusValueId;

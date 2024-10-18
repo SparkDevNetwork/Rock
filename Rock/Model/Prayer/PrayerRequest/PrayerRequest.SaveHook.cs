@@ -89,57 +89,62 @@ namespace Rock.Model
                 // so if there's no category we can skip any additional checks.
                 if ( categoryId > 0 )
                 {
-                    var aiProviderService = new AIProviderService( RockContext );
-                    var aiConfig = aiProviderService.GetCompletionConfiguration( categoryId );
-
-                    if ( aiConfig == null )
+                    using ( var aiAutomationRockContext = new RockContext() )
                     {
-                        return;
-                    }
+                        var aiProviderService = new AIProviderService( aiAutomationRockContext );
+                        var aiConfig = aiProviderService.GetCompletionConfiguration( categoryId );
 
-                    // Determine if there are any AI automations that use the Formatter template ( text changes ).
-                    var hasTextChangingCompletions =
-                        aiConfig.RemoveNames != NameRemoval.NoChanges
-                        || aiConfig.TextEnhancement != TextEnhancement.NoChanges;
+                        if ( aiConfig == null )
+                        {
+                            return;
+                        }
 
-                    // Determine if there are any AI automations that use the Analyzer template.
-                    var hasAnalysisCompletions = aiConfig.ClassifySentiment ||
-                        aiConfig.AutoCategorize ||
-                        aiConfig.CheckPublicAppropriateness ||
-                        aiConfig.EnableAIModeration;
+                        // Determine if there are any AI automations that use the Formatter template ( text changes ).
+                        var hasTextChangingCompletions =
+                            aiConfig.RemoveNames != NameRemoval.NoChanges
+                            || aiConfig.TextEnhancement != TextEnhancement.NoChanges;
 
-                    // If there are no configured automations return without sending any requests.
-                    if ( !hasTextChangingCompletions && !hasAnalysisCompletions )
-                    {
-                        return;
-                    }
+                        // Determine if there are any AI automations that use the Analyzer template.
+                        var hasAnalysisCompletions = aiConfig.ClassifySentiment ||
+                            aiConfig.AutoCategorize ||
+                            aiConfig.CheckPublicAppropriateness ||
+                            aiConfig.EnableAIModeration;
 
-                    var prayerRequestService = new PrayerRequestService( RockContext );
+                        // If there are no configured automations return without sending any requests.
+                        if ( !hasTextChangingCompletions && !hasAnalysisCompletions )
+                        {
+                            return;
+                        }
 
-                    // It's important that the text formatting changes are run first
-                    // so that any subsequent completions use the updated text rather than the original text.
-                    if ( hasTextChangingCompletions )
-                    {
-                        isEntityModified = await ProcessTextFormatting( prayerRequestService, aiConfig );
-                    }
+                        var prayerRequestService = new PrayerRequestService( aiAutomationRockContext );
+                        var prayerRequest = prayerRequestService.Get( Entity.Id );
 
-                    // Analysis completions are items like auto-categorization and sentiment classification.
-                    if ( hasAnalysisCompletions )
-                    {
-                        isEntityModified = await ProcessAnalysis( prayerRequestService, aiConfig ) || isEntityModified;
-                    }
+                        // It's important that the text formatting changes are run first
+                        // so that any subsequent completions use the updated text rather than the original text.
+                        if ( hasTextChangingCompletions )
+                        {
+                            isEntityModified = await ProcessTextFormatting( prayerRequest, prayerRequestService, aiConfig );
+                        }
 
-                    // Moderation - looking for harmful or offensive content.
-                    if ( aiConfig.EnableAIModeration )
-                    {
-                        isEntityModified = await ProcessModeration( aiConfig ) || isEntityModified;
-                    }
+                        // Analysis completions are items like auto-categorization and sentiment classification.
+                        if ( hasAnalysisCompletions )
+                        {
+                            isEntityModified = await ProcessAnalysis( prayerRequest, prayerRequestService, aiConfig ) || isEntityModified;
+                        }
 
-                    if ( isEntityModified )
-                    {
-                        // Disable save hooks so we don't endlessly update our text.
-                        var disablePrePostSaveHooks = true;
-                        RockContext.SaveChanges( disablePrePostSaveHooks );
+                        // Moderation - looking for harmful or offensive content.
+                        if ( aiConfig.EnableAIModeration )
+                        {
+                            isEntityModified = await ProcessModeration( prayerRequest, aiConfig ) || isEntityModified;
+                        }
+
+                        if ( isEntityModified )
+                        {
+                            // Disable save hooks so we don't endlessly update our text.
+                            var disablePrePostSaveHooks = true;
+
+                            aiAutomationRockContext.SaveChanges( disablePrePostSaveHooks );
+                        }
                     }
                 }
             }
@@ -150,24 +155,24 @@ namespace Rock.Model
             /// <param name="prayerRequestService">The PrayerRequestService to use to call the AIAutomationFormatter completion.</param>
             /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
-            private async Task<bool> ProcessTextFormatting( PrayerRequestService prayerRequestService, AIAutomation aiAutomationConfig )
+            private async Task<bool> ProcessTextFormatting( PrayerRequest prayerRequest, PrayerRequestService prayerRequestService, AIAutomation aiAutomationConfig )
             {
                 var isEntityModified = false;
 
                 // Get the AI Completion response from the AIProvider.
-                var formatterResponse = await prayerRequestService.GetAIAutomationFormatterResults( Entity, aiAutomationConfig );
+                var formatterResponse = await prayerRequestService.GetAIAutomationFormatterResults( prayerRequest, aiAutomationConfig );
                 var hasModifiedText = !Entity.Text.Equals( formatterResponse.Content, StringComparison.OrdinalIgnoreCase );
 
                 // If the text was modified then capture the original text
                 // (if not already captured) before updating the PrayerRequest.Text.
                 if ( hasModifiedText )
                 {
-                    if ( Entity.OriginalRequest.IsNullOrWhiteSpace() )
+                    if ( prayerRequest.OriginalRequest.IsNullOrWhiteSpace() )
                     {
-                        Entity.OriginalRequest = Entity.Text;
+                        prayerRequest.OriginalRequest = prayerRequest.Text;
                     }
 
-                    Entity.Text = formatterResponse.Content;
+                    prayerRequest.Text = formatterResponse.Content;
                     isEntityModified = true;
                 }
 
@@ -180,10 +185,10 @@ namespace Rock.Model
             /// <param name="prayerRequestService">The PrayerRequestService to use to call the AIAutomationAnalyzer completion.</param>
             /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
-            private async Task<bool> ProcessAnalysis( PrayerRequestService prayerRequestService, AIAutomation aiAutomationConfig )
+            private async Task<bool> ProcessAnalysis( PrayerRequest prayerRequest, PrayerRequestService prayerRequestService, AIAutomation aiAutomationConfig )
             {
                 var wasModified = false;
-                var analysisResponse = await prayerRequestService.GetAIAutomationAnalyzerResults( Entity, aiAutomationConfig );
+                var analysisResponse = await prayerRequestService.GetAIAutomationAnalyzerResults( prayerRequest, aiAutomationConfig );
 
                 // If the configuration was asked to classify sentiment
                 // and there's a value in the response
@@ -195,7 +200,7 @@ namespace Rock.Model
 
                     if ( sentiments.DefinedValues.Any( v => v.Id == analysisResponse.SentimentId ) )
                     {
-                        Entity.SentimentEmotionValueId = analysisResponse.SentimentId;
+                        prayerRequest.SentimentEmotionValueId = analysisResponse.SentimentId;
                         wasModified = true;
                     }
                 }
@@ -208,7 +213,7 @@ namespace Rock.Model
                 {
                     if ( aiAutomationConfig.ChildCategories.Any( c => c.Id == analysisResponse.CategoryId ) )
                     {
-                        Entity.CategoryId = analysisResponse.CategoryId;
+                        prayerRequest.CategoryId = analysisResponse.CategoryId;
                         wasModified = true;
                     }
                 }
@@ -219,10 +224,10 @@ namespace Rock.Model
                 var isInappropriate = analysisResponse.IsAppropriateForPublic.HasValue && analysisResponse.IsAppropriateForPublic.Value == false;
                 if ( aiAutomationConfig.CheckPublicAppropriateness && isInappropriate )
                 {
-                    Entity.IsPublic = false;
+                    prayerRequest.IsPublic = false;
 
                     var flagCount = Entity.FlagCount.ToIntSafe() + 1;
-                    Entity.FlagCount = flagCount;
+                    prayerRequest.FlagCount = flagCount;
 
                     wasModified = true;
                 }
@@ -235,7 +240,7 @@ namespace Rock.Model
             /// </summary>
             /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
-            private async Task<bool> ProcessModeration( AIAutomation aiAutomationConfig )
+            private async Task<bool> ProcessModeration( PrayerRequest prayerRequest, AIAutomation aiAutomationConfig )
             {
                 // Call the moderations endpoint for the AIProvider.
                 var moderations = await aiAutomationConfig.AIProviderComponent.GetModerations( aiAutomationConfig.AIProvider, new ModerationsRequest
@@ -244,14 +249,14 @@ namespace Rock.Model
                     Model = "text-moderation-latest"
                 } );
 
-                // Get the bit mask of detected moderation flags.
-                Entity.ModerationFlags = ( long ) moderations.ModerationsResponseCategories.ModerationFlags;
+                // Set the bit mask of detected moderation flags.
+                prayerRequest.ModerationFlags = ( long ) moderations.ModerationsResponseCategories.ModerationFlags;
 
                 // If there were any detected moderation flags and we have a moderation workflow
                 // then launch the workflow and return true to indicate the entity was modified.
                 var moderationWorkflow = aiAutomationConfig.ModerationAlertWorkflowType;
                 var workflowTypeGuid = moderationWorkflow?.Guid ?? Guid.Empty;
-                if ( Entity.ModerationFlags > 0 && workflowTypeGuid != null && !workflowTypeGuid.IsEmpty() )
+                if ( prayerRequest.ModerationFlags > 0 && workflowTypeGuid != null && !workflowTypeGuid.IsEmpty() )
                 {
                     var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
                     var workflowAttributes = new Dictionary<string, string>
@@ -264,7 +269,7 @@ namespace Rock.Model
                         { "IsViolent", moderations.ModerationsResponseCategories.IsViolent.ToString() },
                     };
 
-                    Entity.LaunchWorkflow( workflowTypeGuid, moderationWorkflow.Name, workflowAttributes, currentPersonAliasId );
+                    prayerRequest.LaunchWorkflow( workflowTypeGuid, moderationWorkflow.Name, workflowAttributes, currentPersonAliasId );
                     return true;
                 }
 

@@ -21,36 +21,31 @@
 // </copyright>
 //
 
-/** The action types that can be performed for a schedule row within the group schedule toolbox. */
-export const ToolboxScheduleRowActionType = {
-    /** Accept a pending, scheduled attendance. */
-    Accept: 0,
+/** The types of notifications a group schedule coordinator can receive about changes to scheduled individuals. */
+export const ScheduleCoordinatorNotificationType = {
+    /** Don't sent any notifications. */
+    None: 0x0000,
 
-    /** Decline a pending, scheduled attendance. */
-    Decline: 1,
+    /** Send a notification when a person accepts a schedule. */
+    Accept: 0x0001,
 
-    /** Cancel a confirmed, scheduled attendance. */
-    Cancel: 2,
+    /** Send a notification when a person declines a schedule. */
+    Decline: 0x0002,
 
-    /** Delete a person schedule exclusion. */
-    Delete: 3,
-
-    /** Schedule oneself (or one's family member). */
-    SelfSchedule: 4
+    /** Send a notification when a person self-schedules (e.g. using the Group Schedule Toolbox to sign up for additional times). */
+    SelfSchedule: 0x0004
 } as const;
 
-/** The action types that can be performed for a schedule row within the group schedule toolbox. */
-export const ToolboxScheduleRowActionTypeDescription: Record<number, string> = {
-    0: "Accept",
+/** The types of notifications a group schedule coordinator can receive about changes to scheduled individuals. */
+export const ScheduleCoordinatorNotificationTypeDescription: Record<number, string> = {
+    0: "None",
 
-    1: "Decline",
+    1: "Accept",
 
-    2: "Cancel",
-
-    3: "Delete",
+    2: "Decline",
 
     4: "Self-Schedule"
 };
 
-/** The action types that can be performed for a schedule row within the group schedule toolbox. */
-export type ToolboxScheduleRowActionType = typeof ToolboxScheduleRowActionType[keyof typeof ToolboxScheduleRowActionType];
+/** The types of notifications a group schedule coordinator can receive about changes to scheduled individuals. */
+export type ScheduleCoordinatorNotificationType = number;

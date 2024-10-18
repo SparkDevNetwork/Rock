@@ -558,6 +558,7 @@ namespace RockWeb.Blocks.Groups
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
             ViewState["GroupSyncState"] = JsonConvert.SerializeObject( GroupSyncState, Formatting.None, jsonSetting );
             ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
+            ViewState["ScheduleCoordinatorNotificationTypes"] = cblScheduleCoordinatorNotificationTypes.SelectedValuesAsInt;
 
             return base.SaveViewState();
         }
@@ -1065,11 +1066,35 @@ namespace RockWeb.Blocks.Groups
             // Save Scheduling settings.
             group.SchedulingMustMeetRequirements = cbSchedulingMustMeetRequirements.Checked;
             group.AttendanceRecordRequiredForCheckIn = ddlAttendanceRecordRequiredForCheckIn.SelectedValueAsEnum<AttendanceRecordRequiredForCheckIn>();
-            group.ScheduleCancellationPersonAliasId = ppScheduleCancellationPerson.PersonAliasId;
+            group.ScheduleCoordinatorPersonAliasId = ppScheduleCoordinatorPerson.PersonAliasId;
             group.DisableScheduling = cbDisableGroupScheduling.Checked;
             group.DisableScheduleToolboxAccess = cbDisableScheduleToolboxAccess.Checked;
             group.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnumOrNull<ScheduleConfirmationLogic>();
             string iCalendarContent = string.Empty;
+
+            ScheduleCoordinatorNotificationType? notificationTypes = null;
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                if ( !li.Selected )
+                {
+                    continue;
+                }
+
+                var selectedType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                if ( selectedType == ScheduleCoordinatorNotificationType.None )
+                {
+                    // Ensure that if "None" is selected, it's the only value that can be saved.
+                    notificationTypes = ScheduleCoordinatorNotificationType.None;
+                    break;
+                }
+
+                // Otherwise save all selected values.
+                notificationTypes = notificationTypes.HasValue
+                    ? notificationTypes | selectedType
+                    : selectedType;
+            }
+
+            group.ScheduleCoordinatorNotificationTypes = notificationTypes;
 
             // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
             var scheduleType = rblScheduleSelect.SelectedValueAsEnum<ScheduleType>( ScheduleType.None );
@@ -1530,6 +1555,53 @@ namespace RockWeb.Blocks.Groups
             SetScheduleDisplay();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblScheduleCoordinatorNotificationTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblScheduleCoordinatorNotificationTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            // Retrieve the previously-selected values before this postback.
+            var previouslySelectedValues = ( List<int> ) ViewState["ScheduleCoordinatorNotificationTypes"] ?? new List<int>();
+
+            // Was "None" selected before this postback?
+            var wasNoneSelected = previouslySelectedValues.Any( v =>
+                ( ScheduleCoordinatorNotificationType ) v == ScheduleCoordinatorNotificationType.None
+            );
+
+            // Get the currently-selected values.
+            var selectedValues = cblScheduleCoordinatorNotificationTypes.SelectedValuesAsInt ?? new List<int>();
+
+            // Is "None" selected now?
+            var isNoneSelected = selectedValues.Any( v =>
+                ( ScheduleCoordinatorNotificationType ) v == ScheduleCoordinatorNotificationType.None
+            );
+
+            // Are any other options selected now?
+            var anyOthersSelected = selectedValues.Any( v =>
+                ( ScheduleCoordinatorNotificationType ) v != ScheduleCoordinatorNotificationType.None
+            );
+
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+
+                // If "None" wasn't selected, but is now, deselect all other options.
+                if ( !wasNoneSelected && isNoneSelected )
+                {
+                    li.Selected = notificationType == ScheduleCoordinatorNotificationType.None;
+                    continue;
+                }
+
+                // If "None" was (and still is) selected, but other options have now been selected, deselect "None".
+                if ( isNoneSelected && anyOthersSelected && notificationType == ScheduleCoordinatorNotificationType.None )
+                {
+                    li.Selected = false;
+                }
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -1874,13 +1946,27 @@ namespace RockWeb.Blocks.Groups
             ddlAttendanceRecordRequiredForCheckIn.SetValue( group.AttendanceRecordRequiredForCheckIn.ConvertToInt() );
             ddlScheduleConfirmationLogic.SetValue( group.ScheduleConfirmationLogic.HasValue ? group.ScheduleConfirmationLogic.ConvertToInt().ToString() : null );
 
-            if ( group.ScheduleCancellationPersonAlias != null )
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
             {
-                ppScheduleCancellationPerson.SetValue( group.ScheduleCancellationPersonAlias.Person );
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                if ( notificationType == ScheduleCoordinatorNotificationType.None )
+                {
+                    // "None" must be explicitly evaluated, otherwise the bitwise operator could return false positives.
+                    li.Selected = group.ScheduleCoordinatorNotificationTypes == ScheduleCoordinatorNotificationType.None;
+                }
+                else
+                {
+                    li.Selected = ( group.ScheduleCoordinatorNotificationTypes & notificationType ) == notificationType;
+                }
+            }
+
+            if ( group.ScheduleCoordinatorPersonAlias != null )
+            {
+                ppScheduleCoordinatorPerson.SetValue( group.ScheduleCoordinatorPersonAlias.Person );
             }
             else
             {
-                ppScheduleCancellationPerson.SetValue( null );
+                ppScheduleCoordinatorPerson.SetValue( null );
             }
 
             // If this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
