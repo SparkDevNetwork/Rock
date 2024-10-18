@@ -5982,7 +5982,7 @@ namespace RockWeb.Blocks.Event
                             if ( RegistrationState.DiscountPercentage > 0.0m )
                             {
                                 // If the DiscountPercentage is greater than 100% than set it to 0, otherwise compute the discount and set the DiscountedCost
-                                costSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost.ApplyDiscountPercentage( RegistrationState.DiscountPercentage );
+                                costSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost.GetAsDiscountedPercentage( RegistrationState.DiscountPercentage );
                             }
                             else if ( RegistrationState.DiscountAmount > 0 )
                             {
@@ -6040,7 +6040,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     if ( RegistrationState.DiscountPercentage > 0.0m )
                                     {
-                                        feeCostSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost.ApplyDiscountPercentage( RegistrationState.DiscountPercentage );
+                                        feeCostSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost.GetAsDiscountedPercentage( RegistrationState.DiscountPercentage );
                                     }
                                     else if ( RegistrationState.DiscountAmount > 0 && discountAmountRemaining > 0 )
                                     {

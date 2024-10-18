@@ -29,12 +29,16 @@ namespace Rock
         /// Applies the <paramref name="discountPercentage"/> as a discount to the <paramref name="value"/>
         /// and rounds the resulting value to the number of decimal places specified by the organization's configured currency.
         /// </summary>
+        /// <remarks>
+        /// Zero is the lowest number that will be returned.
+        /// </remarks>
         /// <param name="value">The value to apply the discount to.</param>
         /// <param name="discountPercentage">The percentage to discount (0 - 1).</param>
         /// <returns>The new currency amount after applying the discount percentage.</returns>
-        public static decimal ApplyDiscountPercentage( this decimal value, decimal discountPercentage )
+        public static decimal GetAsDiscountedPercentage( this decimal value, decimal discountPercentage )
         {
-            return Math.Round( value - ( value * discountPercentage ), RockCurrencyCodeInfo.GetDecimalPlaces() );
+            var discountedValue = Math.Round( value - ( value * discountPercentage ), RockCurrencyCodeInfo.GetDecimalPlaces() );
+            return discountedValue > 0 ? discountedValue : 0;
         }
 
         /// <summary>
