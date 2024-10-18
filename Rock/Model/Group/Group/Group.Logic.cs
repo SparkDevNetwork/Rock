@@ -23,6 +23,8 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Security;
@@ -504,6 +506,40 @@ namespace Rock.Model
             }
 
             return scheduleConfirmationLogic;
+        }
+
+        /// <summary>
+        /// Gets whether a notification of the provided type should be sent to a group schedule coordinator.
+        /// If any notification types are defined at the group level, they will take precedence over any that are
+        /// defined at the group type level.
+        /// </summary>
+        /// <param name="notificationType">The notification type in question.</param>
+        /// <returns>Whether a notification of the provided type should be sent to a group schedule coordinator.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.7" )]
+        public bool ShouldSendScheduleCoordinatorNotificationType( ScheduleCoordinatorNotificationType notificationType )
+        {
+            // Just in case the caller of this method passed in "None".
+            if ( notificationType == ScheduleCoordinatorNotificationType.None )
+            {
+                return false;
+            }
+
+            // Prefer notification types defined on the group.
+            if ( this.ScheduleCoordinatorNotificationTypes.HasValue )
+            {
+                return this.ScheduleCoordinatorNotificationTypes.Value.HasFlag( notificationType );
+            }
+
+            // Fall back to notification types defined on the group type.
+            return this.GroupType?.ScheduleCoordinatorNotificationTypes?.HasFlag( notificationType ) == true;
         }
 
         #endregion

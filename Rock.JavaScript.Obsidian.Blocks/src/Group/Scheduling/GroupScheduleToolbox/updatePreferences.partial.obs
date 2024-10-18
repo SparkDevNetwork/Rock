@@ -126,7 +126,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isLoadingSchedulePreferences"): void
+        (e: "update:isLoadingSchedulePreferences"): void;
     }>();
 
     // #region Values
