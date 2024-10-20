@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="config.options?.eventCalendarIdKey"
+    <Grid v-if="isVisible"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -122,11 +122,13 @@
     import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./EventCalendarItemList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./EventCalendarItemList/gridSettingsModal.partial.obs";
-import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<EventCalendarItemListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+    const store = useStore();
 
     // #region Values
 
@@ -149,6 +151,10 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const nextDateColumnTitle = computed((): string => {
         return !!gridSettings.value.startDate || !!gridSettings.value.endDate ? "Next Date In Range" : "Next Start Date";
+    });
+
+    const isVisible = computed((): boolean => {
+        return !!config.options?.eventCalendarIdKey && store.state.areSecondaryBlocksShown;
     });
 
     /** `true` if the grid settings is performing any filtering. */
