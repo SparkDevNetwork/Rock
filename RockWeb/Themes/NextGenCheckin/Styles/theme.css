@@ -235,7 +235,7 @@ th {
   --color-interface-strong: #5D5D6F;
   --color-interface-medium: #8B8BA7;
   --color-interface-soft: #D9D9E3;
-  --color-interface-softer: #F2F2F7;
+  --color-interface-softer: #E7E9EF;
   --color-interface-softest: #FFFFFF;
   --tint-white-percentage: 100%;
   --shade-black-percentage: 15%;
@@ -27766,7 +27766,7 @@ tbody .collapse.in {
     --color-interface-strong: #5D5D6F;
     --color-interface-medium: #8B8BA7;
     --color-interface-soft: #D9D9E3;
-    --color-interface-softer: #F2F2F7;
+    --color-interface-softer: #E7E9EF;
     --color-interface-softest: #FFFFFF;
     --color-success-soft: #D7F4DE;
     --color-success-strong: #248A3D;
