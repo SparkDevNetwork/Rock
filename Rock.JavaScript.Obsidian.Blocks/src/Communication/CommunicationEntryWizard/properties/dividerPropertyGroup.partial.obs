@@ -5,11 +5,6 @@
     <BorderWidthProperty :element="element"
                          :label="''"
                          labelTop="Thickness"
-                         :mode="{
-                            type: 'numberUpDown',
-                            min: 0,
-                            max: 30
-                         }"
                          showConstituentProperties="top"
                          @changeTop="onBorderTopWidthChanged" />
 

@@ -25,13 +25,6 @@
         label: {
             type: String as PropType<string>,
             default: "Padding" as const
-        },
-
-        mode: {
-            type: Object as PropType<LengthControlType>,
-            default: {
-                type: "numberBox"
-            }
         }
     });
 

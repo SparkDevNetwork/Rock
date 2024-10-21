@@ -9,8 +9,7 @@
 
     <TextAlignProperty :element="element" label="Column Align" />
     <PaddingProperty :element="element"
-                     label="Column Padding"
-                     :mode="{ type: 'numberBox' }" />
+                     label="Column Padding" />
     <BackgroundColorProperty :element="element" label="Column Background" />
 </template>
 

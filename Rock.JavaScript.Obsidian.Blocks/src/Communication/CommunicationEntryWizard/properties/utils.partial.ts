@@ -85,7 +85,7 @@ export const standardLengthProps: StandardLengthProps = {
 
     mode: {
         type: Object as PropType<LengthControlType>,
-        default: { type: "numberUpDown", min: 0, max: 99 } as const
+        default: { type: "numberBox", min: 0, max: 99 } as const
     }
 };
 

@@ -1,12 +1,12 @@
 <template>
-    <div class="d-flex">
-        <div class="font-family-container">
+    <div class="row">
+        <div class="col-sm-8">
             <FontFamilyPropertyBase v-model="fontFamily"
                                     :label="label" />
         </div>
 
-        <div class="font-size-container">
-            <FontSizePropertyBase v-model="fontSize" :mode="{ type: 'dropDownList', items: fontSizeItems }" />
+        <div class="col-sm-4">
+            <FontSizePropertyBase v-model="fontSize" />
         </div>
     </div>
 
@@ -22,22 +22,6 @@
         <TextTransformPropertyBase v-model="textTransform" />
     </div>
 </template>
-
-<style scoped>
-svg {
-    height: 16px;
-    width: 16px;
-}
-
-.font-family-container {
-    flex-grow: 1;
-    margin-right: 1rem;
-}
-
-.font-size-container {
-    min-width: 100px;
-}
-</style>
 
 <style>
 .button-groups {

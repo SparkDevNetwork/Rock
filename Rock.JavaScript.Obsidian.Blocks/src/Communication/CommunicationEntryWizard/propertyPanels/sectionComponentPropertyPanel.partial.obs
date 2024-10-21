@@ -5,8 +5,7 @@
             <Accordion title="Section Settings">
                 <BackgroundColorProperty :element="componentElement" />
                 <BorderPropertyGroup :element="componentElement" />
-                <PaddingProperty :element="componentElement"
-                                 :mode="{ type: 'numberBox' }" />
+                <PaddingProperty :element="componentElement" />
             </Accordion>
 
             <Accordion title="Columns">
