@@ -19,11 +19,8 @@
                 <TextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
                 <TextBox label="Last Name" v-model="lastName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
                 <EmailBox label="Email" v-model="email" rules="required" />
+                <PhoneNumberDetails v-for="(value, key) in phoneNumbers" :key="key" v-model="phoneNumbers[key]" />
             </div>
-
-            <template v-for="(value, key) in phoneNumbers">
-                <PhoneNumberDetails v-model="phoneNumbers[key]" />
-            </template>
 
             <DropDownList v-if="selectGroupTypeGuidOrEmptyString"
                           :label="groupsLabel"
@@ -139,9 +136,6 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        if (selectedDateRange.value?.upperValue && !selectedDateRange.value?.lowerValue) {
-            selectedDateRange.value.lowerValue = new Date().toISOString();
-        }
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");

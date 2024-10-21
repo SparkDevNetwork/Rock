@@ -610,7 +610,7 @@ namespace Rock.Blocks.Finance
                 var mobilePhone = entityBag.PhoneNumbers.FirstOrDefault( n => n.Guid.Equals( mobilePhoneType ) );
 
                 // Same logic as TransactionEntry.ascx.cs
-                var personQuery = new PersonService.PersonMatchQuery( firstName, entityBag.LastName, entityBag.Email, mobilePhone.PhoneNumber );
+                var personQuery = new PersonService.PersonMatchQuery( firstName, entityBag.LastName, entityBag.Email, mobilePhone?.PhoneNumber );
                 person = personService.FindPerson( personQuery, true );
             }
 

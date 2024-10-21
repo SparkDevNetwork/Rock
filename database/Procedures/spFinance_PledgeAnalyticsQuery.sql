@@ -5,6 +5,8 @@
 	</summary>
 </doc>
 */
+
+/* #Obsolete# - Pledge Analytics can be gotten using the spFinance_PledgeAnalyticsQueryWithMultipleAccountIds Stored Procedure. */
 ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
 	  @AccountId int
 	, @StartDate datetime = NULL
