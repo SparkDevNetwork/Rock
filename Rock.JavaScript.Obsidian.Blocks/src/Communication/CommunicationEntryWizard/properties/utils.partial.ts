@@ -134,6 +134,26 @@ export const standardShorthandProps: StandardShorthandProps = {
     canToggleShowConstituents: {
         type: Boolean as PropType<boolean>,
         default: true as const
+    },
+
+    cssClassShorthand: {
+        type: String as PropType<string | undefined>
+    },
+
+    cssClassTop: {
+        type: String as PropType<string | undefined>
+    },
+
+    cssClassBottom: {
+        type: String as PropType<string | undefined>
+    },
+
+    cssClassRight: {
+        type: String as PropType<string | undefined>
+    },
+
+    cssClassLeft: {
+        type: String as PropType<string | undefined>
     }
 };
 
@@ -156,12 +176,29 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
         labelRight: props.labelRight,
         labelLeft: props.labelLeft,
         showConstituentProperties: props.showConstituentProperties,
-        canToggleShowConstituents: props.canToggleShowConstituents
+        canToggleShowConstituents: props.canToggleShowConstituents,
+        cssClassShorthand: props.cssClassShorthand,
+        cssClassTop: props.cssClassTop,
+        cssClassBottom: props.cssClassBottom,
+        cssClassRight: props.cssClassRight,
+        cssClassLeft: props.cssClassLeft
     });
 
     watch(() => props.label, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.label = value;
+        }
+    });
+
+    watch(() => props.labelShorthand, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.labelShorthand = value;
+        }
+    });
+
+    watch(() => props.labelTop, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.labelTop = value;
         }
     });
 
@@ -171,21 +208,15 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
         }
     });
 
-    watch(() => props.labelLeft, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.labelLeft = value;
-        }
-    });
-
     watch(() => props.labelRight, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.labelRight = value;
         }
     });
 
-    watch(() => props.labelTop, (value, oldValue) => {
+    watch(() => props.labelLeft, (value, oldValue) => {
         if (value !== oldValue) {
-            propValues.labelTop = value;
+            propValues.labelLeft = value;
         }
     });
 
@@ -204,6 +235,36 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
     watch(() => props.canToggleShowConstituents, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.canToggleShowConstituents = value;
+        }
+    });
+
+    watch(() => props.cssClassShorthand, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.cssClassShorthand = value;
+        }
+    });
+
+    watch(() => props.cssClassTop, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.cssClassTop = value;
+        }
+    });
+
+    watch(() => props.cssClassBottom, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.cssClassBottom = value;
+        }
+    });
+
+    watch(() => props.cssClassRight, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.cssClassRight = value;
+        }
+    });
+
+    watch(() => props.cssClassLeft, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.cssClassLeft = value;
         }
     });
 

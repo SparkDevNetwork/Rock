@@ -1,5 +1,10 @@
 <template>
     <ShorthandPropertyBase :canToggleShowConstituents="canToggleShowConstituents"
+                           :cssClassShorthand="cssClassShorthand"
+                           :cssClassTop="cssClassTop"
+                           :cssClassBottom="cssClassBottom"
+                           :cssClassLeft="cssClassLeft"
+                           :cssClassRight="cssClassRight"
                            :label="label"
                            :showConstituentProperties="showConstituentProperties">
         <template #shorthandProperty>

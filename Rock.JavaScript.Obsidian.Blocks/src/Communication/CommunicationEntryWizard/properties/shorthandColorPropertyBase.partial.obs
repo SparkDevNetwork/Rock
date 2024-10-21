@@ -1,6 +1,12 @@
 <template>
-    <ShorthandPropertyBase :showConstituentProperties="showConstituentProperties"
-                           :label="label">
+    <ShorthandPropertyBase :canToggleShowConstituents="canToggleShowConstituents"
+                           :cssClassShorthand="cssClassShorthand"
+                           :cssClassTop="cssClassTop"
+                           :cssClassBottom="cssClassBottom"
+                           :cssClassLeft="cssClassLeft"
+                           :cssClassRight="cssClassRight"
+                           :label="label"
+                           :showConstituentProperties="showConstituentProperties">
         <template #shorthandProperty>
             <ColorTypePropertyBase :element="element"
                                    :label="labelShorthand"
@@ -73,6 +79,37 @@
         propertyLeft: {
             type: String as PropType<CSSStyleDeclarationKebabKey>,
             required: true
+        },
+
+        // For color type, shorthand properties,
+        // since color pickers tend to be wider than 6 columns,
+        // set the default to 12. This can still be overridden by
+        // individual properties or even by the property panel
+        // where those properties are used.
+
+        cssClassShorthand: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        cssClassTop: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        cssClassBottom: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        cssClassLeft: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        cssClassRight: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
         }
     });
 

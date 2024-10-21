@@ -16,6 +16,7 @@
     import { computed, PropType } from "vue";
     import ShorthandLengthTypePropertyBase from "./shorthandLengthTypePropertyBase.partial.obs";
     import { standardLengthProps, standardShorthandProps, useStandardLengthProps, useStandardShorthandProps } from "./utils.partial";
+    import { LengthControlType } from "./types.partial";
 
     const props = defineProps({
         ...standardShorthandProps,
@@ -24,6 +25,13 @@
         label: {
             type: String as PropType<string>,
             default: "Padding" as const
+        },
+
+        mode: {
+            type: Object as PropType<LengthControlType>,
+            default: {
+                type: "numberBox"
+            }
         }
     });
 

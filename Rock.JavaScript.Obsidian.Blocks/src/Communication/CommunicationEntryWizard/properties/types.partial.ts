@@ -83,6 +83,26 @@ export type StandardShorthandProps = {
         type: PropType<boolean>;
         default: boolean;
     };
+
+    cssClassShorthand: {
+        type: PropType<string | undefined>;
+    };
+
+    cssClassTop: {
+        type: PropType<string | undefined>;
+    };
+
+    cssClassBottom: {
+        type: PropType<string | undefined>;
+    };
+
+    cssClassRight: {
+        type: PropType<string | undefined>;
+    };
+
+    cssClassLeft: {
+        type: PropType<string | undefined>;
+    };
 };
 
 export type StandardLengthProps = {
