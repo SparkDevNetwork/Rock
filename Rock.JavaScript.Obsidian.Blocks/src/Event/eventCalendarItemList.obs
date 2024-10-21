@@ -38,6 +38,7 @@
                 field="calendars"
                 :filter="pickExistingValueFilter"
                 :filterValue="getRowCalendarsFilterValue"
+                :quickFilterValue="getRowCalendarsFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <template v-for="calendar in row.calendars">
@@ -76,6 +77,7 @@
                 field="isActive"
                 :filter="pickExistingValueFilter"
                 :filterValue="getActiveStatusFilterValue"
+                :quickFilterValue="getActiveStatusFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isActive" class="label label-success">
@@ -92,6 +94,7 @@
                 field="isApproved"
                 :filter="pickExistingValueFilter"
                 :filterValue="getApprovalStatusRowFilterValue"
+                :quickFilterValue="getApprovalStatusRowFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isApproved" class="label label-info">
