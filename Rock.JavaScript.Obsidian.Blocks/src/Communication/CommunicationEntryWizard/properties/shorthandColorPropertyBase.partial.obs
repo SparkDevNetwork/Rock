@@ -6,7 +6,7 @@
                            :cssClassLeft="cssClassLeft"
                            :cssClassRight="cssClassRight"
                            :label="label"
-                           :showConstituentProperties="showConstituentProperties">
+                           :showConstituentProperties="internalShowConstituentProperties">
         <template #shorthandProperty>
             <ColorTypePropertyBase :element="element"
                                    :label="labelShorthand"
@@ -42,11 +42,11 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, ref } from "vue";
     import ColorTypePropertyBase from "./colorTypePropertyBase.partial.obs";
     import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
-    import { CSSStyleDeclarationKebabKey } from "./types.partial";
-    import { standardShorthandProps } from "./utils.partial";
+    import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
+    import { hasConstituentProperties, standardShorthandProps } from "./utils.partial";
 
     const props = defineProps({
         ...standardShorthandProps,
@@ -120,6 +120,12 @@
         (e: "changeRight", value: string): void;
         (e: "changeLeft", value: string): void;
     }>();
+
+    // #region Values
+
+    const internalShowConstituentProperties = ref<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>(hasConstituentProperties(props));
+
+    // #endregion
 
     // #region Event Handlers
 

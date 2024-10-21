@@ -300,3 +300,30 @@ export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthPro
 
     return propValues;
 }
+
+export function hasConstituentProperties(props: ExtractPropTypes<StandardShorthandProps> & { propertyTop: string; propertyBottom: string; propertyRight: string; propertyLeft: string; }): boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[] {
+    if (props.showConstituentProperties === false) {
+        const top = props.element.style.getPropertyValue(props.propertyTop);
+        const bottom = props.element.style.getPropertyValue(props.propertyBottom);
+        const right = props.element.style.getPropertyValue(props.propertyRight);
+        const left = props.element.style.getPropertyValue(props.propertyLeft);
+
+        if (top || bottom || right || left) {
+            return hasAnyDifference(top, bottom, right, left);
+        }
+    }
+
+    return props.showConstituentProperties;
+}
+
+function hasAnyDifference(...strings: string[]): boolean {
+    const firstString = strings[0];
+
+    for (let i = 1; i < strings.length; i++) {
+        if (strings[i] !== firstString) {
+            return true; // Exit early if a difference is found
+        }
+    }
+
+    return false; // No differences found
+}
