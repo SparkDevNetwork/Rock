@@ -1,6 +1,9 @@
 <template>
     <TextAlignProperty :element="element" label="Column Align" />
-    <PaddingProperty :element="element" :showConstituentProperties="true" label="Column Padding" />
+    <PaddingProperty :element="element"
+                     label="Column Padding"
+                     :mode="{ type: 'numberBox' }"
+                     :showConstituentProperties="true" />
     <BackgroundColorProperty :element="element" label="Column Background" />
 </template>
 

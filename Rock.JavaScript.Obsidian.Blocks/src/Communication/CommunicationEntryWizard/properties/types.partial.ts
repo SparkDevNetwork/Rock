@@ -8,18 +8,18 @@ export type DirectionalConstituentProperty = "top" | "bottom" | "right" | "left"
 export type LengthControlType =
     | {
         type: "numberUpDown";
-        min: number;
-        max: number;
+        min: number | undefined;
+        max: number | undefined;
     }
     | {
         type: "numberBox";
-        min: number;
-        max: number;
+        min?: number | undefined;
+        max?: number | undefined;
     }
     | {
         type: "rangeSlider";
-        min: number;
-        max: number;
+        min?: number | undefined;
+        max?: number | undefined;
     }
     | { type: "textBox" }
     | { type: "dropDownList", items: ListItemBag[] };
