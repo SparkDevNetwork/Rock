@@ -23,8 +23,10 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -68,6 +70,21 @@ namespace Rock.Field.Types
         /// </summary>
         public static readonly string CONFIG_VALIDATION_MESSAGE = "validationMessage";
 
+        /// <summary>
+        /// Configuration Key for the public ListItemBag of the media account.
+        /// </summary>
+        public static readonly string CONFIG_MEDIA_ACCOUNT = "mediaAccount";
+
+        /// <summary>
+        /// Configuration Key for the public ListItemBag of the media folder.
+        /// </summary>
+        public static readonly string CONFIG_MEDIA_FOLDER = "mediaFolder";
+
+        /// <summary>
+        /// Configuration Key for the public ListItemBag of the media element.
+        /// </summary>
+        public static readonly string CONFIG_MEDIA_ELEMENT = "mediaElement";
+
         /// <inheritdoc/>
         public override bool HasDefaultControl => false;
 
@@ -81,6 +98,40 @@ namespace Rock.Field.Types
             // Create a new dictionary to protect against the passed dictionary
             // being changed after we are called.
             var config = new Dictionary<string, string>( privateConfigurationValues );
+
+            var rockContext = new RockContext();
+
+            var mediaId = config.GetValueOrDefault( CONFIG_MEDIA, string.Empty ).ToIntSafe( 0 );
+            int? mediaFolderId;
+            int? mediaAccountId;
+
+            if ( mediaId != 0 )
+            {
+                var mediaElement = new MediaElementService( rockContext ).Queryable()
+                    .Where( f => f.Id == mediaId )
+                    .SingleOrDefault();
+
+                if ( mediaElement != null )
+                {
+                    config.AddOrReplace( CONFIG_MEDIA_ELEMENT, ( new ListItemBag
+                    {
+                        Value = mediaElement?.Guid.ToString(),
+                        Text = mediaElement?.Name,
+                    } ).ToCamelCaseJson( false, true ) );
+
+                    mediaFolderId = mediaElement.MediaFolderId;
+
+                    if ( mediaFolderId != null && mediaFolderId != 0 )
+                    {
+                        var mediaFolder = new MediaFolderService( rockContext ).Queryable()
+                            .Where( f => f.Id == mediaFolderId )
+                            .SingleOrDefault();
+
+                        // TODO GET FOLDER AND ACCOUNT
+                    }
+                }
+            }
+
 
             return config;
         }
