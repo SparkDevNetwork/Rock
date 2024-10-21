@@ -6,8 +6,7 @@
                 <BackgroundColorProperty :element="componentElement" />
                 <BorderPropertyGroup :element="componentElement" />
                 <PaddingProperty :element="componentElement"
-                                 :mode="{ type: 'numberBox' }"
-                                 :showConstituentProperties="true" />
+                                 :mode="{ type: 'numberBox' }" />
             </Accordion>
 
             <Accordion title="Columns">

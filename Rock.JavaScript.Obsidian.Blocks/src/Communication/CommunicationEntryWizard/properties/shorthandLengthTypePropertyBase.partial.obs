@@ -6,7 +6,7 @@
                            :cssClassLeft="cssClassLeft"
                            :cssClassRight="cssClassRight"
                            :label="label"
-                           :showConstituentProperties="showConstituentProperties">
+                           :showConstituentProperties="internalShowConstituentProperties">
         <template #shorthandProperty>
             <LengthTypePropertyBase v-bind="lengthProps"
                                     :disableLabel="!(labelShorthand || (!canToggleShowConstituents && label) || '')"
@@ -48,10 +48,10 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, ref } from "vue";
     import LengthTypePropertyBase from "./lengthTypePropertyBase.partial.obs";
     import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
-    import { CSSStyleDeclarationKebabKey } from "./types.partial";
+    import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
     import { standardLengthProps, standardShorthandProps, useStandardLengthProps } from "./utils.partial";
 
     const props = defineProps({
@@ -98,6 +98,43 @@
         (e: "changeRight", value: string): void;
         (e: "changeLeft", value: string): void;
     }>();
+
+    // #region Values
+
+    const internalShowConstituentProperties = ref<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>(hasConstituentProperties());
+
+    // #endregion
+
+    // #region Functions
+
+    function hasConstituentProperties(): boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[] {
+        if (props.showConstituentProperties === false) {
+            const top = props.element.style.getPropertyValue(props.propertyTop);
+            const bottom = props.element.style.getPropertyValue(props.propertyBottom);
+            const right = props.element.style.getPropertyValue(props.propertyRight);
+            const left = props.element.style.getPropertyValue(props.propertyLeft);
+
+            if (top || bottom || right || left) {
+                return hasAnyDifference(top, bottom, right, left);
+            }
+        }
+
+        return props.showConstituentProperties;
+    }
+
+    function hasAnyDifference(...strings: string[]): boolean {
+        const firstString = strings[0];
+
+        for (let i = 1; i < strings.length; i++) {
+            if (strings[i] !== firstString) {
+                return true; // Exit early if a difference is found
+            }
+        }
+
+        return false; // No differences found
+    }
+
+    // #endregion
 
     // #region Event Handlers
 

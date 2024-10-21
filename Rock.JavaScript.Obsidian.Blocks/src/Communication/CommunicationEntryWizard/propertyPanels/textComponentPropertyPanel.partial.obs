@@ -13,7 +13,7 @@
 
             <Accordion title="Spacing & Layout">
                 <TextAlignProperty :element="componentElement" />
-                <PaddingProperty :element="componentElement" :showConstituentProperties="true" />
+                <PaddingProperty :element="componentElement" />
             </Accordion>
 
             <Accordion title="Borders & Effects">
