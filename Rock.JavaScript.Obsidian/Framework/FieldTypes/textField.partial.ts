@@ -29,7 +29,10 @@ export const enum ConfigurationValueKey {
     MaxCharacters = "maxcharacters",
 
     /** Contains "True" if the text field should show the character countdown. */
-    ShowCountdown = "showcountdown"
+    ShowCountdown = "showcountdown",
+
+    /** Contains "True" if the text field is designed for first name entry. */
+    IsFirstName = "isfirstname",
 }
 
 // The configuration component can be quite large, so load it only as needed.
