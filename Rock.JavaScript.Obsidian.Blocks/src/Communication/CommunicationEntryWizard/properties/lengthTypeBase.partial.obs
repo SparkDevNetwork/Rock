@@ -91,7 +91,7 @@
 
     watch(internalNumericValue, (newValue: number, oldValue: number) => {
         if (newValue !== oldValue) {
-            internalValue.value = newValue ? `${newValue}px` : "";
+            internalValue.value = `${newValue}px`;
         }
     });
 
@@ -102,12 +102,7 @@
     });
 
     watch([() => props.modelValue, () => props.mode], () => {
-        if (isNumeric.value) {
-            internalNumericValue.value = getPixelValue(props.modelValue);
-        }
-        else {
-            internalValue.value = props.modelValue;
-        }
+        internalValue.value = props.modelValue;
     });
 
     // #endregion
