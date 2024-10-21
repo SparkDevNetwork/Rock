@@ -283,6 +283,19 @@ defineRule("datekey", value => {
     return true;
 });
 
+defineRule("number", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    if (isNumeric(value)) {
+        return true;
+    }
+
+    return "must be a valid number.";
+});
+
 defineRule("integer", (value: unknown) => {
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
