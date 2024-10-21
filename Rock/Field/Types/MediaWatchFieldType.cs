@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// Field Type to allow the user to watch a video and have the amount they
     /// watched recorded.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_WATCH )]
     public class MediaWatchFieldType : FieldType
     {
@@ -74,6 +74,17 @@ namespace Rock.Field.Types
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            var config = new Dictionary<string, string>( privateConfigurationValues );
+
+            return config;
+        }
+
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
