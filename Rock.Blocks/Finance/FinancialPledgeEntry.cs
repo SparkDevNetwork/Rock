@@ -208,7 +208,7 @@ namespace Rock.Blocks.Finance
                 var box = new DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
-                
+
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( rockContext, box.Entity );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<FinancialPledge>();

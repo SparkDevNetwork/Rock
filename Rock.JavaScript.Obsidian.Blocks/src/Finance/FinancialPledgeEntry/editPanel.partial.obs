@@ -95,7 +95,7 @@
     const email = ref(props.modelValue.email ?? "");
     const currentPerson = ref(props.modelValue.currentPerson ?? {});
     const personAlias = propertyRef(props.modelValue.personAlias ?? {}, "PersonAliasId");
-    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const startDate = propertyRef(props.modelValue.startDate || (props.modelValue.endDate ? new Date().toISOString() : ""), "StartDate");
     const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
     const groupGuidOrEmptyString = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
@@ -107,7 +107,7 @@
     const pledgeFrequencies = ref(props.options.pledgeFrequencies ?? []);
     const duplicatePledgeWarningText = ref(props.modelValue.duplicatePledgeWarningText);
     const account = propertyRef(props.modelValue.account ?? {}, "AccountId");
-    const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value || new Date().toISOString(), upperValue: endDate.value } : undefined);
+    const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
     const phoneNumbers = ref<FinancialPledgeEntryPhoneNumberBag[]>(props.modelValue?.phoneNumbers ?? []);
     const showDateRange = ref(props.options.showDateRange);
     const pledgeTerm = ref(props.options.pledgeTerm);
