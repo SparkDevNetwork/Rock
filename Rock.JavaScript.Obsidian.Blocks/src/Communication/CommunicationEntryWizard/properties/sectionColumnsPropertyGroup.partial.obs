@@ -2,7 +2,12 @@
     <div class="form-group">
         <div class="columns-header">
             <RockLabel>Columns</RockLabel>
-            <RockButton btnSize="xs" btnType="link" @click="$emit('add')"><i class="fa fa-plus" aria-hidden="true"></i> Add Column</RockButton>
+            <RockButton v-if="columnValues.length < 12"
+                        btnSize="xs"
+                        btnType="link"
+                        @click="$emit('add')">
+                <i class="fa fa-plus" aria-hidden="true"></i> Add Column
+            </RockButton>
         </div>
 
         <div class="column-structure">
@@ -13,7 +18,7 @@
                     <div class="content">12</div>
                 </div>
             </template>
-            
+
             <template v-else>
                 <template v-for="(columns, index, sfd) in columnValues" :key="'column-' + index">
                     <div :class="['column', selectedColumnElement === columnElements[index] ? 'selected' : '']"
@@ -37,6 +42,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 }
 
 .column-structure {

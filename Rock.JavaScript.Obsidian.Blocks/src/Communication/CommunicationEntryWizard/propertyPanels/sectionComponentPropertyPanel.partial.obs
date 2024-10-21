@@ -16,14 +16,21 @@
                                              @add="onAddColumn"
                                              @select="onColumnElementSelected" />
 
-                <SectionColumnPropertyGroup v-if="selectedColumnElement" :element="selectedColumnElement" />
+                <SectionColumnPropertyGroup v-if="selectedColumnElement
+                    && selectedColumnNumber !== null
+                    && selectedColumnNumber !== undefined
+                    && selectedColumnNumber > -1"
+                                            :element="selectedColumnElement"
+                                            :columnNumber="selectedColumnNumber"
+                                            :isDeleteHidden="columnElements.length <= 1"
+                                            @delete="onDeleteColumn(selectedColumnElement)" />
             </Accordion>
         </AccordionGroup>
     </ComponentPropertyPanelBase>
 </template>
 
 <script setup lang="ts">
-    import { nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
@@ -50,6 +57,26 @@
     const backgroundColor = ref<string>(props.componentElement.style.backgroundColor ?? "");
     const columnElements = ref<HTMLElement[]>(getChildDropzones(props.componentElement));
     const selectedColumnElement = ref<HTMLElement | null | undefined>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const selectedColumnNumber = computed<number | null | undefined>(() => {
+        if (!selectedColumnElement.value) {
+            return;
+        }
+
+        const index = columnElements.value.indexOf(selectedColumnElement.value);
+
+        if (index !== -1) {
+            return index + 1;
+        }
+        else {
+            // Not found.
+            return null;
+        }
+    });
 
     // #endregion
 
@@ -125,6 +152,32 @@
                 return;
             }
         }
+    }
+
+    function onDeleteColumn(columnElement: HTMLElement): void {
+        // Skip deleting if this is the only column.
+        if (columnElements.value.length <= 1) {
+            return;
+        }
+
+        const columnIndex = columnElements.value.indexOf(columnElement);
+
+        if (columnIndex !== 0) {
+            // Give the columns to the column to the left.
+            const leftColumnElement = columnElements.value[columnIndex - 1];
+            setCols(leftColumnElement, getCols(columnElement) + getCols(leftColumnElement));
+        }
+        else {
+            // Give the columns to the column to the right.
+            const rightColumnElement = columnElements.value[columnIndex + 1];
+            setCols(rightColumnElement, getCols(columnElement) + getCols(rightColumnElement));
+        }
+
+        // Remove the column element.
+        columnElement.remove();
+
+        // Refresh the list of column elements.
+        columnElements.value = getChildDropzones(props.componentElement);
     }
 
     function replaceTagName(oldElement: HTMLElement, newTagName: string): HTMLElement {

@@ -1,4 +1,12 @@
 <template>
+    <div class="section-column-property-header">
+        <RockLabel>Column {{ columnNumber }}</RockLabel>
+        <RockButton v-if="!isDeleteHidden"
+                    btnSize="xs"
+                    btnType="danger"
+                    @click="$emit('delete')">Delete Column</RockButton>
+    </div>
+
     <TextAlignProperty :element="element" label="Column Align" />
     <PaddingProperty :element="element"
                      label="Column Padding"
@@ -7,16 +15,41 @@
     <BackgroundColorProperty :element="element" label="Column Background" />
 </template>
 
+<style scoped>
+.section-column-property-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
+
 <script setup lang="ts">
     import { PropType } from "vue";
     import BackgroundColorProperty from "./backgroundColorProperty.partial.obs";
     import PaddingProperty from "./paddingProperty.partial.obs";
     import TextAlignProperty from "./textAlignProperty.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     defineProps({
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        columnNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isDeleteHidden: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
+
+    defineEmits<{
+        (e: "delete"): void;
+    }>();
 </script>
