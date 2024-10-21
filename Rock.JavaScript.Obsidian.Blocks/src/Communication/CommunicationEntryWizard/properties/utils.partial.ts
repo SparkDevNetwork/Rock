@@ -103,7 +103,7 @@ export const standardShorthandProps: StandardShorthandProps = {
 
     labelShorthand: {
         type: String as PropType<string>,
-        default: "All" as const
+        default: "" as const
     },
 
     labelTop: {
@@ -129,6 +129,11 @@ export const standardShorthandProps: StandardShorthandProps = {
     showConstituentProperties: {
         type: Boolean as PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>,
         default: false as const
+    },
+
+    canToggleShowConstituents: {
+        type: Boolean as PropType<boolean>,
+        default: true as const
     }
 };
 
@@ -151,6 +156,7 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
         labelRight: props.labelRight,
         labelLeft: props.labelLeft,
         showConstituentProperties: props.showConstituentProperties,
+        canToggleShowConstituents: props.canToggleShowConstituents
     });
 
     watch(() => props.label, (value, oldValue) => {
@@ -192,6 +198,12 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
     watch(() => props.element, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.element = value;
+        }
+    });
+
+    watch(() => props.canToggleShowConstituents, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.canToggleShowConstituents = value;
         }
     });
 

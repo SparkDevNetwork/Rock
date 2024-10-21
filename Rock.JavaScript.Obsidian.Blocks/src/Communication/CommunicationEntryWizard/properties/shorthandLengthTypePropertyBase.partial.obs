@@ -1,10 +1,12 @@
 <template>
-    <ShorthandPropertyBase :showConstituentProperties="showConstituentProperties"
-                           :label="label">
+    <ShorthandPropertyBase :canToggleShowConstituents="canToggleShowConstituents"
+                           :label="label"
+                           :showConstituentProperties="showConstituentProperties">
         <template #shorthandProperty>
             <LengthTypePropertyBase v-bind="lengthProps"
+                                    :disableLabel="!(labelShorthand || (!canToggleShowConstituents && label) || '')"
                                     :element="element"
-                                    :label="label"
+                                    :label="labelShorthand || (!canToggleShowConstituents && label) || ''"
                                     :property="propertyShorthand"
                                     @change="onChangeShorthand" />
         </template>

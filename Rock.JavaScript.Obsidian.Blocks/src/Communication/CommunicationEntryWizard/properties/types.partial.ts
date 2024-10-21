@@ -78,6 +78,11 @@ export type StandardShorthandProps = {
         type: PropType<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>;
         default: boolean;
     };
+
+    canToggleShowConstituents: {
+        type: PropType<boolean>;
+        default: boolean;
+    };
 };
 
 export type StandardLengthProps = {

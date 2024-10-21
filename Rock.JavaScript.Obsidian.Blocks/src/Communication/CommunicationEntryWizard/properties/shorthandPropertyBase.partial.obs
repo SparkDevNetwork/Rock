@@ -1,36 +1,53 @@
 <template>
-    <template v-if="!showConstituentProperties">
-        <slot name="shorthandProperty"></slot>
-    </template>
-
-    <template v-else>
+    <div v-if="canToggleShowConstituents"
+         class="shorthand-property-base">
         <RockLabel v-if="label">{{ label }}</RockLabel>
+        <InlineSwitch v-model="areConstituentPropertiesShown" label="Show More" />
+    </div>
 
-        <div class="row">
-            <div class="col-sm-6" v-if="constituentProperties.includes('top')">
-                <slot name="topProperty"></slot>
-            </div>
-
-            <div class="col-sm-6" v-if="constituentProperties.includes('bottom')">
-                <slot name="bottomProperty"></slot>
-            </div>
-
-            <div class="col-sm-6" v-if="constituentProperties.includes('left')">
-                <slot name="leftProperty"></slot>
-            </div>
-
-            <div class="col-sm-6" v-if="constituentProperties.includes('right')">
-                <slot name="rightProperty"></slot>
-            </div>
+    <TransitionVerticalCollapse>
+        <div v-if="!areConstituentPropertiesShown">
+            <slot name="shorthandProperty"></slot>
         </div>
 
-    </template>
+        <div v-if="areConstituentPropertiesShown">
+            <div class="row">
+                <div class="col-sm-6" v-if="constituentProperties.includes('top')">
+                    <slot name="topProperty"></slot>
+                </div>
+
+                <div class="col-sm-6" v-if="constituentProperties.includes('bottom')">
+                    <slot name="bottomProperty"></slot>
+                </div>
+
+                <div class="col-sm-6" v-if="constituentProperties.includes('left')">
+                    <slot name="leftProperty"></slot>
+                </div>
+
+                <div class="col-sm-6" v-if="constituentProperties.includes('right')">
+                    <slot name="rightProperty"></slot>
+                </div>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
 </template>
 
+<style scoped>
+.shorthand-property-base {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-bottom: 4px;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { PropType, ref, watch } from "vue";
     import { DirectionalConstituentProperty } from "./types.partial";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 
     const props = defineProps({
         showConstituentProperties: {
@@ -40,32 +57,60 @@
 
         label: {
             type: String as PropType<string | null | undefined>
+        },
+
+        canToggleShowConstituents: {
+            type: Boolean as PropType<boolean>,
+            default: true as const
         }
     });
 
-    // #region Computed Props
+    // #region Values
 
-    const constituentProperties = computed<DirectionalConstituentProperty[]>(() => {
-        if (props.showConstituentProperties === false) {
+    const constituentProperties = ref<DirectionalConstituentProperty[]>(getConstituentProperties(props.showConstituentProperties));
+    const areConstituentPropertiesShown = ref<boolean>(!!constituentProperties.value.length);
+
+    // #endregion
+
+    // #region Functions
+
+    function getConstituentProperties(showConstituentProperties: boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]): DirectionalConstituentProperty[] {
+        if (showConstituentProperties === false) {
             return [];
         }
-        else if (props.showConstituentProperties === true) {
+        else if (showConstituentProperties === true) {
             return ["top", "bottom", "right", "left"];
         }
-        else if (props.showConstituentProperties === "top") {
+        else if (showConstituentProperties === "top") {
             return ["top"];
         }
-        else if (props.showConstituentProperties === "bottom") {
+        else if (showConstituentProperties === "bottom") {
             return ["bottom"];
         }
-        else if (props.showConstituentProperties === "right") {
+        else if (showConstituentProperties === "right") {
             return ["right"];
         }
-        else if (props.showConstituentProperties === "left") {
+        else if (showConstituentProperties === "left") {
             return ["left"];
         }
         else {
-            return props.showConstituentProperties;
+            return showConstituentProperties;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.showConstituentProperties, () => {
+        constituentProperties.value = getConstituentProperties(props.showConstituentProperties);
+    });
+
+    watch(areConstituentPropertiesShown, (value: boolean) => {
+        if (value && constituentProperties.value.length === 0) {
+            // If the "Show More" switch is turned on and there are currently no constituent properties to show,
+            // then show them all.
+            constituentProperties.value = getConstituentProperties(true);
         }
     });
 
