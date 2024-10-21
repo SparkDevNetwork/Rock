@@ -7,8 +7,8 @@
     background-color: var(--color-interface-softer);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-small);
-    padding: var(--spacing-small) var(--spacing-medium);
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     font-size: var(--font-size-regular);
     font-weight: var(--font-weight-regular);
 }
@@ -16,7 +16,7 @@
 .check-in-page .check-in-panel {
     background-color: var(--color-interface-softest);
     border-radius: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
-    padding: var(--spacing-small) var(--spacing-medium);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     display: flex;
     flex-direction: column;
 }
@@ -33,7 +33,7 @@
 .check-in-page .button-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .button-list .btn {
@@ -64,7 +64,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-tiny);
-    padding: var(--spacing-small);
+    padding: var(--spacing-xsmall);
     align-items: center;
 }
 
@@ -73,7 +73,7 @@
     /*margin: auto;*/
     grid-template-columns: 150px 150px 150px;
     grid-template-rows: 60px 60px 60px 60px ;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .number-pad .btn {
@@ -86,7 +86,7 @@
 .check-in-page .body {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 
@@ -98,7 +98,7 @@
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
     min-height: 56px;
 
     /* Overrides from bootstrap. */
@@ -142,7 +142,7 @@
 .check-in-page h3 {
     color: var(--color-interface-stronger);
     font-size: var(--font-size-h3);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     margin: 0 0 var(--spacing-tiny) 0;
 }
 
@@ -166,14 +166,14 @@
 }
 
 .check-in-page .btn-primary {
-    padding: var(--spacing-small) var(--spacing-medium);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     font-size: var(--font-size-regular);
     font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .btn-default {
-    padding: var(--spacing-small) var(--spacing-medium);
-    font-size: var(--font-size-regular);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    font-size: var(--font-size-h3);
     font-weight: var(--font-weight-regular);
 }
 
@@ -216,6 +216,10 @@
     line-height: var(--line-height-compact);
 }
 
+.check-in-page .btn.btn-primary .selection {
+    font-size: var(--font-size-h1);
+}
+
 .check-in-page .illustrated-button .btn {
     margin: 0;
     border-radius: 0;
@@ -232,7 +236,7 @@
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
     min-height: 64px;
     color: var(--color-interface-strong);
 }
@@ -241,13 +245,23 @@
     flex-grow: 1;
     display: flex;
     justify-content: end;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .page-footer .configure-button {
     padding: 0;
     font-size: var(--font-size-h3);
     color: var(--color-interface-soft);
+}
+
+.check-in-page .actions .btn.btn-primary.next-button {
+    font-size: var(--font-size-h3);
+    padding: var(--spacing-xsmall) var(--spacing-xlarge);
+}
+
+.check-in-page .actions .btn.btn-primary {
+    font-size: var(--font-size-h3);
+    padding: var(--spacing-xsmall) var(--spacing-large);
 }
 
 /*
@@ -262,14 +276,14 @@
 .check-in-page .configuration-screen .saved-configurations {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .configuration-screen .saved-configurations .header,
 .check-in-page .configuration-screen .custom-configuration .header {
     display: flex;
     align-items: center;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .configuration-screen .saved-configurations .header h4,
@@ -292,7 +306,7 @@
     height: 100%;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 2fr 1fr;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .welcome-screen .promotions {
@@ -445,14 +459,14 @@
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
-    padding-bottom: var(--spacing-small);
+    padding-bottom: var(--spacing-xsmall);
 }
 
 .check-in-page .achievement-card {
     border-radius: var(--spacing-tiny);
     background-color: white;
     border: var(--rounded-tiny) solid var(--color-interface-soft);
-    padding: var(--spacing-small) var(--spacing-medium);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     display: grid;
     line-height: 1.3em;
 }
@@ -476,16 +490,16 @@
 
 .check-in-page .attendance-cards {
     display: flex;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .check-in-page .attendance-card {
-    width: calc(33.33% - calc(var(--spacing-small) * 2 / 3));
+    width: calc(33.33% - calc(var(--spacing-xsmall) * 2 / 3));
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
     border-radius: var(--spacing-tiny);
     background-color: var(--color-interface-soft);
     border: var(--color-interface-medium);
@@ -494,7 +508,7 @@
 
 .check-in-page .attendance-card .header {
     display: flex;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
     justify-content: center;
     align-items: center;
 }
@@ -510,10 +524,10 @@
 }
 
 .check-in-page .attendance-card .attendance-detail {
-    border-radius: var(--spacing-small);
+    border-radius: var(--spacing-xsmall);
     background-color: var(--color-primary);
     color: var(--theme-white);
-    padding: var(--spacing-tiny) var(--spacing-small);
+    padding: var(--spacing-tiny) var(--spacing-xsmall);
     display: flex;
     justify-content: space-between;
 }
@@ -563,11 +577,11 @@
 }
 
 .check-in-page .attendance-card .achievement:first-of-type {
-    margin-top: calc(var(--spacing-small) * -1);
+    margin-top: calc(var(--spacing-xsmall) * -1);
 }
 
 .check-in-page .attendance-card .achievement + .achievement {
-    padding-top: var(--spacing-small);
+    padding-top: var(--spacing-xsmall);
     border-top: var(--rounded-tiny) solid var(--color-interface-medium);
 }
 
@@ -578,7 +592,7 @@
 .supervisor-login-screen {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
     align-items: start;
 }
 
@@ -598,7 +612,7 @@
 
 .supervisor-login-screen .current-counts .count-row {
     display: flex;
-    gap: var(--spacing-small);
+    gap: var(--spacing-xsmall);
 }
 
 .supervisor-login-screen .current-counts .title {
@@ -623,7 +637,7 @@
 .supervisor-action-screen {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    column-gap: var(--spacing-small);
+    column-gap: var(--spacing-xsmall);
     align-items: start;
 }
 
@@ -667,13 +681,13 @@
 */
 .supervisor-schedule-locations-screen .schedule-grid {
     display: grid;
-    row-gap: var(--spacing-small);
+    row-gap: var(--spacing-xsmall);
     grid-template-columns: 1fr 1fr repeat(var(--schedule-count, 0), minmax(90px, max-content));
 }
 
 .supervisor-schedule-locations-screen .schedule-grid > * {
     border-bottom: var(--rounded-tiny) solid var(--color-interface-soft);
-    padding-bottom: var(--spacing-small);
+    padding-bottom: var(--spacing-xsmall);
 }
 
 .supervisor-schedule-locations-screen .schedule-grid > .header {
@@ -699,5 +713,5 @@
 }
 
 .grid-obsidian .grid-body .grid-row .btn.btn-default {
-    padding: var(--spacing-small) 0px;
+    padding: var(--spacing-xsmall) 0px;
 }

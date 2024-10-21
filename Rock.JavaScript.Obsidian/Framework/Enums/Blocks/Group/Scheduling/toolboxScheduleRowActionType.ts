@@ -33,7 +33,10 @@ export const ToolboxScheduleRowActionType = {
     Cancel: 2,
 
     /** Delete a person schedule exclusion. */
-    Delete: 3
+    Delete: 3,
+
+    /** Schedule oneself (or one's family member). */
+    SelfSchedule: 4
 } as const;
 
 /** The action types that can be performed for a schedule row within the group schedule toolbox. */
@@ -44,7 +47,9 @@ export const ToolboxScheduleRowActionTypeDescription: Record<number, string> = {
 
     2: "Cancel",
 
-    3: "Delete"
+    3: "Delete",
+
+    4: "Self-Schedule"
 };
 
 /** The action types that can be performed for a schedule row within the group schedule toolbox. */

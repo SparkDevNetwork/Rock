@@ -107,7 +107,7 @@
                                             Help="The location selection modes to allow when adding locations to groups of this type." />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow"
+                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations"
                                             Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules"
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
@@ -289,6 +289,12 @@
 
                                 <Rock:RockDropDownList ID="ddlScheduleReminderSystemCommunication" runat="server" Label="Schedule Reminder Communication" Help="The system communication to use when sending a schedule reminder." />
                                 <Rock:NumberBox ID="nbScheduleReminderOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Offset Days" Help="The default number of days prior to the schedule to send a reminder notification." />
+
+                                <Rock:RockCheckBoxList ID="cblScheduleCoordinatorNotificationTypes" runat="server" Label="Schedule Coordinator Notification Options" RepeatDirection="Horizontal" Help='Specifies the types of notifications the coordinator receives regarding scheduled individuals. For example, selecting "Self-Schedule" notifies the coordinator when someone signs up for additional times via the Group Schedule Toolbox.'>
+                                    <asp:ListItem Value="1" Text="Accept" />
+                                    <asp:ListItem Value="2" Text="Decline" />
+                                    <asp:ListItem Value="4" Text="Self-Schedule" />
+                                </Rock:RockCheckBoxList>
                             </div>
                         </div>
                     </Rock:PanelWidget>

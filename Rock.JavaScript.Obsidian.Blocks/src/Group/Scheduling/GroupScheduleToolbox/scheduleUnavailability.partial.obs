@@ -87,8 +87,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isVisible"): void,
-        (e: "scheduleUnavailabilityAdded"): void
+        (e: "update:isVisible"): void;
+        (e: "scheduleUnavailabilityAdded"): void;
     }>();
 
     // #region Values

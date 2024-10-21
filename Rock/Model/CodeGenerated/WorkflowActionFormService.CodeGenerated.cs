@@ -119,6 +119,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ActionAttributeGuid = source.ActionAttributeGuid;
             target.Actions = source.Actions;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AllowNotes = source.AllowNotes;
             target.AllowPersonEntry = source.AllowPersonEntry;
             target.Footer = source.Footer;

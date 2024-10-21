@@ -31,5 +31,13 @@ namespace Rock.ViewModels.Blocks.Event.EventCalendarDetail
         /// The attributes.
         /// </value>
         public List<EventAttributeBag> EventAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether /[indexing enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [indexing enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IndexingEnabled { get; set; }
     }
 }

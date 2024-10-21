@@ -25,9 +25,6 @@ import { Guid } from "@Obsidian/Types";
 
 /** A bag that contains information about an additional time sign-up to be saved or deleted for the group schedule toolbox block. */
 export type SaveSignUpRequestBag = {
-    /** Gets or sets whether this request represents a save () or delete () attempt. */
-    isSigningUp: boolean;
-
     /** Gets or sets the occurrence date time. */
     occurrenceDateTime?: string | null;
 

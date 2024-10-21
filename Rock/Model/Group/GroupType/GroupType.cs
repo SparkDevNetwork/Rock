@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
@@ -706,7 +707,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The attendance reminder followup days.</value>
         [DataMember]
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         public string AttendanceReminderFollowupDays { get; set; }
 
         //AttendanceReminderLastSentDateTime
@@ -904,6 +905,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool ShowAdministrator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the types of notifications the coordinator receives about scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator notification types.
+        /// </value>
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
 
         #endregion
 

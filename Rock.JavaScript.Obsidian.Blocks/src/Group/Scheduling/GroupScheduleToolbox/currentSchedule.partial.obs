@@ -136,7 +136,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isLoadingCurrentSchedule"): void
+        (e: "update:isLoadingCurrentSchedule"): void;
     }>();
 
     // #region Values

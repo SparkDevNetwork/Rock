@@ -221,6 +221,7 @@ namespace Rock.Model
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
+            target.ScheduleCoordinatorNotificationTypes = source.ScheduleCoordinatorNotificationTypes;
             target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             target.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
             target.SendAttendanceReminder = source.SendAttendanceReminder;

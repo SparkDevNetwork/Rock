@@ -23,6 +23,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Workflow.FormBuilder;
 
 namespace Rock.Web.UI.Controls
 {
@@ -57,6 +58,7 @@ namespace Rock.Web.UI.Controls
         private CodeEditor _cePersonEntryPreHtml;
 
         private RockCheckBox _cbPersonEntryShowCampus;
+        private RockCheckBox _cbPersonEntryIncludeInactive;
         private RockCheckBox _cbPersonEntryAutofillCurrentPerson;
         private RockCheckBox _cbPersonEntryHideIfCurrentPersonKnown;
         private RockDropDownList _ddlPersonEntrySpouseEntryOption;
@@ -176,6 +178,10 @@ namespace Rock.Web.UI.Controls
             form.PersonEntryGroupLocationTypeValueId = _dvpPersonEntryGroupLocationType.SelectedDefinedValueId;
             form.PersonEntryCampusStatusValueId = _dvpPersonEntryCampusStatus.SelectedDefinedValueId;
             form.PersonEntryCampusTypeValueId = _dvpPersonEntryCampusType.SelectedDefinedValueId;
+            form.SetAdditionalSettings( new PersonEntryAdditionalSettings
+            {
+                IncludeInactiveCampus = _cbPersonEntryIncludeInactive.Checked,
+            } );
 
             form.PersonEntryPersonAttributeGuid = _ddlPersonEntryPersonAttribute.SelectedValueAsGuid();
             form.PersonEntrySpouseAttributeGuid = _ddlPersonEntrySpouseAttribute.SelectedValueAsGuid();
@@ -236,9 +242,11 @@ namespace Rock.Web.UI.Controls
             _cbAllowPersonEntry.Checked = workflowActionForm.AllowPersonEntry;
             _pnlPersonEntry.Visible = workflowActionForm.AllowPersonEntry;
 
+            var personEntryAdditionalSettings = workflowActionForm.GetAdditionalSettings<PersonEntryAdditionalSettings>();
             _cePersonEntryPreHtml.Text = workflowActionForm.PersonEntryPreHtml;
             _cePersonEntryPostHtml.Text = workflowActionForm.PersonEntryPostHtml;
             _cbPersonEntryShowCampus.Checked = workflowActionForm.PersonEntryCampusIsVisible;
+            _cbPersonEntryIncludeInactive.Checked = personEntryAdditionalSettings.IncludeInactiveCampus ?? true;
             _cbPersonEntryAutofillCurrentPerson.Checked = workflowActionForm.PersonEntryAutofillCurrentPerson;
             _cbPersonEntryHideIfCurrentPersonKnown.Checked = workflowActionForm.PersonEntryHideIfCurrentPersonKnown;
             _ddlPersonEntrySpouseEntryOption.SetValue( ( int ) workflowActionForm.PersonEntrySpouseEntryOption );
@@ -249,8 +257,8 @@ namespace Rock.Web.UI.Controls
             _ddlPersonEntryBirthdateEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryBirthdateEntryOption );
             _ddlPersonEntryAddressEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryAddressEntryOption );
             _ddlPersonEntryMaritalStatusEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryMaritalStatusEntryOption );
-            _ddlPersonEntryRaceEntryOption.SetValue ( ( int ) workflowActionForm.PersonEntryRaceEntryOption );
-            _ddlPersonEntryEthnicityEntryOption.SetValue ( ( int ) workflowActionForm.PersonEntryEthnicityEntryOption );
+            _ddlPersonEntryRaceEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryRaceEntryOption );
+            _ddlPersonEntryEthnicityEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryEthnicityEntryOption );
 
             _tbPersonEntrySpouseLabel.Text = workflowActionForm.PersonEntrySpouseLabel;
             _dvpPersonEntryConnectionStatus.SetValue( workflowActionForm.PersonEntryConnectionStatusValueId );
@@ -259,6 +267,7 @@ namespace Rock.Web.UI.Controls
 
             _dvpPersonEntryCampusStatus.Visible = workflowActionForm.PersonEntryCampusIsVisible;
             _dvpPersonEntryCampusType.Visible = workflowActionForm.PersonEntryCampusIsVisible;
+            _cbPersonEntryIncludeInactive.Visible = workflowActionForm.PersonEntryCampusIsVisible;
 
             _dvpPersonEntryCampusStatus.SetValue( workflowActionForm.PersonEntryCampusStatusValueId );
             _dvpPersonEntryCampusType.SetValue( workflowActionForm.PersonEntryCampusTypeValueId );
@@ -397,6 +406,7 @@ namespace Rock.Web.UI.Controls
             target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
         }
 
         /// <summary>
@@ -596,6 +606,12 @@ namespace Rock.Web.UI.Controls
             _cbPersonEntryShowCampus.AutoPostBack = true;
             _cbPersonEntryShowCampus.CheckedChanged += _cbPersonEntryShowCampus_CheckedChanged;
 
+            _cbPersonEntryIncludeInactive = new RockCheckBox
+            {
+                ID = "_cbPersonEntryIncludeInactive",
+                Label = "Include Inactive"
+            };
+
             _cbPersonEntryAutofillCurrentPerson = new RockCheckBox
             {
                 ID = "_cbPersonEntryAutofillCurrentPerson",
@@ -646,7 +662,7 @@ namespace Rock.Web.UI.Controls
                 Label = "SMS Opt-In"
             };
 
-            _ddlPersonEntrySmsOptInEntryOption.BindToEnum<WorkflowActionFormShowHideOption> ();
+            _ddlPersonEntrySmsOptInEntryOption.BindToEnum<WorkflowActionFormShowHideOption>();
 
             _ddlPersonEntryBirthdateEntryOption = new RockDropDownList
             {
@@ -847,6 +863,7 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow2.Controls.Add( pnlPersonEntryRow2Col4 );
 
             pnlPersonEntryRow2Col1.Controls.Add( _cbPersonEntryShowCampus );
+            pnlPersonEntryRow2Col1.Controls.Add( _cbPersonEntryIncludeInactive );
             pnlPersonEntryRow2Col2.Controls.Add( _dvpPersonEntryCampusType );
             pnlPersonEntryRow2Col3.Controls.Add( _dvpPersonEntryCampusStatus );
 
@@ -892,7 +909,7 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow3Col2.Controls.Add( _ddlPersonEntryEmailEntryOption );
             pnlPersonEntryRow3Col3.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
             pnlPersonEntryRow3Col4.Controls.Add( _ddlPersonEntrySmsOptInEntryOption );
-            
+
 
             /* Person Entry - Row 4*/
             Panel pnlPersonEntryRow4 = new Panel
@@ -1067,6 +1084,7 @@ namespace Rock.Web.UI.Controls
         {
             _dvpPersonEntryCampusStatus.Visible = _cbPersonEntryShowCampus.Checked;
             _dvpPersonEntryCampusType.Visible = _cbPersonEntryShowCampus.Checked;
+            _cbPersonEntryIncludeInactive.Visible = _cbPersonEntryShowCampus.Checked;
         }
 
         /// <summary>

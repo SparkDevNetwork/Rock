@@ -15,22 +15,11 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-
 namespace Rock.Field
 {
     /// <summary>
     /// Defines the way configuration values are intended to be used.
     /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         <strong>This is an internal API</strong> that supports the Rock
-    ///         infrastructure and not subject to the same compatibility standards
-    ///         as public APIs. It may be changed or removed without notice in any
-    ///         release and should therefore not be directly used in any plug-ins.
-    ///     </para>
-    /// </remarks>
-    [RockInternal( "1.13.4" )]
     public enum ConfigurationValueUsage
     {
         /// <summary>

@@ -33,7 +33,7 @@ namespace Rock.Blocks
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.13" )]
+    [RockInternal( "1.13", true )]
     public interface IRockWebBlockType : IRockBlockType
     {
         /// <summary>

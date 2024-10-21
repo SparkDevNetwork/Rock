@@ -4637,6 +4637,7 @@
     <Compile Include="Workflow\FormBuilder\FormNotificationEmailSettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormPersonEntrySettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormSettings.cs" />
+    <Compile Include="Workflow\FormBuilder\PersonEntryAdditionalSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

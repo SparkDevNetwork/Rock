@@ -61,10 +61,10 @@
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            activatedDateRangeLowerValue: activatedDateRange.value?.upperValue,
-            activatedDateRangeUpperValue: activatedDateRange.value?.lowerValue,
-            completedDateRangeLowerValue: completedDateRange.value?.upperValue,
-            completedDateRangeUpperValue: completedDateRange.value?.lowerValue,
+            activatedDateRangeLowerValue: activatedDateRange.value?.lowerValue,
+            activatedDateRangeUpperValue: activatedDateRange.value?.upperValue,
+            completedDateRangeLowerValue: completedDateRange.value?.lowerValue,
+            completedDateRangeUpperValue: completedDateRange.value?.upperValue,
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -81,7 +81,7 @@
         };
         completedDateRange.value = {
             lowerValue: props.modelValue.completedDateRangeLowerValue,
-            upperValue: props.modelValue.completedDateRangeLowerValue,
+            upperValue: props.modelValue.completedDateRangeUpperValue,
         };
     });
 
