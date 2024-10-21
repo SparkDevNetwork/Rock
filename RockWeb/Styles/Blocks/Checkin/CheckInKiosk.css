@@ -30,6 +30,12 @@
     color: var(--color-interface-strong);
 }
 
+.check-in-page  .btn.btn-default.check-in-button {
+    font-size: var(--font-size-regular);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+}
+
 .check-in-page .button-list {
     display: flex;
     flex-direction: column;
@@ -38,7 +44,7 @@
 
 .check-in-page .button-list .btn {
     display: flex;
-    padding: var(--spacing-large);
+    padding: var(--spacing-medium) var(--spacing-large);
     gap: var(--spacing-medium);
     align-items: center;
 }
@@ -77,10 +83,10 @@
 }
 
 .check-in-page .number-pad .btn {
-    color: var(--color-interface-stronger);
+    color: var(--color-interface-strong);
     background-color: var(--color-interface-soft);
     font-size: var(--font-size-h4);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
 }
 
 .check-in-page .body {
@@ -140,7 +146,7 @@
 }
 
 .check-in-page h3 {
-    color: var(--color-interface-stronger);
+    color: var(--color-interface-strong);
     font-size: var(--font-size-h3);
     font-weight: var(--font-weight-bold);
     margin: 0 0 var(--spacing-tiny) 0;
@@ -156,7 +162,7 @@
 }
 
 .check-in-page .btn .title {
-    font-size: var(--font-size-h5);
+    font-size: var(--font-size-h4);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -167,7 +173,7 @@
 
 .check-in-page .btn-primary {
     padding: var(--spacing-xsmall) var(--spacing-medium);
-    font-size: var(--font-size-regular);
+    font-size: var(--font-size-h4);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -471,6 +477,12 @@
     line-height: 1.3em;
 }
 
+.label-info {
+    background-color: rgba(255,255,255,.2);
+    color: var(--color-interface-softest);
+    font-weight: var(--font-weight-regular);
+}
+
 .check-in-page .achievement-card svg {
     grid-row: 1 / span 2;
     margin-right: var(--spacing-medium);
@@ -495,20 +507,26 @@
     flex-wrap: wrap;
 }
 
+.check-in-page .attendance-card .header .title {
+    font-size: var(--font-size-h3);
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-bold);
+}
+
 .check-in-page .attendance-card {
     width: calc(33.33% - calc(var(--spacing-xsmall) * 2 / 3));
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xsmall);
     border-radius: var(--spacing-tiny);
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
     border: var(--color-interface-medium);
     padding: var(--spacing-medium) var(--spacing-medium);
 }
 
 .check-in-page .attendance-card .header {
     display: flex;
-    gap: var(--spacing-xsmall);
+    gap: var(--spacing-medium);
     justify-content: center;
     align-items: center;
 }
@@ -521,6 +539,7 @@
 
 .check-in-page .attendance-card label {
     margin-bottom: 0;
+    color: var(--color-interface-medium)
 }
 
 .check-in-page .attendance-card .attendance-detail {
@@ -617,13 +636,17 @@
 
 .supervisor-login-screen .current-counts .title {
     flex-grow: 1;
-    color: var(--color-interface-strong);
+    color: var(--color-interface-medium);
 }
 
 .supervisor-login-screen .current-counts-column h4.count-row > .title{
     font-size: var(--font-size-h5);
     margin-left: var(--spacing-medium);
-    color: var(--color-interface-strong);
+    color: var(--color-interface-medium);
+}
+
+ul li::marker {
+    color: var(--color-interface-medium);
 }
 
 .current-counts-column ul {
