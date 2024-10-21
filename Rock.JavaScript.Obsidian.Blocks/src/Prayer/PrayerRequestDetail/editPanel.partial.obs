@@ -229,6 +229,7 @@
             lastName: lastName.value,
             email: email.value,
             expirationDate: expirationDate.value,
+            campus: campus.value,
             category: category.value,
             text: request.value,
             answer: answer.value,
