@@ -2,7 +2,9 @@
     <div v-if="canToggleShowConstituents"
          class="shorthand-property-base">
         <RockLabel v-if="label">{{ label }}</RockLabel>
-        <InlineSwitch v-model="areConstituentPropertiesShown" label="Show More" />
+        <small>
+            <InlineSwitch v-model="areConstituentPropertiesShown" label="Show More" />
+        </small>
     </div>
 
     <TransitionVerticalCollapse>
