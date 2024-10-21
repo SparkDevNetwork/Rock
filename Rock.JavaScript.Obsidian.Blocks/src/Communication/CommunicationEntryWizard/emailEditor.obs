@@ -79,7 +79,8 @@
                                                      :key="sectionComponentType.componentTypeName"
                                                      class="section-list-item"
                                                      draggable="true"
-                                                     @dragstart="onComponentTypeDragStart(sectionComponentType.componentTypeName)"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
+                                                     @dragstart="onComponentTypeDragStart(sectionComponentType.componentTypeName)"
+                                                     @dragend="onComponentTypeDragEnd()"><i :class="sectionComponentType.iconCssClass"></i>{{ sectionComponentType.title }}</div>
                                             </div>
                                         </div>
                                     </template>
