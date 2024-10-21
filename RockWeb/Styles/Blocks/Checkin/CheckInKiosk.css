@@ -142,7 +142,7 @@
 .check-in-page h3 {
     color: var(--color-interface-stronger);
     font-size: var(--font-size-h3);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     margin: 0 0 var(--spacing-tiny) 0;
 }
 
