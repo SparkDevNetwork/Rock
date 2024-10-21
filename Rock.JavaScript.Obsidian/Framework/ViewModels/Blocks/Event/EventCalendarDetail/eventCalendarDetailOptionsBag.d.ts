@@ -26,4 +26,7 @@ import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalend
 export type EventCalendarDetailOptionsBag = {
     /** Gets or sets the attributes. */
     eventAttributes?: EventAttributeBag[] | null;
+
+    /** Gets or sets a value indicating whether /[indexing enabled]. */
+    indexingEnabled: boolean;
 };
