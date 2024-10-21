@@ -216,6 +216,10 @@
     line-height: var(--line-height-compact);
 }
 
+.check-in-page .btn.btn-primary .selection {
+    font-size: var(--font-size-h1);
+}
+
 .check-in-page .illustrated-button .btn {
     margin: 0;
     border-radius: 0;
@@ -248,6 +252,11 @@
     padding: 0;
     font-size: var(--font-size-h3);
     color: var(--color-interface-soft);
+}
+
+.check-in-page .actions .btn.btn-primary {
+    font-size: var(--font-size-h3);
+    padding: var(--spacing-small) var(--spacing-large);
 }
 
 /*
