@@ -1,0 +1,47 @@
+.gm-container {
+    position: relative;
+}
+
+.gm-map {
+    overflow: hidden;
+}
+
+.gm-clear-button {
+    z-index: 10;
+    position: absolute;
+    /* right: 0px; */
+    margin-top: 5px;
+    line-height: 0;
+    overflow: hidden;
+    color: #8c4b4b;
+    background: white;
+    padding: 4px;
+    border-radius: 2px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
+    border: 0;
+    text-align: left;
+}
+
+.gm-clear-button:hover {
+    background: whitesmoke;
+}
+
+.gm-clear-button:disabled {
+    color: #aaa;
+    background: white;
+}
+
+.gm-clear-button i.fa {
+    font-size: 16px;
+    padding: 0 2.5px;
+}
+
+.static-map-size {
+    height: 300px;
+    width: 500px;
+}
+
+.expanded-map-size {
+    height: 100%;
+    width: 100%;
+}
