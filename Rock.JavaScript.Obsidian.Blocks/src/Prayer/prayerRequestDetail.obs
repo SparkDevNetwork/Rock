@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -115,7 +116,10 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return prayerRequestViewBag.value?.text ?? "";
+        if(panelMode.value == DetailPanelMode.Edit) {
+            return "Edit Prayer Request";
+        }
+        return `${prayerRequestViewBag.value?.requestedByPersonAlias?.text ?? ""} Prayer Request`;
     });
 
     /**

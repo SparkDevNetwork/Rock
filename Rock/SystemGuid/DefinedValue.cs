@@ -322,7 +322,14 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Proxy device type
         /// </summary>
+        [RockObsolete( "1.16.7" )]
+        [Obsolete( "Use DEVICE_TYPE_CLOUD_PRINT_PROXY instead." )]
         public const string DEVICE_TYPE_PROXY = "EF5BF148-C9E0-4F96-8152-BB23CD85D845";
+
+        /// <summary>
+        /// Cloud Print Proxy device type
+        /// </summary>
+        public const string DEVICE_TYPE_CLOUD_PRINT_PROXY = "EF5BF148-C9E0-4F96-8152-BB23CD85D845";
 
         #endregion
 

@@ -344,7 +344,8 @@ namespace Rock.Blocks.Cms
 
             if ( layout.Id == 0 )
             {
-                var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId )?.AsIntegerOrNull();
+                var siteIdParam = PageParameter( PageParameterKey.SiteId );
+                var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ) ?? siteIdParam.AsIntegerOrNull();
                 if ( siteId.HasValue )
                 {
                     layout.SiteId = siteId.Value;
@@ -360,9 +361,13 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.SiteId] = siteId
+                } )
             };
         }
 

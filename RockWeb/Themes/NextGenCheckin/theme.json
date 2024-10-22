@@ -67,7 +67,7 @@
                     "name": "Interface Color Softer",
                     "variable": "color-interface-softer",
                     "description": "A softer color used throughout the UI",
-                    "default": "#F2F2F7"
+                    "default": "#E7E9EF"
                 },
                 {
                     "type": "color",

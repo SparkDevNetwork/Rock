@@ -332,22 +332,23 @@ namespace Rock.Blocks.Communication
         private void SetEmailFromDetails( RockEmailMessage rockEmailMessage, SystemCommunication systemCommunication )
         {
             var globalAttributes = GlobalAttributesCache.Get();
+            var fromName = systemCommunication.FromName;
+            var fromEmail = systemCommunication.From;
 
             // Email - From Name
-            if ( string.IsNullOrWhiteSpace( systemCommunication.FromName ) )
+            if ( string.IsNullOrWhiteSpace( fromName ) )
             {
-                systemCommunication.FromName = globalAttributes.GetValue( "OrganizationName" );
+                fromName = globalAttributes.GetValue( "OrganizationName" );
             }
-
-            rockEmailMessage.FromName = systemCommunication.FromName;
 
             // Email - From Address
-            if ( string.IsNullOrWhiteSpace( systemCommunication.From ) )
+            if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                systemCommunication.From = globalAttributes.GetValue( "OrganizationEmail" );
+                fromEmail = globalAttributes.GetValue( "OrganizationEmail" );
             }
 
-            rockEmailMessage.FromEmail = systemCommunication.From;
+            rockEmailMessage.FromName = fromName;
+            rockEmailMessage.FromEmail = fromEmail;
         }
 
         #endregion
