@@ -35,6 +35,10 @@
     visibility: hidden;
 }
 
+.panel-flex .label-group > .label + * {
+  margin-left: 8px;
+}
+
 .panel.panel-flex {
   display: flex;
   flex-direction: column;

@@ -888,12 +888,6 @@ export default defineComponent({
     </template>
 
     <template #default>
-        <v-style>
-            .panel-flex .label-group > .label + * {
-                margin-left: 8px;
-            }
-        </v-style>
-
         <RockForm v-if="isEditModeVisible" v-show="isEditMode" @submit="onSaveSubmit" v-model:submit="isFormSubmitting">
             <RockSuspense @ready="onEditSuspenseReady">
                 <slot name="edit" />
