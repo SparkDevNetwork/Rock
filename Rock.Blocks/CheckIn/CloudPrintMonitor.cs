@@ -67,7 +67,7 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A list of <see cref="ListItemBag"/> objects that represent the proxy devices.</returns>
         private List<ListItemBag> GetPrintProxyBags()
         {
-            var proxyDeviceTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_PROXY.AsGuid(), RockContext ).Id;
+            var proxyDeviceTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CLOUD_PRINT_PROXY.AsGuid(), RockContext ).Id;
             var deviceService = new DeviceService( RockContext );
 
             var devices = deviceService.Queryable()
