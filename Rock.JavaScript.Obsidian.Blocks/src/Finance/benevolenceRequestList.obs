@@ -133,10 +133,9 @@
 
         <template v-if="!config.options?.columnsToHide?.includes(ColumnKey.TotalResults)" #gridFooterAppend>
             <div class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
-                <div class="flex-grow-1"></div>
-                <div>
-                    <SectionHeader title="Total Results">
-                    </SectionHeader>
+                <div style="flex-grow: 4;"></div>
+                <div style="flex-grow: 1;">
+                    <SectionHeader title="Total Results" />
                     <div v-for="[key, value] of Object.entries(resultTotals)">
                         <div class="row">
                             <div class="col-xs-8">{{ key }}: </div>
