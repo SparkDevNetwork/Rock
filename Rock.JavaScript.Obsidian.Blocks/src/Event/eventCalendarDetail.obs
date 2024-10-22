@@ -185,7 +185,7 @@
 
             return false;
         }
-        store.setAreSecondaryBlocksShown(false);
+        store.setAreSecondaryBlocksShown(true);
         return true;
     }
 
