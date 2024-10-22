@@ -87,6 +87,11 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.SearchResultsPage )]
 
+    [BooleanField( "Show Only Categories",
+        Description = "Set to true to show only the categories (rather than the categorized entities) for the configured entity type.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowOnlyCategories )]
+
     [Rock.SystemGuid.BlockTypeGuid( "ADE003C7-649B-466A-872B-B8AC952E7841" )]
     public partial class CategoryTreeView : RockBlockCustomSettings
     {
@@ -103,6 +108,7 @@ namespace RockWeb.Blocks.Core
             public const string RootCategory = "RootCategory";
             public const string ExcludeCategories = "ExcludeCategories";
             public const string SearchResultsPage = "SearchResultsPage";
+            public const string ShowOnlyCategories = "ShowOnlyCategories";
         }
 
         public const string CategoryNodePrefix = "C";
@@ -179,6 +185,13 @@ namespace RockWeb.Blocks.Core
         {
             mdCategoryTreeConfig.Visible = false;
 
+            if ( GetAttributeValue( AttributeKey.ShowOnlyCategories ).AsBoolean() )
+            {
+                // If the block is configured to only show categories
+                // then hide the button for adding new entities.
+                lbAddItem.Visible = false;
+            }
+
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             // hide all the actions if user doesn't have EDIT to the block
@@ -235,8 +248,18 @@ namespace RockWeb.Blocks.Core
                     string entityTypeQualiferColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
                     string entityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
                     bool showUnnamedEntityItems = GetAttributeValue( AttributeKey.ShowUnnamedEntityItems ).AsBooleanOrNull() ?? true;
+                    bool showOnlyCategories = GetAttributeValue( AttributeKey.ShowOnlyCategories ).AsBoolean();
 
-                    string parms = string.Format( "?getCategorizedItems=true&showUnnamedEntityItems={0}", showUnnamedEntityItems.ToTrueFalse().ToLower() );
+                    // If we should only show categories then don't get the entities
+                    // (categorized items) and force load all categories eagerly.
+                    var getCategorizedItems = !showOnlyCategories;
+                    var lazyLoad = !showOnlyCategories;
+
+                    string parms = string.Format(
+                        "?getCategorizedItems={0}&showUnnamedEntityItems={1}&lazyLoad={2}",
+                        getCategorizedItems.ToTrueFalse().ToLower(),
+                        showUnnamedEntityItems.ToTrueFalse().ToLower(),
+                        lazyLoad.ToTrueFalse().ToLower() );
                     parms += string.Format( "&entityTypeId={0}", cachedEntityType.Id );
                     parms += string.Format( "&includeInactiveItems={0}", ( !tglHideInactiveItems.Checked ).ToTrueFalse() );
 
@@ -320,7 +343,7 @@ namespace RockWeb.Blocks.Core
                         hfSelectedItemId.Value = selectedNodeId;
                         List<string> parentIdList = new List<string>();
 
-                        if ( selectedEntityType.Equals( "category" ) )
+                        if ( selectedEntityType.Equals( "category" ) || showOnlyCategories )
                         {
                             selectedCategory = CategoryCache.Get( itemId.GetValueOrDefault() );
                             if ( selectedCategory != null && !canEditBlock && selectedCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
@@ -374,8 +397,8 @@ namespace RockWeb.Blocks.Core
                                     break;
                                 }
                             }
-
                         }
+
                         // also get any additional expanded nodes that were sent in the Post
                         string postedExpandedIds = this.Request.Params["ExpandedIds"];
                         if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )

@@ -22,4 +22,6 @@
 //
 
 export type CategoryDetailOptionsBag = {
+    /** Gets or sets whether the block should be shown. */
+    showBlock: boolean;
 };

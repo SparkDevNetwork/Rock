@@ -152,6 +152,7 @@ namespace Rock.Model
             /// <summary>
             /// Performs the text formatting completion and updates the PrayerRequest entity if necessary.
             /// </summary>
+            /// <param name="prayerRequest">The <see cref="PrayerRequest"/> to format.</param>
             /// <param name="prayerRequestService">The PrayerRequestService to use to call the AIAutomationFormatter completion.</param>
             /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
@@ -182,6 +183,7 @@ namespace Rock.Model
             /// <summary>
             /// Performs the text analysis completion and updates the PrayerRequest entity if necessary.
             /// </summary>
+            /// <param name="prayerRequest">The <see cref="PrayerRequest"/> to analyze.</param>
             /// <param name="prayerRequestService">The PrayerRequestService to use to call the AIAutomationAnalyzer completion.</param>
             /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
@@ -238,6 +240,7 @@ namespace Rock.Model
             /// <summary>
             /// Performs the moderation completion and updates the PrayerRequest entity if necessary.
             /// </summary>
+            /// <param name="prayerRequest">The <see cref="PrayerRequest"/> to get moderations for.</param>
             /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
             private async Task<bool> ProcessModeration( PrayerRequest prayerRequest, AIAutomation aiAutomationConfig )
@@ -245,7 +248,9 @@ namespace Rock.Model
                 // Call the moderations endpoint for the AIProvider.
                 var moderations = await aiAutomationConfig.AIProviderComponent.GetModerations( aiAutomationConfig.AIProvider, new ModerationsRequest
                 {
-                    Input = Entity.Text,
+                    // Use the original prayer request text for moderation.
+                    // OriginalRequest will be null if no text formatter completion was run.
+                    Input = Entity.OriginalRequest ?? Entity.Text,
                     Model = "text-moderation-latest"
                 } );
 

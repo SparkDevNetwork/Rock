@@ -90,6 +90,7 @@
     import EditPanel from "./CategoryDetail/editPanel.partial.obs";
     import ViewPanel from "./CategoryDetail/viewPanel.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./CategoryDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
     import { CategoryDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryDetailOptionsBag";
@@ -102,7 +103,7 @@
     const config = useConfigurationValues<DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    // #region Valuesz
+    // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
@@ -160,7 +161,7 @@
     });
 
     const options = computed((): CategoryDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { showBlock: true };
     });
 
     // #endregion
@@ -178,14 +179,6 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        const params = new URLSearchParams(window.location.search);
-        const categoryId = params.get("CategoryId");
-
-        if (categoryId == "0") {
-            params.delete("CategoryId");
-            window.location.search = params.toString();
-        }
-
         return true;
     }
 
@@ -195,12 +188,12 @@
      * @param key The key of the row that was selected.
      */
      function onCategoryClick(key: string): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set("CategoryId", key);
-        params.set("autoEdit", "true");
-        params.set("returnUrl", window.location.href);
-        params.delete("ParentCategoryId");
-        window.location.search = params.toString();
+        const childCategory = gridData?.rows?.find(c => c.idKey === key);
+        const categoryId = childCategory?.categoryId as number ?? 0;
+
+        if (categoryId > 0){
+            navigateToCategoryDetail(categoryId, categoryViewBag.value?.idKey ?? "", true);
+        }
     }
 
     /**
@@ -257,6 +250,7 @@
      */
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
+
         const result = await invokeBlockAction<ValidPropertiesBox<CategoryBag> | string>("Save", {
             box: categoryEditBag.value
         });
@@ -264,7 +258,7 @@
         if (result.isSuccess && result.data) {
             const params = new URLSearchParams(window.location.search);
             const returnUrl = params.get("returnUrl") ?? "";
-            if (returnUrl.length > 0) {
+            if (returnUrl.length > 0 && result.statusCode !== 201) {
                 return returnUrl;
             }
 
@@ -340,12 +334,44 @@
         }
     }
 
+    /** Handles the onNewChildCategoryClick event. Navigates to the Category Detail page to add a new record. */
     function onNewChildCategoryClick(): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set("CategoryId", "0");
-        params.set("ParentCategoryId", categoryViewBag.value?.idKey ?? "");
-        params.set("returnUrl", window.location.href);
-        window.location.search = params.toString();
+        navigateToCategoryDetail(0, categoryViewBag.value?.idKey ?? "", true);
+    }
+
+    /**
+     * Navigates to the Detail page for a Category.
+     *   One of the use-cases for the CategoryDetail block is
+     *  to be used alongside the Category Tree View webforms block
+     *  which only supports setting the CategoryId as a number.
+     *  Therefore we are only using a number here.
+     * @param categoryId The CategoryId (as a number) for the Cateogry to show.
+     * @param parentCategoryId The ParentCategoryId to use for new Categories.
+     * @param autoEdit Whether the autoEdit parameter should be true or not.
+     */
+    function navigateToCategoryDetail(categoryId: number, parentCategoryIdKey?: string, autoEdit = false): void {
+        const currentPageTemplate = config.navigationUrls?.[NavigationUrlKey.CurrentPageTemplate] ?? "";
+        const categoryIdRouteParamKey = "{CategoryId}";
+
+        if (currentPageTemplate) {
+
+            const params = new URLSearchParams(window.location.search);
+
+            // First set the returnUrl to the url before making changes to it.
+            params.set("returnUrl", window.location.href);
+
+            params.set("autoEdit", autoEdit.toString());
+
+            if (parentCategoryIdKey && parentCategoryIdKey.length > 0){
+                params.set("ParentCategoryId", parentCategoryIdKey);
+            }
+            else {
+                params.delete("ParentCategoryId");
+            }
+
+            const navigationUrl =  currentPageTemplate.replace(categoryIdRouteParamKey, categoryId.toString()) + "?" + params.toString();
+            window.location.href = navigationUrl;
+        }
     }
 
     /**
@@ -373,9 +399,6 @@
 
     // #endregion
 
-    const params = new URLSearchParams(window.location.search);
-    const categoryId = params.get("CategoryId");
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -383,15 +406,7 @@
     else if (!config.entity) {
         blockError.value = "The specified category could not be viewed.";
     }
-    else if (!config.entity.idKey && categoryId) {
-
-        categoryEditBag.value = {
-            bag: config.entity,
-            validProperties: Object.keys(config.entity)
-        };
-        panelMode.value = DetailPanelMode.Add;
-    }
-    else if (!categoryId) {
+    else if (!options.value.showBlock){
         isBlockVisible.value = false;
     }
 
