@@ -3,8 +3,8 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    padding: 12px 24px;
-    background: #fff;
+    padding: var(--spacing-small) var(--spacing-large);
+    background: var(--color-interface-softest);
     box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
   
     @media (min-width: $screen-small) {
@@ -33,7 +33,7 @@
       a,
       a:hover,
       a:focus {
-        color: #fff;
+        color: var(--color-interface-softest);
         background-color: var(--color-primary);
       }
     }
@@ -367,7 +367,7 @@
     .note-editor {
       padding: 16px 24px;
       margin: 0;
-      border-bottom: 1px solid #dfe0e1;
+      // border-bottom: 1px solid #dfe0e1;
   
       .meta-figure {
         display: none;
@@ -482,7 +482,7 @@
 .card-section dl.reversed-label dt {
     font-size: 16px;
     line-height: 1.3125;
-    color: #343a40;
+    color: var(--color-interface-strong);
 }
 
 .card-section dl.reversed-label dt.d-none + dd {
