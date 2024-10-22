@@ -967,9 +967,9 @@ namespace RockWeb.Blocks.Finance
         protected void gTransactions_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var rockContext = new RockContext();
+            var transactionService = new FinancialTransactionService( rockContext );
             if ( hfTransactionViewMode.Value == "Transaction Details" )
             {
-                var transactionService = new FinancialTransactionService( rockContext );
                 var transactionDetailService = new FinancialTransactionDetailService( rockContext );
                 var transactionDetail = transactionDetailService.Get( e.RowKeyId );
                 var transaction = transactionDetail.Transaction;
@@ -996,7 +996,6 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                var transactionService = new FinancialTransactionService( rockContext );
                 var transaction = transactionService.Get( e.RowKeyId );
                 if ( transaction != null )
                 {
