@@ -30,6 +30,7 @@
         <Column name="contactInformation"
                 title="Contact Information"
                 :filter="textValueFilter"
+                :sortValue="getRowContactInformationFilterValue"
                 :filterValue="getRowContactInformationFilterValue"
                 :quickFilterValue="getRowContactInformationFilterValue"
                 visiblePriority="xs"
@@ -53,6 +54,7 @@
         <Column name="address"
                 title="Address"
                 :filter="textValueFilter"
+                :sortValue="getRowAddressFilterValue"
                 :filterValue="getRowAddressFilterValue"
                 :quickFilterValue="getRowAddressFilterValue"
                 visiblePriority="md">
@@ -62,7 +64,8 @@
                         <span>{{ row.street }}</span>
                     </div>
                     <div>
-                        <span>{{ row.city }},&nbsp;</span>
+                        <span>{{ row.city }}</span>
+                        <span v-if="row.city && row.state">,&nbsp;</span>
                         <span>{{ row.state }}&nbsp;</span>
                         <span>{{ row.zip }}</span>
                     </div>
@@ -74,13 +77,20 @@
             </template>
         </Column>
 
-        <TextColumn name="contacts"
-                    title="Contacts"
-                    field="contacts"
-                    :filter="textValueFilter"
-                    visiblePriority="md"
-                    width="5%" />
-
+        <Column name="contacts"
+                title="Contacts"
+                :filter="textValueFilter"
+                :sortValue="getRowContactsFilterValue"
+                :filterValue="getRowContactsFilterValue"
+                :quickFilterValue="getRowContactsFilterValue"
+                visiblePriority="md"
+                width="5%">
+            <template #format="{ row }">
+                <div>
+                    <div v-for="(contact, index) in row.contacts" :key="index">{{ contact }}</div>
+                </div>
+            </template>
+        </Column>
 
         <TextColumn name="campus"
                     title="Campus"
@@ -120,8 +130,7 @@
     const isGridSettingsVisible = ref(false);
 
     const gridSettings = ref<GridSettingsOptions>({
-        businessName: preferences.getValue(PreferenceKey.FilterBusinessName),
-        active: preferences.getValue(PreferenceKey.FilterActive),
+        recordStatus: preferences.getValue(PreferenceKey.FilterRecordStatus),
     });
 
     // #endregion
@@ -133,8 +142,7 @@
      */
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.businessName
-            || !!gridSettings.value.active;
+        return !!gridSettings.value.recordStatus && gridSettings.value.recordStatus !== "All";
     });
 
     // #endregion
@@ -146,12 +154,10 @@
      */
     watch(gridSettings, async () => {
         // Handle the potential null or undefined values for each setting
-        const businessNameValue = gridSettings.value.businessName ?? "";
-        const activeValue = gridSettings.value.active ?? "";
+        const recordStatus = gridSettings.value.recordStatus ?? "";
 
         // Set the preferences with the appropriate values
-        preferences.setValue(PreferenceKey.FilterBusinessName, businessNameValue);
-        preferences.setValue(PreferenceKey.FilterActive, activeValue);
+        preferences.setValue(PreferenceKey.FilterRecordStatus, recordStatus);
 
         // Save the preferences
         await preferences.save();
@@ -203,6 +209,21 @@
     function getRowAddressFilterValue(row: Record<string, unknown>): string {
         const r = row as Row;
         return `${r.street ?? ""} ${r.city ?? ""} ${r.state ?? ""} ${r.zip ?? ""}`;
+    }
+
+    /**
+     * Gets the filter value text to use for the contacts column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowContactsFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+
+        for (const contact of (row as Row).contacts) {
+            filterValue += ` ${contact} `;
+        }
+
+        return filterValue;
     }
 
 
