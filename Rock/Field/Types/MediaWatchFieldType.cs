@@ -101,13 +101,17 @@ namespace Rock.Field.Types
 
             var rockContext = new RockContext();
 
-            var mediaId = config.GetValueOrDefault( CONFIG_MEDIA, string.Empty ).ToIntSafe( 0 );
-            int? mediaFolderId;
-            int? mediaAccountId;
+            int mediaId = config.GetValueOrDefault( CONFIG_MEDIA, string.Empty ).ToIntSafe( 0 );
+            int mediaFolderId = 0;
+            int mediaAccountId = 0;
+
+            MediaElement mediaElement = null;
+            MediaFolder mediaFolder = null;
+            MediaAccount mediaAccount = null;
 
             if ( mediaId != 0 )
             {
-                var mediaElement = new MediaElementService( rockContext ).Queryable()
+                mediaElement = new MediaElementService( rockContext ).Queryable()
                     .Where( f => f.Id == mediaId )
                     .SingleOrDefault();
 
@@ -118,20 +122,70 @@ namespace Rock.Field.Types
                         Value = mediaElement?.Guid.ToString(),
                         Text = mediaElement?.Name,
                     } ).ToCamelCaseJson( false, true ) );
-
-                    mediaFolderId = mediaElement.MediaFolderId;
-
-                    if ( mediaFolderId != null && mediaFolderId != 0 )
-                    {
-                        var mediaFolder = new MediaFolderService( rockContext ).Queryable()
-                            .Where( f => f.Id == mediaFolderId )
-                            .SingleOrDefault();
-
-                        // TODO GET FOLDER AND ACCOUNT
-                    }
                 }
             }
 
+            mediaFolderId = mediaElement?.MediaFolderId ?? 0;
+
+            if ( mediaFolderId != 0 )
+            {
+                mediaFolder = new MediaFolderService( rockContext ).Queryable()
+                    .Where( f => f.Id == mediaFolderId )
+                    .SingleOrDefault();
+
+                if ( mediaFolder != null )
+                {
+                    config.AddOrReplace( CONFIG_MEDIA_FOLDER, ( new ListItemBag
+                    {
+                        Value = mediaFolder?.Guid.ToString(),
+                        Text = mediaFolder?.Name,
+                    } ).ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            mediaAccountId = mediaFolder?.MediaAccountId ?? 0;
+
+            if ( mediaAccountId != 0 )
+            {
+                mediaAccount = new MediaAccountService( rockContext ).Queryable()
+                    .Where( f => f.Id == mediaAccountId )
+                    .SingleOrDefault();
+
+                if ( mediaAccount != null )
+                {
+                    config.AddOrReplace( CONFIG_MEDIA_ACCOUNT, ( new ListItemBag
+                    {
+                        Value = mediaAccount?.Guid.ToString(),
+                        Text = mediaAccount?.Name,
+                    } ).ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            config.Remove( CONFIG_MEDIA );
+
+            return config;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            var config = new Dictionary<string, string>( publicConfigurationValues );
+
+            var rockContext = new RockContext();
+
+            ListItemBag mediaBag = config.GetValueOrDefault( CONFIG_MEDIA_ELEMENT, "{}" ).FromJsonOrNull<ListItemBag>();
+
+            if ( mediaBag != null && mediaBag.Value != null )
+            {
+                var mediaId = new MediaElementService( rockContext ).Get( mediaBag.Value.AsGuid() )?.Id ?? 0;
+                config.AddOrReplace( CONFIG_MEDIA, mediaId.ToString() );
+            }
+
+            config.Remove( CONFIG_MEDIA_ELEMENT );
+            config.Remove( CONFIG_MEDIA_FOLDER );
+            config.Remove( CONFIG_MEDIA_ACCOUNT );
 
             return config;
         }

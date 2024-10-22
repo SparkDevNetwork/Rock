@@ -19,6 +19,16 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
+export const ConfigurationValueKey = {
+    CompletionPercentage: "completionPercentage",
+    AutoResumeInDays: "autoResumeInDays",
+    MaxWidth: "maxWidth",
+    ValidationMessage: "validationMessage",
+    MediaAccount: "mediaAccount",
+    MediaFolder: "mediaFolder",
+    MediaElement: "mediaElement",
+} as const;
+
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./mediaWatchFieldComponents")).EditComponent;
@@ -33,23 +43,8 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the MediaWatch field.
  */
 export class MediaWatchFieldType extends FieldTypeBase {
-    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
-        console.log("CONFIG:", configurationValues);
-
-        if (value) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                const asset = JSON.parse(value) as Partial<{Url: string}>;
-
-                return asset?.Url ?? "";
-            }
-            catch {
-                return value ?? "";
-            }
-        }
-        else {
-            return "";
-        }
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
+        return value ? value + "%" : "";
     }
 
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
