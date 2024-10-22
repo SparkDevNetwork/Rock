@@ -87,6 +87,7 @@
 .label-info{
   background-color:   var(--color-info-soft);
   color:              var(--color-info-strong);
+  border: 1px solid var(--color-info-strong);
 
   &[href] {
     &:hover,

@@ -19,7 +19,7 @@
 
 <style scoped>
 .tabbed-bar {
-    border-bottom: 6px solid #dedede;
+    border-bottom: 6px solid var(--color-interface-soft);
     padding: 0 24px;
 }
 
