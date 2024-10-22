@@ -10,21 +10,6 @@
     </div>
 </template>
 
-<style>
-    .grid-light-action-row {
-        justify-content: flex-end;
-    }
-
-    .grid-light-action-row .grid-actions {
-        background-color: inherit;
-        padding: calc(var(--table-cell-padding-y) * .25) 0;
-    }
-
-    .grid-light-action-row .grid-actions:last-child {
-        padding-right: var(--table-cell-padding-x);
-    }
-</style>
-
 <script setup lang="ts">
     import ActionGroup from "./actionGroup.partial.obs";
     import PopupActionGroup from "./popupActionGroup.partial.obs";

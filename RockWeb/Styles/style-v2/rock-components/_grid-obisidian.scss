@@ -516,6 +516,19 @@
     }
 }
 
+.grid-light-action-row {
+  justify-content: flex-end;
+}
+
+.grid-light-action-row .grid-actions {
+  background-color: inherit;
+  padding: calc(var(--table-cell-padding-y) * .25) 0;
+}
+
+.grid-light-action-row .grid-actions:last-child {
+  padding-right: var(--table-cell-padding-x);
+}
+
 @media (max-width: 767px) {
   .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
       display: none;
