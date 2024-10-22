@@ -89,6 +89,11 @@
     font-weight: var(--font-weight-bold);
 }
 
+.check-in-page .form-control {
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
+}
+
 .check-in-page .body {
     display: flex;
     flex-direction: column;
