@@ -15,7 +15,7 @@
                 <div class="note-editor-container">
                     <div class="note-editor note-frame panel panel-default">
                         <div :id="assignToolbarId(uniqueId)"
-                             class="panel-heading note-toolbar"
+                             class="panel-heading note-toolbar d-none"
                              ref="toolbarElement"></div>
 
                         <div class="note-editing-area">
@@ -28,12 +28,13 @@
                                                   :isTogglableCodeEditorForced="isTogglableCodeEditorForced"
                                                   @preventToggleOff="onPreventCodeEditorToggleOff">
                                 <template #default="{ isEditorShown }">
-                                    <div v-show="!updateIsEditorShown(isEditorShown)"
-                                         class="note-editable"
-                                         :id="assignEditorId(uniqueId)"
-                                         ref="editorElement"></div>
+                                    <textarea v-show="!updateIsEditorShown(isEditorShown)"
+                                              class="note-editable"
+                                              :id="assignEditorId(uniqueId)"
+                                              ref="editorElement"></textarea>
                                 </template>
                             </EditSourceCodePlugin>
+                            <div v-if="isResizing" class="note-editing-area-overlay"></div>
                         </div>
 
                         <div class="note-statusbar" ref="resizerElement" role="status">
@@ -63,11 +64,11 @@
 
             <AssetManagerPlugin ref="assetManagerPlugin" />
 
-            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor" bodyCssReplacementSelector=".note-editing-area" />
-
             <MetaTagsPlugin />
 
             <LavaLanguagePlugin />
+
+            <StylesheetsPlugin />
         </template>
     </RockFormField>
 </template>
@@ -77,8 +78,13 @@
     border: none;
 }
 
+:deep(.tox-tinymce) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 .note-editable {
-    height: v-bind(editorHeightCss);
+    display: none;
 }
 
 .note-editor-container {
@@ -91,6 +97,19 @@
 
 :deep(.codeeditor-header) {
     display: none;
+}
+
+.note-editing-area {
+    position: relative;
+}
+
+.note-editing-area-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: transparent;
 }
 </style>
 
@@ -158,7 +177,7 @@
             required: false
         },
 
-        /** Editor height in pixels (not including toolbar). */
+        /** Editor height in pixels (including toolbar). */
         editorHeight: {
             type: Number as PropType<number>,
             default: 600
@@ -232,6 +251,7 @@
     const toolbarElement = ref<HTMLElement | undefined>();
     const isCodeEditorWarningDismissed = ref<boolean>(false);
     const isCodeEditorWarningShown = ref<boolean>(false);
+    const isResizing = ref<boolean>(false);
 
     // Keep track of the TinyMCE value to compare with the modelValue.
     const tinyMceValue = ref<string | undefined>();
@@ -255,14 +275,6 @@
     });
 
     //#endregion
-
-    // #region Computed Values
-
-    const editorHeightCss = computed<string>(() => {
-        return `${props.editorHeight + yOffset.value}px`;
-    });
-
-    // #endregion
 
     // #region Functions
 
@@ -291,8 +303,15 @@
 
     /** Event handler for the mouse being pressed while the pointer is inside the resize element. This starts the resize behavior. */
     function onResizeStart(_event: MouseEvent): void {
+        isResizing.value = true;
+
+        // Prevent page scrolling during resize
+        document.body.style.userSelect = "none"; // Disable text selection
+        document.body.style.overflow = "hidden"; // Disable scrolling
+
         document.addEventListener("mousemove", onResize);
         document.addEventListener("mouseup", onResizeEnd, { once: true });
+
     }
 
     /** Event handler for the mouse being moved while the resizer is being dragged. This resizes the editor. */
@@ -302,8 +321,13 @@
 
     /** Event handler for the mouse being released while the resizer is being dragged. This ends the resize behavior. */
     function onResizeEnd(_event: MouseEvent): void {
+        isResizing.value = false;
         document.removeEventListener("mousemove", onResize);
         resizerElement.value?.addEventListener("mousedown", onResizeStart, { once: true });
+
+        // Re-enable scrolling
+        document.body.style.userSelect = "";
+        document.body.style.overflow = "";
     }
 
     /** Event handler for the code editor toggle off being prevented. */
@@ -333,6 +357,16 @@
     // Clear the resize offset when the `editorHeight` prop changes.
     watch(() => props.editorHeight, () => {
         yOffset.value = 0;
+    });
+
+    watch(yOffset, (value: number) => {
+        if (tinyMceInstance.value) {
+            // Only resize the TinyMCE editor if it is not in edit source code mode.
+            const editorContainer = tinyMceInstance.value.getContainer();
+            if (editorContainer.dataset.editSourceCode !== "true") {
+                editorContainer.style.height = `${props.editorHeight + value}px`;
+            }
+        }
     });
 
     // Disable the editor when the `disabled` prop changes.
@@ -388,37 +422,49 @@
             }
 
             let editorOptions: RawEditorOptions = {
+                selector: `#${editorId.value}`,
+                statusbar: false,
+                plugins: "image link lists media searchreplace table help",
+                toolbar: toolbarConfigs[props.toolbar],
+                content_css: false,
+                skin: false,
+                menubar: false,
+
                 // Add the editor directly to the target element (instead of in an iframe)
                 // by configuring an inline editor with a fixed toolbar.
                 // An inline editor is preferred so the editor will inherit the Rock styles
                 // and have access to the same APIs loaded in the page.
                 // https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#persistent-inline-editor-toolbar-options
-                selector: `#${editorId.value}`,
-                inline: true,
-                fixed_toolbar_container: `#${toolbarId.value}`,
-                toolbar_persist: true,
-                toolbar_mode: "wrap",
+                //selector: `#${editorId.value}`,
+                //target: editorElement.value!,
+                //inline: false,
+                //fixed_toolbar_container: `#${toolbarId.value}`,
+                //toolbar_persist: true,
+                //toolbar_mode: "wrap",
+
+                height: props.editorHeight,
 
                 // The default skin CSS is loaded manually as an import in
                 // @Obsidian/Libs/tinymce.ts, so no need to specify one here.
-                skin: false,
+                //skin: false,
 
                 // Content CSS is not needed since TinyMCE is loaded inline (instead of in an iframe)
                 // and will inherit global Rock styles.
-                content_css: false,
+                //content_css: false,
 
                 // Hide the header menu bar and the footer status bar (which includes the TinyMCE attribution).
-                menubar: false,
-                statusbar: false,
+                //menubar: false,
+                //statusbar: false,
 
                 // Allow the editor to be resizable: true - vertical, false - none, 'both' - horizontal & vertical
-                resize: "both",
+                resize: true,
 
                 // Only include the plugins that are needed to keep TinyMCE leaner.
-                plugins: "image link lists media searchreplace table help",
+                // These also need to be imported in @Obsidian/Libs/tinymce.ts.
+                //plugins: "image link lists media searchreplace table help",
 
                 // Set the toolbar buttons.
-                toolbar: toolbarConfigs[props.toolbar],
+                //toolbar: toolbarConfigs[props.toolbar],
 
                 // Define the options for the `fontfamily` toolbar button.
                 // https://www.tiny.cloud/docs/tinymce/latest/user-formatting-options/#font_family_formats
@@ -596,7 +642,8 @@
             };
 
             // Initialize Tiny MCE.
-            tinymce.init(pluginManager.configureEditorOptions(editorOptions));
+            const configuredEditorOptions = pluginManager.configureEditorOptions(editorOptions);
+            tinymce.init(configuredEditorOptions);
         }
 
         // Add vertical resizing.
