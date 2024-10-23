@@ -261,9 +261,6 @@
 
 .grid-column-title {
     flex: 1 1 auto;
-
-    white-space: nowrap;
-    text-overflow: ellipsis;
     overflow: hidden;
 }
 
@@ -403,9 +400,6 @@
 .grid-cell.grid-columnreorder {
     min-width: fit-content;
 }
-
-/* .grid-cell.grid-select-cell {
-} */
 
 .grid-select-field {
     min-width: 60px;
