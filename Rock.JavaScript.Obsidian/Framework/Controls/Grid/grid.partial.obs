@@ -391,7 +391,6 @@
     line-height: 1.4;
     align-self: stretch;
     background-color: inherit;
-    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     min-width: 120px;
