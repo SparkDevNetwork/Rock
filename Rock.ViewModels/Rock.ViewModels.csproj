@@ -181,6 +181,7 @@
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryPhoneNumberBag.cs" />
     <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationBag.cs" />
     <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationOptionsBag.cs" />
     <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageBag.cs" />
