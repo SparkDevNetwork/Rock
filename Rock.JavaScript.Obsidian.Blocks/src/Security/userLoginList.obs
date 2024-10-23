@@ -43,7 +43,7 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     :width="columnWidth"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
 
@@ -53,7 +53,7 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     :width="columnWidth"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
         <BooleanColumn name="isConfirmed"
@@ -130,6 +130,12 @@
         </div>
     </Modal>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PhoneNumberBox v-model:modelValue="internalPhoneNumber"
+                    v-model:countryCode="internalCountryCode"
+                    :label="`${modelValue.label} Phone`"
+                    :rules="phoneNumberRules"
+                    :validationTitle="`${modelValue.label} Phone`" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import { FinancialPledgeEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryPhoneNumberBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialPledgeEntryPhoneNumberBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialPledgeEntryPhoneNumberBag): void
+    }>();
+
+    //#region Computed Values
+
+    const internalPhoneNumber = computed<string>({
+        get() {
+            return props.modelValue.phoneNumber ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, phoneNumber: newValue });
+        }
+    });
+
+    const internalCountryCode = computed<string>({
+        get() {
+            return props.modelValue.countryCode ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, countryCode: newValue });
+        }
+    });
+
+    const phoneNumberRules = computed<string>(() => props.modelValue.isRequired ? "required" : "");
+
+    //#endregion
+</script>

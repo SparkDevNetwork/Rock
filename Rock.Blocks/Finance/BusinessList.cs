@@ -61,20 +61,15 @@ namespace Rock.Blocks.Finance
 
         private static class PreferenceKey
         {
-            public const string FilterBusinessName = "filter-business-name";
-
-            public const string FilterActive = "filter-active";
+            public const string FilterRecordStatus = "filter-record-status";
         }
 
         #endregion Keys
 
         #region Properties
 
-        protected string FilterBusinessName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterBusinessName );
-
-        protected string FilterActive => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActive );
+        protected string FilterRecordStatus => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterRecordStatus );
 
         #endregion
 
@@ -128,26 +123,20 @@ namespace Rock.Blocks.Finance
                 .Queryable( "PhoneNumbers, GivingGroup.GroupLocations.Location, PrimaryCampus" )
                 .Where( p => p.RecordTypeValueId == recordTypeValueId );
 
-            // Filter by Business Name
-            if ( !string.IsNullOrWhiteSpace( FilterBusinessName ) )
-            {
-                businessQueryable = businessQueryable.Where( p => p.LastName.Contains( FilterBusinessName ) );
-            }
-
-            // Filter by Active Status
-            if ( !string.IsNullOrWhiteSpace( FilterActive ) )
+            // Filter by Record Status
+            if ( !string.IsNullOrWhiteSpace( FilterRecordStatus ) )
             {
                 int statusValueId = 0;
 
-                if ( FilterActive.Equals( "Active", StringComparison.OrdinalIgnoreCase ) )
+                if ( FilterRecordStatus.Equals( "Active", StringComparison.OrdinalIgnoreCase ) )
                 {
                     statusValueId = 3;
                 }
-                else if ( FilterActive.Equals( "Inactive", StringComparison.OrdinalIgnoreCase ) )
+                else if ( FilterRecordStatus.Equals( "Inactive", StringComparison.OrdinalIgnoreCase ) )
                 {
                     statusValueId = 4;
                 }
-                else if ( FilterActive.Equals( "Pending", StringComparison.OrdinalIgnoreCase ) )
+                else if ( FilterRecordStatus.Equals( "Pending", StringComparison.OrdinalIgnoreCase ) )
                 {
                     statusValueId = 5;
                 }
@@ -182,7 +171,7 @@ namespace Rock.Blocks.Finance
                        .SelectMany( m => m.Group.Members )
                        .Where( member => member.GroupRoleId == groupTypeRoleIdKnownRelationshipsOwner && member.PersonId != p.Id )
                        .Select( member => member.Person.LastName + ", " + member.Person.NickName )
-                       .FirstOrDefault()
+                       .ToList()
             } );
         }
 
@@ -195,7 +184,7 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "businessName", b => b.BusinessName )
                 .AddTextField( "email", b => b.Email )
                 .AddTextField( "phoneNumber", b => b.Phone )
-                .AddTextField( "contacts", b => b.Contacts )
+                .AddField( "contacts", b => b.Contacts )
                 .AddTextField( "campus", b => b.Campus.Text )
                 .AddTextField( "street", b => b.Street )
                 .AddTextField( "city", b => b.City )

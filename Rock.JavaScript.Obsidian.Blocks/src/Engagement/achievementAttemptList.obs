@@ -37,7 +37,7 @@
                     field="startDate"
                     :filter="dateValueFilter"
                     visiblePriority="md"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"/>
 
         <DateColumn name="endDate"
@@ -45,7 +45,7 @@
                     field="endDate"
                     :filter="dateValueFilter"
                     visiblePriority="md"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
         <BooleanColumn name="isSuccessful"
@@ -103,6 +103,10 @@
 <style>
 .progress-cell {
     display: block;
+}
+
+.title-right .grid-column-title {
+    text-align: right;
 }
 </style>
 

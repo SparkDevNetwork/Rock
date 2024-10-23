@@ -159,8 +159,8 @@ namespace RockWeb.Blocks.Finance
             pnlResults.Visible = true;
             pnlSummary.Visible = true;
 
-            int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
-            if ( !accountId.HasValue )
+            int[] accountIds = apAccounts.SelectedIds;
+            if ( accountIds.Length == 0 )
             {
                 return;
             }
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Finance
             var rockContextAnalytics = new RockContextAnalytics();
             rockContextAnalytics.Database.CommandTimeout = this.GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
-            DataSet ds = new FinancialPledgeService( rockContextAnalytics ).GetPledgeAnalyticsDataSet( accountId.Value, start, end,
+            DataSet ds = new FinancialPledgeService( rockContextAnalytics ).GetPledgeAnalyticsDataSet( accountIds, start, end,
                 minPledgeAmount, maxPledgeAmount, minComplete, maxComplete, minGiftAmount, maxGiftAmount,
                 includePledges, includeGifts );
             System.Data.DataView dv = ds.Tables[0].DefaultView;
@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Finance
         {
             var preferences = GetBlockPersonPreferences();
 
-            preferences.SetValue( "apAccount", apAccount.SelectedValue );
+            preferences.SetValue( "apAccounts", apAccounts.SelectedIds.ToList().AsDelimited( "," ) );
 
             preferences.SetValue( "drpDateRange", drpSlidingDateRange.DelimitedValues );
 
@@ -260,11 +260,9 @@ namespace RockWeb.Blocks.Finance
         {
             var preferences = GetBlockPersonPreferences();
 
-            string accountSetting = preferences.GetValue( "apAccount" );
-            if ( !string.IsNullOrWhiteSpace( accountSetting ) )
-            {
-                apAccount.SetValue( Int32.Parse( accountSetting ) );
-            }
+            var accountSettings = preferences.GetValue( "apAccounts" ).SplitDelimitedValues().AsIntegerList();
+
+            apAccounts.SetValues( accountSettings );
 
             string slidingDateRangeSettings = preferences.GetValue( "drpDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )

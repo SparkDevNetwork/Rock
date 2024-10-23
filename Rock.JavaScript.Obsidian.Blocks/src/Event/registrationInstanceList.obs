@@ -26,7 +26,7 @@
                     title="Start Date"
                     field="startDateTime"
                     :filter="dateValueFilter"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
 
@@ -34,7 +34,7 @@
                     title="End Date"
                     field="endDateTime"
                     :filter="dateValueFilter"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
 
@@ -51,7 +51,7 @@
                       title="Wait List"
                       field="waitList"
                       :filter="numberValueFilter"
-                      headerClass="text-right"
+                      headerClass="title-right"
                       itemClass="justify-content-end text-right"
                       visiblePriority="xs" />
 
@@ -60,12 +60,22 @@
                        field="isActive"
                        visiblePriority="xs"
                        :filter="booleanValueFilter"
-                       headerClass="text-center"
+                       headerClass="title-center"
                        itemClass="justify-content-center text-center" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" :disableConfirmation="true" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+
+.title-center .grid-column-title {
+    text-align: center;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

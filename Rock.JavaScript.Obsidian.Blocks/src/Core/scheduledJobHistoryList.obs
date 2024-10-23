@@ -17,12 +17,16 @@
                         title="Start DateTime"
                         field="startDateTime"
                         :filter="dateValueFilter"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="xs" />
 
         <DateTimeColumn name="stopDateTime"
                         title="Stop DateTime"
                         field="stopDateTime"
                         :filter="dateValueFilter"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="xs" />
 
         <TextColumn name="runDuration"
@@ -50,7 +54,7 @@
         <Column name="statusMessageHtml"
                 title="Status Message"
                 field="statusMessageHtml"
-                width="55%"
+                width="35%"
                 visiblePriority="md"
                 :filterValue="getStatusMessageFilterValue">
             <template #format="{ row }">
@@ -64,6 +68,12 @@
 
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

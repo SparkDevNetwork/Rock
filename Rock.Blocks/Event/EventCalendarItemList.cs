@@ -28,7 +28,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventCalendarItemList;
 using Rock.ViewModels.Core.Grid;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -92,25 +91,9 @@ namespace Rock.Blocks.Event
 
         #region Properties
 
-        protected string FilterStartDate => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToEventCalendar( PreferenceKey.FilterStartDate ) );
-
-        protected string FilterEndDate => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToEventCalendar( PreferenceKey.FilterEndDate ) );
-
-        protected string FilterStatus => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToEventCalendar( PreferenceKey.FilterStatus ) );
-
-        protected string FilterApprovalStatus => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToEventCalendar( PreferenceKey.FilterApprovalStatus ) );
-
         protected List<Guid> FilterCampus => GetBlockPersonPreferences()
             .GetValue( MakeKeyUniqueToEventCalendar( PreferenceKey.FilterCampus ) )
             .FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
-
-        protected List<Guid> FilterAudience => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToEventCalendar(PreferenceKey.FilterAudience ) )
-            .FromJsonOrNull<List<ListItemBag>>()?.Select( l => l.Value.AsGuid() ).ToList() ?? new List<Guid>();
 
         #endregion
 
@@ -163,9 +146,11 @@ namespace Rock.Blocks.Event
         {
             var calendar = GetEventCalendar();
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "EventCalendarId", calendar?.IdKey );
-            qryParams.Add( "EventItemId", "((Key))" );
+            var qryParams = new Dictionary<string, string>
+            {
+                { "EventCalendarId", calendar?.IdKey },
+                { "EventItemId", "((Key))" }
+            };
 
             return new Dictionary<string, string>
             {
@@ -184,30 +169,6 @@ namespace Rock.Blocks.Event
                     m.EventItem != null &&
                     m.EventCalendarId == eventCalendarId );
 
-            // Filter by Status
-            if ( FilterStatus == "Active" )
-            {
-                qry = qry
-                    .Where( m => m.EventItem.IsActive );
-            }
-            else if ( FilterStatus == "Inactive" )
-            {
-                qry = qry
-                    .Where( m => !m.EventItem.IsActive );
-            }
-
-            // Filter by Approval Status
-            if ( FilterApprovalStatus == "Approved" )
-            {
-                qry = qry
-                    .Where( m => m.EventItem.IsApproved );
-            }
-            else if ( FilterApprovalStatus == "Not Approved" )
-            {
-                qry = qry
-                    .Where( m => !m.EventItem.IsApproved );
-            }
-
             // Filter by Campus
             if ( FilterCampus.Any() )
             {
@@ -216,16 +177,6 @@ namespace Rock.Blocks.Event
                         i.EventItem.EventItemOccurrences
                             .Any( c =>
                                 FilterCampus.Contains( c.Campus.Guid ) ) );
-            }
-
-            // Filter by Audience
-            if ( FilterAudience.Any() )
-            {
-                qry = qry
-                    .Where( i =>
-                        i.EventItem.EventItemAudiences
-                            .Any( c =>
-                                FilterAudience.Contains( c.DefinedValue.Guid ) ) );
             }
 
             return qry;
@@ -238,34 +189,12 @@ namespace Rock.Blocks.Event
         }
 
         /// <inheritdoc/>
-        protected override List<EventCalendarItem> GetListItems( IQueryable<EventCalendarItem> queryable, RockContext rockContext )
-        {
-            var eventCalendarItems = base.GetListItems( queryable, rockContext );
-
-            // if a date range was specified, need to get all dates for items and filter based on any that have an occurrence withing the date range
-            DateTime? lowerDateRange = FilterStartDate.AsDateTime();
-            DateTime? upperDateRange = FilterEndDate.AsDateTime();
-
-            if ( lowerDateRange.HasValue || upperDateRange.HasValue )
-            {
-                // If only one value was included, default the other to be a years difference
-                lowerDateRange = lowerDateRange ?? upperDateRange.Value.AddYears( -1 ).AddDays( 1 );
-                upperDateRange = upperDateRange ?? lowerDateRange.Value.AddYears( 1 ).AddDays( -1 );
-
-                // Filter out calendar items with no dates within range
-                eventCalendarItems = eventCalendarItems.Where( i => i.EventItem.GetStartTimes( lowerDateRange.Value, upperDateRange.Value.AddDays( 1 ) ).Any() ).ToList();
-            }
-
-            return eventCalendarItems;
-        }
-
-        /// <inheritdoc/>
         protected override GridBuilder<EventCalendarItem> GetGridBuilder()
         {
             return new GridBuilder<EventCalendarItem>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddDateTimeField( "date", a => GetNextStartDateTime( a.EventItem ) )
+                .AddDateTimeField( "date", a => a.EventItem?.NextStartDateTime )
                 .AddTextField( "name", a => a.EventItem?.Name )
                 .AddField( "occurrences", a => GetOccurrences( a.EventItem ) )
                 .AddField( "calendars", a => a.EventItem?.EventCalendarItems?.Select( i => i.EventCalendar.Name ).ToList() )
@@ -338,37 +267,6 @@ namespace Rock.Blocks.Event
             {
                 return eventItem.EventItemOccurrences.Count;
             }
-        }
-
-        /// <summary>
-        /// Gets the next start date time.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        private DateTime? GetNextStartDateTime( EventItem item )
-        {
-            DateTime? lowerDateRange = FilterStartDate.AsDateTime();
-            DateTime? upperDateRange = FilterEndDate.AsDateTime();
-            DateTime? nextStartDate = null;
-
-            if ( lowerDateRange.HasValue || upperDateRange.HasValue )
-            {
-                lowerDateRange = lowerDateRange ?? upperDateRange.Value.AddYears( -1 ).AddDays( 1 );
-                upperDateRange = upperDateRange ?? lowerDateRange.Value.AddYears( 1 ).AddDays( -1 );
-
-                var startDateTimes = item.GetStartTimes( lowerDateRange.Value, upperDateRange.Value.AddDays( 1 ) );
-
-                if ( startDateTimes.Count > 0 )
-                {
-                    nextStartDate = startDateTimes.Min();
-                }
-            }
-            else
-            {
-                nextStartDate = item.NextStartDateTime;
-            }
-
-            return nextStartDate;
         }
 
         /// <summary>
