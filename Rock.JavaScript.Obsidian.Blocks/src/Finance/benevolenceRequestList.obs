@@ -19,7 +19,7 @@
                     title="Date"
                     field="date"
                     :filter="dateValueFilter"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
 
@@ -123,7 +123,7 @@
                         title="Total Amount"
                         field="totalAmount"
                         :filter="numberValueFilter"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
@@ -156,6 +156,12 @@
                        :benevolenceTypeItems="config.options?.benevolenceTypes ?? []"
                        :caseWorkerItems="config.options?.caseWorkers ?? []" />
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
