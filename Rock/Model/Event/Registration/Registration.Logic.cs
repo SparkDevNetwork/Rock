@@ -15,11 +15,9 @@
 // </copyright>
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using Rock.Attribute;
 using Rock.Communication;
@@ -147,7 +145,7 @@ namespace Rock.Model
         {
             get
             {
-                return DiscountedCost - TotalPaid;
+                return ( DiscountedCost - TotalPaid ).AsCurrency();
             }
         }
 
