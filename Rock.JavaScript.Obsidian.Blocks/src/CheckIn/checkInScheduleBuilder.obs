@@ -125,6 +125,176 @@
     </Modal>
 </template>
 
+<style scoped>
+.grid-obsidian {
+    --table-cell-padding-x: 16px;
+    --table-cell-padding-y: 16px;
+    color: var(--theme-darkest);
+}
+
+.grid-obsidian.grid-bordered {
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+.grid-obsidian.grid-bordered {
+    border: 1px solid var(--theme-light);
+    border-radius: 4px;
+}
+
+.grid-heading {
+    background: var(--theme-white);
+    border-radius: 4px 4px 0 0;
+}
+
+.grid-obsidian.grid-sticky > .grid-heading {
+    position: sticky;
+    top: var(--sticky-element-offset);
+    z-index: 10;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--theme-light);
+    align-items: center;
+    font-size: 18px;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
+    flex-grow: 1;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+    padding-left: 24px;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
+    background-color: initial;
+    text-align: initial;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action {
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
+    background-color: var(--theme-light);
+    color: var(--theme-medium);
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
+    background-color: var(--theme-light);
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
+    display: flex;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+    display: inline-flex;
+    align-items: stretch;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .grid-quick-filter-search {
+    width: 240px;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
+    background-color: var(--theme-light);
+    color: var(--theme-medium);
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > :deep(.control-wrapper) {
+    width: 100%;
+    height: 100%;
+}
+
+.grid-quick-filter-search > :deep(.control-wrapper > div) {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > :deep(.control-wrapper .form-control) {
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
+}
+
+.grid-column-heading {
+    display: flex;
+    font-weight: 500;
+    border-bottom: 1px solid var(--theme-light);
+    color: var(--theme-dark);
+}
+
+.grid-column-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+}
+
+.grid-bordered .grid-column-header {
+    background-color: var(--theme-lightest);
+}
+
+.grid-column-title {
+    flex: 1 1 auto;
+}
+
+.grid-column-header.grid-select-field .checkbox label {
+    margin: 0;
+}
+
+.grid-row {
+    display: flex;
+    background-color: #fff;
+    border-bottom: 1px solid var(--theme-light);
+    transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
+}
+
+.grid-striped .grid-row.grid-row-even {
+    background-color: var(--theme-lightest);
+}
+
+.grid-hover .grid-row:hover {
+    background-color: #eef4fc;
+}
+
+.grid-cell {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+    overflow-x: hidden;
+    align-self: center;
+    line-height: 1.4;
+}
+
+.grid-footing {
+    color: var(--theme-darkest);
+    background-color: var(--theme-white);
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+}
+
+</style>
+
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderOptionsBag";
@@ -484,8 +654,7 @@
 
     onMounted(() => {
         document.addEventListener("keydown", onDocumentKeyDown);
-
-        if (!scheduleCategory.value && config.defaultScheduleCategory) {
+        if (!scheduleCategory.value?.value && config.defaultScheduleCategory) {
             scheduleCategory.value = config.defaultScheduleCategory;
             return;
         }
@@ -498,173 +667,3 @@
     });
 
 </script>
-
-<style scoped>
-.grid-obsidian {
-    --table-cell-padding-x: 16px;
-    --table-cell-padding-y: 16px;
-    color: var(--theme-darkest);
-}
-
-.grid-obsidian.grid-bordered {
-    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-}
-
-.grid-obsidian.grid-bordered {
-    border: 1px solid var(--theme-light);
-    border-radius: 4px;
-}
-
-.grid-heading {
-    background: var(--theme-white);
-    border-radius: 4px 4px 0 0;
-}
-
-.grid-obsidian.grid-sticky > .grid-heading {
-    position: sticky;
-    top: var(--sticky-element-offset);
-    z-index: 10;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--theme-light);
-    align-items: center;
-    font-size: 18px;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
-    flex-grow: 1;
-    font-size: 22px;
-    font-weight: 500;
-    line-height: 1;
-    padding-left: 24px;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
-    height: 56px;
-    display: flex;
-    align-items: center;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
-    background-color: initial;
-    text-align: initial;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action {
-    width: 56px;
-    height: 56px;
-    margin: 0;
-    border-radius: 0;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
-    background-color: var(--theme-light);
-    color: var(--theme-medium);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
-    background-color: var(--theme-light);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
-    display: flex;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-    display: inline-flex;
-    align-items: stretch;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .grid-quick-filter-search {
-    width: 240px;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
-    background-color: var(--theme-light);
-    color: var(--theme-medium);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > :deep(.control-wrapper) {
-    width: 100%;
-    height: 100%;
-}
-
-.grid-quick-filter-search > :deep(.control-wrapper > div) {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > :deep(.control-wrapper .form-control) {
-    height: 100%;
-    width: 100%;
-    border-radius: 0;
-}
-
-.grid-column-heading {
-    display: flex;
-    font-weight: 500;
-    border-bottom: 1px solid var(--theme-light);
-    color: var(--theme-dark);
-}
-
-.grid-column-header {
-    position: relative;
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-}
-
-.grid-bordered .grid-column-header {
-    background-color: var(--theme-lightest);
-}
-
-.grid-column-title {
-    flex: 1 1 auto;
-}
-
-.grid-column-header.grid-select-field .checkbox label {
-    margin: 0;
-}
-
-.grid-row {
-    display: flex;
-    background-color: #fff;
-    border-bottom: 1px solid var(--theme-light);
-    transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
-}
-
-.grid-striped .grid-row.grid-row-even {
-    background-color: var(--theme-lightest);
-}
-
-.grid-hover .grid-row:hover {
-    background-color: #eef4fc;
-}
-
-.grid-cell {
-    display: flex;
-    align-items: flex-start;
-    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-    overflow-x: hidden;
-    align-self: center;
-    line-height: 1.4;
-}
-
-.grid-footing {
-    color: var(--theme-darkest);
-    background-color: var(--theme-white);
-    border-radius: 0 0 4px 4px;
-    overflow: hidden;
-}
-
-</style>
