@@ -14,7 +14,7 @@
                     field="changeDateTime"
                     :filter="dateValueFilter"
                     visiblePriority="xs"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
         <TextColumn name="entityType"
@@ -30,7 +30,7 @@
                       :filter="numberValueFilter"
                       visiblePriority="md"
                       width="5%"
-                      headerClass="text-right"
+                      headerClass="title-right"
                       itemClass="justify-content-end text-right" />
 
         <PersonColumn name="changeBy"
@@ -116,7 +116,7 @@
                 visiblePriority="md"
                 width="100">
             <template #format="{ row }">
-                <span v-html="getOrderText(row.preOrder, row.postOrder)"></span>
+                <span v-html="getOrderText(row.preOrder, row.postOrder, rightArrowIndicator)"></span>
             </template>
 
         </Column>
@@ -149,6 +149,12 @@
     </Grid>
 </template>
 
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -159,6 +165,7 @@
     import { reactive, ref } from "vue";
     import { ChangeType, ChangeTypeDescription } from "@Obsidian/Enums/Core/changeType";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<SecurityChangeAuditListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -210,9 +217,9 @@
     * @param row The row to be filtered.
     */
     function getOrderRowFilterValue(row: Record<string, unknown>): string {
-        const preOrder = row.preOrder ? row.preOrder as number : null;
-        const postOrder = row.postOrder ? row.postOrder as number : null;
-        return getOrderText(preOrder, postOrder);
+        const preOrder =  toNumberOrNull(row.preOrder as number);
+        const postOrder = toNumberOrNull(row.postOrder as number);
+        return getOrderText(preOrder, postOrder, rightArrowIndicator);
     }
 
     /**
@@ -240,7 +247,9 @@
     * @param row The row to be sorted.
     */
     function getOrderRowSortValue(row: Record<string, unknown>): string {
-        return getOrderRowFilterValue(row);
+        const preOrder =  toNumberOrNull(row.preOrder as number);
+        const postOrder = toNumberOrNull(row.postOrder as number);
+        return getOrderText(preOrder, postOrder, " ");
     }
 
     /**
@@ -248,12 +257,12 @@
      * @param preOrder The pre order or priority of the Auth entity.
      * @param postOrder The post order or priority of the Auth entity.
      */
-    function getOrderText(preOrder: number | null, postOrder: number | null): string {
+    function getOrderText(preOrder: number | null, postOrder: number | null, separator: string): string {
         let orderString = "";
 
         if (preOrder != postOrder) {
             orderString = preOrder != null ? preOrder.toString() : "";
-            orderString += rightArrowIndicator;
+            orderString += separator;
             orderString += postOrder != null ? postOrder.toString() : "";
         }
 
