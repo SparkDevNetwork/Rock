@@ -125,6 +125,7 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySendRequestBag.cs" />
     <Compile Include="Blocks\Core\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\Disc\DiscBox.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PersonPhotoBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PhotoUploadInitializationBox.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
