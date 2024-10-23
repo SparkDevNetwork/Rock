@@ -16,7 +16,7 @@
 //
 
 using System;
-
+using System.Collections.Generic;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry
@@ -123,5 +123,13 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry
         /// The duplicate pledge warning text.
         /// </value>
         public string DuplicatePledgeWarningText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone numbers.
+        /// </summary>
+        /// <value>
+        /// The phone numbers.
+        /// </value>
+        public List<FinancialPledgeEntryPhoneNumberBag> PhoneNumbers { get; set; }
     }
 }
