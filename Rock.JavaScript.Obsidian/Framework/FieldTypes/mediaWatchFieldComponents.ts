@@ -20,7 +20,6 @@ import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
 import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 import { ConfigurationValueKey } from "./mediaWatchField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -56,8 +55,6 @@ export const EditComponent = defineComponent({
                 validationMessage: props.configurationValues[ConfigurationValueKey.ValidationMessage],
                 mediaGuid: mediaElement?.value ?? emptyGuid,
             };
-
-            console.log(config);
 
             return config;
         });

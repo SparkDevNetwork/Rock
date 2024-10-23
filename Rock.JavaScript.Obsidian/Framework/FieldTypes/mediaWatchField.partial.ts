@@ -17,7 +17,6 @@
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
-import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const ConfigurationValueKey = {
     CompletionPercentage: "completionPercentage",
@@ -45,15 +44,6 @@ const configurationComponent = defineAsyncComponent(async () => {
 export class MediaWatchFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         return value ? value + "%" : "";
-    }
-
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        const url = escapeHtml(this.getTextValue(value, configurationValues));
-        return isEscaped ? url : `<a href="${url}">${url}</a>`;
-    }
-
-    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        return this.getHtmlValue(value, configurationValues, isEscaped);
     }
 
     public override getEditComponent(): Component {
