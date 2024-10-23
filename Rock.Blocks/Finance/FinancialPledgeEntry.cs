@@ -145,7 +145,7 @@ namespace Rock.Blocks.Finance
     [DefinedValueField(
         "Phone Types",
         Key = AttributeKey.PhoneTypes,
-        Description = "The phone numbers to display for editing.",
+        Description = "The phone numbers to display for editing (for non logged in individuals).",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
@@ -154,7 +154,7 @@ namespace Rock.Blocks.Finance
     [DefinedValueField(
         "Required Phone Types",
         Key = AttributeKey.PhoneTypesRequired,
-        Description = "The phone numbers that are required.",
+        Description = "The phone numbers that are required (for non logged in individuals).",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,

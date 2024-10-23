@@ -141,7 +141,7 @@ namespace Rock.Net
         /// <value>
         /// The context entities.
         /// </value>
-        internal protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
+        private protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
 
         /// <summary>
         /// Gets the personalization segment identifiers. Will be empty if this
@@ -149,7 +149,7 @@ namespace Rock.Net
         /// personalization enabled.
         /// </summary>
         /// <value>The personalization segment identifiers.</value>
-        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; }
+        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; } = Array.Empty<int>();
 
         /// <summary>
         /// Gets the personalization request filter identifiers. Will be empty if this
@@ -157,7 +157,7 @@ namespace Rock.Net
         /// personalization enabled.
         /// </summary>
         /// <value>The personalization request filter identifiers.</value>
-        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; }
+        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; } = Array.Empty<int>();
 
         /// <summary>
         /// Gets the query string from the request.
@@ -531,7 +531,7 @@ namespace Rock.Net
         /// Adds or replaces a context entity for the specified entity type name and key.
         /// </summary>
         /// <param name="entityTypeName">The entity type name.</param>
-        /// <param name="entityKey">The entity key.</param>
+        /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         private void AddOrReplaceContextEntity( string entityTypeName, string entityKey )
         {
             // If entity type name or entity key are not defined then skip.
@@ -551,6 +551,22 @@ namespace Rock.Net
 
             // If we got an unknown type then skip.
             if ( type == null )
+            {
+                return;
+            }
+
+            AddOrReplaceContextEntity( type, entityKey );
+        }
+
+        /// <summary>
+        /// Adds or replaces a context entity for the specified entity type and key.
+        /// </summary>
+        /// <param name="type">The entity type.</param>
+        /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
+        private void AddOrReplaceContextEntity( Type type, string entityKey )
+        {
+            // If entity type or entity key are not defined then skip.
+            if ( type == null || entityKey.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -788,7 +804,9 @@ namespace Rock.Net
                     contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
                 }
 
-                if ( contextObjects.Any() )
+                // Use Count instead of Any() so we don't materialize the lazy
+                // values in the dictionary.
+                if ( contextObjects.Count > 0 )
                 {
                     mergeFields.Add( "Context", contextObjects );
                 }
