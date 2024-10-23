@@ -550,7 +550,7 @@ namespace Rock.Jobs
 
                                 Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext );
 
-                                updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+                                updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, true, rockContext );
 
                                 LogTimedMessage( $"Rebuild of {attributeValueIds.Count:N0} dirty values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
 

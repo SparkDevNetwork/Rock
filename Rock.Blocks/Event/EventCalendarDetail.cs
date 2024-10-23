@@ -95,7 +95,7 @@ namespace Rock.Blocks.Event
         {
             var options = new EventCalendarDetailOptionsBag()
             {
-                IndexingEnabled = true //IndexContainer.IndexingEnabled
+                IndexingEnabled = IndexContainer.IndexingEnabled
             };
             return options;
         }

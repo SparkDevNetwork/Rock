@@ -392,5 +392,10 @@ namespace Rock.SystemGuid
         /// The Job to run Post v16.7 Data Migrations to chop AccountEdit Block.
         /// </summary>
         public const string DATA_MIGRATIONS_167_CHOP_ACCOUNT_EDIT_BLOCK = "E581688C-E60D-4841-B3C3-C535CAD0002D";
+
+        /// <summary>
+        /// The Job to run Post v16.7 Data Migrations to chop PledgeEntry Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_167_CHOP_PLEDGE_ENTRY_BLOCK = "8E8C177E-DE88-47B2-AD9A-FC6AD5965882";
     }
 }

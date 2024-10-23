@@ -75,7 +75,7 @@
                         :filter="dateValueFilter"
                         :quickFilterValue="createdRowFilterValue"
                         visiblePriority="md"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         width="150">
             <template #format="{ row }">
@@ -151,6 +151,12 @@
         <p>The Workflow items are scheduled to be deleted.</p>
     </Modal>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";

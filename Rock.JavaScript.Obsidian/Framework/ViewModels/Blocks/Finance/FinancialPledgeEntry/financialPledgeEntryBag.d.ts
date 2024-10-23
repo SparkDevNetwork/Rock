@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { FinancialPledgeEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryPhoneNumberBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -63,6 +64,9 @@ export type FinancialPledgeEntryBag = {
 
     /** Gets or sets the Rock.Model.PersonAlias. */
     personAlias?: ListItemBag | null;
+
+    /** Gets or sets the phone numbers. */
+    phoneNumbers?: FinancialPledgeEntryPhoneNumberBag[] | null;
 
     /**
      * Gets or sets the pledge frequency Rock.Model.DefinedValue. This is how often the Rock.Model.Person who is 

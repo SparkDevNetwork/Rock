@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Core
                 device.DeviceTypeValueId = dvpDeviceType.SelectedValueAsInt().Value;
                 device.PrintToOverride = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
                 device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
-                device.ProxyDeviceId = ddlProxy.SelectedValueAsInt();
+                device.ProxyDeviceId = ddlProxyDevice.SelectedValueAsInt();
                 device.PrintFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
                 device.IsActive = cbIsActive.Checked;
                 device.HasCamera = cbHasCamera.Checked;
@@ -421,14 +421,14 @@ namespace RockWeb.Blocks.Core
 
             rblKioskType.BindToEnum<KioskType>();
 
-            ddlProxy.Items.Clear();
-            ddlProxy.DataSource = new DeviceService( new RockContext() )
-                .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PROXY ) )
+            ddlProxyDevice.Items.Clear();
+            ddlProxyDevice.DataSource = new DeviceService( new RockContext() )
+                .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CLOUD_PRINT_PROXY ) )
                 .OrderBy( d => d.Name )
                 .ToList();
 
-            ddlProxy.DataBind();
-            ddlProxy.Items.Insert( 0, new ListItem() );
+            ddlProxyDevice.DataBind();
+            ddlProxyDevice.Items.Insert( 0, new ListItem() );
 
             ddlIPadCameraBarcodeConfigurationType.BindToEnum<CameraBarcodeConfiguration>( true );
         }
@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Core
                 rblKioskType.SetValue( device.KioskType.ConvertToInt() );
             }
             ddlIPadCameraBarcodeConfigurationType.SetValue( device.CameraBarcodeConfigurationType.HasValue ? device.CameraBarcodeConfigurationType.ConvertToInt().ToString() : null );
-            ddlProxy.SetValue( device.ProxyDeviceId );
+            ddlProxyDevice.SetValue( device.ProxyDeviceId );
 
             SetDeviceTypeControlsVisibility();
 
@@ -545,7 +545,7 @@ namespace RockWeb.Blocks.Core
             ddlPrintTo.Enabled = !readOnly;
             ddlPrinter.Enabled = !readOnly;
             ddlPrintFrom.Enabled = !readOnly;
-            ddlProxy.Enabled = !readOnly;
+            ddlProxyDevice.Enabled = !readOnly;
             SetHighlightLabelVisibility( device, readOnly );
 
             btnSave.Visible = !readOnly;
@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.Core
             cbHasCamera.Visible = deviceSupportsCameras;
             ddlIPadCameraBarcodeConfigurationType.Visible = deviceSupportsCameras && kioskType == KioskType.IPad && cbHasCamera.Checked;
 
-            ddlProxy.Visible = deviceTypeValueId == printerDeviceTypeId;
+            ddlProxyDevice.Visible = deviceTypeValueId == printerDeviceTypeId;
         }
 
         /// <summary>

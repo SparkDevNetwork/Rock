@@ -90,6 +90,7 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeFieldBag.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryPhoneNumberBag.cs" />
     <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationBag.cs" />
     <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationOptionsBag.cs" />
     <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageBag.cs" />

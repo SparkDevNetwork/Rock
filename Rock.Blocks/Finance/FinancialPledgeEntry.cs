@@ -43,7 +43,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows a website visitor to create pledge for the configured accounts, start and end date. This block also creates a new person record if a matching person could not be found." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -142,6 +142,24 @@ namespace Rock.Blocks.Finance
         DefaultValue = "Pledge",
         Order = 12 )]
 
+    [DefinedValueField(
+        "Phone Types",
+        Key = AttributeKey.PhoneTypes,
+        Description = "The phone numbers to display for editing.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 13 )]
+
+    [DefinedValueField(
+        "Required Phone Types",
+        Key = AttributeKey.PhoneTypesRequired,
+        Description = "The phone numbers that are required.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 14 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "fad28407-5128-4ddb-9c1c-a0c2233f3e73" )]
@@ -174,6 +192,8 @@ namespace Rock.Blocks.Finance
             public const string ConfirmationEmailTemplate = "ConfirmationEmailTemplate";
             public const string SelectGroupType = "SelectGroupType";
             public const string PledgeTerm = "PledgeTerm";
+            public const string PhoneTypes = "PhoneTypes";
+            public const string PhoneTypesRequired = "PhoneTypesRequired";
         }
 
         #endregion Keys
@@ -324,6 +344,41 @@ namespace Rock.Blocks.Finance
                 return null;
             }
 
+            var currentPerson = GetCurrentPerson();
+            var requiredPhoneTypes = GetAttributeValue( AttributeKey.PhoneTypesRequired )
+                    .Split( ',' )
+                    .Where( guidString => guidString.IsNotNullOrWhiteSpace() )
+                    .Select( Guid.Parse )
+                    .ToList();
+
+            var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes )
+                .Split( ',' )
+                .Where( guidString => guidString.IsNotNullOrWhiteSpace() )
+                .Select( Guid.Parse )
+                .ToList();
+
+            var knownNumbers = new Dictionary<Guid, string>();
+            if ( currentPerson != null )
+            {
+                foreach ( var phoneNumber in currentPerson.PhoneNumbers )
+                {
+                    knownNumbers.Add( phoneNumber.NumberTypeValue.Guid, phoneNumber.Number );
+                }
+            }
+
+            var phoneNumberTypeDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() );
+
+            var phoneNumberBags = phoneNumberTypeDefinedType.DefinedValues
+                .Where( v => selectedPhoneTypeGuids.Contains( v.Guid ) )
+                .Select( v => new FinancialPledgeEntryPhoneNumberBag
+                {
+                    Guid = v.Guid,
+                    IsRequired = requiredPhoneTypes.Contains( v.Guid ),
+                    Label = v.Value,
+                    PhoneNumber = knownNumbers.GetValueOrDefault( v.Guid, null )
+                } )
+                .ToList();
+
             var entityBag = new FinancialPledgeEntryBag
             {
                 IdKey = entity.IdKey,
@@ -332,7 +387,8 @@ namespace Rock.Blocks.Finance
                 CurrentPerson = RequestContext.CurrentPerson.ToListItemBag(),
                 PersonAlias = entity.PersonAlias.ToListItemBag(),
                 PledgeFrequencyValue = entity.PledgeFrequencyValue.ToListItemBag(),
-                SaveButtonText = GetAttributeValue( AttributeKey.SaveButtonText )
+                SaveButtonText = GetAttributeValue( AttributeKey.SaveButtonText ),
+                PhoneNumbers = phoneNumberBags
             };
 
             var pledgeDateRange = GetAttributeValue( AttributeKey.PledgeDateRange );
@@ -537,8 +593,11 @@ namespace Rock.Blocks.Finance
                     }
                 }
 
+                Guid mobilePhoneType = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
+                var mobilePhone = entityBag.PhoneNumbers.FirstOrDefault( n => n.Guid.Equals( mobilePhoneType ) );
+
                 // Same logic as TransactionEntry.ascx.cs
-                var personQuery = new PersonService.PersonMatchQuery( firstName, entityBag.LastName, entityBag.Email, string.Empty );
+                var personQuery = new PersonService.PersonMatchQuery( firstName, entityBag.LastName, entityBag.Email, mobilePhone?.PhoneNumber );
                 person = personService.FindPerson( personQuery, true );
             }
 
@@ -556,6 +615,28 @@ namespace Rock.Blocks.Finance
                     RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                     RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id
                 };
+
+                if ( entityBag.PhoneNumbers != null )
+                {
+                    foreach ( var item in entityBag.PhoneNumbers )
+                    {
+                        var cleanNumber = PhoneNumber.CleanNumber( item.PhoneNumber );
+
+                        if ( cleanNumber.IsNullOrWhiteSpace() )
+                        {
+                            continue;
+                        }
+
+                        var phoneNumber = new PhoneNumber
+                        {
+                            NumberTypeValueId = DefinedValueCache.Get( item.Guid ).Id,
+                            Number = cleanNumber,
+                            CountryCode = PhoneNumber.CleanNumber( item.CountryCode )
+                        };
+
+                        person.PhoneNumbers.Add( phoneNumber );
+                    }
+                }
 
                 PersonService.SaveNewPerson( person, RockContext, null, false );
             }

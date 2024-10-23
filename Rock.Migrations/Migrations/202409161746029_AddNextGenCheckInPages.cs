@@ -59,7 +59,7 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.DEVICE_TYPE,
                 "Proxy",
                 "A proxy device that handles communication between the server and another device.",
-                SystemGuid.DefinedValue.DEVICE_TYPE_PROXY,
+                SystemGuid.DefinedValue.DEVICE_TYPE_CLOUD_PRINT_PROXY,
                 true );
         }
 
