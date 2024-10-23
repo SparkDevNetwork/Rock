@@ -334,6 +334,22 @@ namespace Rock.Model
         /// <returns>A IEnumerable of person, ordered by the likelihood they are a good match for the query.</returns>
         public IEnumerable<Person> FindPersons( PersonMatchQuery searchParameters, bool includeDeceased = false, bool includeBusinesses = false )
         {
+            Dictionary<int, PersonMatchResult> foundPeople = FindAllPersons( searchParameters, includeDeceased, includeBusinesses );
+
+            // Find people who have a good confidence score
+            var goodMatches = foundPeople.Values
+                .Where( match => match.MeetsMinimumConfidence )
+                .OrderByDescending( match => match.ConfidenceScore )
+                .Select( match => match.PersonId )
+                .ToList();
+
+            // The OrderBy ensures that the returned persons are in goodMatches.ConfidenceScore order
+            return GetByIds( goodMatches ).ToList().OrderBy( p => goodMatches.IndexOf( p.Id ) ).ToList();
+        }
+
+        [RockInternal( "1.16.7" )]
+        public Dictionary<int, PersonMatchResult> FindAllPersons( PersonMatchQuery searchParameters, bool includeDeceased = false, bool includeBusinesses = false )
+        {
             // Because we are search different tables (PhoneNumber, PreviousName, etc.) we do multiple queries, store the results in a dictionary, and then find good matches by scoring the results of the dictionary.
             // The large query we're building is: (email matches AND suffix matches AND DoB loose matches AND gender matches) OR last name matches OR phone number matches OR previous name matches
             // The dictionary is PersonId => PersonMatchResult, a class that stores the items that match and calculates the score
@@ -503,15 +519,7 @@ namespace Rock.Model
                     } );
             }
 
-            // Find people who have a good confidence score
-            var goodMatches = foundPeople.Values
-                .Where( match => match.MeetsMinimumConfidence )
-                .OrderByDescending( match => match.ConfidenceScore )
-                .Select( match => match.PersonId )
-                .ToList();
-
-            // The OrderBy ensures that the returned persons are in goodMatches.ConfidenceScore order
-            return GetByIds( goodMatches ).ToList().OrderBy( p => goodMatches.IndexOf( p.Id ) ).ToList();
+            return foundPeople;
         }
 
         #region FindPersonClasses
@@ -643,7 +651,8 @@ namespace Rock.Model
         /// <summary>
         /// A class to summarise the components of a Person which matched a PersonMatchQuery and produce a score representing the likelihood this match is the correct match.
         /// </summary>
-        private class PersonMatchResult
+        [RockInternal( "1.16.7" )]
+        public class PersonMatchResult
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="PersonMatchResult"/> class.
@@ -807,7 +816,8 @@ namespace Rock.Model
         /// <summary>
         /// Used to avoid bringing a whole Person into memory
         /// </summary>
-        private class PersonSummary
+        [RockInternal( "1.16.7" )]
+        public class PersonSummary
         {
             public int Id { get; set; }
 

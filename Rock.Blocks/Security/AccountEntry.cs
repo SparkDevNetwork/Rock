@@ -33,6 +33,8 @@ using Rock.ViewModels.Blocks.Security.AccountEntry;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+using static Rock.Model.PersonService;
+
 namespace Rock.Blocks.Security
 {
     /// <summary>
@@ -916,9 +918,12 @@ namespace Rock.Blocks.Security
                 return Enumerable.Empty<Person>().AsQueryable();
             }
 
-            return personService.Queryable()
-                .Where( p => p.Email.ToLower() == email.ToLower() )
-                .Where( p => p.LastName.ToLower() == lastName.ToLower() );
+            var searchParameters = new PersonMatchQuery( firstName: string.Empty, lastName, email, mobilePhone: string.Empty );
+            var matchedPersonIds = personService.FindAllPersons( searchParameters )
+                    .Where( p => p.Value.LastNameMatched && p.Value.PrimaryEmailMatched )
+                    .Select( p => p.Key )
+                    .ToList();
+            return personService.GetByIds( matchedPersonIds );
         }
 
         /// <summary>
