@@ -90,6 +90,7 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeFieldBag.cs" />

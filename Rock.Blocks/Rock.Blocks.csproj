@@ -73,6 +73,7 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\LavaShortcodeList.cs" />
     <Compile Include="Cms\ThemeDetail.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Administration\PageProperties.cs" />
@@ -135,7 +136,7 @@
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
-	<Compile Include="Event\RegistrationInstanceList.cs" />
+    <Compile Include="Event\RegistrationInstanceList.cs" />
     <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
