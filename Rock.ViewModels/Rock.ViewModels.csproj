@@ -103,6 +103,10 @@
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryPhoneNumberBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\GetDynamicDataRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\GetDynamicDataResponseBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\GetUpdatedFiltersRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\GetUpdatedFiltersResponseBag.cs" />
     <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationBag.cs" />
     <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationOptionsBag.cs" />
     <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageBag.cs" />
@@ -124,6 +128,10 @@
     <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionList\StreakTypeExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakMapEditor\StreakMapEditorBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\EditableFilterBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\PageParameterFilterCustomSettingsBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\PageParameterFilterCustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\PageParameterFilterInitializationBox.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Security\SecurityChangeAuditList\SecurityChangeAuditListOptionsBag.cs" />

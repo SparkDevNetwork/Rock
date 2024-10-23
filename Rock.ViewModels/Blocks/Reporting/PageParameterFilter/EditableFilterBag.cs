@@ -15,16 +15,25 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Reporting.DynamicData
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Reporting.PageParameterFilter
 {
     /// <summary>
-    /// The box that contains all the initialization information for the dynamic data block.
+    /// A bag that contains information needed to edit a filter for the page parameter filter block.
     /// </summary>
-    public class DynamicDataInitializationBox : BlockBox
+    public class EditableFilterBag
     {
         /// <summary>
-        /// Gets or sets whether the results should be displayed using a lava template.
+        /// Gets or sets the editable filter or null if adding a new filter.
         /// </summary>
-        public bool IsLavaTemplateDisplayMode { get; set; }
+        public PublicEditableAttributeBag Filter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the filters reserved key names.
+        /// </summary>
+        public List<string> FiltersReservedKeyNames { get; set; }
     }
 }

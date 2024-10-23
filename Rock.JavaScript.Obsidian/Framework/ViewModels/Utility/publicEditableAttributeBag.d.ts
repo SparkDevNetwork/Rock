@@ -85,7 +85,7 @@ export type PublicEditableAttributeBag = {
     /** Gets or sets a value indicating whether this attribute is indexed by universal search. */
     isIndexEnabled: boolean;
 
-    /** Gets or sets a value indicating whether the attribute is publically visible. */
+    /** Gets or sets a value indicating whether the attribute is publicly visible. */
     isPublic: boolean;
 
     /**
