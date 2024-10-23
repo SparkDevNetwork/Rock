@@ -1464,6 +1464,7 @@ Rock.settings.initialize({{
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
                                     blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
+                                    blockControl.RequestContext = RequestContext;
                                     control = new RockBlockWrapper( blockControl );
                                 }
                             }

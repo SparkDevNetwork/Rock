@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -117,6 +118,13 @@ namespace Rock.Web.UI
             get { return RockPage.PageReference; }
             set { RockPage.PageReference = value; }
         }
+
+        /// <summary>
+        /// Contains the request context that describes the details about the
+        /// request that is active while processing this block instance. This
+        /// may be <c>null</c> during some calls into the block.
+        /// </summary>
+        public RockRequestContext RequestContext { get; internal set; }
 
         /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null

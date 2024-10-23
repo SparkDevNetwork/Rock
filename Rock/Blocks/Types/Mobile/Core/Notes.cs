@@ -798,11 +798,13 @@ namespace Rock.Blocks.Types.Mobile.Core
                 if ( newNote && EnableGroupNotification && GroupNotificationCommunicationTemplate.HasValue )
                 {
                     // If there is a Group context, send the communication. Even in the cases where the note entity type is Group.
-                    if ( RequestContext.ContextEntities.TryGetValue( typeof( Group ), out var contextGroupEntity ) )
+                    var contextGroupEntity = RequestContext.GetContextEntity<Group>();
+
+                    if ( contextGroupEntity != null )
                     {
                         Task.Run( () =>
                         {
-                            SendNoteAddedCommunicationToGroup( contextGroupEntity.Value as Group, text );
+                            SendNoteAddedCommunicationToGroup( contextGroupEntity, text );
                         } );
                     }
                 }
