@@ -23,7 +23,7 @@
                     visiblePriority="xs" />
 
         <DateColumn name="date"
-                    :title="nextDateColumnTitle"
+                    title="Next Start Date"
                     field="date"
                     :filter="dateValueFilter"
                     visiblePriority="xs">
@@ -140,21 +140,12 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        startDate: preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterStartDate)),
-        endDate: preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterEndDate)),
-        status: preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterStatus)),
-        approvalStatus: preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterApprovalStatus)),
-        campuses: JSON.parse(preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterCampus)) || "[]"),
-        audiences: JSON.parse(preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterAudience)) || "[]"),
+        campuses: JSON.parse(preferences.getValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterCampus)) || "[]")
     });
 
     // #endregion
 
     // #region Computed Values
-
-    const nextDateColumnTitle = computed((): string => {
-        return !!gridSettings.value.startDate || !!gridSettings.value.endDate ? "Next Date In Range" : "Next Start Date";
-    });
 
     const isVisible = computed((): boolean => {
         return !!config.options?.eventCalendarIdKey && store.state.areSecondaryBlocksShown;
@@ -162,12 +153,7 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.startDate
-            || !!gridSettings.value.endDate
-            || !!gridSettings.value.status
-            || !!gridSettings.value.approvalStatus
-            || gridSettings.value.campuses.length > 0
-            || gridSettings.value.audiences.length > 0;
+        return gridSettings.value.campuses.length > 0;
     });
 
     /**
@@ -309,12 +295,7 @@
     // #endregion
 
     watch(gridSettings, async () => {
-        preferences.setValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterStartDate), gridSettings.value.startDate ?? "");
-        preferences.setValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterEndDate), gridSettings.value.endDate ?? "");
-        preferences.setValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterStatus), gridSettings.value.status ?? "");
-        preferences.setValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterApprovalStatus), gridSettings.value.approvalStatus ?? "");
         preferences.setValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterCampus), JSON.stringify(gridSettings.value.campuses));
-        preferences.setValue(makeKeyUniqueToEventCalendar(PreferenceKey.FilterAudience), JSON.stringify(gridSettings.value.audiences));
 
         await preferences.save();
 
