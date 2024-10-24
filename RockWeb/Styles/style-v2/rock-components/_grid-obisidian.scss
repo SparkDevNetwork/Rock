@@ -176,7 +176,7 @@
 .grid-sort-direction.sort-desc {
     /* transform flip */
     transform: rotate(180deg);
-    /* transform orgin centerr */
+    /* transform origin center */
     transform-origin: center;
 }
 
@@ -253,7 +253,7 @@
 .grid-column-header > .grid-filter-popup > .actions {
     display: flex;
     border-top: 1px solid var(--color-interface-soft);
-    background-color: #fcfcfc;
+    background-color: var(--color-interface-softer);
     padding: 8px;
     gap: 8px;
 }
@@ -548,7 +548,7 @@
         &:active:focus {
         color:        var(--color-danger-strong);
         background:   var(--color-danger-soft);
-        border-color: var(--color-danger-strnog);
+        border-color: var(--color-danger-strong);
         }
     }
 }
