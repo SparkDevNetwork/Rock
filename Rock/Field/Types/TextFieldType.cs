@@ -43,6 +43,7 @@ namespace Rock.Field.Types
         private const string IS_PASSWORD_KEY = "ispassword";
         private const string MAX_CHARACTERS = "maxcharacters";
         private const string SHOW_COUNT_DOWN = "showcountdown";
+        private const string IS_FIRST_NAME = "isfirstname";
 
         /// <summary>
         /// Determines whether the Attribute Configuration for this field has IsPassword = True
@@ -135,6 +136,7 @@ namespace Rock.Field.Types
             configKeys.Add( IS_PASSWORD_KEY );
             configKeys.Add( MAX_CHARACTERS );
             configKeys.Add( SHOW_COUNT_DOWN );
+            configKeys.Add( IS_FIRST_NAME );
             return configKeys;
         }
 
@@ -171,6 +173,14 @@ namespace Rock.Field.Types
             cbShowCountDown.Label = "Show Character Limit Countdown";
             cbShowCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
 
+            // Add checkbox for deciding if the textbox is used for storing a first name.
+            var cbIsFirstNameField= new RockCheckBox();
+            controls.Add( cbIsFirstNameField );
+            cbIsFirstNameField.AutoPostBack = true;
+            cbIsFirstNameField.CheckedChanged += OnQualifierUpdated;
+            cbIsFirstNameField.Label = "FirstName Field";
+            cbIsFirstNameField.Help = "When set, edit field will be validated as a first name.";
+
             return controls;
         }
 
@@ -185,6 +195,7 @@ namespace Rock.Field.Types
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
             configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
             configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Character Limit Countdown", "When set, displays a countdown showing how many characters remain (for the Max Characters setting).", "" ) );
+            configurationValues.Add( IS_FIRST_NAME, new ConfigurationValue( "FirstName Field", "When set, edit field will be validated as a first name.", "" ) );
 
             if ( controls != null )
             {
@@ -212,6 +223,15 @@ namespace Rock.Field.Types
                     if ( cbShowCountDown != null )
                     {
                         configurationValues[SHOW_COUNT_DOWN].Value = cbShowCountDown.Checked.ToString();
+                    }
+                }
+
+                if ( controls.Count > 3 )
+                {
+                    CheckBox cbIsFirstNameField = controls[3] as CheckBox;
+                    if ( cbIsFirstNameField != null )
+                    {
+                        configurationValues[IS_FIRST_NAME].Value = cbIsFirstNameField.Checked.ToString();
                     }
                 }
             }
@@ -252,6 +272,15 @@ namespace Rock.Field.Types
                     if ( cbShowCountDown != null )
                     {
                         cbShowCountDown.Checked = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
+                    }
+                }
+
+                if ( controls.Count > 3 && configurationValues.ContainsKey( IS_FIRST_NAME ) )
+                {
+                    CheckBox cbIsFirstNameField = controls[3] as CheckBox;
+                    if ( cbIsFirstNameField != null )
+                    {
+                        cbIsFirstNameField.Checked = configurationValues[IS_FIRST_NAME].Value.AsBoolean();
                     }
                 }
             }
@@ -331,6 +360,14 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null )
             {
+                if ( configurationValues.ContainsKey( IS_FIRST_NAME ) &&
+                    configurationValues[IS_FIRST_NAME].Value.AsBoolean() )
+                {
+                    tb = new FirstNameTextBox()
+                    {
+                        ID = id,
+                    };
+                }
 
                 if ( configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
                     configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )

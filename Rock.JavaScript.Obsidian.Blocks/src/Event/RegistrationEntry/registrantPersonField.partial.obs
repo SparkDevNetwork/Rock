@@ -15,6 +15,7 @@
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
     import { Guid } from "@Obsidian/Types";
     import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
@@ -45,7 +46,7 @@
     const component = computed(() => {
         switch (props.field.personFieldType) {
             case RegistrationPersonFieldType.FirstName:
-                return TextBox;
+                return FirstNameTextBox;
 
             case RegistrationPersonFieldType.LastName:
                 return TextBox;
