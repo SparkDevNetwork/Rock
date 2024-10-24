@@ -133,7 +133,7 @@ namespace Rock.Blocks.CheckIn
             }
 
             var defaultCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
-            if (defaultCategoryId.HasValue)
+            if ( defaultCategoryId.HasValue )
             {
                 bag.DefaultScheduleCategory = new ListItemBag
                 {
@@ -175,7 +175,7 @@ namespace Rock.Blocks.CheckIn
             }
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.OrderBy(a => a.Name).ToList();
+            var scheduleList = scheduleQry.OrderBy( a => a.Name ).ToList();
             var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
 
             foreach ( var item in sortedScheduleList )
@@ -417,7 +417,7 @@ namespace Rock.Blocks.CheckIn
         /// <param name="scheduledLocations">The scheduled group locations</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult Save(List<GroupLocationsBag> scheduledLocations)
+        public BlockActionResult Save( List<GroupLocationsBag> scheduledLocations )
         {
             // Load all the group locations in a single query, along with the
             // schedule information.
@@ -487,7 +487,7 @@ namespace Rock.Blocks.CheckIn
         /// <param name="bag">The clone schedule bag that contains the source and destination schedules</param>
         /// <returns>The updated group locations list to the client.</returns>
         [BlockAction]
-        public BlockActionResult ProcessClonedSchedule(CloneScheduleBag bag)
+        public BlockActionResult ProcessClonedSchedule( CloneScheduleBag bag )
         {
             var groupLocationQuery = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths ).ToList();
 
@@ -523,7 +523,7 @@ namespace Rock.Blocks.CheckIn
                 }
             }
 
-            return ActionBadRequest("The source and destination schedules must be defined.");
+            return ActionBadRequest( "The source and destination schedules must be defined." );
         }
 
         /// <summary>
@@ -538,7 +538,7 @@ namespace Rock.Blocks.CheckIn
             bag.GroupLocations = GetGroupLocationSchedules( groupLocationQry, groupPaths );
             bag.Schedules = GetSchedules();
 
-            return ActionOk(bag);
+            return ActionOk( bag );
         }
     }
 }
