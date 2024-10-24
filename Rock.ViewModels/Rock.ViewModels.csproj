@@ -91,6 +91,10 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ScheduledLocationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SubscribeToRealTimeResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\WebKioskBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CheckInScheduleBuilderDataBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CheckInScheduleBuilderOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\GroupLocationsBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CloneScheduleBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\DataSourceBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\IconItemBag.cs" />
