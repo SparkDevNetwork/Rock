@@ -1239,7 +1239,7 @@ namespace Rock.Web.UI.Controls
                 throw new PersonEditorException( "UpdatePerson must use the same person that was used in SetFromPerson." );
             }
 
-            if ( ShowTitle )
+            if ( ShowTitle && this.PersonTitleValueId.IsNotNullOrZero() )
             {
                 person.TitleValueId = this.PersonTitleValueId;
             }
@@ -1248,52 +1248,52 @@ namespace Rock.Web.UI.Controls
             person.NickName = this.FirstName;
             person.LastName = this.LastName;
 
-            if ( ShowSuffix )
+            if ( ShowSuffix && this.PersonSuffixValueId.IsNotNullOrZero() )
             {
                 person.SuffixValueId = this.PersonSuffixValueId;
             }
 
-            if ( this.PersonGender.HasValue )
+            if ( this.PersonGender.HasValue && this.PersonGender.HasValue )
             {
                 person.Gender = this.PersonGender.Value;
             }
 
-            if ( ShowMaritalStatus )
+            if ( ShowMaritalStatus && this.PersonMaritalStatusValueId.IsNotNullOrZero() )
             {
                 person.MaritalStatusValueId = this.PersonMaritalStatusValueId;
             }
 
-            if ( ShowBirthdate )
+            if ( ShowBirthdate && this.PersonBirthDate.HasValue )
             {
                 person.SetBirthDate( this.PersonBirthDate );
             }
 
-            if ( ShowGrade )
+            if ( ShowGrade && this.PersonGradeOffset.HasValue )
             {
                 person.GradeOffset = this.PersonGradeOffset;
             }
 
-            if ( ShowConnectionStatus )
+            if ( ShowConnectionStatus && this.PersonConnectionStatusValueId.IsNotNullOrZero() )
             {
                 person.ConnectionStatusValueId = this.PersonConnectionStatusValueId;
             }
 
-            if ( ShowEmail )
+            if ( ShowEmail && this.Email.IsNotNullOrWhiteSpace() )
             {
                 person.Email = this.Email;
             }
 
-            if ( ShowRace )
+            if ( ShowRace && this.PersonRaceValueId.IsNotNullOrZero() )
             {
                 person.RaceValueId = this.PersonRaceValueId;
             }
 
-            if ( ShowEthnicity )
+            if ( ShowEthnicity && this.PersonEthnicityValueId.IsNotNullOrZero() )
             {
                 person.EthnicityValueId = this.PersonEthnicityValueId;
             }
 
-            if ( ShowMobilePhone )
+            if ( ShowMobilePhone && MobilePhoneNumber.IsNotNullOrWhiteSpace() )
             {
                 var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
 
