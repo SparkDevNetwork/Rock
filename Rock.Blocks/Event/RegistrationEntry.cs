@@ -4628,8 +4628,6 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
         {
-            var currentPerson = GetCurrentPerson();
-
             // Create a view model with default values in case anything goes wrong
             var viewModel = new RegistrationEntrySuccessBag
             {
@@ -4658,12 +4656,10 @@ namespace Rock.Blocks.Event
                     registration.RegistrationInstance.RegistrationTemplate != null )
                 {
                     var template = registration.RegistrationInstance.RegistrationTemplate;
-                    var mergeFields = new Dictionary<string, object>
-                    {
-                        { "CurrentPerson", currentPerson },
-                        { "RegistrationInstance", registration.RegistrationInstance },
-                        { "Registration", registration }
-                    };
+
+                    var mergeFields = this.RequestContext.GetCommonMergeFields();
+                    mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                    mergeFields.Add( "Registration", registration );
 
                     if ( template != null && !string.IsNullOrWhiteSpace( template.SuccessTitle ) )
                     {
