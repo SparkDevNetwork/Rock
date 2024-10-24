@@ -480,7 +480,7 @@ $navbar-element-height: 40px;
   display: none;
   width: 100%;
   height: 100%;
-  color: var(--color-interface-softer);
+  color: #FFF; /* Harded code because in dark mode it looks weird with dark color. */
   background-color: var(--color-primary);
 
   .navbar-side {

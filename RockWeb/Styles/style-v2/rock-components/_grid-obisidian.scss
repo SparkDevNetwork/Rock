@@ -266,7 +266,7 @@
 
 .grid-row {
     display: flex;
-    background-color: #fff;
+    background-color: var(--color-interface-softest);
     border-bottom: 1px solid var(--color-interface-soft);
     transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
 }
@@ -280,7 +280,7 @@
 }
 
 .grid-hover .grid-row:hover {
-    background-color: #eef4fc;
+    background-color: var(--color-interface-soft);
 }
 
 .grid-cell {
