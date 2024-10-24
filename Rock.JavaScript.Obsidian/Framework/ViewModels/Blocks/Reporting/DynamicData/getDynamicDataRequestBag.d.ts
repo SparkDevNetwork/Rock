@@ -21,20 +21,11 @@
 // </copyright>
 //
 
-/** The box that contains all the initialization information for the dynamic data block. */
-export type DynamicDataInitializationBox = {
+/** A bag that contains information needed to load data for the dynamic data block. */
+export type GetDynamicDataRequestBag = {
     /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
+     * Gets or sets any page parameter overrides that should be used by the query or stored procedure, as well as
+     * the many Lava templates in use throughout the block.
      */
-    errorMessage?: string | null;
-
-    /** Gets or sets whether the results should be displayed using a lava template. */
-    isLavaTemplateDisplayMode: boolean;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    pageParameterOverrides?: Record<string, string> | null;
 };

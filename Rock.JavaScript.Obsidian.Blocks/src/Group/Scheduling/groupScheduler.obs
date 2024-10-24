@@ -384,7 +384,7 @@
     });
 
     const copyLinkUrl = computed((): string | null => {
-        return navigationUrls.value?.[NavigationUrlKey.CopyLink] ?? "hello";
+        return navigationUrls.value?.[NavigationUrlKey.CopyLink] || null;
     });
 
     const secondaryActions = computed((): PanelAction[] => {

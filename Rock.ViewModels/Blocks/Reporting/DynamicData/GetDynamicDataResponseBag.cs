@@ -18,13 +18,23 @@
 namespace Rock.ViewModels.Blocks.Reporting.DynamicData
 {
     /// <summary>
-    /// The box that contains all the initialization information for the dynamic data block.
+    /// A bag that contains information about loaded data for the dynamic data block.
     /// </summary>
-    public class DynamicDataInitializationBox : BlockBox
+    public class GetDynamicDataResponseBag
     {
         /// <summary>
-        /// Gets or sets whether the results should be displayed using a lava template.
+        /// Gets or sets the quick return page title.
         /// </summary>
-        public bool IsLavaTemplateDisplayMode { get; set; }
+        public string QuickReturnPageTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lava template results.
+        /// </summary>
+        public LavaTemplateResultsBag LavaTemplateResults { get; set; }
+
+        /// <summary>
+        /// Gets or sets the grid results.
+        /// </summary>
+        public GridResultsBag GridResults { get; set; }
     }
 }

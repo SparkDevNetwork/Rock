@@ -15,16 +15,19 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Reporting.DynamicData
 {
     /// <summary>
-    /// The box that contains all the initialization information for the dynamic data block.
+    /// A bag that contains information needed to load data for the dynamic data block.
     /// </summary>
-    public class DynamicDataInitializationBox : BlockBox
+    public class GetDynamicDataRequestBag
     {
         /// <summary>
-        /// Gets or sets whether the results should be displayed using a lava template.
+        /// Gets or sets any page parameter overrides that should be used by the query or stored procedure, as well as
+        /// the many Lava templates in use throughout the block.
         /// </summary>
-        public bool IsLavaTemplateDisplayMode { get; set; }
+        public Dictionary<string, string> PageParameterOverrides { get; set; }
     }
 }
