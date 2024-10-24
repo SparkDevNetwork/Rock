@@ -387,6 +387,8 @@
 }
 
 .grid-cell {
+    display:flex;
+    align-items: center;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     line-height: 1.4;
     align-self: stretch;
