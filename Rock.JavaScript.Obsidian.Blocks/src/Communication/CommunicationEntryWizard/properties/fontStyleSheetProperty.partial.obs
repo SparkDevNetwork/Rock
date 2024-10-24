@@ -52,6 +52,7 @@
     import TextFormatPropertyBase from "./textFormatPropertyBase.partial.obs";
     import TextTransformPropertyBase from "./textTransformPropertyBase.partial.obs";
     import { ListItemBag } from "@Obsidian/Utility";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
 
     const props = defineProps({
         element: {
@@ -97,6 +98,7 @@
     const fontStyle = ref<string>("");
     const lineHeight = ref<string>("");
     const textTransform = ref<string>("");
+    const padding = ref<Partial<Record<CSSStyleDeclarationKebabKey, string>>>({});
 
     // #endregion
 
@@ -137,6 +139,10 @@
             declarations.push(`text-transform: ${textTransform.value};`);
         }
 
+        if (Object.keys(padding.value).length) {
+            declarations.push(...Object.entries(padding.value).map(([k, v]) => `${k}: ${v};`));
+        }
+
         if (declarations.length) {
             return `${props.tagName} {\n    ${declarations.join("\n    ")}\n}`;
         }
@@ -174,6 +180,24 @@
                                 fontStyle.value = rule.style.fontStyle;
                                 lineHeight.value = rule.style.lineHeight;
                                 textTransform.value = rule.style.textTransform;
+                                padding.value = {};
+                                if (rule.style.padding) {
+                                    padding.value.padding = rule.style.padding;
+                                }
+                                else {
+                                    if (rule.style.paddingTop) {
+                                        padding.value["padding-top"] = rule.style.paddingTop;
+                                    }
+                                    if (rule.style.paddingBottom) {
+                                        padding.value["padding-bottom"] = rule.style.paddingBottom;
+                                    }
+                                    if (rule.style.paddingLeft) {
+                                        padding.value["padding-left"] = rule.style.paddingLeft;
+                                    }
+                                    if (rule.style.paddingRight) {
+                                        padding.value["padding-right"] = rule.style.paddingRight;
+                                    }
+                                }
 
                                 loaded = true;
                             }
@@ -192,6 +216,7 @@
             fontStyle.value = "";
             lineHeight.value = "";
             textTransform.value = "";
+            padding.value = {};
         }
     }, {
         // Since the reactive values are not initialized where defined above,

@@ -39,9 +39,25 @@ type StringOnlyKeys<T> = T extends string ? T : never;
 export type CSSStyleDeclarationKebabKey = ToKebabCase<StringOnlyKeys<keyof CSSStyleDeclaration>>;
 
 export type StandardShorthandProps = {
+    mode: {
+        type: PropType<"inline" | "stylesheet">;
+        default: string;
+    };
+
+    /**
+     * Only required in "inline" mode.
+     */
     element: {
-        type: PropType<HTMLElement>;
-        required: true;
+        type: PropType<HTMLElement | undefined>;
+        required: boolean;
+    };
+
+    /**
+     * Only required in "stylesheet" mode.
+     */
+    styleSheetValues: {
+        type: PropType<Partial<Record<CSSStyleDeclarationKebabKey, string>> | undefined>;
+        required: boolean;
     };
 
     label: {
@@ -49,27 +65,27 @@ export type StandardShorthandProps = {
         required: boolean;
     };
 
-    labelShorthand: {
+    shorthandLabel: {
         type: PropType<string>;
         default: string;
     };
 
-    labelTop: {
+    topLabel: {
         type: PropType<string>;
         default: string;
     };
 
-    labelBottom: {
+    bottomLabel: {
         type: PropType<string>;
         default: string;
     };
 
-    labelRight: {
+    rightLabel: {
         type: PropType<string>;
         default: string;
     };
 
-    labelLeft: {
+    leftLabel: {
         type: PropType<string>;
         default: string;
     };
@@ -84,23 +100,23 @@ export type StandardShorthandProps = {
         default: boolean;
     };
 
-    cssClassShorthand: {
+    shorthandCssClass: {
         type: PropType<string | undefined>;
     };
 
-    cssClassTop: {
+    topCssClass: {
         type: PropType<string | undefined>;
     };
 
-    cssClassBottom: {
+    bottomCssClass: {
         type: PropType<string | undefined>;
     };
 
-    cssClassRight: {
+    rightCssClass: {
         type: PropType<string | undefined>;
     };
 
-    cssClassLeft: {
+    leftCssClass: {
         type: PropType<string | undefined>;
     };
 };

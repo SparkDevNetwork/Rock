@@ -1,14 +1,5 @@
-import ShorthandPropertyBase from "./shorthandPropertyBase.partial.obs";
-import { computed, ExtractPropTypes, PropType, reactive, Ref, watch, WritableComputedRef } from "vue";
-import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps, LengthControlType } from "./types.partial";
-
-type ReactiveShorthandProperties = {
-    shorthand: WritableComputedRef<string>;
-    top: WritableComputedRef<string>;
-    bottom: WritableComputedRef<string>;
-    right: WritableComputedRef<string>;
-    left: WritableComputedRef<string>;
-};
+import { ExtractPropTypes, PropType, reactive, watch } from "vue";
+import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps, LengthControlType, CSSStyleDeclarationKebabKey } from "./types.partial";
 
 /** The standard component props that should be included when using RockFormField. */
 export const standardLengthProps: StandardLengthProps = {
@@ -30,9 +21,19 @@ export const standardLengthProps: StandardLengthProps = {
 
 /** The standard component props that should be included when using RockFormField. */
 export const standardShorthandProps: StandardShorthandProps = {
+    mode: {
+        type: String as PropType<"inline" | "stylesheet">,
+        default: "inline" as const
+    },
+
     element: {
-        type: Object as PropType<HTMLElement>,
-        required: true as const
+        type: Object as PropType<HTMLElement | undefined>,
+        required: false
+    },
+
+    styleSheetValues: {
+        type: Object as PropType<Partial<Record<CSSStyleDeclarationKebabKey, string>>>,
+        required: false
     },
 
     label: {
@@ -40,29 +41,49 @@ export const standardShorthandProps: StandardShorthandProps = {
         required: true as const
     },
 
-    labelShorthand: {
+    shorthandLabel: {
         type: String as PropType<string>,
         default: "" as const
     },
 
-    labelTop: {
+    shorthandCssClass: {
+        type: String as PropType<string | undefined>
+    },
+
+    topLabel: {
         type: String as PropType<string>,
         default: "Top" as const
     },
 
-    labelBottom: {
+    topCssClass: {
+        type: String as PropType<string | undefined>
+    },
+
+    bottomLabel: {
         type: String as PropType<string>,
         default: "Bottom" as const
     },
 
-    labelRight: {
+    bottomCssClass: {
+        type: String as PropType<string | undefined>
+    },
+
+    rightLabel: {
         type: String as PropType<string>,
         default: "Right" as const
     },
 
-    labelLeft: {
+    rightCssClass: {
+        type: String as PropType<string | undefined>
+    },
+
+    leftLabel: {
         type: String as PropType<string>,
         default: "Left" as const
+    },
+
+    leftCssClass: {
+        type: String as PropType<string | undefined>
     },
 
     showConstituentProperties: {
@@ -73,26 +94,6 @@ export const standardShorthandProps: StandardShorthandProps = {
     canToggleShowConstituents: {
         type: Boolean as PropType<boolean>,
         default: true as const
-    },
-
-    cssClassShorthand: {
-        type: String as PropType<string | undefined>
-    },
-
-    cssClassTop: {
-        type: String as PropType<string | undefined>
-    },
-
-    cssClassBottom: {
-        type: String as PropType<string | undefined>
-    },
-
-    cssClassRight: {
-        type: String as PropType<string | undefined>
-    },
-
-    cssClassLeft: {
-        type: String as PropType<string | undefined>
     }
 };
 
@@ -107,61 +108,27 @@ export const standardShorthandProps: StandardShorthandProps = {
  */
 export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorthandProps>): ExtractPropTypes<StandardShorthandProps> {
     const propValues = reactive<ExtractPropTypes<StandardShorthandProps>>({
+        mode: props.mode,
         element: props.element,
+        styleSheetValues: props.styleSheetValues,
         label: props.label,
-        labelShorthand: props.labelShorthand,
-        labelTop: props.labelTop,
-        labelBottom: props.labelBottom,
-        labelRight: props.labelRight,
-        labelLeft: props.labelLeft,
+        shorthandLabel: props.shorthandLabel,
+        shorthandCssClass: props.shorthandCssClass,
+        topLabel: props.topLabel,
+        topCssClass: props.topCssClass,
+        bottomLabel: props.bottomLabel,
+        bottomCssClass: props.bottomCssClass,
+        rightLabel: props.rightLabel,
+        rightCssClass: props.rightCssClass,
+        leftLabel: props.leftLabel,
+        leftCssClass: props.leftCssClass,
         showConstituentProperties: props.showConstituentProperties,
-        canToggleShowConstituents: props.canToggleShowConstituents,
-        cssClassShorthand: props.cssClassShorthand,
-        cssClassTop: props.cssClassTop,
-        cssClassBottom: props.cssClassBottom,
-        cssClassRight: props.cssClassRight,
-        cssClassLeft: props.cssClassLeft
+        canToggleShowConstituents: props.canToggleShowConstituents
     });
 
-    watch(() => props.label, (value, oldValue) => {
+    watch(() => props.mode, (value, oldValue) => {
         if (value !== oldValue) {
-            propValues.label = value;
-        }
-    });
-
-    watch(() => props.labelShorthand, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.labelShorthand = value;
-        }
-    });
-
-    watch(() => props.labelTop, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.labelTop = value;
-        }
-    });
-
-    watch(() => props.labelBottom, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.labelBottom = value;
-        }
-    });
-
-    watch(() => props.labelRight, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.labelRight = value;
-        }
-    });
-
-    watch(() => props.labelLeft, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.labelLeft = value;
-        }
-    });
-
-    watch(() => props.showConstituentProperties, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.showConstituentProperties = value;
+            propValues.mode = value;
         }
     });
 
@@ -171,39 +138,87 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
         }
     });
 
+    watch(() => props.styleSheetValues, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.styleSheetValues = value;
+        }
+    });
+
+    watch(() => props.label, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.label = value;
+        }
+    });
+
+    watch(() => props.shorthandLabel, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.shorthandLabel = value;
+        }
+    });
+
+    watch(() => props.shorthandCssClass, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.shorthandCssClass = value;
+        }
+    });
+
+    watch(() => props.topLabel, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.topLabel = value;
+        }
+    });
+
+    watch(() => props.topCssClass, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.topCssClass = value;
+        }
+    });
+
+    watch(() => props.bottomLabel, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.bottomLabel = value;
+        }
+    });
+
+    watch(() => props.bottomCssClass, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.bottomCssClass = value;
+        }
+    });
+
+    watch(() => props.rightLabel, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.rightLabel = value;
+        }
+    });
+
+    watch(() => props.rightCssClass, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.rightCssClass = value;
+        }
+    });
+
+    watch(() => props.leftLabel, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.leftLabel = value;
+        }
+    });
+
+    watch(() => props.leftCssClass, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.leftCssClass = value;
+        }
+    });
+
+    watch(() => props.showConstituentProperties, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.showConstituentProperties = value;
+        }
+    });
+
     watch(() => props.canToggleShowConstituents, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.canToggleShowConstituents = value;
-        }
-    });
-
-    watch(() => props.cssClassShorthand, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.cssClassShorthand = value;
-        }
-    });
-
-    watch(() => props.cssClassTop, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.cssClassTop = value;
-        }
-    });
-
-    watch(() => props.cssClassBottom, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.cssClassBottom = value;
-        }
-    });
-
-    watch(() => props.cssClassRight, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.cssClassRight = value;
-        }
-    });
-
-    watch(() => props.cssClassLeft, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.cssClassLeft = value;
         }
     });
 
@@ -240,12 +255,12 @@ export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthPro
     return propValues;
 }
 
-export function hasConstituentProperties(props: ExtractPropTypes<StandardShorthandProps> & { propertyTop: string; propertyBottom: string; propertyRight: string; propertyLeft: string; }): boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[] {
+export function hasConstituentProperties(props: ExtractPropTypes<StandardShorthandProps> & { top: string; bottom: string; right: string; left: string; }): boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[] {
     if (props.showConstituentProperties === false) {
-        const top = props.element.style.getPropertyValue(props.propertyTop);
-        const bottom = props.element.style.getPropertyValue(props.propertyBottom);
-        const right = props.element.style.getPropertyValue(props.propertyRight);
-        const left = props.element.style.getPropertyValue(props.propertyLeft);
+        const top = props.element?.style.getPropertyValue(props.top) ?? "";
+        const bottom = props.element?.style.getPropertyValue(props.bottom) ?? "";
+        const right = props.element?.style.getPropertyValue(props.right) ?? "";
+        const left = props.element?.style.getPropertyValue(props.left) ?? "";
 
         if (top || bottom || right || left) {
             return hasAnyDifference(top, bottom, right, left);

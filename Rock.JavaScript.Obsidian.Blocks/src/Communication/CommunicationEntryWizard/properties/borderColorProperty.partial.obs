@@ -1,21 +1,17 @@
 <template>
-    <ShorthandColorPropertyBase v-bind="baseProps"
-                                ref="baseProperty"
-                                propertyShorthand="border-color"
-                                propertyTop="border-top-color"
-                                propertyBottom="border-bottom-color"
-                                propertyRight="border-right-color"
-                                propertyLeft="border-left-color"
-                                @change="$emit('change', $event)"
-                                @changeTop="$emit('changeTop', $event)"
-                                @changeBottom="$emit('changeBottom', $event)"
-                                @changeRight="$emit('changeRight', $event)"
-                                @changeLeft="$emit('changeLeft', $event)" />
+    <ShorthandColorProperty v-bind="shorthandProps"
+                            shorthand="border-color"
+                            top="border-top-color"
+                            bottom="border-bottom-color"
+                            right="border-right-color"
+                            left="border-left-color"
+                            @update:styleSheetValues="$emit('update:styleSheetValues', $event)" />
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import ShorthandColorPropertyBase from "./shorthandColorPropertyBase.partial.obs";
+    import ShorthandColorProperty from "./shorthandColorProperty.partial.obs";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
     import { standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
 
     const props = defineProps({
@@ -27,13 +23,9 @@
         }
     });
 
-    const baseProps = useStandardShorthandProps(props);
+    const shorthandProps = useStandardShorthandProps(props);
 
     defineEmits<{
-        (e: "change", value: string): void;
-        (e: "changeTop", value: string): void;
-        (e: "changeBottom", value: string): void;
-        (e: "changeRight", value: string): void;
-        (e: "changeLeft", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void;
     }>();
 </script>

@@ -1,0 +1,355 @@
+<template>
+    <div v-if="canToggleShowConstituents"
+         class="shorthand-property-header">
+        <RockLabel v-if="label">{{ label }}</RockLabel>
+        <small>
+            <InlineSwitch v-model="areConstituentPropertiesShown" label="Show More" />
+        </small>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="!areConstituentPropertiesShown" class="row">
+            <div :class="shorthandCssClass">
+                <ColorPicker v-model="internalShorthandValue"
+                             :disableLabel="!internalShorthandLabel"
+                             :label="internalShorthandLabel"
+                             @update:modelValue="onShorthandUpdated" />
+            </div>
+        </div>
+
+        <div v-else class="row">
+            <div v-if="constituentProperties.includes('top')" :class="topCssClass">
+                <ColorPicker v-model="internalTopValue"
+                             :disableLabel="!topLabel"
+                             :label="topLabel"
+                             @update:modelValue="onTopUpdated" />
+            </div>
+
+            <div v-if="constituentProperties.includes('bottom')" :class="bottomCssClass">
+                <ColorPicker v-model="internalBottomValue"
+                             :disableLabel="!bottomLabel"
+                             :label="bottomLabel"
+                             @update:modelValue="onBottomUpdated" />
+            </div>
+
+            <div v-if="constituentProperties.includes('left')" :class="leftCssClass">
+                <ColorPicker v-model="internalLeftValue"
+                             :disableLabel="!leftLabel"
+                             :label="leftLabel"
+                             @update:modelValue="onLeftUpdated" />
+            </div>
+
+            <div v-if="constituentProperties.includes('right')" :class="rightCssClass">
+                <ColorPicker v-model="internalRightValue"
+                             :disableLabel="!rightLabel"
+                             :label="rightLabel"
+                             @update:modelValue="onRightUpdated" />
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<style scoped>
+.shorthand-property-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-bottom: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { CSSStyleDeclarationKebabKey, DirectionalConstituentProperty } from "./types.partial";
+    import { hasConstituentProperties, standardShorthandProps } from "./utils.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+
+    const props = defineProps({
+        ...standardShorthandProps,
+
+        shorthand: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        shorthandCssClass: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        top: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        topCssClass: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        bottom: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        bottomCssClass: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        right: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        rightCssClass: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        left: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        },
+
+        leftCssClass: {
+            type: String as PropType<string>,
+            default: "col-sm-12" as const
+        },
+
+        canToggleShowConstituents: {
+            type: Boolean as PropType<boolean>,
+            default: true as const
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:styleSheetValues", value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void;
+    }>();
+
+    // #region Values
+
+    const internalShowConstituentProperties = ref<boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]>(hasConstituentProperties(props));
+    const constituentProperties = ref<DirectionalConstituentProperty[]>(getConstituentProperties(internalShowConstituentProperties.value));
+    const areConstituentPropertiesShown = ref<boolean>(!!constituentProperties.value.length);
+    const internalShorthandValue = ref<string>(getPropertyValue(props.shorthand) ?? "");
+    const internalTopValue = ref<string>(getPropertyValue(props.top) ?? "");
+    const internalBottomValue = ref<string>(getPropertyValue(props.bottom) ?? "");
+    const internalLeftValue = ref<string>(getPropertyValue(props.left) ?? "");
+    const internalRightValue = ref<string>(getPropertyValue(props.right) ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const internalShorthandLabel = computed<string>(() => {
+        return props.shorthandLabel || (!props.canToggleShowConstituents && props.label) || "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getPropertyValue(prop: CSSStyleDeclarationKebabKey): string | undefined {
+        if (props.mode === "inline" && props.element) {
+            return props.element.style.getPropertyValue(prop);
+        }
+        else if (props.mode === "stylesheet" && props.styleSheetValues && props.styleSheetValues[prop]) {
+            return props.styleSheetValues[prop];
+        }
+    }
+
+    function getConstituentProperties(showConstituentProperties: boolean | DirectionalConstituentProperty | DirectionalConstituentProperty[]): DirectionalConstituentProperty[] {
+        if (showConstituentProperties === false) {
+            return [];
+        }
+        else if (showConstituentProperties === true) {
+            return ["top", "bottom", "right", "left"];
+        }
+        else if (showConstituentProperties === "top") {
+            return ["top"];
+        }
+        else if (showConstituentProperties === "bottom") {
+            return ["bottom"];
+        }
+        else if (showConstituentProperties === "right") {
+            return ["right"];
+        }
+        else if (showConstituentProperties === "left") {
+            return ["left"];
+        }
+        else {
+            return showConstituentProperties;
+        }
+    }
+
+    function emitChange(value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit("update:styleSheetValues", value);
+    }
+
+    /**
+     * Gets the element's current inline constituent property values.
+     *
+     * If a constituent property does not have a value, then it is excluded from the result.
+     */
+    function getElementConstituentPropertyValues(): Partial<Record<CSSStyleDeclarationKebabKey, string>> {
+        const updates: Partial<Record<CSSStyleDeclarationKebabKey, string>> = {};
+
+        const topValue = getPropertyValue(props.top);
+        if (topValue) {
+            updates[props.top] = topValue;
+        }
+
+        const bottomValue = getPropertyValue(props.bottom);
+        if (bottomValue) {
+            updates[props.bottom] = bottomValue;
+        }
+
+        const rightValue = getPropertyValue(props.right);
+        if (rightValue) {
+            updates[props.right] = rightValue;
+        }
+
+        const leftValue = getPropertyValue(props.left);
+        if (leftValue) {
+            updates[props.left] = leftValue;
+        }
+
+        return updates;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onShorthandUpdated(value: string): void {
+        if (props.mode === "inline" && props.element) {
+            props.element.style.setProperty(props.shorthand, value);
+        }
+
+        emitChange({
+            [props.shorthand]: value
+        });
+    }
+
+    function onTopUpdated(value: string): void {
+        if (props.mode === "inline" && props.element) {
+            props.element.style.setProperty(props.top, value);
+        }
+
+        emit("update:styleSheetValues", {
+            ...getElementConstituentPropertyValues(),
+
+            [props.top]: value
+        });
+    }
+
+    function onBottomUpdated(value: string): void {
+        if (props.mode === "inline" && props.element) {
+            props.element.style.setProperty(props.bottom, value);
+        }
+
+        emit("update:styleSheetValues", {
+            ...getElementConstituentPropertyValues(),
+
+            [props.bottom]: value
+        });
+    }
+
+    function onLeftUpdated(value: string): void {
+        if (props.mode === "inline" && props.element) {
+            props.element.style.setProperty(props.left, value);
+        }
+
+        emit("update:styleSheetValues", {
+            ...getElementConstituentPropertyValues(),
+
+            [props.left]: value
+        });
+    }
+
+    function onRightUpdated(value: string): void {
+        if (props.mode === "inline" && props.element) {
+            props.element.style.setProperty(props.right, value);
+        }
+
+        emit("update:styleSheetValues", {
+            ...getElementConstituentPropertyValues(),
+
+            [props.right]: value
+        });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.showConstituentProperties, () => {
+        constituentProperties.value = getConstituentProperties(props.showConstituentProperties);
+    });
+
+    watch(areConstituentPropertiesShown, (value: boolean) => {
+        if (value) {
+            if (constituentProperties.value.length === 0) {
+                // If the "Show More" switch is turned on and there are currently no constituent properties to show,
+                // then show them all.
+                constituentProperties.value = getConstituentProperties(true);
+            }
+
+            // When constituent properties are shown, update all the fields to equal the shorthand value
+            // and trigger their event handlers.
+            const shorthandValue = getPropertyValue(props.shorthand) ?? "";
+            internalTopValue.value = shorthandValue;
+            internalBottomValue.value = shorthandValue;
+            internalLeftValue.value = shorthandValue;
+            internalRightValue.value = shorthandValue;
+
+            if (props.mode === "inline" && props.element) {
+                props.element.style.setProperty(props.top, shorthandValue);
+                props.element.style.setProperty(props.bottom, shorthandValue);
+                props.element.style.setProperty(props.left, shorthandValue);
+                props.element.style.setProperty(props.right, shorthandValue);
+            }
+
+            emitChange({
+                [props.top]: shorthandValue,
+                [props.bottom]: shorthandValue,
+                [props.right]: shorthandValue,
+                [props.left]: shorthandValue
+            });
+        }
+        else {
+            // When the shorthand property is shown, set it to the top constituent property value.
+            const topValue = getPropertyValue(props.top) ?? "";
+            internalShorthandValue.value = topValue;
+
+            if (props.mode === "inline" && props.element) {
+                props.element.style.setProperty(props.shorthand, topValue);
+            }
+
+            emitChange({
+                [props.shorthand]: topValue
+            });
+        }
+    });
+
+    watch([() => props.styleSheetValues, () => props.mode], ([values, mode]) => {
+        if (mode === "stylesheet") {
+            if (areConstituentPropertiesShown.value) {
+                internalTopValue.value = values?.[props.top] ?? "";
+                internalBottomValue.value = values?.[props.bottom] ?? "";
+                internalLeftValue.value = values?.[props.left] ?? "";
+                internalRightValue.value = values?.[props.right] ?? "";
+            }
+            else {
+                internalShorthandValue.value = values?.[props.shorthand] ?? "";
+            }
+        }
+    });
+
+    // #endregion
+</script>

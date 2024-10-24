@@ -1,26 +1,21 @@
 <template>
-    <ShorthandLengthTypePropertyBase v-bind="mergedProps"
-                                     propertyShorthand="padding"
-                                     propertyTop="padding-top"
-                                     propertyBottom="padding-bottom"
-                                     propertyRight="padding-right"
-                                     propertyLeft="padding-left"
-                                     @change="$emit('change', $event)"
-                                     @changeTop="$emit('changeTop', $event)"
-                                     @changeBottom="$emit('changeBottom', $event)"
-                                     @changeRight="$emit('changeRight', $event)"
-                                     @changeLeft="$emit('changeLeft', $event)" />
+    <ShorthandLengthProperty v-bind="shorthandProps"
+                             shorthand="padding"
+                             top="padding-top"
+                             bottom="padding-bottom"
+                             right="padding-right"
+                             left="padding-left"
+                             @update:styleSheetValues="$emit('update:styleSheetValues', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
-    import ShorthandLengthTypePropertyBase from "./shorthandLengthTypePropertyBase.partial.obs";
-    import { standardLengthProps, standardShorthandProps, useStandardLengthProps, useStandardShorthandProps } from "./utils.partial";
-    import { LengthControlType } from "./types.partial";
+    import { PropType } from "vue";
+    import ShorthandLengthProperty from "./shorthandLengthProperty.partial.obs";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
+    import { standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
 
     const props = defineProps({
         ...standardShorthandProps,
-        ...standardLengthProps,
 
         label: {
             type: String as PropType<string>,
@@ -29,24 +24,8 @@
     });
 
     const shorthandProps = useStandardShorthandProps(props);
-    const lengthProps = useStandardLengthProps(props);
 
     defineEmits<{
-        (e: "change", value: string): void;
-        (e: "changeTop", value: string): void;
-        (e: "changeBottom", value: string): void;
-        (e: "changeRight", value: string): void;
-        (e: "changeLeft", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void;
     }>();
-
-    // #region Computed Values
-
-    const mergedProps = computed(() => {
-        return {
-            ...shorthandProps,
-            ...lengthProps
-        };
-    });
-
-    // #endregion
 </script>

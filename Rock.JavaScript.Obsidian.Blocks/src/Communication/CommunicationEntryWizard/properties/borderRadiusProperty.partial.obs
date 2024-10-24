@@ -1,71 +1,51 @@
 <template>
-    <ShorthandLengthTypePropertyBase v-bind="mergedProps"
-                                     propertyShorthand="border-radius"
-                                     propertyTop="border-top-left-radius"
-                                     propertyBottom="border-top-right-radius"
-                                     propertyRight="border-bottom-right-radius"
-                                     propertyLeft="border-bottom-left-radius"
-                                     @change="$emit('change', $event)"
-                                     @changeTop="$emit('changeTopLeft', $event)"
-                                     @changeBottom="$emit('changeTopRight', $event)"
-                                     @changeRight="$emit('changeBottomRight', $event)"
-                                     @changeLeft="$emit('changeBottomLeft', $event)" />
+    <ShorthandLengthProperty v-bind="shorthandProps"
+                             shorthand="border-radius"
+                             top="border-top-left-radius"
+                             bottom="border-top-right-radius"
+                             right="border-bottom-right-radius"
+                             left="border-bottom-left-radius"
+                             @update:styleSheetValues="$emit('update:styleSheetValues', $event)" />
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
-    import ShorthandLengthTypePropertyBase from "./shorthandLengthTypePropertyBase.partial.obs";
-    import { standardLengthProps, standardShorthandProps, useStandardLengthProps, useStandardShorthandProps } from "./utils.partial";
+    import { PropType } from "vue";
+    import ShorthandLengthProperty from "./shorthandLengthProperty.partial.obs";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
+    import { standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
 
     const props = defineProps({
         ...standardShorthandProps,
-        ...standardLengthProps,
 
         label: {
             type: String as PropType<string>,
             default: "Border Radius" as const
         },
 
-        labelTop: {
+        topLabel: {
             type: String as PropType<string>,
             default: "Top-left" as const
         },
 
-        labelBottom: {
+        bottomLabel: {
             type: String as PropType<string>,
             default: "Top-right" as const
         },
 
-        labelLeft: {
+        leftLabel: {
             type: String as PropType<string>,
             default: "Bottom-left" as const
         },
 
-        labelRight: {
+        rightLabel: {
             type: String as PropType<string>,
             default: "Bottom-right" as const
         }
     });
 
     const shorthandProps = useStandardShorthandProps(props);
-    const lengthProps = useStandardLengthProps(props);
 
     defineEmits<{
-        (e: "change", value: string): void;
-        (e: "changeTopLeft", value: string): void;
-        (e: "changeTopRight", value: string): void;
-        (e: "changeBottomRight", value: string): void;
-        (e: "changeBottomLeft", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void;
     }>();
-
-    // #region Computed Props
-
-    const mergedProps = computed(() => {
-        return {
-            ...shorthandProps,
-            ...lengthProps
-        };
-    });
-
-    // #endregion
 </script>
