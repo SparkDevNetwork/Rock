@@ -22,7 +22,6 @@
         <RockButton v-if="config.isFilterButtonVisible"
                     :btnType="BtnType.Primary"
                     :btnSize="btnSize"
-                    :disabled="areButtonsDisabled"
                     @click="onApplyFiltersClick">
             {{ config.filterButtonText }}
         </RockButton>
@@ -30,7 +29,6 @@
         <RockButton v-if="config.isResetFiltersButtonVisible"
                     :btnType="BtnType.Link"
                     :btnSize="btnSize"
-                    :disabled="areButtonsDisabled"
                     @click="onResetFiltersClick">
             Reset Filters
         </RockButton>
@@ -102,8 +100,6 @@
     const redirectUrl = ref(config.navigationUrls?.[NavigationUrlKey.RedirectPage] || null);
 
     const blockActionErrorMessage = ref("");
-
-    const areButtonsDisabled = ref(false);
 
     const ignoreWatchersForFilterUpdate = ref(false);
     const ignoreWatchersForFilterReset = ref(false);
@@ -197,8 +193,6 @@
             return;
         }
 
-        areButtonsDisabled.value = true;
-
         const bag: GetUpdatedFiltersRequestBag = {
             publicFilterValues: publicFilterValues.value
         };
@@ -231,8 +225,6 @@
         if (cancellationToken?.isCancellationRequested) {
             return;
         }
-
-        areButtonsDisabled.value = true;
 
         const bag: GetUpdatedFiltersRequestBag = {
             publicFilterValues: publicFilterValues.value
@@ -320,8 +312,6 @@
         if (cancellationToken?.isCancellationRequested) {
             return;
         }
-
-        areButtonsDisabled.value = true;
 
         const result = await invokeBlockAction<GetUpdatedFiltersResponseBag>("ResetFilters");
 
@@ -428,7 +418,6 @@
 
         nextTick(() => {
             ignoreWatchersToken.value = false;
-            areButtonsDisabled.value = false;
         });
     }
 

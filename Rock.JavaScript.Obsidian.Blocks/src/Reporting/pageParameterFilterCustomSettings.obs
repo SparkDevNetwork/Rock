@@ -136,7 +136,6 @@
         <AttributeEditor v-model="editableFilter"
                          :attributeEntityTypeGuid="EntityType.Block"
                          :isCategoriesVisible="false"
-                         :isIsRequiredVisible="false"
                          :isAnalyticsVisible="false"
                          :isShowInGridVisible="false"
                          :isShowOnBulkVisible="false"
