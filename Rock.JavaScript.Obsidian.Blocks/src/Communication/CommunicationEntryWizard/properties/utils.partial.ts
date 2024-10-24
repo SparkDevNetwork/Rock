@@ -1,26 +1,8 @@
 import { ExtractPropTypes, PropType, reactive, watch } from "vue";
-import { DirectionalConstituentProperty, StandardShorthandProps, StandardLengthProps, LengthControlType, CSSStyleDeclarationKebabKey } from "./types.partial";
+import { DirectionalConstituentProperty, StandardShorthandProps, StandardProps, CSSStyleDeclarationKebabKey } from "./types.partial";
 
 /** The standard component props that should be included when using RockFormField. */
-export const standardLengthProps: StandardLengthProps = {
-    /**
-     * Used as both the shorthand property label and the group label for constituent properties.
-     *
-     * Set to "" to hide this label.
-     */
-    label: {
-        type: String as PropType<string>,
-        required: true as const
-    },
-
-    mode: {
-        type: Object as PropType<LengthControlType>,
-        default: { type: "numberBox", min: 0, max: 99 } as const
-    }
-};
-
-/** The standard component props that should be included when using RockFormField. */
-export const standardShorthandProps: StandardShorthandProps = {
+export const standardProps: StandardProps = {
     mode: {
         type: String as PropType<"inline" | "stylesheet">,
         default: "inline" as const
@@ -36,10 +18,20 @@ export const standardShorthandProps: StandardShorthandProps = {
         required: false
     },
 
+    /**
+     * Used as both the shorthand property label and the group label for constituent properties.
+     *
+     * Set to "" to hide this label.
+     */
     label: {
         type: String as PropType<string>,
         required: true as const
-    },
+    }
+};
+
+/** The standard component props that should be included when using RockFormField. */
+export const standardShorthandProps: StandardShorthandProps = {
+    ...standardProps,
 
     shorthandLabel: {
         type: String as PropType<string>,
@@ -234,21 +226,35 @@ export function useStandardShorthandProps(props: ExtractPropTypes<StandardShorth
  *
  * @returns An object of prop values that can be used with v-bind.
  */
-export function useStandardLengthProps(props: ExtractPropTypes<StandardLengthProps>): ExtractPropTypes<StandardLengthProps> {
-    const propValues = reactive<ExtractPropTypes<StandardLengthProps>>({
+export function useStandardProps(props: ExtractPropTypes<StandardProps>): ExtractPropTypes<StandardProps> {
+    const propValues = reactive<ExtractPropTypes<StandardProps>>({
         mode: props.mode,
-        label: props.label,
-    });
-
-    watch(() => props.label, (value, oldValue) => {
-        if (value !== oldValue) {
-            propValues.label = value;
-        }
+        element: props.element,
+        styleSheetValues: props.styleSheetValues,
+        label: props.label
     });
 
     watch(() => props.mode, (value, oldValue) => {
         if (value !== oldValue) {
             propValues.mode = value;
+        }
+    });
+
+    watch(() => props.element, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.element = value;
+        }
+    });
+
+    watch(() => props.styleSheetValues, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.styleSheetValues = value;
+        }
+    });
+
+    watch(() => props.label, (value, oldValue) => {
+        if (value !== oldValue) {
+            propValues.label = value;
         }
     });
 
@@ -280,4 +286,18 @@ export function hasAnyDifference(...strings: string[]): boolean {
     }
 
     return false; // No differences found
+}
+
+export function getDerived<
+    T extends string, // Input key type (e.g., CSSStyleDeclarationKebabKey)
+    U extends T       // Output key type (e.g., BorderColorProperty)
+>(
+    value: Partial<Record<T, string>>, // Input object
+    keys: readonly U[]                 // Keys to filter from the input
+): Partial<Record<U, string>> {
+    return Object.fromEntries(
+        keys
+            .filter((key) => key in value) // Keep only keys present in the input
+            .map((key) => [key, value[key as T]]) // Map back to key-value pairs
+    ) as Partial<Record<U, string>>;
 }

@@ -6,11 +6,11 @@
         </div>
 
         <div class="col-sm-4">
-            <FontSizePropertyBase v-model="fontSize" />
+            <FontSizeProperty mode="stylesheet" v-model:styleSheetValues="fontSize" />
         </div>
     </div>
 
-    <FontColorPropertyBase v-model="fontColor" label="" />
+    <ColorProperty mode="stylesheet" v-model:styleSheetValues="fontColor" label="" />
 
     <div class="button-groups">
         <TextFormatPropertyBase v-model:fontWeight="fontWeight"
@@ -45,14 +45,12 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import FontColorPropertyBase from "./fontColorPropertyBase.partial.obs";
+    import ColorProperty from "./colorProperty.partial.obs";
     import FontFamilyPropertyBase from "./fontFamilyPropertyBase.partial.obs";
-    import FontSizePropertyBase from "./fontSizePropertyBase.partial.obs";
+    import FontSizeProperty from "./fontSizeProperty.partial.obs";
     import LineHeightPropertyBase from "./lineHeightPropertyBase.partial.obs";
     import TextFormatPropertyBase from "./textFormatPropertyBase.partial.obs";
     import TextTransformPropertyBase from "./textTransformPropertyBase.partial.obs";
-    import { ListItemBag } from "@Obsidian/Utility";
-    import { CSSStyleDeclarationKebabKey } from "./types.partial";
 
     const props = defineProps({
         element: {
@@ -69,42 +67,28 @@
         }
     });
 
-    const fontSizeItems: ListItemBag[] = [
-        { text: "8px", value: "8px" },
-        { text: "9px", value: "9px" },
-        { text: "10px", value: "10px" },
-        { text: "11px", value: "11px" },
-        { text: "12px", value: "12px" },
-        { text: "14px", value: "14px" },
-        { text: "16px", value: "16px" },
-        { text: "18px", value: "18px" },
-        { text: "20px", value: "20px" },
-        { text: "24px", value: "24px" },
-        { text: "28px", value: "28px" },
-        { text: "32px", value: "32px" },
-        { text: "36px", value: "36px" },
-        { text: "48px", value: "48px" },
-        { text: "60px", value: "60px" },
-        { text: "72px", value: "72px" }
-    ];
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.
     const fontFamily = ref<string>("");
-    const fontColor = ref<string>("");
-    const fontSize = ref<string>("");
+    const fontColor = ref<Partial<Record<"color", string>>>({});
     const fontWeight = ref<string>("");
     const textDecoration = ref<string>("");
     const fontStyle = ref<string>("");
     const lineHeight = ref<string>("");
     const textTransform = ref<string>("");
-    const padding = ref<Partial<Record<CSSStyleDeclarationKebabKey, string>>>({});
+    const fontSize = ref<Partial<Record<"font-size", string>>>({});
 
     // #endregion
 
     // #region Computed Values
 
     const cssRuleset = computed<string | null>(() => {
+        const styles = {
+            ...fontColor.value,
+            ...fontSize.value,
+
+        };
         const declarations: string[] = [];
 
         if (fontFamily.value) {
@@ -139,8 +123,8 @@
             declarations.push(`text-transform: ${textTransform.value};`);
         }
 
-        if (Object.keys(padding.value).length) {
-            declarations.push(...Object.entries(padding.value).map(([k, v]) => `${k}: ${v};`));
+        if (Object.keys(styles).length) {
+            declarations.push(...Object.entries(styles).map(([k, v]) => `${k}: ${v};`));
         }
 
         if (declarations.length) {
@@ -173,31 +157,19 @@
                         if (rule instanceof ownerWindow.CSSStyleRule) {
                             if (rule.selectorText === props.tagName) {
                                 fontFamily.value = rule.style.fontFamily;
-                                fontColor.value = rule.style.color;
-                                fontSize.value = rule.style.fontSize;
+                                fontColor.value = {};
+                                if (rule.style.color) {
+                                    fontColor.value.color = rule.style.color;
+                                }
+                                fontSize.value = {};
+                                if (rule.style.fontSize) {
+                                    fontSize.value["font-size"] = rule.style.fontSize;
+                                }
                                 fontWeight.value = rule.style.fontWeight;
                                 textDecoration.value = rule.style.textDecoration;
                                 fontStyle.value = rule.style.fontStyle;
                                 lineHeight.value = rule.style.lineHeight;
                                 textTransform.value = rule.style.textTransform;
-                                padding.value = {};
-                                if (rule.style.padding) {
-                                    padding.value.padding = rule.style.padding;
-                                }
-                                else {
-                                    if (rule.style.paddingTop) {
-                                        padding.value["padding-top"] = rule.style.paddingTop;
-                                    }
-                                    if (rule.style.paddingBottom) {
-                                        padding.value["padding-bottom"] = rule.style.paddingBottom;
-                                    }
-                                    if (rule.style.paddingLeft) {
-                                        padding.value["padding-left"] = rule.style.paddingLeft;
-                                    }
-                                    if (rule.style.paddingRight) {
-                                        padding.value["padding-right"] = rule.style.paddingRight;
-                                    }
-                                }
 
                                 loaded = true;
                             }
@@ -209,14 +181,13 @@
 
         if (!loaded) {
             fontFamily.value = "";
-            fontColor.value = "";
-            fontSize.value = "";
+            fontColor.value = {};
+            fontSize.value = {};
             fontWeight.value = "";
             textDecoration.value = "";
             fontStyle.value = "";
             lineHeight.value = "";
             textTransform.value = "";
-            padding.value = {};
         }
     }, {
         // Since the reactive values are not initialized where defined above,

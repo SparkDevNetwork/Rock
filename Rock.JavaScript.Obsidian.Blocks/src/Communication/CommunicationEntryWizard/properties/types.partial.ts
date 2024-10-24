@@ -121,14 +121,32 @@ export type StandardShorthandProps = {
     };
 };
 
-export type StandardLengthProps = {
+export type StandardProps = {
+    mode: {
+        type: PropType<"inline" | "stylesheet">;
+        default: string;
+    };
+
+    /**
+     * Only required in "inline" mode.
+     */
+    element: {
+        type: PropType<HTMLElement | undefined>;
+        required: boolean;
+    };
+
+    /**
+     * Only required in "stylesheet" mode.
+     */
+    styleSheetValues: {
+        type: PropType<Partial<Record<CSSStyleDeclarationKebabKey, string>> | undefined>;
+        required: boolean;
+    };
+
     label: {
         type: PropType<string>;
         required: boolean;
     };
-
-    mode: {
-        type: PropType<LengthControlType>;
-        default: LengthControlType;
-    };
 };
+
+export type Include<T, U extends T> = U;

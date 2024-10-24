@@ -5,17 +5,38 @@
                             bottom="border-bottom-color"
                             right="border-right-color"
                             left="border-left-color"
-                            @update:styleSheetValues="$emit('update:styleSheetValues', $event)" />
+                            @update:styleSheetValues="onStyleSheetValuesUpdated" />
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
     import ShorthandColorProperty from "./shorthandColorProperty.partial.obs";
-    import { CSSStyleDeclarationKebabKey } from "./types.partial";
-    import { standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { getDerived, standardShorthandProps, useStandardShorthandProps } from "./utils.partial";
+
+    type BorderColorProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "border-color"
+        | "border-bottom-color"
+        | "border-top-color"
+        | "border-left-color"
+        | "border-right-color"
+    >;
+
+    const borderColorProperties: BorderColorProperty[] = [
+        "border-color",
+        "border-top-color",
+        "border-bottom-color",
+        "border-left-color",
+        "border-right-color"
+    ] as const;
 
     const props = defineProps({
         ...standardShorthandProps,
+
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<BorderColorProperty, string>> | undefined>,
+        },
 
         label: {
             type: String as PropType<string>,
@@ -25,7 +46,18 @@
 
     const shorthandProps = useStandardShorthandProps(props);
 
-    defineEmits<{
-        (e: "update:styleSheetValues", value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void;
+    const emit = defineEmits<{
+        (e: "update:styleSheetValues", value: Partial<Record<BorderColorProperty, string>>): void;
     }>();
+
+    // #region Event Handlers
+
+    function onStyleSheetValuesUpdated(values: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit(
+            "update:styleSheetValues",
+            getDerived<CSSStyleDeclarationKebabKey, BorderColorProperty>(values, borderColorProperties)
+        );
+    }
+
+    // #endregion Event Handlers
 </script>

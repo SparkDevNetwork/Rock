@@ -1,19 +1,25 @@
 <template>
-    <FontSizePropertyBase v-bind="lengthProps"
-                          v-model="fontSize" />
+    <LengthTypeProperty v-bind="baseProps"
+                        property="font-size"
+                        @update:styleSheetValues="onStyleSheetValuesUpdated" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import FontSizePropertyBase from "./fontSizePropertyBase.partial.obs";
-    import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
+    import { PropType } from "vue";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { getDerived, standardProps, useStandardProps } from "./utils.partial";
+    import LengthTypeProperty from "./lengthTypeProperty.partial.obs";
+
+    type FontSizeProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "font-size"
+    >;
 
     const props = defineProps({
-        ...standardLengthProps,
+        ...standardProps,
 
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<FontSizeProperty, string>> | undefined>,
         },
 
         label: {
@@ -22,29 +28,22 @@
         }
     });
 
-    const lengthProps = useStandardLengthProps(props);
+    const baseProps = useStandardProps(props);
 
     const emit = defineEmits<{
-        (e: "change", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<FontSizeProperty, string>>): void;
     }>();
 
-    // #region Values
+    // #region Event Handlers
 
-    const fontSize = ref<string>(props.element.style.fontSize);
+    function onStyleSheetValuesUpdated(values: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit(
+            "update:styleSheetValues",
+            getDerived<CSSStyleDeclarationKebabKey, FontSizeProperty>(values, [
+                "font-size"
+            ])
+        );
+    }
 
-    // #endregion
-
-    // #region Watchers
-
-    watch(fontSize, (value: string) => {
-        props.element.style.fontSize = value;
-
-        emit("change", value);
-    });
-
-    watch(() => props.element, () => {
-        fontSize.value = props.element.style.fontSize;
-    });
-
-    // #endregion
+    // #endregion Event Handlers
 </script>

@@ -1,21 +1,29 @@
 <template>
-    <LengthTypePropertyBase v-bind="lengthProps"
-                            :element="element"
-                            property="height"
-                            @change="$emit('change', $event)" />
+    <LengthTypeProperty v-bind="baseProps"
+                        property="height"
+                        @update:styleSheetValues="onStyleSheetValuesUpdated" />
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import LengthTypePropertyBase from "./lengthTypePropertyBase.partial.obs";
-    import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { getDerived, standardProps, useStandardProps } from "./utils.partial";
+    import LengthTypeProperty from "./lengthTypeProperty.partial.obs";
+
+    type HeightProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "height"
+    >;
+
+    const heightProperties: HeightProperty[] = [
+        "height"
+    ] as const;
 
     const props = defineProps({
-        ...standardLengthProps,
+        ...standardProps,
 
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<HeightProperty, string>> | undefined>,
         },
 
         label: {
@@ -24,9 +32,20 @@
         }
     });
 
-    const lengthProps = useStandardLengthProps(props);
+    const baseProps = useStandardProps(props);
 
-    defineEmits<{
-        (e: "change", value: string): void;
+    const emit = defineEmits<{
+        (e: "update:styleSheetValues", value: Partial<Record<HeightProperty, string>>): void;
     }>();
+
+    // #region Event Handlers
+
+    function onStyleSheetValuesUpdated(values: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit(
+            "update:styleSheetValues",
+            getDerived<CSSStyleDeclarationKebabKey, HeightProperty>(values, heightProperties)
+        );
+    }
+
+    // #endregion Event Handlers
 </script>

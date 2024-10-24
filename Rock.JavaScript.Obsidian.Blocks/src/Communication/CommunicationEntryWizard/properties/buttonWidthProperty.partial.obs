@@ -7,11 +7,9 @@
 
     <TransitionVerticalCollapse>
         <div v-if="buttonWidth === 'fixed'">
-            <WidthProperty ref="fixedWidthProperty"
-                           :element="buttonShellElement"
+            <WidthProperty :element="buttonShellElement"
                            label="Fixed Width"
-                           :mode="{ type: 'textBox' }"
-                           @change="onButtonShellWidthChanged" />
+                           @update:styleSheetValues="onButtonShellWidthChanged" />
         </div>
     </TransitionVerticalCollapse>
 </template>
@@ -60,7 +58,6 @@
     // #region Values
 
     const buttonWidth = ref<ButtonWidth>(props.buttonElement.style.width === "100%" ? "full" : props.buttonElement.style.width === "" ? "fitToText" : "fixed");
-    const fixedWidthProperty = ref<InstanceType<typeof WidthProperty> | undefined>();
 
     // #endregion
 
@@ -74,13 +71,13 @@
 
     // #region Event Handlers
 
-    function onButtonShellWidthChanged(value: string): void {
+    function onButtonShellWidthChanged(value: Partial<Record<"width", string>>): void {
         // Keep the wrapped button updated.
-        props.buttonElement.style.width = value;
+        props.buttonElement.style.width = value.width ?? "";
 
         // Keep the shell's width attribute updated.
-        if (value) {
-            props.buttonShellElement.setAttribute("width", value);
+        if (value.width) {
+            props.buttonShellElement.setAttribute("width", value.width);
         }
         else {
             props.buttonShellElement.removeAttribute("width");

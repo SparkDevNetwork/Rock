@@ -1,16 +1,28 @@
 <template>
-    <ColorPropertyBase v-model="color"
-                       :label="label" />
+    <ColorTypeProperty v-bind="baseProps"
+                       property="color"
+                       @update:styleSheetValues="onStyleSheetValuesUpdated" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import ColorPropertyBase from "./colorPropertyBase.partial.obs";
+    import { PropType } from "vue";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { getDerived, standardProps, useStandardProps } from "./utils.partial";
+    import ColorTypeProperty from "./colorTypeProperty.partial.obs";
+
+    type ColorProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "color"
+    >;
+    const colorProperties: ColorProperty[] = [
+        "color"
+    ] as const;
 
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
+        ...standardProps,
+
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<ColorProperty, string>> | undefined>,
         },
 
         label: {
@@ -19,27 +31,20 @@
         }
     });
 
+    const baseProps = useStandardProps(props);
+
     const emit = defineEmits<{
-        (e: "change", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<ColorProperty, string>>): void;
     }>();
 
-    // #region Values
+    // #region Event Handlers
 
-    const color = ref<string>(props.element.style.color);
+    function onStyleSheetValuesUpdated(values: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit(
+            "update:styleSheetValues",
+            getDerived<CSSStyleDeclarationKebabKey, ColorProperty>(values, colorProperties)
+        );
+    }
 
-    // #endregion
-
-    // #region Watchers
-
-    watch(color, (value: string) => {
-        props.element.style.color = value;
-
-        emit("change", value);
-    });
-
-    watch(() => props.element, () => {
-        color.value = props.element.style.color;
-    });
-
-    // #endregion
+    // #endregion Event Handlers
 </script>

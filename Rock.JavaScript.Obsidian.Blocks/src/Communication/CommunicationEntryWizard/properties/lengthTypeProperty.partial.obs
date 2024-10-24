@@ -1,0 +1,96 @@
+<template>
+    <NumberBox v-model="internalNumericValue"
+               :disableLabel="!label"
+               :label="label"
+               @update:modelValue="onUpdated">
+        <template #inputGroupAppend>
+            <span class="input-group-addon">px</span>
+        </template>
+    </NumberBox>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { CSSStyleDeclarationKebabKey } from "./types.partial";
+    import { standardProps } from "./utils.partial";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+
+    const props = defineProps({
+        ...standardProps,
+
+        property: {
+            type: String as PropType<CSSStyleDeclarationKebabKey>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:styleSheetValues", value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void;
+    }>();
+
+    // #region Values
+
+    const internalNumericValue = ref<number>(getPropertyValuePixels(props.property));
+
+    // #endregion
+
+    // #region Functions
+
+    function getPropertyValue(prop: CSSStyleDeclarationKebabKey): string | undefined {
+        if (props.mode === "inline" && props.element) {
+            return props.element.style.getPropertyValue(prop);
+        }
+        else if (props.mode === "stylesheet" && props.styleSheetValues && props.styleSheetValues[prop]) {
+            return props.styleSheetValues[prop];
+        }
+    }
+
+    function getPropertyValuePixels(prop: CSSStyleDeclarationKebabKey): number {
+        const value = getPropertyValue(prop);
+        return getPixelValue(value ?? "");
+    }
+
+    function getPixelValue(value: string): number {
+        if (value.endsWith("px")) {
+            return parseInt(value);
+        }
+        else {
+            return 0;
+        }
+    }
+
+    function emitChange(value: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit("update:styleSheetValues", value);
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onUpdated(value: number | null): void {
+        const updatedValue = `${value ?? 0}px`;
+
+        if (props.mode === "inline" && props.element) {
+            props.element.style.setProperty(props.property, updatedValue);
+        }
+
+        emitChange({
+            [props.property]: updatedValue
+        });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([() => props.styleSheetValues, () => props.mode, () => props.element], ([styleSheetValues, mode, element]) => {
+        if (mode === "inline" && element) {
+            internalNumericValue.value = getPropertyValuePixels(props.property);
+        }
+        else if (mode === "stylesheet") {
+            internalNumericValue.value = styleSheetValues ? getPixelValue(styleSheetValues[props.property] ?? "") : 0;
+        }
+    });
+
+    // #endregion
+</script>

@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="col-sm-6">
-                        <AlignProperty :element="buttonInnerWrapElement" />
+                        <AlignAttributeProperty :element="buttonInnerWrapElement" />
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../controls/accordion.partial.obs";
     import AccordionGroup from "../controls/accordionGroup.partial.obs";
-    import AlignProperty from "../properties/alignProperty.partial.obs";
+    import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
     import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";

@@ -1,27 +1,49 @@
 <template>
-    <LengthTypePropertyBase v-bind="baseProps"
-                            :element="element"
-                            property="width"
-                            @change="$emit('change', $event)" />
+    <LengthTypeProperty v-bind="baseProps"
+                        property="width"
+                        @update:styleSheetValues="onStyleSheetValuesUpdated" />
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import LengthTypePropertyBase from "./lengthTypePropertyBase.partial.obs";
-    import { standardLengthProps, useStandardLengthProps } from "./utils.partial";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { getDerived, standardProps, useStandardProps } from "./utils.partial";
+    import LengthTypeProperty from "./lengthTypeProperty.partial.obs";
+
+    type WidthProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "width"
+    >;
 
     const props = defineProps({
-        ...standardLengthProps,
+        ...standardProps,
 
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<WidthProperty, string>> | undefined>,
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Width" as const
         }
     });
 
-    const baseProps = useStandardLengthProps(props);
+    const baseProps = useStandardProps(props);
 
-    defineEmits<{
-        (e: "change", value: string): void;
+    const emit = defineEmits<{
+        (e: "update:styleSheetValues", value: Partial<Record<WidthProperty, string>>): void;
     }>();
+
+    // #region Event Handlers
+
+    function onStyleSheetValuesUpdated(values: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit(
+            "update:styleSheetValues",
+            getDerived<CSSStyleDeclarationKebabKey, WidthProperty>(values, [
+                "width"
+            ])
+        );
+    }
+
+    // #endregion Event Handlers
 </script>

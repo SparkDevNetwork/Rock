@@ -1,17 +1,20 @@
 <template>
-    <BackgroundColorPropertyBase v-model="backgroundColor" />
+    <BackgroundColorProperty mode="stylesheet"
+                             v-model:styleSheetValues="backgroundColor" />
 
-    <ColorPropertyBase v-model="color"
-                       label="Text Color" />
+    <ColorProperty mode="stylesheet"
+                   v-model:styleSheetValues="color"
+                   label="Text Color" />
 
     <FontFamilyPropertyBase v-model="fontFamily"
                             label="Text" />
 
-    <FontSizePropertyBase v-model="fontSize" />
+    <FontSizeProperty mode="stylesheet"
+                      v-model:styleSheetValues="fontSize" />
 
-    <NumberUpDown v-model="borderRadius"
-                  label="Corner Radius"
-                  :min="0" />
+    <BorderRadiusProperty mode="stylesheet"
+                          v-model:styleSheetValues="borderRadius"
+                          label="Corner Radius" />
 
     <DropDownList v-model="textStyle"
                   :items="[]"
@@ -21,10 +24,11 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import BackgroundColorPropertyBase from "./backgroundColorPropertyBase.partial.obs";
-    import ColorPropertyBase from "./colorPropertyBase.partial.obs";
+    import BackgroundColorProperty from "./backgroundColorProperty.partial.obs";
+    import BorderRadiusProperty from "./borderRadiusProperty.partial.obs";
+    import ColorProperty from "./colorProperty.partial.obs";
     import FontFamilyPropertyBase from "./fontFamilyPropertyBase.partial.obs";
-    import FontSizePropertyBase from "./fontSizePropertyBase.partial.obs";
+    import FontSizeProperty from "./fontSizeProperty.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 
     const props = defineProps({
@@ -67,18 +71,23 @@
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.
-    const backgroundColor = ref<string>("");
-    const color = ref<string>("");
+    const backgroundColor = ref<Partial<Record<"background-color", string>>>({});
+    const color = ref<Partial<Record<"color", string>>>({});
     const fontFamily = ref<string>("");
-    const fontSize = ref<string>("");
-    const borderRadius = ref<number>(0);
+    const borderRadius = ref<Partial<Record<"border-bottom-left-radius" | "border-bottom-right-radius" | "border-radius" | "border-top-left-radius" | "border-top-right-radius", string>>>({});
     const textStyle = ref<string>("");
+    const fontSize = ref<Partial<Record<"font-size", string>>>({});
 
     // #endregion
 
     // #region Computed Values
 
     const cssRuleset = computed<string | null>(() => {
+        const styles = {
+            ...backgroundColor.value,
+            ...color.value,
+            ...borderRadius.value
+        };
         const declarations: string[] = [];
 
         if (backgroundColor.value) {
@@ -103,6 +112,10 @@
 
         if (textStyle.value) {
             // TODO JMH Do something?
+        }
+
+        if (Object.keys(styles).length) {
+            declarations.push(...Object.entries(styles).map(([k, v]) => `${k}: ${v};`));
         }
 
         if (declarations.length) {
@@ -134,11 +147,41 @@
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
                             if (rule.selectorText === props.cssRulesetSelectors) {
-                                backgroundColor.value = rule.style.backgroundColor;
-                                color.value = rule.style.color;
+                                backgroundColor.value = {};
+                                if (rule.style.backgroundColor) {
+                                    backgroundColor.value["background-color"] = rule.style.backgroundColor;
+                                }
+
+                                color.value = {};
+                                if (rule.style.color) {
+                                    color.value.color = rule.style.color;
+                                }
+
                                 fontFamily.value = rule.style.fontFamily;
-                                fontSize.value = rule.style.fontSize;
-                                borderRadius.value = parseInt(rule.style.borderRadius || "0");
+
+                                fontSize.value = {};
+                                if (rule.style.fontSize) {
+                                    fontSize.value["font-size"] = rule.style.fontSize;
+                                }
+
+                                borderRadius.value = {};
+                                if (rule.style.borderRadius) {
+                                    borderRadius.value["border-radius"] = rule.style.borderRadius;
+                                }
+                                else {
+                                    if (rule.style.borderTopLeftRadius) {
+                                        borderRadius.value["border-top-left-radius"] = rule.style.borderTopLeftRadius;
+                                    }
+                                    if (rule.style.borderTopRightRadius) {
+                                        borderRadius.value["border-top-right-radius"] = rule.style.borderTopRightRadius;
+                                    }
+                                    if (rule.style.borderBottomLeftRadius) {
+                                        borderRadius.value["border-bottom-left-radius"] = rule.style.borderBottomLeftRadius;
+                                    }
+                                    if (rule.style.borderBottomRightRadius) {
+                                        borderRadius.value["border-bottom-right-radius"] = rule.style.borderBottomRightRadius;
+                                    }
+                                }
                                 // TODO JMH textStyle.value = ??
 
                                 loaded = true;
@@ -150,11 +193,11 @@
         }
 
         if (!loaded) {
-            backgroundColor.value = "";
-            color.value = "";
+            backgroundColor.value = {};
+            color.value = {};
             fontFamily.value = "";
-            fontSize.value = "";
-            borderRadius.value = 0;
+            fontSize.value = {};
+            borderRadius.value = {};
             textStyle.value = "";
         }
     }, {

@@ -1,16 +1,28 @@
 <template>
-    <BackgroundColorPropertyBase v-model="backgroundColor"
-                                 :label="label" />
+    <ColorTypeProperty v-bind="baseProps"
+                       property="background-color"
+                       @update:styleSheetValues="onStyleSheetValuesUpdated" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import BackgroundColorPropertyBase from "./backgroundColorPropertyBase.partial.obs";
+    import { PropType } from "vue";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { getDerived, standardProps, useStandardProps } from "./utils.partial";
+    import ColorTypeProperty from "./colorTypeProperty.partial.obs";
+
+    type BackgroundColorProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "background-color"
+    >;
+    const backgroundColorProperties: BackgroundColorProperty[] = [
+        "background-color"
+    ] as const;
 
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
+        ...standardProps,
+
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<BackgroundColorProperty, string>> | undefined>,
         },
 
         label: {
@@ -19,27 +31,20 @@
         }
     });
 
+    const baseProps = useStandardProps(props);
+
     const emit = defineEmits<{
-        (e: "change", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<BackgroundColorProperty, string>>): void;
     }>();
 
-    // #region Values
+    // #region Event Handlers
 
-    const backgroundColor = ref<string>(props.element.style.backgroundColor);
+    function onStyleSheetValuesUpdated(values: Partial<Record<CSSStyleDeclarationKebabKey, string>>): void {
+        emit(
+            "update:styleSheetValues",
+            getDerived<CSSStyleDeclarationKebabKey, BackgroundColorProperty>(values, backgroundColorProperties)
+        );
+    }
 
-    // #endregion
-
-    // #region Watchers
-
-    watch(backgroundColor, (value: string) => {
-        props.element.style.backgroundColor = value;
-
-        emit("change", value);
-    });
-
-    watch(() => props.element, () => {
-        backgroundColor.value = props.element.style.backgroundColor;
-    });
-
-    // #endregion
+    // #endregion Event Handlers
 </script>
