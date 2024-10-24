@@ -1,14 +1,18 @@
 <template>
-    <BorderStylePropertyBase v-model="borderTopStyle"
-                             label="Style" />
+    <BorderStyleProperty mode="stylesheet"
+                         v-model:styleSheetValues="borderStyle"
+                         label="Style" />
 
     <NumberUpDown v-model="borderTopWidth"
                   label="Thickness"
                   :min="0"
                   :max="30" />
 
-    <ColorPicker v-model="borderTopColor"
-                 label="Color" />
+    <BorderColorProperty mode="stylesheet"
+                         v-model:styleSheetValues="borderColor"
+                         topLabel="Color"
+                         :canToggleShowConstituents="false"
+                         showConstituentProperties="top" />
 
     <NumberUpDown v-model="marginY"
                   label="Vertical Margin Size"
@@ -18,10 +22,9 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import BorderStylePropertyBase from "./borderStylePropertyBase.partial.obs";
-    import { BorderStyle } from "./types.partial";
-    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import BorderStyleProperty from "./borderStyleProperty.partial.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import BorderColorProperty from "./borderColorProperty.partial.obs";
 
     const props = defineProps({
         element: {
@@ -61,9 +64,10 @@
     // #region Values
 
     // These are initialized in the "immediate" props.modelValue watcher below.
-    const borderTopStyle = ref<BorderStyle>("");
+    const borderTopStyle = ref<Partial<Record<"border-top-style", string>>>({});
+    const borderStyle = ref<Partial<Record<"border-style", string>>>({});
     const borderTopWidth = ref<number>(0);
-    const borderTopColor = ref<string>("");
+    const borderColor = ref<Partial<Record<"border-bottom-color" | "border-color" | "border-left-color" | "border-right-color" | "border-top-color", string>>>({});
     const marginY = ref<number>(0);
 
     // #endregion
@@ -71,21 +75,12 @@
     // #region Computed Values
 
     const cssRuleset = computed<string | null>(() => {
+        const styles = {
+            ...borderTopStyle.value, // DO NOT add borderStyle here!
+            ...borderColor.value
+        };
+
         const declarations: string[] = [];
-
-        if (borderTopStyle.value) {
-            declarations.push(`border-top-style: ${borderTopStyle.value};`);
-            declarations.push("border-bottom-style: none;");
-            declarations.push("border-right-style: none;");
-            declarations.push("border-left-style: none;");
-        }
-
-        if (borderTopColor.value) {
-            declarations.push(`border-top-color: ${borderTopColor.value};`);
-            declarations.push("border-bottom-color: transparent;");
-            declarations.push("border-right-color: transparent;");
-            declarations.push("border-left-color: transparent;");
-        }
 
         if (borderTopWidth.value) {
             declarations.push(`border-top-width: ${borderTopWidth.value}px;`);
@@ -97,6 +92,10 @@
         if (marginY.value) {
             declarations.push(`margin-top: ${marginY.value}px;`);
             declarations.push(`margin-bottom: ${marginY.value}px;`);
+        }
+
+        if (Object.keys(styles).length) {
+            declarations.push(...Object.entries(styles).map(([k, v]) => `${k}: ${v};`));
         }
 
         if (declarations.length) {
@@ -128,9 +127,23 @@
                     for (const rule of stylesheet.cssRules) {
                         if (rule instanceof ownerWindow.CSSStyleRule) {
                             if (rule.selectorText === props.cssRulesetSelectors) {
-                                borderTopStyle.value = rule.style.borderTopStyle as BorderStyle;
+                                borderStyle.value = {};
+                                borderTopStyle.value = {};
+                                if (rule.style.borderTopStyle) {
+                                    borderStyle.value["border-style"] = rule.style.borderTopStyle;
+                                    borderTopStyle.value["border-top-style"] = rule.style.borderTopStyle;
+                                }
+
                                 borderTopWidth.value = parseInt(rule.style.borderTopWidth || "0");
-                                borderTopColor.value = rule.style.borderTopColor;
+
+                                borderColor.value = {};
+                                if (rule.style.borderTopColor) {
+                                    borderColor.value["border-top-color"] = rule.style.borderTopColor;
+                                    borderColor.value["border-bottom-color"] = "transparent";
+                                    borderColor.value["border-left-color"] = "transparent";
+                                    borderColor.value["border-right-color"] = "transparent";
+                                }
+
                                 marginY.value = parseInt(rule.style.marginTop || "0");
 
                                 loaded = true;
@@ -142,9 +155,10 @@
         }
 
         if (!loaded) {
-            borderTopStyle.value = "";
+            borderStyle.value = {};
+            borderTopStyle.value = {};
             borderTopWidth.value = 0;
-            borderTopColor.value = "";
+            borderColor.value = {};
             marginY.value = 0;
         }
     }, {

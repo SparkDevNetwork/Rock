@@ -13,9 +13,7 @@
     <ColorProperty mode="stylesheet" v-model:styleSheetValues="fontColor" label="" />
 
     <div class="button-groups">
-        <TextFormatPropertyBase v-model:fontWeight="fontWeight"
-                                v-model:fontStyle="fontStyle"
-                                v-model:textDecoration="textDecoration" />
+        <TextFormatProperty mode="stylesheet" v-model:styleSheetValues="textFormat" />
 
         <LineHeightPropertyBase v-model="lineHeight" />
 
@@ -49,7 +47,7 @@
     import FontFamilyPropertyBase from "./fontFamilyPropertyBase.partial.obs";
     import FontSizeProperty from "./fontSizeProperty.partial.obs";
     import LineHeightPropertyBase from "./lineHeightPropertyBase.partial.obs";
-    import TextFormatPropertyBase from "./textFormatPropertyBase.partial.obs";
+    import TextFormatProperty from "./textFormatProperty.partial.obs";
     import TextTransformPropertyBase from "./textTransformPropertyBase.partial.obs";
 
     const props = defineProps({
@@ -72,12 +70,10 @@
     // These are initialized in the "immediate" props.modelValue watcher below.
     const fontFamily = ref<string>("");
     const fontColor = ref<Partial<Record<"color", string>>>({});
-    const fontWeight = ref<string>("");
-    const textDecoration = ref<string>("");
-    const fontStyle = ref<string>("");
     const lineHeight = ref<string>("");
     const textTransform = ref<string>("");
     const fontSize = ref<Partial<Record<"font-size", string>>>({});
+    const textFormat = ref<Partial<Record<"font-style" | "font-weight" | "text-decoration", string>>>({});
 
     // #endregion
 
@@ -87,8 +83,9 @@
         const styles = {
             ...fontColor.value,
             ...fontSize.value,
-
+            ...textFormat.value
         };
+
         const declarations: string[] = [];
 
         if (fontFamily.value) {
@@ -101,18 +98,6 @@
 
         if (fontSize.value) {
             declarations.push(`font-size: ${fontSize.value};`);
-        }
-
-        if (fontWeight.value) {
-            declarations.push(`font-weight: ${fontWeight.value};`);
-        }
-
-        if (fontStyle.value) {
-            declarations.push(`font-style: ${fontStyle.value};`);
-        }
-
-        if (textDecoration.value) {
-            declarations.push(`text-decoration: ${textDecoration.value};`);
         }
 
         if (lineHeight.value) {
@@ -157,17 +142,28 @@
                         if (rule instanceof ownerWindow.CSSStyleRule) {
                             if (rule.selectorText === props.tagName) {
                                 fontFamily.value = rule.style.fontFamily;
+
                                 fontColor.value = {};
                                 if (rule.style.color) {
                                     fontColor.value.color = rule.style.color;
                                 }
+
                                 fontSize.value = {};
                                 if (rule.style.fontSize) {
                                     fontSize.value["font-size"] = rule.style.fontSize;
                                 }
-                                fontWeight.value = rule.style.fontWeight;
-                                textDecoration.value = rule.style.textDecoration;
-                                fontStyle.value = rule.style.fontStyle;
+
+                                textFormat.value = {};
+                                if (rule.style.fontWeight) {
+                                    textFormat.value["font-weight"] = rule.style.fontWeight;
+                                }
+                                if (rule.style.textDecoration) {
+                                    textFormat.value["text-decoration"] = rule.style.textDecoration;
+                                }
+                                if (rule.style.fontStyle) {
+                                    textFormat.value["font-style"] = rule.style.fontStyle;
+                                }
+
                                 lineHeight.value = rule.style.lineHeight;
                                 textTransform.value = rule.style.textTransform;
 
@@ -183,9 +179,7 @@
             fontFamily.value = "";
             fontColor.value = {};
             fontSize.value = {};
-            fontWeight.value = "";
-            textDecoration.value = "";
-            fontStyle.value = "";
+            textFormat.value = {};
             lineHeight.value = "";
             textTransform.value = "";
         }

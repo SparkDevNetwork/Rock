@@ -1,6 +1,7 @@
 <template>
-    <BorderStylePropertyBase v-model="borderTopStyle"
-                             label="Style" />
+    <BorderStyleProperty mode="stylesheet"
+                         v-model:styleSheetValues="borderTopStyle"
+                         label="Style" />
 
     <BorderWidthProperty :element="element"
                          :label="''"
@@ -14,10 +15,9 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import BorderStylePropertyBase from "./borderStylePropertyBase.partial.obs";
+    import BorderStyleProperty from "./borderStyleProperty.partial.obs";
     import BorderWidthProperty from "./borderWidthProperty.partial.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import { BorderStyle } from "./types.partial";
 
     const props = defineProps({
         element: {
@@ -28,7 +28,7 @@
 
     // #region Values
 
-    const borderTopStyle = ref<BorderStyle>(props.element.style.borderTopStyle as BorderStyle);
+    const borderTopStyle = ref<Partial<Record<"border-style", string>>>(props.element.style.borderTopStyle ? { "border-style": props.element.style.borderTopStyle } : {});
     const borderTopWidth = ref<number>(parseInt(props.element.style.borderTopWidth || "0") || parseInt(props.element.style.height || "0"));
     const borderTopColor = ref<string>(props.element.style.borderTopColor || props.element.style.backgroundColor);
 
@@ -62,15 +62,20 @@
     // #region Watchers
 
     watch(() => props.element, () => {
-        borderTopStyle.value = props.element.style.borderTopStyle as BorderStyle;
+        borderTopStyle.value = {};
+
+        if (props.element.style.borderTopStyle) {
+            borderTopStyle.value["border-style"] = props.element.style.borderTopStyle;
+        }
         borderTopWidth.value = parseInt(props.element.style.borderTopWidth || "0") || parseInt(props.element.style.height || "0");
         borderTopColor.value = props.element.style.borderTopColor || props.element.style.backgroundColor;
     });
 
-    watch(borderTopStyle, (value: BorderStyle) => {
-        props.element.style.borderTopStyle = value;
+    watch(borderTopStyle, (value) => {
+        const borderStyle = value?.["border-style"] ?? "";
+        props.element.style.borderTopStyle = borderStyle;
 
-        if (value) {
+        if (borderStyle) {
             // Explicitly clear the styles on the other sides
             // so the browser doesn't initialize them.
             props.element.style.borderBottomStyle = "none";

@@ -49,15 +49,13 @@
 
     // #region Event Handlers
 
-    function onUpdated(value: string | null): void {
-        const updatedValue = `${value ?? 0}px`;
-
+    function onUpdated(value: string): void {
         if (props.mode === "inline" && props.element) {
-            props.element.style.setProperty(props.property, updatedValue);
+            props.element.style.setProperty(props.property, value);
         }
 
         emitChange({
-            [props.property]: updatedValue
+            [props.property]: value
         });
     }
 

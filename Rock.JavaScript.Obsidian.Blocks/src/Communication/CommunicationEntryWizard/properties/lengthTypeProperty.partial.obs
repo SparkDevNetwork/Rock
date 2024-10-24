@@ -83,7 +83,11 @@
 
     // #region Watchers
 
-    watch([() => props.styleSheetValues, () => props.mode, () => props.element], ([styleSheetValues, mode, element]) => {
+    watch([
+        () => props.styleSheetValues,
+        () => props.mode,
+        () => props.element
+    ], ([styleSheetValues, mode, element]) => {
         if (mode === "inline" && element) {
             internalNumericValue.value = getPropertyValuePixels(props.property);
         }

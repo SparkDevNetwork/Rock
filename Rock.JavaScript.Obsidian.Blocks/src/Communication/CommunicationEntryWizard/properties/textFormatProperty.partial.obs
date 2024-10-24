@@ -1,59 +1,211 @@
 <template>
-    <TextFormatPropertyBase v-model:fontWeight="fontWeight"
-                            v-model:textDecoration="textDecoration"
-                            v-model:fontStyle="fontStyle" />
+    <RockFormField v-bind="standardFieldProps"
+                   :modelValue="internalRockFormFieldValue"
+                   :disableLabel="true"
+                   name="textFormatGroup">
+        <div class="btn-group">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalFontWeight === 'bold')"
+                        title="Bold"
+                        @click="onFontWeightToggled()"><i class="fa fa-bold"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalTextDecoration === 'underline')"
+                        title="Underline"
+                        @click="onTextDecorationToggled()"><i class="fa fa-underline"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalFontStyle === 'italic')"
+                        title="Italic"
+                        @click="onFontStyleToggled()"><i class="fa fa-italic"></i></RockButton>
+        </div>
+    </RockFormField>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import TextFormatPropertyBase from "./textFormatPropertyBase.partial.obs";
+    import { ref, watch } from "vue";
+    import { CSSStyleDeclarationKebabKey, Include } from "./types.partial";
+    import { standardProps } from "./utils.partial";
+    import { computed, PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    type TextFormatProperty = Include<
+        CSSStyleDeclarationKebabKey,
+        "font-weight"
+        | "text-decoration"
+        | "font-style"
+    >;
 
     const props = defineProps({
-        element: {
-            type: Object as PropType<HTMLElement>,
-            required: true
+        ...standardProps,
+        ...standardRockFormFieldProps,
+
+        styleSheetValues: {
+            type: Object as PropType<Partial<Record<TextFormatProperty, string>> | undefined>
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     const emit = defineEmits<{
-        (e: "changeFontWeight", value: string): void;
-        (e: "changeTextDecoration", value: string): void;
-        (e: "changeFontStyle", value: string): void;
+        (e: "update:styleSheetValues", value: Partial<Record<TextFormatProperty, string>>): void;
     }>();
+
+    const unselectedBtnType: BtnType = BtnType.Default;
+    const selectedBtnType: BtnType = BtnType.Primary;
+    const btnSize: BtnSize = BtnSize.Default;
 
     // #region Values
 
-    const fontWeight = ref<string>(props.element.style.fontWeight);
-    const textDecoration = ref<string>(props.element.style.textDecoration);
-    const fontStyle = ref<string>(props.element.style.fontStyle);
+    const internalFontWeight = ref<string>(getPropertyValue("font-weight") ?? "");
+    const internalTextDecoration = ref<string>(getPropertyValue("text-decoration") ?? "");
+    const internalFontStyle = ref<string>(getPropertyValue("font-style") ?? "");
 
     // #endregion
+
+    // #region Computed Values
+
+    // This is only used as a one-way binding for the RockFormField modelValue.
+    const internalRockFormFieldValue = computed<string[]>(() => {
+        return [
+            internalFontWeight.value,
+            internalTextDecoration.value,
+            internalFontStyle.value
+        ];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getPropertyValue(prop: TextFormatProperty): string | undefined {
+        if (props.mode === "inline" && props.element) {
+            return props.element.style.getPropertyValue(prop);
+        }
+        else if (props.mode === "stylesheet" && props.styleSheetValues && props.styleSheetValues[prop]) {
+            return props.styleSheetValues[prop];
+        }
+    }
+
+    function getItemButtonType(isSelected: boolean): LiteralUnion<BtnType> {
+        return isSelected ? selectedBtnType : unselectedBtnType;
+    }
+
+    function getCurrentStyleSheetValues(): Partial<Record<TextFormatProperty, string>> {
+        const values: Partial<Record<TextFormatProperty, string>> = {};
+
+        if (internalFontWeight.value) {
+            values["font-weight"] = internalFontWeight.value;
+        }
+
+        if (internalTextDecoration.value) {
+            values["text-decoration"] = internalTextDecoration.value;
+        }
+
+        if (internalFontStyle.value) {
+            values["font-style"] = internalFontStyle.value;
+        }
+
+        return values;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onFontWeightToggled(): void {
+        const updatedValue = internalFontWeight.value ? "" : "bold";
+        internalFontWeight.value = updatedValue;
+
+        if (props.mode === "inline" && props.element) {
+            props.element.style.fontWeight = updatedValue;
+        }
+
+        const updates = getCurrentStyleSheetValues();
+
+        if (updatedValue) {
+            updates["font-weight"] = updatedValue;
+        }
+        else {
+            delete updates["font-weight"];
+        }
+
+        emit("update:styleSheetValues", updates);
+    }
+
+    function onTextDecorationToggled(): void {
+        const updatedValue = internalTextDecoration.value ? "" : "underline";
+        internalTextDecoration.value = updatedValue;
+
+        if (props.mode === "inline" && props.element) {
+            props.element.style.textDecoration = updatedValue;
+        }
+
+        const updates = getCurrentStyleSheetValues();
+
+        if (updatedValue) {
+            updates["text-decoration"] = updatedValue;
+        }
+        else {
+            delete updates["text-decoration"];
+        }
+
+        emit("update:styleSheetValues", updates);
+    }
+
+    function onFontStyleToggled(): void {
+        const updatedValue = internalFontStyle.value ? "" : "italic";
+        internalFontStyle.value = updatedValue;
+
+        if (props.mode === "inline" && props.element) {
+            props.element.style.fontStyle = updatedValue;
+        }
+
+        const updates = getCurrentStyleSheetValues();
+
+        if (updatedValue) {
+            updates["font-style"] = updatedValue;
+        }
+        else {
+            delete updates["font-style"];
+        }
+
+        emit("update:styleSheetValues", updates);
+    }
+
+    // #endregion Event Handlers
 
     // #region Watchers
 
-    watch(fontWeight, (value: string) => {
-        props.element.style.fontWeight = value;
-
-        emit("changeFontWeight", value);
-    });
-
-    watch(textDecoration, (value: string) => {
-        props.element.style.textDecoration = value;
-
-        emit("changeTextDecoration", value);
-    });
-
-    watch(fontStyle, (value: string) => {
-        props.element.style.fontStyle = value;
-
-        emit("changeFontStyle", value);
-    });
-
-    watch(() => props.element, () => {
-        fontWeight.value = props.element.style.fontWeight;
-        textDecoration.value = props.element.style.textDecoration;
-        fontStyle.value = props.element.style.fontStyle;
+    watch([
+        () => props.styleSheetValues,
+        () => props.mode,
+        () => props.element
+    ], ([styleSheetValues, mode, element]) => {
+        if (mode === "inline" && element) {
+            internalFontWeight.value = getPropertyValue("font-weight") ?? "";
+            internalTextDecoration.value = getPropertyValue("text-decoration") ?? "";
+            internalFontStyle.value = getPropertyValue("font-style") ?? "";
+        }
+        else if (mode === "stylesheet") {
+            internalFontWeight.value = styleSheetValues?.["font-weight"] ?? "";
+            internalTextDecoration.value = styleSheetValues?.["text-decoration"] ?? "";
+            internalFontStyle.value = styleSheetValues?.["font-style"] ?? "";
+        }
     });
 
     // #endregion
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
 </script>
