@@ -294,12 +294,16 @@ namespace Rock.Jobs
                             // Special Query to only get what we need to know.
                             // This could cause a lot of database calls, but it is consistently just a few milliseconds.
                             // This seems to increase overall performance vs Eager loading all the interactions of the session
-                            var interactionStats = new InteractionSessionService( rockContext ).Queryable().Where( a => a.Id == interactionSession.Id ).Select( s => new
+                            var interactionStats = new InteractionSessionService( rockContext ).Queryable()
+                                .Where( a => a.Id == interactionSession.Id )
+                                .Select( s => new
                             {
                                 Count = s.Interactions.Count(),
                                 MaxDateTime = s.Interactions.Max( i => ( DateTime? ) i.InteractionDateTime ),
                                 MinDateTime = s.Interactions.Min( i => ( DateTime? ) i.InteractionDateTime ),
-                                InteractionChannelId = s.Interactions.FirstOrDefault().InteractionComponent.InteractionChannelId
+                                InteractionChannelId = s.Interactions.FirstOrDefault().InteractionComponent.InteractionChannelId,
+                                PersonAliasId = s.Interactions.FirstOrDefault( i => i.PersonAliasId != null ).PersonAliasId,
+                                NullPersonAliasInteractionIds = s.Interactions.Where( i => i.PersonAliasId == null ).Select( i => i.Id ).ToList()
                             } ).FirstOrDefault();
 
                             interactionSession.InteractionCount = interactionStats?.Count ?? 0;
@@ -331,6 +335,15 @@ namespace Rock.Jobs
                             }
 
                             interactionSession.DurationLastCalculatedDateTime = interactionCalculationDateTime;
+
+                            // If there are any interactions that have a null PersonAliasId
+                            // and another interaction in the same series has a non-null PersonAliasId
+                            // update the null PersonAliasId to use the non-null PersonAliasId value.
+                            if ( interactionStats.NullPersonAliasInteractionIds.Any() )
+                            {
+                                var interactionsForUpdate = new InteractionService( rockContext ).GetByIds( interactionStats.NullPersonAliasInteractionIds );
+                                rockContext.BulkUpdate( interactionsForUpdate, i => new Interaction { PersonAliasId = interactionStats.PersonAliasId } );
+                            }
 
                             totalRecordsProcessed += 1;
                         }
