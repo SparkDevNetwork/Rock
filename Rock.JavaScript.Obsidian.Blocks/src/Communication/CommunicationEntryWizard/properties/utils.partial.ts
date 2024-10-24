@@ -10,67 +10,6 @@ type ReactiveShorthandProperties = {
     left: WritableComputedRef<string>;
 };
 
-export function useReactiveShorthandProperties(component: Ref<InstanceType<typeof ShorthandPropertyBase> | undefined>): ReactiveShorthandProperties {
-    const shorthand = computed<string>({
-        get(): string {
-            return component.value?.shorthand ?? "";
-        },
-        set(value: string): void {
-            if (component.value) {
-                component.value.shorthand = value;
-            }
-        }
-    });
-    const top = computed<string>({
-        get(): string {
-            return component.value?.top ?? "";
-        },
-        set(value: string): void {
-            if (component.value) {
-                component.value.top = value;
-            }
-        }
-    });
-    const bottom = computed<string>({
-        get(): string {
-            return component.value?.bottom ?? "";
-        },
-        set(value: string): void {
-            if (component.value) {
-                component.value.bottom = value;
-            }
-        }
-    });
-    const right = computed<string>({
-        get(): string {
-            return component.value?.right ?? "";
-        },
-        set(value: string): void {
-            if (component.value) {
-                component.value.right = value;
-            }
-        }
-    });
-    const left = computed<string>({
-        get(): string {
-            return component.value?.left ?? "";
-        },
-        set(value: string): void {
-            if (component.value) {
-                component.value.left = value;
-            }
-        }
-    });
-
-    return {
-        shorthand,
-        top,
-        bottom,
-        right,
-        left
-    };
-}
-
 /** The standard component props that should be included when using RockFormField. */
 export const standardLengthProps: StandardLengthProps = {
     /**
@@ -316,7 +255,7 @@ export function hasConstituentProperties(props: ExtractPropTypes<StandardShortha
     return props.showConstituentProperties;
 }
 
-function hasAnyDifference(...strings: string[]): boolean {
+export function hasAnyDifference(...strings: string[]): boolean {
     const firstString = strings[0];
 
     for (let i = 1; i < strings.length; i++) {

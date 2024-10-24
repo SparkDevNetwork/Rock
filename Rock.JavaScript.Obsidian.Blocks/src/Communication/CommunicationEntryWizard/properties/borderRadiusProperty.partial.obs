@@ -58,7 +58,7 @@
         (e: "changeBottomLeft", value: string): void;
     }>();
 
-    // #region Computed Values
+    // #region Computed Props
 
     const mergedProps = computed(() => {
         return {
