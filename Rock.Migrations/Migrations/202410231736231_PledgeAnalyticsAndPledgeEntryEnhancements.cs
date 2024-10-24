@@ -54,8 +54,9 @@ namespace Rock.Migrations
                 },
                 migrationStrategy: "Chop",
                 jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_167_CHOP_PLEDGE_ENTRY_BLOCK,
-                null
-             );
+                blockAttributeKeysToIgnore: new Dictionary<string, string> {
+                { "20B5568E-A010-4E15-9127-E63CF218D6E5", "DefaultAccounts,LegendText,GivingPage,DefaultStartDate,DefaultEndDate,DefaultConnectionStatus,EnableDebug" },
+            } );
         }
 
         #endregion
