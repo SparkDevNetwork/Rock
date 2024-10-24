@@ -208,6 +208,10 @@
     <Compile Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.designer.cs">
       <DependentUpon>202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410241828213_AddHighlightColorToGradingScale.cs" />
+    <Compile Include="Migrations\202410241828213_AddHighlightColorToGradingScale.Designer.cs">
+      <DependentUpon>202410241828213_AddHighlightColorToGradingScale.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2389,6 +2393,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.resx">
       <DependentUpon>202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410241828213_AddHighlightColorToGradingScale.resx">
+      <DependentUpon>202410241828213_AddHighlightColorToGradingScale.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
