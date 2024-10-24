@@ -104,14 +104,27 @@ export function getComponentTitle(componentTypeName: EditorComponentTypeName): s
     }
 }
 
-/** Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getHtml(). */
+/**
+ * Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getHtml().
+ */
 export const rockRuntimeElementCssClass = "rock-runtime-element" as const;
 
-/** Add this CSS class prefix to any temporary CSS class that should be stripped out when the HTML is retrieved via getHTML(). */
+/**
+ * Add this CSS class prefix to any temporary CSS class that should be stripped out when the HTML is retrieved via getHTML().
+ */
 export const rockRuntimeClassCssClassPrefix = "rock-runtime-class-" as const;
 
-/** Add this CSS class to any element that should be editable inline when selected in the email designer. */
+/**
+ * Add this CSS class to any element that should be editable inline when selected in the email designer.
+ */
 export const rockRuntimeClassContentEditable = `${rockRuntimeClassCssClassPrefix}content-editable` as const;
+
+/**
+ * Add this CSS class to any temporary element that wraps other elements, and should be unwrapped when the HTML is retrieved via getHTML().
+ *
+ * The wrapped elements will be placed in the DOM in place of the wrapper.
+ */
+export const rockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" as const;
 
 export function createComponentElementPlaceholder(document: Document, componentTypeName: EditorComponentTypeName): HTMLElement {
     let componentTypeCssClass: string;

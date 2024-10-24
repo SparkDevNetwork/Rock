@@ -4,7 +4,7 @@
 
     <FontSizeProperty :element="element" />
 
-    <FontColorProperty :element="element" />
+    <ColorProperty :element="element" />
 
     <TextFormatProperty :element="element" />
 
@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import FontColorProperty from "./fontColorProperty.partial.obs";
+    import ColorProperty from "./colorProperty.partial.obs";
     import FontFamilyProperty from "./fontFamilyProperty.partial.obs";
     import FontSizeProperty from "./fontSizeProperty.partial.obs";
     import LineHeightProperty from "./lineHeightProperty.partial.obs";

@@ -1,5 +1,6 @@
 <template>
     <iframe v-if="!isResetting"
+            id="email-iframe-wrapper"
             ref="iFrameElement"
             frameborder="0"
             border="0"
@@ -20,10 +21,10 @@ iframe {
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { ComponentTypeDragDropMessage, ComponentTypeDragEndMessage, ComponentTypeDragLeaveMessage, ComponentTypeDragOverMessage, ComponentTypeDragStartMessage, EditorComponentTypeName } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { createComponentElement, createComponentElementPlaceholder, rockRuntimeClassContentEditable, rockRuntimeClassCssClassPrefix, rockRuntimeElementCssClass } from "./utils.partial";
+    import { createComponentElement, createComponentElementPlaceholder, rockRuntimeClassContentEditable, rockRuntimeClassCssClassPrefix, rockRuntimeElementCssClass, rockRuntimeWrapperElementCssClass } from "./utils.partial";
 
     const props = defineProps({
         /** This is reactive. If it is changed, the inner HTML for the editor will be updated. */
@@ -63,6 +64,9 @@ iframe {
 
     // #region Functions
 
+    /**
+     * Adds event handlers to the iframe.
+     */
     function addEventHandlers(iFrameElement: HTMLIFrameElement): void {
         // Add the handler that processes interwindow communication.
         iFrameElement.contentWindow?.addEventListener("message", onIFrameMessageReceived);
@@ -79,6 +83,9 @@ iframe {
         iFrameElement.contentWindow?.addEventListener("click", onIFrameClick);
     }
 
+    /**
+     * Removes event handlers from the iframe.
+     */
     function removeEventHandlers(iFrameElement: HTMLIFrameElement): void {
         iFrameElement.contentWindow?.removeEventListener("message", onIFrameMessageReceived);
         iFrameElement.contentWindow?.removeEventListener("load", onIFrameLoaded);
@@ -88,7 +95,13 @@ iframe {
         iFrameElement.contentWindow?.removeEventListener("click", onIFrameClick);
     }
 
-    function sendMessage(message:
+    /**
+     * Sends a message to the iframe.
+     *
+     * This is used for forwarding events to the iframe
+     * so they can be handled in the iframe's context.
+     */
+    function sendMessageToIFrame(message:
         ComponentTypeDragStartMessage
         | ComponentTypeDragDropMessage
         | ComponentTypeDragOverMessage
@@ -105,10 +118,15 @@ iframe {
         iFrameElement.value.contentWindow.postMessage(message, "/");
     }
 
+    /**
+     * Gets a component's descendant elements that are allowed to be edited in-line.
+     *
+     * This does not mean that inline editing is enabled yet on those elements, but that it *can be* enabled.
+     */
     function getInlineEditableElements(componentElement: HTMLElement): Element[] {
         const editableElements: Element[] = [];
 
-        if ([...componentElement.classList].includes(rockRuntimeClassContentEditable)) {
+        if (componentElement.classList.contains(rockRuntimeClassContentEditable)) {
             editableElements.push(componentElement);
         }
 
@@ -117,6 +135,11 @@ iframe {
         return editableElements;
     }
 
+    /**
+     * Selects a component.
+     *
+     * TODO JMH This should handle all things about selecting a component.
+     */
     function selectComponent(componentElement: HTMLElement): void {
         // IMPORTANT! This needs to be able to be called multiple times.
         // The first selection will highlight the component and show its properties.
@@ -133,13 +156,24 @@ iframe {
         }
         else {
             internalSelectedComponentElement.value = componentElement;
+            onComponentSelected(componentElement);
         }
     }
 
+    /**
+     * Deselects a component.
+     *
+     * TODO JMH This should handle all things about deselecting a component.
+     */
     function deselectComponentElement(componentElement: HTMLElement): void {
         componentElement.classList.remove("selected");
 
-        // Remove editable regions.
+        // Removed the selected class from the wrapper too, if needed.
+        if (componentElement.parentElement?.classList.contains("component-side-menu-wrapper")) {
+            componentElement.parentElement.classList.remove("selected");
+        }
+
+        // Disable in-line editing for in-line editable elements.
         const editableElements = getInlineEditableElements(componentElement);
         if (editableElements.length) {
             editableElements.forEach(element => {
@@ -148,6 +182,9 @@ iframe {
         }
     }
 
+    /**
+     * Gets the raw HTML for this email iframe.
+     */
     function getHtml(): string {
         const clone = document.createElement("iframe");
 
@@ -167,6 +204,7 @@ iframe {
             removeTemporaryElements(cloneDocument);
             removeTemporaryCssClasses(cloneDocument);
             removeTemporaryAttributes(cloneDocument);
+            removeTemporaryWrappers(cloneDocument);
 
             const html = cloneDocument.documentElement.outerHTML ?? "";
 
@@ -180,11 +218,17 @@ iframe {
         }
     }
 
+    /**
+     * Removes temporary elements from a document.
+     */
     function removeTemporaryElements(document: Document): void {
         const removals = document.querySelectorAll(`.${rockRuntimeElementCssClass}`);
         removals.forEach(el => el.remove());
     }
 
+    /**
+     * Removes temporary CSS classes from a document's elements.
+     */
     function removeTemporaryCssClasses(document: Document): void {
         let elementsWithRuntimeClasses = [...document.querySelectorAll(`[class*="${rockRuntimeClassCssClassPrefix}"]`)];
 
@@ -204,6 +248,9 @@ iframe {
         });
     }
 
+    /**
+     * Removes temporary attributes from a document's elements.
+     */
     function removeTemporaryAttributes(document: Document): void {
         const attributesToRemove: string[] = ["draggable", "contenteditable"];
 
@@ -217,6 +264,33 @@ iframe {
         });
     }
 
+    /**
+     * Removes temporary wrapper elements from a document's elements.
+     *
+     * This will place the wrapped elements in place of their associated wrappers,
+     * and the wrappers will be removed.
+     */
+    function removeTemporaryWrappers(document: Document): void {
+        const wrappers = [...document.querySelectorAll(`.${rockRuntimeWrapperElementCssClass}`)] as HTMLElement[];
+
+        wrappers.forEach((wrapper) => {
+            if (wrapper.parentNode) {
+                // Move all child nodes of the wrapper to the wrapper's parent.
+                while (wrapper.firstChild) {
+                    wrapper.parentNode.insertBefore(wrapper.firstChild, wrapper);
+                }
+            }
+
+            // Remove the now-empty wrapper.
+            wrapper.remove();
+        });
+    }
+
+    /**
+     * Removes white space content from dropzones that have no elements.
+     *
+     * This is important for applying :empty styles.
+     */
     function removeWhiteSpaceFromDropzones(document: Document): void {
         // Clear white space from dropzones so :empty styling gets applied.
         // :empty styles make the dropzones visible in the iframe by showing
@@ -226,15 +300,125 @@ iframe {
         });
     }
 
+    /**
+     * Removes white space content from an element.
+     *
+     * This is important for applying :empty styles.
+     */
     function removeWhiteSpace(element: Element): void {
         if (element.childNodes.length && [...element.childNodes].every(n => n.nodeType === Node.TEXT_NODE) && !element.textContent?.trim()) {
             element.innerHTML = "";
         }
     }
 
+    function isComponentElement(element: HTMLElement): element is HTMLElement {
+        return element.classList.contains("component") && element.dataset.state === "component";
+    }
+
+    /**
+     * Adds a side menu wrapper to a component element.
+     */
+    function addComponentSideMenuWrapper(document: Document, componentElement: HTMLElement): HTMLElement {
+        if (!isComponentElement(componentElement)) {
+            // Do not wrap if the element is not a component element.
+            return componentElement;
+        }
+
+        function createComponentSideMenu(): HTMLElement {
+            const menu = document.createElement("div");
+            menu.classList.add(rockRuntimeElementCssClass, "component-side-menu");
+
+            // Create the grab handle.
+            const grabHandle = document.createElement("div");
+            // The runtime element css class is needed only on this direct wrapper descendant element so that the
+            // auto-removal observer can delete the wrapper when *other* non-runtime elements are removed from it.
+            grabHandle.classList.add("grab-handle");
+            grabHandle.innerHTML = "☰"; // Unicode for burger icon TODO JMH Use the fa icon from the form builder? That would require loading font awesome though.
+            menu.appendChild(grabHandle);
+
+            // Create the save button.
+            const saveButton = document.createElement("button");
+            saveButton.classList.add("side-menu-button");
+            saveButton.textContent = "Save";
+            menu.appendChild(saveButton);
+
+            // Create the delete button.
+            const deleteButton = document.createElement("button");
+            deleteButton.classList.add("side-menu-button");
+            deleteButton.textContent = "Delete";
+            menu.appendChild(deleteButton);
+
+            return menu;
+        }
+
+        // Create the wrapper element.
+        const wrapper = document.createElement("div");
+        wrapper.classList.add(rockRuntimeWrapperElementCssClass, "component-side-menu-wrapper");
+
+        // Insert wrapper before the component and move the component inside it.
+        componentElement.parentNode?.insertBefore(wrapper, componentElement);
+        wrapper.appendChild(componentElement);
+
+        // Create the component side menu.
+        const sideMenu = createComponentSideMenu();
+        wrapper.appendChild(sideMenu);
+
+        // Add event listeners for hover behavior.
+        wrapper.addEventListener("mouseenter", (e) => {
+            e.stopPropagation();
+            wrapper.classList.add("hovered");
+        });
+
+        wrapper.addEventListener("mouseleave", (e) => {
+            e.stopPropagation();
+            wrapper.classList.remove("hovered");
+        });
+
+        wrapper.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const selectableComponent = wrapper.querySelector(`.component[data-state="component"]`) as HTMLElement;
+            selectComponent(selectableComponent);
+        });
+
+        // TODO JMH Add event handlers for side menu buttons.
+
+        // Automatically remove the wrapper if all of its children elements are removed.
+        wrapperAutoRemovalObserver.value?.observe(wrapper, { childList: true });
+
+        return wrapper;
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
+
+    /**
+     * Handles the event when a component is added.
+     */
+    function onComponentAdded(componentElement: HTMLElement): void {
+
+    }
+
+    /**
+     * Handles the event before a component is removed.
+     */
+    function onBeforeComponentRemoved(componentElement: HTMLElement): void {
+
+    }
+
+    /**
+     * Handles the event when a component is selected.
+     */
+    function onComponentSelected(componentElement: HTMLElement): void {
+
+    }
+
+    /**
+     * Handles the event when a component is deselected.
+     */
+    function onComponentDeselected(componentElement: HTMLElement): void {
+
+    }
 
     /**
      * Handles the editor iframe being loaded.
@@ -308,7 +492,7 @@ iframe {
     cursor: pointer;
 }
 
-.component.selected {
+.component:not(.component-section).selected {
     cursor: move;
     outline: 3px solid #59c9a5;
     outline-offset: -2px;
@@ -320,25 +504,85 @@ iframe {
 }
 
 .component-section[data-state="component"] {
-    box-sizing: border-box;
-    display: block;
-    width: calc(100% + 36px) !important;
-    padding: 0 15px;
-    margin-left: -18px;
-    border: 3px solid transparent;
-    border-top: 0;
-    border-bottom: 0;
-    outline: none !important;
-    transition: 0.3s border cubic-bezier(0.85,0.175,0,1.385);
+    /* box-sizing: border-box; */
+    /* display: block; */
+    /* width: calc(100% + 36px) !important; */
+    /* padding: 0 15px; */
+    /* margin-left: -18px; */
+    /* border: 3px solid transparent; */
+    /* border-top: 0; */
+    /* border-bottom: 0; */
+    /* outline: none !important; */
+    /* transition: 0.3s border cubic-bezier(0.85,0.175,0,1.385); */
 }
 
 .component-section[data-state="component"]:hover {
-    border-color: rgba(0, 0, 0, 0.3);
+    /* border-color: rgba(0, 0, 0, 0.3); */
 }
 
 .component-section[data-state="component"].selected {
-    cursor: move;
-    border-color: #59c9a5;
+    /* cursor: move; */
+    /* border-color: #59c9a5; */
+}
+
+/* Ensure the iframe wrapper style is reset properly */
+#email-iframe-wrapper {
+    position: relative;
+}
+
+/* Border overlay for hovered elements */
+.component-side-menu-wrapper {
+    position: relative;
+    border: 2px dashed transparent; /* Initially invisible */
+    transition: border-color 0.2s ease-in-out;
+}
+
+/* Blue dotted border on hover or selected */
+.component-side-menu-wrapper.hovered,
+.component-side-menu-wrapper.selected {
+    border-color: #C9EAF9;
+}
+
+/* Add padding when hovered but not selected so it can be selected. */
+.component-side-menu-wrapper.hovered:not(.selected) {
+    padding: 8px;
+}
+
+/* Side menu that appears next to the component */
+.component-side-menu {
+    position: absolute;top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #C9EAF9;
+    gap: 8px;
+    align-items: center;
+    visibility: hidden; /* Default hidden */
+    opacity: 0;
+    transition: visibility 0.2s, opacity 0.2s;
+    color: #83BAD3;
+}
+
+/* Show menu when hovered or selected */
+.component-side-menu-wrapper.hovered > .component-side-menu,
+.component-side-menu-wrapper.selected > .component-side-menu {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Styles for individual side menu buttons */
+.side-menu-button {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 6px;
+    cursor: pointer;
+}
+
+/* Grab handle styling */
+.grab-handle {
+    cursor: grab;
+    font-size: 1.5em;
 }
 `;
         iFrameDocument.head.appendChild(style);
@@ -363,7 +607,38 @@ iframe {
         removeWhiteSpaceFromDropzones(iFrameDocument);
 
         emailDocument.value = iFrameDocument;
+
+        // Wrap all section components.
+        // Create the element that will wrap section components when they are hovered over.
+        const sectionComponents = [...iFrameDocument.querySelectorAll(`.component-section[data-state="component"]`)] as HTMLElement[];
+        sectionComponents.forEach(sectionComponent => {
+            addComponentSideMenuWrapper(iFrameDocument, sectionComponent);
+        });
+
+        // Create a MutationObserver to watch for changes inside each wrapper
+        if (wrapperAutoRemovalObserver.value) {
+            wrapperAutoRemovalObserver.value.disconnect();
+        }
+
+        wrapperAutoRemovalObserver.value = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                const wrapper = mutation.target as HTMLElement;
+
+                // If the wrapper has no more (non-runtime) children, remove it.
+                if (wrapper) {
+                    const childrenWithoutRuntime = Array.from(wrapper.children).filter(
+                        (child) => !child.classList.contains(rockRuntimeElementCssClass)
+                    );
+
+                    if (childrenWithoutRuntime.length === 0) {
+                        wrapper.remove();
+                    }
+                }
+            });
+        });
     }
+
+    const wrapperAutoRemovalObserver = ref<MutationObserver | null | undefined>();
 
     function onIFrameClick(event: MouseEvent): void {
         console.log(`"click" iframe`);
@@ -443,12 +718,19 @@ iframe {
     function onIFrameComponentTypeDragStart(componentTypeName: EditorComponentTypeName): void {
         console.log(`"dragstart" iframe component type`);
 
-        if (!iFrameElement.value?.contentDocument) {
+        const iFrameDocument = iFrameElement.value?.contentDocument;
+        if (!iFrameDocument) {
             throw "iframe: Unable to handle 'dragstart' event. The iframe document has not been initialized.";
         }
 
-        draggingComponentElement.value = createComponentElement(iFrameElement.value.contentDocument, componentTypeName);
-        draggingComponentPlaceholderElement.value = createComponentElementPlaceholder(iFrameElement.value.contentDocument, componentTypeName);
+        draggingComponentElement.value = createComponentElement(iFrameDocument, componentTypeName);
+
+        // If it's a section component, wrap it so we can display controls for dragging, saving, and deleting the section.
+        if (iFrameDocument && draggingComponentElement.value.classList.contains("component-section")) {
+            draggingComponentElement.value = addComponentSideMenuWrapper(iFrameDocument, draggingComponentElement.value);
+        }
+
+        draggingComponentPlaceholderElement.value = createComponentElementPlaceholder(iFrameDocument, componentTypeName);
         // If "dragend" happens and there was never a "drop",
         // then remove the temporary dragging element from the DOM.
         // if (draggingComponentPlaceholderElement.value) {
@@ -656,13 +938,14 @@ iframe {
     function onIFrameComponentTypeDragDrop(): void {
         console.log(`"drop" iframe component type`);
 
-        if (!iFrameElement.value?.contentDocument) {
+        const iFrameDocument = iFrameElement.value?.contentDocument;
+        if (!iFrameDocument) {
             throw "iframe: Unable to handle 'drop' event. The iframe document has not been initialized.";
         }
 
         if (!draggingComponentPlaceholderElement.value || !draggingComponentElement.value) {
             // TODO JMH Remove this. It's nice to know when this occurs during development, but should be removed before merge.
-            //console.log("iframe: placeholder element has already been removed. Unable to replace placeholder with component element.");
+            console.log("iframe: placeholder element has already been removed. Unable to replace placeholder with component element.");
         }
         else {
             // Swap the placeholder element with the permanent element.
@@ -731,6 +1014,10 @@ iframe {
 
         if (newSelectedComponentElement) {
             newSelectedComponentElement.classList.add("selected");
+
+            if (newSelectedComponentElement.parentElement?.classList.contains("component-side-menu-wrapper")) {
+                newSelectedComponentElement.parentElement.classList.add("selected");
+            }
         }
     });
 
@@ -749,12 +1036,23 @@ iframe {
 
     // #endregion Watchers
 
+    // #region Hooks
+
+    onBeforeUnmount(() => {
+        if (wrapperAutoRemovalObserver.value) {
+            wrapperAutoRemovalObserver.value.disconnect();  // Stop observing to avoid memory leaks
+            console.log("Observer disconnected.");
+        }
+    });
+
+    // #endregion
+
     defineExpose({
         emailDocument: computed(() => {
             return emailDocument.value;
         }),
         getHtml,
-        sendMessage
+        sendMessage: sendMessageToIFrame
     });
 
 </script>
