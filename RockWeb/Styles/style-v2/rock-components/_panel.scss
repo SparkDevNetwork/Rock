@@ -119,7 +119,7 @@
 
     .panel-block {
       height:         auto !important;
-      margin-bottom:  24px;
+      margin-bottom:  var(--spacing-large);
       overflow:       visible;
     }
   }
@@ -192,7 +192,7 @@
 
     .panel-block {
       height:         auto !important;
-      margin-bottom:  24px;
+      margin-bottom:  var(--spacing-large);
       overflow:       visible;
     }
   }

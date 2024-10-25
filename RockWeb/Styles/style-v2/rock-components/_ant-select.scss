@@ -574,7 +574,7 @@
 .ant-select-dropdown {
   margin: 0;
   padding: 0;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-interface-stronger);
   font-variant: tabular-nums;
   line-height: 1.5715;
   list-style: none;
@@ -588,7 +588,7 @@
   overflow: hidden;
   font-size: 14px;
   font-variant: initial;
-  background-color: #fff;
+  background-color: var(--color-interface-softest);
   border-radius: 2px;
   outline: none;
   box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
@@ -625,7 +625,7 @@
   display: block;
   min-height: 32px;
   padding: 5px 12px;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-interface-stronger);
   font-weight: normal;
   font-size: 14px;
   line-height: 22px;
@@ -637,7 +637,7 @@
   display: block;
   min-height: 32px;
   padding: 5px 12px;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-interface-stronger);
   font-weight: normal;
   font-size: 14px;
   line-height: 22px;
@@ -667,13 +667,13 @@
 }
 
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-  background-color: var(--color-interface-softer);
+  background-color: var(--color-interface-soft);
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-interface-softest);
   font-weight: var(--font-weight-semibold);
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-medium);
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
@@ -788,7 +788,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-interface-stronger);
   font-size: 14px;
   font-variant: tabular-nums;
   line-height: 1.5715;

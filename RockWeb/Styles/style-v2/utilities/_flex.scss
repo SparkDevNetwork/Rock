@@ -13,6 +13,12 @@
   min-width: 50%;
 }
 
+@media (min-width: 768px) {
+  .flex-1 {
+    min-width: fit-content;
+  }
+}
+
 @media (min-width: $screen-medium) {
   .row-eq-height-md {
     display: -webkit-flex;

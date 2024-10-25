@@ -480,11 +480,11 @@ $navbar-element-height: 40px;
   display: none;
   width: 100%;
   height: 100%;
-  color: #FFF; /* Harded code because in dark mode it looks weird with dark color. */
+  color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
   background-color: var(--color-primary);
 
   .navbar-side {
-    margin-bottom: 84px; // adds space for the admintool bar and the static top menu item on mobile
+    margin-bottom: 84px; // adds space for the admin tool bar and the static top menu item on mobile
 
     .nav-item-top {
       display: flex;
@@ -952,7 +952,7 @@ $hamburger-spacing: 4px;
 }
 
 
-// Miscellanous
+// Miscellaneous
 .header + .nav-item {
   margin-top: var(--spacing-medium);
 }

@@ -76,7 +76,7 @@
 @import 'rock-components/labels';                   // Fully Format.
 @import 'rock-components/pagelist';                 // Fully Format. There are Some hard coded value.
 @import 'rock-components/panel-helper';             // Fully Format.
-@import 'rock-components/panel';                    // Fully Format. The harded code is the num of row and col
+@import 'rock-components/panel';                    // Fully Format. The hard coded is the num of row and col
 @import 'rock-components/person-list';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/photo-frame';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/picker-time';              // Fully Format. There are Some hard coded value.
@@ -112,19 +112,20 @@
 @import 'rock-components/kpi';                      // Fully Format. There are Some hard coded value. 
 @import 'rock-components/key-value';                // Fully Format.
 @import 'rock-components/image-with-icon';          // Fully Format. There are Some hard coded value. 
-@import 'rock-components/grid-obisidian';           // ** WORK IN PROGRESS ** NOT DONE YET, NEED TO MOVE THE STYLE FROM THE OBSIDIAN FILE.
 @import 'rock-components/modal';                    // Fully Format. Must import below the bootstrap modal.
 @import 'rock-components/pickers';                  // Fully Format. There are Some hard coded value.
+@import 'rock-components/person-program-step';
+@import 'rock-components/card';                     // Fully Format.
+@import 'rock-components/range-slider';             // Fully Format.
+@import 'rock-components/rock-obsidian';            // Fully Format.
+@import 'rock-components/dragula';                  // Fully Format.
+@import 'rock-components/color-selector';           // Fully Format.
+@import 'rock-components/picker-geo';               // Fully Format.
+@import 'rock-components/custom-select';            // Fully Format.
+@import 'rock-components/grid-obisidian';           
 @import 'rock-components/html-editor';
 @import 'rock-components/ant-select';
-@import 'rock-components/card';
-@import 'rock-components/range-slider';             // Fully Format.
-@import 'rock-components/rock-obsidian';
-@import 'rock-components/dragula';
-@import 'rock-components/color-selector';
-@import 'rock-components/picker-geo';
 @import 'rock-components/profile';
-@import 'rock-components/custom-select';
 
 
 /* ===================== BLOCK =================== */
@@ -157,6 +158,6 @@
 @import 'components/component-animations';  //Fully Format.
 
 /* ======================= ICON  ======================*/
-@import './icons/core-icon';
-@import './font-styling/font-styling-core'
+@import './icons/core-icon';                //Fully Format.
+@import './font-styling/font-styling-core'  //Fully Format.
 
