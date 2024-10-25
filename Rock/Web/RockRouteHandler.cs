@@ -332,7 +332,7 @@ namespace Rock.Web
                 if ( page.IsRateLimited )
                 {
                     
-                    var canProcess = RateLimiterCache.CanProcessPage( page.Id, RockPage.GetClientIpAddress(), TimeSpan.FromSeconds( page.RateLimitPeriod.Value ), page.RateLimitRequestPerPeriod.Value );
+                    var canProcess = RateLimiterCache.CanProcessPage( page.Id, RockPage.GetClientIpAddress(), TimeSpan.FromSeconds( page.RateLimitPeriodDuration.Value ), page.RateLimitRequestPerPeriod.Value );
                     if ( !canProcess )
                     {
                         return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http429Error.aspx", typeof( System.Web.UI.Page ) );
