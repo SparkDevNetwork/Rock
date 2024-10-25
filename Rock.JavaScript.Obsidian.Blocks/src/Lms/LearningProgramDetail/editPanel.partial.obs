@@ -83,7 +83,7 @@
 
                     <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 
-                    <Panel title="Advanced Settings" :hasCollapse="true">
+                    <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
                         <div class="row">
                             <div class="col-md-6">
                                 <CheckBox
