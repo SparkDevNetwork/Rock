@@ -51,9 +51,11 @@
                 width="20%"
                 visiblePriority="md">
             <template #format="{ row }">
-                <span :class="getConfigurationModeLabelClass(row.configurationMode)">
-                    {{ getConfigurationModeText(row.configurationMode) }}
-                </span>
+                <div class="configuration-mode-container">
+                    <span :class="getConfigurationModeLabelClass(row.configurationMode)">
+                        {{ getConfigurationModeText(row.configurationMode) }}
+                    </span>
+                </div>
             </template>
         </Column>
         <BooleanColumn name="isPublic"

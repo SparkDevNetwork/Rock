@@ -341,6 +341,9 @@ namespace Rock.Blocks.Lms
                     previousActivityCompletion?.CompletedDate :
                     activity.AvailableDateTime;
 
+                var grade = activity.GetGrade( scales );
+                var hasPassingGrade = grade?.IsPassing ?? false;
+
                 var activityCompletion = new LearningActivityCompletionBag
                 {
                     IdKey = activity.IdKey,
@@ -352,10 +355,11 @@ namespace Rock.Blocks.Lms
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
                     GradedByPersonAlias = activity.GradedByPersonAlias.ToListItemBag(),
-                    GradeName = activity.GetGrade( scales )?.Name,
+                    GradeColor = grade?.HighlightColor,
+                    GradeName = grade?.Name,
                     GradeText = activity.GetGradeText( scales ),
                     IsAvailable = isActivityAvailable,
-                    IsGradePassing = activity.LearningActivity.Points == 0 || activity.GetGrade( scales ).IsPassing,
+                    IsGradePassing = activity.LearningActivity.Points == 0 || hasPassingGrade,
                     IsFacilitatorCompleted = activity.IsFacilitatorCompleted,
                     IsStudentCompleted = activity.IsStudentCompleted,
                     LearningActivityIdKey = activity.LearningActivity.IdKey,
@@ -421,7 +425,7 @@ namespace Rock.Blocks.Lms
 
             var now = RockDateTime.Now;
             box.ContentPages = new LearningClassContentPageService( RockContext ).Queryable()
-                .Where( c => c.LearningClassId == classId && (!c.StartDateTime.HasValue || c.StartDateTime <= now ) )
+                .Where( c => c.LearningClassId == classId && ( !c.StartDateTime.HasValue || c.StartDateTime <= now ) )
                 .Select( c => new
                 {
                     c.Id,
@@ -623,7 +627,7 @@ namespace Rock.Blocks.Lms
                     activity.LearningActivity.Points
                 );
             }
-                
+
             if ( !activity.CompletedByPersonAliasId.HasValue )
             {
                 activity.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
@@ -659,9 +663,17 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .OrderByDescending( s => s.ThresholdPercentage );
 
+            activityCompletionBag.IdKey = activity.IdKey;
             activityCompletionBag.CompletedDate = activity.CompletedDateTime;
             activityCompletionBag.WasCompletedOnTime = activity.WasCompletedOnTime;
-            activityCompletionBag.GradeName = activity.GetGrade( scales )?.Name;
+
+
+            var grade = activity.GetGrade( scales );
+            if ( grade != null )
+            {
+                activityCompletionBag.GradeName = grade.Name;
+                activityCompletionBag.GradeColor = grade.HighlightColor;
+            }
 
             // Return the raw component settings so a grade can be computed (if applicable).
             activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;

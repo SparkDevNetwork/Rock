@@ -360,17 +360,23 @@
 
     // #region Watches
 
-    watch(selectedTab, () => {
-        updateUrlWithSelectedTab();
+    watch(selectedTab, (current, previous) => {
+        if (current !== previous && !backButtonClicked.value){
+            updateUrlWithSelectedTab();
+        }
     });
 
     // #endregion
 
     // Listen for the browser back button click and update the selected tab if necessary.
-    window.addEventListener("popstate", function (_) {
-        backButtonClicked.value = true;
-        selectedTab.value = new URLSearchParams(window.location.search).get("tab") ?? "";
-        nextTick(() => backButtonClicked.value = false);
+    window.addEventListener("popstate", function () {
+        const tab = new URLSearchParams(window.location.search).get("tab") ?? "";
+
+        if (tab && tab !== selectedTab.value) {
+            backButtonClicked.value = true;
+            selectedTab.value = tab;
+            nextTick(() => backButtonClicked.value = false);
+        }
     });
 
 </script>

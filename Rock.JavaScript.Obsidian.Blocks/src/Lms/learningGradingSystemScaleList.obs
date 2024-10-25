@@ -127,7 +127,7 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
         }
     }
 

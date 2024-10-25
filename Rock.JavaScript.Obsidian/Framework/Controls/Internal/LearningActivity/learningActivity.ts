@@ -83,6 +83,12 @@ type LearningActivityComponentBaseEmits = {
      * @param isSuccess True if the button click was for a completion; false if cancelled.
      */
     completed(isSuccess: boolean): void;
+
+    /**
+     * @description Emitted when the activity is done and should be closed
+     * or the next activity opened.
+     */
+    closed(): void;
 };
 
 /**
@@ -115,6 +121,7 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
  */
 export const learningActivityEmits: LearningActivityComponentBaseEmits = {
     completed(_isSuccess: boolean): void { },
+    closed(): void { },
     ["update:activityBag"](_bag: LearningActivityBag): void { },
     ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
 };

@@ -17,6 +17,7 @@
                  :entityTypeGuid="entityTypeGuid"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
                  @save="onSave">
         <template #edit>
             <EditPanel v-model="learningGradingSystemScaleEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
@@ -48,11 +49,14 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
+
+    const learningGradingSystemScaleViewBag = ref(config.entity);
     const learningGradingSystemScaleEditBag = ref<ValidPropertiesBox<LearningGradingSystemScaleBag>>({
-        bag: config.entity ?? {} as LearningGradingSystemScaleBag
+        bag: config.entity ?? {} as LearningGradingSystemScaleBag,
+        validProperties: config.validProperties
     });
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
@@ -104,6 +108,27 @@
     }
 
     /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+     async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningGradingSystemScaleBag>>("Edit", {
+            key: learningGradingSystemScaleViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningGradingSystemScaleEditBag.value = result.data;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -113,7 +138,7 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<ValidPropertiesBox<LearningGradingSystemScaleBag> | string>("Save", {
-            box: learningGradingSystemScaleEditBag.value
+            box: learningGradingSystemScaleEditBag.value,
         });
 
         if (result.isSuccess && result.data && typeof result.data === "string") {
@@ -133,9 +158,5 @@
     }
     else if (!config.entity) {
         blockError.value = "The specified learning grading system scale could not be viewed.";
-    }
-    else if (!config.entity.idKey) {
-        learningGradingSystemScaleEditBag.value = { bag: config.entity };
-        panelMode.value = DetailPanelMode.Add;
     }
 </script>

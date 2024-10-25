@@ -17,7 +17,7 @@
                             <TextBox v-model="courseCode"
                                      class="input-width-md"
                                      label="Course Code"
-                                     rules="required" />
+                                     :max="12" />
 
                             <NumberBox v-if="!isOnDemandMode"
                                        v-model="credits"

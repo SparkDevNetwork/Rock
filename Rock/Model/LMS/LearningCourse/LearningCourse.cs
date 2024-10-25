@@ -144,12 +144,13 @@ namespace Rock.Model
         /// <summary>
         /// Indicates whether or not this course should 
         /// be displayed in public contexts (e.g. on a public site).
+        /// Defaults to <c>true</c>
         /// </summary>
         /// <value>
         ///   <c>true</c> if this LearningCourse should be publicly visible; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the order in which the course should be displayed.

@@ -86,6 +86,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public string GradeText { get; set; }
 
         /// <summary>
+        /// Gets or sets the highlight color of the achieved grade.
+        /// </summary>
+        public string GradeColor { get; set; }
+
+        /// <summary>
         /// Indicates whether or not the activity is currently available.
         /// </summary>
         public bool IsAvailable { get; set; }

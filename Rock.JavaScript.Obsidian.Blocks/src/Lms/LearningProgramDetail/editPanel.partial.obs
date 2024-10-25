@@ -15,7 +15,8 @@
                                      v-model="summary"
                                      label="Summary"
                                      help="Short summary of the program to be used on public sites and lists."
-                                     textMode="multiline" />
+                                     textMode="multiline"
+                                     :maxLength="500" />
 
                             <RadioButtonList
                                              v-model="configurationMode"
@@ -38,8 +39,8 @@
                             <DropDownList
                                           :enhanceForLongLists="true"
                                           v-model="systemCommunicationValue"
-                                          label="Default Communication Template"
-                                          help="The template to use when sending emails for communications about this program and it's courses."
+                                          label="Activity Available Communication Template"
+                                          help="The template to use when sending available activity emails for this program and it's courses."
                                           rules="required"
                                           :items="systemCommunications" />
 

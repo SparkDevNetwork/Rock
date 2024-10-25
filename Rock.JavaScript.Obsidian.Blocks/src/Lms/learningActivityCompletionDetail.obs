@@ -18,6 +18,7 @@
                  :isFullScreenVisible="false"
                  :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
                  @save="onSave">
         <template #view>
             <ViewPanel :modelValue="learningActivityCompletionViewBag" :options="options" />
@@ -180,6 +181,27 @@
     }
 
     /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+     async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityCompletionBag>>("Edit", {
+            key: learningActivityCompletionViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningActivityCompletionEditBag.value = result.data;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -217,8 +239,8 @@
     else if (!config.entity) {
         blockError.value = "The specified learning activity completion could not be viewed.";
     }
-    else if (!config.entity.idKey) {
-        learningActivityCompletionEditBag.value = { bag: config.entity };
-        panelMode.value = DetailPanelMode.Add;
-    }
+    // else if (!config.entity.idKey) {
+    //     learningActivityCompletionEditBag.value = { bag: config.entity };
+    //     panelMode.value = DetailPanelMode.Add;
+    // }
 </script>

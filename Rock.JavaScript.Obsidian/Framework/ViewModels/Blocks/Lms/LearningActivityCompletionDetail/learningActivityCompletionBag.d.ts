@@ -64,6 +64,9 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the PersonAlias of the Person who graded the activity. */
     gradedByPersonAlias?: ListItemBag | null;
 
+    /** Gets or sets the highlight color of the achieved grade. */
+    gradeColor?: string | null;
+
     /** Gets or sets the text of the grade earned by the student. */
     gradeName?: string | null;
 
