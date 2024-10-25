@@ -130,7 +130,7 @@
                                             <Rock:NumberBox runat="server" ID="nbRequestPerPeriod" Label="Max Request Per Period" />
                                         </div>
                                         <div class="col-md-6">
-                                            <Rock:NumberBox runat="server" ID="nbRateLimitPeriod" Label="Rate Limit Period" AppendText="seconds" />
+                                            <Rock:NumberBox runat="server" ID="nbRateLimitPeriodDuration" Label="Rate Limit Period" AppendText="seconds" />
                                         </div>
                                     </asp:Panel>
                                 </div>

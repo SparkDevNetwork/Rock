@@ -1173,14 +1173,6 @@ namespace Rock.Blocks.Lms
                 return classId;
             }
 
-            var courseIdKey = PageParameter( PageParameterKey.LearningCourseId );
-
-            // If this is for a course then try to get the default class.
-            if ( courseIdKey.IsNotNullOrWhiteSpace() )
-            {
-                return new LearningClassService( RockContext ).GetCourseDefaultClass( courseIdKey, c => c.Id );
-            }
-
             return null;
         }
 

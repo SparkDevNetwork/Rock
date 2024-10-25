@@ -81,7 +81,7 @@
     </Grid>
 
     <Modal v-model="isCreateEditModalOpen" title="Login" saveText="Save" @save="onSaveUserLogin">
-        <div v-if="isPersonPickerVisible || !hasPersonContextEntity" class="row">
+        <div v-if="isPersonPickerVisible" class="row">
             <div class="col-md-6">
                 <PersonPicker v-model="person"
                               label="Person"
@@ -337,7 +337,7 @@
         password.value = "";
         confirmPassword.value = "";
 
-        isPersonPickerVisible.value = !userLogin?.personAlias?.value;
+        isPersonPickerVisible.value = !hasPersonContextEntity.value && !userLogin?.personAlias?.value;
     }
 
     /**

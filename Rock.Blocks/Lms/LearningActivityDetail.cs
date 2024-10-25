@@ -291,7 +291,7 @@ namespace Rock.Blocks.Lms
             {
                 Id = 0,
                 Guid = Guid.Empty,
-                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AlwaysAvailable,
+                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AfterPreviousCompleted,
                 DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
         }

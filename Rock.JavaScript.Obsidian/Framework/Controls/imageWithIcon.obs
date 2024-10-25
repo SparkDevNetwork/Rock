@@ -50,7 +50,6 @@ import { Guid } from "@Obsidian/Types";
             type: String as PropType<string>,
             required: false
         },
-
     });
 
     // #region Values
@@ -96,8 +95,9 @@ import { Guid } from "@Obsidian/Types";
     // Get the background image to display
     const backgroundImagePath = computed(() => {
 
+        const width = container.value?.clientWidth ? `&width=${container.value?.clientWidth}` : "";
         if (guidIsValid.value === true){
-            return { backgroundImage: `url('/GetImage.ashx?guid=${imageFileGuid.value}&width=${container.value?.clientWidth}')`};
+            return { backgroundImage: `url('/GetImage.ashx?guid=${imageFileGuid.value}')${width}`};
         }
 
         return { backgroundImage: "url('/Assets/Images/no-picture.svg')"};

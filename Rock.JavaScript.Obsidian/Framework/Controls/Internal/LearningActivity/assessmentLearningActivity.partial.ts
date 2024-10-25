@@ -142,7 +142,7 @@ export class AssessmentActivityDefaults
             assessmentTerm: "Test",
             header: "",
             items: [],
-            multipleChoiceWeight: 0,
+            multipleChoiceWeight: 100,
             showMissedQuestionsOnResults: false,
             showResultsOnCompletion: false,
         };

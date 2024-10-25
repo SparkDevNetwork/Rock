@@ -20,7 +20,7 @@
                 </div>
             </div>
             <Transition name="fade">
-                <div class="custom-select-expand-icon" v-if="!showOverlay">
+                <div class="custom-select-expand-icon" v-if="!showOverlay" @click="onItemClick(null)">
                     <i class="fa fa-angle-up"></i><br>
                     <i class="fa fa-angle-down"></i>
                 </div>

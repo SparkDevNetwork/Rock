@@ -30,6 +30,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the highlight color of the grading system scale.
+        /// </summary>
+        public string HighlightColor { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this grading system scale is considered passing.
         /// </summary>
         public bool IsPassing { get; set; }

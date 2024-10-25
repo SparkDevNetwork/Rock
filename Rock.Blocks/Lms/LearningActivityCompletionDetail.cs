@@ -27,7 +27,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;

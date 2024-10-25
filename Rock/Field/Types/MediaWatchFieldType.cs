@@ -23,8 +23,10 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +35,7 @@ namespace Rock.Field.Types
     /// Field Type to allow the user to watch a video and have the amount they
     /// watched recorded.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_WATCH )]
     public class MediaWatchFieldType : FieldType
     {
@@ -68,12 +70,126 @@ namespace Rock.Field.Types
         /// </summary>
         public static readonly string CONFIG_VALIDATION_MESSAGE = "validationMessage";
 
+        /// <summary>
+        /// Configuration Key for the public ListItemBag of the media account.
+        /// </summary>
+        public static readonly string CONFIG_MEDIA_ACCOUNT = "mediaAccount";
+
+        /// <summary>
+        /// Configuration Key for the public ListItemBag of the media folder.
+        /// </summary>
+        public static readonly string CONFIG_MEDIA_FOLDER = "mediaFolder";
+
+        /// <summary>
+        /// Configuration Key for the public ListItemBag of the media element.
+        /// </summary>
+        public static readonly string CONFIG_MEDIA_ELEMENT = "mediaElement";
+
         /// <inheritdoc/>
         public override bool HasDefaultControl => false;
 
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            var config = new Dictionary<string, string>( privateConfigurationValues );
+
+            var rockContext = new RockContext();
+
+            int mediaId = config.GetValueOrDefault( CONFIG_MEDIA, string.Empty ).ToIntSafe( 0 );
+            int mediaFolderId = 0;
+            int mediaAccountId = 0;
+
+            MediaElement mediaElement = null;
+            MediaFolder mediaFolder = null;
+            MediaAccount mediaAccount = null;
+
+            if ( mediaId != 0 )
+            {
+                mediaElement = new MediaElementService( rockContext ).Queryable()
+                    .Where( f => f.Id == mediaId )
+                    .SingleOrDefault();
+
+                if ( mediaElement != null )
+                {
+                    config.AddOrReplace( CONFIG_MEDIA_ELEMENT, ( new ListItemBag
+                    {
+                        Value = mediaElement?.Guid.ToString(),
+                        Text = mediaElement?.Name,
+                    } ).ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            mediaFolderId = mediaElement?.MediaFolderId ?? 0;
+
+            if ( mediaFolderId != 0 )
+            {
+                mediaFolder = new MediaFolderService( rockContext ).Queryable()
+                    .Where( f => f.Id == mediaFolderId )
+                    .SingleOrDefault();
+
+                if ( mediaFolder != null )
+                {
+                    config.AddOrReplace( CONFIG_MEDIA_FOLDER, ( new ListItemBag
+                    {
+                        Value = mediaFolder?.Guid.ToString(),
+                        Text = mediaFolder?.Name,
+                    } ).ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            mediaAccountId = mediaFolder?.MediaAccountId ?? 0;
+
+            if ( mediaAccountId != 0 )
+            {
+                mediaAccount = new MediaAccountService( rockContext ).Queryable()
+                    .Where( f => f.Id == mediaAccountId )
+                    .SingleOrDefault();
+
+                if ( mediaAccount != null )
+                {
+                    config.AddOrReplace( CONFIG_MEDIA_ACCOUNT, ( new ListItemBag
+                    {
+                        Value = mediaAccount?.Guid.ToString(),
+                        Text = mediaAccount?.Name,
+                    } ).ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            config.Remove( CONFIG_MEDIA );
+
+            return config;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            var config = new Dictionary<string, string>( publicConfigurationValues );
+
+            var rockContext = new RockContext();
+
+            ListItemBag mediaBag = config.GetValueOrDefault( CONFIG_MEDIA_ELEMENT, "{}" ).FromJsonOrNull<ListItemBag>();
+
+            if ( mediaBag != null && mediaBag.Value != null )
+            {
+                var mediaId = new MediaElementService( rockContext ).Get( mediaBag.Value.AsGuid() )?.Id ?? 0;
+                config.AddOrReplace( CONFIG_MEDIA, mediaId.ToString() );
+            }
+
+            config.Remove( CONFIG_MEDIA_ELEMENT );
+            config.Remove( CONFIG_MEDIA_FOLDER );
+            config.Remove( CONFIG_MEDIA_ACCOUNT );
+
+            return config;
+        }
+
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )

@@ -97,7 +97,10 @@
             </div>
 
             <div class="col-md-6">
-                <NumberBox v-model="points" label="Points" help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items." inputGroupClasses="input-width-md" />
+                <NumberBox v-model="points"
+                           label="Points"
+                           help="This is the total number of points available for this activity."
+                           inputGroupClasses="input-width-md" />
             </div>
         </div>
 

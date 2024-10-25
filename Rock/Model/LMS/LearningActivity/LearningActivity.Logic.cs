@@ -100,7 +100,7 @@ namespace Rock.Model
                             return $"{DateOffsetText( DueDateOffset )} class enrollment.";
                         }
                     case DueDateCriteria.NoDate:
-                        return "Optional";
+                        return string.Empty;
                 }
 
                 return null;
@@ -226,7 +226,14 @@ namespace Rock.Model
         {
             get
             {
-                return $"{AvailableDateDescription} - {DueDateDescription}";
+                if ( DueDateDescription.IsNotNullOrWhiteSpace() )
+                {
+                    return $"{AvailableDateDescription} - {DueDateDescription}";
+                }
+                else
+                {
+                    return AvailableDateDescription;
+                }
             }
         }
 

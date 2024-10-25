@@ -13,7 +13,7 @@
             <div class="workspace-tab-bar" v-if="isAcademicCalendarMode">
                 <ul class="nav nav-pills">
                     <li v-for="tab in tabs" role="presentation" :class="{ 'active': tab === selectedTab }">
-                        <a href="#" @click.preventDefault="onSelectTab(tab)">{{ tab }}</a>
+                        <a href="#" @click.prevent="onSelectTab(tab)">{{ tab }}</a>
                     </li>
                 </ul>
 
@@ -150,8 +150,8 @@
                         </div>
 
                         <div class="activity-item-status text-right">
-                            <span v-if="item.isStudentCompleted" class="badge badge-success">
-                                {{ badgeText(item) }}
+                            <span v-if="item.isStudentCompleted" class="badge badge-grade" :style="getGradeBageStyles(item)">
+                                {{ getBadgeText(item) }}
                             </span>
                         </div>
                     </template>
@@ -167,6 +167,7 @@
                                            v-model:activityBag="viewingCompletionBag.activityBag"
                                            v-model:completionBag="viewingCompletionBag"
                                            :screenToShow="screenToShow"
+                                           @closed="onClosed"
                                            @completed="onCompleted" />
                 </div>
             </div>
@@ -205,7 +206,7 @@
     margin: var(--spacing-tiny) 0;
 }
 
-/* Workspace Activties */
+/* Workspace Activities */
 @media (min-width: 768px) {
     .workspace-block-content {
         display: flex;
@@ -269,7 +270,7 @@
 </style>
 
 <script setup lang="ts">
-    import { Component, computed, defineAsyncComponent, onMounted, ref, toValue, watch } from "vue";
+    import { Component, computed, defineAsyncComponent, nextTick, onMounted, ref, toValue, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressBar from "@Obsidian/Controls/progressBar.obs";
     import CustomSelect from "@Obsidian/Controls/customSelect.obs";
@@ -282,6 +283,7 @@
     import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
     import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -292,8 +294,14 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
+    const backButtonClicked = ref(false);
     const headerHtml = config.headerHtml ?? "";
     const screenToShow = ref(ComponentScreen.Completion);
+
+    /** Whether the activity's onClosed event was called. */
+    const wasClosedCalled = ref(false);
+    /** Whether the activity's onCompleted event was called. */
+    const isCompleting = ref(false);
 
     const params = new URLSearchParams(window.location.search);
     const selectedActivityIdKey = params.get("activity") ?? "";
@@ -302,7 +310,7 @@
 
     const viewingCompletionBag = ref((
         selectedActivityIdKey.length > 0 ?
-            activities.value?.find(a => a.learningActivityIdKey === selectedActivityIdKey) :
+            activities.value?.find(a => a.learningActivityIdKey === selectedActivityIdKey && a.isAvailable) :
             activities.value?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
@@ -353,9 +361,23 @@
 
     // #region Functions
 
-    function badgeText(activity: LearningActivityCompletionBag): string | undefined {
+    function getBadgeText(activity: LearningActivityCompletionBag): string | undefined {
         if (activity.isStudentCompleted && activity.gradeName) {
             return activity.gradeName;
+        }
+    }
+
+    function getGradeBageStyles(activity: LearningActivityCompletionBag): string | undefined {
+        if (!activity.gradeColor){
+            return;
+        }
+
+        const pair = RockColor.calculateColorPair(new RockColor(activity.gradeColor as string));
+        const backgroundColor = pair.backgroundColor.toRgba();
+        const foreColor = pair.foregroundColor.toRgba();
+
+        if (activity.isStudentCompleted && activity.gradeName) {
+            return `background-color: ${backgroundColor}; color: ${foreColor};`;
         }
     }
 
@@ -430,26 +452,56 @@
     // #region Event Handlers
 
     /**
-     * Called when activity component's complete emit is fired.
+     * Called when the activity component's closed emit is fired. Because completed
+     *  and closed may be called together - when this event handler is aware
+     * that the onCompleted event is being handled it will not process.
+     * In that scenario the onCompleted event handler will call onClosed when ready.
+     */
+    async function onClosed(): Promise<void> {
+        wasClosedCalled.value = true;
+
+        // If we're also awaiting a completeActivity request then don't look for
+        // another activity. Expect the onCompleted event handler to call onClosed
+        // once it's completed.
+        if (!isCompleting.value){
+            const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
+            const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable);
+            if (nextAvailableActivity){
+                viewingCompletionBag.value = nextAvailableActivity;
+                wasClosedCalled.value = false;
+            }
+        }
+    }
+
+    /**
+     * Called when activity component's completed emit is fired.
+     * If the closed emit was also fired onCompleted will call
+     * that method once completed.
      *
      * @param wasSuccessful True if the complete button was clicked; false otherwise.
      *
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
     async function onCompleted(wasSuccessful: boolean): Promise<boolean> {
+        isCompleting.value = true;
+
         if (wasSuccessful) {
             var result = await invokeBlockAction<LearningActivityCompletionBag>("CompleteActivity", {
                 activityCompletionBag: viewingCompletionBag.value
             });
 
-            if (result.statusCode === 200 && result.data != null) {
-                viewingCompletionBag.value = result.data;
-
+            if (result.statusCode === 200 && result.data) {
                 // If the result was successful, update the activity with the new values.
-                const index = activities.value?.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey) ?? -1;
+                const index = activities.value?.findIndex(a => a.learningActivityIdKey === result.data?.learningActivityIdKey) ?? -1;
 
                 if (activities.value && index >= 0) {
-                    activities.value[index] = viewingCompletionBag.value;
+                    activities.value[index] = result.data;
+
+                    // Only set the viewing completion bag to the returned data if it matches.
+                    // It's possible the another available activity was selected between submission and response.
+                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey){
+                        viewingCompletionBag.value = result.data;
+                    }
 
                     // If there's a subsequent activity and it becomes available upon completion of the previous
                     // then mark it available.
@@ -458,18 +510,31 @@
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
 
                     if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
-                        nextActivity.availableDate = viewingCompletionBag.value.completedDate;
+                        nextActivity.availableDate = result.data.completedDate;
                         nextActivity.isAvailable = true;
                     }
+
                 }
 
                 // Reload the activity component.
-                activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+                activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+
+                isCompleting.value = false;
+
+                // If the onClosed handler didn't find another available activity
+                // check again now that the response from the completion came back
+                // and another activity has possibly been made available.
+                if (wasClosedCalled.value){
+                    onClosed();
+                }
+
                 return true;
             }
             else if ((result.errorMessage ?? "").length > 0) {
                 blockError.value = result.errorMessage ?? "";
             }
+
+            isCompleting.value = false;
         }
 
         return false;
@@ -478,9 +543,16 @@
     /** Called when a new tab is selected by the individual.  */
     function onSelectTab(tabName: string): void {
         const queryParams = new URLSearchParams(window.location.search);
+        const currentTab = queryParams.get("tab");
+
+        selectedTab.value = tabName;
+
+        if (backButtonClicked.value || tabName === currentTab) {
+            return;
+        }
+
         queryParams.set("tab", tabName ?? "");
         history.pushState(null, "", "?" + queryParams.toString());
-        selectedTab.value = tabName;
     }
 
     // #endregion
@@ -490,14 +562,14 @@
      * activityType component are in-sync.
      */
     watch(viewingCompletionBag, (cur, prev) => {
-        const prevousIdKey = toValue(prev)?.learningActivityIdKey;
+        const previousIdKey = toValue(prev)?.learningActivityIdKey;
         const currentIdKey = toValue(cur)?.learningActivityIdKey;
 
-        if (prevousIdKey === currentIdKey) {
+        if (previousIdKey === currentIdKey) {
             return;
         }
 
-        const previousSelectedIndex = activities.value.findIndex(a => a.learningActivityIdKey === prevousIdKey);
+        const previousSelectedIndex = activities.value.findIndex(a => a.learningActivityIdKey === previousIdKey);
 
         // Update the current selection before moving to the new selection.
         // This ensures that any work completed by the student isn't lost when clicking to another task.
@@ -505,12 +577,14 @@
             activities.value[previousSelectedIndex] = prev;
         }
 
-        const queryParams = new URLSearchParams(window.location.search);
-        queryParams.set("activity", currentIdKey ?? "");
-        history.pushState(null, "", "?" + queryParams.toString());
-
         // Update the activity component.
-        activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+        activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+
+        if (!backButtonClicked.value){
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.set("activity", currentIdKey ?? "");
+            history.pushState(null, "", "?" + queryParams.toString());
+        }
     });
 
     // Handle any initial error conditions or the need to go into edit mode.
@@ -520,7 +594,7 @@
 
     onMounted(() => {
         if (componentUrl.value.length > 0) {
-            activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+            activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
         }
     });
 
@@ -534,11 +608,25 @@
         activitiesTab;
 
     // Listen for the browser back button click and update the selected tab if necessary.
-    window.addEventListener("popstate", function (_) {
-        const activityIdKey = new URLSearchParams(window.location.search).get("activity") ?? "";
-        const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === activityIdKey);
-        if (newActivitySelection){
-            viewingCompletionBag.value = newActivitySelection;
+    window.addEventListener("popstate", function () {
+        backButtonClicked.value = true;
+        const queryParams = new URLSearchParams(window.location.search);
+
+        const idKey = queryParams.has("activity") ? queryParams.get("activity") : "";
+        const tab = queryParams.has("tab") ? queryParams.get("tab") : "";
+
+        if (tab) {
+            onSelectTab(tab);
         }
+
+        if (idKey) {
+            const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === idKey);
+
+            if (newActivitySelection){
+                viewingCompletionBag.value = newActivitySelection;
+            }
+        }
+
+        void nextTick(() => backButtonClicked.value = false);
     });
 </script>

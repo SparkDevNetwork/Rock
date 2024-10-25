@@ -99,6 +99,12 @@
         entity: learningActivityEditBag
     });
 
+    const isNewActivity = !learningActivityViewBag.value?.idKey;
+
+    // #endregion
+
+    // #region Computed Values
+
     // If the due or available date criteria is changed
     // we will compare the new values to the original
     // and prompt the individual to confirm the change
@@ -110,9 +116,6 @@
     const originalAvailableDateDefault = computed(() => learningActivityViewBag.value?.availableDateDefault);
     const originalAvailableDateOffset = computed(() => learningActivityViewBag.value?.availableDateOffset);
 
-    // #endregion
-
-    // #region Computed Values
 
     /**
      * Additional labels to display in the block panel.
@@ -250,19 +253,21 @@
     }
 
     const hasAvailabilityChanges = computed((): boolean => {
-        return learningActivityEditBag.value?.bag?.availabilityCriteria !== originalAvailabilityCriteria.value ||
-            learningActivityEditBag.value?.bag?.availableDateDefault !== originalAvailableDateDefault.value ||
-            learningActivityEditBag.value?.bag?.availableDateOffset !== originalAvailableDateOffset.value;
+        return !isNewActivity
+        && (learningActivityEditBag.value?.bag?.availabilityCriteria !== originalAvailabilityCriteria.value
+            || learningActivityEditBag.value?.bag?.availableDateDefault !== originalAvailableDateDefault.value
+            || learningActivityEditBag.value?.bag?.availableDateOffset !== originalAvailableDateOffset.value);
     });
 
     const hasDueDateChanges = computed((): boolean => {
-        return learningActivityEditBag.value?.bag?.dueDateCriteria !== originalDueDateCriteria.value ||
-            learningActivityEditBag.value?.bag?.dueDateDefault !== originalDueDateDefault.value ||
-            learningActivityEditBag.value?.bag?.dueDateOffset !== originalDueDateOffset.value;
+        return !isNewActivity
+            && (learningActivityEditBag.value?.bag?.dueDateCriteria !== originalDueDateCriteria.value
+             || learningActivityEditBag.value?.bag?.dueDateDefault !== originalDueDateDefault.value
+             || learningActivityEditBag.value?.bag?.dueDateOffset !== originalDueDateOffset.value);
     });
 
     async function onSaveWithUpdateAllDueDates(): Promise<void> {
-        if (!learningActivityEditBag.value?.bag) {
+        if (!learningActivityEditBag.value?.bag || isNewActivity) {
             showDueDateChangeConfirmation.value = false;
             return;
         }
@@ -272,7 +277,7 @@
     }
 
     async function onSaveWithUpdateMatchingDueDates(): Promise<void> {
-        if (!learningActivityEditBag.value?.bag) {
+        if (!learningActivityEditBag.value?.bag|| isNewActivity) {
             showDueDateChangeConfirmation.value = false;
             return;
         }

@@ -58,7 +58,7 @@ namespace Rock.Blocks.Lms
         AllowMultiple = true,
         IsRequired = false,
         Key = AttributeKey.ProgramCategories,
-        Order = 3)]
+        Order = 3 )]
 
     [CustomDropdownListField(
         "Show Completion Status",
@@ -68,6 +68,15 @@ namespace Rock.Blocks.Lms
         IsRequired = true,
         DefaultValue = "Show",
         Order = 4 )]
+
+    [BooleanField(
+        "Public Only",
+        Description = "If selected, all non-public programs will be excluded.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.PublicOnly,
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "59d82730-e4a7-4aaf-bb1e-bec4b7aa8624" )]
     [Rock.SystemGuid.BlockTypeGuid( "2fc656da-7f5d-41b3-ad18-bfe692cfca57" )]
@@ -80,6 +89,7 @@ namespace Rock.Blocks.Lms
             public const string DetailPage = "DetailPage";
             public const string LavaTemplate = "LavaTemplate";
             public const string ProgramCategories = "ProgramCategories";
+            public const string PublicOnly = "PublicOnly";
             public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
 
@@ -252,25 +262,25 @@ namespace Rock.Blocks.Lms
 
         private bool ShowCompletionStatus()
         {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus) == "Show" ;
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
         }
 
         private List<Rock.Model.LearningProgramService.PublicLearningProgramBag> GetPrograms()
         {
             var categoryGuids = GetAttributeValue( AttributeKey.ProgramCategories ).SplitDelimitedValues().AsGuidList().ToArray();
-
+            var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
             var pageLevelCategoryFilter = PageParameter( PageParameterKey.CategoryId );
             if ( pageLevelCategoryFilter.Any() )
             {
                 var onlyCategoryGuid = new CategoryService( RockContext ).GetSelect( pageLevelCategoryFilter, c => c.Guid );
 
-                if (categoryGuids.Contains( onlyCategoryGuid ) )
+                if ( categoryGuids.Contains( onlyCategoryGuid ) )
                 {
-                    return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson()?.Id ?? 0, onlyCategoryGuid ).ToList();
+                    return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson()?.Id ?? 0, publicOnly, onlyCategoryGuid ).ToList();
                 }
             }
 
-            return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson()?.Id ?? 0, categoryGuids ).ToList();
+            return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson()?.Id ?? 0, publicOnly, categoryGuids ).ToList();
         }
 
         #endregion

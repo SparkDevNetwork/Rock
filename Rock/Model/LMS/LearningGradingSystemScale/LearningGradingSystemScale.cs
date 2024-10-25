@@ -98,7 +98,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string HighlightColor { get; set; }
+        public string HighlightColor { get; set; } = "#007aff";
 
         #endregion
 

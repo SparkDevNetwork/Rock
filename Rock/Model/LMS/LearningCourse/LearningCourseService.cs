@@ -164,9 +164,10 @@ namespace Rock.Model
         /// <param name="programId">The identifier of the <see cref="LearningProgram"/> for which to return courses.</param>
         /// <param name="personId">The identifier of the <see cref="Person"/> to include completion status for.</param>
         /// <param name="semesterStartFrom">Optional filter for the next session Semester Start. Only Start Dates greater than this date will be included.</param>
-        /// /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
+        /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
+        /// <param name="publicOnly"><c>true</c> to include <see cref="LearningCourse"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <returns>An enumerable of PublicLearningCourseBag.</returns>
-        public List<PublicLearningCourseBag> GetPublicCourses( int programId, int? personId, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
+        public List<PublicLearningCourseBag> GetPublicCourses( int programId, int? personId, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null, bool publicOnly = true )
         {
             var rockContext = ( RockContext ) Context;
             var orderedPersonCompletions =
@@ -197,7 +198,10 @@ namespace Rock.Model
                 .Include( c => c.LearningProgram )
                 .Include( c => c.Category )
                 .Include( c => c.LearningCourseRequirements )
-                .Where( c => c.IsActive && c.IsPublic && c.LearningProgramId == programId )
+                .Where( c =>
+                    c.IsActive
+                    && c.LearningProgramId == programId
+                    && ( c.IsPublic || !publicOnly ) )
                 .Select( c => new PublicLearningCourseBag
                 {
                     Entity = c,
@@ -215,7 +219,7 @@ namespace Rock.Model
                     // Get the earliest semester with open enrollment and a start date within the specified dates for this course.
                     NextSemester = semesters.FirstOrDefault( s =>
                         ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
-                        s.StartDate >= now && 
+                        s.StartDate >= now &&
                         ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
                         ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value ) &&
                         s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
