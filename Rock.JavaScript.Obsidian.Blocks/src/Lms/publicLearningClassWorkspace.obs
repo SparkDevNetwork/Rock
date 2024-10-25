@@ -150,7 +150,7 @@
                         </div>
 
                         <div class="activity-item-status text-right">
-                            <span v-if="item.isStudentCompleted" class="badge badge-grade" :style="getGradeBageStyles(item)" >
+                            <span v-if="item.isStudentCompleted" class="badge badge-grade" :style="getGradeBageStyles(item)">
                                 {{ getBadgeText(item) }}
                             </span>
                         </div>
@@ -497,6 +497,12 @@
                 if (activities.value && index >= 0) {
                     activities.value[index] = result.data;
 
+                    // Only set the viewing completion bag to the returned data if it matches.
+                    // It's possible the another available activity was selected between submission and response.
+                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey){
+                        viewingCompletionBag.value = result.data;
+                    }
+
                     // If there's a subsequent activity and it becomes available upon completion of the previous
                     // then mark it available.
                     const nextActivityIndex = index + 1;
@@ -508,15 +514,10 @@
                         nextActivity.isAvailable = true;
                     }
 
-                    // Only set the viewing completion bag to the returned data if it matches.
-                    // It's possible the another available activity was selected between submission and response.
-                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey){
-                        viewingCompletionBag.value = result.data;
-                    }
                 }
 
                 // Reload the activity component.
-                activityTypeComponent.value = await defineAsyncComponent(() => import(componentUrl.value));
+                activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
 
                 isCompleting.value = false;
 
@@ -560,7 +561,7 @@
      * Watch for the selected activity changing and ensure the query params and
      * activityType component are in-sync.
      */
-    watch(viewingCompletionBag, async (cur, prev) => {
+    watch(viewingCompletionBag, (cur, prev) => {
         const previousIdKey = toValue(prev)?.learningActivityIdKey;
         const currentIdKey = toValue(cur)?.learningActivityIdKey;
 
@@ -576,16 +577,14 @@
             activities.value[previousSelectedIndex] = prev;
         }
 
-        if (backButtonClicked.value){
-            return;
-        }
-
-        const queryParams = new URLSearchParams(window.location.search);
-        queryParams.set("activity", currentIdKey ?? "");
-        history.pushState(null, "", "?" + queryParams.toString());
-
         // Update the activity component.
-        activityTypeComponent.value = await defineAsyncComponent(() => import(componentUrl.value));
+        activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+
+        if (!backButtonClicked.value){
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.set("activity", currentIdKey ?? "");
+            history.pushState(null, "", "?" + queryParams.toString());
+        }
     });
 
     // Handle any initial error conditions or the need to go into edit mode.
@@ -593,9 +592,9 @@
         blockError.value = config.errorMessage;
     }
 
-    onMounted(async () => {
+    onMounted(() => {
         if (componentUrl.value.length > 0) {
-            activityTypeComponent.value = await defineAsyncComponent(() => import(componentUrl.value));
+            activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
         }
     });
 
@@ -628,6 +627,6 @@
             }
         }
 
-        nextTick(() => backButtonClicked.value = false);
+        void nextTick(() => backButtonClicked.value = false);
     });
 </script>
