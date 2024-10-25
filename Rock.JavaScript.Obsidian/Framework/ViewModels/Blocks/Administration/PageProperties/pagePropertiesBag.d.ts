@@ -149,8 +149,8 @@ export type PagePropertiesBag = {
     /** Gets or sets the Id of the parent Page. */
     parentPageId?: number | null;
 
-    /** Gets or sets the rate limit period. */
-    rateLimitPeriod?: string | null;
+    /** Gets or sets the rate limit period (in seconds). */
+    rateLimitPeriodDuration?: string | null;
 
     /** Gets or sets the rate limit request per period. */
     rateLimitRequestPerPeriod?: string | null;
