@@ -43,7 +43,7 @@
                         @click="onSaveClick">
                 Save
             </RockButton>
-            <RockButton v-if="panelMode === DetailPanelMode.Edit"
+            <RockButton v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add"
                         btnType="link"
                         @click="onCancelEdit"
                         autoDisable>Cancel</RockButton>
