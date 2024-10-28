@@ -97,7 +97,7 @@
     * @param row The row to be filtered.
     */
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
+        const person = row["person"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
