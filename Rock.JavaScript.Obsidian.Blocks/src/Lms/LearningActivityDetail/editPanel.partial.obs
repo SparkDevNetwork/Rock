@@ -177,6 +177,8 @@
     const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
     const activityBag = ref(props.modelValue.bag ?? {} as LearningActivityBag);
 
+    const isNew = activityBag.value.idKey?.length === 0;
+
     const attributes = ref(activityBag.value?.attributes ?? {});
     const attributeValues = ref(activityBag.value?.attributeValues ?? {});
     const name = propertyRef(activityBag.value?.name ?? "", "Name");
@@ -194,7 +196,7 @@
     const activityComponentSettingsJson = propertyRef(activityBag.value?.activityComponentSettingsJson ?? "", "ActivityComponentSettingsJson");
     const activityComponent = propertyRef(activityBag.value?.activityComponent ?? {} as LearningActivityComponentBag, "ActivityComponent");
 
-    const points = propertyRef(activityBag.value?.points ?? 0, "Points");
+    const points = propertyRef(isNew ? 10 : activityBag.value?.points ?? 10, "Points");
 
     const activityComponentValue = ref(activityBag.value?.activityComponent?.guid ?? "");
 

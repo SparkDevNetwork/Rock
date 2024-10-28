@@ -15,14 +15,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <CheckBox
-                                            v-model="isActive"
-                                            label="Active" />
+                                              v-model="isActive"
+                                              label="Active" />
                                 </div>
 
                                 <div class="col-md-6">
                                     <CheckBox
-                                            v-model="isPublic"
-                                            label="Public" />
+                                              v-model="isPublic"
+                                              label="Public" />
 
                                 </div>
                             </div>
@@ -30,9 +30,9 @@
                     </div>
 
                     <TextBox
-                            v-model="summary"
-                            label="Public Summary"
-                            textMode="multiline" />
+                             v-model="summary"
+                             label="Public Summary"
+                             textMode="multiline" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -41,12 +41,6 @@
                                      label="Public Name" />
 
 
-
-                            <NumberBox v-if="!isOnDemandMode"
-                                       v-model="credits"
-                                       class="input-width-sm"
-                                       label="Credits"
-                                       rules="required" />
 
                             <ImageUploader v-model="imageBinaryFile"
                                            label="Image"
@@ -110,32 +104,41 @@
                     <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <TextBox v-model="courseCode"
-                                            class="input-width-md"
-                                            label="Course Code"
-                                            :max="12" />
+                                <div class="col-md-6">
+                                    <TextBox v-model="courseCode"
+                                             class="input-width-md"
+                                             label="Course Code"
+                                             :max="12" />
+                                </div>
+                                <div class="col-md-6">
 
+                                    <NumberBox
+                                               v-model="credits"
+                                               class="input-width-sm"
+                                               label="Credits" />
+
+                                </div>
                                 <WorkflowTypePicker
-                                            v-model="completionWorkflowType"
-                                            label="Completion Workflow Type"
-                                            help="The workflow to launch when an individual completes the course." />
+                                                    v-model="completionWorkflowType"
+                                                    label="Completion Workflow Type"
+                                                    help="The workflow to launch when an individual completes the course." />
                             </div>
                             <div class="col-md-6">
                                 <NumberBox v-model="maxStudents"
-                                       class="input-width-sm"
-                                       label="Maximum Students"
-                                       help="The maximum number of students a class can have." />
+                                           class="input-width-sm"
+                                           label="Maximum Students"
+                                           help="The maximum number of students a class can have." />
 
                                 <div class="row">
                                     <div class="col-md-6">
                                         <CheckBox
-                                            v-model="allowHistoricalAccess"
-                                            label="Allow Historical Access" />
+                                                  v-model="allowHistoricalAccess"
+                                                  label="Allow Historical Access" />
                                     </div>
                                     <div class="col-md-6">
                                         <CheckBox
-                                            v-model="enableAnnouncements"
-                                            label="Enable Announcements" />
+                                                  v-model="enableAnnouncements"
+                                                  label="Enable Announcements" />
                                     </div>
                                 </div>
                             </div>
@@ -178,7 +181,6 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -259,8 +261,6 @@
             rows: [...courseRequirements.value]
         };
     });
-
-    const isOnDemandMode = ref(props.options?.configurationMode === ConfigurationMode.OnDemandLearning);
 
     // #endregion
 

@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
-import { Guid } from "@Obsidian/Types";
+    import { Guid } from "@Obsidian/Types";
     import { isValidGuid, emptyGuid } from "@Obsidian/Utility/guid";
     import { PropType, computed, ref } from "vue";
 
@@ -96,12 +96,12 @@ import { Guid } from "@Obsidian/Types";
     const backgroundImagePath = computed(() => {
 
         const width = container.value?.clientWidth ? `&width=${container.value?.clientWidth}` : "";
-        if (guidIsValid.value === true){
-            return { backgroundImage: `url('/GetImage.ashx?guid=${imageFileGuid.value}')${width}`};
+        if (guidIsValid.value === true) {
+            return { backgroundImage: `url('/GetImage.ashx?guid=${imageFileGuid.value}')${width}` };
         }
-
-        return { backgroundImage: "url('/Assets/Images/no-picture.svg')"};
-
+        else {
+            return undefined;
+        }
     });
 
     // #endregion
