@@ -22,5 +22,13 @@ namespace Rock.ViewModels.Blocks.Core.CategoryDetail
     /// </summary>
     public class CategoryDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets whether the block should be shown.
+        /// </summary>
+        /// <remarks>
+        /// Because this block may be used with the Category Tree View control
+        /// - we want this block to be hidden when there is no selection.
+        /// </remarks>
+        public bool ShowBlock { get; set; }
     }
 }

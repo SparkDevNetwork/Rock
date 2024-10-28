@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-bind="formFieldProps" :modelValue="internalMediaElement" name="media-element-picker">
-        <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem />
-        <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+        <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" rules="" help="" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem />
+        <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" rules="" help="" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
                     <RockButton isSquare @click.prevent="fetchMediaFolders"><i class="fa fa-refresh"></i></RockButton>
                 </span>
             </template>
         </BaseAsyncPicker>
-        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" help="" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
                     <RockButton isSquare @click.prevent="fetchMediaElements"><i class="fa fa-refresh"></i></RockButton>

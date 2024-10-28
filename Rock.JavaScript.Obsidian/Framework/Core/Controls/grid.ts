@@ -1042,6 +1042,11 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
             sortValue = (r) => {
                 const v = r[sortField];
 
+                // Explicitly handle null and undefined values
+                if (v === null || v === undefined) {
+                    return undefined;
+                }
+
                 if (typeof v === "string" || typeof v === "number") {
                     return v;
                 }

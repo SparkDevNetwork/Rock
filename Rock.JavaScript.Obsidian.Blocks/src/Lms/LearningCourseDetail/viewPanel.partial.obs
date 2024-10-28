@@ -2,25 +2,33 @@
 <template>
     <TabbedContent :tabs="courseDetailTabs">
         <template #tabpane="{ item }">
-            <div v-if="item === 'Overview'">
-                <fieldset>
-                    <ValueDetailList :modelValue="topValues" />
-                    <div class="row">
-                        <div class="col-md-6">
-                            <ValueDetailList :modelValue="leftSideValues" />
+            <template v-if="item === 'Overview'" class="row">
+
+                <div class="col-md-4">
+                    <ImageWithIcon :imageFileGuid="imageGuid"
+                                :highlightColor="highlightColor"
+                                :iconCssClass="iconCssClass" />
+                </div>
+                <div class="col-md-8">
+                    <fieldset>
+                        <ValueDetailList :modelValue="topValues" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ValueDetailList :modelValue="leftSideValues" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <ValueDetailList :modelValue="rightSideValues" />
+                            </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <ValueDetailList :modelValue="rightSideValues" />
-                        </div>
-                    </div>
-
-                    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
-                </fieldset>
-            </div>
-            <div v-else-if="item === 'Description'">
+                        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+                    </fieldset>
+                </div>
+            </template>
+            <template v-else-if="item === 'Description'">
                 <span v-html="descriptionAsHtml"></span>
-            </div>
+            </template>
         </template>
     </TabbedContent>
 </template>
@@ -38,7 +46,8 @@
     import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
-	import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
 
     const props = defineProps({
         modelValue: {
@@ -64,6 +73,10 @@
     // #region Computed Values
 
     const isOnDemandMode = ref(props.options?.configurationMode === ConfigurationMode.OnDemandLearning);
+
+    const imageGuid = computed(() => props.modelValue?.imageBinaryFile?.value ?? "");
+    const iconCssClass = computed(() => props.modelValue?.programIconCssClass ?? "");
+    const highlightColor = computed(() => props.modelValue?.programHighlightColor ?? "");
 
     /** The values to display full-width at the top of the block. */
     const topValues = computed((): ValueDetailListItem[] => {
@@ -93,7 +106,7 @@
             valueBuilder.addTextValue("Public Name", publicName);
         }
 
-		// On-Demand mode doesn't allow  course credits.
+        // On-Demand mode doesn't allow  course credits.
         if (isOnDemandMode.value === false){
             valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
         }

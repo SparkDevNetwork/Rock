@@ -8,8 +8,8 @@ INSERT INTO @PersonAliasIds
 VALUES
   (0) -- Leave this here for ease of commenting/uncommenting the below lines.
 , (10) -- Admin Admin
---, (17) -- Ted Decker
---, (16) -- Cindy Decker
+, (17) -- Ted Decker
+, (16) -- Cindy Decker
 --, (15) -- Noah Decker
 --, (14) -- Alex Decker
 ;
@@ -41,6 +41,7 @@ SELECT 'Attendance' AS [Entity]
     , a.[DidAttend]
     , dv.[Value] AS [DeclineReason]
     , a.[Note]
+    , CONCAT(pScheduledBy.[NickName], ' ', pScheduledBy.[LastName]) AS 'ScheduledByName'
 FROM [Attendance] a
 INNER JOIN @PersonAliasIds pai
     ON pai.[Id] = a.[PersonAliasId]
@@ -58,7 +59,12 @@ LEFT OUTER JOIN [Schedule] s
     ON s.[Id] = ao.[ScheduleId]
 LEFT OUTER JOIN [DefinedValue] dv
     ON dv.[Id] = a.[DeclineReasonValueId]
-WHERE a.[RequestedToAttend] = 1
+LEFT OUTER JOIN [PersonAlias] paScheduledBy
+    ON paScheduledBy.[Id] = a.[ScheduledByPersonAliasId]
+LEFT OUTER JOIN [Person] pScheduledBy
+    ON pScheduledBy.[Id] = paScheduledBy.[PersonId]
+WHERE 1 = 1
+    AND a.[RequestedToAttend] = 1
     AND ao.[OccurrenceDate] >= @Today
 ORDER BY p.[PrimaryFamilyId]
     , p.[Id]

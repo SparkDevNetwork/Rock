@@ -463,23 +463,13 @@
      */
     function togglePopup(): void {
         showPopup.value = !showPopup.value;
-        const body = document.getElementsByTagName("body")[0];
 
         if (showPopup.value) {
             // After popup is shown, focus on the first search input
             nextTick(() => {
                 if (nameSearchTextBox.value) {
                     const input = nameSearchTextBox.value.querySelector("input");
-
                     input?.focus();
-                }
-
-                // When the modal popup, disable scrolling.
-                if (showPopup.value == true) {
-                    body.style.overflowY = "hidden";
-                }
-                else {
-                    body.style.overflowY = "";
                 }
             });
         }
@@ -532,6 +522,20 @@
         searchCancelToken = ref(false);
 
         updateSearchResults(nameSearchText.value, addressSearchText.value, phoneSearchText.value, emailSearchText.value, searchCancelToken);
+    });
+
+    watch(showPopup, () => {
+        const body = document.getElementsByTagName("body")[0];
+
+        // When the modal popup, disable scrolling.
+        if (showPopup.value) {
+            console.log("hidden");
+            body.style.overflowY = "hidden";
+        }
+        else {
+            console.log("unhidden");
+            body.style.overflowY = "";
+        }
     });
 
     watch(() => props.expandSearchOptions, () => {

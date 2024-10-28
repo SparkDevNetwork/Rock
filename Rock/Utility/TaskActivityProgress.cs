@@ -284,7 +284,6 @@ namespace Rock.Utility
         /// Processes the queued messages for sending.
         /// </summary>
         /// <param name="forceProcessing">if set to <c>true</c> then processing will happen even if it isn't time yet.</param>
-        /// <param name="flushAllItems">if set to <c>true</c> all items will be processed, otherwise a single item will be processed.</param>
         private void ProcessQueuedMessages( bool forceProcessing = false )
         {
             bool hasLock = false;

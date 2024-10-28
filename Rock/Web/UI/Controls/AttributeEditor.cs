@@ -1404,7 +1404,6 @@ namespace Rock.Web.UI.Controls
             _cbRequired = new RockCheckBox();
             _cbRequired.ID = "cbRequired";
             _cbRequired.Label = "Required";
-            _cbRequired.Text = "Require a value";
             Controls.Add( _cbRequired );
 
             _cbShowInGrid = new RockCheckBox();

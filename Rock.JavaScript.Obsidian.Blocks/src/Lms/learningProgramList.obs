@@ -51,9 +51,11 @@
                 width="20%"
                 visiblePriority="md">
             <template #format="{ row }">
-                <span :class="getConfigurationModeLabelClass(row.configurationMode)">
-                    {{ getConfigurationModeText(row.configurationMode) }}
-                </span>
+                <div class="configuration-mode-container">
+                    <span :class="getConfigurationModeLabelClass(row.configurationMode)">
+                        {{ getConfigurationModeText(row.configurationMode) }}
+                    </span>
+                </div>
             </template>
         </Column>
         <BooleanColumn name="isPublic"
@@ -183,7 +185,7 @@
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0") + "?returnUrl=" + window.location.href;
         }
     }
 

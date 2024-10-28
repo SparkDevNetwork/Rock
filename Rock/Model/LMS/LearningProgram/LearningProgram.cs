@@ -120,12 +120,13 @@ namespace Rock.Model
         /// <summary>
         /// Indicates whether or not this LearningProgram should
         /// be displayed in public contexts (e.g. on a public site).
+        /// Defaults to <c>true</c>.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this LearningProgram should be publicly visible; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the <see cref="Model.Category"/> identifier.

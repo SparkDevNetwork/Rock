@@ -104,8 +104,8 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
-                .Where( c => c.LearningSemester.EndDate >= now )
-                .Where( c => c.LearningSemester.StartDate <= now )
+                .Where( c => ( !c.LearningSemester.EndDate.HasValue || c.LearningSemester.EndDate >= now ) )
+                .Where( c => ( !c.LearningSemester.StartDate.HasValue || c.LearningSemester.StartDate <= now ) )
                 .Select( c => new
                 {
                     ClassId = c.Id,
@@ -132,15 +132,18 @@ namespace Rock.Model
         /// Gets a list of active, public programs, optionally filtered to the specified categoryIds and optionally with completion status for the specified person.
         /// </summary>
         /// <param name="includeCompletionsForPersonId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="publicOnly"><c>true</c> to include <see cref="LearningProgram"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="categoryGuids">The optional list of category Guids to filter for.</param>
         /// <returns>An enumerable of PublicLearningProgramBag.</returns>
-        public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, params Guid[] categoryGuids )
+        public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, bool publicOnly = true, params Guid[] categoryGuids )
         {
             var baseQuery = Queryable()
                 .AsNoTracking()
                 .Include( p => p.ImageBinaryFile )
                 .Include( p => p.Category )
-                .Where( p => p.IsActive && p.IsPublic );
+                .Where( p =>
+                    p.IsActive
+                    && ( p.IsPublic || !publicOnly ) );
 
             if ( categoryGuids.Any() )
             {

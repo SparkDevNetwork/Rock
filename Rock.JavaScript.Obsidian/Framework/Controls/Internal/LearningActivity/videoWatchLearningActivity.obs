@@ -57,7 +57,7 @@
             </div>
             <div class="footer-buttons">
                 <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || isStudentCompleted"
-                            @click="emits('completed', true)">
+                            @click="onCompletedAndClosed">
                     {{ isStudentCompleted ? 'Completed' : 'Complete' }}
                 </RockButton>
             </div>
@@ -126,6 +126,11 @@
     watch(completionThresholdForView, () => {
         completionThreshold.value = completionThresholdForView.value / 100;
     });
+
+    function onCompletedAndClosed(): void {
+        emits("completed", true);
+        emits("closed");
+    }
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {

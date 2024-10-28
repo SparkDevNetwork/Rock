@@ -4,80 +4,42 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <template v-if="isCompletionsTabSelected">
-        <ProgramCompletionGrid
-                               :tabs="tabs"
-                               :entityName="programName"
-                               :labels="blockLabels"
-                               :showSemesterColumn="isAcademicConfigurationMode"
-                               @tabChange="onSelectTab"
-                               @rowClick="onCompletionClick" />
-    </template>
-    <template v-else-if="isSemestersTabSelected">
-        <SemesterGrid
-                      :tabs="tabs"
-                      :entityName="programName"
-                      :labels="blockLabels"
-                      :isAddEnabled="isEditable"
-                      :isDeleteEnabled="isEditable"
-                      @tabChange="onSelectTab"
-                      @deleteClick="onDeleteSemesterClick" />
-    </template>
+    <DetailBlock
+                    v-if="!blockError"
+                    v-model:mode="panelMode"
+                    :alwaysShowLabels="true"
+                    :isFullScreenVisible="false"
+                    :isAuditHidden="true"
+                    :name="panelName"
+                    :labels="blockLabels"
+                    :entityKey="entityKey"
+                    :entityTypeGuid="entityTypeGuid"
+                    entityTypeName="LearningProgram"
+                    :isBadgesVisible="false"
+                    :isSecurityHidden="isSecurityHidden"
+                    :footerSecondaryActions="footerSecondaryActions"
+                    :headerActions="headerSecondaryActions"
+                    :isEditVisible="showEditButton"
+                    :onDelete="onDelete"
+                    @cancelEdit="onCancelEdit"
+                    @edit="onEdit"
+                    @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
 
-    <template v-if="!isCompletionsTabSelected && !isSemestersTabSelected">
-        <DetailBlock
-                     v-if="!blockError"
-                     v-model:mode="panelMode"
-                     :alwaysShowLabels="true"
-                     :isFullScreenVisible="false"
-                     :isAuditHidden="true"
-                     :name="panelName"
-                     :labels="blockLabels"
-                     :entityKey="entityKey"
-                     :entityTypeGuid="entityTypeGuid"
-                     entityTypeName="LearningProgram"
-                     :isBadgesVisible="false"
-                     :isSecurityHidden="false"
-                     :footerSecondaryActions="footerSecondaryActions"
-                     :onDelete="onDelete"
-                     @cancelEdit="onCancelEdit"
-                     @save="onSave">
-            <template #sidebar v-if="panelMode === DetailPanelMode.View">
-                <ImageWithIcon :imageFileGuid="imageGuid"
-                               :highlightColor="highlightColor"
-                               :iconCssClass="iconCssClass" />
-            </template>
-            <template #view>
-                <div v-if="showKpis" class="row d-flex mb-3">
-                    <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
-                    <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
-                    <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
-                </div>
-
-                <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
-
-                <div>
-                    <RockButton v-for="action in footerActions" :btnType="action.type" @click.preventDefault="action.handler" class="mr-3">
-                        {{ action.title }}
-                    </RockButton>
-                </div>
-
-                <Modal v-model="showDetailsModal" title="Additional Details">
-                    <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
-                </Modal>
-            </template>
-            <template #edit>
-                <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
-            </template>
-        </DetailBlock>
-    </template>
+            <Modal v-model="showDetailsModal" title="Additional Details">
+                <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
+            </Modal>
+        </template>
+        <template #edit>
+            <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
+        </template>
+    </DetailBlock>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import ProgramCompletionGrid from "./LearningProgramSecondaryLists/programCompletionGrid.partial.obs";
-    import SemesterGrid from "./LearningProgramSecondaryLists/semesterGrid.partial.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -86,24 +48,17 @@
     import EditPanel from "./LearningProgramDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningProgramDetail/viewPanel.partial.obs";
     import AdditionalDetailsModal from "./LearningProgramDetail/additionalDetailsModal.obs";
-    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
-    import Kpi from "@Obsidian/Controls/kpi.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useBlockBrowserBus, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningProgramDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
     import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
-    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
-    import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
-
-    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -114,38 +69,20 @@
     const learningProgramViewBag = ref(config.entity);
     const learningProgramEditBag = ref<ValidPropertiesBox<LearningProgramBag>>({bag: {} as LearningProgramBag});
     const learningProgramAdditionalDetailsBag = ref(config.entity);
+    const displayMode = ref(config.options?.displayMode ?? "Summary");
 
     const entityTypeGuid = EntityType.LearningProgram;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    const activeClasses = ref(learningProgramViewBag.value?.activeClasses);
-    const activeStudents = ref(learningProgramViewBag.value?.activeStudents);
-    const completions = ref(learningProgramViewBag.value?.completions);
-    const showKpis = ref(learningProgramViewBag.value?.showKpis);
-
-    const programName = ref(learningProgramViewBag.value?.publicName ?? "");
-    const isAcademicConfigurationMode = ref(learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar);
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
         entity: learningProgramEditBag
     });
 
-    const tabs = computed(() =>
-        isAcademicConfigurationMode ?
-        ["Overview", "Description", "Completions", "Semesters"] :
-        ["Overview", "Description"]
-    );
-
-    const selectedTabIndex = ref(0);
-
     // #endregion
 
     // #region Computed Values
-
-    const imageGuid = computed((): string => learningProgramViewBag.value?.imageBinaryFile?.value ?? "");
-    const iconCssClass = computed((): string => learningProgramViewBag.value?.iconCssClass ?? "");
-    const highlightColor = computed((): string => learningProgramViewBag.value?.highlightColor ?? "");
 
     /**
      * The entity name to display in the block panel.
@@ -156,6 +93,24 @@
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => learningProgramViewBag.value?.idKey ?? "");
+
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        return [
+            {
+                iconCssClass: "fa fa-ellipsis-v",
+                title: "Additional Details",
+                type: "default",
+                handler: async () => {
+                    if (await onViewAdditionalDetailsModal()) {
+                        showDetailsModal.value = true;
+                    }
+                }
+            }
+        ];
+    });
+
+    /** Whether the security icon should be hidden. */
+    const isSecurityHidden = computed(() => displayMode.value === "Summary");
 
     /**
      * Additional labels to display in the block panel.
@@ -214,58 +169,6 @@
     });
 
     /**
-     * The footer actions for the block panel.
-     */
-    const footerActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
-            return [];
-        }
-
-        const footerActionsPanelActions: PanelAction[] = [];
-
-        if (config.navigationUrls?.[NavigationUrlKey.CoursesPage]) {
-            footerActionsPanelActions.push({
-                title: "Courses",
-                type: "default",
-                handler: () => {
-                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.CoursesPage] ?? "");
-                }
-            });
-        }
-
-        // Completions and Semesters are only applicable to Academic Calendar mode programs.
-        if (isAcademicConfigurationMode.value === true) {
-            footerActionsPanelActions.push({
-                title: "Completions",
-                type: "default",
-                handler: () => {
-                    onSelectTab(tabs.value.findIndex(t => t === "Completions"));
-
-                    // Because we're showing other content and
-                    // we don't want secondary blocks to be visible
-                    // we need to alert them via the browser bus.
-                    browserBus.publish(BlockMessages.BeginEdit);
-                }
-            });
-
-            footerActionsPanelActions.push({
-                    title: "Semesters",
-                    type: "default",
-                    handler: () => {
-                        onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
-
-                        // Because we're showing other content and
-                        // we don't want secondary blocks to be visible
-                        // we need to alert them via the browser bus.
-                        browserBus.publish(BlockMessages.BeginEdit);
-                    }
-                });
-        }
-
-        return footerActionsPanelActions;
-    });
-
-    /**
      * The footer secondary actions for the block panel.
      */
     const footerSecondaryActions = computed((): PanelAction[] => {
@@ -275,28 +178,13 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (displayMode.value === "Summary") {
             secondaryActions.push({
-                iconCssClass: "fa fa-ellipsis-h",
-                title: "Additional Details",
+                iconCssClass: "fa fa-cog",
+                title: "Configure",
                 type: "default",
                 handler: async () => {
-                    if (await onViewAdditionalDetailsModal()) {
-                        showDetailsModal.value = true;
-                    }
-                }
-            }, {
-                iconCssClass: "fa fa-pencil",
-                title: "Edit",
-                type: "default",
-                handler: async () => {
-                    if (await onEdit()) {
-                        panelMode.value = DetailPanelMode.Edit;
-
-                        // Because we're not using the standard edit button we are now responsible
-                        // for alerting other blocks that we're entering edit mode (end edit will work as normal).
-                        browserBus.publish(BlockMessages.BeginEdit);
-                    }
+                    await onConfigure();
                 }
             });
         }
@@ -306,13 +194,12 @@
 
     const isEditable = computed((): boolean => config.isEditable === true);
 
-    const isCompletionsTabSelected = computed((): boolean => selectedTabIndex.value === 2);
-    const isDescriptionTabSelected = computed((): boolean => selectedTabIndex.value === 1);
-    const isSemestersTabSelected = computed((): boolean => selectedTabIndex.value === 3);
-    const isOverviewTabSelected = computed((): boolean => selectedTabIndex.value === 0);
-
     const options = computed((): LearningProgramDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { displayMode: "Summary" };
+    });
+
+    const showEditButton = computed((): boolean => {
+        return displayMode.value === "Detail" && isEditable.value;
     });
 
     // #endregion
@@ -342,15 +229,16 @@
     }
 
     /**
-     * Event handler for a program completion row click.
+     * Event handler for the Configure button being clicked (the Cog icon).
      *
-     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     * @returns true if the panel should enter edit mode; otherwise false.
      */
-    function onCompletionClick(idKey: string): void {
-        const url = (config.navigationUrls && config.navigationUrls[NavigationUrlKey.CompletionDetailPage]) ?? "";
-        if (url.length > 0) {
-            window.location.href = url.replace("((Key))", idKey + "?autoEdit=True&returnUrl=" + encodeURIComponent(window.location.href));
+     async function onConfigure(): Promise<boolean | string>{
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage];
         }
+
+        return false;
     }
 
     /**
@@ -371,29 +259,6 @@
         }
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning program.";
-
-            return false;
-        }
-    }
-
-    /**
-     * Event handler for the Semester Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
-     *
-     * @returns false if it should stay on the page; or a string containing a redirect URL.
-     */
-    async function onDeleteSemesterClick(): Promise<false | string> {
-        errorMessage.value = "";
-
-        const result = await invokeBlockAction<string>("DeleteSemester", {
-            key: learningProgramViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data) {
-            return result.data;
-        }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning semester.";
 
             return false;
         }
@@ -449,30 +314,6 @@
         return false;
     }
 
-    async function onSelectTab(tabIndex: number): Promise<void> {
-        if (selectedTabIndex.value === tabIndex) {
-            return;
-        }
-
-        const newTabName = tabIndex >= 0 && tabIndex < tabs.value.length ? tabs.value[tabIndex] : 0;
-
-        const queryParams = new URLSearchParams(window.location.search);
-        queryParams.set("tab", newTabName.toString() ?? "");
-        history.pushState(null, "", "?" + queryParams.toString());
-        selectedTabIndex.value = tabIndex;
-
-        if (isDescriptionTabSelected.value === true && isEditable.value === true) {
-            if (await onEdit()) {
-                panelMode.value = DetailPanelMode.Edit;
-            }
-        }
-        else if (isOverviewTabSelected.value === true){
-            // If we're coming from another tab we should send an alert
-            // via the browser bus that we're exiting edit mode.
-            browserBus.publish(BlockMessages.EndEdit);
-        }
-    }
-
     /**
      * Event handler for the Additional Details Modal button being clicked.
      * Request all attribute details from the server and then show the modal.
@@ -512,28 +353,4 @@
         panelMode.value = DetailPanelMode.Add;
     }
 
-    // Set initially selected tab.
-    const queryString = new URLSearchParams(window.location.search.toLowerCase());
-    let tabIndex = 0;
-    if (queryString.has("tab")) {
-        const tab = queryString.get("tab")?.toLowerCase() ?? "";
-
-        // Because we include a secondary block that should be hidden in edit mode
-        // and when on other tabs we also want secondary blocks hidden -
-        // send the 'Begin/End Edit' bus message as necessary.
-        const busMessage = tabIndex === 0 ? BlockMessages.EndEdit : BlockMessages.BeginEdit;
-        browserBus.publish(busMessage);
-
-        if (tab === "description") {
-            tabIndex = 1;
-        }
-        else if (tab === "completions") {
-            tabIndex = 2;
-        }
-        else if (tab === "semesters") {
-            tabIndex = 3;
-        }
-    }
-
-    selectedTabIndex.value = tabIndex;
 </script>

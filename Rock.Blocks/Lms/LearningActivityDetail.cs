@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
@@ -290,7 +291,7 @@ namespace Rock.Blocks.Lms
             {
                 Id = 0,
                 Guid = Guid.Empty,
-                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AlwaysAvailable,
+                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AfterPreviousCompleted,
                 DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
         }
@@ -362,14 +363,19 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
                 () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateCriteria ),
+            var canUpdateDueDates = entity.Id == 0 || box.Bag.DueDateChangeType.HasValue;
+
+            if ( canUpdateDueDates )
+            {
+                box.IfValidProperty( nameof( box.Bag.DueDateCriteria ),
                 () => entity.DueDateCriteria = box.Bag.DueDateCriteria );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
-                () => entity.DueDateDefault = box.Bag.DueDateDefault );
+                box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
+                    () => entity.DueDateDefault = box.Bag.DueDateDefault );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
-                () => entity.DueDateOffset = box.Bag.DueDateOffset );
+                box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
+                    () => entity.DueDateOffset = box.Bag.DueDateOffset );
+            }
 
             box.IfValidProperty( nameof( box.Bag.IsStudentCommentingEnabled ),
                 () => entity.IsStudentCommentingEnabled = box.Bag.IsStudentCommentingEnabled );
@@ -545,11 +551,25 @@ namespace Rock.Blocks.Lms
                 return actionError;
             }
 
+            // Get the previous Available & DueDates in case we need it for
+            // updating existing LearningActivityCompletion records.
+            var previousAvailableDate = entity.AvailableDateCalculated;
+            var previousDueDate = entity.DueDateCalculated;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
             }
+
+            var newAvailableDate = entity.AvailableDateCalculated;
+            var newDueDate = entity.DueDateCalculated;
+
+            // Check to see if we should also update LearningActivityCompletion records.
+            // If the available dates changes
+            // or if the due date changed and we have a due date change type.
+            var updateAvailableDates = previousAvailableDate != newAvailableDate;
+            var updateDueDates = previousDueDate != newDueDate && box.Bag.DueDateChangeType.HasValue;
 
             // Ensure everything is valid before saving.
             if ( !ValidateLearningActivity( entity, out var validationMessage ) )
@@ -561,6 +581,34 @@ namespace Rock.Blocks.Lms
             if ( isNew )
             {
                 entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            }
+            else if ( updateAvailableDates || updateDueDates )
+            {
+                // If there is a change to the available or due date for an
+                // existing LearningActivity we need to update any those completions
+                // to use the new date.
+                var allCompletions = new LearningActivityCompletionService( RockContext )
+                    .Queryable()
+                    .Where( c => c.LearningActivityId == entity.Id );
+
+                foreach ( var c in allCompletions )
+                {
+                    if ( updateAvailableDates )
+                    {
+                        c.AvailableDateTime = newAvailableDate;
+                    }
+
+                    if ( updateDueDates )
+                    {
+                        // Update the DueDate if we're updating all records
+                        // or if this record matches the previous value -
+                        // per the user provided DueDateChangeType.
+                        if ( box.Bag.DueDateChangeType == DueDateChangeType.UpdateAll || c.DueDate.Value.Date == previousDueDate.Value.Date )
+                        {
+                            c.DueDate = newDueDate;
+                        }
+                    }
+                }
             }
 
             RockContext.SaveChanges();

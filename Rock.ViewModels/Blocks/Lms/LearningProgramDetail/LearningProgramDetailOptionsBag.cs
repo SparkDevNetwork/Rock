@@ -22,7 +22,7 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
 {
     /// <summary>
-    /// 
+    /// The options bag containing the necessary configuration data for the LearningProgram Detail block.
     /// </summary>
     public class LearningProgramDetailOptionsBag
     {
@@ -35,5 +35,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
         /// Gets or sets the available system communications.
         /// </summary>
         public List<ListItemBag> SystemCommunications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DisplayMode of the block, "Summary" or "Detail".
+        /// </summary>
+        public string DisplayMode { get; set; }
     }
 }

@@ -42,7 +42,7 @@
             </div>
 
             <div class="footer-content-section">
-                <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed) || completionBag.isStudentCompleted" @click="emits('completed', true)">
+                <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed) || completionBag.isStudentCompleted" @click="onCompletedAndClosed">
                     Complete
                 </RockButton>
             </div>
@@ -94,6 +94,11 @@
         screenToShow,
         new AcknowledgementActivityDefaults()
     );
+
+    function onCompletedAndClosed(): void {
+        emits("completed", true);
+        emits("closed");
+    }
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {

@@ -55,6 +55,13 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// </summary>
         public bool ShowCampus { get; set; }
 
+
+        /// <summary>
+        /// Indicates if the campus picker on the person entry form should include Inactive Campuses.
+        /// Defaulting to true as it was the existing behavior before this option was introduced.
+        /// </summary>
+        public bool IncludeInactiveCampus { get; set; } = true;
+
         /// <summary>
         /// The DefinedValue unique identifier for the campus type used to
         /// filter Campuses when displaying the campus picker.

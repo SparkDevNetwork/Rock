@@ -28,7 +28,6 @@ using Rock.Enums.Lms;
 using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Search.Group;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
@@ -146,7 +145,7 @@ namespace Rock.Blocks.Lms
         private LearningClassDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var classId = GetClassId().ToIntSafe();
             var options = new LearningClassDetailOptionsBag();
 
             if ( programId > 0 )
@@ -391,7 +390,7 @@ namespace Rock.Blocks.Lms
         {
             // Parse out the Id if the parameter is an IdKey or take the Id
             // If the site allows predictable Ids in parameters.
-            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var entityId = GetClassId().ToIntSafe();
 
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
@@ -923,7 +922,14 @@ namespace Rock.Blocks.Lms
                 .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
-            var orderedItems = GetOrderedLearningPlan( RockContext ).AsNoTracking();
+            var classId = GetClassId().ToIntSafe();
+
+            if ( classId == 0 )
+            {
+                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+            }
+
+            var orderedItems = GetOrderedLearningPlan( RockContext, classId ).AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
         }
 
@@ -941,19 +947,47 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
             }
 
+            // Get the "current assignment" for each student.
+            var activityService = new LearningActivityService( RockContext );
+            var activities = activityService.Queryable()
+                    .Include( a => a.LearningActivityCompletions )
+                    .Include( a => a.LearningClass )
+                    .Include( a => a.LearningClass.LearningSemester )
+                    .Where( a => a.LearningClassId == entity.Id )
+                    .Select( a => new
+                    {
+                        a.Name,
+                        a.DueDateCriteria,
+                        a.DueDateOffset,
+                        a.DueDateDefault,
+                        EnrollmentDate = a.LearningClass.CreatedDateTime,
+                        ClassStartDate = a.LearningClass.LearningSemester.StartDate,
+                        CompletedStudentIds = a.LearningActivityCompletions.Select( c => c.StudentId )
+                    } )
+                    .ToList()
+                    .Select( a => new
+                    {
+                        CompletedStudentIds = a.CompletedStudentIds.Distinct(),
+                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.ClassStartDate, a.EnrollmentDate ),
+                        a.Name
+                    } )
+                    .OrderBy( a => a.DueDate );
+
+            var students = new LearningParticipantService( RockContext )
+                .GetStudents( entity.Id )
+                .AsNoTracking()
+                .ToList();
+
             // Return all students for the course's default class.
             var gridBuilder = new GridBuilder<LearningParticipant>()
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "name", a => a.Person )
-                .AddField( "currentGradePercent", a => Math.Round(a.LearningGradePercent, 1) )
-                .AddField( "currentGrade", a => a.LearningGradingSystemScale?.Name )
-                .AddTextField( "note", a => a.Note )
-                .AddTextField( "role", a => a.GroupRole.Name )
-                .AddTextField( "currentAssignment", a =>
-                    a.LearningActivities
-                    .OrderBy( t => t.DueDate )
-                    .FirstOrDefault( t => !t.IsStudentCompleted )?
-                    .LearningActivity?.Name );
+                .AddTextField( "idKey", p => p.IdKey )
+                .AddPersonField( "name", p => p.Person )
+                .AddField( "currentGradePercent", p => Math.Round( p.LearningGradePercent, 1 ) )
+                .AddField( "currentGrade", p => p.LearningGradingSystemScale?.Name )
+                .AddTextField( "note", p => p.Note )
+                .AddTextField( "role", p => p.GroupRole.Name )
+                .AddTextField( "currentAssignment", p =>
+                    activities.Where( a => !a.CompletedStudentIds.Contains( p.Id ) ).Select( a => a.Name ).FirstOrDefault() );
 
             if ( includeAbsences )
             {
@@ -981,11 +1015,6 @@ namespace Rock.Blocks.Lms
                             entity.LearningCourse.LearningProgram ) );
             }
 
-            var students = new LearningParticipantService( RockContext )
-                .GetStudents( entity.Id )
-                .AsNoTracking()
-                .ToList();
-
             return ActionOk( gridBuilder.Build( students ) );
         }
 
@@ -1000,8 +1029,15 @@ namespace Rock.Blocks.Lms
         {
             using ( var rockContext = new RockContext() )
             {
+                var classId = GetClassId().ToIntSafe();
+
+                if ( classId == 0 )
+                {
+                    return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+                }
+
                 // Get the queryable and make sure it is ordered correctly.
-                var items = GetOrderedLearningPlan( rockContext ).ToList();
+                var items = GetOrderedLearningPlan( rockContext, classId ).ToList();
 
                 if ( !items.ReorderEntity( key, beforeKey ) )
                 {
@@ -1124,6 +1160,23 @@ namespace Rock.Blocks.Lms
         #region Private methods
 
         /// <summary>
+        /// Gets the identifier for the specified LearningClass (or Default LearningClass for the LearningCourse).
+        /// </summary>
+        /// <returns></returns>
+        private int? GetClassId()
+        {
+            // Get the page parameter value (either IdKey or Id).
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+
+            if ( classId > 0 )
+            {
+                return classId;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the LearningParticipantBag for the specified <paramref name="entity"/>
         /// and using the specified <paramref name="participantService"/>.
         /// </summary>
@@ -1187,26 +1240,12 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="rockContext">The RockContex tto use for getting the ordered results</param>
         /// <returns>An IQueryable of ordered <see cref="LearningActivity"/> records.</returns>
-        private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
+        private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext, int classId )
         {
-            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
-
             if ( classId > 0 )
             {
                 return new LearningActivityService( rockContext )
                     .GetClassLearningPlan( classId );
-            }
-
-            // Get the page parameter value (either IdKey or Id).
-            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
-
-            if ( courseId > 0 )
-            {
-                // Get the default class (prevents duplicates from showing in the activity list).
-                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( courseId, c => c.Id );
-
-                return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( defaultClassId );
             }
 
             return new List<LearningActivity>().AsQueryable();

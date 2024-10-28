@@ -189,6 +189,12 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool PersonEntryShowHeadingSeparator { get; set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.AdditionalSettingsJson"/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
+        private PersonEntryAdditionalSettings _personEntryAdditionalSettings;
+
         #endregion Person entry related Entity Properties
 
         /// <summary>
@@ -351,6 +357,7 @@ namespace Rock.Web.Cache
                     SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption,
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
+                    IncludeInactiveCampus = actionForm._personEntryAdditionalSettings?.IncludeInactiveCampus ?? true,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
                     SpouseLabel = actionForm.PersonEntrySpouseLabel,
                     RaceEntry = actionForm.PersonEntryRaceEntryOption,
@@ -437,6 +444,8 @@ namespace Rock.Web.Cache
             this.PersonEntryShowHeadingSeparator = workflowActionForm.PersonEntryShowHeadingSeparator;
             this.Guid = workflowActionForm.Guid;
             this.ForeignId = workflowActionForm.ForeignId;
+            this.AdditionalSettingsJson = workflowActionForm.AdditionalSettingsJson;
+            this._personEntryAdditionalSettings = workflowActionForm.GetAdditionalSettings<PersonEntryAdditionalSettings>();
 
             // set formAttributeIds to null so it load them all at once on demand
             _formAttributeIds = null;

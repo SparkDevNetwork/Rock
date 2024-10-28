@@ -150,7 +150,7 @@
             </div>
 
             <div class="footer-content-section mt-3">
-                <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)" :disabled="unansweredQuestions">Complete</RockButton>
+                <RockButton :btnType="BtnType.Primary" @click="emits('completed', true)" :disabled="unansweredQuestions">Complete</RockButton>
             </div>
         </fieldset>
         <div v-if="isStudentAssignedAndCompleted">
@@ -186,11 +186,15 @@
                     </div>
                 </div>
             </div>
+
+            <div class="continue-button-container">
+                <RockButton :btnType="BtnType.Primary" @click="emits('closed')">Continue</RockButton>
+            </div>
         </div>
     </div>
 
 </template>
-<style>
+<style scoped>
 .clickable-help {
     margin-left: 6px;
 }
@@ -252,11 +256,6 @@
     flex-direction: column;
 }
 
-.lms-configuration-container.lms-assessment-container > div {
-    display: flex;
-    flex-direction: column;
-}
-
 .configuration-footer-buttons {
     display: flex;
     justify-content: flex-end;
@@ -299,7 +298,7 @@ div.summary-sub-title {
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
-    const emit = defineEmits({ ...learningActivityEmits });
+    const emits = defineEmits({ ...learningActivityEmits });
 
     /**
      * Because we potentially have  multiple fields whose validity is shared
@@ -354,7 +353,7 @@ div.summary-sub-title {
     );
 
     // If there are assessment items, sort them based on order.
-    if (items.value) {
+    if (items?.value) {
         items.value.sort((a, b) => a.order - b.order);
     }
 
@@ -522,7 +521,7 @@ div.summary-sub-title {
     );
 
     const allWeights = computed(() =>
-        items.value.filter(i => i.typeName === AssessmentItemType.ShortAnswer)
+        items?.value.filter(i => i.typeName === AssessmentItemType.ShortAnswer)
             .map(i => (i as ShortAnswerItem).questionWeight)
             .concat(multipleChoiceWeight.value)
     );
@@ -534,8 +533,8 @@ div.summary-sub-title {
             "";
 
         return hasShortAnswerQuestions.value === true ?
-            `${questionsCorrectSentence} ${missedQuestionSentence}` :
-            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.`;
+            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.` :
+            `${questionsCorrectSentence} ${missedQuestionSentence}`;
     });
 
     /** Contains the custom style values to apply to the icon. */
@@ -582,7 +581,7 @@ div.summary-sub-title {
             showResultsOnCompletion: toValue(showResultsOnCompletion)
         }) ?? "{}";
 
-        emit("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     }, 500);
     watch([
         assessmentTerm,
@@ -616,7 +615,7 @@ div.summary-sub-title {
             updatedCompletionBag.pointsEarned = totalPointsEarned.value;
         }
 
-        emit("update:completionBag", updatedCompletionBag);
+        emits("update:completionBag", updatedCompletionBag);
     }, { deep: true });
 
     // If the individual hasn't completed the assessment ensure we are using

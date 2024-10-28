@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, reactive, ref } from "vue";
+    import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
     import { NavigationUrlKey } from "./DynamicData/types.partial";
     import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -63,10 +63,17 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { ColumnFilter, FilterValueFunction } from "@Obsidian/Types/Controls/grid";
+    import { Message, QueryStringChangedData } from "@Obsidian/Types/Utility/browserBus";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
     import { addQuickReturn } from "@Obsidian/Utility/page";
     import { DynamicDataInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/dynamicDataInitializationBox";
+    import { GetDynamicDataRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/getDynamicDataRequestBag";
+    import { GetDynamicDataResponseBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/getDynamicDataResponseBag";
+    import { GridResultsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/gridResultsBag";
+    import { LavaTemplateResultsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/lavaTemplateResultsBag";
     import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
@@ -74,6 +81,7 @@
     const config = useConfigurationValues<DynamicDataInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
+    const browserBus = useBrowserBus();
 
     const columnComponents = {
         "boolean": BooleanColumn,
@@ -85,13 +93,16 @@
         "text": TextColumn
     };
 
+    let isStartingUp = true;
+    let loadGridDataCts: CancellationTokenSource | null = null;
+
     // #region Values
 
     const errorMessage = ref(config.errorMessage);
 
     const isLavaTemplateDisplayMode = ref(config.isLavaTemplateDisplayMode);
-    const lavaTemplateResults = ref(config.lavaTemplateResults);
-    const gridResults = ref(config.gridResults);
+    const lavaTemplateResults = ref<LavaTemplateResultsBag | null | undefined>(undefined);
+    const gridResults = ref<GridResultsBag | null | undefined>(undefined);
 
     const lavaTemplateResultsElement = ref<HTMLElement | null>(null);
 
@@ -221,10 +232,122 @@
     // #region Functions
 
     /**
-     * Called when the grid is requesting the row data be loaded.
+     * Called on startup and when notified of new page parameter overrides.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     * @param pageParameterOverrides Page parameter values that will be sent
+     * to the server to override any startup or default page parameter values.
      */
-    async function loadGridData(): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>("GetGridRowData");
+    async function loadDynamicData(cancellationToken: ICancellationToken, pageParameterOverrides?: Record<string, string>): Promise<void> {
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        const bag: GetDynamicDataRequestBag = {
+            pageParameterOverrides
+        };
+
+        const result = await invokeBlockAction<GetDynamicDataResponseBag>("GetDynamicData", { bag });
+
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unknown error while trying to load block data.";
+            return;
+        }
+
+        lavaTemplateResults.value = result.data.lavaTemplateResults;
+        gridResults.value = result.data.gridResults;
+
+        if (!isLavaTemplateDisplayMode.value) {
+            gridDataSource.value = loadGridData(cancellationToken, pageParameterOverrides);
+        }
+
+        // Add a quick return link if a title is provided in the response.
+        if (result.data.quickReturnPageTitle) {
+            addQuickReturn(result.data.quickReturnPageTitle, "Dynamic Data", 80);
+        }
+    }
+
+    /**
+     * Loads dynamic data on startup.
+     */
+    async function loadDynamicDataOnStartup(): Promise<void> {
+        if (!isStartingUp) {
+            return;
+        }
+
+        // Subscribe to query string changed messages.
+        browserBus.subscribe(PageMessages.QueryStringChanged, onQueryStringChanged);
+
+        // Get the startup query string parameters, as they might be different
+        // than what the server knows about (e.g. if the individual edited block
+        // settings AFTER a "virtual" query string was put into play).
+        var currentParams = new URLSearchParams(window.location.search);
+        const pageParameterOverrides: Record<string, string> = {};
+        for (const [key, value] of currentParams.entries()) {
+            pageParameterOverrides[key] = value;
+        }
+
+        if (!loadGridDataCts) {
+            // If a query string changed message hasn't already been published,
+            // kick off the loading of dynamic data.
+            loadGridDataCts = new CancellationTokenSource();
+            await loadDynamicData(loadGridDataCts.token, pageParameterOverrides);
+        }
+
+        isStartingUp = false;
+    }
+
+    /**
+     * Called when a "query string changed" message is published over the
+     * browser bus.
+     *
+     * @param message The message containing the latest query string params.
+     */
+    async function onQueryStringChanged(message: Message<QueryStringChangedData>): Promise<void> {
+        // Copy the latest query string parameters to a dictionary we can send
+        // to the server. Note that we're sending ALL of the latest params and
+        // not just those that the grid's query is known to care about. This is
+        // because the block has many settings with Lava templates, and we don't
+        // currently have logic in place to determine which specific page params
+        // are referenced across the various templates.
+        const pageParameterOverrides: Record<string, string> = {};
+        for (const [key, value] of message.data.entries()) {
+            pageParameterOverrides[key] = value;
+        }
+
+        loadGridDataCts?.cancel();
+        loadGridDataCts = new CancellationTokenSource();
+
+        await loadDynamicData(loadGridDataCts.token, pageParameterOverrides);
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     * @param pageParameterOverrides Page parameter values that will be sent
+     * to the server to override any startup or default page parameter values.
+     */
+    async function loadGridData(cancellationToken: ICancellationToken, pageParameterOverrides?: Record<string, string>): Promise<GridDataBag> {
+        if (cancellationToken.isCancellationRequested) {
+            return {};
+        }
+
+        const bag: GetDynamicDataRequestBag = {
+            pageParameterOverrides
+        };
+
+        const result = await invokeBlockAction<GridDataBag>("GetGridRowData", { bag });
+
+        if (cancellationToken.isCancellationRequested) {
+            return {};
+        }
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
@@ -287,28 +410,41 @@
 
     // #endregion Event Handlers
 
-    onMounted(() => {
+    // #retion Watchers
+
+    watch([lavaTemplateResultsElement, lavaTemplateResultsHtml], () => {
         if (lavaTemplateResultsElement.value && lavaTemplateResultsHtml.value) {
             setInnerHTML(lavaTemplateResultsElement.value, lavaTemplateResultsHtml.value);
         }
+    });
 
+    watch([gridHeaderElement, gridHeaderHtml], () => {
         if (gridHeaderElement.value && gridHeaderHtml.value) {
             setInnerHTML(gridHeaderElement.value, gridHeaderHtml.value);
         }
+    });
 
+    watch([gridFooterElement, gridFooterHtml], () => {
         if (gridFooterElement.value && gridFooterHtml.value) {
             setInnerHTML(gridFooterElement.value, gridFooterHtml.value);
         }
     });
 
-    if (!isLavaTemplateDisplayMode.value) {
-        gridDataSource.value = loadGridData();
-    }
+    // #endretion Watchers
 
-    // Add a quick return link if a title is provided in the response.
-    if (config.quickReturnPageTitle) {
-        addQuickReturn(config.quickReturnPageTitle, "Dynamic Data", 80);
-    }
+    // #region Lifecyle Hooks
+
+    onBeforeUnmount(() => {
+        // Cancel any in-progress loading of data.
+        loadGridDataCts?.cancel();
+
+        // Remove browser bus event listeners.
+        browserBus.dispose();
+    });
+
+    // #endregion Lifecyle Hooks
+
+    loadDynamicDataOnStartup();
 
     onConfigurationValuesChanged(reloadBlock);
 </script>

@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="emptyDefinition"
+          :data="gridDataSource"
           keyField="idKey"
           title="Learning Plan"
           :entityTypeGuid="EntityType.LearningActivity"
@@ -103,9 +105,11 @@
     import Grid, { Column, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const invokeBlockAction = useInvokeBlockAction();
+    const emptyDefinition = {} as GridDefinitionBag;
 
     const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
     const assignToColors: Array<string> = ["var(--color-info-strong)", "var(--color-warning-strong)"];
@@ -151,13 +155,14 @@
     // #region Functions
 
     function getComponentHtml(row: Record<string, unknown>): string {
-        const baseColor = row.componentHighlightColor as string;
-        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const pair = RockColor.calculateColorPair(new RockColor(row.componentHighlightColor as string));
+        const backgroundColor = pair.backgroundColor.toRgba();
+        const foreColor = pair.foregroundColor.toRgba();
         const iconCssClass = row.componentIconCssClass as string;
 
         return `
-            <span class="label label-default component-label" style="background-color: ${pair.backgroundColor.toRgba()}">
-                <i class="${iconCssClass}" style="color: ${baseColor}"></i>${row.componentName}
+            <span class="label label-default component-label" style="background-color: ${backgroundColor}; color: ${foreColor};">
+                <i class="${iconCssClass}" style="color: ${foreColor}"></i>${row.componentName}
             </span>`;
     }
 

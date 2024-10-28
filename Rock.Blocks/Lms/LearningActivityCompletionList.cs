@@ -150,14 +150,7 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningActivityCompletion> GetListQueryable( RockContext rockContext )
         {
             var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
-
-            return base.GetListQueryable( rockContext )
-                .Include( a => a.Student )
-                .Include( a => a.LearningActivity )
-                .Include( a => a.Student.Person )
-                .Include( a => a.LearningActivity.LearningClass.LearningSemester )
-                .Include( a => a.Student.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
-                .Where( a => a.LearningActivityId == activityId );
+            return new LearningParticipantService( rockContext ).GetActivityCompletions( activityId );
         }
 
         /// <inheritdoc/>
@@ -231,7 +224,7 @@ namespace Rock.Blocks.Lms
             }
 
             var programCommunicationId = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.SystemCommunicationId );
-            var completion = completionService.GetNew( activity, participant.Id, participant.EnrollmentDate, programCommunicationId );
+            var completion = LearningActivityCompletionService.GetNew( activity, participant.Id, participant.EnrollmentDate, programCommunicationId );
             completionService.Add( completion );
 
             RockContext.SaveChanges();

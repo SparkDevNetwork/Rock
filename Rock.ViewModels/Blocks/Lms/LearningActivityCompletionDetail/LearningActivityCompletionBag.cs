@@ -86,6 +86,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public string GradeText { get; set; }
 
         /// <summary>
+        /// Gets or sets the highlight color of the achieved grade.
+        /// </summary>
+        public string GradeColor { get; set; }
+
+        /// <summary>
         /// Indicates whether or not the activity is currently available.
         /// </summary>
         public bool IsAvailable { get; set; }
@@ -119,6 +124,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Indicates whether or not the related activity instance has been completed by the student.
         /// </summary>
         public bool IsStudentCompleted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IdKey of the <see cref="ActivityBag"/>.
+        /// </summary>
+        public string LearningActivityIdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the number of points the student earned by completing the activity.

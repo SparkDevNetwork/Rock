@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex flex-fill align-items-center">
-        <div v-if="!hideAvatar" class="mr-2 flex-shrink-0"
-             :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
+        <div v-if="!hideAvatar" class="mr-3 flex-shrink-0"
+             :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
         </div>
         <div class="flex-grow-1">
             <template v-if="showAsLink && idKey">

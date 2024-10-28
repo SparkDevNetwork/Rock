@@ -64,6 +64,9 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the PersonAlias of the Person who graded the activity. */
     gradedByPersonAlias?: ListItemBag | null;
 
+    /** Gets or sets the highlight color of the achieved grade. */
+    gradeColor?: string | null;
+
     /** Gets or sets the text of the grade earned by the student. */
     gradeName?: string | null;
 
@@ -93,6 +96,9 @@ export type LearningActivityCompletionBag = {
 
     /** Indicates whether or not the related activity instance has been completed by the student. */
     isStudentCompleted: boolean;
+
+    /** Gets or sets the IdKey of the Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail.LearningActivityCompletionBag.ActivityBag. */
+    learningActivityIdKey?: string | null;
 
     /** Gets or sets the number of points the student earned by completing the activity. */
     pointsEarned: number;

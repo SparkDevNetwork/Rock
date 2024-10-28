@@ -184,6 +184,38 @@
     <Compile Include="Migrations\202410141551500_FixLoginConfirmationAlert.Designer.cs">
       <DependentUpon>202410141551500_FixLoginConfirmationAlert.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs" />
+    <Compile Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.Designer.cs">
+      <DependentUpon>202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410171119512_UpdateScheduleToolboxActionsLabelLava.cs" />
+    <Compile Include="Migrations\202410171119512_UpdateScheduleToolboxActionsLabelLava.Designer.cs">
+      <DependentUpon>202410171119512_UpdateScheduleToolboxActionsLabelLava.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410171630156_Rollup_20241017.cs" />
+    <Compile Include="Migrations\202410171630156_Rollup_20241017.designer.cs">
+      <DependentUpon>202410171630156_Rollup_20241017.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410171655004_CodeGenerated_20241017.cs" />
+    <Compile Include="Migrations\202410171655004_CodeGenerated_20241017.designer.cs">
+      <DependentUpon>202410171655004_CodeGenerated_20241017.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410180248298_AddGroupScheduleCoordinator.cs" />
+    <Compile Include="Migrations\202410180248298_AddGroupScheduleCoordinator.Designer.cs">
+      <DependentUpon>202410180248298_AddGroupScheduleCoordinator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.cs" />
+    <Compile Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.designer.cs">
+      <DependentUpon>202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410241828213_AddHighlightColorToGradingScale.cs" />
+    <Compile Include="Migrations\202410241828213_AddHighlightColorToGradingScale.Designer.cs">
+      <DependentUpon>202410241828213_AddHighlightColorToGradingScale.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202410251721110_RenamePageRateLimitPeriod.cs" />
+    <Compile Include="Migrations\202410251721110_RenamePageRateLimitPeriod.Designer.cs">
+      <DependentUpon>202410251721110_RenamePageRateLimitPeriod.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2348,6 +2380,30 @@
     <EmbeddedResource Include="Migrations\202410141551500_FixLoginConfirmationAlert.resx">
       <DependentUpon>202410141551500_FixLoginConfirmationAlert.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.resx">
+      <DependentUpon>202410161906013_AddAdditionalSettingsJSONToWorkflowActionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410171119512_UpdateScheduleToolboxActionsLabelLava.resx">
+      <DependentUpon>202410171119512_UpdateScheduleToolboxActionsLabelLava.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410171630156_Rollup_20241017.resx">
+      <DependentUpon>202410171630156_Rollup_20241017.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410171655004_CodeGenerated_20241017.resx">
+      <DependentUpon>202410171655004_CodeGenerated_20241017.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410180248298_AddGroupScheduleCoordinator.resx">
+      <DependentUpon>202410180248298_AddGroupScheduleCoordinator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.resx">
+      <DependentUpon>202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410241828213_AddHighlightColorToGradingScale.resx">
+      <DependentUpon>202410241828213_AddHighlightColorToGradingScale.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410251721110_RenamePageRateLimitPeriod.resx">
+      <DependentUpon>202410251721110_RenamePageRateLimitPeriod.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
     </EmbeddedResource>
@@ -3922,6 +3978,8 @@
     <None Include="Migrations\202410101546296_AddDefaultCheckInAdvertisement_Image.jpg">
       <DependentUpon>202410101546296_AddDefaultCheckInAdvertisement.cs</DependentUpon>
     </None>
+    <Content Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQuery.sql" />
+    <Content Include="Migrations\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQueryWithMultipleAccountIds.sql" />
     <Content Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication.sql">
       <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
     </Content>

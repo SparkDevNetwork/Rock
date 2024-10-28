@@ -23,23 +23,8 @@ namespace Rock.ViewModels.Blocks.Reporting.DynamicData
     public class DynamicDataInitializationBox : BlockBox
     {
         /// <summary>
-        /// Gets or sets the quick return page title.
-        /// </summary>
-        public string QuickReturnPageTitle { get; set; }
-
-        /// <summary>
         /// Gets or sets whether the results should be displayed using a lava template.
         /// </summary>
         public bool IsLavaTemplateDisplayMode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the lava template results.
-        /// </summary>
-        public LavaTemplateResultsBag LavaTemplateResults { get; set; }
-
-        /// <summary>
-        /// Gets or sets the grid results.
-        /// </summary>
-        public GridResultsBag GridResults { get; set; }
     }
 }
