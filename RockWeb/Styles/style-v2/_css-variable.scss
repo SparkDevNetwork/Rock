@@ -157,6 +157,7 @@
 
   // BORDER RADIUS
   --rounded-tiny:     2px;
+  --rounded-xsmall:    4px;
   --rounded-small:    6px;
   --rounded-medium:   8px;
   --rounded-large:   12px;
@@ -169,4 +170,27 @@
   --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
   --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
 
+  // TEST Dark Mode
+  --color-interface-strongest: #FFFFFF;
+  --color-interface-stronger:  #E7E9EF;
+  --color-interface-strong:    #D9D9E3;
+  --color-interface-medium:    #8B8BA7;
+  --color-interface-soft:      #5D5D6F;
+  --color-interface-softer:    #000000;
+  --color-interface-softest:   #1C1C1E;
+  
+  --color-critical-soft:    #EE772533;
+  --color-critical-strong:  #FEDEC8;
+
+  --color-danger-soft:      #D7001533;
+  --color-danger-strong:    #FFCCD1;
+
+  --color-info-soft:        #007AFF33;
+  --color-info-strong:      #D6EAFF;
+
+  --color-success-soft:     #248A3D33;
+  --color-success-strong:   #D7F4DE;
+
+  --color-warning-soft:     #E5860033;
+  --color-warning-strong:   #FFECD1;
 }

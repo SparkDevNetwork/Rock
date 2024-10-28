@@ -129,15 +129,15 @@
     width:              8px;
     height:             8px;
     // Commented out to remove the scroll bar on "Group Scheduler" & "Connection Request Board" Block
-    // background-color: var(--color-interface-softer);
-    // border-radius:      4px;
+    background-color: var(--color-interface-softer);
+    border-radius:      4px;
   }
 
   & ::-webkit-scrollbar-thumb {
     width:              8px;
     // Commented out to remove the scroll bar on "Group Scheduler" & "Connection Request Board" Block
-    // background-color:   var(--color-interface-soft);
-    // border-radius:      4px;
+    background-color:   var(--color-interface-soft);
+    border-radius:      4px;
 
     &:hover {
       background-color: var(--color-interface-medium);

@@ -50,7 +50,7 @@
 .input-group-lg > .input-group-btn > .btn {
   padding:          var(--spacing-xsmall) var(--spacing-medium);
   font-size:        var(--font-size-h5);
-  border-radius:    var(rounded-small);
+  border-radius:    var(--rounded-small);
 }
 
 .input-group-sm > .form-control,
@@ -96,7 +96,7 @@
   text-align:         center;
   background-color:   var(--color-interface-softest);
   border:             1px solid var(--color-interface-soft);
-  border-radius:      var(--rounded-small);
+  border-radius:      var(--rounded-xsmall);
 
   > .btn {
     position:           relative;
@@ -105,7 +105,7 @@
     justify-content:    center;
     height:             38px;
     margin:             -7px -13px; // Need to hard code for the zoom function on the group scheduler.
-    border-radius:      var(--rounded-small);
+    border-radius:      var(--rounded-xsmall);
 
     &:focus {
       z-index:    3;
@@ -126,12 +126,12 @@
   &.input-sm {
     padding:        var(--spacing-tiny) var(--spacing-xsmall);
     font-size:      var(--font-size-small);
-    border-radius:  var(--rounded-small);
+    border-radius:  var(--rounded-xsmall);
   }
   &.input-lg {
     padding:          var(--spacing-xsmall) var(--spacing-medium);
     font-size:        var(--font-size-h5);
-    border-radius:    var(rounded-small);
+    border-radius:    var(rounded-xsmall);
   }
 
   // Nuke default margins from checkboxes and radios to vertically center within.

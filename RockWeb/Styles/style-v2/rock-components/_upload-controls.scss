@@ -48,6 +48,7 @@
       height:               100%;
       background-position:  50%;
       background-size:      cover;
+      border-radius:    var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
     }
 
     .imageupload-remove {
@@ -77,7 +78,7 @@
     cursor:           pointer;
     background-color: var(--color-interface-softer);
     border:           1px solid var(--color-interface-soft);
-    border-radius:    0 0 var(--rounded-small) var(--rounded-small);
+    border-radius:    0 0 var(--rounded-xsmall) var(--rounded-xsmall);
 
     ::-webkit-file-upload-button {
       cursor: pointer;
