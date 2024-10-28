@@ -711,8 +711,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.AllAttendance
-                    .Min( a => a.StartDateTime )
+                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<FamilyLabelData>
