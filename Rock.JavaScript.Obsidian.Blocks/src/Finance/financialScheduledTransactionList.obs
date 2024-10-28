@@ -49,7 +49,13 @@
                     </div>
                 </div>
             </template>
-
+            <template #condensed="{ row }">
+                <div class="text-sm">
+                    <div v-for="account in row.accounts">
+                        {{ account.name }}
+                    </div>
+                </div>
+            </template>
             <template #skeleton>
                 <div class="skeleton skeleton-text skeleton-rounded" />
             </template>
@@ -102,6 +108,7 @@
         <TextColumn name="gatewayScheduleId"
                     title="Schedule ID"
                     field="gatewayScheduleId"
+                    itemClass="schedule-wrap"
                     :filter="textValueFilter"
                     visiblePriority="md" />
 
@@ -117,7 +124,11 @@
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible" />
 </template>
-
+<style>
+.schedule-wrap {
+    word-break: break-all;
+}
+</style>
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -227,7 +238,7 @@
         let filterValue = "";
         const accounts = row.accounts as AccountAmount[];
         for (const account of accounts) {
-            filterValue += ` ${account.name}`;
+            filterValue += `${account.name} `;
         }
 
         return filterValue;
