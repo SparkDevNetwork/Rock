@@ -4,9 +4,10 @@
            :cancelText="'OK'"
            @close="onClose">
 
-       <Grid
-            itemTerm="Property"
-            :data="gridData">
+        <Grid
+              title="Audit Information"
+              :showExport="false"
+              :data="gridData">
             <TextColumn name="property"
                         field="property"
                         title="Property"
@@ -22,7 +23,7 @@
                         title="New Value"
                         visiblePriority="xs" />
 
-       </Grid>
+        </Grid>
     </Modal>
 </template>
 

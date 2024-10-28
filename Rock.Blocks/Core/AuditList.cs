@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -25,11 +23,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.AuditList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -49,34 +44,6 @@ namespace Rock.Blocks.Core
     [CustomizedGrid]
     public class AuditList : RockEntityListBlockType<Audit>
     {
-        #region Keys
-
-        private static class PreferenceKey
-        {
-            public const string FilterEntityType = "filter-entity-type";
-
-            public const string FilterEntityId = "filter-entity-id";
-
-            public const string FilterWho = "filter-who";
-        }
-
-        #endregion Keys
-
-        #region Properties
-
-        protected string FilterEntityType => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterEntityType );
-
-        protected int? FilterEntityId => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterEntityId )
-            .AsIntegerOrNull();
-
-        protected ListItemBag FilterWho => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterWho )
-            .FromJsonOrNull<ListItemBag>();
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -116,24 +83,6 @@ namespace Rock.Blocks.Core
                 .Include( a => a.Details )
                 .Include( a => a.PersonAlias )
                 .Include( a => a.PersonAlias.Person );
-
-            // Filter by Entity Type
-            if ( Guid.TryParse( FilterEntityType, out var filterEntityType ) )
-            {
-                query = query.Where( a => a.EntityType.Guid == filterEntityType );
-            }
-
-            // Filter by Entity Id
-            if ( FilterEntityId.HasValue && FilterEntityId > 0 )
-            {
-                query = query.Where( a => a.EntityId == FilterEntityId );
-            }
-
-            // Filter by Who/Person
-            if ( FilterWho != null && Guid.TryParse( FilterWho.Value, out var personGuid ) )
-            {
-                query = query.Where( a => a.PersonAlias.Guid == personGuid );
-            }
 
             return query;
         }
