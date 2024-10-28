@@ -226,28 +226,38 @@ namespace Rock.Jobs
         /// <param name="endDate">The end date.</param>
         private void GetStartAndEndDates( DateRange dateRange, out DateTime startDate, out DateTime endDate )
         {
+            /*
+                10/25/2024 - SMC
+                This job was originally intended to run Mon-Sun, as per the original specification, but this has been modified to run
+                from the first day of the week (as specified in the System Settings) to the last day.  By default, this is Mon-Sun in
+                Rock.
+
+                The original engineering note about the appropriate date range below is no longer accurate, but has been left for
+                explanatory reasons.
+
+                Reason: Correcting date range for users with custom "Starting Day of Week" System Setting.
+
+                --------
+
+                Prior engineering note: 2020-05-26 - JH
+                Per the SOW for this Job, the week reported should be Mon - Sun, so we need to add 1 day to the range.
+
+                Reason: Veritas Church custom digest email job.
+             */
+
             switch ( dateRange )
             {
                 case DateRange.CurrentWeek:
-                    endDate = RockDateTime.Today.SundayDate();
+                    startDate = RockDateTime.Today.StartOfWeek( Rock.Web.SystemSettings.StartDayOfWeek );
                     break;
                 case DateRange.PreviousWeek:
-                    endDate = RockDateTime.Today.AddDays( -7 ).SundayDate();
+                    startDate = RockDateTime.Today.StartOfWeek( Rock.Web.SystemSettings.StartDayOfWeek ).AddDays( -7 );
                     break;
                 default:
                     throw new ApplicationException( $"The '{dateRange}' date range is not yet supported." );
             }
 
-            /*
-             * 2020-05-26 - JH
-             *
-             * Per the SOW for this Job, the week reported should be Mon - Sun, so we need to add 1 day to the range.
-             *
-             * Reason: Veritas Church custom digest email job.
-             */
-            endDate = endDate.AddDays( 1 );
-
-            startDate = endDate.AddDays( -7 );
+            endDate = startDate.AddDays( 7 );
         }
 
         /// <summary>
