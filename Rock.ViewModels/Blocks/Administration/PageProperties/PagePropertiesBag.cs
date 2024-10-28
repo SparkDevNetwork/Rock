@@ -186,12 +186,12 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         /// <summary>
         /// Gets or sets the rate limit period (in seconds).
         /// </summary>
-        public string RateLimitPeriodDuration { get; set; }
+        public int? RateLimitPeriodDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the rate limit request per period.
         /// </summary>
-        public string RateLimitRequestPerPeriod { get; set; }
+        public int? RateLimitRequestPerPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.

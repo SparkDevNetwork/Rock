@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -112,9 +112,11 @@
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<SiteBag, SiteDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
 
     // #region Values
 
@@ -196,10 +198,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
 
     const onAuditClick = (): void => {
@@ -267,6 +265,7 @@
 
         isConfirmDeleteVisible.value = true;
         isActionButtonsVisible.value = false;
+        store.setAreSecondaryBlocksShown(true);
     }
 
     /**
@@ -317,6 +316,7 @@
             };
             config.options = result.data.options;
             panelMode.value = DetailPanelMode.Edit;
+            store.setAreSecondaryBlocksShown(false);
         }
     }
 
@@ -364,4 +364,13 @@
         siteEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onMounted(() => {
+        if (config.entity?.idKey) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 </script>

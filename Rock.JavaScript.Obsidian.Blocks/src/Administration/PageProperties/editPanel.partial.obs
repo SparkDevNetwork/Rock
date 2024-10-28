@@ -16,7 +16,7 @@
                     <TextBox v-model="internalName"
                              label="Internal Name"
                              rules="required"
-                             Help="The internal page name to use when administering this page" />
+                             help="The internal page name to use when administering this page" />
 
                     <TextBox v-model="pageTitle"
                              label="Page Title"
@@ -24,19 +24,20 @@
 
                     <TextBox v-model="browserTitle"
                              label="Browser Title"
-                             Help="The page title to display in the browser." />
+                             help="The page title to display in the browser." />
                 </div>
                 <div class="col-md-6">
                     <DropDownList v-model="site"
                                   label="Site"
                                   help="The Site that the page should belong to."
                                   :items="sites"
-                                  OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
+                                  :showBlankItem="false" />
 
                     <DropDownList v-model="layout"
                                   label="Layout"
                                   rules="required"
-                                  :items="layouts" />
+                                  :items="layouts"
+                                  :showBlankItem="false" />
 
                     <CheckBox v-model="menuDisplayIcon"
                               label="Show Icon" />
@@ -50,7 +51,7 @@
                     <TextBox v-model="description"
                              label="Description"
                              textMode="multiline"
-                             Help="The description of the page to include as a meta tag for the page" />
+                             help="The description of the page to include as a meta tag for the page" />
                 </div>
             </div>
 
@@ -154,14 +155,14 @@
                 </div>
                 <div v-if="enableRateLimiting">
                     <div class="col-md-6">
-                        <TextBox v-model="rateLimitPeriodDuration" label="Max Request Per Period" :rules="validateIntegerValue" />
+                        <NumberBox v-model="rateLimitPeriodDuration" label="Max Request Per Period" />
                     </div>
                     <div class="col-md-6">
-                        <TextBox v-model="rateLimitRequestPerPeriod" label="Rate Limit Period" :rules="validateIntegerValue">
+                        <NumberBox v-model="rateLimitRequestPerPeriod" label="Rate Limit Period">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">seconds</span>
                             </template>
-                        </TextBox>
+                        </NumberBox>
                     </div>
                 </div>
             </div>
@@ -189,6 +190,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -278,8 +280,8 @@
     const pageRoute = ref(props.modelValue.bag?.pageRoute ?? "");
     const intents = ref(props.modelValue.bag?.intents);
     const cacheControlHeaderSettings = propertyRef(props.modelValue.bag?.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
-    const rateLimitPeriodDuration = propertyRef(props.modelValue.bag?.rateLimitPeriodDuration ?? "", "RateLimitPeriodDuration");
-    const rateLimitRequestPerPeriod = propertyRef(props.modelValue.bag?.rateLimitRequestPerPeriod ?? "", "RateLimitRequestPerPeriod");
+    const rateLimitPeriodDuration = propertyRef(props.modelValue.bag?.rateLimitPeriodDuration, "RateLimitPeriodDuration");
+    const rateLimitRequestPerPeriod = propertyRef(props.modelValue.bag?.rateLimitRequestPerPeriod, "RateLimitRequestPerPeriod");
     const headerContent = propertyRef(props.modelValue.bag?.headerContent ?? "", "HeaderContent");
     const blockContexts = ref(props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
 
@@ -320,27 +322,6 @@
      */
     function getContextLabel(labelText: string | null | undefined): string {
         return `${labelText} Parameter Name`;
-    }
-
-    function validateIntegerValue(value: unknown): string | boolean {
-
-        const stringValue = value as string;
-
-        if (stringValue) {
-            const num = Number(value);
-            if (!isValidNumber(num)) {
-                return "must be a valid number.";
-            }
-            else if (num < 0) {
-                return "must have a value of 0 or more.";
-            }
-        }
-
-        return true;
-    }
-
-    function isValidNumber(num: number): boolean {
-        return !isNaN(num) && isFinite(num);
     }
 
     // #endregion
@@ -403,8 +384,8 @@
         updateRefValue(pageRoute, props.modelValue.bag?.pageRoute ?? "");
         updateRefValue(intents, props.modelValue.bag?.intents);
         updateRefValue(cacheControlHeaderSettings, props.modelValue.bag?.cacheControlHeaderSettings ?? null);
-        updateRefValue(rateLimitPeriodDuration, props.modelValue.bag?.rateLimitPeriodDuration ?? "");
-        updateRefValue(rateLimitRequestPerPeriod, props.modelValue.bag?.rateLimitRequestPerPeriod ?? "");
+        updateRefValue(rateLimitPeriodDuration, props.modelValue.bag?.rateLimitPeriodDuration);
+        updateRefValue(rateLimitRequestPerPeriod, props.modelValue.bag?.rateLimitRequestPerPeriod);
         updateRefValue(headerContent, props.modelValue.bag?.headerContent ?? "");
         updateRefValue(blockContexts, props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
         updateRefValue(breadCrumbDisplayIcon, props.modelValue.bag?.breadCrumbDisplayIcon ?? false);

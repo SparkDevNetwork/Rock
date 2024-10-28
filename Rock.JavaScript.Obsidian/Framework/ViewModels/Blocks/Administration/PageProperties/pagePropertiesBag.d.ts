@@ -150,10 +150,10 @@ export type PagePropertiesBag = {
     parentPageId?: number | null;
 
     /** Gets or sets the rate limit period (in seconds). */
-    rateLimitPeriodDuration?: string | null;
+    rateLimitPeriodDuration?: number | null;
 
     /** Gets or sets the rate limit request per period. */
-    rateLimitRequestPerPeriod?: string | null;
+    rateLimitRequestPerPeriod?: number | null;
 
     /** Gets or sets a flag that indicates if the Page requires SSL encryption. */
     requiresEncryption: boolean;
