@@ -1610,7 +1610,9 @@ namespace RockWeb.Blocks.WorkFlow
                 existingPersonSpouseId = matchedPersonsSpouse.Id;
             }
 
-            if ( formPersonEntrySettings.MaritalStatus != WorkflowActionFormPersonEntryOption.Hidden )
+
+            // Keeping the Marital Status in sync with the other controls in PersonEditor.
+            if ( formPersonEntrySettings.MaritalStatus != WorkflowActionFormPersonEntryOption.Hidden && dvpMaritalStatus.SelectedDefinedValueId.IsNotNullOrZero() )
             {
                 personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
             }
