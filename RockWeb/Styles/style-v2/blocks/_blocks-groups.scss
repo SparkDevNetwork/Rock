@@ -149,7 +149,7 @@
       align-items:       center;
       gap:               var(--spacing-xsmall);
       padding:           8px 0 8px 10px;
-      background-color:  #fcfbfc;
+      background-color:  var(--color-interface-softer);
 
       &.status-pending,
       &.status-declined,
