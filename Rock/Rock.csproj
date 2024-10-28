@@ -1597,13 +1597,14 @@
     <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
     <Compile Include="Plugin\HotFixes\211_MigrationRollupsForV17_0_17.cs" />
     <Compile Include="Plugin\HotFixes\210_LMSPageChanges.cs" />
+    <Compile Include="Plugin\HotFixes\213_CategoryTreeViewBlockSettings.cs" />
     <Compile Include="Plugin\HotFixes\212_PrayerCategoryPageBlockSettings.cs" />
     <Compile Include="Plugin\HotFixes\209_MigrationRollupsForV17_0_16.cs" />
     <Compile Include="Plugin\HotFixes\208_MigrationRollupsForV17_0_15.cs" />
     <Compile Include="Plugin\HotFixes\207_MigrationRollupsForV17_0_14.cs" />
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
-    <Compile Include="Plugin\HotFixes\213_UpdateGradingScaleDescriptions.cs" />
+    <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

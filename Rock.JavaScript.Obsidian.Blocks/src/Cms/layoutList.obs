@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+        :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Layout"
@@ -118,7 +119,8 @@
     </Grid>
 
     <!-- Informational Note -->
-    <NotificationBox :alertType="'info'"
+    <NotificationBox v-if="isVisible"
+                     :alertType="'info'"
                      :dismissible="false"
                      :class="'mt-4'"
                      heading="Note">
@@ -136,16 +138,26 @@
     import { LayoutListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutList/layoutListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LayoutList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<LayoutListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     const note = " Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder. If all the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry.";
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return store.state.areSecondaryBlocksShown;
+    });
 
     // #endregion
 

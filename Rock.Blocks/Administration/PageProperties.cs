@@ -380,8 +380,8 @@ namespace Rock.Blocks.Administration
                 PageTitle = entity.PageTitle,
                 ParentPage = ToListItemBag( entity.ParentPage ),
                 ParentPageId = entity.ParentPageId,
-                RateLimitPeriodDuration = entity.RateLimitPeriodDuration.ToString(),
-                RateLimitRequestPerPeriod = entity.RateLimitRequestPerPeriod.ToString(),
+                RateLimitPeriodDuration = entity.RateLimitPeriodDuration,
+                RateLimitRequestPerPeriod = entity.RateLimitRequestPerPeriod,
                 RequiresEncryption = entity.RequiresEncryption,
                 PageUrl = pageUrl,
                 Site = entity.Layout?.Site.ToListItemBag() ?? site.ToListItemBag(),
@@ -559,10 +559,10 @@ namespace Rock.Blocks.Administration
                 () => entity.ParentPageId = box.Bag.ParentPageId );
 
             box.IfValidProperty( nameof( box.Bag.RateLimitPeriodDuration ),
-                () => entity.RateLimitPeriodDuration = box.Bag.RateLimitPeriodDuration.AsIntegerOrNull() );
+                () => entity.RateLimitPeriodDuration = box.Bag.RateLimitPeriodDuration );
 
             box.IfValidProperty( nameof( box.Bag.RateLimitRequestPerPeriod ),
-                () => entity.RateLimitRequestPerPeriod = box.Bag.RateLimitRequestPerPeriod.AsIntegerOrNull() );
+                () => entity.RateLimitRequestPerPeriod = box.Bag.RateLimitRequestPerPeriod );
 
             box.IfValidProperty( nameof( box.Bag.RequiresEncryption ),
                 () => entity.RequiresEncryption = box.Bag.RequiresEncryption );

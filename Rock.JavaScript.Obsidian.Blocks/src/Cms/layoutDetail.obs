@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
-    <DetailBlock v-if="!blockError"
+    <DetailBlock v-if="!blockError && layoutEditBag.siteId"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"

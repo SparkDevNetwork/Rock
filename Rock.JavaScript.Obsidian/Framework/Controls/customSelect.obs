@@ -4,6 +4,13 @@
         <!-- MOBILE VERSION -->
         <div v-if="isMobile" class="custom-select-mobile-wrapper">
             <div :class="`custom-select-wrapper ${wrapperClass} ${openStateCssClass()}`">
+                <TransitionVerticalCollapse speed="fast">
+                    <div v-if="!internalValue && !showOverlay" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
+                        <slot name="placeholder">
+                            <p class="text-muted">Select an item</p>
+                        </slot>
+                    </div>
+                </TransitionVerticalCollapse>
                 <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
                     <div v-if="showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
                         <div class="custom-select-item-content">
@@ -13,11 +20,6 @@
                         </div>
                     </div>
                 </TransitionVerticalCollapse>
-                <div v-if="!internalValue && !showOverlay" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
-                    <slot name="placeholder">
-                        <p class="text-muted">Select an item</p>
-                    </slot>
-                </div>
             </div>
             <Transition name="fade">
                 <div class="custom-select-expand-icon" v-if="!showOverlay" @click="onItemClick(null)">
@@ -142,7 +144,7 @@
     /**
      * Determine the class to apply to each item.
      */
-     function getItemClass(item: TItem | null): string | undefined {
+    function getItemClass(item: TItem | null): string | undefined {
         if (typeof props.itemClass === "string") {
             return props.itemClass;
         }
@@ -171,7 +173,7 @@
     }
 
     function openStateCssClass(): string {
-        if (showOverlay.value == true){
+        if (showOverlay.value == true) {
             return "is-open";
         }
 
@@ -183,7 +185,7 @@
             internalValue.value = item;
             showOverlay.value = false;
         }
-        else {
+        else if (isMobile.value) {
             showOverlay.value = true;
         }
     }

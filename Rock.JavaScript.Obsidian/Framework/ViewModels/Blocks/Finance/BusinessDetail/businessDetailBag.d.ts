@@ -55,6 +55,9 @@ export type BusinessDetailBag = {
     /** Gets or sets the custom actions. */
     customActions?: string | null;
 
+    /** Gets or sets the phone number when in view mode. */
+    displayPhoneNumber?: string | null;
+
     /** Gets or sets the email address. */
     emailAddress?: string | null;
 

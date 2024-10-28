@@ -13,12 +13,13 @@
           @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <SelectColumn />
         <TextColumn name="id" title="Id" field="id" :hideOnScreen="true" />
         <PersonColumn name="authorized"
                       title="Contributor"
                       field="authorized"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonFilterValue"
+                      :quickFilterValue="getPersonFilterValue"
                       visiblePriority="xs" />
 
         <CurrencyColumn name="amount"
@@ -36,10 +37,11 @@
 
         <Column name="accounts"
                 title="Accounts"
-                :filter="textValueFilter"
+                field="accounts"
+                :filter="pickExistingValueFilter"
                 :filterValue="getRowAccountsFilterValue"
                 :quickFilterValue="getRowAccountsFilterValue"
-                visiblePriority="lg">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <div class="text-sm">
                     <div v-for="account in row.accounts">
@@ -56,7 +58,7 @@
         <TextColumn name="transactionFrequency"
                     title="Frequency"
                     field="transactionFrequency"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
 
@@ -87,7 +89,7 @@
         <TextColumn name="currencyType"
                     title="Currency Type"
                     field="currencyType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn v-if="showTransactionTypeColumn"
@@ -101,11 +103,12 @@
                     title="Schedule ID"
                     field="gatewayScheduleId"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -118,15 +121,16 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, DateColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, CurrencyColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, DateColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, CurrencyColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialScheduledTransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialScheduledTransactionList/financialScheduledTransactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./FinancialScheduledTransactionList/types.partial";
+    import { AccountAmount, GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./FinancialScheduledTransactionList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./FinancialScheduledTransactionList/gridSettingsModal.partial.obs";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<FinancialScheduledTransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -221,12 +225,22 @@ import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
      */
      function getRowAccountsFilterValue(row: Record<string, unknown>): string {
         let filterValue = "";
-
-        for (const account of (row as Row).accounts) {
-            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
+        const accounts = row.accounts as AccountAmount[];
+        for (const account of accounts) {
+            filterValue += ` ${account.name}`;
         }
 
         return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["authorized"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     watch(gridSettings, async () => {
