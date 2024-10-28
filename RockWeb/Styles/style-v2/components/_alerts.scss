@@ -54,10 +54,10 @@
   }
 
   &.alert-grid {
-    margin-top:   -var(--spacing-medium);
-    margin-right: -var(--spacing-medium);
+    margin-top:   calc(var(--spacing-medium) * -1);
+    margin-right: calc(var(--spacing-medium) * -1);
     margin-bottom: var(--spacing-medium);
-    margin-left:  -var(--spacing-medium);
+    margin-left:  calc(var(--spacing-medium) * -1);
     border-radius: 0;
   }
 }
@@ -161,7 +161,7 @@
   ul,
   span {
     font-weight:  var(--font-weight-regular);
-    color:        var(--color-interface-stronger);
+    color:        var(--color-interface-strong);
   }
   ul {
     padding:      5px 25px 0;

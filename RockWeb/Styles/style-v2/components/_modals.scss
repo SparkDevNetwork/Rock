@@ -64,7 +64,7 @@ body.modal-open,
 .modal-dialog {
   position: relative;
   width:    auto;
-  margin:   var(--spacing-small);
+  margin:   var(--spacing-xsmall);
 }
 
 .modal-content {
@@ -330,7 +330,7 @@ body.rock-modal {
 
   .modal-header {
     min-height:       34px;
-    padding:          var(--spacing-small) var(--spacing-large);
+    padding:          var(--spacing-xsmall) var(--spacing-large);
     color:            var(--color-interface-softest);
     background-color: var(--color-primary);
     padding:          var(--spacing-medium);
@@ -357,19 +357,19 @@ body.rock-modal {
 
     .close {
       margin-top:       -2px;
-      padding:          var(--spacing-small);
+      padding:          var(--spacing-xsmall);
       text-decoration:  none;
       color:            var(--color-interface-strongest);
       text-shadow:      none;
     }
 
     .label {
-      margin-top: var(--spacing-small);
+      margin-top: var(--spacing-xsmall);
     }
 
     small {
       display:    block;
-      margin-top: var(--spacing-small);
+      margin-top: var(--spacing-xsmall);
       color:      var(--color-interface-medium) // TODO Darken the ui softest by 10% when color-mix() is avaialable
     }
 
@@ -401,7 +401,7 @@ body.rock-modal {
   }
 
   .modal-footer {
-    padding:            var(--spacing-small) var(--spacing-large);
+    padding:            var(--spacing-xsmall) var(--spacing-large);
     margin-top:         0;
     color:              var(--color-interface-medium);
     background-color:   var(--color-interface-softer);

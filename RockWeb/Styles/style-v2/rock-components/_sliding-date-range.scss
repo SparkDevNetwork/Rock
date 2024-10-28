@@ -14,14 +14,14 @@
 .input-group-sm .slidingdaterange-daterange .input-group-addon {
 
   height:         30px;
-  padding:        var(--spacing-tiny) var(--spacing-small);
+  padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-xsmall);
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-tiny);
 
   select & {
     height:       30px;
-    padding:      var(--spacing-tiny) var(--spacing-large) var(--spacing-tiny) var(--spacing-small); // Modified to BS5
+    padding:      var(--spacing-tiny) var(--spacing-large) var(--spacing-tiny) var(--spacing-xsmall); // Modified to BS5
   }
 
   textarea &,

@@ -18,7 +18,7 @@
   h3 {
     display:      inline-block;
     width:        100%;
-    margin:       0 0 var(--spacing-small);
+    margin:       0 0 var(--spacing-xsmall);
     font-size:    var(--font-size-small);
     font-weight:  var(--font-weight-regular);
     word-wrap:    break-word;
@@ -72,7 +72,7 @@
         min-width:                0;
         min-height:              90px;
         height:                 100%;
-        padding:                var(--spacing-small);
+        padding:                var(--spacing-xsmall);
         color:                  var(--color-interface-strongest);
         text-align:             center;
         word-wrap:              break-word;
@@ -86,7 +86,7 @@
         transition:             background-color 200ms linear, border-color 200ms linear;
 
         i {
-          margin:     var(--spacing-small) 0;
+          margin:     var(--spacing-xsmall) 0;
           font-size:  var(--font-size-h3);    /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
           color:      var(--color-interface-strong);
         }
@@ -108,7 +108,7 @@
           right:      -6px;
 
           .label {
-            padding:        2px var(--spacing-small);
+            padding:        2px var(--spacing-xsmall);
             color:          var(--color-interface-softest);
             background:     var(--color-danger-strong);
             border-radius:  36px;
@@ -164,7 +164,7 @@
 
   .block-status a {
     min-height:   105px;
-    padding:      var(--spacing-small) var(--spacing-medium);
+    padding:      var(--spacing-xsmall) var(--spacing-medium);
 
     .status-list {
       margin-top: auto;

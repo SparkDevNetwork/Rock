@@ -104,7 +104,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 output {
   display:      block;
-  padding-top:  (var(--spacing-small) + 1);
+  padding-top:  (var(--spacing-xsmall) + 1);
   font-size:    var(--font-size-small);
   line-height:  var(--line-height-normal);
   color:        var(--color-interface-stronger);
@@ -173,7 +173,7 @@ output {
   & > .form-row {
     display:      flex;
     flex-wrap:    wrap;
-    gap:          var(--spacing-small);
+    gap:          var(--spacing-xsmall);
     margin-right: var(--spacing-medium);
     align-items:  center;
   }
@@ -225,8 +225,8 @@ output {
 .form-control-static {
   min-height:       calc(var(--spacing-large) + var(--font-size-small));
   // Size it appropriately next to real form controls
-  padding-top:      var(--spacing-small);
-  padding-bottom:   var(--spacing-small);
+  padding-top:      var(--spacing-xsmall);
+  padding-bottom:   var(--spacing-xsmall);
   // Remove default margin from `p`
   margin-bottom:    0;
 
@@ -588,14 +588,14 @@ a.warning {
 // ======================= FORM CONTROL SIZING ======================
 .input-sm {
   height:         34px;
-  padding:        var(--spacing-small) var(--spacing-medium);
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-small);
   line-height:    16px; // Keep 16px to align with carot
   border-radius:  var(--rounded-small);
 
   select & {
     height:   34px;
-    padding:  var(--spacing-small) 36px var(--spacing-small) var(--spacing-medium); // Modified to BS5
+    padding:  var(--spacing-xsmall) 36px var(--spacing-xsmall) var(--spacing-medium); // Modified to BS5
   }
 
   textarea &,
@@ -605,16 +605,16 @@ a.warning {
 }
 
 .input-lg {
-  // .input-size(38px-large; var(--spacing-small); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-small));
+  // .input-size(38px-large; var(--spacing-xsmall); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-small));
   height:         38px;
-  padding:        var(--spacing-small) var(--spacing-medium);
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-medium);
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-normal);
 
   selec t & {
     height: 38px;
-    padding:      var(--spacing-small) var(--spacing-medium) var(--spacing-small) var(--spacing-medium); // Modified to BS5
+    padding:      var(--spacing-xsmall) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium); // Modified to BS5
   }
 
   textarea &,
@@ -642,7 +642,7 @@ a.warning {
 .form-group-sm {
   .form-control {
     height:         34px;
-    padding:        var(--spacing-small) var(--spacing-medium);
+    padding:        var(--spacing-xsmall) var(--spacing-medium);
     font-size:      var(--font-size-small);
     line-height:    var(--line-height-normal);
     border-radius:  var(--rounded-small);
@@ -658,7 +658,7 @@ a.warning {
   .form-control-static {
     height:         var(--line-height-normal);
     min-height:     calc(var(--spacing-large) + var(--font-size-small));
-    padding:        calc(var(--spacing-small) + 1) var(--spacing-medium);
+    padding:        calc(var(--spacing-xsmall) + 1) var(--spacing-medium);
     font-size:      var(--font-size-small);
     line-height:    var(--line-height-normal);
   }
@@ -667,7 +667,7 @@ a.warning {
 .form-group-lg {
   .form-control {
     height:         var(--line-height-normal);
-    padding:        var(--spacing-small) var(--spacing-medium);
+    padding:        var(--spacing-xsmall) var(--spacing-medium);
     font-size:      var(--font-size-medium);
     line-height:    var(--line-height-normal);
     border-radius:  var(--rounded-small);
@@ -683,7 +683,7 @@ a.warning {
   .form-control-static {
     height:       var(--line-height-normal);
     min-height:   calc(var(--spacing-large) + var(--font-size-medium));
-    padding:      calc(var(--spacing-small) + 1) var(--spacing-medium);
+    padding:      calc(var(--spacing-xsmall) + 1) var(--spacing-medium);
     font-size:    var(--font-size-medium);
     line-height:  var(--line-height-normal);
   }
@@ -865,14 +865,14 @@ a.warning {
   .checkbox,
   .radio-inline,
   .checkbox-inline {
-    padding-top: calc(var(--spacing-small) + 1); // Default padding plus a border
+    padding-top: calc(var(--spacing-xsmall) + 1); // Default padding plus a border
     margin-top: 0;
     margin-bottom: 0;
   }
 
   .radio,
   .checkbox {
-    min-height: (var(--spacing-large) + (var(--spacing-small) + 1));
+    min-height: (var(--spacing-large) + (var(--spacing-xsmall) + 1));
   }
 
   .form-group {
@@ -899,7 +899,7 @@ a.warning {
   // labels on narrow viewports stack the same as a default form example.
   @media (min-width: $screen-small) {
     .control-label {
-      padding-top: (var(--spacing-small) + 1); // Default padding plus a border
+      padding-top: (var(--spacing-xsmall) + 1); // Default padding plus a border
       margin-bottom: 0;
       text-align: right;
     }
@@ -920,7 +920,7 @@ a.warning {
   .form-group-lg {
     @media (min-width: $screen-small) {
       .control-label {
-        padding-top: (var(--spacing-small) + 1);
+        padding-top: (var(--spacing-xsmall) + 1);
         font-size: var(--font-size-medium);
       }
     }
@@ -928,7 +928,7 @@ a.warning {
   .form-group-sm {
     @media (min-width: $screen-small) {
       .control-label {
-        padding-top: (var(--spacing-small) + 1);
+        padding-top: (var(--spacing-xsmall) + 1);
         font-size:var(--font-size-small);
       }
     }

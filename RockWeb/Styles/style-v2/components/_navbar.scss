@@ -248,8 +248,8 @@
   margin: calc(calc(($navbar-height - 20px) * 0.5) * 0.5) calc($grid-gutter-width * -0.5);
 
   > li > a {
-    padding-top:      var(--spacing-small);
-    padding-bottom:   var(--spacing-small);
+    padding-top:      var(--spacing-xsmall);
+    padding-bottom:   var(--spacing-xsmall);
     line-height:      20px;
   }
 

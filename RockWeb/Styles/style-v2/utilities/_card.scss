@@ -75,7 +75,7 @@
   padding: .75rem 1.25rem;
   margin-top: 0; // DH: Remove BS3 margin-top of <hN>
   margin-bottom: 0; // Removes the default margin-bottom of <hN>
-  background-color: rgba(0,0,0,.03);
+  background-color: var(--color-interface-soft);
   border-bottom: 1px solid var(--color-interface-softer);
 
   &:first-child {
@@ -278,7 +278,7 @@
 
     .btn-primary,
     .btn-success {
-      margin: var(--spacing-tiny) 0 var(--spacing-tiny) var(--spacing-small);
+      margin: var(--spacing-tiny) 0 var(--spacing-tiny) var(--spacing-xsmall);
     }
   }
 

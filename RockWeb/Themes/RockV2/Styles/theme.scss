@@ -208,8 +208,8 @@ $navbar-element-height: 40px;
 
     .navbar-brand-corner {
       border-radius:  var(--rounded-large) var(--rounded-large) 0 0;
-      margin-top:     var(--spacing-small);
-      margin-left:    var(--spacing-small);
+      margin-top:     var(--spacing-xsmall);
+      margin-left:    var(--spacing-xsmall);
     }
 
     .header-content {
@@ -480,11 +480,11 @@ $navbar-element-height: 40px;
   display: none;
   width: 100%;
   height: 100%;
-  color: var(--color-interface-softer);
+  color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
   background-color: var(--color-primary);
 
   .navbar-side {
-    margin-bottom: 84px; // adds space for the admintool bar and the static top menu item on mobile
+    margin-bottom: 84px; // adds space for the admin tool bar and the static top menu item on mobile
 
     .nav-item-top {
       display: flex;
@@ -575,7 +575,7 @@ $navbar-element-height: 40px;
         line-height: 1.4;
         display: flex;
         align-items: center;
-        margin: var(--spacing-small) 0;
+        margin: var(--spacing-xsmall) 0;
         color: var(--color-interface-strong);
 
         &:last-child{
@@ -705,7 +705,7 @@ $navbar-element-height: 40px;
     height: calc(100% - $navbar-top-height) !important; // Overrides collapse if window is resized
     width: $navbarside-width;
     top: $navbar-top-height;
-    margin-left:    var(--spacing-small);
+    margin-left:    var(--spacing-xsmall);
     height:         calc(100% - 88px) !important;
     border-radius: 0 0 12px 12px;
 
@@ -727,10 +727,10 @@ $navbar-element-height: 40px;
 
     .navbar-side .nav-item-top {
       border: 0;
-      margin: var(--spacing-tiny) var(--spacing-small) var(--spacing-tiny) var(--spacing-small);
+      margin: var(--spacing-tiny) var(--spacing-xsmall) var(--spacing-tiny) var(--spacing-xsmall);
       height: 70px;
       font-size: 24px;
-      padding: var(--spacing-large) var(--spacing-small);
+      padding: var(--spacing-large) var(--spacing-xsmall);
 
       &:last-child {
         border: 0;
@@ -767,8 +767,8 @@ $navbar-element-height: 40px;
       left: calc($navbarside-width + 9px);
       width: 280px;
       border-radius: 0 14px 14px 0;
-      margin-top:     var(--spacing-small);
-      margin-bottom:  var(--spacing-small);
+      margin-top:     var(--spacing-xsmall);
+      margin-bottom:  var(--spacing-xsmall);
 
       .title {
         padding-top: 24px;
@@ -952,7 +952,7 @@ $hamburger-spacing: 4px;
 }
 
 
-// Miscellanous
+// Miscellaneous
 .header + .nav-item {
   margin-top: var(--spacing-medium);
 }
@@ -1078,5 +1078,132 @@ $hamburger-spacing: 4px;
     background-color: transparent;
     box-shadow: none;
   }
+}
+
+.card-profile-bio-condensed {
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+
+  .protection-profile {
+    padding: 14px 18px;
+  }
+
+  .profile-image {
+    position: relative;
+    flex-shrink: 0;
+    width: 25%;
+    height: 100%;
+
+    img {
+      border-radius: var(--rounded-normal) 0 0 var(--rounded-normal);
+    }
+  }
+
+  .profile-data {
+    width: 75%;
+    padding: 14px 18px;
+  }
+
+  .person-name {
+    margin: 0;
+  }
+
+  .dropdown {
+    padding-right: 32px;
+  }
+
+  .profile-toggle {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    color: var(--color-interface-stronger) !important;
+
+    &::after {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      bottom: -4px;
+      left: -4px;
+      z-index: -1;
+      content: '';
+      background: #eee;
+      border-radius: 4px;
+      opacity: 0;
+    }
+    .person-name {
+      flex: 1 1 auto;
+    }
+
+    .dropdown-icon {
+      margin: 0 4px 0 12px;
+    }
+  }
+
+  .profile-toggle:hover::after,
+  .open .profile-toggle::after {
+    opacity: 1;
+  }
+}
+
+@media (max-width: $screen-medium) {
+  .form-well {
+    padding: var(--spacing-medium);
+    margin: 0 calc(var(--spacing-medium) * -1);
+    background: var(--color-interface-softest);
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+
+
+
+
+
+// .tooltip {
+//   &.top {
+//     margin-bottom: 1px;
+//     .tooltip-arrow {
+//       bottom: 1px;
+//       border-width: 0 1px 1px 0;
+//     }
+//   }
+
+//   &.bottom {
+//     margin-top: 1px;
+//     .tooltip-arrow {
+//       top: 1px;
+//       border-width: 1px 0 0 1px;
+//     }
+//   }
+// }
+
+.nav-pills > li + li {
+  margin-left: 12px;
+  @media screen and (max-width: $screen-medium) {
+    margin-left: 8px;
+  }
+}
+
+.panel-heading .rollover-item > a {
+  color: var(--color-interface-strong);
+}
+
+.fa-stack-2x {
+  font-size: 2em;
+}
+
+.tooltip {
+  font-size:  var(--font-size-small);
+}
+
+.tooltip-inner {
+  padding: 8px;
+  text-align: left;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
 }
 

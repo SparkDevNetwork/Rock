@@ -12,8 +12,8 @@
 .smartsearch {
   position:           relative;
   width:              298px;
-  padding:            var(--spacing-tiny) var(--spacing-small);
-  margin-top:         var(--spacing-small);
+  padding:            var(--spacing-tiny) var(--spacing-xsmall);
+  margin-top:         var(--spacing-xsmall);
   font-size:          var(--font-size-xsmall);
   color:              var(--color-interface-stronger);
   background-color:   var(--color-interface-softest);
@@ -55,7 +55,7 @@
   > i {
     position:     absolute;
     float:        left;
-    margin-top:   var(--spacing-small);
+    margin-top:   var(--spacing-xsmall);
     font-size:    var(--font-size-regular);
     opacity:      .6;
   }

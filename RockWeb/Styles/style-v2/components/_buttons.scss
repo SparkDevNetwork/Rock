@@ -98,7 +98,7 @@
 
 .btn-authentication {
   width:            100%;
-  margin-bottom:    var(--spacing-small);
+  margin-bottom:    var(--spacing-xsmall);
   color:            var(--color-interface-strong);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
@@ -197,7 +197,7 @@
   }
   &:hover {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
     border-color:     var(--color-interface-medium);
   }
   &:active,
@@ -782,21 +782,21 @@
 
 // ======================== BUTTON SIZE ========================
 .btn-lg{
-  padding:        var(--spacing-small) var(--spacing-medium);
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-h5);
   line-height:    var(--line-height-tight);
   border-radius:  var(--rounded-small);
 }
 
 .btn-sm{
-  padding:        var(--spacing-small) 12px; // Need to hard code for to match the bottom left button of the `Learning Program Detail` bLock
+  padding:        var(--spacing-xsmall) 12px; // Need to hard code for to match the bottom left button of the `Learning Program Detail` bLock
   font-size:      var(--font-size-small);
   line-height:    16px; // Need to hard code if match the button size with the search bar 
   border-radius:  var(--rounded-small);
 }
 
 .btn-xs{
-  padding:        var(--spacing-tiny) var(--spacing-small);
+  padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-xsmall);
   line-height:    16px;
   border-radius:  var(--rounded-small);
@@ -884,5 +884,5 @@ input[type="button"] {
   color: var(--color-info-strong);
 }
 .ant-select-selector .ant-select-selection-overflow .btn-link {
-  color: var(--color-interface-soft);
+  color: var(--color-interface-medium);
 }

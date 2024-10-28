@@ -1,54 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="taglist">
-        <v-style>
-            .taglist .ant-select-auto-complete.ant-select {
-            width: 125px;
-            }
-
-            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector {
-            border: 0px;
-            padding: 0px;
-            height: 22px;
-            font-size: 12px;
-            background: transparent;
-            }
-
-            .taglist .ant-select-auto-complete.ant-select-focused.ant-select > .ant-select-selector,
-            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector:hover {
-            border: 0px;
-            box-shadow: initial;
-            background: rgba(0,0,0,0.05);
-            }
-
-            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector .ant-select-selection-search {
-            left: 6px;
-            right: 6px;
-            }
-
-            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector .ant-select-selection-placeholder {
-            position: absolute;
-            margin-left: 6px;
-            line-height: 22px;
-            }
-
-            .taglist .ant-select-auto-complete.ant-select .ant-select-selection-search-input {
-            height: 22px;
-            }
-
-            .taglist .add-new-tags {
-            float: left;
-            height: 22px;
-            font-size: 0.7em;
-            line-height: 22px;
-            }
-
-            .taglist .tag-wrap .tag.disabled:hover {
-            padding-right: 12px;
-            transition-delay: 0s;
-            }
-        </v-style>
-
         <div class="tag-wrap">
             <div class="tagsinput">
                 <Tag v-for="tag in currentTags"

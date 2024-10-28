@@ -17,9 +17,9 @@
 
 // ======================== IN-COLUMNS ========================
 .in-columns {
-  -webkit-column-gap:   var(--spacing-small);
-  -moz-column-gap:      var(--spacing-small);
-  column-gap:           var(--spacing-small);
+  -webkit-column-gap:   var(--spacing-xsmall);
+  -moz-column-gap:      var(--spacing-xsmall);
+  column-gap:           var(--spacing-xsmall);
   -webkit-column-width: $checkbox-columns-width;
   -moz-column-width:    $checkbox-columns-width;
   column-width:         $checkbox-columns-width;
@@ -138,7 +138,7 @@
 .checkbox {
   min-height:    var(--spacing-large);
   margin-top:    var(--spacing-tiny);
-  margin-bottom: var(--spacing-small);
+  margin-bottom: var(--spacing-xsmall);
 
   // Bootstrap subtracts -5px for .radio + .radio and .checkbox + .checkbox
 

@@ -47,7 +47,7 @@
     display:          flex;
     align-items:      center;
     width:            100%;
-    padding:          var(--spacing-small) var(--spacing-medium);
+    padding:          var(--spacing-xsmall) var(--spacing-medium);
     font-size:        var(--font-size-regular);
     line-height:      20px;
     color:            var(--color-interface-stronger);
@@ -131,8 +131,8 @@
 
   .scroll-container-native {
     width:              calc(100% + 16px);
-    padding:            var(--spacing-small);
-    margin:             calc(var(--spacing-small) * -1);
+    padding:            var(--spacing-xsmall);
+    margin:             calc(var(--spacing-xsmall) * -1);
     overflow-y:         auto;
   }
 
@@ -150,7 +150,7 @@
   }
 
   hr {
-    margin:           var(--spacing-small) calc(var(--spacing-small) * -1) var(--spacing-tiny);
+    margin:           var(--spacing-xsmall) calc(var(--spacing-xsmall) * -1) var(--spacing-tiny);
   }
 
   h4 {
@@ -162,7 +162,7 @@
   .picker-menu {
     width:            400px;
     max-height:       none; // Added to fix issue where picker paints incorrectly in modals.
-    padding:          var(--spacing-small);
+    padding:          var(--spacing-xsmall);
     will-change:      height;
 
     @media (max-width: $screen-small) {
@@ -186,8 +186,8 @@
   .picker-actions {
     display:          flex;
     align-items:      center;
-    padding:          var(--spacing-small);
-    margin:           var(--spacing-small) calc(var(--spacing-small)* -1) calc(var(--spacing-small) * -1) calc(var(--spacing-small) * -1);
+    padding:          var(--spacing-xsmall);
+    margin:           var(--spacing-xsmall) calc(var(--spacing-xsmall)* -1) calc(var(--spacing-xsmall) * -1) calc(var(--spacing-xsmall) * -1);
     font-size:        var(--font-size-small);
     background-color: var(--color-interface-softest);
     border-top:       1px solid var(--color-interface-softer);
@@ -244,11 +244,11 @@
   .personpicker-item {
     display:                grid;
     grid-template-columns:  1fr;
-    gap:                    var(--spacing-small) var(--spacing-medium);
+    gap:                    var(--spacing-xsmall) var(--spacing-medium);
     background:             var(--color-interface-softest);
     border:                 1px solid var(--color-interface-soft);
-    padding:                var(--spacing-small);
-    margin-bottom:          var(--spacing-small);
+    padding:                var(--spacing-xsmall);
+    margin-bottom:          var(--spacing-xsmall);
     cursor:                 pointer;
     border-radius:          var(--rounded-small);
     align-items:            center;
@@ -370,7 +370,7 @@
       float:                    left;
       width:                    70px;
       height:                   70px;
-      margin-right:             var(--spacing-small);
+      margin-right:             var(--spacing-xsmall);
       background-position:      50%;
       background-size:          cover;
       border:                   1px solid var(--color-interface-softer);

@@ -15,7 +15,7 @@
   margin-bottom:          var(--spacing-large);
 
   .address {
-    margin-top:           var(--spacing-small);
+    margin-top:           var(--spacing-xsmall);
   }
 
   img {
@@ -147,9 +147,9 @@
     .list-group-item {
       display:           flex;
       align-items:       center;
-      gap:               var(--spacing-small);
+      gap:               var(--spacing-xsmall);
       padding:           8px 0 8px 10px;
-      background-color:  #fcfbfc;
+      background-color:  var(--color-interface-softer);
 
       &.status-pending,
       &.status-declined,
@@ -174,7 +174,7 @@
         display:         flex;
         flex:            1;
         align-items:     center;
-        gap:             var(--spacing-small);
+        gap:             var(--spacing-xsmall);
       }
 
       .resource-role {
@@ -314,7 +314,7 @@
   }
 
   .tooltip-section + .tooltip-section {
-    margin-top:          var(--spacing-small);
+    margin-top:          var(--spacing-xsmall);
   }
 }
 

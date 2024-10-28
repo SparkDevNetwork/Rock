@@ -17,7 +17,7 @@
 
   .numberincrement-up,
   .numberincrement-down {
-    padding:          var(--spacing-small) var(--spacing-medium);
+    padding:          var(--spacing-xsmall) var(--spacing-medium);
     color:            var(--color-interface-stronger);
     cursor:           pointer;
     background-color: var(--color-interface-softest);
@@ -38,7 +38,7 @@
   }
 
   .numberincrement-value {
-    padding:          var(--spacing-small) var(--spacing-medium);
+    padding:          var(--spacing-xsmall) var(--spacing-medium);
     background-color: var(--color-interface-softest);
     border-color:     var(--color-interface-soft);
     border-style:     solid;
@@ -49,7 +49,7 @@
   &.input-sm {
     .numberincrement-up,
     .numberincrement-down {
-      padding:        var(--spacing-tiny) var(--spacing-small);
+      padding:        var(--spacing-tiny) var(--spacing-xsmall);
     }
 
     .numberincrement-value {

@@ -7,7 +7,7 @@
   --color-interface-strong:    #5D5D6F;
   --color-interface-medium:    #8B8BA7;
   --color-interface-soft:      #D9D9E3;
-  --color-interface-softer:    #F2F2F7;
+  --color-interface-softer:    #E7E9EF;
   --color-interface-softest:   #FFFFFF;
 
   // APPLICATION COLORS 
@@ -48,17 +48,19 @@
   --color-link-tint:          color-mix(in srgb, var(--color-link) 50%, #FFF var(--tint-white-percentage));
   --color-link-shade:         color-mix(in srgb, var(--color-link) 100%, #000 var(--shade-black-percentage));
   
-  --color-campus:           #83758f;
+  --color-secondary:           #83758f;
+  --color-secondary-tint:     color-mix(in srgb, var(--color-secondary) 50%, #FFF var(--tint-white-percentage));
+  --color-secondary-shade:    color-mix(in srgb, var(--color-secondary) 100%, #000 var(--shade-black-percentage));
 
   // CATEGORICAL COLORS 
-  --color-categorial-1: #007aff;
-  --color-categorial-2: #5856D6;
-  --color-categorial-3: #4cd964;
-  --color-categorial-4: #ff2d55;
-  --color-categorial-5: #ff9500;
-  --color-categorial-6: #5ac8fa;
-  --color-categorial-7: #ffcc00;
-  --color-categorial-8: #8e8e93;
+  --color-categorical-1: #007aff;
+  --color-categorical-2: #5856D6;
+  --color-categorical-3: #4cd964;
+  --color-categorical-4: #ff2d55;
+  --color-categorical-5: #ff9500;
+  --color-categorical-6: #5ac8fa;
+  --color-categorical-7: #ffcc00;
+  --color-categorical-8: #8e8e93;
 
   // DIVERGING COLORS
   --color-diverging-1:  #2507b7;
@@ -134,7 +136,8 @@
 
   // SPACING 
   --spacing-tiny:       4px;
-  --spacing-small:      8px;
+  --spacing-xsmall:     8px;
+  --spacing-small:     12px;
   --spacing-medium:    16px;
   --spacing-large:     24px;
   --spacing-xlarge:    48px;
@@ -162,45 +165,8 @@
 
   // ========================== END VISUAL APPEARANCES ===========================
 
-
-  // For the obsidian grid, sinces the style of the obsidian grid is embedded in the html and references these variable 
-  // Theses variable is also located in _rock-core.less.
-
-  --theme-darkest: var(--color-interface-strongest);
-  --theme-dark: var(--color-interface-stronger);
-  --theme-medium: var(--color-interface-strong);
-  --theme-light: var(--color-interface-soft);
-  --theme-lightest: var(--color-interface-softer);
-
-  --theme-white: var(--color-interface-softest);
-  --theme-black: #343A40;
-
-  --text-color: @text-color;
-
-  //   --color-primary: var(--color-primary);
-  --color-success: var(--color-success-strong);
-  --color-info: var(--color-info-strong);
-  --color-warning: var(--color-warning-strong);
-  --color-danger: var(--color-danger-strong);
-
-  --gutter-x: @grid-gutter-width;
-
-  --panel-border: @panel-border;
-  --panel-body-padding: @panel-body-padding;
-
-  --fa-font-face: @fa-font-face;
-  --fa-theme-weight: @fa-theme-weight;
-
-  --border-radius-base: var(--rounded-small);
-  --color-base-primary: @color-base-primary;
-  --focus-state-border: 1px solid @input-border-focus;
-  --focus-state-border-color: @input-border-focus;
-  --focus-state-shadow: @input-focus-box-shadow;
-  --input-bg-disabled: @input-bg-disabled;
+  --focus-state-border: 1px solid var(--color-primary); // it is used by the "Write a note" in someone profile.
+  --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
   --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
-  --input-border-radius: @input-border-radius;
-  --input-height-base: @input-height-base;
-  --input-padding: @padding-base-vertical @padding-base-horizontal;
-  --input-placeholder: @input-color-placeholder;
 
 }

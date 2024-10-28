@@ -70,7 +70,7 @@
     position:         relative;
     width:            100%;
     height:           30px;
-    padding-top:      var(--spacing-small);
+    padding-top:      var(--spacing-xsmall);
     margin-top:       2px;
     line-height:      12px;
     text-align:       center;
@@ -196,7 +196,7 @@
   .fileupload-button {
     position:           relative;
     height:             30px;
-    padding-top:        var(--spacing-small);
+    padding-top:        var(--spacing-xsmall);
     line-height:        12px;
     text-align:         center;
     background-color:   var(--color-interface-softest);
@@ -235,7 +235,7 @@
   }
 
   .fileupload-button {
-    padding:            var(--spacing-tiny) var(--spacing-small);
+    padding:            var(--spacing-tiny) var(--spacing-xsmall);
     background-color:   var(--color-primary);
     border:             1px solid var(--color-primary); // TODO darken this by 5% when available
     border-radius:      var(--rounded-small);

@@ -17,7 +17,7 @@
   display:      flex;
   flex-wrap:    wrap;
   align-items:  center;
-  gap:          var(--spacing-tiny) var(--spacing-small);
+  gap:          var(--spacing-tiny) var(--spacing-xsmall);
 
   .ui-autocomplete {
     position:           absolute;
@@ -106,7 +106,7 @@
 .taglist {
   display:    flex;
   flex-wrap:  wrap;
-  gap:        calc($grid-gutter-width * .25) var(--spacing-small);
+  gap:        calc($grid-gutter-width * .25) var(--spacing-xsmall);
 
   .tag {
     position:           relative;
@@ -166,7 +166,20 @@
     }
   }
 
-  // Transition padding on tags inside a control.
+  .add-new-tags {
+    float: left;
+    height: 22px;
+    font-size: 0.7em;
+    line-height: 22px;
+  }
+
+  .tag-wrap {
+    .tag.disabled:hover {
+      padding-right: 12px;
+      transition-delay: 0s;
+    }
+  }
+
   .tag-wrap .tag:hover {
     padding-right:      20px;
     transition-delay:   0s;
@@ -177,6 +190,49 @@
     color:        var(--color-interface-medium) !important;
     &:hover {
       color:      var(--color-interface-stronger) !important;
+    }
+  }
+  .ant-select-auto-complete {
+    .ant-select-focused.ant-select{
+      > .ant-select-selector {
+        border: 0px;
+        box-shadow: initial;
+        background: rgba(0,0,0,0.05);
+     }
+    }
+
+    &.ant-select {
+      width: 125px;
+
+      > .ant-select-selector:hover {
+        border: 0px;
+        box-shadow: initial;
+        background: rgba(0,0,0,0.05);
+      }
+
+      > .ant-select-selector { 
+        border: 0px;
+        padding: 0px;
+        height: 22px;
+        font-size: 12px;
+        background: transparent;
+
+        .ant-select-selection-search {
+          left: 6px;
+          right: 6px;
+        }
+
+        .ant-select-selection-placeholder {
+          position: absolute;
+          margin-left: 6px;
+          line-height: 22px;
+        }
+
+      }
+
+      .ant-select-selection-search-input {
+        height: 22px;
+      }
     }
   }
 }

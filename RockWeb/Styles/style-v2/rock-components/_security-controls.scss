@@ -40,7 +40,7 @@
       color:        currentColor;
 
       @media (max-width: $screen-medium) {
-        padding:    0 var(--spacing-small);
+        padding:    0 var(--spacing-xsmall);
         .fa-caret-down {
           display:  none;
         }

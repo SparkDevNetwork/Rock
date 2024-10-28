@@ -17,7 +17,7 @@
 .note-editor {
   // Add extra padding when in code to prevent control height from decreasing when resize bar is hidden.
   &.code-editor-visible {
-    padding-bottom:     var(--spacing-small);
+    padding-bottom:     var(--spacing-xsmall);
     background:         var(--color-interface-softer);
   }
 
