@@ -3,8 +3,8 @@
 }
 
 .grid-obsidian {
-    --table-cell-padding-x: 16px;
-    --table-cell-padding-y: 16px;
+    --table-cell-padding-x: var(--spacing-medium);
+    --table-cell-padding-y: var(--spacing-medium);
     color: var(--color-interface-strongest);
     margin-bottom: var(--spacing-large);
 }
@@ -15,12 +15,12 @@
 
 .grid-obsidian.grid-bordered {
     border: 1px solid var(--color-interface-soft);
-    border-radius: 4px;
+    border-radius: var(--spacing-xsmall);
 }
 
 .grid-heading {
     background: var(--color-interface-softest);
-    border-radius: 4px 4px 0 0;
+    border-radius: var(--rounded-xsmall) var(--spacing-xsmall) 0 0;
 }
 
 .grid-obsidian.grid-sticky > .grid-heading {
@@ -40,7 +40,7 @@
     flex-wrap: wrap;
     border-bottom: 1px solid var(--color-interface-soft);
     align-items: center;
-    font-size: 18px;
+    font-size: var(--font-size-h5);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
@@ -48,7 +48,7 @@
     font-size: var(--font-size-h5);
     font-weight: 500;
     line-height: 1;
-    padding-left: 24px;
+    padding-left: var(--spacing-large);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
@@ -188,10 +188,10 @@
     border: 0;
     text-align: center;
     background-color: transparent;
-    margin-left: 4px;
+    margin-left: var(--spacing-tiny);
     width: 26px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: var(--rounded-xsmall);
     color: var(--color-interface-strong);
     opacity: 0;
     transition: opacity 250ms, color 250ms;
@@ -228,8 +228,8 @@
     background-color: var(--color-interface-softest);
     border: 1px solid var(--color-interface-soft);
     border-radius: 0;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: var(--rounded-small);
+    border-bottom-left-radius: var(--rounded-small);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
     cursor: initial;
     font-weight: initial;
@@ -254,14 +254,14 @@
     display: flex;
     border-top: 1px solid var(--color-interface-soft);
     background-color: var(--color-interface-softer);
-    padding: 8px;
-    gap: 8px;
+    padding: var(--spacing-xsmall);
+    gap: var(--spacing-xsmall);
 }
 
 .grid-column-header > .grid-filter-popup .alert {
     border-top: 0;
     box-shadow: none;
-    padding: 8px;
+    padding: var(--spacing-xsmall);
 }
 
 .grid-row {
@@ -270,7 +270,9 @@
     border-bottom: 1px solid var(--color-interface-soft);
     transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
 }
-
+.grid-row:hover > .grid-cell {
+    background-color: rgba(85, 150, 230, .1);
+}
 .grid-row.grid-row-selectable {
     cursor: pointer;
 }
@@ -280,7 +282,7 @@
 }
 
 .grid-hover .grid-row:hover {
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
 }
 
 .grid-cell {
@@ -338,7 +340,7 @@
 
 .grid-paging-footer {
     display: flex;
-    padding: 8px var(--table-cell-padding-x);
+    padding: var(--spacing-xsmall) var(--table-cell-padding-x);
     align-items: center;
 }
 
@@ -349,7 +351,7 @@
     align-items: center;
     font-size: 14px;
     line-height: 16px;
-    gap: 8px;
+    gap: var(--spacing-xsmall);
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes .form-control {
@@ -373,7 +375,7 @@
     justify-content: center;
     border: 1px solid var(--color-interface-soft);
     background-color: transparent;
-    padding: 8px 12px;
+    padding: var(--spacing-xsmall) var(--spacing-small);
     font-size: 14px;
     line-height: 16px;
     min-width: 2.75em;
@@ -388,11 +390,11 @@
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .prev {
-    border-radius: 4px 0 0 4px;
+    border-radius: var(--rounded-xsmall) 0 0 var(--rounded-xsmall);
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .next {
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 var(--rounded-xsmall) var(--rounded-xsmall) 0;
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.disabled {
