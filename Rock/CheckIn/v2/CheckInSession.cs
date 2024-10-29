@@ -355,6 +355,11 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee to be checked in.</param>
         public void SetDefaultSelectionsForAttendee( Attendee attendee )
         {
+            if ( attendee.IsUnavailable )
+            {
+                return;
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( $"Set Defaults for {attendee.Person.NickName}" ) )
             {
                 var isAutoSelect = TemplateConfiguration.KioskCheckInType == KioskCheckInMode.Family

@@ -20,7 +20,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
     [TestClass]
     public class DuplicateCheckInOpportunityFilterTests
     {
-        #region IsGroupValid Tests
+        #region IsScheduleValid Tests
 
         [TestMethod]
         public void DuplicateCheckInFilter_WithNoConditions_IncludesAnySchedule()
@@ -132,6 +132,115 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
             Assert.IsTrue( isIncluded );
+        }
+
+        #endregion
+
+        #region FilterSchedules Tests
+
+        [TestMethod]
+        public void FilterSchedules_WithDuplicateAttendanceAndNoOtherSchedules_SetsUnavailableMessage()
+        {
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
+            var recentAttendance = new List<RecentAttendance>
+            {
+                new RecentAttendance
+                {
+                    StartDateTime = RockDateTime.Now,
+                    ScheduleId = scheduleId
+                }
+            };
+
+            var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
+            var opportunities = new OpportunityCollection
+            {
+                Schedules = new List<ScheduleOpportunity>
+                {
+                    CreateScheduleOpportunity( scheduleId )
+                }
+            };
+
+            filter.FilterSchedules( opportunities );
+
+            Assert.IsTrue( filter.Person.IsUnavailable );
+            Assert.AreEqual( "Already checked in.", filter.Person.UnavailableMessage );
+        }
+
+        [TestMethod]
+        public void FilterSchedules_WithDuplicateAttendanceAndNoOtherSchedules_DoesNotReplaceExistingUnavailableMessage()
+        {
+            var expectedMessage = "This is the original message.";
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
+            var recentAttendance = new List<RecentAttendance>
+            {
+                new RecentAttendance
+                {
+                    StartDateTime = RockDateTime.Now,
+                    ScheduleId = scheduleId
+                }
+            };
+
+            var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
+            var opportunities = new OpportunityCollection
+            {
+                Schedules = new List<ScheduleOpportunity>
+                {
+                    CreateScheduleOpportunity( scheduleId )
+                }
+            };
+            filter.Person.IsUnavailable = true;
+            filter.Person.UnavailableMessage = expectedMessage;
+
+            filter.FilterSchedules( opportunities );
+
+            Assert.AreEqual( expectedMessage, filter.Person.UnavailableMessage );
+        }
+
+        [TestMethod]
+        public void FilterSchedules_WithDuplicateAttendanceAndAnotherValidSchedule_DoesNotSetUnavailableMessage()
+        {
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
+            var secondScheduleId = "3bf8bd6c-fadf-4de8-ab10-469c848334e7";
+            var recentAttendance = new List<RecentAttendance>
+            {
+                new RecentAttendance
+                {
+                    StartDateTime = RockDateTime.Now,
+                    ScheduleId = scheduleId
+                }
+            };
+
+            var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
+            var opportunities = new OpportunityCollection
+            {
+                Schedules = new List<ScheduleOpportunity>
+                {
+                    CreateScheduleOpportunity( scheduleId ),
+                    CreateScheduleOpportunity( secondScheduleId )
+                }
+            };
+
+            filter.FilterSchedules( opportunities );
+
+            Assert.IsFalse( filter.Person.IsUnavailable );
+            Assert.IsNull( filter.Person.UnavailableMessage );
+        }
+
+        [TestMethod]
+        public void FilterSchedules_WithNoSchedules_DoesNotSetUnavailableMessage()
+        {
+            var recentAttendance = new List<RecentAttendance>();
+
+            var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
+            var opportunities = new OpportunityCollection
+            {
+                Schedules = new List<ScheduleOpportunity>()
+            };
+
+            filter.FilterSchedules( opportunities );
+
+            Assert.IsFalse( filter.Person.IsUnavailable );
+            Assert.IsNull( filter.Person.UnavailableMessage );
         }
 
         #endregion
