@@ -1,4 +1,4 @@
-:root {
+body {
   // ========================= COLOR =========================
 
   // INTERFACE COLORS 
@@ -156,13 +156,13 @@
   --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
 
   // BORDER RADIUS
-  --rounded-tiny:     2px;
-  --rounded-xsmall:    4px;
-  --rounded-small:    6px;
-  --rounded-medium:   8px;
-  --rounded-large:   12px;
-  --rounded-xlarge:  16px;
-  --rounded-huge:    24px;
+  --rounded-tiny:       2px;
+  --rounded-xsmall:     4px;
+  --rounded-small:      6px;
+  --rounded-medium:     8px;
+  --rounded-large:     12px;
+  --rounded-xlarge:    16px;
+  --rounded-huge:      24px;
 
   // ========================== END VISUAL APPEARANCES ===========================
 
@@ -170,7 +170,60 @@
   --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
   --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
 
-  // TEST Dark Mode
+
+  // Follow the system color.
+  @media (prefers-color-scheme: dark) {
+    --color-interface-strongest: #FFFFFF;
+    --color-interface-stronger:  #E7E9EF;
+    --color-interface-strong:    #D9D9E3;
+    --color-interface-medium:    #8B8BA7;
+    --color-interface-soft:      #5D5D6F;
+    --color-interface-softer:    #000000;
+    --color-interface-softest:   #1C1C1E;
+    
+    --color-critical-soft:    #EE7725;
+    --color-critical-strong:  #FEDEC8;
+  
+    --color-danger-soft:      #D70015;
+    --color-danger-strong:    #FFCCD1;
+  
+    --color-info-soft:        #007AFF;
+    --color-info-strong:      #D6EAFF;
+  
+    --color-success-soft:     #248A3D;
+    --color-success-strong:   #D7F4DE;
+  
+    --color-warning-soft:     #E58600;
+    --color-warning-strong:   #FFECD1;
+  }
+}
+
+[theme="light"] {
+  --color-interface-strongest: #000000;
+  --color-interface-stronger:  #1C1C1E;
+  --color-interface-strong:    #5D5D6F;
+  --color-interface-medium:    #8B8BA7;
+  --color-interface-soft:      #D9D9E3;
+  --color-interface-softer:    #E7E9EF;
+  --color-interface-softest:   #FFFFFF;
+
+  --color-critical-soft:    #FEDEC8;
+  --color-critical-strong:  #EE7725;
+
+  --color-danger-soft:      #FFCCD1;
+  --color-danger-strong:    #D70015;
+
+  --color-info-soft:        #D6EAFF;
+  --color-info-strong:      #007AFF;
+
+  --color-success-soft:     #D7F4DE;
+  --color-success-strong:   #248A3D;
+
+  --color-warning-soft:     #FFECD1;
+  --color-warning-strong:   #E58600;
+}
+
+[theme="dark"] {
   --color-interface-strongest: #FFFFFF;
   --color-interface-stronger:  #E7E9EF;
   --color-interface-strong:    #D9D9E3;
@@ -179,18 +232,18 @@
   --color-interface-softer:    #000000;
   --color-interface-softest:   #1C1C1E;
   
-  --color-critical-soft:    #EE772533;
+  --color-critical-soft:    #EE7725;
   --color-critical-strong:  #FEDEC8;
 
-  --color-danger-soft:      #D7001533;
+  --color-danger-soft:      #D70015;
   --color-danger-strong:    #FFCCD1;
 
-  --color-info-soft:        #007AFF33;
+  --color-info-soft:        #007AFF;
   --color-info-strong:      #D6EAFF;
 
-  --color-success-soft:     #248A3D33;
+  --color-success-soft:     #248A3D;
   --color-success-strong:   #D7F4DE;
 
-  --color-warning-soft:     #E5860033;
+  --color-warning-soft:     #E58600;
   --color-warning-strong:   #FFECD1;
 }
