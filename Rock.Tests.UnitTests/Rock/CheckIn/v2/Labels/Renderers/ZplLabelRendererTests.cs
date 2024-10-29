@@ -2429,6 +2429,49 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
+        public void WriteAttendeePhotoField_WithoutPhoto_DoesNotEmitField()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns<ZplImageCache>( null );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration() );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
         public void WriteAttendeePhotoField_WithoutHighQuality_SetsDitheringToFast()
         {
             var expectedDithering = DitherMode.Fast;
