@@ -54,6 +54,12 @@ namespace Rock.CheckIn.v2
         /// <value>The printed label destination.</value>
         public virtual PrintTo PrintTo { get; }
 
+        /// <summary>
+        /// How locations should be selected when a group in this area is
+        /// being used for check-in.
+        /// </summary>
+        public virtual LocationSelectionStrategy LocationSelectionStrategy { get; set; }
+
         #endregion
 
         #region Constructors
@@ -78,6 +84,9 @@ namespace Rock.CheckIn.v2
             AttendanceRule = groupTypeCache.AttendanceRule;
             AlreadyEnrolledMatchingLogic = groupTypeCache.AlreadyEnrolledMatchingLogic;
             PrintTo = groupTypeCache.AttendancePrintTo;
+            LocationSelectionStrategy = groupTypeCache
+                .GetAttributeValue( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY )
+                .ConvertToEnum<LocationSelectionStrategy>( LocationSelectionStrategy.Ask );
         }
 
         #endregion
