@@ -51,7 +51,7 @@
         <div>
             <KeyValueList v-model="editableAdaptiveFontSize"
                           label="Font Sizes"
-                          help="If the string length is equal to or greater than the value of the key then the associated value will be used as the font size. The highest matching key will be used."
+                          help="Adjusts the font size of the label content based on its length. Define text lengths as keys and the desired font sizes as values. The font size is set to the value of the largest key that is less than or equal to the label’s text length."
                           keyPlaceholder="Length"
                           valuePlaceholder="Font size" />
         </div>
