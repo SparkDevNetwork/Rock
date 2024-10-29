@@ -411,7 +411,8 @@ namespace Rock.CheckIn.v2
             return new AreaOpportunityBag
             {
                 Id = area.Id,
-                Name = area.Name
+                Name = area.Name,
+                LocationSelectionStrategy = area.LocationSelectionStrategy
             };
         }
 
