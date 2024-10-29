@@ -12,7 +12,7 @@
                     </div>
                 </TransitionVerticalCollapse>
                 <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
-                    <div v-if="isExpanded || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                    <div v-if="isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
                         <div class="custom-select-item-content">
                             <slot v-bind="{ item }">
                                 {{ item }}
@@ -31,7 +31,7 @@
         <!-- DESKTOP VERSION -->
         <div v-else :class="`custom-select-wrapper ${wrapperClass}`">
             <template v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
-                <div v-if="!isMobile || isExpanded || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                <div v-if="!isMobile || isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
                     <div class="custom-select-item-content">
                         <slot v-bind="{ item }">
                             {{ item }}
