@@ -78,6 +78,7 @@
     <Compile Include="Cms\ThemeDetail.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Administration\PageProperties.cs" />
+    <Compile Include="Mobile\CheckIn\CheckIn.cs" />
     <Compile Include="Tv\RokuApplicationDetail.cs" />
     <Compile Include="Cms\ShortLink.cs" />
     <Compile Include="Cms\LayoutList.cs" />
