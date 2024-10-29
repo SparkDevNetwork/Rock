@@ -916,9 +916,12 @@ namespace Rock.Blocks.Security
                 return Enumerable.Empty<Person>().AsQueryable();
             }
 
+            var accountProtectionLevelsToIgnore = new SecuritySettingsService().SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore;
+
             return personService.Queryable()
                 .Where( p => p.Email.ToLower() == email.ToLower() )
-                .Where( p => p.LastName.ToLower() == lastName.ToLower() );
+                .Where( p => p.LastName.ToLower() == lastName.ToLower() )
+                .Where( p => !accountProtectionLevelsToIgnore.Contains( p.AccountProtectionProfile ) );
         }
 
         /// <summary>
