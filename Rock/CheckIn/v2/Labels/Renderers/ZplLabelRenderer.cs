@@ -457,6 +457,11 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 return;
             }
 
+            if ( image == null )
+            {
+                return;
+            }
+
             WriteFieldOrigin( writer, field );
 
             if ( config.IsColorInverted )
