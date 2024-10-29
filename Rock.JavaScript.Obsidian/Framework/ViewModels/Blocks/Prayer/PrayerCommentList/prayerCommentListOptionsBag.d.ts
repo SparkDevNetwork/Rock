@@ -23,4 +23,9 @@
 
 /** The additional configuration options for the Note List block. */
 export type PrayerCommentListOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether or not the Category Filter is visible
+     * There are hidden if the FilterCategoryFromQueryString block setting is set to true.
+     */
+    isCategoryFilterVisible: boolean;
 };

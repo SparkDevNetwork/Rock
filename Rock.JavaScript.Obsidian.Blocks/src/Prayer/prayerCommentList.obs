@@ -7,7 +7,7 @@
           :entityTypeGuid="EntityType.Note"
           stickyHeader
           liveUpdates
-          gridSettings
+          :gridSettings = "isCategoryFilterVisible"
           :showLaunchWorkflow="false"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="isGridSettingsVisible = true"
@@ -17,12 +17,14 @@
         <DateTimeColumn name="time"
                         title="Time"
                         field="time"
+                        :filter="dateValueFilter"
                         visiblePriority="xs"
                         width="10%" />
         <PersonColumn name="createdBy"
                       title="From"
                       field="createdBy"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn name="text"
@@ -41,7 +43,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { PersonColumn, pickExistingValueFilter, TextColumn, DateTimeColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { PersonColumn, pickExistingValueFilter, TextColumn, DateTimeColumn, textValueFilter, DeleteColumn, dateValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PrayerCommentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCommentList/prayerCommentListOptionsBag";
@@ -50,6 +52,7 @@
     import { NavigationUrlKey } from "./PrayerRequestList/types.partial";
     import { PreferenceKey, GridSettingsOptions } from "./PrayerCommentList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
+import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PrayerCommentListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -57,10 +60,10 @@
     // #region Values
 
     const isGridSettingsVisible = ref(false);
+    const isCategoryFilterVisible = config.options?.isCategoryFilterVisible ?? false;
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     const gridSettings = ref<GridSettingsOptions>({
-        dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
         category: preferences.getValue(PreferenceKey.FilterCategory)?.length > 0 ?
             JSON.parse(preferences.getValue(PreferenceKey.FilterCategory)) :
             undefined,
@@ -75,8 +78,7 @@
      */
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.category ||
-            !!gridSettings.value.dateRange;
+        return !!gridSettings.value.category;
     });
 
     /**
@@ -94,9 +96,27 @@
         }
     }
 
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
     // #endregion
 
     // #region Event Handlers
+
+     /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onClickGridSetting(): void {
+        isGridSettingsVisible.value = true;
+    }
 
     /**
      * Called when a row has been selected by the individual.
@@ -142,7 +162,6 @@
 
     watch(gridSettings, async () => {
         const category = JSON.stringify(gridSettings.value.category ?? "");
-        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
         preferences.setValue(PreferenceKey.FilterCategory, category);
 
         await preferences.save();
