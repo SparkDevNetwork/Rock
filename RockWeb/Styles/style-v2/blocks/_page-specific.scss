@@ -54,7 +54,7 @@
   background-color: var(--color-interface-softest);
 
   main.container {
-    padding:        12px;
+    padding:        var(--spacing-small);
     margin:         0;
   }
 }
@@ -74,7 +74,7 @@
 // 4. Modal Page
 // -------------------------
 body.rock-modal-page {
-    background-color: #fff;
+    background-color: var(--color-interface-softest);
 }
 
 .exceptionDetail-stackTrace-hide {

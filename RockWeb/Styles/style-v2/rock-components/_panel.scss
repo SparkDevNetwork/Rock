@@ -167,9 +167,9 @@
   min-width:          0;
 
   > .panel-heading {
-    border-bottom:        1px solid var(--color-interface-softer);
+    border-bottom:        1px solid var(--color-interface-soft);
     background-color:     var(--color-interface-softest);
-    border-bottom-color:  var(--color-interface-soft);
+    // border-bottom-color:  var(--color-interface-soft);
     padding-left:         var(--spacing-large);
     height:               56px; // to match the NextGen grid
 

@@ -274,7 +274,7 @@
   &-xs {
     width:      20px;
     height:     20px;
-    font-size:  16px;
+    font-size:  var(--font-regular);
   }
 
   &::after {
@@ -418,7 +418,7 @@
   .meta {
     margin-bottom: 6px;
     @media (min-width: $screen-small) {
-      margin-bottom: 12px;
+      margin-bottom: var(--spacing-small);
     }
   }
 
@@ -541,7 +541,7 @@
         }
 
         .input-group-addon {
-          padding: 0 12px;
+          padding: 0 var(--spacing-small);
         }
 
       }
@@ -695,7 +695,7 @@
 // ======================== SCHEDULE BUILDER ========================
 .recurrence-pattern-type {
   padding-left:   30px;
-  margin-top:     12px;
+  margin-top:     var(--spacing-small);
 }
 
 .recurrence-pattern-specific-date {
@@ -716,7 +716,7 @@
   .control-actions {
     float:        left;
     margin-top:   var(--spacing-tiny);
-    margin-left:  12px;
+    margin-left:  var(--spacing-small);
   }
 }
 
@@ -758,7 +758,7 @@
 
     .control-actions {
       float:        left;
-      margin-top:   5px;
+      margin-top:   var(--spacing-tiny);
     }
   }
 }
@@ -809,7 +809,7 @@
     justify-content:  center;
     width:            24px;
     height:           24px;
-    margin-right:     12px;
+    margin-right:     var(--spacing-small);
     font-family:      'FontAwesome';
     font-size:        var(--font-size-xsmall);
     font-weight:      var(--font-weight-black);
@@ -861,7 +861,7 @@
 }
 
 .workflow-action {
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-small);
   // TODO: Re-enable when
   //overflow: hidden;
 
@@ -947,8 +947,8 @@
             margin: 0;
 
             i {
-              margin-right: 12px;
-              font-size:    35px;
+              margin-right: var(--spacing-small);
+              font-size:    var(--font-size-h2);
             }
           }
         }
@@ -981,11 +981,11 @@
   display:        flex;
   -ms-flex-wrap:  wrap;
   flex-wrap:      wrap;
-  margin:         0 -8px;
+  margin:         0 calc(var(--spacing-xsmall) * -1);
 
   .btn-checkbox {
     width:    calc(50% - 16px);
-    margin:   0 var(--spacing-xsmall) 16px;
+    margin:   0 var(--spacing-xsmall) var(--spacing-medium);
 
     @media (min-width: $screen-small) {
       width:  calc(33.333% - 16px);
@@ -1040,7 +1040,7 @@
   max-width:      400px;
   margin-right:   -4px;
   margin-left:    -4px;
-  font-size:      36px;
+  font-size:      var(--font-size-h2);
   text-align:     center;
 
   .input-lg {
@@ -1087,7 +1087,7 @@
     justify-content:  center;
     width:            40px;
     height:           40px;
-    font-size:        16px;
+    font-size:        var(--font-size-regular);
     color:            var(--color-interface-medium);
     border:           1px solid currentColor;
     border-radius:    50%;
@@ -1109,7 +1109,7 @@
   height:         450px;
   margin-bottom:  20px;
   overflow:       auto;
-  background:   #fff;
+  background:     var(--color-interface-softest);
   border:         1px solid var(--color-interface-soft);
   border-radius:  var(--rounded-small);
 }

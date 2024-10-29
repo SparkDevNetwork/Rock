@@ -1,4 +1,4 @@
-body {
+:root {
   // ========================= COLOR =========================
 
   // INTERFACE COLORS 
@@ -198,7 +198,7 @@ body {
   }
 }
 
-[theme="light"] {
+[theme = "light"] {
   --color-interface-strongest: #000000;
   --color-interface-stronger:  #1C1C1E;
   --color-interface-strong:    #5D5D6F;
@@ -223,7 +223,7 @@ body {
   --color-warning-strong:   #E58600;
 }
 
-[theme="dark"] {
+[theme = "dark"] {
   --color-interface-strongest: #FFFFFF;
   --color-interface-stronger:  #E7E9EF;
   --color-interface-strong:    #D9D9E3;

@@ -616,7 +616,7 @@ a.warning {
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-normal);
 
-  selec t & {
+  select & {
     height: 38px;
     padding:      var(--spacing-xsmall) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium); // Modified to BS5
   }

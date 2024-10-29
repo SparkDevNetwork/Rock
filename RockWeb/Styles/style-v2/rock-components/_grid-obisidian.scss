@@ -138,7 +138,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
 }
 
@@ -335,7 +335,7 @@
 .grid-footing {
     color: var(--color-interface-strongest);
     background-color: var(--color-interface-softest);
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 var(--rounded-xsmall) var(--rounded-xsmall);
     overflow: hidden;
 }
 
@@ -350,7 +350,7 @@
     display: flex;
     justify-content: start;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     line-height: 16px;
     gap: var(--spacing-xsmall);
 }
@@ -377,7 +377,7 @@
     border: 1px solid var(--color-interface-soft);
     background-color: transparent;
     padding: var(--spacing-xsmall) var(--spacing-small);
-    font-size: 14px;
+    font-size: var(--font-size-small);
     line-height: 16px;
     min-width: 2.75em;
 }
@@ -409,7 +409,7 @@
 
 .grid-obsidian .grid-cell .highlight-detail {
     color: var(--color-interface-strong);
-    font-size: 14px;
+    font-size: var(--font-size-small);
 }
 
 .grid-obsidian .grid-cell .highlight-title {

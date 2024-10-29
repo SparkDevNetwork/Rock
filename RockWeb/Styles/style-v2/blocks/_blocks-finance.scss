@@ -21,7 +21,7 @@
 // ======================== SCHEDULED TRANSACTIONS ========================
 .scheduledtransaction-item {
   padding-bottom:   6px;
-  margin-bottom:    12px;
+  margin-bottom:    var(--spacing-small);
   border-bottom:    1px solid var(--color-interface-softer);
 
   &:last-child {
@@ -38,7 +38,7 @@
 // ======================== TRANSACTIONS MATCHING ========================
 .transaction-image {
   width:            100%;
-  margin-bottom:    12px;
+  margin-bottom:    var(--spacing-small);
   border:           2px solid var(--color-interface-soft);
 
   .fluidbox-ghost {

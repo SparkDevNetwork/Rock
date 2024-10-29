@@ -157,7 +157,7 @@ iframe.file-browser {
     background:   var(--color-interface-softest);
 
     @media (min-width: $screen-small) {
-      padding:    20px;
+      padding:    var(--spacing-large);
     }
 
     @media (min-width: $screen-large) {

@@ -30,8 +30,8 @@
   .picker-search-action {
     display:      block;
     float:        right;
-    padding:      0 3px;
-    margin-left:  3px;
+    padding:      0 var(--spacing-tiny);
+    margin-left:  var(--spacing-tiny);
     font-size:    var(--font-size-xsmall);
 
     &.active {
@@ -40,7 +40,7 @@
   }
 
   .picker-mode-options {
-    margin-bottom:  12px;
+    margin-bottom:  var(--spacing-small);
   }
 
   .picker-label {
@@ -104,7 +104,7 @@
 
   .picker-select-none {
     padding:            1px 6px;
-    font-size:          12px;
+    font-size:          var(--font-size-xsmall);
     background:         transparent;
     color:              fade(var(--color-interface-strongest), 20%);
     border-radius:      50%;
@@ -491,20 +491,20 @@ textarea,
 
 
 .picker-asset .file-link {
-  height: 100px;
+  height:         100px;
 }
 
 .entity-type-picker .control-wrapper {
-  width: 270px;
+  width:          270px;
 }
 
 .ant-select-arrow:has(.fa.fa-plus-square) {
-  font-size: 24px !important;
-  color: var(--color-info-strong);
-  top: 35%;
-  right: 17px;
-  transition: ease-in-out 0.2s;
+  font-size:      24px !important;
+  color:          var(--color-info-strong);
+  top:            35%;
+  right:          17px;
+  transition:     ease-in-out 0.2s;
 }
 .ant-select-arrow:has(.fa.fa-plus-square):hover {
-  color: var(--color-info-soft);
+  color:          var(--color-info-soft);
 }

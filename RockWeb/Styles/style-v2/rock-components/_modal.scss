@@ -41,7 +41,7 @@ body.rock-modal {
     }
 
     h3 {
-      margin-right: 12px;
+      margin-right: var(--spacing-small);
     }
 
     a {
@@ -105,7 +105,7 @@ body.rock-modal {
 
   .modal-footer .btn {
     float:        right;
-    margin-left:  5px;
+    margin-left:  var(--spacing-tiny);
   }
 }
 
@@ -186,7 +186,7 @@ dl:not(.dl-horizontal) {
   }
 
   .modal-content.rock-modal .modal-body {
-    padding:      12px var(--spacing-medium);
+    padding:      var(--spacing-small) var(--spacing-medium);
   }
 
   .modal-content.rock-modal .modal-header .close {
@@ -194,7 +194,7 @@ dl:not(.dl-horizontal) {
   }
 
   .modal-content.rock-modal .modal-header small {
-    margin-top:   5px;
+    margin-top:   var(--spacing-tiny);
     font-size:    100%;
   }
 

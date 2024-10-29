@@ -19,8 +19,8 @@
     float: none;
 
     > a {
-      padding: 6px 12px;
-      font-weight: 600;
+      padding: var(--spacing-xsmall) var(--spacing-small);
+      font-weight: var(--font-weight-semibold);
       color: var(--color-interface-strong);
       white-space: nowrap;
       background: var(--color-interface-softest);
@@ -78,7 +78,7 @@
   .badges {
     min-height: 102px;
     background: var(--color-interface-softest);
-    border: 1px solid var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-normal);
     box-shadow: 0 1px 3px rgba(0,0,0,.1);
   }
@@ -104,7 +104,7 @@
     min-height: 60px;
     padding: var(--spacing-tiny) var(--spacing-small);
     overflow: hidden;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--color-interface-soft);
     row-gap: calc(var(--badge-size) * .13333);
 
     &:empty {
@@ -112,14 +112,14 @@
     }
 
     &:first-child {
-      border-right: 1px solid #e5e7eb;
+      border-right: 1px solid var(--color-interface-soft);
     }
 
     &:first-child,
     &:last-child {
       flex: 0 0 50%;
       order: -1;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--color-interface-soft);
     }
 
     &:last-child {
@@ -134,7 +134,7 @@
   @media (min-width: $screen-large) {
     .rockbadge-container {
       justify-content: start;
-      border-right: 1px solid #e5e7eb;
+      border-right: 1px solid var(--color-interface-soft);
 
       &:first-child,
       &:last-child {
@@ -322,7 +322,7 @@
       padding: var(--spacing-medium);
 
       ~ .card-section {
-          border-top: 1px solid #dee2e6;
+          border-top: 1px solid var(--color-interface-soft);
       }
   }
   
@@ -346,7 +346,7 @@
   display:        flex;
   flex-direction: column;
   align-items:    center;
-  padding:        4px 10px;
+  padding:        var(--spacing-tiny) var(--spacing-small);
   font-size:      var(--font-size-xsmall);
   color:          var(--color-interface-medium);
 }
@@ -355,10 +355,10 @@
   position: relative;
   width: 100%;
   padding-bottom: 60%;
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
 }
 .profile-squish img {
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
 }
 
 .profile-notes .notes {
@@ -378,7 +378,7 @@
     .meta-body {
       height: 46px;
       overflow: hidden;
-      background: #f8f9fa;
+      background: var(--color-interface-softer);
       transition: height 250ms;
 
       &:hover {
@@ -425,7 +425,7 @@
     }
 
     .settings {
-      padding: 3px 12px 6px;
+      padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-xsmall);
     }
   }
 
@@ -511,7 +511,7 @@ background: currentColor;
   visibility: hidden;
 }
 .btn-phone.orig-enabled:hover {
-  border-color: #e2e6e9;
+  border-color: var(--color-interface-soft);
 }
 .btn-phone.orig-enabled:hover .profile-row-icon {
   visibility: visible;
@@ -563,7 +563,7 @@ background: currentColor;
     color: var(--color-interface-stronger);
 
     .name {
-      font-weight: 600;
+      font-weight: var(--font-weight-semibold);
     }
 
     .person-age {
@@ -588,7 +588,7 @@ background: currentColor;
 .profile-row-icon {
   width: 34px;
   margin-right: var(--spacing-xsmall);
-  font-size: 18px;
+  font-size: var(--font-size-h5);
   color: #ced4da;
   text-align: center;
 }
@@ -638,7 +638,7 @@ background: currentColor;
 
 .card-profile-bio.deceased .person-name::before {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-small);
   color: #d4442e;
   content: "Deceased";
 }
@@ -656,7 +656,7 @@ background: currentColor;
 
   .panel-title {
     i {
-      margin-right: 3px;
+      margin-right: var(--spacing-tiny);
       color: var(--color-interface-soft);
     }
   }
@@ -667,7 +667,7 @@ background: currentColor;
   align-items: center;
   padding: var(--spacing-tiny) var(--spacing-xsmall) var(--spacing-tiny) var(--spacing-xsmall);
   color: var(--color-interface-strong) !important;
-  border-radius: 4px;
+  border-radius: var(--rounded-xsmall);
 }
 .profile-toggle:hover {
   color: var(--color-interface-strong);
@@ -806,7 +806,7 @@ background: currentColor;
   z-index: 1010;
   display: flex;
   justify-content: space-between;
-  padding: 6px;
+  padding: var(--spacing-xsmall);
   color: var(--color-danger-strong);
   text-align: right;
   pointer-events: none;
@@ -815,7 +815,7 @@ background: currentColor;
 
   .profile-label {
     font-size: var(--font-size-small);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     cursor: pointer;
     opacity: 0;
     transition: opacity .2s ease-in-out;
