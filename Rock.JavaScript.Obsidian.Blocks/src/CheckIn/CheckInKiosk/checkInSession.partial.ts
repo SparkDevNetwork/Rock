@@ -1160,7 +1160,7 @@ export class CheckInSession {
 
             filteredLocations = group.locationIds
                 .map(id => filteredLocations.find(l => l.id === id))
-                .filter(l => l !== undefined);
+                .filter(l => l !== undefined) as LocationOpportunityBag[];
 
             return filteredLocations.length > 0
                 ? [filteredLocations[0]]
