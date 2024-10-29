@@ -593,7 +593,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             {
                 var size = adaptiveFontSizes
                     .Where( a => textLength >= a.Key )
-                    .OrderBy( a => a.Key )
+                    .OrderByDescending( a => a.Key )
                     .FirstOrDefault();
 
                 if ( size.Value > 0 )
