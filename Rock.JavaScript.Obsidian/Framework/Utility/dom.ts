@@ -15,19 +15,17 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+/**
+ * Get a unique CSS selector for any DOM element.
+ */
+export function getUniqueCssSelector(el: Element): string {
+    const path: string[] = [];
+    let parent: Element | null = el.parentNode as Element;
 
-export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+    while (parent) {
+        path.unshift(`${el.tagName}:nth-child(${([] as Element[]).indexOf.call(parent.children, el) + 1})`);
+        el = parent;
+        parent = el.parentNode as Element;
+    }
+    return `${path.join(" > ")}`.toLowerCase();
 }
-
-export const enum PreferenceKey {
-    FilterDateRange = "filter-date-range",
-
-    FilterCategory = "filter-category"
-}
-
-
-export type GridSettingsOptions = {
-    category?: ListItemBag | null;
-};
