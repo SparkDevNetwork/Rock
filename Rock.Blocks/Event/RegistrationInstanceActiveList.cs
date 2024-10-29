@@ -63,6 +63,12 @@ namespace Rock.Blocks.Event
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string CategoryId = "CategoryId";
+            public const string RegistrationTemplateId = "RegistrationTemplateId";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -90,7 +96,7 @@ namespace Rock.Blocks.Event
         private RegistrationInstanceActiveListOptionsBag GetBoxOptions()
         {
             var options = new RegistrationInstanceActiveListOptionsBag();
-
+            options.IsGridVisible = PageParameter( PageParameterKey.CategoryId )?.Length == 0 && PageParameter( PageParameterKey.RegistrationTemplateId )?.Length == 0;
             return options;
         }
 
