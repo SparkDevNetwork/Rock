@@ -55,11 +55,11 @@ namespace Rock.CheckIn.v2.Labels.Formatters
         {
             if ( optionValue == "NickName Code" )
             {
-                return $"{value.Person.NickName} {value.SecurityCode}";
+                return $"{value.Person?.NickName} {value.SecurityCode}";
             }
             else if ( optionValue == "Code NickName" )
             {
-                return $"{value.SecurityCode} {value.Person.NickName}";
+                return $"{value.SecurityCode} {value.Person?.NickName}";
             }
             else
             {
