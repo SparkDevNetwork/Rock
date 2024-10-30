@@ -248,7 +248,7 @@ namespace Rock.Model
         /// <see cref="LearningClass"/> is created automatically.
         /// </remarks>
         [DataMember]
-        public LearningGradingSystem DefaultLearningGradingSystem { get; set; }
+        public virtual LearningGradingSystem DefaultLearningGradingSystem { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.LearningProgramCompletion">LearningProgramCompletions</see> for this LearningProgram.

@@ -21,7 +21,7 @@
                              :isDeleteEnabled="isEditable"
                              @addClick="onAddStudentClick"
                              @rowClick="onParticipantClick"
-                             @deleteClick="onDeleteParticipantClick" />
+                             @deleteClick="onDeleteStudentClick" />
             </div>
             <div v-else-if="item === 'Facilitators'">
                 <FacilitatorGrid v-if="!isRefreshingFacilitators"
@@ -29,7 +29,7 @@
                                  :isDeleteEnabled="isEditable"
                                  @addClick="onAddFacilitatorClick"
                                  @rowClick="onParticipantClick"
-                                 @deleteClick="onDeleteParticipantClick" />
+                                 @deleteClick="onDeleteFacilitatorClick" />
             </div>
             <div v-else-if="item === 'Content'">
                 <ContentPageGrid :isAddEnabled="isEditable"
@@ -93,6 +93,8 @@
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -261,7 +263,22 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteActivityClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+        const activity = gridData?.rows?.find(p => p.idKey === key);
+        const hasCompletions = Number(activity?.["completedCount"]) > 0;
+
+        if (hasCompletions) {
+            const activityName = gridData?.rows?.find(r => r["idKey"] === key)?.["name"] as string;
+
+
+            const isConfirmed = await confirm(`The ${activityName} activity has completed activities. Deleting will remove all activity history. Are you sure you want to proceed?`);
+
+            if (isConfirmed) {
+                await invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+            }
+        }
+        else {
+            await invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+        }
     }
 
     /**
@@ -269,7 +286,7 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteAnnouncementClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteAnnouncement", "announcement");
+        await invokeDeleteBlockAction(key, gridData, "DeleteAnnouncement", "announcement");
     }
 
     /**
@@ -277,15 +294,40 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteContentPageClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteContentPage", "content page");
+        await invokeDeleteBlockAction(key, gridData, "DeleteContentPage", "content page");
     }
 
     /**
      * Called when a student or faciliator row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-    async function onDeleteParticipantClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+    async function onDeleteFacilitatorClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        await invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+    }
+
+    /**
+     * Called when a student or faciliator row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteStudentClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        const participant = gridData?.rows?.find(p => p.idKey === key);
+        const individual = participant?.["name"] as PersonFieldBag;
+        let name = "this student";
+        if (individual?.nickName) {
+            name = `${individual.nickName ?? ""} ${individual.lastName ?? ""}`.trim();
+        }
+
+        const hasCompletions = participant?.["hasCompletions"] === true;
+
+        const confirmationMessage = hasCompletions ?
+            `${name} has completed activities for this class. Deleting will remove all activity history. Are you sure you want to proceed?` :
+            `Are you sure you wish to delete ${name} from the class?`;
+
+        const isConfirmed = await confirm(confirmationMessage);
+
+        if (isConfirmed) {
+            invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+        }
     }
 
     /**
@@ -297,7 +339,6 @@
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
     async function onReorderActivity(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        console.warn("reorder", item, beforeItem);
         const result = await invokeBlockAction<string>("ReorderActivity", {
             key: item["idKey"],
             beforeKey: beforeItem?.["idKey"] ?? null

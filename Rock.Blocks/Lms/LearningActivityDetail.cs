@@ -112,7 +112,9 @@ namespace Rock.Blocks.Lms
                 IconCssClass = component.Value.Value.IconCssClass,
                 IdKey = component.Value.Value.EntityType.IdKey,
                 Guid = component.Value.Value.EntityType.Guid.ToString()
-            } ).ToList();
+            } )
+                .OrderBy( a => a.Name )
+                .ToList();
 
             // Get a list of Activity Types for the user to select from.
             options.ActivityTypeListItems = options.ActivityTypes.Select( a => new ListItemBag

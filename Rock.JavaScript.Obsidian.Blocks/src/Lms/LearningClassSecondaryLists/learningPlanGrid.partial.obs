@@ -5,6 +5,7 @@
           :data="gridDataSource"
           keyField="idKey"
           title="Learning Plan"
+          itemTerm="Activity"
           :entityTypeGuid="EntityType.LearningActivity"
           :expectedRowCount="5"
           :isCountMessageVisible="false"
@@ -38,6 +39,7 @@
                 name="componentName"
                 title="Type"
                 field="componentName"
+                width="15%"
                 :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -84,16 +86,16 @@
             </template>
         </Column>
 
-        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" :disableConfirmation="true" />
     </Grid>
 </template>
 <style>
-.student-comments-icon{
+.student-comments-icon {
     color: var(--color-info-strong);
     background-color: var(--color-info-soft);
 }
 
-.attention-needed-icon{
+.attention-needed-icon {
     color: var(--color-warning-strong);
     background-color: var(--color-warning-soft);
 }
@@ -200,7 +202,7 @@
     /**
      * Called when the grid is requesting the row data be loaded.
      */
-     async function loadGridData(): Promise<GridDataBag> {
+    async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>(props.getDataActionName);
 
         if (result.isSuccess && result.data) {
@@ -221,7 +223,7 @@
      *
      * @param key The key of the row that was selected.
      */
-     function onSelectItem(key: string): void {
+    function onSelectItem(key: string): void {
         emit("rowClick", key);
     }
 

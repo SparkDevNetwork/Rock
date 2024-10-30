@@ -89,6 +89,9 @@ export type LearningActivityCompletionBag = {
     isGradePassing: boolean;
 
     /** Indicates whether or not the related activity instance for the student is currently past due. */
+    isLate: boolean;
+
+    /** Indicates whether or not the related activity instance for the student is currently past due. */
     isPastDue: boolean;
 
     /** Indicates whether or not student commenting is enabled for this activity. */

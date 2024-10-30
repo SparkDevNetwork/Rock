@@ -644,12 +644,7 @@ namespace Rock.Blocks.Lms
                 return actionError;
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
+            entityService.Delete( entity.Id );
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );

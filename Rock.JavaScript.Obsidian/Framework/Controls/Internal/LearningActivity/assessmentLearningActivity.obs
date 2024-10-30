@@ -4,9 +4,9 @@
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="assessment-term-section">
                 <TextBox v-model="assessmentTerm"
-                        :disabled="disabled"
-                        label="Assessment Term"
-                        help="How we should refer to this assessment." />
+                         :disabled="disabled"
+                         label="Assessment Term"
+                         help="How we should refer to this assessment." />
             </div>
             <div class="header-content-section">
                 <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
@@ -29,14 +29,14 @@
                 <div class="minor-fields-section">
                     <div class="additional-settings-section">
                         <NumberBox v-model="multipleChoiceWeight"
-                                :key="multiFieldWeightStateKey"
-                                :decimalCount="0"
-                                :disabled="disabled"
-                                :min="0"
-                                label="Multiple Choice Weight"
-                                :rules="weightsSumTo100"
-                                :help="multipleChoiceWeightHelpText"
-                                inputGroupClasses="input-width-md">
+                                   :key="multiFieldWeightStateKey"
+                                   :decimalCount="0"
+                                   :disabled="disabled"
+                                   :min="0"
+                                   label="Multiple Choice Weight"
+                                   :rules="weightsSumTo100"
+                                   :help="multipleChoiceWeightHelpText"
+                                   inputGroupClasses="input-width-md">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">%</span>
                             </template>
@@ -76,14 +76,14 @@
                             <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
                             <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
                             <AssessmentItemShortAnswer
-                                                    v-if="item.typeName === 'Short Answer'"
-                                                    :allAssessmentWeightsSumTo100="weightsSumTo100"
-                                                    :weightsValidationKey="multiFieldWeightStateKey"
-                                                    v-model="items[index]"
-                                                    :disabled="disabled"
-                                                    :screenToShow="screenToShow"
-                                                    rules="required"
-                                                    :totalActivityPoints="activityBag.points" />
+                                                       v-if="item.typeName === 'Short Answer'"
+                                                       :allAssessmentWeightsSumTo100="weightsSumTo100"
+                                                       :weightsValidationKey="multiFieldWeightStateKey"
+                                                       v-model="items[index]"
+                                                       :disabled="disabled"
+                                                       :screenToShow="screenToShow"
+                                                       rules="required"
+                                                       :totalActivityPoints="activityBag.points" />
                         </div>
                     </div>
                 </div>
@@ -187,7 +187,7 @@
                 </div>
             </div>
 
-            <div class="continue-button-container">
+            <div class="continue-button-container mt-3">
                 <RockButton :btnType="BtnType.Primary" @click="emits('closed')">Continue</RockButton>
             </div>
         </div>
@@ -471,7 +471,7 @@ div.summary-sub-title {
     const hasMultipleChoiceQuestions = computed(() => multipleChoiceItemCount.value > 0);
     const hasShortAnswerQuestions = computed(() => shortAnswerItems.value.length > 0);
     const hasIncorrectResponses = computed(() => incorrectMultipleChoiceItems.value.length > 0);
-    const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points);
+    const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points * 100);
 
     /**
      * The calculated points earned.
@@ -487,7 +487,7 @@ div.summary-sub-title {
             .map(i => Number(i.pointsPossible) > 0 ? (i.pointsEarned / Number(i.pointsPossible)) * (i.questionWeight / 100) * activityBag.value.points : 0)
             .reduce((prev, cur) => cur + prev, 0);
 
-        return Math.round((earnedMultipleChoicePoints + earnedShortAnswerPoints) * 100);
+        return Math.round((earnedMultipleChoicePoints + earnedShortAnswerPoints));
     });
 
     const multipleChoiceGradePercent = computed(() => {

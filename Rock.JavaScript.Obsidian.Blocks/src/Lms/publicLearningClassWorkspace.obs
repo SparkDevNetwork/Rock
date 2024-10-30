@@ -83,11 +83,11 @@
                 <div class="col-md-4 workspace-class-sidebar">
 
                     <div class="section section-facilitators" v-if="showFacilitators()">
-                        <h4 class="mt-0" >{{ facilitatorsLabel }}</h4>
+                        <h4 class="mt-0">{{ facilitatorsLabel }}</h4>
 
                         <div class="facilitators-list d-flex flex-column">
                             <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
-                                <a v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{f.facilitatorEmail}}</a>
+                                <a v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{ f.facilitatorEmail }}</a>
                                 {{ f.facilitatorName }}
                             </span>
                         </div>
@@ -109,7 +109,7 @@
 
                         <div class="current-grade" v-if="showGrades && currentGrade">
                             <span v-if="showGrades && currentGrade"
-                                :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
+                                  :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
                                 {{ currentGrade.name ?? '' }}
                             </span>
                         </div>
@@ -121,15 +121,14 @@
 
             <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
                 <CustomSelect
-                    v-model="viewingCompletionBag"
-                    :items="activities"
-                    wrapperClass="workspace-navigation-pane"
-                    itemKey="learningActivityIdKey"
-                    :itemClass="getActivityContainerClasses"
-                    :disabledKey="isActivityUnavailable"
-                    :mobileThreshold="767"
-                    selectedClass="is-selected"
-                >
+                              v-model="viewingCompletionBag"
+                              :items="activities"
+                              wrapperClass="workspace-navigation-pane"
+                              itemKey="learningActivityIdKey"
+                              :itemClass="getActivityContainerClasses"
+                              :disabledKey="isActivityUnavailable"
+                              :mobileThreshold="767"
+                              selectedClass="is-selected">
                     <template #placeholder>
                         <p class="text-muted">Tap here to select an activity</p>
                     </template>
@@ -142,7 +141,7 @@
 
                             <div class="activity-item-details">
                                 <h5>{{ item?.activityBag?.name }}</h5>
-                                <div class="activity-item-time" :class="{'text-warning' : isDueSoonAndIncomplete(item) }">
+                                <div class="activity-item-time" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">
                                     <div class="text-muted">{{ getActivityTimeText(item) }}</div>
                                     <div v-if="item.facilitatorComment" class="label label-default"><i class="fa fa-comment"></i>Comments</div>
                                 </div>
@@ -175,7 +174,6 @@
     </div>
 </template>
 <style>
-
 /* Workspace Tabbar */
 .workspace-tab-bar {
     display: flex;
@@ -249,7 +247,8 @@
 }
 
 .custom-select-mobile-wrapper {
-    margin-bottom: var(--spacing-large); /* add spacing below the activity selector on mobile */
+    margin-bottom: var(--spacing-large);
+    /* add spacing below the activity selector on mobile */
 }
 
 .available {
@@ -284,6 +283,7 @@
     import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -298,10 +298,9 @@
     const headerHtml = config.headerHtml ?? "";
     const screenToShow = ref(ComponentScreen.Completion);
 
-    /** Whether the activity's onClosed event was called. */
-    const wasClosedCalled = ref(false);
-    /** Whether the activity's onCompleted event was called. */
-    const isCompleting = ref(false);
+    /** The promise source for the completed event handler.
+     *  Ensures the onClosed event handler waits for the onCompleted. */
+    let completedPromiseSource = new PromiseCompletionSource<void>();
 
     const params = new URLSearchParams(window.location.search);
     const selectedActivityIdKey = params.get("activity") ?? "";
@@ -368,7 +367,7 @@
     }
 
     function getGradeBageStyles(activity: LearningActivityCompletionBag): string | undefined {
-        if (!activity.gradeColor){
+        if (!activity.gradeColor) {
             return;
         }
 
@@ -403,7 +402,7 @@
     }
 
     function showFacilitators(): boolean {
-        if (facilitators.value.length > 0){
+        if (facilitators.value.length > 0) {
             return true;
         }
 
@@ -453,37 +452,30 @@
 
     /**
      * Called when the activity component's closed emit is fired. Because completed
-     *  and closed may be called together - when this event handler is aware
-     * that the onCompleted event is being handled it will not process.
-     * In that scenario the onCompleted event handler will call onClosed when ready.
+     *  and closed may be called together - this event handler awaits the resolution
+     * of the completedPromiseSource.
      */
     async function onClosed(): Promise<void> {
-        wasClosedCalled.value = true;
+        await completedPromiseSource.promise;
 
-        // If we're also awaiting a completeActivity request then don't look for
-        // another activity. Expect the onCompleted event handler to call onClosed
-        // once it's completed.
-        if (!isCompleting.value){
-            const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
-            const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable);
-            if (nextAvailableActivity){
-                viewingCompletionBag.value = nextAvailableActivity;
-                wasClosedCalled.value = false;
-            }
+        const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
+        const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable && !a.isStudentCompleted);
+        if (nextAvailableActivity) {
+            viewingCompletionBag.value = nextAvailableActivity;
         }
     }
 
     /**
      * Called when activity component's completed emit is fired.
-     * If the closed emit was also fired onCompleted will call
-     * that method once completed.
+     * Manages a promise that resolves itself once completed.
      *
      * @param wasSuccessful True if the complete button was clicked; false otherwise.
      *
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
     async function onCompleted(wasSuccessful: boolean): Promise<boolean> {
-        isCompleting.value = true;
+        completedPromiseSource.resolve(undefined);
+        completedPromiseSource = new PromiseCompletionSource<void>();
 
         if (wasSuccessful) {
             var result = await invokeBlockAction<LearningActivityCompletionBag>("CompleteActivity", {
@@ -499,7 +491,7 @@
 
                     // Only set the viewing completion bag to the returned data if it matches.
                     // It's possible the another available activity was selected between submission and response.
-                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey){
+                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey) {
                         viewingCompletionBag.value = result.data;
                     }
 
@@ -513,28 +505,17 @@
                         nextActivity.availableDate = result.data.completedDate;
                         nextActivity.isAvailable = true;
                     }
-
                 }
 
                 // Reload the activity component.
                 activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
 
-                isCompleting.value = false;
-
-                // If the onClosed handler didn't find another available activity
-                // check again now that the response from the completion came back
-                // and another activity has possibly been made available.
-                if (wasClosedCalled.value){
-                    onClosed();
-                }
-
+                completedPromiseSource.resolve();
                 return true;
             }
             else if ((result.errorMessage ?? "").length > 0) {
                 blockError.value = result.errorMessage ?? "";
             }
-
-            isCompleting.value = false;
         }
 
         return false;
@@ -580,7 +561,7 @@
         // Update the activity component.
         activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
 
-        if (!backButtonClicked.value){
+        if (!backButtonClicked.value) {
             const queryParams = new URLSearchParams(window.location.search);
             queryParams.set("activity", currentIdKey ?? "");
             history.pushState(null, "", "?" + queryParams.toString());
@@ -622,7 +603,7 @@
         if (idKey) {
             const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === idKey);
 
-            if (newActivitySelection){
+            if (newActivitySelection) {
                 viewingCompletionBag.value = newActivitySelection;
             }
         }

@@ -65,6 +65,7 @@ namespace Rock.Model
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
                 .Where( p => p.LearningClassId == activity.LearningClassId )
+                .AreStudents()
                 .ToList();
 
             // Get any of the completions that exist for this participant.
@@ -79,7 +80,10 @@ namespace Rock.Model
 
             foreach ( var student in students )
             {
-                var existingCompletion = existingCompletions.FirstOrDefault( c => c.LearningActivityId == activity.Id );
+                var existingCompletion = existingCompletions
+                    .FirstOrDefault( c =>
+                        c.LearningActivityId == activity.Id
+                        && c.StudentId == student.Id );
 
                 if ( existingCompletion != null )
                 {
@@ -145,7 +149,7 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
         public IQueryable<LearningParticipant> GetFacilitators( int classId )
         {
-            return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
+            return GetParticipants( classId ).AreFacilitators();
         }
 
         /// <summary>
@@ -162,7 +166,7 @@ namespace Rock.Model
                 .Include( c => c.GroupRole )
                 .Where( c => c.LearningClass.LearningCourseId == courseId )
                 .Where( c => c.LearningClass.LearningSemesterId == semesterId )
-                .Where( c => c.GroupRole.IsLeader == true );
+                .AreFacilitators();
 
             return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
@@ -215,7 +219,7 @@ namespace Rock.Model
             // Optionally filter by facilitators only.
             if ( facilitatorsOnly )
             {
-                baseQuery = baseQuery.Where( p => p.GroupRole.IsLeader );
+                baseQuery = baseQuery.AreFacilitators();
             }
 
             return baseQuery
@@ -271,7 +275,7 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
         public IQueryable<LearningParticipant> GetStudents( int classId )
         {
-            return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
+            return GetParticipants( classId, true ).AreStudents();
         }
 
         /// <summary>

@@ -17,6 +17,8 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
+using Rock.Model;
+
 namespace Rock.Lms
 {
     /// <summary>
@@ -48,5 +50,14 @@ namespace Rock.Lms
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
         public FileUploadComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/fileUploadLearningActivity.obs" ) { }
+        
+        /// <summary>
+        /// The <see cref="FileUploadComponent"/> always requires completed activities to be graded.
+        /// </summary>
+        /// <returns><c>true</c> if the completion record has an Id; otherwise <c>false</c>.</returns>
+        public override bool RequiresGrading( LearningActivityCompletion completion )
+        {
+            return completion.Id > 0 && !completion.GradedByPersonAliasId.HasValue;
+        }
     }
 }
