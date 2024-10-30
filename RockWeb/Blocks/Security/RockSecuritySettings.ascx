@@ -74,7 +74,7 @@
                             runat="server"
                             ID="cblIgnoredAccountProtectionProfiles"
                             Label="Disable Duplicate Checking for the Following Protection Profiles"
-                            Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for all but the low profile."
+                            Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for the High and the Extreme profile."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
                     </div>
