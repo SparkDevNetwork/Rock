@@ -32,7 +32,6 @@ using Rock.Web.Cache;
 
 using static Rock.Blocks.Cms.MediaAccountList;
 using static Rock.Blocks.Core.BinaryFileTypeList;
-using static Rock.Blocks.Security.AuthClientList;
 
 namespace Rock.Blocks.Cms
 {
