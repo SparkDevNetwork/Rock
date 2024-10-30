@@ -18,3 +18,11 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterIncludeInactive = "filter-include-inactive"
+}
+
+export type GridSettingsOptions = {
+    includeInactive: string | null;
+};

@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 
 using static Rock.Blocks.Cms.MediaAccountList;
 using static Rock.Blocks.Core.BinaryFileTypeList;
+using static Rock.Blocks.Security.AuthClientList;
 
 namespace Rock.Blocks.Cms
 {
@@ -66,6 +67,11 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterIncludeInactive = "filter-include-inactive";
+        }
+
         #endregion Keys
 
         #region Fields
@@ -74,6 +80,19 @@ namespace Rock.Blocks.Cms
         /// The batch attributes that are configured to show on the grid.
         /// </summary>
         private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the filter indicating whether inactive media accounts should be included in the results.
+        /// </summary>
+        /// <value>
+        /// The filter show inactive media accounts in the results.
+        /// </value>
+        protected string FilterIncludeInactive => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterIncludeInactive );
 
         #endregion
 
@@ -143,7 +162,15 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<MediaAccountData> GetListQueryable( RockContext rockContext )
         {
-            return GetMediaAccountListQueryable( rockContext ).Select( b => new MediaAccountData
+            var query = GetMediaAccountListQueryable( rockContext );
+
+            var includeInactive = FilterIncludeInactive.AsBooleanOrNull() ?? false;
+            if ( !includeInactive )
+            {
+                query = query.Where( p => p.IsActive );
+            }
+
+            return query.Select( b => new MediaAccountData
             {
                 MediaAccount = b,
                 FolderCount = b.MediaFolders.Count,
