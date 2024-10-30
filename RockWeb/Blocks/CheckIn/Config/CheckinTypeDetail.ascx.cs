@@ -401,6 +401,12 @@ namespace RockWeb.Blocks.CheckIn.Config
                 }
 
                 Rock.CheckIn.KioskDevice.Clear();
+
+                // I know, this is a terrible hack. But we need to force the
+                // kiosks to refresh and we don't want to make this public yet. -dsh
+                typeof( GroupType ).Assembly.GetType( "Rock.CheckIn.v2.CheckInDirector" )
+                    .GetMethod( "SendRefreshKioskConfiguration" )
+                    .Invoke( null, new object[0] );
             }
         }
 
