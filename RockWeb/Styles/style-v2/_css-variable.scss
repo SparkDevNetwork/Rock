@@ -174,12 +174,12 @@
   // Follow the system color.
   @media (prefers-color-scheme: dark) {
     --color-interface-strongest: #FFFFFF;
-    --color-interface-stronger:  #E7E9EF;
+    --color-interface-stronger:  #f0f6fc;
     --color-interface-strong:    #D9D9E3;
     --color-interface-medium:    #8B8BA7;
-    --color-interface-soft:      #5D5D6F;
-    --color-interface-softer:    #000000;
-    --color-interface-softest:   #1C1C1E;
+    --color-interface-soft:      #2f353d;
+    --color-interface-softer:    #010409;
+    --color-interface-softest:   #0d1117;
     
     --color-critical-soft:    #EE7725;
     --color-critical-strong:  #FEDEC8;
@@ -221,6 +221,7 @@
 
   --color-warning-soft:     #FFECD1;
   --color-warning-strong:   #E58600;
+  
 }
 
 [theme = "dark"] {
