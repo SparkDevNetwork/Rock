@@ -462,7 +462,12 @@ namespace Rock.Blocks.CheckIn
                     .AsGuidList()
                     .Select( g => CampusCache.Get( g, RockContext ) )
                     .Where( c => c != null )
-                    .ToListItemBagList(),
+                    .Select( c => new ListItemBag
+                    {
+                        Value = c.IdKey,
+                        Text = c.Name
+                    } )
+                    .ToList(),
                 Settings = definedValue.GetAttributeValue( "SettingsJson" ).FromJsonOrNull<SavedCheckInConfigurationSettingsBag>()
             };
         }
