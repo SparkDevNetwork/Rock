@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Fundraising
     [Description( "Lists Fundraising Opportunities (Groups) that have the ShowPublic attribute set to true" )]
 
     [DefinedValueField( "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D", "Fundraising Opportunity Types", "Select which opportunity types are shown, or leave blank to show all", false, true, order:1 )]
-    [LinkedPage( "Details Page", required: false, order: 2 )]
+    [LinkedPage( "Details Page", required: false, order: 2, key: "DetailPage" )]
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"{% include '~~/Assets/Lava/FundraisingList.lava' %}", order: 3 )]
     [Rock.SystemGuid.BlockTypeGuid( "E664BB02-D501-40B0-AAD6-D8FA0E63438B" )]
