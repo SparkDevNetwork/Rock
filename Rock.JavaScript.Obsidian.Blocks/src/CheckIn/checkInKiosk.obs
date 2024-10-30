@@ -506,6 +506,7 @@
 
             if (currentScreen.value !== Screen.Welcome) {
                 configuration.value.locationCountAdjustments.push({
+                    id: attendance.attendanceIdKey,
                     timestamp: Date.now(),
                     locationId: locationId,
                     count: 1
