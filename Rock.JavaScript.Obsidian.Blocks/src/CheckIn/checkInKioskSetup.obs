@@ -38,7 +38,7 @@
                                 </RockButton>
                             </div>
 
-                            <div class="button-list">
+                            <div v-if="savedConfigurations.length > 0" class="button-list">
                                 <RockButton v-for="cfg in savedConfigurations"
                                             btnType="primary"
                                             class="saved-configuration-button"
@@ -46,6 +46,10 @@
                                     <span class="title">{{ cfg.name }}</span>
                                     <span class="subtitle">{{ cfg.description }}</span>
                                 </RockButton>
+                            </div>
+
+                            <div v-else>
+                                No saved configurations currently exist.
                             </div>
                         </div>
 
