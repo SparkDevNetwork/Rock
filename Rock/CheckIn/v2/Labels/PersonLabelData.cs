@@ -165,11 +165,11 @@ namespace Rock.CheckIn.v2.Labels
         public PersonLabelData( Person person, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
         {
             Person = person;
-            Family = family ?? person.PrimaryFamily;
+            Family = family ?? person?.PrimaryFamily;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance
-                .Where( a => a.Person.Id == person.Id )
+                .Where( a => a.Person != null && a.Person.Id == person.Id )
                 .ToList();
 
             IsFirstTime = PersonAttendance.Any( a => a.IsFirstTime );

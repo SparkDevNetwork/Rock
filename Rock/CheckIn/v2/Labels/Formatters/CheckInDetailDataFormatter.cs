@@ -83,27 +83,27 @@ namespace Rock.CheckIn.v2.Labels.Formatters
         {
             if ( optionValue == "NickName ScheduleName" )
             {
-                return $"{value.Person.NickName} {value.Schedule.Name}";
+                return $"{value.Person?.NickName} {value.Schedule?.Name}";
             }
             else if ( optionValue == "ScheduleName NickName" )
             {
-                return $"{value.Schedule.Name} {value.Person.NickName}";
+                return $"{value.Schedule?.Name} {value.Person?.NickName}";
             }
             else if ( optionValue == "NickName LocationName" )
             {
-                return $"{value.Person.NickName}, {value.Location.Name}";
+                return $"{value.Person?.NickName}, {value.Location?.Name}";
             }
             else if ( optionValue == "LocationName NickName" )
             {
-                return $"{value.Location.Name} {value.Person.NickName}";
+                return $"{value.Location?.Name} {value.Person?.NickName}";
             }
             else if ( optionValue == "NickName GroupName" )
             {
-                return $"{value.Person.NickName} {value.Group.Name}";
+                return $"{value.Person?.NickName} {value.Group?.Name}";
             }
             else if ( optionValue == "GroupName NickName" )
             {
-                return $"{value.Group.Name} {value.Person.NickName}";
+                return $"{value.Group?.Name} {value.Person?.NickName}";
             }
             else
             {

@@ -87,13 +87,13 @@ namespace Rock.CheckIn.v2.Labels
         public CheckoutLabelData( AttendanceLabel attendance, Group family, RockContext rockContext )
         {
             Attendance = attendance;
-            Family = family ?? attendance.Person.PrimaryFamily;
+            Family = family ?? attendance.Person?.PrimaryFamily;
 
             CheckInTime = Attendance.StartDateTime;
             CurrentTime = RockDateTime.Now;
 
             GroupRoleNames = Attendance.GroupMembers
-                .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
+                ?.Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
                 .Where( n => n != null )
                 .ToList();
         }
