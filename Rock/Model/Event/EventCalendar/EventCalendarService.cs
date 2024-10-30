@@ -266,10 +266,9 @@ namespace Rock.Model
             iCalendar.AddTimeZone( VTimeZone.FromDateTimeZone( timeZoneId, earliestEventDateTime, includeHistoricalData: true ) );
 
             // Return a serialized iCalendar.
-            var serializer = new CalendarSerializer();
-            var calendarString = serializer.SerializeToString( iCalendar );
+            var iCalendarString = InetCalendarHelper.SerializeCalendarForExport( iCalendar );
 
-            return calendarString;
+            return iCalendarString;
         }
 
         /// <summary>
@@ -496,7 +495,7 @@ namespace Rock.Model
         {
             // Determine the start and end time for the event.
             // For an all-day event, omit the End date.
-            // see https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
+            // See: https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
             var start = iCalEvent.Start;
 
             timeZoneId = timeZoneId ?? iCalEvent.Start.TzId;

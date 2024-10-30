@@ -437,7 +437,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Area Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Attendance.Area.Name
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Area?.Name
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
@@ -464,7 +464,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Group Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Attendance.Group.Name
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Group?.Name
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
@@ -475,7 +475,7 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.Attendance
                     .GroupMembers
-                    .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, printRequest.RockContext )?.Name )
+                    ?.Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, printRequest.RockContext )?.Name )
                     .Where( n => n != null )
                     .FirstOrDefault()
                     ?? string.Empty
@@ -487,7 +487,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Location Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Attendance.Location.Name
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Location?.Name
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
@@ -496,7 +496,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule.Name
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.Name
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
@@ -505,7 +505,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule.GetNextCheckInStartTime( source.Attendance.StartDateTime )
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInStartTime( source.Attendance.StartDateTime )
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
@@ -711,8 +711,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.AllAttendance
-                    .Min( a => a.StartDateTime )
+                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<FamilyLabelData>

@@ -140,11 +140,11 @@ namespace Rock.CheckIn.v2.Labels
         public AttendanceLabelData( AttendanceLabel attendance, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
         {
             Attendance = attendance;
-            Family = family ?? attendance.Person.PrimaryFamily;
+            Family = family ?? attendance.Person?.PrimaryFamily;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance
-                .Where( a => a.Person.Id == attendance.Person.Id )
+                .Where( a => a.Person != null && a.Person.Id == attendance.Person.Id )
                 .ToList();
 
             CheckInTime = PersonAttendance.Count > 0

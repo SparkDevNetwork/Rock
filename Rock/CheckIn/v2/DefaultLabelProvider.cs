@@ -474,12 +474,20 @@ namespace Rock.CheckIn.v2
         {
             var people = new List<Person>( attendanceLabels.Count + 1 );
 
-            people.AddRange( attendanceLabels.Select( a => a.Person ) );
-            people.Add( attendanceLabel.Person );
+            people.AddRange( attendanceLabels.Where( a => a.Person != null ).Select( a => a.Person ) );
 
-            people.Where( p => p.Attributes == null )
-                .DistinctBy( p => p.Id )
-                .LoadAttributes( RockContext );
+            if ( attendanceLabel.Person != null )
+            {
+                people.Add( attendanceLabel.Person );
+            }
+
+            if ( people.Count > 0 )
+            {
+                people.Where( p => p.Attributes == null )
+                    .DistinctBy( p => p.Id )
+                    .LoadAttributes( RockContext );
+            }
+
 
             var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
 

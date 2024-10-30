@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -174,7 +175,8 @@ namespace Rock.CheckIn.v2
                     .Select( a => new AreaOpportunity
                     {
                         Id = a.IdKey,
-                        Name = a.Name
+                        Name = a.Name,
+                        LocationSelectionStrategy = a.GetCheckInAreaData( rockContext ).LocationSelectionStrategy
                     } )
                     .ToList(),
                 Groups = new List<GroupOpportunity>(),
@@ -292,7 +294,8 @@ namespace Rock.CheckIn.v2
                     .Select( a => new AreaOpportunity
                     {
                         Id = a.Id,
-                        Name = a.Name
+                        Name = a.Name,
+                        LocationSelectionStrategy = a.LocationSelectionStrategy
                     } )
                     .ToList(),
                 Groups = Groups
