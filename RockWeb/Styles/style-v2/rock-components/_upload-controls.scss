@@ -200,7 +200,8 @@
     padding-top:        var(--spacing-xsmall);
     line-height:        12px;
     text-align:         center;
-    background-color:   var(--color-interface-softest);
+    border:             1px solid var(--color-interface-soft);
+    background-color:   var(--color-interface-softer);
 
     ::-webkit-file-upload-button {
       cursor:           pointer;
@@ -232,7 +233,7 @@
 
   .fileupload-dropzone {
     margin-top:     2px;
-    border-radius:  0 0 var(--rounded-small) var(--rounded-small);
+    border-radius:  0 0 var(--rounded-xsmall) var(--rounded-xsmall);
   }
 
   .fileupload-button {
@@ -302,7 +303,7 @@
     text-overflow:      ellipsis;
     white-space:        nowrap;
     background-color:   var(--color-interface-softest);
-    border-radius:      calc(var(--rounded-small) - 1);
+    border-radius:      var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
 
     &::after {
       position:         absolute;
@@ -353,6 +354,7 @@
     height:           100%;
     padding:          2px;
     margin:           0;
+    border:           0;
     background-color: transparent;
 
     span {
