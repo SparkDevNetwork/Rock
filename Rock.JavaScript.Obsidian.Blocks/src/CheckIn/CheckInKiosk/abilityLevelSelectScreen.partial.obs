@@ -8,6 +8,7 @@
                 <RockButton v-for="abilityLevel in abilityLevels"
                             btnType="primary"
                             class="ability-level-button"
+                            :class="{ 'btn-dimmed': abilityLevel.isDeprioritized }"
                             :disabled="abilityLevel.isDisabled || isProcessing"
                             @click="onAbilityLevelClick(abilityLevel)">
                     <span v-if="abilityLevel.id === currentAbilityLevelId"

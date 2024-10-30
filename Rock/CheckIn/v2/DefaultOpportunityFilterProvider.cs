@@ -181,11 +181,22 @@ namespace Rock.CheckIn.v2
 
             if ( skipAbilityLevels )
             {
-                attendee.Opportunities.AbilityLevels.ForEach( abilityLevel => abilityLevel.IsDisabled = true );
+                var personAbilityLevelId = attendee.Person.AbilityLevel?.Id;
+
+                // Mark each ability level that is not the current value as
+                // disabled so we don't end up asking for ability level.
+                foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
+                {
+                    if ( abilityLevel.Id != personAbilityLevelId )
+                    {
+                        abilityLevel.IsDisabled = true;
+                    }
+                }
             }
             else if ( attendee.Person.AbilityLevel != null )
             {
-                // Disable any ability level that is lower than the current level.
+                // Mark any ability level that is lower than the current level
+                // as deprioritized so it will be displayed differently.
                 foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
                 {
                     if ( abilityLevel.Id == attendee.Person.AbilityLevel.Id )
@@ -193,7 +204,7 @@ namespace Rock.CheckIn.v2
                         break;
                     }
 
-                    abilityLevel.IsDisabled = true;
+                    abilityLevel.IsDeprioritized = true;
                 }
             }
         }

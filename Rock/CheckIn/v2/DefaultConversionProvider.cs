@@ -397,7 +397,8 @@ namespace Rock.CheckIn.v2
             {
                 Id = abilityLevel.Id,
                 Name = abilityLevel.Name,
-                IsDisabled = abilityLevel.IsDisabled
+                IsDisabled = abilityLevel.IsDisabled,
+                IsDeprioritized = abilityLevel.IsDeprioritized
             };
         }
 
