@@ -187,7 +187,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of field data sources.</returns>
         private static List<FieldDataSource> GetPersonLabelAttendeeInfoDataSources()
         {
-            return GetStandardPersonAttendeeInfoDataSources<PersonLabelData>();
+            return GetStandardPersonAttendeeInfoDataSources();
         }
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of field data sources.</returns>
         private static List<FieldDataSource> GetAttendanceLabelAttendeeInfoDataSources()
         {
-            return GetStandardPersonAttendeeInfoDataSources<PersonLabelData>();
+            return GetStandardPersonAttendeeInfoDataSources();
         }
 
         /// <summary>
@@ -916,12 +916,11 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetStandardPersonAttendeeInfoDataSources<TLabelData>()
-            where TLabelData : ILabelDataHasPerson
+        private static List<FieldDataSource> GetStandardPersonAttendeeInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
-            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
             {
                 Key = "ea92317c-65b9-4d8e-b4c4-7fc7ab9ad932",
                 Name = "Full Name",
@@ -931,7 +930,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
             {
                 Key = "1c1f5c30-5b23-484f-9993-f60d07952b33",
                 Name = "Gender",
@@ -941,7 +940,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person.Gender
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
             {
                 Key = "c37608a7-9a93-4eb7-b045-208117575533",
                 Name = "Grade Offset",
@@ -950,7 +949,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person.GradeOffset
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
             {
                 Key = "ae113ac5-a0b3-4225-be33-d82bb139077e",
                 Name = "Grade Formatted",
@@ -960,7 +959,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person.GraduationYear
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
             {
                 Key = "d07f698e-9c3b-4330-a82e-be45a64b813d",
                 Name = "Age",
@@ -970,7 +969,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person.AgePrecise
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
             {
                 Key = "10a7d224-d0e7-4620-b52b-cf34e7b5e4ca",
                 Name = "Birthday Day Of Week",
@@ -980,7 +979,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person.ThisYearsBirthdate
             } );
 
-            var personDataSources = GetPersonDataSources<TLabelData>();
+            var personDataSources = GetPersonDataSources();
 
             return dataSources
                 .Concat( personDataSources.Where( ds => !PersonPropertyNamesToExcludeFromDataSources.Contains( ds.Key ) ) )
@@ -991,10 +990,8 @@ namespace Rock.CheckIn.v2.Labels
         /// Gets all the data source objects for a Person object on the label
         /// data.
         /// </summary>
-        /// <typeparam name="TLabelData">The type of label data expected.</typeparam>
         /// <returns>A list of field data sources.</returns>
-        private static List<FieldDataSource> GetPersonDataSources<TLabelData>()
-            where TLabelData : ILabelDataHasPerson
+        private static List<FieldDataSource> GetPersonDataSources()
         {
             var dataSources = new List<FieldDataSource>();
             var entityFields = EntityHelper.GetEntityFields( typeof( Person ), true, false );
@@ -1010,7 +1007,7 @@ namespace Rock.CheckIn.v2.Labels
                         continue;
                     }
 
-                    dataSource = GetPropertyDataSource<TLabelData>( entityField, "person", data => data.Person );
+                    dataSource = GetPropertyDataSource<ILabelDataHasPerson>( entityField, "person", data => data.Person );
 
                     if ( PersonPropertyNamesToMakeCommon.Contains( entityField.PropertyInfo.Name ) )
                     {
@@ -1028,11 +1025,11 @@ namespace Rock.CheckIn.v2.Labels
 
                     if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
                     {
-                        dataSource = new DateAttributeFieldDataSource<TLabelData>( attributeCache, "person", data => data.Person );
+                        dataSource = new DateAttributeFieldDataSource<ILabelDataHasPerson>( attributeCache, "person", data => data.Person );
                     }
                     else
                     {
-                        dataSource = new SingleValueFieldDataSource<TLabelData>
+                        dataSource = new SingleValueFieldDataSource<ILabelDataHasPerson>
                         {
                             Key = $"attribute:person:{entityField.AttributeGuid}",
                             Name = entityField.Title,
