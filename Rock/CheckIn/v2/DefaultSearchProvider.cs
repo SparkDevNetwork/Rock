@@ -199,7 +199,14 @@ namespace Rock.CheckIn.v2
                 } )
                 .ToList();
 
-            familyMembers.Select( fm => fm.Person ).LoadAttributes( Session.RockContext );
+            // Load all attributes in one query. We need attributes for the
+            // ability level. DistinctBy person identifier because some people
+            // may be in multiple families which means they may be in our set
+            // multiple times and LoadAttributes() doesn't like duplicates.
+            familyMembers
+                .Select( fm => fm.Person )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( Session.RockContext );
 
             // Convert the raw database data into the bags that are understood
             // by different elements of the check-in system.
