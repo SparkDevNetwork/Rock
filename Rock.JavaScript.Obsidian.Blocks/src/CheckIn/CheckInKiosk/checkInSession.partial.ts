@@ -669,8 +669,16 @@ export class CheckInSession {
         }
 
         if (this.configuration.template.kioskCheckInType === KioskCheckInMode.Family) {
-            if (!this.selectedSchedules || this.selectedSchedules.length === 0) {
-                throw new InvalidCheckInStateError("No schedules were available for check-in.");
+            let selectedScheduleId: string | undefined;
+
+            // In full auto-mode we don't ever select a schedule, it is all
+            // set at once.
+            if (!this.configuration.template.isAutoSelect) {
+                if (!this.selectedSchedules || this.selectedSchedules.length === 0) {
+                    throw new InvalidCheckInStateError("No schedules were available for check-in.");
+                }
+
+                selectedScheduleId = this.selectedSchedules[0].id ?? undefined;
             }
 
             return new CheckInSession(this, {
@@ -681,7 +689,7 @@ export class CheckInSession {
                 selectedArea: undefined,
                 selectedGroup: undefined,
                 selectedLocation: undefined,
-                currentFamilyScheduleId: this.selectedSchedules[0].id
+                currentFamilyScheduleId: selectedScheduleId
             });
         }
 

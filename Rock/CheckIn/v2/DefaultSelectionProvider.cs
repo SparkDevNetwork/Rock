@@ -122,6 +122,14 @@ namespace Rock.CheckIn.v2
 
                     continue;
                 }
+
+                // Finally, just try to match anything.
+                if ( TryGetAnyValidSelection( person, out opportunities ) )
+                {
+                    selectedOpportunities.Add( opportunities );
+
+                    continue;
+                }
             }
 
             return selectedOpportunities;
