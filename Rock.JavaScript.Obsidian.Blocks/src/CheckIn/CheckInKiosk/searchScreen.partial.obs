@@ -167,6 +167,12 @@
      * the term by calling the API endpoint.
      */
     async function onSearchClick(): Promise<void> {
+        // The enter key triggers a search, so we need to verify that search
+        // is okay to execute in that case.
+        if (isSearchDisabled.value) {
+            return;
+        }
+
         let searchValue = searchTerm.value;
         const isAlpha = /[^0-9()+ -]/.test(searchValue);
 

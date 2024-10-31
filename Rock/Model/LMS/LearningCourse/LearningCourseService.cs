@@ -143,17 +143,9 @@ namespace Rock.Model
                 course.MostRecentParticipation = mostRecentParticipation;
             }
 
-            if ( course.Program.ConfigurationMode == ConfigurationMode.OnDemandLearning )
-            {
-                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( courseId, c => c.Id );
-                course.Facilitators = participantService.GetFacilitators( defaultClassId ).ToList();
-            }
-            else
-            {
-                var nextSemesterId = course.NextSemester?.Id ?? 0;
+            var nextSemesterId = course.NextSemester?.Id ?? 0;
 
-                course.Facilitators = nextSemesterId == 0 ? new List<LearningParticipant>() : participantService.GetFacilitators( courseId, nextSemesterId ).ToList();
-            }
+            course.Facilitators = nextSemesterId == 0 ? new List<LearningParticipant>() : participantService.GetFacilitators( courseId, nextSemesterId ).ToList();
 
             return course;
         }

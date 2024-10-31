@@ -51,7 +51,7 @@
         <div>
             <KeyValueList v-model="editableAdaptiveFontSize"
                           label="Font Sizes"
-                          help="Adjusts the font size of the label content based on its length. Define text lengths as keys and the desired font sizes as values. The font size is set to the value of the largest key that is less than or equal to the label’s text length."
+                          help="Adjusts the font size based on text length. The longer the text, the smaller the font size should be to fit neatly. Font sizes are set according to predefined lengths: the size will match the largest specified length that is equal to or less than the current text length."
                           keyPlaceholder="Length"
                           valuePlaceholder="Font size" />
         </div>

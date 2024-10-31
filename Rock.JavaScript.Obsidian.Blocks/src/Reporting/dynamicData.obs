@@ -15,7 +15,7 @@
                   :definition="gridDefinition"
                   :title="gridTitle"
                   :isTitleHidden="isGridTitleHidden"
-                  :keyField="keyField"
+                  keyField="uniqueKey"
                   :personKeyField="personKeyField"
                   :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
                   :liveUpdates="true"
@@ -350,6 +350,10 @@
         }
 
         if (result.isSuccess && result.data) {
+            if (result.data.rows) {
+                result.data.rows.forEach((d, index) => d.uniqueKey = index);
+            }
+
             gridData = reactive(result.data);
             return gridData;
         }
@@ -390,7 +394,7 @@
             return;
         }
 
-        const row = gridData?.rows?.find(r => getRowKey(r, keyField.value) === rowKey);
+        const row = gridData?.rows?.find(r => getRowKey(r, "uniqueKey") === rowKey);
         if (row) {
             columnKeys.forEach(columnKey => {
                 // Replace each column key with the column value.

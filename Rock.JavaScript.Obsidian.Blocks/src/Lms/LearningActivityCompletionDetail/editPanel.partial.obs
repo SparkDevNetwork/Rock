@@ -30,14 +30,14 @@
             <activityTypeComponent
                                    v-model:activityBag="activityBag"
                                    v-model:completionBag="completionBag"
-                                   :screenToShow="screenToShow"
+                                   :screenToShow="ComponentScreen.Scoring"
                                    @completed="onFacilitatorCompleted" />
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { Component, PropType, computed, ref, watch } from "vue";
+    import { Component, PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -50,7 +50,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-	import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
 
     const props = defineProps({
         modelValue: {
@@ -81,8 +81,6 @@
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
-    const requiresScoring = ref(completionBag.value?.requiresScoring ?? false);
-    const requiresFacilitatorCompletion = ref(completionBag.value?.requiresFacilitatorCompletion ?? false);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
@@ -103,12 +101,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const screenToShow = computed(() => {
-        return requiresScoring.value === true || requiresFacilitatorCompletion.value === true ?
-            ComponentScreen.Scoring :
-            ComponentScreen.Summary;
-    });
 
     // #endregion
 

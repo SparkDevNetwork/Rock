@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -191,7 +192,12 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var activityComponentBag = GetLearningActivityComponentBag( entity.LearningActivity?.ActivityComponentId );
+            var activityComponentId = entity?.LearningActivity?.ActivityComponentId.ToIntSafe() ?? 0;
+
+            var componentEntityType = EntityTypeCache.Get( activityComponentId );
+            var activityComponent = LearningActivityContainer.GetComponent( componentEntityType.Name );
+
+            var activityComponentBag = GetLearningActivityComponentBag( activityComponent );
 
             var binaryFile = entity.BinaryFileId > 0 ?
                 new BinaryFileService( RockContext ).GetNoTracking( entity.BinaryFileId.Value ) :
@@ -204,6 +210,8 @@ namespace Rock.Blocks.Lms
 
             // Get the student and current user participants for the current class.
             var studentAndCurrentPersonIds = new[] { currentPerson.Id, entity.Student.PersonId };
+
+            // Get the data necessary for the participant bags.
             var classParticipants = participantService.Queryable()
                 .AsNoTracking()
                 .Include( a => a.Person )
@@ -235,12 +243,37 @@ namespace Rock.Blocks.Lms
                 RoleName = p.RoleName
             } );
 
+            // Get the Guid of each participant type.
             var currentPersonPartipicantGuid = classParticipants.FirstOrDefault( gm => gm.PersonId == currentPerson.Id )?.Guid;
             var studentPartipicantGuid = classParticipants.FirstOrDefault( gm => gm.PersonId == entity.Student.PersonId )?.Guid;
 
+            // Now get the participant bags.
             var currentPersonBag = bags.FirstOrDefault( p => p.Guid == currentPersonPartipicantGuid );
             var studentBag = bags.FirstOrDefault( p => p.Guid == studentPartipicantGuid );
-            
+
+            ListItemBag gradedByPersonAliasBag = null;
+            if ( entity.GradedByPersonAliasId.HasValue )
+            {
+                var gradedByPersonData = new PersonAliasService( RockContext )
+                    .GetSelect( entity.GradedByPersonAliasId.Value,
+                     p => new {p.Person.NickName,
+                    p.Person.LastName,
+                    p.Person.SuffixValueId,
+                    p.Person.Guid});
+
+                if ( gradedByPersonData != null )
+                {
+                    gradedByPersonAliasBag = new ListItemBag
+                    {
+                        Text = Rock.Model.Person.FormatFullName(
+                            gradedByPersonData.NickName,
+                            gradedByPersonData.LastName,
+                            gradedByPersonData.SuffixValueId ),
+                        Value = gradedByPersonData.Guid.ToStringSafe()
+                    };
+                }
+            }
+
             var scales = new LearningClassService( RockContext )
                 .GetClassScales( entity.LearningActivity.LearningClassId );
 
@@ -285,11 +318,13 @@ namespace Rock.Blocks.Lms
                 DueDate = entity.DueDate,
                 FacilitatorComment = entity.FacilitatorComment,
                 GradeText = entity.GetGradeText( scales ),
-                IsGradePassing = entity.GetGrade().IsPassing,
+                GradedByPersonAlias = gradedByPersonAliasBag,
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
+                IsGradePassing = entity.GetGrade().IsPassing,
+                IsLate = entity.IsLate,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = entity.PointsEarned,
-                RequiresScoring = entity.RequiresScoring,
+                RequiresScoring = entity.RequiresGrading,
                 RequiresFacilitatorCompletion = entity.RequiresFaciltatorCompletion,
                 Student = studentBag,
                 StudentComment = entity.StudentComment,
@@ -297,28 +332,17 @@ namespace Rock.Blocks.Lms
             };
         }
 
-        private LearningActivityComponentBag GetLearningActivityComponentBag( int? activityComponentId )
+        private LearningActivityComponentBag GetLearningActivityComponentBag( LearningActivityComponent activityComponent )
         {
-            var componentId = activityComponentId.ToIntSafe();
-            if ( componentId == 0 )
+            return new LearningActivityComponentBag
             {
-                return new LearningActivityComponentBag();
-            }
-            else
-            {
-                var componentEntityType = EntityTypeCache.Get( componentId );
-                var activityComponent = Rock.Lms.LearningActivityContainer.GetComponent( componentEntityType.Name );
-
-                return new LearningActivityComponentBag
-                {
-                    Name = activityComponent?.Name,
-                    ComponentUrl = activityComponent?.ComponentUrl,
-                    HighlightColor = activityComponent?.HighlightColor,
-                    IconCssClass = activityComponent?.IconCssClass,
-                    IdKey = activityComponent?.EntityType.IdKey,
-                    Guid = activityComponent?.EntityType.Guid.ToString()
-                };
-            }
+                Name = activityComponent?.Name,
+                ComponentUrl = activityComponent?.ComponentUrl,
+                HighlightColor = activityComponent?.HighlightColor,
+                IconCssClass = activityComponent?.IconCssClass,
+                IdKey = activityComponent?.EntityType.IdKey,
+                Guid = activityComponent?.EntityType.Guid.ToString()
+            };
         }
 
         /// <inheritdoc/>
@@ -370,6 +394,10 @@ namespace Rock.Blocks.Lms
             if ( !entity.GradedByPersonAliasId.HasValue || box.Bag.PointsEarned != entity.PointsEarned )
             {
                 entity.GradedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+
+                // The activity has been graded so there's no need to check with
+                // the activity component whether it requires grading.
+                entity.RequiresGrading = false;
             }
 
             box.IfValidProperty( nameof( box.Bag.PointsEarned ),

@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -36,7 +35,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning activity completions.
     /// </summary>
-
     [DisplayName( "Learning Activity Completion List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning activity completions." )]
@@ -167,7 +165,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "points", a => a.LearningActivity.Points )
                 .AddField( "grade", a => a.GetGradeText() )
                 .AddField( "gradePercent", a => a.GradePercent.ToIntSafe() )
-                .AddField( "requiresScoring", a => a.RequiresScoring )
+                .AddField( "requiresScoring", a => a.RequiresGrading )
                 .AddField( "isPassingGrade", a => a.GetGrade()?.IsPassing )
                 .AddField( "isLate", a => a.IsLate )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )

@@ -663,11 +663,11 @@ namespace Rock.Blocks.Lms
         /*
             2024/04/04 - JSC
 
-            To match mock-ups of the Course Detail block (On-Demand mode)
-            we had to embed several "list blocks" in the LearningCourseDetail component.
+            To match mock-ups of the Class Detail block (On-Demand mode)
+            we had to embed several "list blocks" in the LearningClassDetail component.
             Because each Obsidian block requires an instance of that block type on the page
             we couldn't create re-usable blocks, but instead had to route their block actions
-            through the Course Detail block. We tried to componentize these grids as much as possible.
+            through the Class Detail block. We tried to componentize these grids as much as possible.
             If at a later time - we have a method of adding blocks to a tabbed control in Obsidian
             we can look at refactoring this code.
 	
@@ -780,7 +780,10 @@ namespace Rock.Blocks.Lms
         public BlockActionResult DeleteParticipant( string key )
         {
             var entityService = new LearningParticipantService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var entity = entityService.GetInclude(
+                key,
+                p => p.LearningActivities,
+                !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
             {
@@ -790,11 +793,6 @@ namespace Rock.Blocks.Lms
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete ${LearningParticipant.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
             }
 
             entityService.Delete( entity );
@@ -902,7 +900,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
             }
 
-            var components = LearningActivityContainer.Instance.Components;
+            var components = LearningActivityContainer.Instance.Components.Values;
             var now = DateTime.Now;
 
             // Return all activities for the course.
@@ -915,11 +913,19 @@ namespace Rock.Blocks.Lms
                 .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated <= now )
                 .AddField( "count", a => a.LearningActivityCompletions.Count() )
                 .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted ) )
-                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.IconCssClass )
-                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
-                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
+                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.IconCssClass )
+                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.HighlightColor )
+                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.Name )
                 .AddField( "points", a => a.Points )
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
+                // Ungraded and requires grading or requires a facilitator to complete.
+                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions
+                    .Any( c =>
+                        (
+                            !c.GradedByPersonAliasId.HasValue
+                            && components.FirstOrDefault( comp => comp.Value.EntityType.Id == a.ActivityComponentId )
+                            .Value
+                            .RequiresGrading(c)
+                        ) || c.RequiresFaciltatorCompletion ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var classId = GetClassId().ToIntSafe();
@@ -986,6 +992,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "currentGrade", p => p.LearningGradingSystemScale?.Name )
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )
+                .AddField( "hasCompletions", p => p.LearningActivities.Any() )
                 .AddTextField( "currentAssignment", p =>
                     activities.Where( a => !a.CompletedStudentIds.Contains( p.Id ) ).Select( a => a.Name ).FirstOrDefault() );
 

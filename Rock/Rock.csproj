@@ -1266,6 +1266,7 @@
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipantExtensionMethods.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.SaveHook.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />

@@ -17,9 +17,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Lms;
 
 namespace Rock.Model
 {
@@ -29,6 +32,7 @@ namespace Rock.Model
         /// Gets the grade as a percentage for the student <see cref="LearningActivityCompletion">Activity</see>.
         /// If no points are configured or <see cref="LearningActivity" /> is null then 100 is returned.
         /// </summary>
+        [NotMapped]
         public decimal GradePercent => LearningActivity?.Points > 0 ? Math.Round( ( decimal ) PointsEarned / ( decimal ) LearningActivity.Points * 100, 3 ) : 100;
 
         /// <summary>
@@ -83,16 +87,13 @@ namespace Rock.Model
         /// <summary>
         /// Determines if the individual was given an extension on the activity <see cref="DueDate"/>.
         /// </summary>
+        [NotAudited]
         public bool HadExtension => LearningActivity?.DueDateCalculated != null && DueDate.HasValue && DueDate.Value.Date != LearningActivity.DueDateCalculated.Value.Date;
-
-        /// <summary>
-        /// Determines if the activity has been graded (or doesn't require grading).
-        /// </summary>
-        public bool HasBeenGraded => IsStudentCompleted && !RequiresScoring;
 
         /// <summary>
         /// Determine if the activity has a student comment.
         /// </summary>
+        [NotAudited]
         public bool HasStudentComment
         {
             get
@@ -104,6 +105,7 @@ namespace Rock.Model
         /// <summary>
         /// Determine if the activity has a facilitator comment.
         /// </summary>
+        [NotAudited]
         public bool HasFacilitatorComment
         {
             get
@@ -115,6 +117,7 @@ namespace Rock.Model
         /// <summary>
         /// Determines if the activity was completed late or is currently incomplete and late.
         /// </summary>
+        [NotAudited]
         public bool IsLate
         {
             get
@@ -134,33 +137,19 @@ namespace Rock.Model
                 // If the student hasn't completed it yet and the due date is in the past.
                 if ( !IsStudentCompleted )
                 {
-                    return DueDate.Value <= RockDateTime.Now;
+                    // We don't allow setting the time portion
+                    // so compare as a Date (excluding time).
+                    return DueDate.Value.Date < RockDateTime.Today.Date;
                 }
 
                 return false;
             }
         }
-
-        /// <summary>
-        /// Determines if an activity requires attention by the facilitator.
-        /// </summary>
-        /// <remarks>
-        /// Either <see cref="RequiresScoring" /> or <see cref="RequiresFaciltatorCompletion"/> is <c>true</c>.
-        /// </remarks>
-        public bool NeedsAttention => RequiresScoring || RequiresFaciltatorCompletion;
-
-        /// <summary>
-        /// The activity has points, is assigned to the student and hasn't been graded.
-        /// </summary>
-        public bool RequiresScoring =>
-            LearningActivity?.Points > 0
-            && LearningActivity?.AssignTo == AssignTo.Student
-            && IsStudentCompleted
-            && !GradedByPersonAliasId.HasValue;
-
+            
         /// <summary>
         /// The activity has points, is assigned to the facilitator and hasn't been completed.
         /// </summary>
+        [NotAudited]
         public bool RequiresFaciltatorCompletion =>
             LearningActivity.Points > 0
             && LearningActivity.AssignTo == AssignTo.Facilitator

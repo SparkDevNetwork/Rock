@@ -278,7 +278,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
      */
     const fileUrl = computed((): string => {
         const securityGrantToken = toValue(completionBag).binaryFileSecurityGrant ?? "";
-        const securityGrantQueryParam = securityGrantToken.length > 0? `&securitygrant=${securityGrantToken}` : "";
+        const securityGrantQueryParam = securityGrantToken.length > 0 ? `&securitygrant=${securityGrantToken}` : "";
 
         if (toValue(completionBag)?.binaryFile?.value) {
             return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}${securityGrantQueryParam}`;

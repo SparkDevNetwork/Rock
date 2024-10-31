@@ -14,25 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.ViewModels.Blocks.Cms.MediaFolderList
+namespace Rock.Migrations
 {
+
     /// <summary>
-    /// The additional configuration options for the Media Folder List block.
+    ///
     /// </summary>
-    public class MediaFolderListOptionsBag
+    public partial class AddRequiresGrading : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the block should be visible to the media account.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if a valid media account exists; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsBlockVisible { get; set; }
-
+        public override void Up()
+        {
+            AddColumn("dbo.LearningActivityCompletion", "RequiresGrading", c => c.Boolean(nullable: false));
+        }
+        
         /// <summary>
-        ///
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public string MediaAccountName { get; set; }
+        public override void Down()
+        {
+            DropColumn("dbo.LearningActivityCompletion", "RequiresGrading");
+        }
     }
 }

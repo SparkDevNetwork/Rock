@@ -36,6 +36,10 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.check-in-page .btn.btn-dimmed {
+    opacity: 0.33;
+}
+
 .check-in-page .button-list {
     display: flex;
     flex-direction: column;

@@ -27,14 +27,14 @@
                         <span>
                             <strong>{{ getFormattedName(row) }}</strong>
                             <span
-                                v-if="row.note"
-                                :ref="(el) => addTooltip(el as Element)"
-                                data-toggle="tooltip"
-                                data-placement="auto"
-                                data-container="body"
-                                data-html="true"
-                                class="note-tooltip ml-2"
-                                :data-original-title="row.note">
+                                  v-if="row.note"
+                                  :ref="(el) => addTooltip(el as Element)"
+                                  data-toggle="tooltip"
+                                  data-placement="auto"
+                                  data-container="body"
+                                  data-html="true"
+                                  class="note-tooltip ml-2"
+                                  :data-original-title="row.note">
                                 <i class='fa fa-file-text-o text-info'></i>
                             </span>
                         </span>
@@ -58,7 +58,7 @@
             </template>
         </Column>
 
-        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" :disableConfirmation="true" />
     </Grid>
 </template>
 
@@ -70,6 +70,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { confirm } from "@Obsidian/Utility/dialogs";
 
     const invokeBlockAction = useInvokeBlockAction();
 
