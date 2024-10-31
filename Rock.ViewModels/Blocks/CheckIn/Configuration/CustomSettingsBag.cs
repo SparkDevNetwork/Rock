@@ -14,21 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Rock.ViewModels.CheckIn;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CustomSettingsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<string> CheckInAreas { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string CheckInConfiguration { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string Kiosk { get; set; }
     }
 }
