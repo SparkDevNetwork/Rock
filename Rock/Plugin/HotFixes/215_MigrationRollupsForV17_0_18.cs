@@ -390,7 +390,7 @@ namespace Rock.Plugin.HotFixes
 
         }
 
-        // PA: Chop blocks for v1.17.0.30
+        // PA: Chop blocks for v1.17.0.31
         private void ChopBlockTypesv17()
         {
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
@@ -460,9 +460,11 @@ namespace Rock.Plugin.HotFixes
                 migrationStrategy: "Chop",
                 jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_170_CHOP_OBSIDIAN_BLOCKS,
                 blockAttributeKeysToIgnore: new Dictionary<string, string> {
-                { "92E4BFE8-DF80-49D7-819D-417E579E282D", "LimitToOwed,MaxResults" }, // Registration List Lava
+                { "92E4BFE8-DF80-49D7-819D-417E579E282D", "EnableDebug,LimitToOwed,MaxResults" }, // Registration List Lava
                 { "BEC5B592-9E9E-4C55-BD0D-2B8065A1802E", "EntityType" }, // Note Type List
-                { "361F15FC-4C08-4A26-B482-CC260E708F7C", "NoteType,EntityType" } // Note Watch Detail
+                { "361F15FC-4C08-4A26-B482-CC260E708F7C", "NoteType,EntityType" }, // Note Watch Detail
+                { "4C32F2CD-5A88-4C3A-ADEA-CF94E85D20A6", "EnableDebug" }, // Prayer Request Entry
+                { "C96479B6-E309-4B1A-B024-1F1276122A13", "MaximumNumberOfDocuments" } // Benevolence Type Detail
             } );
         }
 
