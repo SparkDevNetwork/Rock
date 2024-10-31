@@ -224,6 +224,10 @@
     <Compile Include="Migrations\202410301621464_AddRequiresGrading.Designer.cs">
       <DependentUpon>202410301621464_AddRequiresGrading.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202410311701406_Rollup_20241031.cs" />
+    <Compile Include="Migrations\202410311701406_Rollup_20241031.Designer.cs">
+      <DependentUpon>202410311701406_Rollup_20241031.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2417,6 +2421,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202410301621464_AddRequiresGrading.resx">
       <DependentUpon>202410301621464_AddRequiresGrading.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202410311701406_Rollup_20241031.resx">
+      <DependentUpon>202410311701406_Rollup_20241031.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
