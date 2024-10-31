@@ -449,6 +449,7 @@ namespace RockWeb.Blocks.Core
                 device = new DeviceService( rockContext ).Get( deviceId );
                 lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
                 pdAuditDetails.SetEntity( device, ResolveRockUrl( "~" ) );
+                pdAuditDetails.Placeholder = $"<dl><dt>Guid</dt><dd>{device.Guid}</small></dd></dl>";
             }
 
             if ( device == null )
