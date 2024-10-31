@@ -165,6 +165,7 @@ namespace Rock.ViewModels.Blocks.Crm.Disc
     /// <summary>
     /// The bag containing the results of the assessment.
     /// </summary>
+    [Serializable]
     public class AssessmentResultsBag
     {
         /// <summary>
