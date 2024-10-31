@@ -5,10 +5,8 @@
 	</summary>
 </doc>
 */
-
-/* #Obsolete# - Pledge Analytics can be obtained using the spFinance_PledgeAnalyticsQueryWithMultipleAccountIds Stored Procedure. */
-ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
-	  @AccountId int
+ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]
+	  @AccountIds varchar(max)
 	, @StartDate datetime = NULL
 	, @EndDate datetime = NULL
 	, @MinAmountPledged decimal(18,2) = NULL
@@ -42,7 +40,7 @@ BEGIN
 	SET @Sql = '
 	;WITH CTE_ACCOUNTS AS (
 		SELECT [Id]
-		FROM [FinancialAccount] WHERE Id = ' + CAST(@AccountId as varchar) + '
+		FROM [FinancialAccount] WHERE Id IN (' + @AccountIds + ')
 		UNION ALL
 		SELECT A.[Id]
 		FROM [FinancialAccount] A
@@ -61,7 +59,7 @@ BEGIN
 		FROM [FinancialPledge] [fp]
 		INNER JOIN [PersonAlias] [pa] ON [pa].[Id] = [fp].[PersonAliasId]
 		INNER JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
-		WHERE [fp].[AccountId] = ' + CAST(@AccountId as varchar)
+		WHERE [fp].[AccountId] IN (' + @AccountIds + ')'
 
 		SET @Sql = @Sql + '
 		AND ( 
