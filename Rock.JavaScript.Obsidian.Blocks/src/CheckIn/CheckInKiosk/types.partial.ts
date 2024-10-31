@@ -324,6 +324,9 @@ export type AttendanceCountGroup = {
  * check-in session only.
  */
 export type LocationCountAdjustment = {
+    /** The encrypted identifier of the attendance record. */
+    id?: string | null;
+
     /** The timestamp that this adjustment was received. */
     timestamp: number;
 

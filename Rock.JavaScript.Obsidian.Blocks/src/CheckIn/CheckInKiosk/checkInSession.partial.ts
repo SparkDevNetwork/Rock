@@ -1782,8 +1782,21 @@ export class CheckInSession {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
-            // If there are no ability levels configured then skip that screen.
-            if (familySession.getAvailableAbilityLevels().length === 0) {
+            const abilityLevels = familySession.getAvailableAbilityLevels();
+
+            // If an ability level is not already selected then try to select
+            // one if there is a single option to pick from.
+            if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
+                familySession = new CheckInSession(familySession, {
+                    selectedAbilityLevel: {
+                        id: abilityLevels[0].id,
+                        name: abilityLevels[0].name
+                    }
+                });
+            }
+
+            // If there is zero or one ability levels configured then skip that screen.
+            if (abilityLevels.length <= 1) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
@@ -1835,10 +1848,23 @@ export class CheckInSession {
                 throw new InvalidCheckInStateError("Nobody has been selected for check-in.");
             }
 
-            const familySession = await this.withAttendee(this.selectedAttendeeIds[0]);
+            let familySession = await this.withAttendee(this.selectedAttendeeIds[0]);
 
-            // If there are no ability levels configured then skip that screen.
-            if (familySession.getAvailableAbilityLevels().length === 0) {
+            const abilityLevels = familySession.getAvailableAbilityLevels();
+
+            // If an ability level is not already selected then try to select
+            // one if there is a single option to pick from.
+            if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
+                familySession = new CheckInSession(familySession, {
+                    selectedAbilityLevel: {
+                        id: abilityLevels[0].id,
+                        name: abilityLevels[0].name
+                    }
+                });
+            }
+
+            // If there is zero or one ability levels configured then skip that screen.
+            if (abilityLevels.length <= 1) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 

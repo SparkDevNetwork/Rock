@@ -132,22 +132,31 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         public override object GetObsidianBlockInitialization()
         {
             var apiKey = string.Empty;
+            string loginRequiredUrl = null;
 
             RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Checkin/CheckInKiosk.css" ), true );
 
-            if ( RequestContext.CurrentPerson == null && GetAttributeValue( AttributeKey.RestKey ).IsNotNullOrWhiteSpace() )
+            if ( RequestContext.CurrentPerson == null )
             {
-                var activeRecordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid(), RockContext ).Id;
-                var userGuid = GetAttributeValue( AttributeKey.RestKey ).AsGuid();
+                if ( GetAttributeValue( AttributeKey.RestKey ).IsNotNullOrWhiteSpace() )
+                {
+                    var activeRecordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid(), RockContext ).Id;
+                    var userGuid = GetAttributeValue( AttributeKey.RestKey ).AsGuid();
 
-                apiKey = new UserLoginService( RockContext ).Queryable()
-                    .Where( u => u.Guid == userGuid && u.Person.RecordStatusValueId == activeRecordStatusValueId )
-                    .Select( u => u.ApiKey )
-                    .FirstOrDefault() ?? string.Empty;
+                    apiKey = new UserLoginService( RockContext ).Queryable()
+                        .Where( u => u.Guid == userGuid && u.Person.RecordStatusValueId == activeRecordStatusValueId )
+                        .Select( u => u.ApiKey )
+                        .FirstOrDefault() ?? string.Empty;
+                }
+                else
+                {
+                    loginRequiredUrl = this.GetLoginPageUrl( this.GetCurrentPageUrl() );
+                }
             }
 
             return new
             {
+                LoginRequiredUrl = loginRequiredUrl,
                 ApiKey = apiKey,
                 CurrentTheme = PageCache.Layout?.Site?.Theme?.ToLower(),
                 IdleTimeout = GetAttributeValue( AttributeKey.IdleTimeout ).AsInteger(),

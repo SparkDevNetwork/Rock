@@ -6,7 +6,7 @@
             <div class="col-md-4">
                 <TextBox label="Attendance Id"
                          v-model="previewAttendanceId"
-                         help="To generate a preview of what this label looks like with an actual attendance record you can enter an identifier here." />
+                         help="To generate a preview of what this label looks like with an actual attendance record, you can enter an Attendance Id that's associated with a Next-gen Label." />
             </div>
 
             <div v-if="showCustomSize" class="col-md-2">

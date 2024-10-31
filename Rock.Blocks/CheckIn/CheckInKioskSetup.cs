@@ -19,11 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Hosting;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
@@ -462,7 +459,12 @@ namespace Rock.Blocks.CheckIn
                     .AsGuidList()
                     .Select( g => CampusCache.Get( g, RockContext ) )
                     .Where( c => c != null )
-                    .ToListItemBagList(),
+                    .Select( c => new ListItemBag
+                    {
+                        Value = c.IdKey,
+                        Text = c.Name
+                    } )
+                    .ToList(),
                 Settings = definedValue.GetAttributeValue( "SettingsJson" ).FromJsonOrNull<SavedCheckInConfigurationSettingsBag>()
             };
         }
