@@ -40,7 +40,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// Initializes a new instance of the <see cref="DateAttributeFieldDataSource{TLabelData}"/> class.
         /// </summary>
-        /// <param name="attributeCache">The attribute cache taht identifies the field.</param>
+        /// <param name="attributeCache">The attribute cache that identifies the field.</param>
         /// <param name="entityPath">The text path to the entity property.</param>
         /// <param name="entitySelector">The entity selector function.</param>
         public DateAttributeFieldDataSource( AttributeCache attributeCache, string entityPath, Func<TLabelData, IHasAttributes> entitySelector )
