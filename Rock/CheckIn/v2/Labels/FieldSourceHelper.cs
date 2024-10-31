@@ -214,6 +214,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Check-in Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.CheckInTime
             } );
 
@@ -223,6 +224,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Current Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.CurrentTime
             } );
 
@@ -446,6 +448,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Check-in Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.StartDateTime
             } );
 
@@ -455,6 +458,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Current Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
             } );
 
@@ -710,7 +714,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Check-in Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                Formatter = DateDataFormatter.Instance,
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.CheckInTime
             } );
 
@@ -720,7 +724,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Current Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                Formatter = DateDataFormatter.Instance,
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
             } );
 
@@ -1161,7 +1165,13 @@ namespace Rock.CheckIn.v2.Labels
             // Set any custom formatters based on property type.
             if ( entityField.PropertyType == typeof( DateTime ) || entityField.PropertyType == typeof( DateTime? ) )
             {
-                dataSource.Formatter = DateDataFormatter.Instance;
+                if (entityField.Title.EndsWith("Date"))
+                {
+                    dataSource.Formatter = DateDataFormatter.Instance;
+                    return dataSource;
+                }
+
+                dataSource.Formatter = DateTimeDataFormatter.Instance;
             }
 
             return dataSource;

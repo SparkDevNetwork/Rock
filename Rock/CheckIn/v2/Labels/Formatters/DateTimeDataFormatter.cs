@@ -25,54 +25,54 @@ namespace Rock.CheckIn.v2.Labels.Formatters
     /// Formats a <see cref="DateTime"/> value into a selected format from
     /// the list of options.
     /// </summary>
-    internal sealed class DateDataFormatter : DataFormatter<DateTime?>
+    internal sealed class DateTimeDataFormatter : DataFormatter<DateTime?>
     {
         /// <summary>
         /// The singleton instance of the date formatter.
         /// </summary>
-        public static DataFormatter Instance { get; } = new DateDataFormatter();
+        public static DataFormatter Instance { get; } = new DateTimeDataFormatter();
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DateDataFormatter"/>.
+        /// Initializes a new instance of <see cref="DateTimeDataFormatter"/>.
         /// </summary>
-        private DateDataFormatter()
+        private DateTimeDataFormatter()
         {
             DateTime exampleDateTime = new DateTime( 2024, 04, 21, 17, 30, 0, 0 );
             DateTimeFormatInfo dtf = System.Globalization.CultureInfo.InstalledUICulture.DateTimeFormat;
 
             Options.Add( new DataFormatterOptionBag
             {
-                Key = "652864F9-57EC-492E-B548-5FC8ECD372D6",
-                Name = exampleDateTime.ToString( "M", dtf ),
-                Value = dtf.MonthDayPattern
+                Key = "D7267850-5EBE-4540-9D8F-C453F27C09E3",
+                Name = exampleDateTime.ToString( "t", dtf ),
+                Value = dtf.ShortTimePattern
             } );
 
             Options.Add( new DataFormatterOptionBag
             {
-                Key = "280B1804-C055-4133-AE37-5534D40A5748",
-                Name = exampleDateTime.ToString( "Y", dtf ),
-                Value = dtf.YearMonthPattern
+                Key = "3B0EF43E-6BE2-4D24-BD3B-131456ACB1CF",
+                Name = $"Sun {exampleDateTime.ToString( "t", dtf )}",
+                Value = $"ddd {dtf.ShortTimePattern}"
             } );
 
             Options.Add( new DataFormatterOptionBag
             {
-                Key = "6828eeb1-edf9-4d28-95ca-427f02e1b522",
-                Name = $"Sun {exampleDateTime.ToString( "M", dtf )}",
-                Value = $"ddd {dtf.MonthDayPattern}"
-            } );
-
-            Options.Add( new DataFormatterOptionBag
-            {
-                Key = "ef1f2a8e-11e4-4c4d-a512-5da503a48fe4",
+                Key = "5926E634-48AA-4212-9571-7F08AE491E6C",
                 Name = exampleDateTime.ToString( "d", dtf ),
                 Value = dtf.ShortDatePattern
             } );
 
             Options.Add( new DataFormatterOptionBag
             {
-                Key = "FB24EDC6-BA92-4045-ADAF-B21A12BAC653",
-                Name = exampleDateTime.ToString( "D", dtf ),
-                Value = dtf.LongDatePattern
+                Key = "C743FFCC-B827-4FAD-886D-7A3463C902A9",
+                Name = exampleDateTime.ToString( "g", dtf ),
+                Value = $"{dtf.ShortDatePattern} {dtf.ShortTimePattern}"
+            } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "37D2D6E1-C9D1-4C74-B1A0-06A1AEE3FDE8",
+                Name = exampleDateTime.ToString( "f", dtf ),
+                Value = $"{dtf.LongDatePattern} {dtf.ShortTimePattern}"
             } );
         }
 

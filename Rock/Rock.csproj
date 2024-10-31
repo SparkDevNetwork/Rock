@@ -933,6 +933,7 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\DataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DateAttributeFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\CheckInDetailDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\DateTimeDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\DateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldSourceHelper.cs" />
