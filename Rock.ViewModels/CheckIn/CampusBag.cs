@@ -20,8 +20,14 @@ using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 
 namespace Rock.ViewModels.CheckIn
 {
+    /// <summary>
+    /// The Campus Bag
+    /// </summary>
     public class CampusBag : CheckInItemBag
     {
+        /// <summary>
+        /// List of associated kiosks.
+        /// </summary>
         public List<WebKioskBag> Kiosks { get; set; }
     }
 }

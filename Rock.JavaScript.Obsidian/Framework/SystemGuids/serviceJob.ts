@@ -128,6 +128,8 @@ export const ServiceJob = {
     DataMigrations166UpdateAchievementtypeTargetcountColumn: "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5",
     /** The Job to run Post v16.7 Data Migrations to chop AccountEdit Block. */
     DataMigrations167ChopAccountEditBlock: "E581688C-E60D-4841-B3C3-C535CAD0002D",
+    /** The Job to run Post v16.7 Data Migrations to chop PledgeEntry Block. */
+    DataMigrations167ChopPledgeEntryBlock: "8E8C177E-DE88-47B2-AD9A-FC6AD5965882",
     /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
     DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */

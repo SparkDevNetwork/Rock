@@ -21,18 +21,16 @@
 // </copyright>
 //
 
-import { CampusBag } from "@Obsidian/ViewModels/CheckIn/campusBag";
-import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
-import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
+import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 
-/** The Custom Settings Options Bag */
-export type CustomSettingsOptionsBag = {
-    /** List of campuses and kiosks. */
-    campusesAndKiosks?: CampusBag[] | null;
+/** The Campus Bag */
+export type CampusBag = {
+    /** Gets or sets the identifier of this item. */
+    id?: string | null;
 
-    /** List of available check-in areas. */
-    checkInAreas?: ConfigurationAreaBag[] | null;
+    /** List of associated kiosks. */
+    kiosks?: WebKioskBag[] | null;
 
-    /** Available check-in configuration options. */
-    checkInConfigurationOptions?: ConfigurationTemplateBag[] | null;
+    /** Gets or sets the display name of this item. */
+    name?: string | null;
 };

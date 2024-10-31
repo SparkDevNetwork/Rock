@@ -25,10 +25,24 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration
 {
+    /// <summary>
+    /// The Custom Settings Bag
+    /// </summary>
     public class CustomSettingsBag
     {
+        /// <summary>
+        /// List of check-in areas.
+        /// </summary>
         public List<string> CheckInAreas { get; set; }
+
+        /// <summary>
+        /// Configuration settings for check-in.
+        /// </summary>
         public string CheckInConfiguration { get; set; }
+
+        /// <summary>
+        /// Kiosk identifier.
+        /// </summary>
         public string Kiosk { get; set; }
     }
 }

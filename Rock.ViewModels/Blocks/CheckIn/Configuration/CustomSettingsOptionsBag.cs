@@ -24,11 +24,24 @@ using Rock.ViewModels.CheckIn;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration
 {
+    /// <summary>
+    /// The Custom Settings Options Bag
+    /// </summary>
     public class CustomSettingsOptionsBag
     {
+        /// <summary>
+        /// Available check-in configuration options.
+        /// </summary>
         public List<ConfigurationTemplateBag> CheckInConfigurationOptions { get; set; }
 
+        /// <summary>
+        /// List of available check-in areas.
+        /// </summary>
         public List<ConfigurationAreaBag> CheckInAreas { get; set; }
+
+        /// <summary>
+        /// List of campuses and kiosks.
+        /// </summary>
         public List<CampusBag> CampusesAndKiosks { get; set; }
     }
 }
