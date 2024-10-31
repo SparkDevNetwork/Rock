@@ -743,7 +743,10 @@
 
     setInitialValues();
 
-    if (blockConfiguration.isConfigureByLocationEnabled) {
+    if (blockConfiguration.kioskConfiguration) {
+        configureKiosk(blockConfiguration.kioskConfiguration, blockConfiguration.currentTheme ?? "");
+    }
+    else if (blockConfiguration.isConfigureByLocationEnabled) {
         attemptConfigureByGeoLocation();
     }
     else if (blockConfiguration.isManualSetupAllowed) {
