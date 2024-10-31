@@ -10,6 +10,7 @@
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddCompletionClick : undefined"
+          :rowClass="getRowClass"
           @selectItem="onSelectItem">
         <SelectColumn />
 
@@ -38,8 +39,8 @@
             <template #format="{ row }">
                 <span :class="{ 'text-warning': row.hadExtension }">
                     {{ RockDateTime.parseISO(row.dueDate as string)?.toLocaleString({
-        dateStyle: "short"
-    }) }}</span>
+                        dateStyle: "short"
+                    }) }}</span>
             </template>
         </DateColumn>
 
@@ -97,6 +98,12 @@
 
     </Modal>
 </template>
+
+<style>
+.disable-click {
+    cursor: not-allowed !important;
+}
+</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -173,6 +180,14 @@
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
         const person = row["individual"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    function getRowClass(row: Record<string, unknown>): string | undefined {
+        if (!row.idKey) {
+            return "disable-click";
+        }
+
+        return undefined;
     }
 
     /**

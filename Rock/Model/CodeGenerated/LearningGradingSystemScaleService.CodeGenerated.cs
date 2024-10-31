@@ -120,6 +120,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HighlightColor = source.HighlightColor;
             target.IsPassing = source.IsPassing;
             target.LearningGradingSystemId = source.LearningGradingSystemId;
             target.Name = source.Name;

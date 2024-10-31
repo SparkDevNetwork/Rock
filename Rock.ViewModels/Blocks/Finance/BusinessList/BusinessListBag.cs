@@ -42,7 +42,7 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessList
         /// <summary>
         /// Gets or sets the contacts of the business
         /// </summary>
-        public string Contacts { get; set; }
+        public List<string> Contacts { get; set; }
         /// <summary>
         /// Gets or sets the street address of the business
         /// </summary>

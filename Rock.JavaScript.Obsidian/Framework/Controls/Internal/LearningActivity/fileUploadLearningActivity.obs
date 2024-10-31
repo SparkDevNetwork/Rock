@@ -76,7 +76,7 @@
             <div class="footer-section">
                 <RockButton :btnType="BtnType.Primary"
                             :disabled="!binaryFile"
-                            @click="emits('completed', true)">
+                            @click="onCompletedAndClosed">
                     Complete
                 </RockButton>
             </div>
@@ -157,6 +157,11 @@
 
     const pointsEarned = ref(completionBag.value.pointsEarned);
     const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
+
+    function onCompletedAndClosed(): void {
+        emits("completed", true);
+        emits("closed");
+    }
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {

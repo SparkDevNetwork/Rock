@@ -30,17 +30,17 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration
     public class CustomSettingsOptionsBag
     {
         /// <summary>
-        /// Gets or sets a list of CheckIn Configuration Options
+        /// Available check-in configuration options.
         /// </summary>
         public List<ConfigurationTemplateBag> CheckInConfigurationOptions { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of the CheckIn Areas
+        /// List of available check-in areas.
         /// </summary>
         public List<ConfigurationAreaBag> CheckInAreas { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of the Campuses and Kiosks
+        /// List of campuses and kiosks.
         /// </summary>
         public List<CampusBag> CampusesAndKiosks { get; set; }
     }

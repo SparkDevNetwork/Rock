@@ -97,7 +97,10 @@
             </div>
 
             <div class="col-md-6">
-                <NumberBox v-model="points" label="Points" help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items." inputGroupClasses="input-width-md" />
+                <NumberBox v-model="points"
+                           label="Points"
+                           help="This is the total number of points available for this activity."
+                           inputGroupClasses="input-width-md" />
             </div>
         </div>
 
@@ -174,6 +177,8 @@
     const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
     const activityBag = ref(props.modelValue.bag ?? {} as LearningActivityBag);
 
+    const isNew = activityBag.value.idKey?.length === 0;
+
     const attributes = ref(activityBag.value?.attributes ?? {});
     const attributeValues = ref(activityBag.value?.attributeValues ?? {});
     const name = propertyRef(activityBag.value?.name ?? "", "Name");
@@ -191,7 +196,7 @@
     const activityComponentSettingsJson = propertyRef(activityBag.value?.activityComponentSettingsJson ?? "", "ActivityComponentSettingsJson");
     const activityComponent = propertyRef(activityBag.value?.activityComponent ?? {} as LearningActivityComponentBag, "ActivityComponent");
 
-    const points = propertyRef(activityBag.value?.points ?? 0, "Points");
+    const points = propertyRef(isNew ? 10 : activityBag.value?.points ?? 10, "Points");
 
     const activityComponentValue = ref(activityBag.value?.activityComponent?.guid ?? "");
 

@@ -49,8 +49,7 @@ import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAtte
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
-
-type Mutable<T> = { -readonly [P in keyof T]: T[P] };
+import { LocationSelectionStrategy } from "@Obsidian/Enums/CheckIn/locationSelectionStrategy";
 
 type FunctionPropertyNames<T> = {
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -1112,7 +1111,11 @@ export class CheckInSession {
             .groups
             ?.find(g => g.id === this.selectedGroup?.id);
 
-        if (!group) {
+        const area = this.attendeeOpportunities
+            .areas
+            ?.find(a => a.id === this.selectedArea?.id);
+
+        if (!group || !area) {
             return [];
         }
 
@@ -1128,10 +1131,43 @@ export class CheckInSession {
         // and the selected group.
         const selectedScheduleIds = this.selectedSchedules?.map(s => s.id as string);
 
-        return this.attendeeOpportunities
+        let filteredLocations = this.attendeeOpportunities
             .locations
             .filter(l => isAnyIdInList(l.id, group.locationIds))
             .filter(l => isAnyIdInList(selectedScheduleIds, l.scheduleIds));
+
+        if (filteredLocations.length <= 1) {
+            return filteredLocations;
+        }
+
+        // If we have more than 1 location and our strategy is either Balance
+        // or FillInOrder then we need to return a single location so that it
+        // is pre-selected. This is only supported in family mode.
+        if (area.locationSelectionStrategy === LocationSelectionStrategy.Balance) {
+            // Sort the list in ascending order by current count so the location
+            // with the fewest people is the one returned.
+            filteredLocations.sort((a, b) => a.currentCount - b.currentCount);
+
+            return [filteredLocations[0]];
+        }
+        else if (area.locationSelectionStrategy === LocationSelectionStrategy.FillInOrder) {
+            // Sort the list so that it matches the order of the group
+            // location identifiers. This will then filter out any that are over
+            // capacity.
+            if (!group.locationIds) {
+                return [];
+            }
+
+            filteredLocations = group.locationIds
+                .map(id => filteredLocations.find(l => l.id === id))
+                .filter(l => l !== undefined) as LocationOpportunityBag[];
+
+            return filteredLocations.length > 0
+                ? [filteredLocations[0]]
+                : [];
+        }
+
+        return filteredLocations;
     }
 
     /**
@@ -1746,8 +1782,21 @@ export class CheckInSession {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
-            // If there are no ability levels configured then skip that screen.
-            if (familySession.getAvailableAbilityLevels().length === 0) {
+            const abilityLevels = familySession.getAvailableAbilityLevels();
+
+            // If an ability level is not already selected then try to select
+            // one if there is a single option to pick from.
+            if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
+                familySession = new CheckInSession(familySession, {
+                    selectedAbilityLevel: {
+                        id: abilityLevels[0].id,
+                        name: abilityLevels[0].name
+                    }
+                });
+            }
+
+            // If there is zero or one ability levels configured then skip that screen.
+            if (abilityLevels.length <= 1) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
@@ -1799,10 +1848,23 @@ export class CheckInSession {
                 throw new InvalidCheckInStateError("Nobody has been selected for check-in.");
             }
 
-            const familySession = await this.withAttendee(this.selectedAttendeeIds[0]);
+            let familySession = await this.withAttendee(this.selectedAttendeeIds[0]);
 
-            // If there are no ability levels configured then skip that screen.
-            if (familySession.getAvailableAbilityLevels().length === 0) {
+            const abilityLevels = familySession.getAvailableAbilityLevels();
+
+            // If an ability level is not already selected then try to select
+            // one if there is a single option to pick from.
+            if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
+                familySession = new CheckInSession(familySession, {
+                    selectedAbilityLevel: {
+                        id: abilityLevels[0].id,
+                        name: abilityLevels[0].name
+                    }
+                });
+            }
+
+            // If there is zero or one ability levels configured then skip that screen.
+            if (abilityLevels.length <= 1) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 

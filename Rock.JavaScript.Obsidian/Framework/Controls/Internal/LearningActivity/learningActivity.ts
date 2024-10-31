@@ -83,6 +83,12 @@ type LearningActivityComponentBaseEmits = {
      * @param isSuccess True if the button click was for a completion; false if cancelled.
      */
     completed(isSuccess: boolean): void;
+
+    /**
+     * @description Emitted when the activity is done and should be closed
+     * or the next activity opened.
+     */
+    closed(): void;
 };
 
 /**
@@ -115,6 +121,7 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
  */
 export const learningActivityEmits: LearningActivityComponentBaseEmits = {
     completed(_isSuccess: boolean): void { },
+    closed(): void { },
     ["update:activityBag"](_bag: LearningActivityBag): void { },
     ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
 };
@@ -271,7 +278,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
      */
     const fileUrl = computed((): string => {
         const securityGrantToken = toValue(completionBag).binaryFileSecurityGrant ?? "";
-        const securityGrantQueryParam = securityGrantToken.length > 0? `&securitygrant=${securityGrantToken}` : "";
+        const securityGrantQueryParam = securityGrantToken.length > 0 ? `&securitygrant=${securityGrantToken}` : "";
 
         if (toValue(completionBag)?.binaryFile?.value) {
             return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}${securityGrantQueryParam}`;

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the schedules." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage(
         "Detail Page",

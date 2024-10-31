@@ -71,7 +71,7 @@ namespace Rock.CheckIn.v2.Labels
         {
             SourceKey = values.GetValueOrNull( "sourceKey" );
             FormatterOptionKey = values.GetValueOrNull( "formatterOptionKey" );
-            CollectionFormat = values.GetValueOrNull( "collecitonFormat" ).ConvertToEnumOrNull<TextCollectionFormat>() ?? TextCollectionFormat.FirstItemOnly;
+            CollectionFormat = values.GetValueOrNull( "collectionFormat" ).ConvertToEnumOrNull<TextCollectionFormat>() ?? TextCollectionFormat.FirstItemOnly;
             PlaceholderText = values.GetValueOrNull( "placeholderText" );
             IsDynamicText = values.GetValueOrNull( "isDynamicText" ).AsBoolean();
             StaticText = values.GetValueOrNull( "staticText" );

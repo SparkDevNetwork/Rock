@@ -308,6 +308,9 @@ registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
 import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
 registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
 
+import { MediaWatchFieldType } from "./mediaWatchField.partial";
+registerFieldType(FieldTypeGuids.MediaWatch, new MediaWatchFieldType());
+
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 

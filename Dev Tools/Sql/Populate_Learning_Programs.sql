@@ -174,9 +174,9 @@ DECLARE
     @pointAssessmentComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A6E91C3C-4A4C-4FC2-816A-A6B1E6422381'),
     @presentationDescription NVARCHAR(MAX) = '',
     @presentationSettings NVARCHAR(MAX) = '{"instructions":"{\"time\":1719941564985,\"blocks\":[{\"id\":\"uiHbfAQlzA\",\"type\":\"paragraph\",\"data\":{\"text\":\"Be sure to speak loud enough for all to hear and remember to make eye contact with people in the audience.\"}}],\"version\":\"2.28.0\"}","rubric":"{\"time\":1715703275889,\"blocks\":[{\"id\":\"D2cSRK74X8\",\"type\":\"paragraph\",\"data\":{\"text\":\"Grading Rubric:\"}},{\"id\":\"qZ7h7XNvN2\",\"type\":\"table\",\"data\":{\"withHeadings\":true,\"content\":[[\"Item\",\"Score\"],[\"Eye Contact\",\"5\"],[\"Speaking Quality\",\"5\"],[\"Content\",\"20\"],[\"Slides\",\"20\"]]}}],\"version\":\"2.28.0\"}"}',
-    @checkOffComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '7FAE61A2-5F08-4FD9-8BB7-FF7FAB410AC5'),
-    @checkOffDescription NVARCHAR(MAX) = '',
-    @checkOffSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}',
+    @acknowledgementComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '7FAE61A2-5F08-4FD9-8BB7-FF7FAB410AC5'),
+    @acknowledgementDescription NVARCHAR(MAX) = '',
+    @acknowledgementSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}',
     @fileUploadComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'DEB298FE-383B-46BD-A974-AFD92C09843A'),
     @fileUploadDescription NVARCHAR(MAX) = '{"time":1719854012944,"blocks":[{"id":"XD223JYWoi","type":"paragraph", "data": {"text":"Please upload your mid term paper. Changes will be accepted up until the due date."}}]}',
     @fileUploadSettings NVARCHAR(MAX) = '';
@@ -261,7 +261,7 @@ INSERT [LearningActivity] ( [LearningClassId], [Name], [Order], [ActivityCompone
 SELECT g.[Id], seed.[Name], seed.[Order], [ActivityComponentId], [AssignTo], [DueCalculationMethod], [DueDateDefault], [DueDateOffset], [AvailableCalculationMethod], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], NEWID() [Guid], seed.[Description], [SettingsJson]
 FROM (
     SELECT 'Assessment 1' [Name], 1 [Order], @assessmentComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 2 [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 10 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @assessment1Description [Description], @assessment1Settings [SettingsJson]
-    UNION SELECT 'Check Off' [Name], 2 [Order], @checkOffComponentId [ActivityComponentId], 0 [AssignTo], @neverDue [DueCalculationMethod], NULL [DueDateDefault], NULL [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 0 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @checkOffDescription, @checkOffSettings
+    UNION SELECT 'Check Off' [Name], 2 [Order], @acknowledgementComponentId [ActivityComponentId], 0 [AssignTo], @neverDue [DueCalculationMethod], NULL [DueDateDefault], NULL [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 0 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @acknowledgementDescription, @acknowledgementSettings
     UNION SELECT 'Mid Term' [Name], 3 [Order], @fileUploadComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 12 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 30 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @fileUploadDescription, @fileUploadSettings
     UNION SELECT 'Final Project' [Name], 4 [Order], @pointAssessmentComponentId [ActivityComponentId], 1 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 24 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 50 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @presentationDescription, @presentationSettings
 ) seed
@@ -330,12 +330,12 @@ JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
 JOIN [Person] pers on pers.[Id] = p.[PersonId]
 JOIN #classes c on c.[ClassGuid] = p.[ClassGuid]
 
-/* Add the Student Activity Completions */
+/* Add some Student Activity Completions */
 INSERT [LearningActivityCompletion] ( [LearningActivityId], [StudentId], [IsStudentCompleted], [IsFacilitatorCompleted], [Guid]
     , [AvailableDateTime], [DueDate], [StudentComment], [FacilitatorComment], [CompletedDateTime], [WasCompletedOnTime], [PointsEarned], [CompletedByPersonAliasId] )
 SELECT [a].[Id], 
     gm.[Id], 
-    IIF(gm.[Id] % 5 IN (0, 1), 1, 0) [IsStudentCompleted],
+    1 [IsStudentCompleted],
     0 [IsFacilitatorCompleted],
     NEWID() [Guid],
     CASE 
@@ -353,7 +353,7 @@ SELECT [a].[Id],
     END [DueDate],
     IIF(
         a.[IsStudentCommentingEnabled] = 1, 
-        IIF( gm.[Id] % 3 = 0, 'I was hoping to discuss this further', NULL), 
+        IIF( gm.[Id] % 3 = 0, 'I''ve learned so much!', NULL), 
         NULL
     ) StudentComment,
     IIF( gm.[Id] % 4 = 0 AND gm.[Id] % 5 IN (0, 1), 'Excellent Work!', NULL) FacilitatorComment,
@@ -378,13 +378,14 @@ SELECT [a].[Id],
         END)
     END [CompletedDate],
     IIF( gm.[Id] % 5 = 0, 1, 0) [WasCompletedOnTime],
-    IIF( gm.[Id] % 5 = 0, FLOOR(RAND(CHECKSUM(NEWID())) * a.[Points]), 0) [PointedEarned],
+    IIF( gm.[Id] % 5 = 0, FLOOR(RAND(CHECKSUM(NEWID())) * a.[Points]), 0) [PointsEarned],
     IIF( gm.[Id] % 5 IN (0, 1), pers.[PrimaryAliasId], NULL) [CompletedByPersonAliasId]
 FROM [LearningActivity] a
 JOIN #participants p on p.[GroupId] = a.[LearningClassId]
 JOIN Person pers ON pers.Id = p.PersonId
 JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
 JOIN #classes c ON c.[ClassGuid] = p.[ClassGuid]
+WHERE gm.[Id] % 7 = 0
 
 /* Redeclare the variables here in case we want to run the query without the inserts above. */
 DECLARE

@@ -287,6 +287,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 if ( phoneNumber != null )
                 {
                     bag.PhoneNumber = phoneNumber.NumberFormatted;
+                    bag.DisplayPhoneNumber = phoneNumber.ToString();
                     bag.IsSmsChecked = phoneNumber.IsMessagingEnabled;
                     bag.IsUnlistedChecked = phoneNumber.IsUnlisted;
                     bag.CountryCode = phoneNumber.CountryCode;

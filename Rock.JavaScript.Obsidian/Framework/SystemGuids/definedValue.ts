@@ -185,6 +185,8 @@ export const DefinedValue = {
     DefaultRssChannel: "D6149581-9EFC-40D8-BD38-E92C0717BEDA",
     /** Check-in Kiosk device type */
     DeviceTypeCheckinKiosk: "BC809626-1389-4543-B8BB-6FAC79C27AFD",
+    /** Cloud Print Proxy device type */
+    DeviceTypeCloudPrintProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Giving Kiosk device type */
     DeviceTypeGivingKiosk: "64A1DBE5-10AD-42F1-A9BA-646A781D4112",
     /** Printer device type */

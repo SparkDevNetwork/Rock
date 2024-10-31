@@ -1,6 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass" v-if="!backButtonClicked">
+    <TabbedContent
+                   :tabs="tabs"
+                   v-model:selectedTab="selectedTab"
+                   :class="visibleCssClass"
+                   selectedTabQueryParameterKey="tab">
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
                 <LearningPlanGrid :isAddEnabled="isEditable"
@@ -17,7 +21,7 @@
                              :isDeleteEnabled="isEditable"
                              @addClick="onAddStudentClick"
                              @rowClick="onParticipantClick"
-                             @deleteClick="onDeleteParticipantClick" />
+                             @deleteClick="onDeleteStudentClick" />
             </div>
             <div v-else-if="item === 'Facilitators'">
                 <FacilitatorGrid v-if="!isRefreshingFacilitators"
@@ -25,7 +29,7 @@
                                  :isDeleteEnabled="isEditable"
                                  @addClick="onAddFacilitatorClick"
                                  @rowClick="onParticipantClick"
-                                 @deleteClick="onDeleteParticipantClick" />
+                                 @deleteClick="onDeleteFacilitatorClick" />
             </div>
             <div v-else-if="item === 'Content'">
                 <ContentPageGrid :isAddEnabled="isEditable"
@@ -84,11 +88,13 @@
     import { useBlockBrowserBus, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -125,7 +131,6 @@
 
     const isEditable = ref(props.isEditable ?? false);
     const navigationUrls = ref(props.navigationUrls ?? {});
-    const backButtonClicked = ref(false);
 
     const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators", "Content", "Announcements"];
 
@@ -182,12 +187,6 @@
         }
     }
 
-    function updateUrlWithSelectedTab(): void {
-        const queryParams = new URLSearchParams(window.location.search);
-        queryParams.set("tab", selectedTab.value ?? "");
-        history.pushState(null, "", "?" + queryParams.toString());
-    }
-
     // #endregion
 
     // #region Event Handlers
@@ -209,21 +208,21 @@
     /**
      * Called when the Add announcement button has been clicked by the individual.
      */
-     function onAddAnnouncementClick(): void {
+    function onAddAnnouncementClick(): void {
         navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `0?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when the Add content page button has been clicked by the individual.
      */
-     function onAddContentPageClick(): void {
+    function onAddContentPageClick(): void {
         navigateToPage(NavigationUrlKey.ContentPageDetailPage, `0?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when the Add student button has been clicked by the individual.
      */
-     function onAddStudentClick(): void {
+    function onAddStudentClick(): void {
         modalTitle.value = "Add Student";
         isAddingFacilitator.value = false;
         isParticipantModalOpen.value = true;
@@ -232,7 +231,7 @@
     /**
      * Called when the Add facilitator button has been clicked by the individual.
      */
-     function onAddFacilitatorClick(): void {
+    function onAddFacilitatorClick(): void {
         modalTitle.value = "Add Facilitator";
         isAddingFacilitator.value = true;
         isParticipantModalOpen.value = true;
@@ -241,14 +240,14 @@
     /**
      * Called when an announcement row has been clicked by the individual.
      */
-     function onAnnouncementClick(key: string | null): void {
+    function onAnnouncementClick(key: string | null): void {
         navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `${key}?returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when a content page row has been clicked by the individual.
      */
-     function onContentPageClick(key: string | null): void {
+    function onContentPageClick(key: string | null): void {
         navigateToPage(NavigationUrlKey.ContentPageDetailPage, `${key}?returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
@@ -264,31 +263,71 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteActivityClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+        const activity = gridData?.rows?.find(p => p.idKey === key);
+        const hasCompletions = Number(activity?.["completedCount"]) > 0;
+
+        if (hasCompletions) {
+            const activityName = gridData?.rows?.find(r => r["idKey"] === key)?.["name"] as string;
+
+
+            const isConfirmed = await confirm(`The ${activityName} activity has completed activities. Deleting will remove all activity history. Are you sure you want to proceed?`);
+
+            if (isConfirmed) {
+                await invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+            }
+        }
+        else {
+            await invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+        }
     }
 
     /**
      * Called when an activity row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-     async function onDeleteAnnouncementClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteAnnouncement", "announcement");
+    async function onDeleteAnnouncementClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        await invokeDeleteBlockAction(key, gridData, "DeleteAnnouncement", "announcement");
     }
 
     /**
      * Called when an activity row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-     async function onDeleteContentPageClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteContentPage", "content page");
+    async function onDeleteContentPageClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        await invokeDeleteBlockAction(key, gridData, "DeleteContentPage", "content page");
     }
 
     /**
      * Called when a student or faciliator row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-    async function onDeleteParticipantClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+    async function onDeleteFacilitatorClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        await invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+    }
+
+    /**
+     * Called when a student or faciliator row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteStudentClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        const participant = gridData?.rows?.find(p => p.idKey === key);
+        const individual = participant?.["name"] as PersonFieldBag;
+        let name = "this student";
+        if (individual?.nickName) {
+            name = `${individual.nickName ?? ""} ${individual.lastName ?? ""}`.trim();
+        }
+
+        const hasCompletions = participant?.["hasCompletions"] === true;
+
+        const confirmationMessage = hasCompletions ?
+            `${name} has completed activities for this class. Deleting will remove all activity history. Are you sure you want to proceed?` :
+            `Are you sure you wish to delete ${name} from the class?`;
+
+        const isConfirmed = await confirm(confirmationMessage);
+
+        if (isConfirmed) {
+            invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+        }
     }
 
     /**
@@ -299,8 +338,7 @@
      *
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
-     async function onReorderActivity(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        console.warn("reorder", item, beforeItem);
+    async function onReorderActivity(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction<string>("ReorderActivity", {
             key: item["idKey"],
             beforeKey: beforeItem?.["idKey"] ?? null
@@ -343,12 +381,12 @@
             isRefreshingStudents.value = false;
         }
 
-        if (result.isError && result.errorMessage){
+        if (result.isError && result.errorMessage) {
             participantModalError.value = result.errorMessage;
             return;
         }
 
-        if (!result.isSuccess){
+        if (!result.isSuccess) {
             participantModalError.value = "Unknown error while trying to save the individual.";
             return;
         }
@@ -357,20 +395,5 @@
     }
 
     // #endregion
-
-    // #region Watches
-
-    watch(selectedTab, () => {
-        updateUrlWithSelectedTab();
-    });
-
-    // #endregion
-
-    // Listen for the browser back button click and update the selected tab if necessary.
-    window.addEventListener("popstate", function (_) {
-        backButtonClicked.value = true;
-        selectedTab.value = new URLSearchParams(window.location.search).get("tab") ?? "";
-        nextTick(() => backButtonClicked.value = false);
-    });
 
 </script>

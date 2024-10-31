@@ -268,14 +268,14 @@ namespace Rock.Blocks.Lms
             } );
 
             // Get all the components once rather than loading each one inside the foreach loop.
-            var components = LearningActivityContainer.Instance.Components;
+            var components = LearningActivityContainer.Instance.Components.Values.ToList();
 
             // We need to track the previous completion for activities that become available upon completion of the previous.
             LearningActivityCompletionBag previousActivityCompletion = null;
 
             foreach ( var activity in activities )
             {
-                var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
+                var activityComponent = components.FirstOrDefault( c => c.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value;
 
                 // If the student hasn't yet completed then scrub the component config of any information not permissible for the student to view (e.g. correct answers).
                 var configurationToSend =
@@ -341,6 +341,9 @@ namespace Rock.Blocks.Lms
                     previousActivityCompletion?.CompletedDate :
                     activity.AvailableDateTime;
 
+                var grade = activity.GetGrade( scales );
+                var hasPassingGrade = grade?.IsPassing ?? false;
+
                 var activityCompletion = new LearningActivityCompletionBag
                 {
                     IdKey = activity.IdKey,
@@ -352,10 +355,11 @@ namespace Rock.Blocks.Lms
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
                     GradedByPersonAlias = activity.GradedByPersonAlias.ToListItemBag(),
-                    GradeName = activity.GetGrade( scales )?.Name,
+                    GradeColor = grade?.HighlightColor,
+                    GradeName = grade?.Name,
                     GradeText = activity.GetGradeText( scales ),
                     IsAvailable = isActivityAvailable,
-                    IsGradePassing = activity.LearningActivity.Points == 0 || activity.GetGrade( scales ).IsPassing,
+                    IsGradePassing = activity.LearningActivity.Points == 0 || hasPassingGrade,
                     IsFacilitatorCompleted = activity.IsFacilitatorCompleted,
                     IsStudentCompleted = activity.IsStudentCompleted,
                     LearningActivityIdKey = activity.LearningActivity.IdKey,
@@ -421,7 +425,7 @@ namespace Rock.Blocks.Lms
 
             var now = RockDateTime.Now;
             box.ContentPages = new LearningClassContentPageService( RockContext ).Queryable()
-                .Where( c => c.LearningClassId == classId && (!c.StartDateTime.HasValue || c.StartDateTime <= now ) )
+                .Where( c => c.LearningClassId == classId && ( !c.StartDateTime.HasValue || c.StartDateTime <= now ) )
                 .Select( c => new
                 {
                     c.Id,
@@ -607,12 +611,16 @@ namespace Rock.Blocks.Lms
             activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( RockContext );
             activity.StudentComment = activityCompletionBag.StudentComment;
 
+            var activityComponent = LearningActivityContainer.Instance.Components.Values
+                .FirstOrDefault( c => c.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId )
+                .Value;
+
+            // Let the Activity component decide if it needs to be graded.
+            activity.RequiresGrading = activityComponent.RequiresGrading( activity );
+
             // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
             if ( !activity.GradedByPersonAliasId.HasValue )
             {
-                var components = LearningActivityContainer.Instance.Components;
-                var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
-
                 activity.ActivityComponentCompletionJson = activityComponent.GetCompletionJsonToPersist(
                     activityCompletionBag.ActivityComponentCompletionJson,
                     activity.LearningActivity.ActivityComponentSettingsJson );
@@ -623,7 +631,16 @@ namespace Rock.Blocks.Lms
                     activity.LearningActivity.Points
                 );
             }
-                
+
+            // It's important that the WasCompletedOnTime is set before the
+            // IsStudentCompleted bool. Activity.IsLate property uses this bit.
+            if ( !activity.CompletedDateTime.HasValue )
+            {
+                var now = RockDateTime.Now;
+                activity.CompletedDateTime = now;
+                activity.WasCompletedOnTime = !activity.IsLate;
+            }
+
             if ( !activity.CompletedByPersonAliasId.HasValue )
             {
                 activity.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
@@ -640,13 +657,6 @@ namespace Rock.Blocks.Lms
                 }
             }
 
-            if ( !activity.CompletedDateTime.HasValue )
-            {
-                var now = RockDateTime.Now;
-                activity.CompletedDateTime = now;
-                activity.WasCompletedOnTime = activity.DueDate.HasValue && activity.DueDate >= now;
-            }
-
             if ( isNew )
             {
                 activityCompletionService.Add( activity );
@@ -659,9 +669,16 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .OrderByDescending( s => s.ThresholdPercentage );
 
+            activityCompletionBag.IdKey = activity.IdKey;
             activityCompletionBag.CompletedDate = activity.CompletedDateTime;
             activityCompletionBag.WasCompletedOnTime = activity.WasCompletedOnTime;
-            activityCompletionBag.GradeName = activity.GetGrade( scales )?.Name;
+
+            var grade = activity.GetGrade( scales );
+            if ( grade != null )
+            {
+                activityCompletionBag.GradeName = grade.Name;
+                activityCompletionBag.GradeColor = grade.HighlightColor;
+            }
 
             // Return the raw component settings so a grade can be computed (if applicable).
             activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;

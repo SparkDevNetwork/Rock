@@ -792,8 +792,12 @@ namespace Rock.Blocks.Group
                         var married = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
                         var adultRole = familyType?.Roles?.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
+                        // Check if there is no spouse or if the spouse's first name (or nickname) and last name do not match the provided values.
                         if ( spouse == null ||
-                            !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
+                            (
+                              !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                              !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                            ) ||
                             !groupRegistrationBag.SpouseLastName.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();

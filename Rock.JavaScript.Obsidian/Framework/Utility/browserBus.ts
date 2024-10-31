@@ -1,5 +1,5 @@
 import { Guid } from "@Obsidian/Types";
-import { BlockBeginEditData, BlockEndEditData, BrowserBusCallback, BrowserBusOptions, Message } from "@Obsidian/Types/Utility/browserBus";
+import { BlockBeginEditData, BlockEndEditData, BrowserBusCallback, BrowserBusOptions, Message, QueryStringChangedData } from "@Obsidian/Types/Utility/browserBus";
 import { areEqual } from "./guid";
 
 /*
@@ -43,7 +43,10 @@ import { areEqual } from "./guid";
  * Framework messages that will be sent for pages.
  */
 export const PageMessages = {
-
+    /**
+     * Sent when the query string is changed outside the context of a page load.
+     */
+    QueryStringChanged: "page.core.queryStringChanged"
 } as const;
 
 /**
@@ -286,7 +289,7 @@ export class BrowserBus {
      * @param messageName The name of the message to subscribe to.
      * @param callback The callback to invoke when the message is received.
      */
-    public subscribe(messageName: "core.block.beginEdit", callback: BrowserBusCallback<BlockBeginEditData>): void;
+    public subscribe(messageName: "page.core.queryStringChanged", callback: BrowserBusCallback<QueryStringChangedData>): void;
 
     /**
      * Subscribes to the named message from any source.
@@ -294,7 +297,15 @@ export class BrowserBus {
      * @param messageName The name of the message to subscribe to.
      * @param callback The callback to invoke when the message is received.
      */
-    public subscribe(messageName: "core.block.endEdit", callback: BrowserBusCallback<BlockEndEditData>): void;
+    public subscribe(messageName: "block.core.beginEdit", callback: BrowserBusCallback<BlockBeginEditData>): void;
+
+    /**
+     * Subscribes to the named message from any source.
+     *
+     * @param messageName The name of the message to subscribe to.
+     * @param callback The callback to invoke when the message is received.
+     */
+    public subscribe(messageName: "block.core.endEdit", callback: BrowserBusCallback<BlockEndEditData>): void;
 
     /**
      * Subscribes to any message that is sent.
@@ -353,7 +364,7 @@ export class BrowserBus {
      * @param blockType The identifier of the block type.
      * @param callback The callback to invoke when the message is received.
      */
-    public subscribeToBlockType(messageName: "core.block.beginEdit", blockType: Guid, callback: BrowserBusCallback<BlockBeginEditData>): void;
+    public subscribeToBlockType(messageName: "block.core.beginEdit", blockType: Guid, callback: BrowserBusCallback<BlockBeginEditData>): void;
 
     /**
      * Subscribes to the named message from any block instance with a matching
@@ -363,7 +374,7 @@ export class BrowserBus {
      * @param blockType The identifier of the block type.
      * @param callback The callback to invoke when the message is received.
      */
-    public subscribeToBlockType(messageName: "core.block.endEdit", blockType: Guid, callback: BrowserBusCallback<BlockEndEditData>): void;
+    public subscribeToBlockType(messageName: "block.core.endEdit", blockType: Guid, callback: BrowserBusCallback<BlockEndEditData>): void;
 
     /**
      * Subscribes to any message that is sent from any block instance with a
@@ -427,7 +438,7 @@ export class BrowserBus {
      * @param block The identifier of the block.
      * @param callback The callback to invoke when the message is received.
      */
-    public subscribeToBlock(messageName: "core.block.beginEdit", block: Guid, callback: BrowserBusCallback<BlockBeginEditData>): void;
+    public subscribeToBlock(messageName: "block.core.beginEdit", block: Guid, callback: BrowserBusCallback<BlockBeginEditData>): void;
 
     /**
      * Subscribes to the named message from a single block instance.
@@ -436,7 +447,7 @@ export class BrowserBus {
      * @param block The identifier of the block.
      * @param callback The callback to invoke when the message is received.
      */
-    public subscribeToBlock(messageName: "core.block.endEdit", block: Guid, callback: BrowserBusCallback<BlockEndEditData>): void;
+    public subscribeToBlock(messageName: "block.core.endEdit", block: Guid, callback: BrowserBusCallback<BlockEndEditData>): void;
 
     /**
      * Subscribes to any message that is sent from a single block instance.

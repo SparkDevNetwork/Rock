@@ -13,16 +13,24 @@
         <ReorderColumn @orderChanged="onOrderChanged" />
 
         <Column name="signalColor"
-                title="Signal Color"
+                title="Color"
                 field="signalColor"
                 visiblePriority="xs"
-                width="10%" >
+                itemClass="padding-b-none padding-t-none"
+                width="10%"
+                :hideOnScreen="false"
+                :excludeFromExport="true">
             <template #format="{ row }">
-                <div class="w-75 h-100" :style="{'background-color':row.signalColor}">
+                <div class="h-100" :style="{'background-color':row.signalColor, width: '40px'}">
                     &nbsp;
                 </div>
             </template>
         </Column>
+        <TextColumn name="signalColor"
+                title="Color"
+                field="signalColor"
+                :hideOnScreen="true"
+                visiblePriority="xs" />
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -47,7 +55,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SignalTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignalTypeList/signalTypeListOptionsBag";

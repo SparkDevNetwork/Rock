@@ -97,7 +97,7 @@
 
         <SecurityColumn />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
     </Grid>
 </template>
 
@@ -105,13 +105,14 @@
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningClassList/types.partial";
     import { reactive, ref } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<LearningClassListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -167,10 +168,38 @@
     // #region Event Handlers
 
     /**
-     * Called when a row's delete button has been clicked by the individual. This
-     * happens only if they have confirmed the delete action.
+     * Called when a row's delete button has been clicked by the individual.
+     * This will confirm the delete and if the class contains any
+     * student completions it will confirm a second time.
      */
     async function onDeleteClick(key: string): Promise<void> {
+        const learningClass = gridData?.rows?.find(r => r.idKey === key);
+        const courseName = learningClass?.["course"] as string ?? "";
+
+        const initialConfirmationMessage = courseName.length > 0 ?
+            `Are you sure you wish to delete the ${courseName} class?` :
+            "Are you sure you wish to delete the class?";
+
+        const confirmed = await confirm(initialConfirmationMessage);
+
+        if (!confirmed) {
+            return;
+        }
+
+        // If there are student completions - ensure the individual
+        // is aware that the delete will remove completed activities.
+        if (await getHasStudentCompletions(key)) {
+            const confirmationMessage = courseName.length > 0 ?
+                `The ${courseName} class has students with completed activities. Are you sure you want to delete this class and all its related information?` :
+                "The class has students with completed activities. Are you sure you want to delete this class and all its related information?";
+
+            const confirmedDelete = await confirm(confirmationMessage);
+
+            if (!confirmedDelete) {
+                return;
+            }
+        }
+
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -187,6 +216,21 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
         }
+    }
+
+    async function getHasStudentCompletions(key: string): Promise<boolean> {
+        const result = await invokeBlockAction<string>("HasStudentCompletions", {
+            key
+        });
+
+        if (result.isSuccess && result.data) {
+            return asBoolean(result.data);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to check learning class student completions.");
+        }
+
+        return false;
     }
 
     /**

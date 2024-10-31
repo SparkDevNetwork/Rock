@@ -43,7 +43,7 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     :width="columnWidth"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
 
@@ -53,7 +53,7 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     :width="columnWidth"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
         <BooleanColumn name="isConfirmed"
@@ -81,7 +81,7 @@
     </Grid>
 
     <Modal v-model="isCreateEditModalOpen" title="Login" saveText="Save" @save="onSaveUserLogin">
-        <div v-if="isPersonPickerVisible || !hasPersonContextEntity" class="row">
+        <div v-if="isPersonPickerVisible" class="row">
             <div class="col-md-6">
                 <PersonPicker v-model="person"
                               label="Person"
@@ -130,6 +130,12 @@
         </div>
     </Modal>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -331,7 +337,7 @@
         password.value = "";
         confirmPassword.value = "";
 
-        isPersonPickerVisible.value = !userLogin?.personAlias?.value;
+        isPersonPickerVisible.value = !hasPersonContextEntity.value && !userLogin?.personAlias?.value;
     }
 
     /**

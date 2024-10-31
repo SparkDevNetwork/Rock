@@ -129,7 +129,7 @@ WHERE GUID = 'E333D1CC-CB55-4E73-8568-41DAD296971C'
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17();
+            //ChopBlockTypesv17();
         }
 
         private void RegisterBlockAttributesForChop()

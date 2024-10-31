@@ -369,12 +369,12 @@ namespace Rock.CheckIn.v2
             var personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid(), Session.RockContext )?.Id;
             var numericSearchTerm = searchTerm.AsNumeric();
 
-            if ( TemplateConfiguration.MinimumPhoneNumberLength.HasValue && searchTerm.Length < TemplateConfiguration.MinimumPhoneNumberLength.Value )
+            if ( TemplateConfiguration.MinimumPhoneNumberLength.HasValue && numericSearchTerm.Length < TemplateConfiguration.MinimumPhoneNumberLength.Value )
             {
                 throw new CheckInMessageException( $"Search term must be at least {TemplateConfiguration.MinimumPhoneNumberLength} digits." );
             }
 
-            if ( TemplateConfiguration.MaximumPhoneNumberLength.HasValue && searchTerm.Length > TemplateConfiguration.MaximumPhoneNumberLength.Value )
+            if ( TemplateConfiguration.MaximumPhoneNumberLength.HasValue && numericSearchTerm.Length > TemplateConfiguration.MaximumPhoneNumberLength.Value )
             {
                 throw new CheckInMessageException( $"Search term must be at most {TemplateConfiguration.MaximumPhoneNumberLength} digits." );
             }

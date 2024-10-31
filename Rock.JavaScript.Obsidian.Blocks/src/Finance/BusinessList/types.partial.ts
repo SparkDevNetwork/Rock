@@ -20,15 +20,11 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterBusinessName = "filter-business-name",
-
-    FilterActive = "filter-active",
+    FilterRecordStatus = "filter-record-status",
 }
 
 export type GridSettingsOptions = {
-    businessName?: string | null;
-
-    active?: string | null;
+    recordStatus?: string | null;
 };
 
 export type Row = {

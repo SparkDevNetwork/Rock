@@ -23,4 +23,8 @@
 
 /** The additional configuration options for the Media Folder List block. */
 export type MediaFolderListOptionsBag = {
+    /** Gets or sets a value indicating whether the block should be visible to the media account. */
+    isBlockVisible: boolean;
+
+    mediaAccountName?: string | null;
 };

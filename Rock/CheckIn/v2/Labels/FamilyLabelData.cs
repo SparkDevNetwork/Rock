@@ -126,32 +126,35 @@ namespace Rock.CheckIn.v2.Labels
                 : RockDateTime.Now;
             CurrentTime = RockDateTime.Now;
 
-            NickNames = AllAttendance.Select( a => a.Person )
+            NickNames = AllAttendance.Where(a => a.Person != null )
+                .Select( a => a.Person )
                 .DistinctBy( p => p.Id )
                 .Select( p => p.NickName )
                 .ToList();
-            FirstNames = AllAttendance.Select( a => a.Person )
+            FirstNames = AllAttendance.Where( a => a.Person != null )
+                .Select( a => a.Person )
                 .DistinctBy( p => p.Id )
                 .Select( p => p.FirstName )
                 .ToList();
-            LastNames = AllAttendance.Select( a => a.Person )
+            LastNames = AllAttendance.Where( a => a.Person != null )
+                .Select( a => a.Person )
                 .DistinctBy( p => p.Id )
                 .Select( p => p.LastName )
                 .ToList();
 
-            AreaNames = AllAttendance.Select( a => a.Area.Name )
+            AreaNames = AllAttendance.Select( a => a.Area?.Name )
                 .Distinct()
                 .ToList();
 
-            GroupNames = AllAttendance.Select( a => a.Group.Name )
+            GroupNames = AllAttendance.Select( a => a.Group?.Name )
                 .Distinct()
                 .ToList();
 
-            LocationNames = AllAttendance.Select( a => a.Location.Name )
+            LocationNames = AllAttendance.Select( a => a.Location?.Name )
                 .Distinct()
                 .ToList();
 
-            ScheduleNames = AllAttendance.Select( a => a.Schedule.Name )
+            ScheduleNames = AllAttendance.Select( a => a.Schedule?.Name )
                 .Distinct()
                 .ToList();
 

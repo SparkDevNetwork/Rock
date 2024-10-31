@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -94,6 +94,7 @@
     <Compile Include="Bus\QueueList.cs" />
     <Compile Include="CheckIn\CheckInKiosk.cs" />
     <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\CheckInScheduleBuilder.cs" />
     <Compile Include="CheckIn\CloudPrintMonitor.cs" />
     <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
     <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Cms\ContentChannelList.cs" />
     <Compile Include="Cms\ContentChannelTypeList.cs" />
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
+    <Compile Include="Cms\LavaShortcodeList.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Cms\ThemeDetail.cs" />
@@ -116,6 +118,7 @@
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />
+    <Compile Include="Crm\Disc.cs" />
     <Compile Include="Crm\PhotoUpload.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
@@ -163,6 +166,7 @@
     <Compile Include="Core\TagReport.cs" />
     <Compile Include="Engagement\StreakTypeExclusionList.cs" />
     <Compile Include="Engagement\StreakMapEditor.cs" />
+    <Compile Include="Reporting\PageParameterFilter.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Security\SecurityChangeAuditList.cs" />

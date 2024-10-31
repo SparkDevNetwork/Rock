@@ -34,7 +34,7 @@
                     field="lastPromotedDateTime"
                     :filter="dateValueFilter"
                     visiblePriority="md"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     width="170" />
 
@@ -62,7 +62,7 @@
                         field="statusChangedDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="md"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         width="200" />
 
@@ -82,6 +82,12 @@
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible" />
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";

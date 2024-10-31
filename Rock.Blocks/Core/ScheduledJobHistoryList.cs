@@ -38,10 +38,6 @@ namespace Rock.Blocks.Core
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the service job history details.",
-        Key = AttributeKey.DetailPage )]
-
     [Rock.SystemGuid.EntityTypeGuid( "4b46834f-c9d3-43f3-9de2-8990d3a232c2" )]
     [Rock.SystemGuid.BlockTypeGuid( "2306068d-3551-4c10-8db8-133c030fa4fa" )]
     [CustomizedGrid]

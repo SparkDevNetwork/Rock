@@ -3,6 +3,7 @@
     <Grid :data="gridDataSource"
           keyField="idKey"
           title="Announcements"
+          itemTerm="Announcement"
           :entityTypeGuid="EntityType.LearningClassAnnouncement"
           :expectedRowCount="3"
           :isCountMessageVisible="false"
@@ -20,12 +21,12 @@
                     visiblePriority="xs" />
 
         <DateColumn
-                name="publishDateTime"
-                title="Publish Date"
-                field="publishDateTime"
-                :filter="dateValueFilter"
-                filterValue="publishDateTime"
-                visiblePriority="xs" />
+                    name="publishDateTime"
+                    title="Publish Date"
+                    field="publishDateTime"
+                    :filter="dateValueFilter"
+                    filterValue="publishDateTime"
+                    visiblePriority="xs" />
 
         <Column
                 name="communicationMode"
@@ -35,15 +36,15 @@
                 quickFilterValue="communicationMode"
                 visiblePriority="xs">
             <template #format="{ row }">
-               <span v-html="getCommunicationModeHtml(row.communicationMode)"></span>
+                <span v-html="getCommunicationModeHtml(row.communicationMode)"></span>
             </template>
         </Column>
 
         <BooleanColumn name="communicationSent"
-                    title="Sent"
-                    field="communicationSent"
-                    :filter="booleanValueFilter"
-                    visiblePriority="xs" />
+                       title="Sent"
+                       field="communicationSent"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>

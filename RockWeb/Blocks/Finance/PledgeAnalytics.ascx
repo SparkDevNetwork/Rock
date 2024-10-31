@@ -21,7 +21,7 @@
                     <div class="row row-eq-height-md">
 
                         <div class="col-md-3 filter-options">
-                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
+                            <Rock:AccountPicker ID="apAccounts" runat="server" Label="Account" Required="true" AllowMultiSelect="true" />
 
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
 

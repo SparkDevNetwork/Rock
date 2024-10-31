@@ -36,8 +36,13 @@
              * @param event {MouseEvent}
              */
             function onClick(event) {
-                // Only make the sound if the event happened inside a button.
-                if (!event.target.closest(".btn") && !event.target.closest("button")) {
+                const inputControl = event.target.closest("button")
+                    || event.target.closest(".btn")
+                    || event.target.closest(".control-wrapper")
+                    || event.target.closest(".ant-select-dropdown");
+
+                // Only make the sound if the event happened inside an input control.
+                if (!inputControl) {
                     return;
                 }
 
@@ -122,7 +127,7 @@
 
             loadSounds();
 
-            document.body.addEventListener("click", onClick);
+            document.body.addEventListener("mousedown", onClick);
             document.addEventListener("rockMessage", onRockMessage);
         })();
     </script>
