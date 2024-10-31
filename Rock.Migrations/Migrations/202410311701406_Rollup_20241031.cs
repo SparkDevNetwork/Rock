@@ -36,6 +36,7 @@ namespace Rock.Migrations
             AddObsidianPageParameterFilterBlockTypeUp();
             UpdateProxyDeviceTypeUp();
             WindowsCheckinClientDownloadLinkUp();
+            AddNewDevices();
         }
 
         /// <summary>
@@ -45,6 +46,24 @@ namespace Rock.Migrations
         {
             AddObsidianPageParameterFilterBlockTypeDown();
             WindowsCheckinClientDownloadLinkDown();
+        }
+
+        private void AddNewDevices()
+        {
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPhone17,4", "iPhone 16 Plus", "0278EAD9-0B7C-4B9F-9D05-F4D5692F459A", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPhone17,3", "iPhone 16", "1CC01CDF-0F56-498C-A3B9-9080D40FC710", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPhone17,2", "iPhone 16 Pro Max", "646F4ABE-5AA4-4E9B-8C34-63C27C5EF7A1", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPhone17,1", "iPhone 16 Pro", "FBF3D89C-7010-4315-A513-FC50F8CDC441", true );
+
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad16,6", "iPad Pro 12.9 inch 7th Gen", "19843044-0870-4760-A644-3CECABBEAA09", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad16,5", "iPad Pro 12.9 inch 7th Gen", "C4CA706E-8B22-4DFE-B15E-4027B1208353", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad16,4", "iPad Pro 11 inch 5th Gen", "CD445D01-E04F-44F3-AA21-46378CC12743", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad16,3", "iPad Pro 11 inch 5th Gen", "369840FF-A488-49EF-ACFA-9515E72F8D3D", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad14,9", "iPad Air 6th Gen", "4F5AD619-A051-4958-B999-E3C8D92B04EC", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad14,8", "iPad Air 6th Gen", "7145FAA3-5F35-49C8-913C-F826C4E85E4E", true );
+
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad14,11", "iPad Air 7th Gen", "4192D9A8-2B97-420A-9851-34F1DE237827", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad14,10", "iPad Air 7th Gen", "B050BD9D-64F9-4DA4-8E1F-8FB14BE8C996", true );
         }
 
         #region PA:Include Profiles With Medium Protection Level In Duplicate Checks.
@@ -83,9 +102,6 @@ WHERE [Guid] = '{SystemGuid.Attribute.SYSTEM_SECURITY_SETTINGS}'";
 
                 value.AccountProtectionProfilesForDuplicateDetectionToIgnore.Remove( AccountProtectionProfile.Medium );
 
-                //
-                // Clear the old additional settings.
-                //
                 DbService.ExecuteCommand( "UPDATE [Attribute] SET [DefaultValue] = @value WHERE [Guid] = @guid", CommandType.Text, new Dictionary<string, object>
                 {
                     ["guid"] = SystemGuid.Attribute.SYSTEM_SECURITY_SETTINGS.AsGuid(),
