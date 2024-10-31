@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202410311824406_CodeGenerated_20241031.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202410311824406_CodeGenerated_20241031.designer.cs">
+      <DependentUpon>202410311824406_CodeGenerated_20241031.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2302,6 +2306,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202410311824406_CodeGenerated_20241031.resx">
+      <DependentUpon>202410311824406_CodeGenerated_20241031.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202407181858470_Rollup_20240718.resx">
       <DependentUpon>202407181858470_Rollup_20240718.cs</DependentUpon>
     </EmbeddedResource>
