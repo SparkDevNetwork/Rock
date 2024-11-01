@@ -102,7 +102,7 @@
         for (const location of props.supervisorData.counts.locations) {
             const isLocationValid = props.supervisorData.counts
                 .groups
-                ?.some(g => g.locationIds?.includes(location.id ?? ""));
+                ?.some(g => g.locations?.some(gl => gl.locationId === location.id));
 
             if (!location.id || !location.name || !isLocationValid) {
                 continue;
