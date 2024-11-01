@@ -420,6 +420,10 @@
     min-width: 400px;
 }
 
+.check-in-page .input-group .btn.btn-default {
+    padding: 7px var(--spacing-small);
+    font-size: var(--font-size-regular);
+}
 /**
  * Family Select Screen.
  */
