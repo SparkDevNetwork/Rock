@@ -15,7 +15,8 @@
                     ref="barcodeButtonElement"
                     id="barcode-button"
                     btnType="default"
-                    class="scan-barcode-button">
+                    class="scan-barcode-button"
+                    @click="onScanBarcodeClick">
             <span class="title">
                 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <mask id="mask0_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
@@ -71,6 +72,7 @@
     import { alert, showDialog } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
     import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
 
     const props = defineProps({
         configuration: {
@@ -197,6 +199,7 @@
 
             if (!newSession.families || newSession.families.length === 0 || !newSession.families[0].id) {
                 await alert("Sorry, there were not any families found with the selected identifier.");
+                startNativeCamera(false);
                 return;
             }
 
@@ -206,6 +209,7 @@
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            startNativeCamera(false);
         }
         finally {
             isProcessingScannedCode = false;
@@ -446,6 +450,28 @@
     }
 
     /**
+     * Starts the native application camera if the device is currently
+     * configured in that mode.
+     *
+     * @param isManualRequest Determines if the person is attempting to start the camera.
+     */
+    function startNativeCamera(isManualRequest: boolean): void {
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (!props.configuration.kiosk || !props.configuration.kiosk.isCameraEnabled) {
+            return;
+        }
+
+        if (!native || !isIpadAppWithCamera(props.configuration.kiosk)) {
+            return;
+        }
+
+        if (isManualRequest || props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.AlwaysOn || props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.Passive) {
+            native.StartCamera?.(props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.Passive);
+        }
+    }
+
+    /**
      * Event handler for when the Start button is clicked.
      */
     async function onStartClick(): Promise<void> {
@@ -484,6 +510,14 @@
         else {
             documentKeyboardBuffer += event.key;
         }
+    }
+
+    /**
+     * Called when the scan barcode button has been clicked. Start the native
+     * camera if the kiosk is configured for it.
+     */
+    function onScanBarcodeClick(): void {
+        startNativeCamera(true);
     }
 
     // #endregion
@@ -550,12 +584,18 @@
     onMounted(async () => {
         const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
 
-        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
-            // Block configuration check for AlwaysOn or Passive.
-            native.StartCamera?.(false);
-        }
-        else if (props.configuration.kiosk?.isCameraEnabled) {
-            cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
+        if (props.configuration.kiosk?.isCameraEnabled) {
+            if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk)) {
+                startNativeCamera(false);
+            }
+            else {
+                try {
+                    cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
+                }
+                catch {
+                    cameraDeviceId.value = undefined;
+                }
+            }
         }
 
         // If we have a native check-in app then initialize it.
