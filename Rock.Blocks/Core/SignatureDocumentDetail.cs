@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a given signature document." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    //[SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

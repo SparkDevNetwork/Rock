@@ -43,7 +43,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing values for a signature document type." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the signature document details.",
