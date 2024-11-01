@@ -251,7 +251,7 @@
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--spacing-xsmall);
+    gap: var(--spacing-medium);
     min-height: 64px;
     color: var(--color-interface-strong);
 }
