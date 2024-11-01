@@ -28,9 +28,11 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignatureDocumentList;
 using Rock.Web.Cache;
+using Person = Rock.Model.Person;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
@@ -97,9 +99,11 @@ namespace Rock.Blocks.Core
         private SignatureDocumentListOptionsBag GetBoxOptions()
         {
             var options = new SignatureDocumentListOptionsBag();
+            options.CanView = true;
 
             // in case this is used as a Person Block, set the TargetPerson 
             Person targetPerson = this.RequestContext.GetContextEntity<Person>();
+            Person currentPerson = GetCurrentPerson();
 
             if ( targetPerson != null )
             {
@@ -108,7 +112,21 @@ namespace Rock.Blocks.Core
             else
             {
                 options.ShowDocumentType = false;
+
+                int? documentTypeId = PageParameter( PageParameterKey.SignatureDocumentTemplateId ).AsIntegerOrNull();
+                if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
+                {
+                    // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
+                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
+                    var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
+
+                    bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, currentPerson ) ?? false;
+                    bool canView = canEdit || ( signatureDocumentTemplate?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false );
+
+                    options.CanView = canView;
+                }
             }
+
 
             return options;
         }

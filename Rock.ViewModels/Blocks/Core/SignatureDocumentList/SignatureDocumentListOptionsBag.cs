@@ -20,5 +20,6 @@ namespace Rock.ViewModels.Blocks.Core.SignatureDocumentList
     public class SignatureDocumentListOptionsBag
     {
         public bool ShowDocumentType { get; set; }
+        public bool CanView {  get; set; }
     }
 }

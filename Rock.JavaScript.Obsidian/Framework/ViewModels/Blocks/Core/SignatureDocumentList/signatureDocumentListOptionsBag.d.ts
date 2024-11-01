@@ -23,4 +23,5 @@
 
 export type SignatureDocumentListOptionsBag = {
     showDocumentType: boolean;
+    canView: boolean;
 };

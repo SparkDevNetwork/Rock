@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="canView"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Signature Document"
@@ -106,6 +107,7 @@
     let gridData: GridDataBag | undefined;
 
     const showDocumentType = ref<boolean>(config.options?.showDocumentType ?? true);
+    const canView = ref<boolean>(config.options?.canView ?? false);
 
     // #endregion
 
