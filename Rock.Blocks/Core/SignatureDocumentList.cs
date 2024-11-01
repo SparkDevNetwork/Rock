@@ -65,6 +65,10 @@ namespace Rock.Blocks.Core
         {
             public const string DetailPage = "DetailPage";
         }
+        private static class PageParameterKey
+        {
+            public const string SignatureDocumentTemplateId = "SignatureDocumentTemplateId";
+        }
 
         #endregion Keys
 
@@ -159,7 +163,7 @@ namespace Rock.Blocks.Core
             }
             else
             {
-                int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+                int? documentTypeId = PageParameter( PageParameterKey.SignatureDocumentTemplateId ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     qry = qry.Where( d =>
