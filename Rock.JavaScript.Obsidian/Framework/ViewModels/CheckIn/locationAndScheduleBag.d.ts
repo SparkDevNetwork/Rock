@@ -21,17 +21,15 @@
 // </copyright>
 //
 
-/** Defines a single location that can be used during check-in. */
-export type LocationOpportunityBag = {
-    /** Gets or sets the maximum capacity of the location. */
-    capacity?: number | null;
+/**
+ * Defines a location and schedule pair. Used to indicate which locations
+ * are valid for a group since a location might only be valid during one
+ * schedule.
+ */
+export type LocationAndScheduleBag = {
+    /** The identifier of the location. */
+    locationId?: string | null;
 
-    /** Gets or sets the number of spots currently filled in the location. */
-    currentCount: number;
-
-    /** Gets or sets the identifier of this item. */
-    id?: string | null;
-
-    /** Gets or sets the display name of this item. */
-    name?: string | null;
+    /** The identifier of the schedule. */
+    scheduleId?: string | null;
 };

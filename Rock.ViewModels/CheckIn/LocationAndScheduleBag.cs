@@ -14,25 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-
 namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
-    /// Defines a single location that can be used during check-in.
+    /// Defines a location and schedule pair. Used to indicate which locations
+    /// are valid for a group since a location might only be valid during one
+    /// schedule.
     /// </summary>
-    public class LocationOpportunityBag : CheckInItemBag
+    public class LocationAndScheduleBag
     {
         /// <summary>
-        /// Gets or sets the maximum capacity of the location.
+        /// The identifier of the location.
         /// </summary>
-        /// <value>The maximum capacity; or <c>null</c> if not available.</value>
-        public int? Capacity { get; set; }
+        public string LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of spots currently filled in the location.
+        /// The identifier of the schedule.
         /// </summary>
-        /// <value>The number of spots filled.</value>
-        public int CurrentCount { get; set; }
+        public string ScheduleId { get; set; }
     }
 }
