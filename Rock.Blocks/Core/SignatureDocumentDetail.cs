@@ -35,12 +35,12 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays the details of a particular signature document.
+    /// User controls for managing signature documents.
     /// </summary>
 
     [DisplayName( "Signature Document Detail" )]
     [Category( "Core" )]
-    [Description( "Displays the details of a particular signature document." )]
+    [Description( "Displays the details of a given signature document." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
@@ -143,7 +143,7 @@ namespace Rock.Blocks.Core
             else
             {
                 // Creating Signature Documents in this way is not allowed
-                box.ErrorMessage = EditModeMessage.ReadOnlyEditActionNotAllowed(SignatureDocument.FriendlyTypeName );
+                box.ErrorMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( SignatureDocument.FriendlyTypeName );
             }
 
             PrepareDetailBox( box, entity );

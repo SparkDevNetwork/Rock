@@ -36,12 +36,12 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays a list of signature documents.
+    /// User controls for managing signature documents.
     /// </summary>
 
     [DisplayName( "Signature Document List" )]
     [Category( "Core" )]
-    [Description( "Displays a list of signature documents." )]
+    [Description( "Block for viewing values for a signature document type." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
