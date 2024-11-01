@@ -124,8 +124,8 @@ namespace Rock.CheckIn.v2
             var allReferencedLocationIds = new HashSet<string>(
                 person.Opportunities
                     .Groups
-                    .SelectMany( g => g.LocationIds )
-                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocationIds ) )
+                    .SelectMany( g => g.Locations.Select( l => l.LocationId ) )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.LocationId ) ) )
             );
             person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
 
@@ -141,7 +141,12 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any schedules that have no group referencing them.
-            var allReferencedScheduleIds = new HashSet<string>( person.Opportunities.Locations.SelectMany( l => l.ScheduleIds ) );
+            var allReferencedScheduleIds = new HashSet<string>(
+                person.Opportunities
+                    .Groups
+                    .SelectMany( g => g.Locations.Select( l => l.ScheduleId ) )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.ScheduleId ) ) )
+            );
             person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
 
             // Run schedule filters.

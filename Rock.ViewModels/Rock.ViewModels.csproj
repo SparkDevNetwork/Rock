@@ -583,6 +583,7 @@
     <Compile Include="CheckIn\Labels\LineFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\RectangleFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\TextFieldConfigurationBag.cs" />
+    <Compile Include="CheckIn\LocationAndScheduleBag.cs" />
     <Compile Include="CheckIn\LocationOpportunityBag.cs" />
     <Compile Include="CheckIn\ConfigurationTemplateBag.cs" />
     <Compile Include="CheckIn\PersonBag.cs" />

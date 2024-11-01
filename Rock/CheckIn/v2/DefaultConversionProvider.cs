@@ -429,7 +429,7 @@ namespace Rock.CheckIn.v2
                 AbilityLevelId = group.AbilityLevelId,
                 AreaId = group.AreaId,
                 Id = group.Id,
-                LocationIds = group.LocationIds,
+                Locations = group.Locations,
                 Name = group.Name
             };
         }
@@ -446,8 +446,7 @@ namespace Rock.CheckIn.v2
                 Capacity = location.Capacity,
                 CurrentCount = location.CurrentCount,
                 Id = location.Id,
-                Name = location.Name,
-                ScheduleIds = location.ScheduleIds
+                Name = location.Name
             };
         }
 
