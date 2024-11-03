@@ -29,7 +29,8 @@
                     title="Category"
                     field="category"
                     visiblePriority="md"
-                    width="15%" />
+                    width="15%"
+                    itemClass="category-wrap" />
 
         <TextColumn name="message"
                     title="Message"
@@ -45,6 +46,11 @@
 
     </Grid>
 </template>
+<style>
+.category-wrap {
+    word-break: break-all;
+}
+</style>
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
