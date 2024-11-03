@@ -577,7 +577,16 @@ namespace Rock.Blocks.Core
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
-            return ActionOk( this.GetParentPageUrl() );
+            var pageReference = new Rock.Web.PageReference( this.PageCache.Guid.ToString(), new Dictionary<string, string>() );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return ActionOk( pageReference.BuildUrl() );
+            }
+            else
+            {
+                return ActionOk( this.GetCurrentPageUrl() );
+            }
         }
 
         /// <summary>
