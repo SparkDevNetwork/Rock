@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -95,12 +96,37 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="privateValue"></param>
+        /// <param name="privateConfigurationValues"></param>
+        /// <returns></returns>
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !privateValue.IsLavaTemplate() )
+            {
+                return privateValue;
+            }
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+
+            return privateValue.ResolveMergeFields( mergeFields ).Trim();
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Encode because if the user typed <span>hello</span> then we want
             // it to display on screen as "<span>hello</span>" rather than "hello".
-            return privateValue.EncodeHtml();
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
