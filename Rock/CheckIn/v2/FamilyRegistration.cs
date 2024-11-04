@@ -170,22 +170,26 @@ namespace Rock.CheckIn.v2
             var attributeGuids = _template.RequiredAttributeGuidsForFamilies
                 .Union( _template.OptionalAttributeGuidsForFamilies )
                 .ToList();
+            AddressControlBag address = null;
 
-            var location = group.GroupLocations
-                .Where( l => l.GroupLocationTypeValueId == homeLocationTypeId )
-                .Select( l => l.Location )
-                .FirstOrDefault();
-
-            var address = new AddressControlBag
+            if ( group.GroupLocations != null )
             {
-                City = location?.City,
-                Country = location?.Country,
-                State = location?.State,
-                Locality = location?.County,
-                PostalCode = location?.PostalCode,
-                Street1 = location?.Street1,
-                Street2 = location?.Street2,
-            };
+                var location = group.GroupLocations
+                    .Where( l => l.GroupLocationTypeValueId == homeLocationTypeId )
+                    .Select( l => l.Location )
+                    .FirstOrDefault();
+
+                address = new AddressControlBag
+                {
+                    City = location?.City,
+                    Country = location?.Country,
+                    State = location?.State,
+                    Locality = location?.County,
+                    PostalCode = location?.PostalCode,
+                    Street1 = location?.Street1,
+                    Street2 = location?.Street2,
+                };
+            }
 
             if ( group.Attributes == null )
             {
@@ -196,7 +200,7 @@ namespace Rock.CheckIn.v2
 
             var bag = new RegistrationFamilyBag
             {
-                Id = group.IdKey,
+                Id = group.Id != 0 ? group.IdKey : null,
                 FamilyName = group.Name,
                 AttributeValues = group.GetPublicAttributeValuesForEdit(
                     _currentPerson,

@@ -1401,6 +1401,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 group.LoadAttributes( RockContext );
                 group.Members.Select( gm => gm.Person ).LoadAttributes( RockContext );
             }
+            else
+            {
+                group = new Model.Group
+                {
+                    GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), RockContext ).Id
+                };
+
+                group.LoadAttributes( RockContext );
+            }
 
             if ( template == null )
             {
@@ -1438,7 +1447,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             var response = new EditFamilyResponseBag
             {
-                Family = group != null ? registration.GetFamilyBag( group ) : null,
+                Family = registration.GetFamilyBag( group ),
                 People = group != null ? registration.GetFamilyMemberBags( group ) : null,
                 IsAlternateIdFieldVisibleForAdults = template.IsAlternateIdFieldVisibleForAdults,
                 IsAlternateIdFieldVisibleForChildren = template.IsAlternateIdFieldVisibleForChildren,
