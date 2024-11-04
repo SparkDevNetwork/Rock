@@ -188,7 +188,7 @@
 
 .check-in-page .btn-default {
     padding: var(--spacing-xsmall) var(--spacing-medium);
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-regular);
     font-weight: var(--font-weight-regular);
 }
 
@@ -212,6 +212,11 @@
     min-height: 82px;
     overflow: hidden;
     gap: 0;
+}
+
+.check-in-panel .body .button-list .btn.btn-primary.ability-level-button {
+    padding: 0 var(--spacing-large);
+    height: 82px;
 }
 
 .check-in-page .illustrated-button > * {
@@ -270,7 +275,7 @@
 }
 
 .check-in-page .actions .btn.btn-primary.next-button {
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-regular);
     padding: var(--spacing-xsmall) var(--spacing-xlarge);
 }
 
@@ -584,6 +589,10 @@
     gap: var(--spacing-tiny);
 }
 
+.achievement .header .subtitle {
+    min-width: 50px;
+}
+
 .check-in-page .attendance-card .achievement .header {
     display: flex;
     justify-content: space-between;
@@ -750,4 +759,33 @@ ul li::marker {
 
 .grid-obsidian .grid-body .grid-row .btn.btn-default {
     padding: var(--spacing-xsmall) 0px;
+}
+
+
+.check-in-page .check-in-panel.page-footer .title {
+    display: none;
+}
+
+@media screen and (min-width: 576px) {
+    .check-in-page .actions .btn.btn-primary.next-button {
+        font-size: var(--font-size-regular);
+    }
+
+    .check-in-page .btn-default {
+        font-size: var(--font-size-regular);
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .check-in-page .actions .btn.btn-primary.next-button {
+        font-size: var(--font-size-h4);
+    }
+
+    .check-in-page .btn-default {
+        font-size: var(--font-size-h4);
+    }
+
+    .check-in-page .check-in-panel.page-footer .title {
+        display: block;
+    }
 }
