@@ -214,6 +214,11 @@
     gap: 0;
 }
 
+.check-in-panel .body .button-list .btn.btn-primary.ability-level-button {
+    padding: 0 var(--spacing-large);
+    height: 82px;
+}
+
 .check-in-page .illustrated-button > * {
     margin: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) 0;
 }
@@ -755,6 +760,7 @@ ul li::marker {
 .grid-obsidian .grid-body .grid-row .btn.btn-default {
     padding: var(--spacing-xsmall) 0px;
 }
+
 
 .check-in-page .check-in-panel.page-footer .title {
     display: none;
