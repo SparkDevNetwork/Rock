@@ -10,9 +10,6 @@
           :entityTypeGuid="EntityType.SystemCommunication"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -32,17 +29,21 @@
         <TextColumn name="category"
                     title="Category"
                     field="category"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="from"
                     title="From Address"
                     field="from"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    itemClass="wrap-text"
+                    :filter="textValueFilter" />
 
         <Column name="mediums"
-                title="Mediums">
+                title="Mediums"
+                field="mediums"
+                :sortValue="getMediumsRowSortValue"
+                :filter="pickExistingValueFilter"
+                :filterValue="getMediumRowFilterValue">
             <template #format="{ row }">
                 <span v-if="row.smsMessage" class='label label-info mr-1'>SMS</span>
                 <span v-if="row.pushMessage" class='label label-info'>Push</span>
@@ -52,11 +53,14 @@
         <ButtonColumn name="preview"
                       iconClass="fa fa-search"
                       visiblePriority="xs"
-                      @click="onPreviewClick" />
+                      @click="onPreviewClick"
+                      width="57" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       :filter="booleanValueFilter"
+                       itemClass="justify-content-center text-center"
                        width="57"
                        visiblePriority="xs" />
 
@@ -64,50 +68,33 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
+<style>
+.wrap-text {
+    line-break: anywhere;
+}
+</style>
+
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, pickExistingValueFilter, DeleteColumn, SecurityColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SystemCommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SystemCommunicationList/systemCommunicationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./SystemCommunicationList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./SystemCommunicationList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./SystemCommunicationList/types.partial";
+    import { reactive, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const config = useConfigurationValues<ListBlockBox<SystemCommunicationListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        activeStatus: preferences.getValue(PreferenceKey.FilterActive),
-        category: JSON.parse(preferences.getValue(PreferenceKey.FilterCategory) || "{}"),
-        supports: preferences.getValue(PreferenceKey.FilterSupports),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.activeStatus
-            || !!gridSettings.value.supports
-            || !!gridSettings.value.category?.value;
-    });
 
     // #endregion
 
@@ -127,6 +114,40 @@
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
     }
+
+    function getMediumRowFilterValue(row: Record<string, unknown>): string {
+        if (row.smsMessage) {
+            return "SMS";
+        }
+        else if (row.pushMessage) {
+            return "Push";
+        }
+        else {
+            return "";
+        }
+    }
+
+    /**
+    * Gets the sort value to use for the mediums column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getMediumsRowSortValue(row: Record<string, unknown>): string {
+        let mediums = "";
+        const pushMessage = row.pushMessage as string;
+        const smsMessage = row.smsMessage as string;
+
+        if (smsMessage) {
+            mediums += "SMS ";
+        }
+
+        if (pushMessage) {
+            mediums += "Push";
+        }
+
+        return mediums;
+    }
+
 
     // #endregion
 
@@ -185,25 +206,7 @@
         }
     }
 
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterActive, gridSettings.value.activeStatus ?? "");
-        preferences.setValue(PreferenceKey.FilterCategory, JSON.stringify(gridSettings.value.category));
-        preferences.setValue(PreferenceKey.FilterSupports, gridSettings.value.supports ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>
