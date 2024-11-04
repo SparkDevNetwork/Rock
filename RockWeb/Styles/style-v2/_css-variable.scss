@@ -52,7 +52,7 @@
   @supports (color-mix(in srgb, red 50%, white 50%)) {
     --tint-white-percentage: 100%;
     --shade-black-percentage: 15%;
-    
+
     --color-critical-tint: color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));
   
@@ -200,37 +200,37 @@
   // Follow the system color.
   @media (prefers-color-scheme: dark) {
     --color-interface-strongest: #FFFFFF;
-    --color-interface-stronger:  #f0f6fc;
+    --color-interface-stronger:  #f1f1f8;
     --color-interface-strong:    #D9D9E3;
     --color-interface-medium:    #8B8BA7;
-    --color-interface-soft:      #2f353d;
+    --color-interface-soft:      #3d444d;
     --color-interface-softer:    #010409;
     --color-interface-softest:   #0d1117;
     
-    --color-critical-soft:    #EE7725;
+    --color-critical-soft:    #EE772533;
     --color-critical-strong:  #FEDEC8;
   
-    --color-danger-soft:      #D70015;
+    --color-danger-soft:      #D7001533;
     --color-danger-strong:    #FFCCD1;
   
-    --color-info-soft:        #007AFF;
+    --color-info-soft:        #007AFF33;
     --color-info-strong:      #D6EAFF;
   
-    --color-success-soft:     #248A3D;
+    --color-success-soft:     #248A3D33;
     --color-success-strong:   #D7F4DE;
   
-    --color-warning-soft:     #E58600;
+    --color-warning-soft:     #E5860033;
     --color-warning-strong:   #FFECD1;
   }
 }
 
 [theme = "light"] {
-  --color-interface-strongest: #000000;
-  --color-interface-stronger:  #1C1C1E;
-  --color-interface-strong:    #5D5D6F;
+  --color-interface-strongest: #010409;
+  --color-interface-stronger:  #0d1117;
+  --color-interface-strong:    #3d444d;
   --color-interface-medium:    #8B8BA7;
   --color-interface-soft:      #D9D9E3;
-  --color-interface-softer:    #E7E9EF;
+  --color-interface-softer:    #f1f1f8;
   --color-interface-softest:   #FFFFFF;
 
   --color-critical-soft:    #FEDEC8;
@@ -252,12 +252,12 @@
 
 [theme = "dark"] {
   --color-interface-strongest: #FFFFFF;
-  --color-interface-stronger:  #E7E9EF;
+  --color-interface-stronger:  #f1f1f8;
   --color-interface-strong:    #D9D9E3;
   --color-interface-medium:    #8B8BA7;
-  --color-interface-soft:      #5D5D6F;
-  --color-interface-softer:    #000000;
-  --color-interface-softest:   #1C1C1E;
+  --color-interface-soft:      #3d444d;
+  --color-interface-softer:    #010409;
+  --color-interface-softest:   #0d1117;
   
   --color-critical-soft:    #EE7725;
   --color-critical-strong:  #FEDEC8;
