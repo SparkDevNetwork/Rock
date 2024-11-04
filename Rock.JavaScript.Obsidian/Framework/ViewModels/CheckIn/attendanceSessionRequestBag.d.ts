@@ -43,6 +43,12 @@ export type AttendanceSessionRequestBag = {
     guid: Guid;
 
     /**
+     * Gets or sets a value indicating whether this session should enforce
+     * location capacity limits on the locations.
+     */
+    isCapacityThresholdEnforced: boolean;
+
+    /**
      * Gets or sets a value indicating whether this session should create
      * pending attendance records that will later be made permanent all
      * at once.
