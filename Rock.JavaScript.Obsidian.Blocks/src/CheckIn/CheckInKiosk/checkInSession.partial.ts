@@ -605,7 +605,7 @@ export class CheckInSession {
 
     /**
      * Creates a new session by selecting the next attendee that should be
-     * processed for opportunity selection screens. This will load the the
+     * processed for opportunity selection screens. This will load the
      * opporunity options from the server. If there are no more attendees then
      * the {@link currentAttendeeId} will be undefined.
      *
@@ -633,6 +633,139 @@ export class CheckInSession {
         else {
             return this.withAttendee(null);
         }
+    }
+
+    /**
+     * Creates a new session by selecting the next attendee in this family that
+     * should be processed for opportunity selection screens. Note that the
+     * returned session will have already moved to the proper screen.
+     *
+     * @param isCurrentAttendeeSkipped `true` if this attendee is being skipped.
+     *
+     * @returns A new CheckInSession object.
+     */
+    private async withNextFamilyAttendee(isCurrentAttendeeSkipped?: boolean): Promise<CheckInSession> {
+        if (this.configuration.template?.kioskCheckInType !== KioskCheckInMode.Family) {
+            throw new InvalidCheckInStateError("Attempt to move to next family member when not performing family check-in.");
+        }
+
+        let familySession: CheckInSession;
+
+        // Get all the selections made and stash them so they can be saved
+        // later.
+        if (!isCurrentAttendeeSkipped) {
+            const selections = this.getCurrentSelections();
+
+            familySession = this.withStashedCurrentAttendeeSelections(selections, false);
+            familySession = familySession.withNextFamilySchedule();
+
+            if (this.configuration.template?.isSameOptionUsed) {
+                // There should be only one in this mode of check-in, so make
+                // sure that is the case.
+                if (selections.length !== 1) {
+                    throw new InvalidCheckInStateError("Only one opportunity selection is allowed.");
+                }
+
+                // Replicate the selection to all other services.
+                while (familySession.currentFamilyScheduleId) {
+                    // Find the schedule for the opportunity.
+                    const schedule = familySession.possibleSchedules
+                        ?.find(s => s.id === familySession.currentFamilyScheduleId);
+                    const group = familySession.attendeeOpportunities
+                        ?.groups
+                        ?.find(g => g.id === selections[0].group?.id);
+                    const locationId = selections[0].location?.id;
+
+                    if (!schedule) {
+                        throw new InvalidCheckInStateError("Schedule was not found.");
+                    }
+
+                    if (!group) {
+                        throw new InvalidCheckInStateError("Group was not found.");
+                    }
+
+                    // Make sure this group and location is valid for the
+                    // schedule. If it isn't then we need to ask.
+                    if (!group.locations?.some(gl => gl.locationId === locationId && gl.scheduleId === schedule.id)) {
+                        break;
+                    }
+
+                    const scheduleSelection = {
+                        abilityLevel: selections[0].abilityLevel,
+                        area: selections[0].area,
+                        group: selections[0].group,
+                        location: selections[0].location,
+                        schedule: schedule
+                    };
+
+                    familySession = familySession.withStashedCurrentAttendeeSelections([scheduleSelection], false);
+                    familySession = familySession.withNextFamilySchedule();
+                }
+            }
+
+            // Was this the last schedule for this attendee?
+            if (!familySession.currentFamilyScheduleId) {
+                // Save the stashed attendance as pending.
+                familySession = await familySession.withSaveAttendance(true);
+            }
+        }
+        else {
+            familySession = this.withNextFamilySchedule();
+        }
+
+        // Was this the last schedule for this attendee?
+        if (!familySession.currentFamilyScheduleId) {
+            // Move to the next attendee.
+            familySession = await familySession.withNextAttendee();
+        }
+
+        // Was this the last attendee?
+        if (!familySession.currentAttendeeId) {
+            familySession = await familySession.withConfirmAttendance();
+
+            return familySession.withScreen(Screen.Success);
+        }
+
+        // If this is not the first family schedule then skip the ability
+        // level screen as we only need to ask once per attendee.
+        if (!familySession.isProcessingFirstFamilySchedule()) {
+            return familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        const abilityLevels = familySession.getAvailableAbilityLevels();
+
+        // If an ability level is not already selected then try to select
+        // one if there is a single option to pick from.
+        if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
+            familySession = new CheckInSession(familySession, {
+                selectedAbilityLevel: {
+                    id: abilityLevels[0].id,
+                    name: abilityLevels[0].name
+                }
+            });
+        }
+
+        // If there is zero or one ability levels configured then skip that screen.
+        if (abilityLevels.length <= 1) {
+            return familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        // If there are no groups that filter by ability level then we
+        // can also skip the ability level screen.
+        const groupsWithAbilityLevels = familySession.attendeeOpportunities
+            ?.groups
+            ?.filter(g => !!g.abilityLevelId) ?? [];
+
+        if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
+            return familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        // When in override mode, we don't ask for ability level.
+        if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+            return await familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        return familySession.withScreen(Screen.AbilityLevelSelect);
     }
 
     /**
@@ -1296,7 +1429,7 @@ export class CheckInSession {
      * @returns true if we are currently processing the first family schedule.
      */
     public isProcessingFirstFamilySchedule(): boolean {
-        const scheduleIndex = this.possibleSchedules
+        const scheduleIndex = this.selectedSchedules
             ?.findIndex(s => s.id === this.currentFamilyScheduleId);
 
         return scheduleIndex === 0;
@@ -1400,6 +1533,18 @@ export class CheckInSession {
         else {
             return Promise.resolve(this.withScreen(Screen.Welcome));
         }
+    }
+
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after skipping the current family attendee. This will technically only
+     * skip the specific schedule for the attendee if multiple schedules have
+     * been selected.
+     *
+     * @returns A new CheckInSession object.
+     */
+    public withNextScreenBySkippingAttendee(): Promise<CheckInSession> {
+        return this.withNextFamilyAttendee(true);
     }
 
     /**
@@ -1637,12 +1782,8 @@ export class CheckInSession {
             }
         }
 
-        if (areas.length === 0) {
-            throw new Error(`No areas are available for ${this.getCurrentAttendee()?.person?.nickName} to check into.`);
-        }
-
         // If we have more than 1 area to pick from then show the area screen.
-        if (areas.length > 1) {
+        if (areas.length !== 1) {
             return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
         }
 
@@ -1733,113 +1874,7 @@ export class CheckInSession {
      */
     private async withNextScreenFromLocationSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
-            // Get all the selections made and stash them so they can be saved
-            // later.
-            const selections = this.getCurrentSelections();
-            let familySession: CheckInSession;
-
-            familySession = this.withStashedCurrentAttendeeSelections(selections, false);
-            familySession = familySession.withNextFamilySchedule();
-
-            if (this.configuration.template?.isSameOptionUsed) {
-                // There should be only one in this mode of check-in, so make
-                // sure that is the case.
-                if (selections.length !== 1) {
-                    throw new InvalidCheckInStateError("Only one opportunity selection is allowed.");
-                }
-
-                // Replicate the selection to all other services.
-                while (familySession.currentFamilyScheduleId) {
-                    // Find the schedule for the opportunity.
-                    const schedule = familySession.possibleSchedules
-                        ?.find(s => s.id === familySession.currentFamilyScheduleId);
-                    const group = familySession.attendeeOpportunities
-                        ?.groups
-                        ?.find(g => g.id === selections[0].group?.id);
-                    const locationId = selections[0].location?.id;
-
-                    if (!schedule) {
-                        throw new InvalidCheckInStateError("Schedule was not found.");
-                    }
-
-                    if (!group) {
-                        throw new InvalidCheckInStateError("Group was not found.");
-                    }
-
-                    // Make sure this group and location is valid for the
-                    // schedule. If it isn't then we need to ask.
-                    if (!group.locations?.some(gl => gl.locationId === locationId && gl.scheduleId === schedule.id)) {
-                        break;
-                    }
-
-                    const scheduleSelection = {
-                        abilityLevel: selections[0].abilityLevel,
-                        area: selections[0].area,
-                        group: selections[0].group,
-                        location: selections[0].location,
-                        schedule: schedule
-                    };
-
-                    familySession = familySession.withStashedCurrentAttendeeSelections([scheduleSelection], false);
-                    familySession = familySession.withNextFamilySchedule();
-                }
-            }
-
-            // Was this the last schedule for this attendee?
-            if (!familySession.currentFamilyScheduleId) {
-                // Save the stashed attendance as pending and move to the
-                // next attendee.
-                familySession = await familySession.withSaveAttendance(true);
-                familySession = await familySession.withNextAttendee();
-            }
-
-            // Was this the last attendee?
-            if (!familySession.currentAttendeeId) {
-                familySession = await familySession.withConfirmAttendance();
-
-                return familySession.withScreen(Screen.Success);
-            }
-
-            // If this is not the first family schedule then skip the ability
-            // level screen as we only need to ask once per attendee.
-            if (!familySession.isProcessingFirstFamilySchedule()) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            const abilityLevels = familySession.getAvailableAbilityLevels();
-
-            // If an ability level is not already selected then try to select
-            // one if there is a single option to pick from.
-            if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
-                familySession = new CheckInSession(familySession, {
-                    selectedAbilityLevel: {
-                        id: abilityLevels[0].id,
-                        name: abilityLevels[0].name
-                    }
-                });
-            }
-
-            // If there is zero or one ability levels configured then skip that screen.
-            if (abilityLevels.length <= 1) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            // If there are no groups that filter by ability level then we
-            // can also skip the ability level screen.
-            const groupsWithAbilityLevels = familySession.attendeeOpportunities
-                ?.groups
-                ?.filter(g => !!g.abilityLevelId) ?? [];
-
-            if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            // When in override mode, we don't ask for ability level.
-            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
-                return await familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            return familySession.withScreen(Screen.AbilityLevelSelect);
+            return this.withNextFamilyAttendee();
         }
 
         if (!this.attendeeOpportunities?.schedules || this.attendeeOpportunities.schedules.length === 0) {

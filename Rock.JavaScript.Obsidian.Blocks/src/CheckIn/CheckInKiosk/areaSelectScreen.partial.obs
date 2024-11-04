@@ -4,7 +4,13 @@
         <MainPanel :title="title"
                    :subtitle="subtitle"
                    :person="session.getCurrentAttendee()?.person">
-            <div class="button-list">
+            <NotificationBox v-if="skipMessage"
+                             alertType="warning">
+                {{ skipMessage }}
+            </NotificationBox>
+
+            <div v-else
+                 class="button-list">
                 <RockButton v-for="area in areas"
                             btnType="primary"
                             class="area-button"
@@ -20,13 +26,15 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, onBeforeUnmount, PropType, ref } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
     import { alert, UnexpectedErrorMessage } from "./utils.partial";
     import { KioskButton } from "./types.partial";
     import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 
     const props = defineProps({
         configuration: {
@@ -66,6 +74,14 @@
         return props.session.getAvailableAreas();
     });
 
+    const skipMessage = computed((): string | undefined => {
+        if (props.session.getAvailableAreas().length > 0) {
+            return undefined;
+        }
+
+        return `Sorry, there are currently not any available areas that ${props.session.getCurrentAttendee()?.person?.nickName} can check into at this time.`;
+    });
+
     // #endregion
 
     // #region Functions
@@ -75,6 +91,16 @@
      */
     function updateActions(): void {
         const actions: KioskButton[] = [];
+
+        if (skipMessage.value && props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            actions.push({
+                title: "Skip",
+                key: "next",
+                type: "primary",
+                disabled: false,
+                handler: onSkipClick
+            });
+        }
 
         emit("updateActions", actions);
     }
@@ -104,9 +130,27 @@
         }
     }
 
+    async function onSkipClick(): Promise<void> {
+        try {
+            isProcessing.value = true;
+
+            emit("next", await props.session.withNextScreenBySkippingAttendee());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
     // #endregion
+
+    watch(() => props.session, () => {
+        updateActions();
+    });
 
     onBeforeUnmount(() => cancellationTokenSource.cancel());
 
-updateActions();
+    updateActions();
 </script>

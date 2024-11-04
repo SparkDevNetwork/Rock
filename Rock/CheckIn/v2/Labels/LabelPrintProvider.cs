@@ -249,6 +249,12 @@ namespace Rock.CheckIn.v2.Labels
                     // while still connecting.
                     cancellationToken.ThrowIfCancellationRequested();
                 }
+                catch ( ObjectDisposedException ) when ( cancellationToken.IsCancellationRequested )
+                {
+                    // OBE is sometimes thrown in .NET Framework when the socket is closed
+                    // while still connecting.
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             }
 #else
             await socket.ConnectAsync( printerEndpoint, cancellationToken );
