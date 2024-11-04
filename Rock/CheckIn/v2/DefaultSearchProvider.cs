@@ -100,7 +100,7 @@ namespace Rock.CheckIn.v2
 
                     return searchTerm.Any( c => char.IsLetter( c ) )
                         ? SearchForFamiliesByName( searchTerm )
-                        : SearchForFamiliesByPhoneNumber( searchTerm);
+                        : SearchForFamiliesByPhoneNumber( searchTerm );
 
                 case FamilySearchMode.ScannedId:
                     return SearchForFamiliesByScannedId( searchTerm );
@@ -389,6 +389,13 @@ namespace Rock.CheckIn.v2
             if ( !personRecordTypeId.HasValue )
             {
                 throw new Exception( "Person record type was not found in the database, please check your installation." );
+            }
+
+            var match = Session.TemplateConfiguration.PhoneNumberRegex?.Match( numericSearchTerm );
+
+            if ( match?.Success == true && match.Groups.Count == 2 )
+            {
+                numericSearchTerm = match.Groups[1].Value;
             }
 
             var phoneQry = new PhoneNumberService( Session.RockContext )
