@@ -296,9 +296,11 @@ export class CheckInSession {
      * a new session object that contains the attendance results.
      *
      * @param isPending True if the attendance should be saved as pending.
+     * @param isCapacityEnforced True if the capacity thresholds should be checked when saving.
+     *
      * @returns A new CheckInSession object.
      */
-    private async withSaveAttendance(isPending: boolean): Promise<CheckInSession> {
+    private async withSaveAttendance(isPending: boolean, isCapacityEnforced?: boolean): Promise<CheckInSession> {
         // Verify we have a valid configuration template.
         if (!this.configuration.template) {
             throw new InvalidCheckInStateError("Template has not been configured.");
@@ -351,6 +353,7 @@ export class CheckInSession {
             session: {
                 guid: this.sessionGuid,
                 isPending: isPending,
+                isCapacityThresholdEnforced: isCapacityEnforced ?? false,
                 searchMode: this.searchType,
                 searchTerm: this.searchTerm,
                 familyId: this.currentFamilyId
@@ -565,6 +568,7 @@ export class CheckInSession {
             templateId: this.configuration.template.id,
             session: {
                 guid: this.sessionGuid,
+                isCapacityThresholdEnforced: false,
                 isPending: false,
                 searchMode: this.searchType,
                 searchTerm: this.searchTerm,
