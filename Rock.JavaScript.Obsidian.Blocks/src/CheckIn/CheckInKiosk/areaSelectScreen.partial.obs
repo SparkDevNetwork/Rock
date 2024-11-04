@@ -92,7 +92,12 @@
     function updateActions(): void {
         const actions: KioskButton[] = [];
 
-        if (skipMessage.value && props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+        const isSkipVisible = skipMessage.value
+            && props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family
+            && props.session.selectedAttendeeIds
+            && props.session.selectedAttendeeIds.length > 1;
+
+        if (isSkipVisible) {
             actions.push({
                 title: "Skip",
                 key: "next",

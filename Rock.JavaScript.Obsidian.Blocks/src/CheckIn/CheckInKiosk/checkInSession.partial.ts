@@ -1179,18 +1179,28 @@ export class CheckInSession {
             return [];
         }
 
-        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
-            return this.attendeeOpportunities.areas;
-        }
+        let validAreaIds: string[];
 
-        // In family mode we need to filter the areas by the selected schedule
-        // which means we need to start by getting the groups that are valid
-        // for the current schedule.
-        const validAreaIds = this.attendeeOpportunities
-            .groups
-            ?.filter(g => g.locations
-                && g.locations.some(l => l.scheduleId === this.currentFamilyScheduleId))
-            .map(g => g.areaId as string) ?? [];
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            // In individual mode we need to filter the areas by the selected
+            // ability level. Which means we need to start by getting the groups
+            // that are valid.
+            validAreaIds = this.attendeeOpportunities
+                .groups
+                ?.filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id)
+                .map(g => g.areaId as string) ?? [];
+        }
+        else {
+            // In family mode we need to filter the areas by the selected schedule
+            // as well as by the ability level. Which means we need to start by
+            // getting the groups that are valid.
+            validAreaIds = this.attendeeOpportunities
+                .groups
+                ?.filter(g => g.locations
+                    && g.locations.some(l => l.scheduleId === this.currentFamilyScheduleId)
+                    && (!g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id))
+                .map(g => g.areaId as string) ?? [];
+        }
 
         // Now we can find the areas
         return this.attendeeOpportunities
