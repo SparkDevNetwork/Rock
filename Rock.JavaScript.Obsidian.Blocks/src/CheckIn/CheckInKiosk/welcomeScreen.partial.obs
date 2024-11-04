@@ -458,7 +458,7 @@
     function startNativeCamera(isManualRequest: boolean): void {
         const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
 
-        if (!props.configuration.kiosk || !props.configuration.kiosk.isCameraEnabled) {
+        if (!props.configuration.kiosk || !props.configuration.kiosk.isCameraEnabled || props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.Off) {
             return;
         }
 
