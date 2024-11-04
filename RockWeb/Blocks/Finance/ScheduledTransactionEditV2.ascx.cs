@@ -199,8 +199,8 @@ mission. We are so grateful for your commitment.</p>
     <dt>When<dt>
     <dd>
 
-    {% if Transaction.TransactionFrequencyValue %}
-        {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
+    {% if Transaction.TransactionFrequencyValue %} //- Updated to include EndDate
+        {{ Transaction.TransactionFrequencyValue.Value }} {% if Transaction.EndDate %}starting on {{ Transaction.NextPaymentDate | Date:''sd'' }} and ending on {{ Transaction.EndDate | Date:''sd'' }}{% else %}starting on {{ Transaction.NextPaymentDate | Date:''sd'' }}{% endif %}
     {% else %}
         Today
     {% endif %}

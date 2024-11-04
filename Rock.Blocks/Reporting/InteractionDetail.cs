@@ -35,7 +35,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction using Lava" )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

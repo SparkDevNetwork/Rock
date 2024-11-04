@@ -587,29 +587,44 @@ namespace Rock.CheckIn.v2
         /// used for the specified people. The dictionary key will be the
         /// person unique identifier.
         /// </summary>
-        /// <param name="personIds">The person identifiers.</param>
+        /// <param name="personIds">The person identifiers, guaranteed to not have duplicates.</param>
+        /// <param name="sessionRequest">The data that describes the check-in session.</param>
         /// <returns>A dictionary of attendance codes.</returns>
-        protected virtual Dictionary<string, AttendanceCode> CreateAttendanceCodes( IEnumerable<string> personIds )
+        protected virtual Dictionary<string, AttendanceCode> CreateAttendanceCodes( IEnumerable<string> personIds, AttendanceSessionRequest sessionRequest )
         {
             var attendanceCodeService = new AttendanceCodeService( Session.RockContext );
             var codeLookup = new Dictionary<string, AttendanceCode>();
+            AttendanceCode lastAttendanceCode = null;
 
-            foreach ( var personId in personIds )
+            foreach ( var personId in personIds ) 
             {
-                if ( TemplateConfiguration.IsSameCodeUsedForFamily && codeLookup.Count > 0 )
+                if ( TemplateConfiguration.IsSameCodeUsedForFamily )
                 {
-                    codeLookup.Add( personId, codeLookup.Values.First() );
-                }
-                else if ( !codeLookup.ContainsKey( personId ) )
-                {
-                    var attendanceCode = attendanceCodeService.CreateNewCode(
-                        TemplateConfiguration.SecurityCodeAlphaNumericLength,
-                        TemplateConfiguration.SecurityCodeAlphaLength,
-                        TemplateConfiguration.SecurityCodeNumericLength,
-                        TemplateConfiguration.IsNumericSecurityCodeRandom );
+                    if ( lastAttendanceCode == null )
+                    {
+                        lastAttendanceCode = new AttendanceService( Session.RockContext )
+                            .Queryable()
+                            .Where( a => a.AttendanceCheckInSession.Guid == sessionRequest.Guid )
+                            .Select( a => a.AttendanceCode )
+                            .FirstOrDefault();
+                    }
 
-                    codeLookup.Add( personId, attendanceCode );
+                    if ( lastAttendanceCode != null )
+                    {
+                        codeLookup.Add( personId, lastAttendanceCode );
+                        continue;
+                    }
                 }
+
+                var attendanceCode = attendanceCodeService.CreateNewCode(
+                    TemplateConfiguration.SecurityCodeAlphaNumericLength,
+                    TemplateConfiguration.SecurityCodeAlphaLength,
+                    TemplateConfiguration.SecurityCodeNumericLength,
+                    TemplateConfiguration.IsNumericSecurityCodeRandom );
+
+                codeLookup.Add( personId, attendanceCode );
+
+                lastAttendanceCode = attendanceCode;
             }
 
             return codeLookup;
@@ -847,7 +862,6 @@ namespace Rock.CheckIn.v2
         /// <returns>A list of <see cref="PreparedAttendanceRequest"/> that represent the attendance records to create.</returns>
         protected List<PreparedAttendanceRequest> GetPreparedRequests( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<AttendanceRequestBag> requests, DeviceCache kiosk, string clientIpAddress, DateTime now )
         {
-            var attendanceService = new AttendanceService( Session.RockContext );
             var personService = new PersonService( Session.RockContext );
             var personIds = requests.Select( r => r.PersonId ).Distinct().ToList();
             var personIdNumbers = personIds
@@ -863,7 +877,7 @@ namespace Rock.CheckIn.v2
             var attendanceCheckInSession = GetOrAddSession( sessionRequest.Guid, kiosk?.Id, clientIpAddress );
 
             // Create all the attendance codes.
-            var codeLookup = CreateAttendanceCodes( personIds );
+            var codeLookup = CreateAttendanceCodes( personIds, sessionRequest );
 
             // Load all the people related to the check-in.
             var personQry = personService.Queryable();

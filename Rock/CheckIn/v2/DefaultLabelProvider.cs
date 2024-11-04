@@ -299,7 +299,11 @@ namespace Rock.CheckIn.v2
             // Get all the labels that will be printed for each person.
             var personLabelsToPrint = groupTypeLabels
                 .Where( gtl => gtl.CheckInLabel.LabelType == LabelType.Person )
-                .DistinctBy( gtl => gtl.CheckInLabel.Id )
+                .DistinctBy( gtl => new
+                {
+                    gtl.AreaId,
+                    LabelId = gtl.CheckInLabel.Id
+                } )
                 .OrderBy( gtl => gtl.Order )
                 .ThenBy( gtl => gtl.CheckInLabel.Id )
                 .ToList();

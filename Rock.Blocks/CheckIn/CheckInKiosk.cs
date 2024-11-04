@@ -444,8 +444,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                     Id = IdHasher.Instance.GetHash( g.Key.Id ),
                     Name = g.Key.Name,
                     AreaId = IdHasher.Instance.GetHash( g.Key.GroupTypeId ),
-                    LocationIds = g.Where( l => l.LocationId.HasValue )
-                        .Select( l => IdHasher.Instance.GetHash( l.LocationId.Value ) )
+                    Locations = g.Where( l => l.LocationId.HasValue )
+                        .Select( l => new LocationAndScheduleBag
+                        {
+                            LocationId = IdHasher.Instance.GetHash( l.LocationId.Value )
+                        } )
                         .ToList()
                 } )
                 .ToList();

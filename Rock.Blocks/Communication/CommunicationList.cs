@@ -109,12 +109,6 @@ namespace Rock.Blocks.Communication
         protected DateTime? FilterCreatedDateRangeTo => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterCreatedDateRangeTo ).AsDateTime();
 
-        protected DateTime? FilterSentDateRangeFrom => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSentDateRangeFrom ).AsDateTime();
-
-        protected DateTime? FilterSentDateRangeTo => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSentDateRangeTo ).AsDateTime();
-
         protected string FilterContent => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterContent );
 
@@ -202,8 +196,6 @@ namespace Rock.Blocks.Communication
 
             queryable = FilterByCreatedDateRange( queryable );
 
-            queryable = FilterBySentDateRange( queryable );
-
             queryable = FilterByContent( queryable );
 
             return queryable;
@@ -267,27 +259,6 @@ namespace Rock.Blocks.Communication
                 // This achieves better query performance than searching the fields individually.
                 queryable = queryable.Where( c =>
                                     ( c.Message + c.SMSMessage + c.PushMessage ).Contains( FilterContent ) );
-            }
-
-            return queryable;
-        }
-
-        /// <summary>
-        /// Filters the queryable by the selected Send Date Range filter.
-        /// </summary>
-        /// <param name="queryable">The <see cref="Rock.Model.Communication"/> queryable</param>
-        /// <returns></returns>
-        private IQueryable<Model.Communication> FilterBySentDateRange( IQueryable<Model.Communication> queryable )
-        {
-            if ( FilterSentDateRangeFrom.HasValue )
-            {
-                queryable = queryable.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= FilterSentDateRangeFrom.Value );
-            }
-
-            if ( FilterSentDateRangeTo.HasValue )
-            {
-                DateTime upperDate = FilterSentDateRangeTo.Value.Date.AddDays( 1 );
-                queryable = queryable.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) < upperDate );
             }
 
             return queryable;
@@ -360,7 +331,7 @@ namespace Rock.Blocks.Communication
                     queryable = queryable
                         .Where( c =>
                             c.SenderPersonAlias != null &&
-                            c.SenderPersonAlias.Guid == createdBy.Value );
+                            c.SenderPersonAlias.Person.Guid == createdBy.Value );
                 }
             }
             else if ( currentPerson != null )

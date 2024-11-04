@@ -1236,7 +1236,7 @@ WHERE [GUID] = '43819A34-4819-4507-8FEA-2E406B5474EA'" );
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17();
+            //ChopBlockTypesv17();
         }
 
         private void RegisterBlockAttributesForChop()

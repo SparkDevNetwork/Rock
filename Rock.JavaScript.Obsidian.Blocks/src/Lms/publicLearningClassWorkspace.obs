@@ -235,7 +235,7 @@
 }
 
 .activity-item-content .activity-item-icon {
-    margin-right: var(--spacing-small);
+    margin-right: var(--spacing-xsmall);
 }
 
 .activity-item-content h5 {

@@ -940,6 +940,7 @@
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\FamilyRegistration.cs" />
     <Compile Include="CheckIn\v2\FamilyRegistrationSaveResult.cs" />
+    <Compile Include="CheckIn\v2\Filters\AbilityLevelOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
@@ -957,6 +958,7 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\DataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DateAttributeFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\CheckInDetailDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\DateTimeDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\DateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldSourceHelper.cs" />
@@ -1596,6 +1598,7 @@
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
     <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
+    <Compile Include="Plugin\HotFixes\215_MigrationRollupsForV17_0_18.cs" />
     <Compile Include="Plugin\HotFixes\211_MigrationRollupsForV17_0_17.cs" />
     <Compile Include="Plugin\HotFixes\210_LMSPageChanges.cs" />
     <Compile Include="Plugin\HotFixes\213_CategoryTreeViewBlockSettings.cs" />

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Rock.ViewModels.CheckIn;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration
 {
@@ -31,17 +24,17 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration
     public class CustomSettingsBag
     {
         /// <summary>
-        /// Gets or sets the CheckIn Areas
+        /// List of check-in areas.
         /// </summary>
         public List<string> CheckInAreas { get; set; }
 
         /// <summary>
-        /// Gets or sets the CheckIn Configuration
+        /// Configuration settings for check-in.
         /// </summary>
         public string CheckInConfiguration { get; set; }
 
         /// <summary>
-        /// Gets or sets the Kiosk
+        /// Kiosk identifier.
         /// </summary>
         public string Kiosk { get; set; }
     }

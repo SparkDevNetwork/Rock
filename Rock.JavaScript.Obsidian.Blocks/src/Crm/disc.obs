@@ -41,12 +41,12 @@
                                     <td class="disc-question">{{ question }}</td>
                                     <td class="disc-answer grid-select-field disc-more">
                                         <div class="radio">
-                                            <RadioButton v-model="response.mostScore" v-on:update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
+                                            <RadioButton v-if="response.mostScore !== null" v-model="response.mostScore" v-on:update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
                                         </div>
                                     </td>
                                     <td class="disc-answer grid-select-field disc-less">
                                         <div class="radio">
-                                            <RadioButton v-model="response.leastScore" v-on:update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
+                                            <RadioButton v-if="response.leastScore !== null" v-model="response.leastScore" v-on:update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
                                         </div>
                                     </td>
                                 </tr>
@@ -57,21 +57,24 @@
 
                 <div v-if="isResultsSectionVisible" class="result-section d-flex flex-column justify-content-between">
                     <div v-if="isAsessmentForCurrentPerson" class='alert alert-success' role='alert'><strong>Tip!</strong> Consider printing this page out for future reference.</div>
-                    <div class='disc-heading'><h1>{{ targetPersonName }}</h1><h4>Personality Type: {{personalityType}}</h4></div>
+                    <div class='disc-heading'>
+                        <h1>{{ targetPersonName }}</h1>
+                        <h4>Personality Type: {{ personalityType }}</h4>
+                    </div>
 
                     <ul class="discchart">
                         <li class="discchart-midpoint"></li>
                         <li style="height: 100%; width: 0;"></li>
-                        <li class="discbar discbar-d" :class="{'discbar-primary': dIsPrimary}" :style="{height: dScoreAsPercent + '%'}" :title="dScore.toString()">
+                        <li class="discbar discbar-d" :class="{ 'discbar-primary': dIsPrimary }" :style="{ height: dScoreAsPercent + '%' }" :title="dScore.toString()">
                             <div class="discbar-label">D</div>
                         </li>
-                        <li class="discbar discbar-i" :class="{'discbar-primary': iIsPrimary}" :style="{height: iScoreAsPercent + '%'}" :title="iScore.toString()">
+                        <li class="discbar discbar-i" :class="{ 'discbar-primary': iIsPrimary }" :style="{ height: iScoreAsPercent + '%' }" :title="iScore.toString()">
                             <div class="discbar-label">I</div>
                         </li>
-                        <li class="discbar discbar-s" :class="{'discbar-primary': sIsPrimary}" :style="{height: sScoreAsPercent + '%'}" :title="sScore.toString()">
+                        <li class="discbar discbar-s" :class="{ 'discbar-primary': sIsPrimary }" :style="{ height: sScoreAsPercent + '%' }" :title="sScore.toString()">
                             <div class="discbar-label">S</div>
                         </li>
-                        <li class="discbar discbar-c" :class="{'discbar-primary': cIsPrimary}" :style="{height: cScoreAsPercent + '%'}" :title="cScore.toString()">
+                        <li class="discbar discbar-c" :class="{ 'discbar-primary': cIsPrimary }" :style="{ height: cScoreAsPercent + '%' }" :title="cScore.toString()">
                             <div class="discbar-label">C</div>
                         </li>
                     </ul>
@@ -99,7 +102,7 @@
                         {{ leadershipStyle }}
 
                         <h3>Follower Style</h3>
-                        {{ followerStyle}}
+                        {{ followerStyle }}
                     </div>
 
                     <div class="actions margin-t-lg margin-b-lg">
@@ -153,7 +156,7 @@
     const infoMessage = computed(() => box.value?.infoMessage ?? "");
 
     /** The panel icon CSS class configured by the block settings. */
-    const panelIconCssClass = computed(() =>box.value?.panelIcon ?? "");
+    const panelIconCssClass = computed(() => box.value?.panelIcon ?? "");
 
     /** The panel title configured by the block settings. */
     const panelTitle = computed(() => box.value?.panelTitle ?? "");
@@ -165,7 +168,7 @@
     const results = computed(() => box.value?.results);
 
     /** The page size configuration from the block settings. */
-    const pageSize = computed(() =>box.value?.pageSize ?? defaultPageSize);
+    const pageSize = computed(() => box.value?.pageSize ?? defaultPageSize);
 
     /** True if the current person viewing the assessment is the individual the assessment is for. */
     const isAsessmentForCurrentPerson = computed(() => box.value?.isAsessmentForCurrentPerson);
@@ -257,7 +260,7 @@
     /** Returns the highest score of the 4. */
     const highestScore = computed(() =>
         [dScore.value, iScore.value, sScore.value, cScore.value]
-        .reduce((prev, cur) => cur > prev ? cur : prev)
+            .reduce((prev, cur) => cur > prev ? cur : prev)
     );
 
     /** Determines if the 'D' score is the highest. */
@@ -300,7 +303,7 @@
     async function onFinishClick(): Promise<void> {
         const hasUnansweredQuestions = pageQuestions.value.some(r => !r.leastScore || !r.mostScore);
 
-        if (hasUnansweredQuestions){
+        if (hasUnansweredQuestions) {
             errorMessage.value = "Please answer question(s) before proceeding further.";
         }
         else {
@@ -332,7 +335,7 @@
     function onLeastSelectionChange(response: AssessmentResponseBag): void {
         // If both selections are the same then un-select the previous selection
         // retaining the selection that was just made.
-        if (bothSelectionsAreSame(response)){
+        if (bothSelectionsAreSame(response)) {
             response.mostScore = undefined;
         }
     }
@@ -341,7 +344,7 @@
     function onMostSelectionChange(response: AssessmentResponseBag): void {
         // If both selections are the same then un-select the previous selection
         // retaining the selection that was just made.
-        if (bothSelectionsAreSame(response)){
+        if (bothSelectionsAreSame(response)) {
             response.leastScore = undefined;
         }
     }
@@ -350,7 +353,7 @@
     function onNextClick(): void {
         const hasUnansweredQuestions = pageQuestions.value.some(r => !r.leastScore || !r.mostScore);
 
-        if (hasUnansweredQuestions){
+        if (hasUnansweredQuestions) {
             errorMessage.value = "Please answer question(s) before proceeding further.";
         }
         else {

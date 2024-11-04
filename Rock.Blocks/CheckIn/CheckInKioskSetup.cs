@@ -152,6 +152,7 @@ namespace Rock.Blocks.CheckIn
                 Name = kiosk.Name,
                 Type = kiosk.KioskType,
                 IsCameraEnabled = kiosk.HasCamera,
+                CameraMode = kiosk.CameraBarcodeConfigurationType ?? CameraBarcodeConfiguration.Off,
                 IsRegistrationModeEnabled = kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean()
             };
 

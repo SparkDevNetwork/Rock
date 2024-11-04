@@ -296,9 +296,11 @@ export class CheckInSession {
      * a new session object that contains the attendance results.
      *
      * @param isPending True if the attendance should be saved as pending.
+     * @param isCapacityEnforced True if the capacity thresholds should be checked when saving.
+     *
      * @returns A new CheckInSession object.
      */
-    private async withSaveAttendance(isPending: boolean): Promise<CheckInSession> {
+    private async withSaveAttendance(isPending: boolean, isCapacityEnforced?: boolean): Promise<CheckInSession> {
         // Verify we have a valid configuration template.
         if (!this.configuration.template) {
             throw new InvalidCheckInStateError("Template has not been configured.");
@@ -351,6 +353,7 @@ export class CheckInSession {
             session: {
                 guid: this.sessionGuid,
                 isPending: isPending,
+                isCapacityThresholdEnforced: isCapacityEnforced ?? false,
                 searchMode: this.searchType,
                 searchTerm: this.searchTerm,
                 familyId: this.currentFamilyId
@@ -565,6 +568,7 @@ export class CheckInSession {
             templateId: this.configuration.template.id,
             session: {
                 guid: this.sessionGuid,
+                isCapacityThresholdEnforced: false,
                 isPending: false,
                 searchMode: this.searchType,
                 searchTerm: this.searchTerm,
@@ -601,7 +605,7 @@ export class CheckInSession {
 
     /**
      * Creates a new session by selecting the next attendee that should be
-     * processed for opportunity selection screens. This will load the the
+     * processed for opportunity selection screens. This will load the
      * opporunity options from the server. If there are no more attendees then
      * the {@link currentAttendeeId} will be undefined.
      *
@@ -629,6 +633,139 @@ export class CheckInSession {
         else {
             return this.withAttendee(null);
         }
+    }
+
+    /**
+     * Creates a new session by selecting the next attendee in this family that
+     * should be processed for opportunity selection screens. Note that the
+     * returned session will have already moved to the proper screen.
+     *
+     * @param isCurrentAttendeeSkipped `true` if this attendee is being skipped.
+     *
+     * @returns A new CheckInSession object.
+     */
+    private async withNextFamilyAttendee(isCurrentAttendeeSkipped?: boolean): Promise<CheckInSession> {
+        if (this.configuration.template?.kioskCheckInType !== KioskCheckInMode.Family) {
+            throw new InvalidCheckInStateError("Attempt to move to next family member when not performing family check-in.");
+        }
+
+        let familySession: CheckInSession;
+
+        // Get all the selections made and stash them so they can be saved
+        // later.
+        if (!isCurrentAttendeeSkipped) {
+            const selections = this.getCurrentSelections();
+
+            familySession = this.withStashedCurrentAttendeeSelections(selections, false);
+            familySession = familySession.withNextFamilySchedule();
+
+            if (this.configuration.template?.isSameOptionUsed) {
+                // There should be only one in this mode of check-in, so make
+                // sure that is the case.
+                if (selections.length !== 1) {
+                    throw new InvalidCheckInStateError("Only one opportunity selection is allowed.");
+                }
+
+                // Replicate the selection to all other services.
+                while (familySession.currentFamilyScheduleId) {
+                    // Find the schedule for the opportunity.
+                    const schedule = familySession.possibleSchedules
+                        ?.find(s => s.id === familySession.currentFamilyScheduleId);
+                    const group = familySession.attendeeOpportunities
+                        ?.groups
+                        ?.find(g => g.id === selections[0].group?.id);
+                    const locationId = selections[0].location?.id;
+
+                    if (!schedule) {
+                        throw new InvalidCheckInStateError("Schedule was not found.");
+                    }
+
+                    if (!group) {
+                        throw new InvalidCheckInStateError("Group was not found.");
+                    }
+
+                    // Make sure this group and location is valid for the
+                    // schedule. If it isn't then we need to ask.
+                    if (!group.locations?.some(gl => gl.locationId === locationId && gl.scheduleId === schedule.id)) {
+                        break;
+                    }
+
+                    const scheduleSelection = {
+                        abilityLevel: selections[0].abilityLevel,
+                        area: selections[0].area,
+                        group: selections[0].group,
+                        location: selections[0].location,
+                        schedule: schedule
+                    };
+
+                    familySession = familySession.withStashedCurrentAttendeeSelections([scheduleSelection], false);
+                    familySession = familySession.withNextFamilySchedule();
+                }
+            }
+
+            // Was this the last schedule for this attendee?
+            if (!familySession.currentFamilyScheduleId) {
+                // Save the stashed attendance as pending.
+                familySession = await familySession.withSaveAttendance(true);
+            }
+        }
+        else {
+            familySession = this.withNextFamilySchedule();
+        }
+
+        // Was this the last schedule for this attendee?
+        if (!familySession.currentFamilyScheduleId) {
+            // Move to the next attendee.
+            familySession = await familySession.withNextAttendee();
+        }
+
+        // Was this the last attendee?
+        if (!familySession.currentAttendeeId) {
+            familySession = await familySession.withConfirmAttendance();
+
+            return familySession.withScreen(Screen.Success);
+        }
+
+        // If this is not the first family schedule then skip the ability
+        // level screen as we only need to ask once per attendee.
+        if (!familySession.isProcessingFirstFamilySchedule()) {
+            return familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        const abilityLevels = familySession.getAvailableAbilityLevels();
+
+        // If an ability level is not already selected then try to select
+        // one if there is a single option to pick from.
+        if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
+            familySession = new CheckInSession(familySession, {
+                selectedAbilityLevel: {
+                    id: abilityLevels[0].id,
+                    name: abilityLevels[0].name
+                }
+            });
+        }
+
+        // If there is zero or one ability levels configured then skip that screen.
+        if (abilityLevels.length <= 1) {
+            return familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        // If there are no groups that filter by ability level then we
+        // can also skip the ability level screen.
+        const groupsWithAbilityLevels = familySession.attendeeOpportunities
+            ?.groups
+            ?.filter(g => !!g.abilityLevelId) ?? [];
+
+        if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
+            return familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        // When in override mode, we don't ask for ability level.
+        if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+            return await familySession.withNextScreenFromAbilityLevelSelect();
+        }
+
+        return familySession.withScreen(Screen.AbilityLevelSelect);
     }
 
     /**
@@ -669,8 +806,16 @@ export class CheckInSession {
         }
 
         if (this.configuration.template.kioskCheckInType === KioskCheckInMode.Family) {
-            if (!this.selectedSchedules || this.selectedSchedules.length === 0) {
-                throw new InvalidCheckInStateError("No schedules were available for check-in.");
+            let selectedScheduleId: string | undefined;
+
+            // In full auto-mode we don't ever select a schedule, it is all
+            // set at once.
+            if (!this.configuration.template.isAutoSelect) {
+                if (!this.selectedSchedules || this.selectedSchedules.length === 0) {
+                    throw new InvalidCheckInStateError("No schedules were available for check-in.");
+                }
+
+                selectedScheduleId = this.selectedSchedules[0].id ?? undefined;
             }
 
             return new CheckInSession(this, {
@@ -681,7 +826,7 @@ export class CheckInSession {
                 selectedArea: undefined,
                 selectedGroup: undefined,
                 selectedLocation: undefined,
-                currentFamilyScheduleId: this.selectedSchedules[0].id
+                currentFamilyScheduleId: selectedScheduleId
             });
         }
 
@@ -1034,24 +1179,28 @@ export class CheckInSession {
             return [];
         }
 
+        let validAreaIds: string[];
+
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
-            return this.attendeeOpportunities.areas;
+            // In individual mode we need to filter the areas by the selected
+            // ability level. Which means we need to start by getting the groups
+            // that are valid.
+            validAreaIds = this.attendeeOpportunities
+                .groups
+                ?.filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id)
+                .map(g => g.areaId as string) ?? [];
         }
-
-        // In family mode we need to filter the areas by the selected schedules
-        // which means we need to start by getting the locations that are
-        // valid for that schedule.
-        const selectedScheduleIds = this.selectedSchedules?.map(s => s.id as string);
-        const validLocationIds = this.attendeeOpportunities
-            .locations
-            ?.filter(l => isAnyIdInList(selectedScheduleIds, l.scheduleIds))
-            .map(l => l.id as string) ?? [];
-
-        // Now find all groups for those locations.
-        const validAreaIds = this.attendeeOpportunities
-            .groups
-            ?.filter(g => isAnyIdInList(validLocationIds, g.locationIds))
-            .map(g => g.areaId as string) ?? [];
+        else {
+            // In family mode we need to filter the areas by the selected schedule
+            // as well as by the ability level. Which means we need to start by
+            // getting the groups that are valid.
+            validAreaIds = this.attendeeOpportunities
+                .groups
+                ?.filter(g => g.locations
+                    && g.locations.some(l => l.scheduleId === this.currentFamilyScheduleId)
+                    && (!g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id))
+                .map(g => g.areaId as string) ?? [];
+        }
 
         // Now we can find the areas
         return this.attendeeOpportunities
@@ -1081,18 +1230,11 @@ export class CheckInSession {
             return attendeeGroups.filter(g => g.areaId === this.selectedArea?.id);
         }
 
-        // In family mode we need to filter the areas by the selected schedule
-        // and the selected area. Which means we need to start by getting the
-        // locations that are valid for that schedule.
-        const selectedScheduleIds = this.selectedSchedules?.map(s => s.id as string);
-        const validLocationIds = this.attendeeOpportunities
-            .locations
-            ?.filter(l => isAnyIdInList(selectedScheduleIds, l.scheduleIds))
-            .map(l => l.id as string) ?? [];
-
-        // Now find all groups for those locations and the selected area.
+        // In family mode we need to filter the groups by the selected schedule
+        // as well as the selected area.
         return attendeeGroups
-            .filter(g => isAnyIdInList(validLocationIds, g.locationIds))
+            .filter(g => g.locations
+                && g.locations.some(l => l.scheduleId === this.currentFamilyScheduleId))
             .filter(g => g.areaId === this.selectedArea?.id);
     }
 
@@ -1122,19 +1264,21 @@ export class CheckInSession {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
             // In individual mode we need to filter the locations by the selected
             // group.
+            const groupLocationIds = group.locations?.map(gl => gl.locationId ?? "");
+
             return this.attendeeOpportunities
                 .locations
-                .filter(l => isAnyIdInList(l.id, group.locationIds));
+                .filter(l => isAnyIdInList(l.id, groupLocationIds));
         }
 
-        // In family mode we need to filter the locations by the selected schedules
+        // In family mode we need to filter the locations by the selected schedule
         // and the selected group.
-        const selectedScheduleIds = this.selectedSchedules?.map(s => s.id as string);
-
+        const groupLocationIds = group.locations
+            ?.filter(gl => gl.scheduleId === this.currentFamilyScheduleId)
+            .map(gl => gl.locationId ?? "");
         let filteredLocations = this.attendeeOpportunities
             .locations
-            .filter(l => isAnyIdInList(l.id, group.locationIds))
-            .filter(l => isAnyIdInList(selectedScheduleIds, l.scheduleIds));
+            .filter(l => isAnyIdInList(l.id, groupLocationIds));
 
         if (filteredLocations.length <= 1) {
             return filteredLocations;
@@ -1154,12 +1298,13 @@ export class CheckInSession {
             // Sort the list so that it matches the order of the group
             // location identifiers. This will then filter out any that are over
             // capacity.
-            if (!group.locationIds) {
+            if (!group.locations) {
                 return [];
             }
 
-            filteredLocations = group.locationIds
-                .map(id => filteredLocations.find(l => l.id === id))
+            filteredLocations = group.locations
+                .filter(gl => gl.scheduleId === this.currentFamilyScheduleId)
+                .map(gl => filteredLocations.find(l => l.id === gl.locationId))
                 .filter(l => l !== undefined) as LocationOpportunityBag[];
 
             return filteredLocations.length > 0
@@ -1183,18 +1328,26 @@ export class CheckInSession {
             }
 
             // In individual mode we need to filter the schedules by the selected
-            // location.
+            // group and location.
             const location = this.attendeeOpportunities
                 .locations
                 ?.find(l => l.id === this.selectedLocation?.id);
+            const group = this.attendeeOpportunities
+                .groups
+                ?.find(l => l.id === this.selectedGroup?.id);
 
-            if (!location) {
+            if (!location || !group) {
                 return [];
             }
 
+            const scheduleIds = group.locations
+                ?.filter(gl => gl.locationId === this.selectedLocation?.id)
+                .filter(gl => gl.scheduleId)
+                .map(gl => gl.scheduleId ?? "");
+
             return this.attendeeOpportunities
                 .schedules
-                .filter(s => isAnyIdInList(s.id, location.scheduleIds));
+                .filter(s => isAnyIdInList(s.id, scheduleIds));
         }
 
         // In family mode we are the first step so we just show everything.
@@ -1286,7 +1439,7 @@ export class CheckInSession {
      * @returns true if we are currently processing the first family schedule.
      */
     public isProcessingFirstFamilySchedule(): boolean {
-        const scheduleIndex = this.possibleSchedules
+        const scheduleIndex = this.selectedSchedules
             ?.findIndex(s => s.id === this.currentFamilyScheduleId);
 
         return scheduleIndex === 0;
@@ -1390,6 +1543,18 @@ export class CheckInSession {
         else {
             return Promise.resolve(this.withScreen(Screen.Welcome));
         }
+    }
+
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after skipping the current family attendee. This will technically only
+     * skip the specific schedule for the attendee if multiple schedules have
+     * been selected.
+     *
+     * @returns A new CheckInSession object.
+     */
+    public withNextScreenBySkippingAttendee(): Promise<CheckInSession> {
+        return this.withNextFamilyAttendee(true);
     }
 
     /**
@@ -1628,7 +1793,7 @@ export class CheckInSession {
         }
 
         // If we have more than 1 area to pick from then show the area screen.
-        if (areas.length > 1) {
+        if (areas.length !== 1) {
             return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
         }
 
@@ -1719,103 +1884,7 @@ export class CheckInSession {
      */
     private async withNextScreenFromLocationSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
-            // Get all the selections made and stash them so they can be saved
-            // later.
-            const selections = this.getCurrentSelections();
-            let familySession: CheckInSession;
-
-            if (this.configuration.template?.isSameOptionUsed) {
-                // There should be only one in this mode of check-in, so make
-                // sure that is the case.
-                if (selections.length !== 1) {
-                    throw new InvalidCheckInStateError("Only one opportunity selection is allowed.");
-                }
-
-                familySession = this.withNextFamilySchedule();
-
-                // Replicate the selection to all other services.
-                while (familySession.currentFamilyScheduleId) {
-                    // Find the schedule for the opportunity.
-                    const schedule = familySession.possibleSchedules
-                        ?.find(s => s.id === familySession.currentFamilyScheduleId);
-
-                    if (!schedule) {
-                        throw new InvalidCheckInStateError("Schedule was not found.");
-                    }
-
-                    selections.push({
-                        abilityLevel: selections[0].abilityLevel,
-                        area: selections[0].area,
-                        group: selections[0].group,
-                        location: selections[0].location,
-                        schedule: schedule
-                    });
-
-                    familySession = familySession.withNextFamilySchedule();
-                }
-
-                familySession = familySession.withStashedCurrentAttendeeSelections(selections, true);
-            }
-            else {
-                familySession = this.withStashedCurrentAttendeeSelections(selections, false);
-                familySession = familySession.withNextFamilySchedule();
-            }
-
-            // Was this the last schedule for this attendee?
-            if (!familySession.currentFamilyScheduleId) {
-                // Save the stashed attendance as pending and move to the
-                // next attendee.
-                familySession = await familySession.withSaveAttendance(true);
-                familySession = await familySession.withNextAttendee();
-            }
-
-            // Was this the last attendee?
-            if (!familySession.currentAttendeeId) {
-                familySession = await familySession.withConfirmAttendance();
-
-                return familySession.withScreen(Screen.Success);
-            }
-
-            // If this is not the first family schedule then skip the ability
-            // level screen as we only need to ask once per attendee.
-            if (!familySession.isProcessingFirstFamilySchedule()) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            const abilityLevels = familySession.getAvailableAbilityLevels();
-
-            // If an ability level is not already selected then try to select
-            // one if there is a single option to pick from.
-            if (!familySession.selectedAbilityLevel && abilityLevels.length === 1) {
-                familySession = new CheckInSession(familySession, {
-                    selectedAbilityLevel: {
-                        id: abilityLevels[0].id,
-                        name: abilityLevels[0].name
-                    }
-                });
-            }
-
-            // If there is zero or one ability levels configured then skip that screen.
-            if (abilityLevels.length <= 1) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            // If there are no groups that filter by ability level then we
-            // can also skip the ability level screen.
-            const groupsWithAbilityLevels = familySession.attendeeOpportunities
-                ?.groups
-                ?.filter(g => !!g.abilityLevelId) ?? [];
-
-            if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            // When in override mode, we don't ask for ability level.
-            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
-                return await familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            return familySession.withScreen(Screen.AbilityLevelSelect);
+            return this.withNextFamilyAttendee();
         }
 
         if (!this.attendeeOpportunities?.schedules || this.attendeeOpportunities.schedules.length === 0) {

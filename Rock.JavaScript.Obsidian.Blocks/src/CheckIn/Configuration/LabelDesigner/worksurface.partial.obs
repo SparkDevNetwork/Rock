@@ -1211,7 +1211,7 @@
     });
 
     // If they want to snap to grid then configure the surface for snapping.
-    watch(() => [props.showGrid, props.snapToGrid], () => {
-        surface.snapToGrid = props.showGrid && props.snapToGrid;
+    watch(() => props.snapToGrid, () => {
+        surface.snapToGrid = props.snapToGrid;
     });
 </script>

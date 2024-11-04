@@ -96,7 +96,8 @@
                 <SuccessScreen v-if="currentScreen === Screen.Success"
                                :configuration="configuration"
                                :session="currentSession"
-                               @updateActions="onUpdateActions($event, Screen.Success)" />
+                               @updateActions="onUpdateActions($event, Screen.Success)"
+                               @checkInFamily="onRegistrationCheckInFamily" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
                                        :configuration="configuration"
@@ -638,6 +639,12 @@
 
         session = await session.withFamily(familyId);
         session = await session.withNextScreen();
+
+        // If we are on the action select screen, skip it and go straight to
+        // family member screen.
+        if (session.currentScreen === Screen.ActionSelect) {
+            session = await session.withNextScreen();
+        }
 
         // Make the back button go back to the welcome screen.
         currentSession.value = blankSession;

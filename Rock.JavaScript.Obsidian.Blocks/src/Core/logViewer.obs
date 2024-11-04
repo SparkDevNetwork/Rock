@@ -10,40 +10,47 @@
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
           :isCountMessageVisible="false"
-          :customActions="customActions">
+          :customActions="customActions"
+          :isSearchVisible="false">
 
         <DateTimeColumn name="dateTime"
-            title="Date"
-            field="datetime"
-            visiblePriority="xs"
-            width="15%" />
+                        title="Date"
+                        field="datetime"
+                        visiblePriority="xs"
+                        width="15%" />
 
         <TextColumn name="level"
-            title="Level"
-            field="level"
-            visiblePriority="md"
-            width="15%" />
+                    title="Level"
+                    field="level"
+                    visiblePriority="md"
+                    width="15%" />
 
         <TextColumn name="category"
-            title="Category"
-            field="category"
-            visiblePriority="md"
-            width="15%" />
+                    title="Category"
+                    field="category"
+                    visiblePriority="md"
+                    width="15%"
+                    itemClass="category-wrap" />
 
         <TextColumn name="message"
-            title="Message"
-            field="message"
-            visiblePriority="xs"
-            width="75%" />
+                    title="Message"
+                    field="message"
+                    visiblePriority="xs"
+                    width="75%" />
 
         <TextColumn name="exception"
-            title="Exception"
-            field="exception"
-            visiblePriority="md"
-            width="10%" />
+                    title="Exception"
+                    field="exception"
+                    visiblePriority="md"
+                    width="10%" />
 
     </Grid>
 </template>
+<style>
+.category-wrap {
+    word-break: break-all;
+}
+</style>
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";

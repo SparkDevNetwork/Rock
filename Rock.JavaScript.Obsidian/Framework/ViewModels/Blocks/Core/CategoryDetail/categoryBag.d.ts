@@ -33,7 +33,7 @@ export type CategoryBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the CategoryId of the currently selected Category. */
-    categoryId?: number | null;
+    categoryId: number;
 
     /** Gets or sets the description. */
     description?: string | null;

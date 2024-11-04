@@ -241,33 +241,34 @@ th {
   --shade-black-percentage: 15%;
   --color-critical-soft: #FEDEC8;
   --color-critical-strong: #EE7725;
-  --color-critical-tint: color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
-  --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));
+  --color-critical-tint: #EE7725;
+  --color-critical-shade: #EE7725;
   --color-danger-soft: #FFCCD1;
   --color-danger-strong: #D70015;
-  --color-danger-tint: color-mix(in srgb, var(--color-danger-strong) 50%, #FFF var(--tint-white-percentage));
-  --color-danger-shade: color-mix(in srgb, var(--color-danger-strong) 100%, #000 var(--shade-black-percentage));
+  --color-danger-tint: #D70015;
+  --color-danger-shade: #D70015;
   --color-info-soft: #D6EAFF;
   --color-info-strong: #007AFF;
-  --color-info-tint: color-mix(in srgb, var(--color-info-strong) 50%, #FFF var(--tint-white-percentage));
-  --color-info-shade: color-mix(in srgb, var(--color-info-strong) 100%, #000 var(--shade-black-percentage));
+  --color-info-tint: #007AFF;
+  --color-info-shade: #007AFF;
   --color-success-soft: #D7F4DE;
   --color-success-strong: #248A3D;
-  --color-success-tint: color-mix(in srgb, var(--color-success-strong) 50%, #FFF var(--tint-white-percentage));
-  --color-success-shade: color-mix(in srgb, var(--color-success-strong) 100%, #000 var(--shade-black-percentage));
+  --color-success-tint: #248A3D;
+  --color-success-shade: #248A3D;
   --color-warning-soft: #FFECD1;
   --color-warning-strong: #E58600;
-  --color-warning-tint: color-mix(in srgb, var(--color-warning-strong) 50%, #FFF var(--tint-white-percentage));
-  --color-warning-shade: color-mix(in srgb, var(--color-warning-strong) 100%, #000 var(--shade-black-percentage));
+  --color-warning-tint: #E58600;
+  --color-warning-shade: #E58600;
+  /* System colors */
   --color-primary: #EE7725;
-  --color-primary-tint: color-mix(in srgb, var(--color-primary) 50%, #FFF var(--tint-white-percentage));
-  --color-primary-shade: color-mix(in srgb, var(--color-primary) 100%, #000 var(--shade-black-percentage));
+  --color-primary-tint: #EE7725;
+  --color-primary-shade: #EE7725;
   --color-link: #006DCC;
-  --color-link-tint: color-mix(in srgb, var(--color-link) 50%, #FFF var(--tint-white-percentage));
-  --color-link-shade: color-mix(in srgb, var(--color-link) 100%, #000 var(--shade-black-percentage));
+  --color-link-tint: #006DCC;
+  --color-link-shade: #006DCC;
   --color-secondary: #83758f;
-  --color-secondary-tint: color-mix(in srgb, var(--color-secondary) 50%, #FFF var(--tint-white-percentage));
-  --color-secondary-shade: color-mix(in srgb, var(--color-secondary) 100%, #000 var(--shade-black-percentage));
+  --color-secondary-tint: #83758f;
+  --color-secondary-shade: #83758f;
   --color-categorical-1: #007aff;
   --color-categorical-2: #5856D6;
   --color-categorical-3: #4cd964;
@@ -336,39 +337,36 @@ th {
   --dropdown-box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
   --input-focus-box-shadow: 0 0 0 2px var(--color-primary-tint);
   --rounded-tiny: 2px;
+  --rounded-xsmall: 4px;
   --rounded-small: 6px;
   --rounded-medium: 8px;
   --rounded-large: 12px;
   --rounded-xlarge: 16px;
   --rounded-huge: 24px;
-  --theme-darkest: var(--color-interface-strongest);
-  --theme-dark: var(--color-interface-stronger);
-  --theme-medium: var(--color-interface-strong);
-  --theme-light: var(--color-interface-soft);
-  --theme-lightest: var(--color-interface-softer);
-  --theme-white: var(--color-interface-softest);
-  --theme-black: #343A40;
-  --text-color: @text-color;
-  --color-success: var(--color-success-strong);
-  --color-info: var(--color-info-strong);
-  --color-warning: var(--color-warning-strong);
-  --color-danger: var(--color-danger-strong);
-  --gutter-x: @grid-gutter-width;
-  --panel-border: @panel-border;
-  --panel-body-padding: @panel-body-padding;
-  --fa-font-face: @fa-font-face;
-  --fa-theme-weight: @fa-theme-weight;
-  --border-radius-base: var(--rounded-small);
-  --color-base-primary: @color-base-primary;
   --focus-state-border: 1px solid var(--color-primary);
-  --focus-state-border-color: @input-border-focus;
   --focus-state-shadow: var(--input-focus-box-shadow);
-  --input-bg-disabled: @input-bg-disabled;
   --input-border: var(--color-interface-soft);
-  --input-border-radius: @input-border-radius;
-  --input-height-base: @input-height-base;
-  --input-padding: @padding-base-vertical @padding-base-horizontal;
-  --input-placeholder: @input-color-placeholder;
+}
+
+@supports (color-mix(in srgb, red 50%, white 50%)) {
+  :root {
+    --color-critical-tint: color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));
+    --color-danger-tint: color-mix(in srgb, var(--color-danger-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-danger-shade: color-mix(in srgb, var(--color-danger-strong) 100%, #000 var(--shade-black-percentage));
+    --color-info-tint: color-mix(in srgb, var(--color-info-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-info-shade: color-mix(in srgb, var(--color-info-strong) 100%, #000 var(--shade-black-percentage));
+    --color-success-tint: color-mix(in srgb, var(--color-success-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-success-shade: color-mix(in srgb, var(--color-success-strong) 100%, #000 var(--shade-black-percentage));
+    --color-warning-tint: color-mix(in srgb, var(--color-warning-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-warning-shade: color-mix(in srgb, var(--color-warning-strong) 100%, #000 var(--shade-black-percentage));
+    --color-primary-tint: color-mix(in srgb, var(--color-primary) 50%, #FFF var(--tint-white-percentage));
+    --color-primary-shade: color-mix(in srgb, var(--color-primary) 100%, #000 var(--shade-black-percentage));
+    --color-link-tint: color-mix(in srgb, var(--color-link) 50%, #FFF var(--tint-white-percentage));
+    --color-link-shade: color-mix(in srgb, var(--color-link) 100%, #000 var(--shade-black-percentage));
+    --color-secondary-tint: color-mix(in srgb, var(--color-secondary) 50%, #FFF var(--tint-white-percentage));
+    --color-secondary-shade: color-mix(in srgb, var(--color-secondary) 100%, #000 var(--shade-black-percentage));
+  }
 }
 
 /* ===================== LEGACY  =================== */

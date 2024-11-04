@@ -60,11 +60,11 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var scheduleValue = publicValue.FromJsonOrNull<ListItemBag>();
+            var dataViewValue = publicValue.FromJsonOrNull<ListItemBag>();
 
-            if ( scheduleValue != null )
+            if ( dataViewValue != null )
             {
-                return scheduleValue.Value;
+                return dataViewValue.Value;
             }
 
             return string.Empty;
@@ -75,11 +75,11 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
-                var schedule = NamedScheduleCache.Get( guid );
+                var dataView = DataViewCache.Get( guid );
                 
-                if ( schedule != null )
+                if ( dataView != null )
                 {
-                    return schedule.ToListItemBag().ToCamelCaseJson( false, true );
+                    return dataView.ToListItemBag().ToCamelCaseJson( false, true );
                 }
             }
 
