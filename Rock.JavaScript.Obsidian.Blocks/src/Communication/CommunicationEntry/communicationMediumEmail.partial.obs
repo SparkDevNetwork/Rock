@@ -169,12 +169,6 @@
                 </div>
             </div>
 
-            <div v-if="isDuplicatePreventionOptionShown">
-                <CheckBox label="Prevent Duplicate Email Addresses"
-                          help="Check this option to prevent communications from being sent to people with the same email addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
-                          v-model="excludeDuplicateRecipientAddress" />
-            </div>
-
             <VerticalTransitionCollapse>
                 <div v-if="areAttachmentsShown" class="row">
                     <div class="col-sm-12">
@@ -184,6 +178,12 @@
                     </div>
                 </div>
             </VerticalTransitionCollapse>
+
+            <div v-if="isDuplicatePreventionOptionShown">
+                <CheckBox label="Prevent Duplicate Email Addresses"
+                          help="Check this option to prevent communications from being sent to people with the same email addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
+                          v-model="excludeDuplicateRecipientAddress" />
+            </div>
 
             <HtmlEditor v-model="message"
                         :disabled="disabled"
