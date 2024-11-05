@@ -290,6 +290,7 @@ namespace Rock.Model
         {
             // Get the participant based on class and person identifiers.
             var participant = Queryable()
+                .AreStudents()
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningActivities )
                 .Include( p => p.LearningClass.LearningSemester )
@@ -297,7 +298,7 @@ namespace Rock.Model
                 .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
 
             // If the participant has a completion for this activity return it.
-            var existingCompletion = participant.LearningActivities.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
+            var existingCompletion = participant?.LearningActivities?.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
             if ( existingCompletion != null )
             {
                 return existingCompletion;

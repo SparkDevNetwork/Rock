@@ -161,6 +161,7 @@
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceNotificationBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceBox.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningClassEnrollment\PublicLearningClassEnrollmentBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseDetail\PublicLearningCourseDetailBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningProgramList\PublicLearningProgramListBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseList\PublicLearningCourseListBox.cs" />

@@ -169,7 +169,7 @@ DECLARE
     
     -- Activities
     @assessmentComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A585C101-02E8-4953-BF77-C783C7CFDFDC'),
-    @assessment1Description NVARCHAR(MAX) = '{"time":1714411974206,"blocks":[{"id":"nUecbc6V6Z","type":"paragraph","data":{"text":"My Content Here"}}],"version":"2.28.0"}',
+    @assessment1Description NVARCHAR(MAX) = '',
     @assessment1Settings NVARCHAR(MAX) = '{"items":[{"uniqueId":"B6D5C8A6-3C4E-4F5F-9ADA-C092BDF8BC3F","typeName":"Multiple Choice","question":"How many apostles are there?","helpText":"","answers":["7","12","20"],"correctAnswer":"12","response":"","order":1},{"uniqueId":"D1524351-462B-49DC-9330-F11C8C31619B","typeName":"Section","title":"Short Answer Section","summary":"Please answer with as much detail as you can.","response":"","order":4},{"uniqueId":"F62B3AA3-A126-4A4B-8DE6-26E817EB13CF","answerBoxRows":5,"helpText":"","maxCharacterCount":120,"pointsEarned":0,"question":"Are there any other numbers in the Bible that match the number of apostles?","questionWeight":20,"response":"","typeName":"Short Answer","order":5},{"answerBoxRows":2,"helpText":"Possibly one of the Gospels?","maxCharacterCount":50,"pointsEarned":0,"question":"Which apostle was the one Jesus loved?","questionWeight":30,"response":"","typeName":"Short Answer","order":6,"uniqueId":"B5658589-B322-4193-85B5-F71767ACD7AB"},{"uniqueId":"ae4fe271-abd2-4779-9ebf-c9481c209d46","typeName":"Multiple Choice","question":"Who was sold into slavery in Egypt?","helpText":"","answers":["Joseph","Jonathan","Johab","Jorge"],"correctAnswer":"Joseph","response":"","order":2},{"uniqueId":"64a74114-92fa-4099-8dea-9e010c912d48","typeName":"Multiple Choice","question":"Who led the Israelites after Moses died?","helpText":"","answers":["Joshua","Johab","Jonah","Lot"],"correctAnswer":"Joshua","order":3}],"assessmentTerm":"Assessment","header":"{\"time\":1716326144116,\"blocks\":[{\"id\":\"-SQIQa_9xh\",\"type\":\"paragraph\",\"data\":{\"text\":\"Please complete to the best of your ability.\"}}],\"version\":\"2.28.0\"}","multipleChoiceWeight":50,"showMissedQuestionsOnResults":true,"showResultsOnCompletion":true}',
     @pointAssessmentComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A6E91C3C-4A4C-4FC2-816A-A6B1E6422381'),
     @presentationDescription NVARCHAR(MAX) = '',
@@ -178,7 +178,7 @@ DECLARE
     @acknowledgementDescription NVARCHAR(MAX) = '',
     @acknowledgementSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}',
     @fileUploadComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'DEB298FE-383B-46BD-A974-AFD92C09843A'),
-    @fileUploadDescription NVARCHAR(MAX) = '{"time":1719854012944,"blocks":[{"id":"XD223JYWoi","type":"paragraph", "data": {"text":"Please upload your mid term paper. Changes will be accepted up until the due date."}}]}',
+    @fileUploadDescription NVARCHAR(MAX) = 'Please upload your mid term paper. Changes will be accepted up until the due date.',
     @fileUploadSettings NVARCHAR(MAX) = '';
     
 

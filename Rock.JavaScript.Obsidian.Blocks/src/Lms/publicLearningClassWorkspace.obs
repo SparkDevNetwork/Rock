@@ -41,7 +41,7 @@
                         </h3>
 
                         <div class="notification-cards row">
-                            <template v-for="notification in notifications" ::key="notification.idKey">
+                            <template v-for="notification in notifications">
                                 <div class="col-md-4">
                                     <div class="card card-notification">
                                         <div class="card-body">
@@ -141,15 +141,15 @@
 
                             <div class="activity-item-details">
                                 <h5>{{ item?.activityBag?.name }}</h5>
-                                <div class="activity-item-time" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">
-                                    <div class="text-muted">{{ getActivityTimeText(item) }}</div>
-                                    <div v-if="item.facilitatorComment" class="label label-default"><i class="fa fa-comment"></i>Comments</div>
+                                <div class="activity-item-time" >
+                                    <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
+                                    <div v-if="item.facilitatorComment" class="label label-default"><i class="fa fa-comment"></i> Comments</div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="activity-item-status text-right">
-                            <span v-if="item.isStudentCompleted" class="badge badge-grade" :style="getGradeBageStyles(item)">
+                            <span v-if="isCompleted(item)" class="badge badge-grade" :style="getGradeBageStyles(item)">
                                 {{ getBadgeText(item) }}
                             </span>
                         </div>
@@ -315,7 +315,7 @@
 
     const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
-    // const isAcademicCalendarMode = ref(true);  // uncomment this for testing a on-demand course in an academic calendar
+
     const isFacilitator = ref(config.isCurrentPersonFacilitator ?? false);
     const facilitatorPortalUrl = ref(config.navigationUrls?.[NavigationUrlKey.FacilitatorPortalPage] ?? "");
     const facilitators = ref(config.facilitators ?? []);
@@ -360,8 +360,12 @@
 
     // #region Functions
 
+    function isCompleted(activity): boolean {
+        return activity.isStudentCompleted || activity.isFacilitatorCompleted;
+    }
+
     function getBadgeText(activity: LearningActivityCompletionBag): string | undefined {
-        if (activity.isStudentCompleted && activity.gradeName) {
+        if (isCompleted(activity) && activity.gradeName) {
             return activity.gradeName;
         }
     }
@@ -375,13 +379,13 @@
         const backgroundColor = pair.backgroundColor.toRgba();
         const foreColor = pair.foregroundColor.toRgba();
 
-        if (activity.isStudentCompleted && activity.gradeName) {
+        if (isCompleted(activity) && activity.gradeName) {
             return `background-color: ${backgroundColor}; color: ${foreColor};`;
         }
     }
 
     function isDueSoonAndIncomplete(activity: LearningActivityCompletionBag): boolean {
-        return !activity.isStudentCompleted && (activity.isDueSoon || activity.isPastDue);
+        return !isCompleted(activity) && (activity.isDueSoon || activity.isLate);
     }
 
     /** The CSS classes to apply to the activity container. */
@@ -411,16 +415,16 @@
 
     /** Classes to apply to the activity icon stack. */
     function activityIconStackClasses(activity: LearningActivityCompletionBag): string[] {
-        const completionStatusClass = activity.isStudentCompleted ? "text-success" : "text-muted";
+        const completionStatusClass = isCompleted(activity) ? "text-success" : "text-muted";
         return ["fa", "fa-circle", "fa-stack-2x", completionStatusClass];
     }
 
     /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
     function getActivityTimeText(activity: LearningActivityCompletionBag): string {
-        if (activity.isStudentCompleted) {
+        if (isCompleted(activity)) {
             return `Completed: ${getElapsedTime(activity.completedDate?.toString() ?? "")}`;
         }
-        else if (activity.isDueSoon || activity.isPastDue) {
+        else if (activity.isDueSoon || activity.isLate) {
             return `Due: ${getElapsedTime(activity.dueDate?.toString() ?? "")}`;
         }
         else if (!activity.isAvailable) {
@@ -459,7 +463,7 @@
         await completedPromiseSource.promise;
 
         const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
-        const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable && !a.isStudentCompleted);
+        const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable && !isCompleted(a));
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
         }
@@ -498,7 +502,7 @@
                     // If there's a subsequent activity and it becomes available upon completion of the previous
                     // then mark it available.
                     const nextActivityIndex = index + 1;
-                    const hasNextActivity = nextActivityIndex < activities.value?.length ?? -1;
+                    const hasNextActivity = nextActivityIndex < activities.value?.length;
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
 
                     if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {

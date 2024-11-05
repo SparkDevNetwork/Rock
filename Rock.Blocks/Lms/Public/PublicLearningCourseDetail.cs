@@ -250,7 +250,7 @@ namespace Rock.Blocks.Lms
 				</div>
 				
 				<div class=""side-bar-header-value-pair text-muted"">
-					<div class=""sidebar-header text-bold"">{{ 'Instructor' | PluralizeForQuantity:facilitatorCount }}:</div>
+					<div class=""sidebar-header text-bold"">{{ 'Facilitator' | PluralizeForQuantity:facilitatorCount }}:</div>
 					<div class=""sidebar-value"">{{ facilitators }}</div>
 				</div>
 				<div class=""side-bar-action mt-3"">

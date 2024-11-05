@@ -86,7 +86,6 @@ namespace Rock.Model
                     ImageFileGuid = c.ImageBinaryFile.Guid,
                     Program = c.LearningProgram,
 
-                    // Get the earliest semester with open enrollment and a future start date for this course.
                     NextSemester = c.LearningClasses
                         .Select( cl => cl.LearningSemester )
                         .FirstOrDefault( s =>
@@ -113,29 +112,27 @@ namespace Rock.Model
                 };
             }
 
-            if ( course.CourseRequirements.Any() )
+            var nextSemesterQuery = new LearningClassService( rockContext )
+                .Queryable()
+                .Where( c => c.LearningCourseId == course.Entity.Id )
+                .Select( c => c.LearningSemester );
+
+            if ( semesterStartFrom.HasValue )
             {
-                var requiredCourseIds = course.CourseRequirements.Select( r => r.RequiredLearningCourseId );
-                var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
-
-                course.CourseRequirements.ForEach( cr =>
-                    cr.RequiredLearningCourse =
-                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
-
-                var completedClasses =
-                    !personId.HasValue ?
-                    default
-                    : new LearningParticipantService( rockContext )
-                    .GetClasses( personId.Value )
-                    .AsNoTracking();
-
-                // Any Equivalent or PreRequisite classes that aren't already passed.
-                var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
-                course.UnmetPrerequisites = course.CourseRequirements.Where( cr =>
-                    unmetPrerequisiteTypes.Contains( cr.RequirementType ) &&
-                    !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass )
-                    ).ToList();
+                nextSemesterQuery = nextSemesterQuery
+                    .Where( s => s.StartDate >= semesterStartFrom.Value );
             }
+
+            if ( semesterStartTo.HasValue )
+            {
+                nextSemesterQuery = nextSemesterQuery
+                    .Where( s => s.StartDate <= semesterStartTo.Value );
+            }
+
+            // Get the earliest semester with open enrollment and a future start date for this course.
+            course.NextSemester = nextSemesterQuery.OrderBy( c => c.StartDate ).FirstOrDefault();
+
+            course.UnmetPrerequisites = GetUnmetCourseRequirements( personId, course.CourseRequirements );
 
             if ( mostRecentParticipation != null )
             {
@@ -254,6 +251,48 @@ namespace Rock.Model
             }
 
             return courses.ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of LearningCourseRequirements where the <see cref="Person"/> specified by the <paramref name="personId"/>
+        /// hasn't completed the course.
+        /// </summary>
+        /// <param name="personId">The identifier of the <see cref="Person"/> to check requirement completions for.</param>
+        /// <param name="courseRequirements">The List of <see cref="LearningCourseRequirement"/> records to check completions for.</param>
+        /// <returns>A List of <see cref="LearningCourseRequirement"/> records that haven't been completed by the <see cref="Person"/>.</returns>
+        public List<LearningCourseRequirement> GetUnmetCourseRequirements( int? personId, IEnumerable<LearningCourseRequirement> courseRequirements )
+        {
+            if ( courseRequirements.Any() )
+            {
+                var hasMissingCourseDetails = courseRequirements.Any( cr => cr.RequiredLearningCourse == null || cr.RequiredLearningCourse.Id == 0 );
+                if ( hasMissingCourseDetails )
+                {
+                    // If there were provided LearningCourseRequirements that aren't populated with their
+                    // related RequiredLearningCourse then go get that data.
+                    var requiredCourseIds = courseRequirements.Select( r => r.RequiredLearningCourseId );
+                    var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
+
+                    courseRequirements.ForEach( cr =>
+                    cr.RequiredLearningCourse =
+                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
+                }
+
+                var completedClasses =
+                    !personId.HasValue ?
+                    default
+                    : new LearningParticipantService( ( RockContext ) Context )
+                    .GetClasses( personId.Value )
+                    .AsNoTracking();
+
+                // Any Equivalent or PreRequisite classes that aren't already passed.
+                var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
+                return courseRequirements.Where( cr =>
+                    unmetPrerequisiteTypes.Contains( cr.RequirementType ) &&
+                    !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass )
+                    ).ToList();
+            }
+
+            return new List<LearningCourseRequirement>();
         }
 
         #region Nested Classes

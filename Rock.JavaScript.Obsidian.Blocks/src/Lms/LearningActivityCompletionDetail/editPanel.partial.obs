@@ -81,11 +81,13 @@
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
+    const assignTo = ref(activityBag.value.assignTo);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
     const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
+
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -126,10 +128,15 @@
     // If the due date changes re-evaluate whether the assignment was late.
     watch(dueDate, () => {
         const dueAsRockDate = RockDateTime.parseISO(dueDate.value ?? "");
-        const completedAsRockDate = RockDateTime.parseISO(completedDate.value ?? "");
+        const isFacilitatorAssigned = assignTo.value === AssignTo.Facilitator;
+        let completedAsRockDate = RockDateTime.parseISO(completedDate.value ?? "");
+
+        if (!completedAsRockDate && isFacilitatorAssigned) {
+            completedAsRockDate = RockDateTime.now();
+        }
 
         if (dueAsRockDate && completedAsRockDate) {
-            wasCompletedOnTime.value = dueAsRockDate.isLaterThan(completedAsRockDate);
+            wasCompletedOnTime.value = dueAsRockDate.date.isLaterThan(completedAsRockDate.date);
         }
     });
 

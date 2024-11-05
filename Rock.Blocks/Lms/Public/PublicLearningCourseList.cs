@@ -67,11 +67,6 @@ namespace Rock.Blocks.Lms
         IsRequired = false,
         Key = AttributeKey.NextSessionDateRange )]
 
-    [LinkedPage( "Enrollment Page",
-        Description = "The page that will enroll the student in the course.",
-        Key = AttributeKey.CourseEnrollmentPage,
-        Order = 5 )]
-
     [BooleanField(
         "Public Only",
         Description = "If selected, all non-public courses will be excluded.",
@@ -79,7 +74,7 @@ namespace Rock.Blocks.Lms
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
-        Order = 6 )]
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4356febe-5efd-421a-bfc4-05942b6bd910" )]
     [Rock.SystemGuid.BlockTypeGuid( "5d6ba94f-342a-4ec1-b024-fc5046ffe14d" )]

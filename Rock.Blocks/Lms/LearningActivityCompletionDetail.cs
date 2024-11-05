@@ -28,6 +28,7 @@ using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
@@ -49,10 +50,6 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region Block Attributes
-
-    #endregion
-
     [Rock.SystemGuid.EntityTypeGuid( "19474eb0-eeda-4fcb-b1ea-a35e23e6f691" )]
     [Rock.SystemGuid.BlockTypeGuid( "4569f28d-1efb-4b95-a506-0d9043c24775" )]
     public class LearningActivityCompletionDetail : RockEntityDetailBlockType<LearningActivityCompletion, LearningActivityCompletionBag>, IBreadCrumbBlock
@@ -66,6 +63,7 @@ namespace Rock.Blocks.Lms
             public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
+            public const string LearningParticipantId = "LearningParticipantId";
         }
 
         private static class NavigationUrlKey
@@ -99,7 +97,6 @@ namespace Rock.Blocks.Lms
         private LearningActivityCompletionDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new LearningActivityCompletionDetailOptionsBag();
-
 
             var scales = new LearningClassService( RockContext )
                 .GetClassScales( RequestContext.PageParameterAsId( PageParameterKey.LearningClassId ) )
@@ -382,14 +379,14 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.ActivityComponentCompletionJson ),
                 () => entity.ActivityComponentCompletionJson = box.Bag.ActivityComponentCompletionJson );
 
-            box.IfValidProperty( nameof( box.Bag.DueDate ),
-                () => entity.DueDate = box.Bag.DueDate );
-
             box.IfValidProperty( nameof( box.Bag.FacilitatorComment ),
                 () => entity.FacilitatorComment = box.Bag.FacilitatorComment );
 
             box.IfValidProperty( nameof( box.Bag.IsFacilitatorCompleted ),
                 () => entity.IsFacilitatorCompleted = box.Bag.IsFacilitatorCompleted );
+
+            box.IfValidProperty( nameof( box.Bag.DueDate ),
+                () => entity.DueDate = box.Bag.DueDate );
 
             if ( !entity.GradedByPersonAliasId.HasValue || box.Bag.PointsEarned != entity.PointsEarned )
             {
@@ -412,18 +409,16 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivityCompletion GetInitialEntity()
         {
-            var completionId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityCompletionId );
-            if ( completionId > 0 )
+            var completionId = PageParameter( PageParameterKey.LearningActivityCompletionId );
+            
+            if ( completionId.IsNotNullOrWhiteSpace() && completionId != "0" )
             {
                 return new LearningActivityCompletionService( RockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.LearningActivity )
-                    .FirstOrDefault( a => a.Id == completionId );
+                    .GetInclude( completionId, a => a.LearningActivity );
             }
             else
             {
-                return new LearningActivityCompletion();
+                return GetNewEntity();
             }
         }
 
@@ -437,6 +432,56 @@ namespace Rock.Blocks.Lms
             {
                 [NavigationUrlKey.ParentPage] = ParentPageUrl()
             };
+        }
+
+        /// <summary>
+        /// Gets a new <see cref="LearningActivityCompletion"/> record using the
+        /// LearningActivityId and LearningParticipantId page parameters.
+        /// </summary>
+        /// <remarks>
+        /// This is non-standard because the entity may not exist yet, but we
+        /// need to initialize with values for the specified <see cref="LearningActivity"/>
+        /// and <see cref="LearningParticipant"/>.
+        /// </remarks>
+        /// <returns>A new <see cref="LearningActivityCompletion"/> for the
+        /// <see cref="LearningActivity"/> and <see cref="LearningParticipant"/>
+        /// whose identifier is provided as a PageParameter.</returns>
+        private LearningActivityCompletion GetNewEntity()
+        {
+            var activityIdParam = PageParameter( PageParameterKey.LearningActivityId );
+            var participantIdParam = PageParameter( PageParameterKey.LearningParticipantId );
+
+            int.TryParse( activityIdParam, out var activityId );
+            int.TryParse( participantIdParam, out var participantId );
+
+            if (activityId == 0 && activityIdParam.Length > 0)
+            {
+                activityId = IdHasher.Instance.GetId( activityIdParam ).ToIntSafe();
+            }
+
+            if ( participantId == 0 && participantIdParam.Length > 0 )
+            {
+                participantId = IdHasher.Instance.GetId( participantIdParam ).ToIntSafe();
+            }
+
+            var existingActivity = new LearningActivityCompletionService( RockContext )
+                .Queryable()
+                .FirstOrDefault( a => a.LearningActivityId == activityId && a.StudentId == participantId );
+
+            if ( existingActivity != null )
+            {
+                // If the record exists, but the completion id just wasn't passed
+                // get the existing record.
+                return existingActivity;
+            }
+
+            // The completion record doesn't yet exist
+            // We'll need to get a default for the activity and student.
+            // (This can happen when an activity is completed by the facilitator).
+            var student = new LearningParticipantService( RockContext ).Get( participantId );
+            var activity = new LearningActivityService( RockContext ).Get( activityId );
+
+            return LearningActivityCompletionService.GetNew( activity, student );
         }
 
         private string ParentPageUrl()
@@ -469,7 +514,7 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningActivityCompletion();
+                entity = GetNewEntity();
                 entityService.Add( entity );
             }
 
