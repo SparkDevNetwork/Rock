@@ -1,0 +1,169 @@
+<template>
+    <div>
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList label="Theme"
+                              v-model="theme"
+                              :items="blockConfiguration.themes ?? []"
+                              showBlankItem />
+
+                <DropDownList label="Check-in Configuration Template"
+                              v-model="templateId"
+                              :items="templateItems"
+                              showBlankItem />
+            </div>
+
+            <div class="col-md-6">
+                <slot name="additionalOptions" />
+            </div>
+        </div>
+
+        <div class="row" v-if="templateId">
+            <div class="col-md-6">
+                <CheckBoxList label="Primary Areas"
+                              v-model="primaryAreaIds"
+                              :items="primaryAreaItems"
+                              horizontal
+                              :repeatColumns="2" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBoxList label="Secondary Areas"
+                              v-model="secondaryAreaIds"
+                              :items="secondaryAreaItems"
+                              horizontal
+                              :repeatColumns="2" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import { CheckInKioskOptionsBag } from "../CheckInKiosk/types.partial";
+    import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
+    import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
+    import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
+    import { deepEqual } from "@Obsidian/Utility/util";
+
+    const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<SavedKioskConfigurationBag>,
+            required: false
+        },
+
+        kiosk: {
+            type: Object as PropType<WebKioskBag>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SavedKioskConfigurationBag | undefined): void;
+    }>();
+
+    const theme = ref(props.modelValue?.theme ?? blockConfiguration.currentTheme ?? "");
+    const templateId = ref<string>(props.modelValue?.templateId ?? "");
+    const areaItems = ref<ConfigurationAreaBag[]>([]);
+    const primaryAreaIds = ref<string[]>([]);
+    const secondaryAreaIds = ref<string[]>([]);
+
+    /** The primary area items that match the current selections. */
+    const primaryAreaItems = computed((): ListItemBag[] => {
+        return areaItems.value
+            .filter(a => (a.primaryTemplateIds ?? []).includes(templateId.value ?? ""))
+            .map(a => ({ value: a.id, text: a.name }));
+    });
+
+    /** The secondary area items that match the current selections. */
+    const secondaryAreaItems = computed((): ListItemBag[] => {
+        return areaItems.value
+            .filter(a => !(a.primaryTemplateIds ?? []).includes(templateId.value ?? ""))
+            .map(a => ({ value: a.id, text: a.name }));
+    });
+
+    /** The list of configuration templates to show in the template picker. */
+    const templateItems = computed((): ListItemBag[] => {
+        if (!blockConfiguration.templates) {
+            return [];
+        }
+
+        return blockConfiguration
+            .templates
+            .map(t => ({
+                value: t.id,
+                text: t.name
+            }));
+    });
+
+    /**
+     * Gets the area items from the server and updates the selected values
+     * to only those which are still valid.
+     */
+    async function updateAreaItems(restore?: SavedKioskConfigurationBag): Promise<void> {
+        if (!props.kiosk) {
+            primaryAreaIds.value = [];
+            secondaryAreaIds.value = [];
+            areaItems.value = [];
+
+            return;
+        }
+
+        const request = {
+            kioskId: props.kiosk.id
+        };
+
+        const response = await invokeBlockAction<ConfigurationResponseBag>("GetConfiguration", request);
+
+        if (!response.isSuccess || !response.data || !response.data.areas) {
+            primaryAreaIds.value = [];
+            secondaryAreaIds.value = [];
+            areaItems.value = [];
+
+            return;
+        }
+
+        areaItems.value = response.data.areas;
+
+        if (restore?.areaIds) {
+            primaryAreaIds.value = areaItems.value
+                .filter(a => a.id && restore.areaIds?.includes(a.id))
+                .filter(a => a.primaryTemplateIds?.includes(templateId.value) === true)
+                .map(a => a.id ?? "");
+
+            secondaryAreaIds.value = areaItems.value
+                .filter(a => a.id && restore.areaIds?.includes(a.id))
+                .filter(a => !a.primaryTemplateIds?.includes(templateId.value))
+                .map(a => a.id ?? "");
+        }
+    }
+
+    watch([theme, templateId, primaryAreaIds, secondaryAreaIds], () => {
+        const newValue: SavedKioskConfigurationBag = {
+            ...props.modelValue,
+            theme: theme.value,
+            templateId: templateId.value,
+            areaIds: [...primaryAreaIds.value, ...secondaryAreaIds.value]
+        };
+
+        if (!deepEqual(props.modelValue, newValue, true)) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    watch(() => props.kiosk, () => {
+        updateAreaItems();
+    });
+
+    if (props.kiosk) {
+        updateAreaItems(props.modelValue);
+    }
+</script>
