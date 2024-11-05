@@ -934,6 +934,11 @@ namespace Rock.Blocks.Communication
             }
 
             return mediums
+                .OrderBy( medium =>
+                    medium.Medium.CommunicationType == CommunicationType.Email ? 1 :
+                    medium.Medium.CommunicationType == CommunicationType.SMS ? 2 :
+                    medium.Medium.CommunicationType == CommunicationType.PushNotification ? 3 : 4
+                )
                 .Select( medium => new ListItemBag
                 {
                     Text = medium.ComponentName,
