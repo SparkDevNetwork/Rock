@@ -768,6 +768,8 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
+            pdAuditDetails.SetEntity( financialScheduledTransaction, ResolveRockUrl( "~" ) );
+
             ForeignCurrencyDefinedValueId = financialScheduledTransaction.ForeignCurrencyCodeValueId;
 
             if ( financialScheduledTransaction.FinancialPaymentDetail.CardExpirationDate < RockDateTime.Now )
@@ -914,6 +916,7 @@ namespace RockWeb.Blocks.Finance
         private void SetAccountEditMode( bool editable )
         {
             pnlViewAccounts.Visible = !editable;
+            pdAuditDetails.Visible = !editable;
             pnlEditAccounts.Visible = editable;
         }
 
