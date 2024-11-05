@@ -563,8 +563,9 @@ mission. We are so grateful for your commitment.</p>
     <dt>When<dt>
     <dd>
 
-    {% if Transaction.TransactionFrequencyValue %} //- Updated to include EndDate
-        {{ Transaction.TransactionFrequencyValue.Value }} {% if Transaction.EndDate %}starting on {{ Transaction.NextPaymentDate | Date:''sd'' }} and ending on {{ Transaction.EndDate | Date:''sd'' }}{% else %}starting on {{ Transaction.NextPaymentDate | Date:''sd'' }}{% endif %}
+    {% if Transaction.TransactionFrequencyValue %}
+        {{ Transaction.TransactionFrequencyValue.Value }} //- Updated to include EndDate
+{% if Transaction.EndDate %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }} and ending on {{ Transaction.EndDate | Date:'sd' }}{% else %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }}{% endif %}
     {% else %}
         Today
     {% endif %}
@@ -3542,7 +3543,7 @@ mission. We are so grateful for your commitment.</p>
                 int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
                 if ( this.GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() && ddlFrequency.SelectedValue.AsInteger() != oneTimeFrequencyId )
                 {
-                    if ( dtpEndDate.SelectedDate < dtpStartDate.SelectedDate || !dtpEndDate.SelectedDate.HasValue )
+                    if ( dtpEndDate.SelectedDate < dtpStartDate.SelectedDate )
                     {
                         nbPromptForAmountsWarning.Visible = true;
 
