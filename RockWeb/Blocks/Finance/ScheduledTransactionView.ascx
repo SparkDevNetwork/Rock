@@ -13,6 +13,7 @@
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
 
             <Rock:ModalAlert ID="mdWarningAlert" runat="server" />
             <div class="panel-body">

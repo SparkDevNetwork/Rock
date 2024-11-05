@@ -284,7 +284,6 @@
     async function onAttendeeClick(attendee: AttendeeBag, event: MouseEvent): Promise<void> {
         // Check if the user clicked our button or one of the nested buttons.
         if (!(event.target instanceof HTMLElement) || event.target.closest(".btn") !== event.currentTarget) {
-            console.log("skip");
             return;
         }
 

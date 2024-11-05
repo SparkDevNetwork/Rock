@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Enums.CheckIn;
@@ -244,7 +245,15 @@ namespace Rock.CheckIn.v2
         /// search term before a phone number search is performed.
         /// </summary>
         /// <value>The regular expression filter.</value>
-        public virtual string RegularExpressionFilter { get; }
+        public virtual string PhoneNumberPattern { get; }
+
+        /// <summary>
+        /// Gets the regular expression that will be run against the search
+        /// term before a phone number search is performed. If it matches then
+        /// the phone number will be replaced with the first match group.
+        /// </summary>
+        /// <value>The regular expression for phone number searches.</value>
+        public Regex PhoneNumberRegex { get; }
 
         /// <summary>
         /// Gets the length of the alpha character sequence for the security
@@ -606,7 +615,8 @@ namespace Rock.CheckIn.v2
             MinimumPhoneNumberLength = groupTypeCache.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" ).AsIntegerOrNull();
             PhoneSearchType = ( PhoneSearchMode ) groupTypeCache.GetAttributeValue( "core_checkin_PhoneSearchType" ).AsInteger();
             RefreshInterval = groupTypeCache.GetAttributeValue( "core_checkin_RefreshInterval" ).AsInteger();
-            RegularExpressionFilter = groupTypeCache.GetAttributeValue( "core_checkin_RegularExpressionFilter" ) ?? string.Empty;
+            PhoneNumberPattern = groupTypeCache.GetAttributeValue( "core_checkin_RegularExpressionFilter" ) ?? string.Empty;
+            PhoneNumberRegex = GetRegexOrNull( PhoneNumberPattern );
             SecurityCodeAlphaLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" ).AsInteger();
             SecurityCodeAlphaNumericLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeLength" ).AsInteger();
             SecurityCodeNumericLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" ).AsInteger();
@@ -745,6 +755,33 @@ namespace Rock.CheckIn.v2
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Gets a compiled regular expression for the pattern. This catches
+        /// any exceptions and returns <c>null</c> instead.
+        /// </summary>
+        /// <param name="pattern">The pattern of the regular expression.</param>
+        /// <returns>An <see cref="Regex"/> instance of <c>null</c> if <paramref name="pattern"/> was not valid.</returns>
+        private static Regex GetRegexOrNull( string pattern )
+        {
+            if ( pattern.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            try
+            {
+                // A compiled expression will take about 0.2ms to compile to
+                // native code for the expected complexity. It then executes
+                // 3x faster. Since this is likely to be called hundreds if
+                // not thousands of times per service, that is a good tradeoff.
+                return new Regex( pattern, RegexOptions.Compiled );
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion

@@ -372,12 +372,17 @@
     function setInternalValues(): void {
         const person = props.registrationData.people
             ?.find(p => p.bag.guid === props.registrationData.editPersonGuid);
+        let defaultLastName = "";
+
+        if (props.registrationData.people.length > 0) {
+            defaultLastName = props.registrationData.people[0].bag.lastName ?? "";
+        }
 
         isAdult.value = person?.bag.isAdult ?? false;
         relationshipToAdult.value = person?.bag.relationshipToAdult?.value ?? getDefaultRelationship();
         isMarried.value = person?.bag.isMarried ?? false;
         nickName.value = person?.bag.nickName ?? "";
-        lastName.value = person?.bag.lastName ?? "";
+        lastName.value = person?.bag.lastName ?? defaultLastName;
         suffix.value = person?.bag.suffix?.value ?? "";
         birthDate.value = person?.bag.birthDate ?? "";
         grade.value = person?.bag.grade ?? undefined;

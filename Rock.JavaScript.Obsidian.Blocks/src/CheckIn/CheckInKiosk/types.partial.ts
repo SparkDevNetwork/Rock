@@ -40,6 +40,8 @@ export type CampusBag = CheckInItemBag & {
 export type CheckInKioskOptionsBag = {
     kioskConfiguration?: KioskConfigurationBag | null;
 
+    isEditAllowed: boolean;
+
     isManualSetupAllowed: boolean;
 
     isConfigureByLocationEnabled: boolean;
