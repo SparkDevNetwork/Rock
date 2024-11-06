@@ -74,6 +74,15 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.CourseEnrollmentPage,
         Order = 5 )]
 
+    [BooleanField(
+        "Public Only",
+        Description = "If selected, all non-public classes will be excluded.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.PublicOnly,
+        Order = 6 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "c5d5a151-038e-4295-a03c-63196883f68e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b0dce130-0c91-4aa0-8161-57e8fa523392" )]
     public class PublicLearningCourseDetail : RockBlockType
@@ -86,6 +95,7 @@ namespace Rock.Blocks.Lms
             public const string CourseDetailTemplate = "CourseListTemplate";
             public const string ClassWorkspacePage = "DetailPage";
             public const string NextSessionDateRange = "NextSessionDateRange";
+            public const string PublicOnly = "PublicOnly";
             public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
 
@@ -308,9 +318,11 @@ namespace Rock.Blocks.Lms
                 RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now ) :
                 null;
 
+            var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
+
             var course = includeNextSessionFiltering ?
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, semesterDateRange.Start, semesterDateRange.End ) :
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id );
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly, semesterDateRange.Start, semesterDateRange.End ) :
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly );
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
