@@ -15,19 +15,18 @@
 // </copyright>
 //
 
-using Rock.Model;
-
 namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
-    /// Label data objects that have a singular Person property which identifies
-    /// the person that was checked in.
+    /// Label data objects that have a singular Attendance property which identifies
+    /// the attendance record.
     /// </summary>
-    internal interface ILabelDataHasPerson
+    internal interface ILabelDataHasAttendance
     {
         /// <summary>
-        /// The person that was checked in that this label is being printed for.
+        /// The data that describes the attendance record this label is being
+        /// printed for.
         /// </summary>
-        Person Person { get; }
+        AttendanceLabel Attendance { get; }
     }
 }

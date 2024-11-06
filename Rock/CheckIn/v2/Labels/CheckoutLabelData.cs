@@ -36,12 +36,9 @@ namespace Rock.CheckIn.v2.Labels
     /// labels.
     /// </para>
     /// </summary>
-    internal class CheckoutLabelData : ILabelDataHasPerson
+    internal class CheckoutLabelData : ILabelDataHasPerson, ILabelDataHasAttendance
     {
-        /// <summary>
-        /// The data that describes the attendance record this label is being
-        /// printed for.
-        /// </summary>
+        /// <inheritdoc/>
         public AttendanceLabel Attendance { get; set; }
 
         /// <inheritdoc/>

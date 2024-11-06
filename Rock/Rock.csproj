@@ -969,11 +969,13 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\IconFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\IFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\ILabelDataHasAttendance.cs" />
     <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelPrintProvider.cs" />
     <Compile Include="CheckIn\v2\Labels\ImageFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelIcon.cs" />
+    <Compile Include="CheckIn\v2\Labels\PersonLocationLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\RenderedLabel.cs" />
     <Compile Include="CheckIn\v2\Labels\LineFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />

@@ -1,0 +1,75 @@
+// This file is being imported by rock-core.less
+
+.tox .tox-dialog__footer .tox-dialog__footer-end .tox-button {
+  display: inline-block;
+  margin-bottom: 0; // For input.btn
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border: 1px solid transparent;
+  background-color: var(--color-primary);
+  color: var(--color-interface-softest);
+
+  &:hover {
+    background-color: #d05e10;
+    border-color: #c65a0f;
+  }
+
+  &:focus {
+    background-color: #d05e10;
+    border-color: #c65a0f;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(238,119,37,0.5)
+  }
+
+  &:active {
+    background-color: #d05e10;
+    border-color: #c65a0f;
+  }
+
+  &:active:focus {
+    background-color: #af4f0e;
+    border-color: #893e0b;
+  }
+}
+
+
+.tox .tox-form .tox-form__group .tox-textfield {
+  border-color: var(--color-interface-soft);
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(238,119,37,0.5);
+  }
+}
+
+
+.tox .tox-dialog__body-nav .tox-dialog__body-nav-item--active {
+  border-bottom: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+
+.tox .tox-dialog__header .tox-button--naked.tox-button--icon {
+  color: var(--color-interface-strong);
+
+  &:hover:not(:disabled),
+  &:focus {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-softer);
+  }
+
+  &:focus:active {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+  }
+}
+
+.tox .tox-collection.tox-collection--grid .tox-collection__group .tox-collection__item--active {
+  background-color: rgba(238,119,37,0.3);
+  cursor: pointer;
+}
