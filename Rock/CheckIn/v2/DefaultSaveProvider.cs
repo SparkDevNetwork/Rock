@@ -79,17 +79,15 @@ namespace Rock.CheckIn.v2
         /// <returns>An instance of <see cref="CheckInResultBag"/> that contains the result of the operation.</returns>
         public CheckInResultBag SaveAttendance( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<AttendanceRequestBag> requests, DeviceCache kiosk, string clientIpAddress )
         {
-            var result = new CheckInResultBag
-            {
-                Messages = new List<string>(),
-                Attendances = new List<RecordedAttendanceBag>()
-            };
-
             if ( requests.Count == 0 )
             {
-                result.Messages.Add( "There were no individuals requested to be checked in." );
-
-                return result;
+                return new CheckInResultBag
+                {
+                    Messages = new List<string>
+                    {
+                        "There were no individuals requested to be checked in."
+                    }
+                };
             }
 
             // Get the current date and time based on the kiosk's campus time zone.
@@ -116,9 +114,13 @@ namespace Rock.CheckIn.v2
             // sent us bad data.
             if ( hasInvalidRequests )
             {
-                result.Messages.Add( "One or more people were invalid so no check-in was performed." );
-
-                return result;
+                return new CheckInResultBag
+                {
+                    Messages = new List<string>
+                    {
+                        "One or more people were invalid so no check-in was performed."
+                    }
+                };
             }
 
             // Get the current attendance records for these locations.
@@ -127,13 +129,14 @@ namespace Rock.CheckIn.v2
             var newOrUpdatedAttendances = new List<RecentAttendance>();
             var newAttendances = new List<Attendance>();
             var attributeEntitiesToSave = new List<IHasAttributes>();
+            var messages = new List<string>();
 
             foreach ( var request in preparedRequests )
             {
                 // Check if the location is over capacity.
-                if ( sessionRequest.IsCapacityThresholdEnforced && IsLocationOverCapacity( sessionRequest, request, currentAttendances ) )
+                if ( sessionRequest.IsCapacityThresholdEnforced && IsLocationOverCapacity( sessionRequest, request, currentAttendances, newAttendances ) )
                 {
-                    result.Messages.Add( $"Could not check {request.Person.FullName} into {request.Location.Name} because it is over capacity." );
+                    messages.Add( $"Could not check {request.Person.FullName} into {request.Location.Name} because it is over capacity." );
 
                     continue;
                 }
@@ -185,7 +188,14 @@ namespace Rock.CheckIn.v2
 
             var people = preparedRequests.Select( a => a.Person ).ToList();
 
-            return SaveAttendanceRecords( sessionRequest.IsPending, newAttendances, newOrUpdatedAttendances, people, attributeEntitiesToSave );
+            var result = SaveAttendanceRecords( sessionRequest.IsPending, newAttendances, newOrUpdatedAttendances, people, attributeEntitiesToSave );
+
+            if ( messages.Count > 0 )
+            {
+                result.Messages.InsertRange( 0, messages );
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -596,7 +606,7 @@ namespace Rock.CheckIn.v2
             var codeLookup = new Dictionary<string, AttendanceCode>();
             AttendanceCode lastAttendanceCode = null;
 
-            foreach ( var personId in personIds ) 
+            foreach ( var personId in personIds )
             {
                 if ( TemplateConfiguration.IsSameCodeUsedForFamily )
                 {
@@ -664,7 +674,7 @@ namespace Rock.CheckIn.v2
         /// <param name="request">The attendance request.</param>
         /// <param name="currentAttendances">The current attendance records that we know about.</param>
         /// <returns><c>true</c> if the location is at or over capacity; <c>false</c> otherwise.</returns>
-        protected virtual bool IsLocationOverCapacity( AttendanceSessionRequest sessionRequest, PreparedAttendanceRequest request, IReadOnlyCollection<RecentAttendance> currentAttendances )
+        protected virtual bool IsLocationOverCapacity( AttendanceSessionRequest sessionRequest, PreparedAttendanceRequest request, IReadOnlyCollection<RecentAttendance> currentAttendances, IReadOnlyCollection<Attendance> newAttendances )
         {
             int? threshold;
 
@@ -683,11 +693,17 @@ namespace Rock.CheckIn.v2
                 return false;
             }
 
+            // Current attendence records in the database.
             var count = currentAttendances
                 .Where( a => a.LocationId == request.Location.IdKey )
                 .Count();
 
-            return count < threshold.Value;
+            // New records we have created but not written yet.
+            count += newAttendances
+                .Where( a => a.Occurrence.LocationId == request.Location.Id )
+                .Count();
+
+            return count >= threshold.Value;
         }
 
         /// <summary>
