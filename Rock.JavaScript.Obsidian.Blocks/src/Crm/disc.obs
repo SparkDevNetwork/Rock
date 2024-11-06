@@ -139,6 +139,18 @@
 
     const errorMessage = ref("");
     const box = ref(initialBox);
+
+    const initialResponses = box.value?.responses ?? [];
+
+    initialResponses.forEach(r => {
+        if (r.leastScore === null) {
+            r.leastScore = undefined;
+        }
+
+        if (r.mostScore === null) {
+            r.mostScore = undefined;
+        }
+    });
     const responses = ref(box.value?.responses ?? []);
 
     const currentPage = ref(1);
