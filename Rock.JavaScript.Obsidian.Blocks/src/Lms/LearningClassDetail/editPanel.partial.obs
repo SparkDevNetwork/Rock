@@ -27,6 +27,7 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList
+                              v-if="isAcademicCalendarMode"
                               label="Semester"
                               v-model="semester"
                               :grouped="false"
@@ -80,6 +81,7 @@
     import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
     import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import numberUtils from "@Obsidian/Utility/numberUtils";
 
@@ -102,6 +104,8 @@
     // #region Values
 
     const pickerMode = (LocationPickerMode.Named + LocationPickerMode.Address) as LocationPickerModeFlag;
+
+    const isAcademicCalendarMode = props.options.programConfigurationMode === ConfigurationMode.AcademicCalendar;
 
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");

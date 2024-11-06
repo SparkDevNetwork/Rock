@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
+          :class="visibleCssClass"
           :data="gridDataSource"
           keyField="idKey"
           :showMergeTemplate="false"
@@ -45,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { NumberColumn, TextColumn, DateColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -53,10 +54,25 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
     import { NavigationUrlKey } from "./LearningSemesterList/types.partial";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningSemesterListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
 
     // #region Values
 
@@ -110,7 +126,7 @@
      * Called when a semester row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-     async function onDeleteClick(key: string): Promise<void> {
+    async function onDeleteClick(key: string): Promise<void> {
         const result = await invokeBlockAction<string>("Delete", {
             key
         });

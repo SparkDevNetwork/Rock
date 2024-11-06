@@ -26,6 +26,15 @@
         </TextColumn>
 
         <TextColumn
+                    name="className"
+                    title="Class"
+                    field="className"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="md">
+        </TextColumn>
+
+        <TextColumn
                     v-if="config.options?.showCourseColumn"
                     name="code"
                     title="Code"
@@ -74,19 +83,6 @@
                     visiblePriority="sm">
         </TextColumn>
 
-        <Column name="category"
-                title="Category"
-                field="category"
-                :filter="pickExistingValueFilter"
-                width="15%"
-                visiblePriority="lg">
-            <template #format="{ row }">
-                <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
-                    {{ row.category }}
-                </span>
-            </template>
-        </Column>
-
         <Column name="students"
                 title="Students"
                 field="students"
@@ -94,6 +90,22 @@
                 width="10%"
                 visiblePriority="lg">
         </Column>
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       width="2%"
+                       visiblePriority="lg">
+        </BooleanColumn>
+
+        <BooleanColumn name="isPublic"
+                       title="Public"
+                       field="isPublic"
+                       :filter="booleanValueFilter"
+                       width="2%"
+                       visiblePriority="lg">
+        </BooleanColumn>
 
         <SecurityColumn />
 
@@ -104,7 +116,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, BooleanColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";

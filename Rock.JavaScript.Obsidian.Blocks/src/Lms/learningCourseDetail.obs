@@ -40,17 +40,21 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./LearningCourseDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
+
+    // This block uses the browser bus to notify other blocks that it's entering 'Add' mode.
+    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -226,5 +230,6 @@
     else if (!config.entity.idKey) {
         learningCourseEditBag.value.bag = config.entity;
         panelMode.value = DetailPanelMode.Add;
+        browserBus.publish(BlockMessages.BeginEdit);
     }
 </script>
