@@ -16,6 +16,8 @@
 
 using System;
 
+using Rock.Common.Mobile.Enums;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -52,6 +54,7 @@ namespace Rock.Plugin.HotFixes
             var courseListRouteGuid = "FA31BDF7-875A-4AAA-BD27-734FF10AF61A";
             var courseDetailRouteGuid = "6AC3D62C-488B-44C8-98AF-7D23B7B701DD";
             var courseWorkspaceRouteGuid = "E2EF9FAC-3E9B-4EC8-A21F-D01178416247";
+            var programListPageGuid = "84DBEC51-EE0B-41C2-94B3-F361C4B98879";
 
             var enrollmentBlockTypeGuid = "E80F9006-3C00-4F36-839E-7A0883F9E229";
             var enrollmentBlockGuid = "13557A75-5374-4965-B2F6-14DC04764057";
@@ -75,6 +78,13 @@ UPDATE [dbo].[Page] SET
     [PageTitle] = 'Course Description',
     [BrowserTitle] = 'Course Description'
 WHERE [Guid] = '{publicCourseDetailPageGuid}'
+" );
+
+            // Unhide both the public and internal root LMS pages.
+            Sql( $@"
+UPDATE [Page] SET
+    [DisplayInNavWhen] = {( int ) DisplayInNavWhen.WhenAllowed}
+WHERE [Guid] IN ('{publicLearnPageGuid}', '{programListPageGuid}');
 " );
 
             // Add the enrollment page, route, block and initial attributes/values.
