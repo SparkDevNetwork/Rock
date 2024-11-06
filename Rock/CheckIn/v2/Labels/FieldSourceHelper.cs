@@ -113,6 +113,10 @@ namespace Rock.CheckIn.v2.Labels
             {
                 return GetCheckoutLabelDataSources();
             }
+            else if ( labelType == LabelType.PersonLocation )
+            {
+                return GetPersonLocationLabelDataSources();
+            }
 
             return new List<FieldDataSource>();
         }
@@ -139,6 +143,10 @@ namespace Rock.CheckIn.v2.Labels
             else if ( labelType == LabelType.Checkout )
             {
                 return GetCheckoutLabelFilterSources();
+            }
+            else if ( labelType == LabelType.PersonLocation )
+            {
+                return GetPersonLocationLabelFilterSources();
             }
 
             return new List<FieldFilterSourceBag>();
@@ -433,7 +441,7 @@ namespace Rock.CheckIn.v2.Labels
         {
             var dataSources = new List<FieldDataSource>();
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "6b58e4d4-1cd7-4908-abe6-ba0ff070f95c",
                 Name = "Area Name",
@@ -442,7 +450,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Area?.Name
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "f69b47f6-40f0-4cf3-93f8-9a7f49c400e7",
                 Name = "Check-in Time",
@@ -452,7 +460,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.StartDateTime
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "d3f07ec5-4444-4d20-adc3-4f979e8a29cb",
                 Name = "Current Time",
@@ -462,7 +470,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "d7baf5ab-3b5a-4304-a29c-a3d3a8de4c6c",
                 Name = "Group Name",
@@ -471,7 +479,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Group?.Name
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "55c0d92b-792a-48b1-97d1-00048156043c",
                 Name = "Group Role Name",
@@ -485,7 +493,7 @@ namespace Rock.CheckIn.v2.Labels
                     ?? string.Empty
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "602af35f-2bbd-4147-ae2c-1123478a30ee",
                 Name = "Location Name",
@@ -494,7 +502,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Location?.Name
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "b6fd6684-187e-4bc3-a85c-b25d1367c914",
                 Name = "Schedule Name",
@@ -503,7 +511,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.Name
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "1e01aa11-7171-4124-bdaf-e316ca34390b",
                 Name = "Schedule Time",
@@ -512,7 +520,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInStartTime( source.Attendance.StartDateTime )
             } );
 
-            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "5bfa4351-3f18-4ec8-be29-18e4aa44323d",
                 Name = "Security Code",
@@ -906,6 +914,213 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             return filterSources;
+        }
+
+        #endregion
+
+        #region Person Location Label
+
+        /// <summary>
+        /// Gets all data sources for a <see cref="LabelType.PersonLocation"/> label.
+        /// </summary>
+        /// <returns>A list of data sources.</returns>
+        public static List<FieldDataSource> GetPersonLocationLabelDataSources()
+        {
+            return GetStandardPersonAttendeeInfoDataSources()
+                .Concat( GetPersonLocationLabelCheckInInfoDataSources() )
+                .DistinctBy( ds => ds.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the filter sources that will be used with <see cref="LabelType.PersonLocation"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="FieldFilterSourceBag"/> objects that represent the filtering options.</returns>
+        public static List<FieldFilterSourceBag> GetPersonLocationLabelFilterSources()
+        {
+            var filterSources = GetPersonFilterSources( nameof( PersonLocationLabelData.Person ) );
+
+            // Add in the IsFirstTime filter.
+            filterSources.Add( CreateBooleanPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.IsFirstTime ),
+                category: "Common" ) );
+
+            // Add in the Check-in Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.AreaNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.CheckInTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.CurrentTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.GroupNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.GroupRoleNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.Location.Name ),
+                path: nameof( PersonLocationLabelData.Location ),
+                title: "Location Name",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.ScheduleNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.SecurityCode ),
+                category: "Check-in Info" ) );
+
+            // Add in the Achievement Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.InProgressAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.InProgressAchievementIds ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.JustCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.JustCompletedAchievementIds ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLocationLabelData.PreviouslyCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( PersonLabelData.PreviouslyCompletedAchievementIds ),
+                category: "Achievement Info" ) );
+
+            return filterSources;
+        }
+
+        /// <summary>
+        /// Gets the check-in information data sources for a
+        /// <see cref="LabelType.PersonLocation"/> label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetPersonLocationLabelCheckInInfoDataSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "a11f9e72-95b0-41e2-ae07-41b99be70d27",
+                Name = "Area Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.AreaNames
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "b89cce4b-18af-432d-96c0-442e6125cc1f",
+                Name = "Check-in Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "83a48fc3-69b3-469d-ac94-704d29488a8e",
+                Name = "Current Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.CurrentTime
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "ee479f7e-5ccc-4bb7-8fa1-9a2e038184cb",
+                Name = "Group Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.GroupNames
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "c040f6f1-7bbd-4e6a-883c-6bbe46dfc548",
+                Name = "Group Role Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.GroupRoleNames
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "0e7e6ca7-44b1-4ef5-96c5-c27fbd9249da",
+                Name = "Location Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Location.Name
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "331038d5-c959-4a37-9978-10c2a3a851b1",
+                Name = "Schedule Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.ScheduleNames
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "dcb17979-f336-4204-87dd-b3ef49b8d94c",
+                Name = "Schedule Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "b66a29e1-d84c-4c4e-9c39-e22cf4cc9b9c",
+                Name = "Security Code",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.SecurityCode
+            } );
+
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "6fca79e1-5d42-4598-9ec4-bf9c0f727862",
+                Name = "Schedule Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Location.Name )
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            {
+                Key = "b9e605ed-1b8e-4fee-9c72-44e81dcde985",
+                Name = "Schedule Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
+            } );
+
+            return dataSources;
         }
 
         #endregion

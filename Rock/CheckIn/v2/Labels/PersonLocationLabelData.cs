@@ -27,87 +27,90 @@ namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
     /// <para>
-    /// Attendance labels are printed for every single attendance record.
+    /// A person location label is printed once per person and location.
     /// </para>
     /// <para>
-    /// Meaning if Noah is checked in to the Bunnies room at the 9am service
-    /// and also the Bunnies room at the 11am service, he will get two
-    /// attendance labels.
+    /// Meaning, if Jordan Greggs is checked into the Bears room at both the
+    /// 9:00am service and the 11:00am service, then only one person location
+    /// label will print.
+    /// </para>
+    /// <para>
+    /// If Jordan Greggs is checked into the Bears room and Billy Greggs is
+    /// also checked into the Bears room, then two labels will print.
     /// </para>
     /// </summary>
-    internal class AttendanceLabelData : ILabelDataHasPerson, ILabelDataHasAttendance
+    internal class PersonLocationLabelData : ILabelDataHasPerson
     {
         /// <inheritdoc/>
-        public AttendanceLabel Attendance { get; set; }
-
-        /// <inheritdoc/>
-        public Person Person => Attendance.Person;
+        public Person Person { get; }
 
         /// <summary>
         /// The location that represents the room this attendance label is being
         /// printed for.
         /// </summary>
-        public NamedLocationCache Location => Attendance.Location;
+        public NamedLocationCache Location { get; }
 
         /// <summary>
         /// The attendance records for the <see cref="Person"/> during this
-        /// check-in session. This includes the <see cref="Attendance"/> record.
+        /// check-in session.
         /// </summary>
-        public List<AttendanceLabel> PersonAttendance { get; set; }
+        public List<AttendanceLabel> PersonAttendance { get; }
 
         /// <summary>
-        /// All attendance records for this session, including those from
-        /// other people being checked in as well as those from
-        /// <see cref="PersonAttendance"/>.
+        /// The attendance records for the <see cref="Person"/> and location
+        /// during this check-in session.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; set; }
+        public List<AttendanceLabel> LocationAttendance { get; }
 
         /// <summary>
-        /// The family object that was determined via either kiosk search
-        /// or <see cref="Person.PrimaryFamily"/> if checking in a single
-        /// person by API call.
+        /// All attendance records for this session.
         /// </summary>
-        public Group Family { get; set; }
+        public List<AttendanceLabel> AllAttendance { get; }
 
         /// <summary>
-        /// The achievement type names that were completed by the person this
-        /// label is being printed for during this check-in session.
+        /// The achievement type names that were completed by any person during
+        /// this check-in session.
         /// </summary>
-        public List<string> JustCompletedAchievements { get; set; }
+        public List<string> JustCompletedAchievements { get; }
 
         /// <summary>
-        /// The achievement type identifiers that were completed by the person
-        /// this label is being printed for during this check-in session.
+        /// The achievement type identifiers that were completed by any person
+        /// during this check-in session.
         /// </summary>
-        public List<int> JustCompletedAchievementIds { get; set; }
+        public List<int> JustCompletedAchievementIds { get; }
 
         /// <summary>
         /// The achievement type names that are currently in progress for
         /// the person this label is being printed for during this check-in
         /// session.
         /// </summary>
-        public List<string> InProgressAchievements { get; set; }
+        public List<string> InProgressAchievements { get; }
 
         /// <summary>
         /// The achievement type identifiers that are currently in progress for
         /// the person this label is being printed for during this check-in
         /// session.
         /// </summary>
-        public List<int> InProgressAchievementIds { get; set; }
+        public List<int> InProgressAchievementIds { get; }
 
         /// <summary>
         /// The achievement type names that were previously completed for
         /// the person this label is being printed for during this check-in
         /// session.
         /// </summary>
-        public List<string> PreviouslyCompletedAchievements { get; set; }
+        public List<string> PreviouslyCompletedAchievements { get; }
 
         /// <summary>
         /// The achievement type identifiers that were previously completed for
         /// the person this label is being printed for during this check-in
         /// session.
         /// </summary>
-        public List<int> PreviouslyCompletedAchievementIds { get; set; }
+        public List<int> PreviouslyCompletedAchievementIds { get; }
+
+        /// <summary>
+        /// The names of the check-in areas that the person was checked into.
+        /// </summary>
+        public List<string> AreaNames { get; }
 
         /// <summary>
         /// The date and time this person was checked in for this label.
@@ -120,43 +123,73 @@ namespace Rock.CheckIn.v2.Labels
         public DateTime CurrentTime { get; }
 
         /// <summary>
+        /// The names of the check-in groups that the person was checked into.
+        /// </summary>
+        public List<string> GroupNames { get; }
+
+        /// <summary>
         /// The names of any group roles for any group membership records
-        /// the person has in the group they were checked into.
+        /// the person has in any groups they were checked into.
         /// </summary>
         public List<string> GroupRoleNames { get; }
+
+        /// <summary>
+        /// Indicates if this is the first time this person has attended
+        /// anything at the organization. Uses the <see cref="Attendance.IsFirstTime"/>
+        /// property of <see cref="PersonAttendance"/> to make the determination.
+        /// </summary>
+        public bool IsFirstTime { get; }
+
+        /// <summary>
+        /// The names of the schedules that any person was checked into.
+        /// </summary>
+        public List<string> ScheduleNames { get; }
+
+        /// <summary>
+        /// The security code for the person during this check-in session.
+        /// </summary>
+        public string SecurityCode { get; }
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceLabelData"/> class.
+        /// Initializes a new instance of the <see cref="FamilyLabelData"/> class.
         /// </summary>
-        /// <param name="attendance">The attendance data for the label that is being generated.</param>
-        /// <param name="family">The family group used during the check-in process.</param>
+        /// <param name="person">The person for whom the label data is being generated.</param>
+        /// <param name="location">The location the person was checked into.</param>
         /// <param name="allAttendance">The list of all attendance labels.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
-        public AttendanceLabelData( AttendanceLabel attendance, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        public PersonLocationLabelData( Person person, NamedLocationCache location, List<AttendanceLabel> allAttendance, RockContext rockContext )
         {
-            Attendance = attendance;
-            Family = family ?? attendance.Person?.PrimaryFamily;
+            Person = person;
+            Location = location;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance
-                .Where( a => a.Person != null && a.Person.Id == attendance.Person.Id )
+                .Where( a => a.Person != null && a.Person.Id == person.Id )
+                .ToList();
+            LocationAttendance = allAttendance
+                .Where( a => a.Person != null && a.Person.Id == person.Id
+                    && a.Location != null && a.Location.Id == location.Id )
                 .ToList();
 
-            CheckInTime = PersonAttendance.Count > 0
-                ? PersonAttendance.Min( a => a.StartDateTime )
+            AreaNames = LocationAttendance.Select( a => a.Area.Name ).ToList();
+            CheckInTime = AllAttendance.Count > 0
+                ? AllAttendance.Min( a => a.StartDateTime )
                 : RockDateTime.Now;
             CurrentTime = RockDateTime.Now;
-
+            GroupNames = LocationAttendance.Select( a => a.Group.Name ).ToList();
             GroupRoleNames = PersonAttendance
                 .SelectMany( a => a.GroupMembers )
                 .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
                 .Where( n => n != null )
                 .ToList();
+            IsFirstTime = PersonAttendance.Any( a => a.IsFirstTime );
+            ScheduleNames = LocationAttendance.Select( a => a.Schedule.Name ).ToList();
+            SecurityCode = PersonAttendance.Select( a => a.SecurityCode ).FirstOrDefault() ?? string.Empty;
 
             // Just completed achievements.
-            var justCompletedAchievements = PersonAttendance
+            var justCompletedAchievements = AllAttendance
                 .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeId ) )
                 .Distinct()
                 .Select( id => AchievementTypeCache.GetByIdKey( id, rockContext ) )
