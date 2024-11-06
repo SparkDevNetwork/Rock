@@ -55,10 +55,15 @@
             <div class="assessment-items-section">
                 <div class="assessment-items-title-bar">
                     <h4 class="assessment-items-header">Assessment Items</h4>
-
-                    <button aria-label="Add an assessment item" :disabled="disabled" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(0)">
-                        <i class="fa fa-plus" aria-hidden="true"></i> Add Item
-                    </button>
+                    <div class="add-assessment-item-button-container">
+                        <button
+                                aria-label="Add an assessment item"
+                                :disabled="disabled"
+                                class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                                @click.prevent="addAssessmentItem(0)">
+                            <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+                        </button>
+                    </div>
                 </div>
                 <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
                     <div class="well well-sm assessment-item-container" v-for="(item, index) in items">
@@ -89,7 +94,11 @@
                 </div>
 
                 <div class="configuration-footer-buttons">
-                    <button v-if="items.length > 0" aria-label="Add an assessment item" :disabled="disabled" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(items.length - 1)">
+                    <button v-if="items.length > 0"
+                            aria-label="Add an assessment item"
+                            :disabled="disabled"
+                            class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                            @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
@@ -169,7 +178,7 @@
                 </div>
             </div>
 
-            <div v-if="hasMultipleChoiceQuestions && hasIncorrectResponses">
+            <div v-if="hasMultipleChoiceQuestions && showMissedQuestionsOnResults && hasIncorrectResponses">
                 <div class="missed-questions-section">
                     <h4>Missed Questions</h4>
 
