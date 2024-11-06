@@ -1711,8 +1711,11 @@ export class CheckInSession {
                 }
                 else {
                     // Family check-in in auto-select mode saves everybody at
-                    // once. Perform a full save of the attendance.
-                    const newSessionFamily = await this.withSaveAttendance(false);
+                    // once. Perform a full save of the attendance. Also force
+                    // capacity checking since it is very easy to go over capacity
+                    // in this mode since we are sending up everything in one
+                    // go instead of one person at a time.
+                    const newSessionFamily = await this.withSaveAttendance(false, true);
 
                     return newSessionFamily.withScreen(Screen.Success);
                 }
