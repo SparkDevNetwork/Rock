@@ -37,6 +37,13 @@ namespace Rock.Model
             {
                 base.PreSave();
 
+                // Ensure the WasCompletedOnTime property stays current
+                // when changes are made to the DueDate of the Completion.
+                if ( Entity.IsStudentCompleted || Entity.IsFacilitatorCompleted )
+                {
+                    Entity.WasCompletedOnTime = Entity.DueDate >= RockDateTime.Now;
+                }
+
                 LogChanges();
             }
 

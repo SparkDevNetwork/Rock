@@ -298,7 +298,7 @@ namespace Rock.Blocks.Lms
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
             var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
-            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, semesterDates.Start, semesterDates.End, publicOnly );
+            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, publicOnly, semesterDates.Start, semesterDates.End );
         }
 
         #endregion
