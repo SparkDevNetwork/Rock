@@ -308,6 +308,15 @@ namespace Rock.CheckIn.v2
                 .ThenBy( gtl => gtl.CheckInLabel.Id )
                 .ToList();
 
+            // Get all the labels that will be printed for each person and
+            // location combination.
+            var personLocationLabelsToPrint = groupTypeLabels
+                .Where( gtl => gtl.CheckInLabel.LabelType == LabelType.PersonLocation )
+                .DistinctBy( gtl => gtl.CheckInLabel.Id )
+                .OrderBy( gtl => gtl.Order )
+                .ThenBy( gtl => gtl.CheckInLabel.Id )
+                .ToList();
+
             // Get all the labels that will be printed for each attendance.
             // We don't distinct because we are allowed to print the same
             // label multiple times.
@@ -318,7 +327,7 @@ namespace Rock.CheckIn.v2
                 .ToList();
 
             var labels = new List<RenderedLabel>();
-            var attendanceLabelsByPerson = attendanceLabels.GroupBy( a => a.Person.Id );
+            var personIds = attendanceLabels.Select( a => a.Person.Id ).Distinct();
 
             // Print all family labels first.
             labels.AddRange( RenderLabels( familyLabelsToPrint,
@@ -328,21 +337,39 @@ namespace Rock.CheckIn.v2
                 sessionFamily ) );
 
             // Now print person and attendance labels, grouped by person.
-            foreach ( var labelsByPerson in attendanceLabelsByPerson )
+            foreach ( var personId in personIds )
             {
+                var attendanceLabelsForPerson = attendanceLabels.Where( a => a.Person.Id == personId ).ToList();
+
                 // Print labels that get printed once per person.
                 labels.AddRange( RenderLabels( personLabelsToPrint,
-                    labelsByPerson,
+                    attendanceLabelsForPerson,
                     attendanceLabels,
                     kiosk,
                     sessionFamily ) );
 
+                // Print labels that get printed once per location for the
+                // person.
+                var attendanceLabelsByLocations = attendanceLabelsForPerson
+                    .GroupBy( a => a.Location.Id );
+                foreach ( var attendanceLabelsByLocation in attendanceLabelsByLocations )
+                {
+                    labels.AddRange( RenderLabels( personLocationLabelsToPrint,
+                        attendanceLabelsByLocation,
+                        attendanceLabels,
+                        kiosk,
+                        sessionFamily ) );
+                }
+
                 // Print labels that get printed for every attendance record.
-                labels.AddRange( RenderLabels( attendanceLabelsToPrint,
-                    labelsByPerson,
-                    attendanceLabels,
-                    kiosk,
-                    sessionFamily ) );
+                foreach ( var personLabel in attendanceLabelsForPerson )
+                {
+                    labels.AddRange( RenderLabels( attendanceLabelsToPrint,
+                        new List<AttendanceLabel> { personLabel },
+                        attendanceLabels,
+                        kiosk,
+                        sessionFamily ) );
+                }
             }
 
             return labels;
@@ -675,6 +702,10 @@ namespace Rock.CheckIn.v2
             else if ( labelType == LabelType.Checkout )
             {
                 return new CheckoutLabelData( attendance, family, RockContext );
+            }
+            else if ( labelType == LabelType.PersonLocation )
+            {
+                return new PersonLocationLabelData( attendance.Person, attendance.Location, allAttendance, RockContext );
             }
 
             return null;

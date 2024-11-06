@@ -228,6 +228,20 @@ namespace Rock.Blocks.CheckIn.Configuration
                     currentPerson.PrimaryFamily,
                     rockContext );
             }
+            else if ( labelType == LabelType.PersonLocation )
+            {
+                var locationId = new LocationService( rockContext )
+                    .Queryable()
+                    .Where( l => !string.IsNullOrEmpty( l.Name ) && l.IsActive )
+                    .OrderBy( l => l.Id )
+                    .Select( l => l.Id )
+                    .FirstOrDefault();
+
+                return new PersonLocationLabelData( currentPerson,
+                    NamedLocationCache.Get( locationId ),
+                    new List<AttendanceLabel>(),
+                    rockContext );
+            }
             else
             {
                 return null;

@@ -111,6 +111,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 options.CheckoutLabelFilterSources = FieldSourceHelper.GetCheckoutLabelFilterSources();
                 options.FamilyLabelFilterSources = FieldSourceHelper.GetFamilyLabelFilterSources();
                 options.PersonLabelFilterSources = FieldSourceHelper.GetPersonLabelFilterSources();
+                options.PersonLocationLabelFilterSources = FieldSourceHelper.GetPersonLocationLabelFilterSources();
             }
 
             return options;
