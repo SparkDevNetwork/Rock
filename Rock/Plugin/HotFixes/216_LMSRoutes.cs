@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -79,7 +81,16 @@ WHERE [Guid] = '{publicCourseDetailPageGuid}'
             RockMigrationHelper.AddPage( publicCourseDetailPageGuid, SystemGuid.Layout.FULL_WIDTH, "Enroll", "", enrollPageGuid, "", "" );
 
             RockMigrationHelper.AddOrUpdatePageRoute( enrollPageGuid , "learn/{LearningProgramId}/courses/{LearningCourseId}/enroll/{LearningClassId}", enrollPageRouteGuid );
-            
+
+            RockMigrationHelper.AddSecurityAuthForPage(
+                enrollPageGuid,
+                0,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUnAuthenticatedUsers,
+                Guid.NewGuid().ToString() );
+
             // Add the linked page attributes for the enroll block.
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Lms.PublicLearningClassEnrollment
