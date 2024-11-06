@@ -631,9 +631,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChangeAccounts_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var financialScheduledTransaction = GetTransaction( rockContext );
-            ShowAccountEdit( financialScheduledTransaction );
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = false;
+                var financialScheduledTransaction = GetTransaction( rockContext );
+                ShowAccountEdit( financialScheduledTransaction );
+            }
         }
 
         /// <summary>
@@ -750,7 +753,6 @@ namespace RockWeb.Blocks.Finance
                     .Include( a => a.ScheduledTransactionDetails )
                     .Include( a => a.AuthorizedPersonAlias.Person )
                     .Include( a => a.FinancialGateway )
-                    .AsNoTracking()
                     .FirstOrDefault( t => t.Guid == scheduledTransactionGuid.Value );
             }
 
