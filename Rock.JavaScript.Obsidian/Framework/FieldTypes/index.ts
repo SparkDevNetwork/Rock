@@ -227,7 +227,7 @@ registerFieldType(FieldTypeGuids.EventItem, new EventItemFieldType());
 import { FinancialAccountFieldType  } from "./financialAccountField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
 
-import { FinancialAccountsFieldType  } from "./financialAccountsField.partial";
+import { FinancialAccountsFieldType } from "./financialAccountsField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldType());
 
 import { FinancialGatewayFieldType  } from "./financialGatewayField.partial";
@@ -304,6 +304,9 @@ registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
 import { MatrixFieldType } from "./matrixField.partial";
 registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
+
+import { MediaElementFieldType } from "./mediaElementField.partial";
+registerFieldType(FieldTypeGuids.MediaElement, new MediaElementFieldType());
 
 import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
 registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
