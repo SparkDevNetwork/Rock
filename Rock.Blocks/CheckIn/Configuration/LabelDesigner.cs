@@ -101,6 +101,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             return new LabelDesignerOptionsBag
             {
                 IdKey = label.IdKey,
+                IsSystem = label.IsSystem,
                 Label = GetLabelDetailBag( label ),
                 LabelName = label.Name,
                 LabelType = label.LabelType,
@@ -274,6 +275,11 @@ namespace Rock.Blocks.CheckIn.Configuration
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+            }
+
+            if ( checkInLabel.IsSystem )
+            {
+                return ActionBadRequest( "Not allowed to edit system labels." );
             }
 
             if ( label == null || label.LabelData == null )
