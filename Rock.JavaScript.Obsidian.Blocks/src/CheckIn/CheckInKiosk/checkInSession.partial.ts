@@ -1284,10 +1284,19 @@ export class CheckInSession {
             return filteredLocations;
         }
 
+        const alreadyFilledLocations = filteredLocations
+            .filter(l => !l.capacity || l.currentCount < l.capacity)
+            .filter(l => this.attendances.some(a => a.attendance?.group?.id === group.id && a.attendance?.location?.id === l.id));
+
         // If we have more than 1 location and our strategy is either Balance
         // or FillInOrder then we need to return a single location so that it
         // is pre-selected. This is only supported in family mode.
         if (area.locationSelectionStrategy === LocationSelectionStrategy.Balance) {
+            // Try to use the same location as somebody else in the session.
+            if (alreadyFilledLocations.length > 0) {
+                return [alreadyFilledLocations[0]];
+            }
+
             // Sort the list in ascending order by current count so the location
             // with the fewest people is the one returned.
             filteredLocations.sort((a, b) => a.currentCount - b.currentCount);
@@ -1295,6 +1304,11 @@ export class CheckInSession {
             return [filteredLocations[0]];
         }
         else if (area.locationSelectionStrategy === LocationSelectionStrategy.FillInOrder) {
+            // Try to use the same location as somebody else in the session.
+            if (alreadyFilledLocations.length > 0) {
+                return [alreadyFilledLocations[0]];
+            }
+
             // Sort the list so that it matches the order of the group
             // location identifiers. This will then filter out any that are over
             // capacity.
