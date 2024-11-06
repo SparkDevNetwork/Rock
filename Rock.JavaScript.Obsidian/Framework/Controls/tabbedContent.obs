@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <TabbedBar v-model="selectedTab" :tabs="tabs" />
+        <TabbedBar v-model="selectedTab" :tabs="tabs" :class="tabBarClass" />
 
         <div class="tab-content mt-4">
             <div v-for="(item, i) in tabs" :key="i" :class="classes[i]">
-                <slot v-if="!isLazyLoad || tabHasBeenViewed[i]" name="tabpane" :item="item" />
+                <slot v-if="!isLazyLoad || tabHasBeenViewed[i]" name="tabpane" :item="item" :selectedTab="selectedTab" />
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
     const props = defineProps({
         /** Whether to load tabs lazily or not. Defaults to false. */
         lazyLoad: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
 
@@ -36,8 +36,14 @@
 
         /** The key for the selected tab to be tracked in the Query String. */
         selectedTabQueryParameterKey: {
-            type: String as PropType<string>,
+            type: String,
             required: false
+        },
+
+        /** CSS class(es) to apply to the tab bar. */
+        tabBarClass: {
+            type: [String, Object, Array] as PropType<string | string[] | Record<string, boolean>>,
+            default: ""
         }
     });
 
@@ -69,7 +75,7 @@
     /** Updates the current URL with the value of the selected tab for the specified query string parameter (if specified). */
     function updateUrlWithSelectedTab(): void {
         // If the control's not configured with a query string parameter don't do anything.
-        if (!shouldManageQueryString.value){
+        if (!shouldManageQueryString.value) {
             return;
         }
 
@@ -120,14 +126,14 @@
     });
 
     onMounted(() => {
-        if (shouldManageQueryString){
+        if (shouldManageQueryString) {
             // Listen for the browser back button click and update the selected tab.
             window.addEventListener("popstate", handleBackButton);
         }
     });
 
     onUnmounted(() => {
-        if (shouldManageQueryString){
+        if (shouldManageQueryString) {
             // Remove the listener.
             window.removeEventListener("popstate", handleBackButton);
         }
