@@ -910,9 +910,9 @@ namespace Rock.Blocks.Lms
                 .AddField( "assignTo", a => a.AssignTo )
                 .AddField( "type", a => a.ActivityComponentId )
                 .AddField( "dates", a => a.DatesDescription )
-                .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated <= now )
+                .AddField( "isPastDue", a => a.IsPastDue )
                 .AddField( "count", a => a.LearningActivityCompletions.Count() )
-                .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted ) )
+                .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted || c.IsFacilitatorCompleted ) )
                 .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.IconCssClass )
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.Name )
@@ -1126,10 +1126,12 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// 
+        /// Updates the active LearningClasses for the <see cref="LearningProgram"/>
+        /// so that they use the <see cref="LearningGradingSystem"/>
+        /// specified by the <paramref name="newGradingSystemGuid"/>.
         /// </summary>
         /// <param name="newGradingSystemGuid">The Guid of the <see cref="LearningGradingSystem"/> to use for all active classes.</param>
-        /// <returns>An Ok response with status message or </returns>
+        /// <returns>An Ok response with status message.</returns>
         [BlockAction]
         public BlockActionResult UpdateActiveClassGradingSystems( Guid newGradingSystemGuid )
         {

@@ -318,6 +318,11 @@
     justify-content: end;
 }
 
+.check-in-page .saved-configuration-button .subtitle {
+    flex-grow: 1;
+    text-align: left;
+}
+
 /*
  * Welcome Screen
  */

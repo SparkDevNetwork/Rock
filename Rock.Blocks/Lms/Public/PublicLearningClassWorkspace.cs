@@ -242,7 +242,16 @@ namespace Rock.Blocks.Lms
             var bags = learningParticipantService
                 .GetParticipantBags( classId, false, currentPerson.Id );
 
-            var currentPersonParticipantBag = bags.FirstOrDefault();
+            // Defer the current person participant bag to the student one (if multiple present).
+            // If they are also a facilitator we'll want to use the studentId for getting activities.
+            var currentPersonParticipantBag = bags.OrderBy( p => p.IsFacilitator ).FirstOrDefault();
+
+            if (bags.Any( p => p.IsFacilitator ) )
+            {
+                // If the current person is a facilitator ensure
+                // they have the access necessary for the instructor portal.
+                currentPersonParticipantBag.IsFacilitator = true;
+            }
 
             var scales = new LearningClassService( RockContext )
                 .GetClassScales( classId )
@@ -255,8 +264,6 @@ namespace Rock.Blocks.Lms
 
             var activities = learningParticipantService
                 .GetStudentLearningPlan( classId, currentPerson.Id );
-
-            var participantId = IdHasher.Instance.GetId( currentPersonParticipantBag.IdKey ).ToIntSafe();
 
             // Get the necessary properties for all the binary files at once.
             var binaryFileIds = activities.Where( a => a.BinaryFileId.HasValue && a.BinaryFileId > 0 ).Select( a => a.BinaryFileId.Value ).ToList();
@@ -331,7 +338,13 @@ namespace Rock.Blocks.Lms
                 var isPreviousMethodCalculation = activityBag.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted;
                 var isPreviousActivityCompleted = previousActivityCompletion == null || previousActivityCompletion.IsStudentCompleted | previousActivityCompletion.IsFacilitatorCompleted;
 
+                // If the student has already completed it (and the available date was later changed)
+                // or it's always available
+                // or it's available date is passed.
+                // or the previous activity is completed AND
+                //    this activity is configured to become available after the previous activity is completed.
                 var isActivityAvailable =
+                    activity.IsStudentCompleted ||
                     activityBag.AvailabilityCriteria == AvailabilityCriteria.AlwaysAvailable ||
                     ( activityBag.AvailableDateCalculated.HasValue && activityBag.AvailableDateCalculated.Value <= DateTime.Now ) ||
                     ( isPreviousMethodCalculation && isPreviousActivityCompleted );
@@ -361,6 +374,7 @@ namespace Rock.Blocks.Lms
                     IsAvailable = isActivityAvailable,
                     IsGradePassing = activity.LearningActivity.Points == 0 || hasPassingGrade,
                     IsFacilitatorCompleted = activity.IsFacilitatorCompleted,
+                    IsLate = activity.IsLate,
                     IsStudentCompleted = activity.IsStudentCompleted,
                     LearningActivityIdKey = activity.LearningActivity.IdKey,
                     PointsEarned = activity.PointsEarned,
@@ -532,9 +546,9 @@ namespace Rock.Blocks.Lms
                 .Where( a => ( a.IsAvailable && !a.IsStudentCompleted ) )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = a.IsDueSoon ? $"Due on {a.DueDate.ToShortDateString()}" : $"Available on {a.AvailableDate.ToShortDateString()}",
-                    LabelText = a.IsDueSoon ? "Due Soon" : "Available",
-                    LabelType = a.IsDueSoon ? "warning" : "default",
+                    Content = a.IsDueSoon || a.IsLate ? $"Due on {a.DueDate.ToShortDateString()}" : $"Available on {a.AvailableDate.ToShortDateString()}",
+                    LabelText = a.IsDueSoon ? "Due Soon" : a.IsLate ? "Due" : "Available",
+                    LabelType = a.IsDueSoon || a.IsLate ? "warning" : "default",
                     NotificationDateTime = a.DueDate ?? DateTime.MaxValue,
                     Title = a.ActivityBag.Name
                 } )
@@ -588,20 +602,36 @@ namespace Rock.Blocks.Lms
             var completionId = IdHasher.Instance.GetId( activityCompletionBag.IdKey ).ToIntSafe();
             var activityId = IdHasher.Instance.GetId( activityCompletionBag.LearningActivityIdKey ).ToIntSafe();
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
-            var currentPersonId = GetCurrentPerson().Id;
+            var currentPerson = GetCurrentPerson();
+
+            if ( currentPerson == null )
+            {
+                // Shouldn't be possible.
+                return ActionBadRequest( $"You must be logged in to complete activities." );
+            }
 
             var activityCompletionService = new LearningActivityCompletionService( RockContext );
             var participantService = new LearningParticipantService( RockContext );
 
             var isNew = completionId == 0;
+            var isStudent = participantService.Queryable()
+                .Any( p =>
+                    p.PersonId == currentPerson.Id
+                    && p.LearningClassId == classId
+                    && !p.GroupRole.IsLeader );
+
+            if ( !isStudent )
+            {
+                return ActionBadRequest( $"Only active students may complete activities." );
+            }
 
             // Verify that the current person is the student for this activity completion.
             var activity = isNew ?
-                participantService.GetStudentActivity( classId, currentPersonId, activityId ) :
+                participantService.GetStudentActivity( classId, currentPerson.Id, activityId ) :
                 activityCompletionService.Queryable()
                 .Include( a => a.LearningActivity )
                 .Include( a => a.Student )
-                .FirstOrDefault( a => a.Id == completionId && a.Student.PersonId == currentPersonId );
+                .FirstOrDefault( a => a.Id == completionId && a.Student.PersonId == currentPerson.Id );
 
             if ( activity == null )
             {

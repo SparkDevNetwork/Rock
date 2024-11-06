@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassList;
 using Rock.Web.Cache;
@@ -296,10 +297,14 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult HasStudentCompletions( string key )
         {
-            var entityService = new LearningClassService( RockContext );
-            var hasCompletions = entityService.GetSelect( key, c => c.LearningActivities.Any(), !PageCache.Layout.Site.DisablePredictableIds );
+            var classId = IdHasher.Instance.GetId( key );
+            var hasCompletions = new LearningParticipantService( RockContext )
+                .Queryable()
+                .Any( p =>
+                    p.LearningClassId == classId
+                    && p.LearningActivities.Any() );
 
-            return ActionOk(hasCompletions);
+            return ActionOk( hasCompletions );
         }
 
         #endregion

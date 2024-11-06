@@ -188,7 +188,20 @@
 
         // If there are student completions - ensure the individual
         // is aware that the delete will remove completed activities.
-        if (await getHasStudentCompletions(key)) {
+        let hasCompletions = true;
+        const hasCompletionsResult = await invokeBlockAction<string>("HasStudentCompletions", {
+            key
+        });
+
+        if (hasCompletionsResult.isSuccess) {
+            hasCompletions = asBoolean(hasCompletionsResult.data);
+        }
+        else {
+            await alert(hasCompletionsResult.errorMessage ?? "Unknown error while trying to check learning class student completions.");
+            return;
+        }
+
+        if (hasCompletions) {
             const confirmationMessage = courseName.length > 0 ?
                 `The ${courseName} class has students with completed activities. Are you sure you want to delete this class and all its related information?` :
                 "The class has students with completed activities. Are you sure you want to delete this class and all its related information?";
@@ -214,23 +227,8 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the class.");
         }
-    }
-
-    async function getHasStudentCompletions(key: string): Promise<boolean> {
-        const result = await invokeBlockAction<string>("HasStudentCompletions", {
-            key
-        });
-
-        if (result.isSuccess && result.data) {
-            return asBoolean(result.data);
-        }
-        else {
-            await alert(result.errorMessage ?? "Unknown error while trying to check learning class student completions.");
-        }
-
-        return false;
     }
 
     /**

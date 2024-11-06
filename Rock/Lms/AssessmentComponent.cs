@@ -135,7 +135,7 @@ namespace Rock.Lms
         /// <returns><c>true</c> if the completion's configuration has short answer items; otherwise <c>false</c>.</returns>
         public override bool RequiresGrading( LearningActivityCompletion completion )
         {
-            if ( completion.Id == 0 || completion.GradedByPersonAliasId.HasValue )
+            if ( completion.GradedByPersonAliasId.HasValue )
             {
                 return false;
             }

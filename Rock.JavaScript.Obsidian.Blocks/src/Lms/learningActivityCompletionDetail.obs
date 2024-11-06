@@ -209,7 +209,7 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "string") {
+            if (typeof result.data === "string") {
                 return result.data;
             }
         }

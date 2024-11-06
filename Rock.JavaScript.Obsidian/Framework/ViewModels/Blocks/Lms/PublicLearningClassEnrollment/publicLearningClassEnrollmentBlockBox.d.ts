@@ -21,25 +21,28 @@
 // </copyright>
 //
 
-import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
+export type PublicLearningClassEnrollmentBlockBox = {
+    /** Gets or sets the HTML to be rendered for the completion content. */
+    completionHtml?: string | null;
 
-/** A representation of a saved check-in configuration on the server. */
-export type SavedCheckInConfigurationBag = {
+    /** Gets or sets the HTML to be rendered for the confirmation content. */
+    confirmationHtml?: string | null;
+
+    /** Gets or sets the HTML to be rendered for the enrollment error content. */
+    enrollmentErrorHtml?: string | null;
+
+    /** Gets or sets the HTML to be rendered for the header content. */
+    headerHtml?: string | null;
+
     /**
-     * Gets or sets the campus identifiers that this saved configuration
-     * can be used with.
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
      */
-    campuses?: string[] | null;
+    errorMessage?: string | null;
 
-    /** Gets or sets the text that describes this saved configuration. */
-    description?: string | null;
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
 
-    /** Gets or sets the identifier of the configuration. */
-    id?: string | null;
-
-    /** Gets or sets the name of this saved configuration. */
-    name?: string | null;
-
-    /** Gets or sets the settings for this saved configuration. */
-    settings?: SavedCheckInConfigurationSettingsBag | null;
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

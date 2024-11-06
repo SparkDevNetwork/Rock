@@ -91,9 +91,6 @@ export type LearningActivityCompletionBag = {
     /** Indicates whether or not the activity was completed late or is late (if incomplete). */
     isLate: boolean;
 
-    /** Indicates whether or not the related activity instance for the student is currently past due. */
-    isPastDue: boolean;
-
     /** Indicates whether or not student commenting is enabled for this activity. */
     isStudentCommentingEnabled: boolean;
 
