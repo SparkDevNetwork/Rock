@@ -177,6 +177,48 @@ WHERE [Guid] IN ('{publicLearnPageGuid}', '{programListPageGuid}');
             /*   Attribute Value: 61be63c7-6611-4235-a6f2-b22456620f35,e2ef9fac-3e9b-4ec8-a21f-d01178416247 */
             RockMigrationHelper.AddBlockAttributeValue( "E921788F-38EA-48F2-B80A-9B7181AB70A5", "96644CEF-4FC7-4986-B591-D6675AA38C2C", $@"{enrollPageGuid},{enrollPageRouteGuid}" );
 
+            var programCoursesPageMenuBlockGuid = "B3C55400-76E9-42D9-9ECA-842FBFC7C123";
+            var coursePageMenuTemplate = @"
+{% comment %}
+   Only show the Page Menu when the program is not an On-Demand ConfigurationMode.
+{% endcomment %}
+
+{% assign programId = PageParameter[""LearningProgramId""] | FromIdHash %}
+
+{% if programId > 0 %}
+    {% sql %}
+        SELECT 1
+        FROM [LearningProgram] 
+        WHERE [Id] = '{{ programId }}'
+            AND [ConfigurationMode] <> 1 -- On-Demand
+    {% endsql %}
+    
+    {% for item in results %}
+        <div class=""mb-3"">
+            {% include '~~/Assets/Lava/PageListAsTabs.lava' %}
+        </div>
+    {% endfor %}
+{% endif %}
+";
+
+            // Add Block Attribute Value
+            //   Block: Page Menu
+            //   BlockType: Page Menu
+            //   Category: CMS
+            //   Block Location: Page=Courses, Site=Rock RMS
+            //   Attribute: Template
+            /*   Attribute Value: [see coursePageMenuTemplate variable] */
+            RockMigrationHelper.AddBlockAttributeValue( programCoursesPageMenuBlockGuid, "1322186A-862A-4CF1-B349-28ECB67229BA", coursePageMenuTemplate );
+
+            // Add Block Attribute Value
+            //   Block: Page Menu
+            //   BlockType: Page Menu
+            //   Category: CMS
+            //   Block Location: Page=Courses, Site=Rock RMS
+            //   Attribute: EnabledLavaCommands
+            /*   Attribute Value: 'Sql '*/
+            RockMigrationHelper.AddBlockAttributeValue( programCoursesPageMenuBlockGuid, "EF10B2F9-93E5-426F-8D43-8C020224670F", "Sql" );
+
             Sql( $@"
 -- Update LMS internal page routes to use people/learn/ instead of learning/
 UPDATE pr SET
