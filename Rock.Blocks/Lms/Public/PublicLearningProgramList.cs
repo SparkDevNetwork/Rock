@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Lms.PublicLearningProgramList;
 using Rock.Web.UI.Controls;
@@ -37,15 +36,39 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+
+    [TextField( "Page Title",
+        Description = "Provide a clear, welcoming title for the Learning Hub homepage. Example: 'Grow Together in Faith.'",
+        IsRequired = true,
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.PageTitle,
+        DefaultValue = AttributeDefault.PageTitle )]
+
+    [TextField( "Page Description",
+        Description = "Enter a brief description for the homepage to introduce users to the LMS. Example: 'Explore resources to deepen your faith and connect with our community.'",
+        IsRequired = false,
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.PageDescription,
+        DefaultValue = AttributeDefault.PageDescription )]
+
+    [FileField(
+        SystemGuid.BinaryFiletype.DEFAULT,
+        "Banner Image",
+        Description = "Add a welcoming banner image to visually enhance the homepage. Ideal size: 1200x400 pixels; use high-quality images.",
+        Key = AttributeKey.BannerImage,
+        DefaultValue = AttributeDefault.BannerImage )]
+
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
-        Description = "The lava template to use to render the page. Merge fields include: Programs, ShowCompletionStatus, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The lava template to use to render the page. Merge fields include: Programs, ShowCompletionStatus, BannerImageGuid, PageTitle, PageDescription, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = AttributeDefault.ProgramListTemplate,
-        Order = 1 )]
+        Order = 4 )]
 
     [LinkedPage( "Detail Page",
         Description = "Page to link to when the individual would like more details.",
@@ -86,8 +109,11 @@ namespace Rock.Blocks.Lms
 
         private static class AttributeKey
         {
+            public const string BannerImage = "BannerImage";
             public const string DetailPage = "DetailPage";
             public const string LavaTemplate = "LavaTemplate";
+            public const string PageDescription = "PageDescription";
+            public const string PageTitle = "PageTitle";
             public const string ProgramCategories = "ProgramCategories";
             public const string PublicOnly = "PublicOnly";
             public const string ShowCompletionStatus = "ShowCompletionStatus";
@@ -95,6 +121,9 @@ namespace Rock.Blocks.Lms
 
         private static class AttributeDefault
         {
+            public const string BannerImage = "C1142570-8CD6-4A20-83B1-ACB47C1CD377";
+            public const string PageDescription = "Explore courses and trainings designed to deepen your faith, help you grow in spiritual knowledge, and prepare you for serving and volunteering.";
+            public const string PageTitle = "Learning Hub";
             public const string ProgramListTemplate = @"
 //- Styles
 {% stylesheet %}
@@ -255,7 +284,10 @@ namespace Rock.Blocks.Lms
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Programs", programs );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
-
+            mergeFields.Add( "BannerImageGuid", GetAttributeValue( AttributeKey.BannerImage ) );
+            mergeFields.Add( "PageDescription", GetAttributeValue( AttributeKey.PageDescription) );
+            mergeFields.Add( "PageTitle", GetAttributeValue( AttributeKey.PageTitle ) );
+            
             var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
         }

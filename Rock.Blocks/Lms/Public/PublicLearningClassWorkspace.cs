@@ -433,7 +433,19 @@ namespace Rock.Blocks.Lms
 
             if ( classId == 0 )
             {
-                box.ErrorMessage = $"The Class was not found.";
+                box.ErrorMessage = $"The {LearningClass.FriendlyTypeName} was not found.";
+                return box;
+            }
+
+            // Get the student and current persons bags.
+            var currentPerson = GetCurrentPerson();
+
+            var participantService = new LearningParticipantService( RockContext );
+            var currentPersonIsStudent = participantService.GetStudents( classId ).Any( s => s.PersonId == currentPerson.Id );
+
+            if ( !currentPersonIsStudent )
+            {
+                box.ErrorMessage = $"You must be enrolled to view the class workspace.";
                 return box;
             }
 
@@ -460,11 +472,6 @@ namespace Rock.Blocks.Lms
                 .ToList();
 
             box.NavigationUrls = GetBoxNavigationUrls();
-
-            // Get the student and current persons bags.
-            var currentPerson = GetCurrentPerson();
-
-            var participantService = new LearningParticipantService( RockContext );
 
             box.Activities = GetStudentActivities( currentPerson, classId );
             box.Facilitators = participantService.GetFacilitatorBags( classId )
