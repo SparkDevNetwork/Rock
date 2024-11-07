@@ -196,31 +196,31 @@ namespace Rock.Blocks.CheckIn.Configuration
             if ( labelType == LabelType.Family )
             {
                 return new FamilyLabelData( currentPerson.PrimaryFamily,
-                    new List<AttendanceLabel>(),
+                    new List<LabelAttendanceDetail>(),
                     rockContext );
             }
             else if ( labelType == LabelType.Person )
             {
                 return new PersonLabelData( currentPerson,
                     currentPerson.PrimaryFamily,
-                    new List<AttendanceLabel>(),
+                    new List<LabelAttendanceDetail>(),
                     rockContext );
             }
             else if ( labelType == LabelType.Attendance )
             {
-                var attendance = new AttendanceLabel
+                var attendance = new LabelAttendanceDetail
                 {
                     Person = currentPerson
                 };
 
                 return new AttendanceLabelData( attendance,
                     currentPerson.PrimaryFamily,
-                    new List<AttendanceLabel>(),
+                    new List<LabelAttendanceDetail>(),
                     rockContext );
             }
             else if ( labelType == LabelType.Checkout )
             {
-                var attendance = new AttendanceLabel
+                var attendance = new LabelAttendanceDetail
                 {
                     Person = currentPerson
                 };
@@ -240,7 +240,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
                 return new PersonLocationLabelData( currentPerson,
                     NamedLocationCache.Get( locationId ),
-                    new List<AttendanceLabel>(),
+                    new List<LabelAttendanceDetail>(),
                     rockContext );
             }
             else
@@ -419,13 +419,13 @@ namespace Rock.Blocks.CheckIn.Configuration
                     return ActionBadRequest( "Attendance record was not found." );
                 }
 
-                var attendanceLabel = new AttendanceLabel( attendance, RockContext );
+                var attendanceLabel = new LabelAttendanceDetail( attendance, RockContext );
                 var director = new CheckInDirector( RockContext );
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 var data = director.LabelProvider.RenderLabelUnconditionally( checkInLabel,
                     attendanceLabel,
-                    new List<AttendanceLabel> { attendanceLabel },
+                    new List<LabelAttendanceDetail> { attendanceLabel },
                     attendance.SearchResultGroup,
                     null );
                 sw.Stop();

@@ -27,6 +27,6 @@ namespace Rock.CheckIn.v2.Labels
         /// The data that describes the attendance record this label is being
         /// printed for.
         /// </summary>
-        AttendanceLabel Attendance { get; }
+        LabelAttendanceDetail Attendance { get; }
     }
 }

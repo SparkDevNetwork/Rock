@@ -29,7 +29,7 @@ namespace Rock.CheckIn.v2.Labels
     /// Details about a single attendance record that will be made available
     /// during printing of check-in labels.
     /// </summary>
-    internal class AttendanceLabel
+    internal class LabelAttendanceDetail
     {
         /// <summary>
         /// The person this attendance record is for.
@@ -106,27 +106,27 @@ namespace Rock.CheckIn.v2.Labels
         /// Creates a new, empty, instance of the AttendanceLabel. This would
         /// primarily be used by unit tests.
         /// </summary>
-        internal AttendanceLabel()
+        internal LabelAttendanceDetail()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceLabel"/> class.
+        /// Initializes a new instance of the <see cref="LabelAttendanceDetail"/> class.
         /// </summary>
         /// <param name="attendance">The attendance object to initialize from.</param>
         /// <param name="rockContext">The RockContext for database operations.</param>
-        public AttendanceLabel( Attendance attendance, RockContext rockContext )
+        public LabelAttendanceDetail( Attendance attendance, RockContext rockContext )
             : this( attendance, null, rockContext )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceLabel"/> class.
+        /// Initializes a new instance of the <see cref="LabelAttendanceDetail"/> class.
         /// </summary>
         /// <param name="attendance">The attendance object to initialize from.</param>
         /// <param name="attendanceBag">The optional recorded attendance object that provides additional attendance details.</param>
         /// <param name="rockContext">The RockContext for database operations.</param>
-        public AttendanceLabel( Attendance attendance, RecordedAttendanceBag attendanceBag, RockContext rockContext )
+        public LabelAttendanceDetail( Attendance attendance, RecordedAttendanceBag attendanceBag, RockContext rockContext )
         {
             if ( attendance == null )
             {
