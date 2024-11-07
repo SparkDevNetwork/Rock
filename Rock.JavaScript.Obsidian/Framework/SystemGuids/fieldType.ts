@@ -183,6 +183,8 @@ export const FieldType = {
     GroupLocationType: "48624B0B-6A58-45B8-9E47-B67B67898D25",
     /** Group Member field type */
     GroupMember: "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9",
+    /** Group Member Requirement field type */
+    GroupMemberRequirement: "C0797A18-B489-46C7-8C30-F5E4F8246E23",
     /** Group Role field type */
     GroupRole: "3BB25568-E793-4D12-AE80-AC3FDA6FD8A8",
     /** Group Type field type */
