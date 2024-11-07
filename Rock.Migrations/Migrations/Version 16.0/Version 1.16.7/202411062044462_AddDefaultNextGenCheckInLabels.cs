@@ -128,7 +128,7 @@ BEGIN
     INSERT INTO [CheckInLabel]
     ([Name], [Description], [IsActive], [IsSystem], [LabelFormat], [LabelType], [Content], [PreviewImage], [AdditionalSettingsJson], [Guid])
     VALUES
-    ('Name Tag', 'Generic name tag for check-in.', 1, 1, 0, 0, '{content.Replace( "'", "''" )}', 0x{previewImageData}, '{additionalSettingsJson.Replace( "'", "''" )}', '{NameTagGuid}')
+    ('Name Tag', 'Generic name tag for check-in.', 1, 1, 0, 1, '{content.Replace( "'", "''" )}', 0x{previewImageData}, '{additionalSettingsJson.Replace( "'", "''" )}', '{NameTagGuid}')
 END" );
         }
 
