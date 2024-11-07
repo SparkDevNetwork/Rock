@@ -689,8 +689,8 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 ValuesFunc = ( source, field, printRequest ) => source.AllAttendance
                     .Select( a => a.Person )
-                    .DistinctBy( a => a.Id )
-                    .Select( a => a.NickName )
+                    .DistinctBy( a => a?.Id )
+                    .Select( a => a?.NickName )
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
@@ -1152,7 +1152,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
                 Formatter = GenderDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.Gender
+                ValueFunc = ( source, field, printRequest ) => source.Person?.Gender
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
@@ -1161,7 +1161,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Grade Offset",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Person.GradeOffset
+                ValueFunc = ( source, field, printRequest ) => source.Person?.GradeOffset
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
@@ -1171,7 +1171,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
                 Formatter = GradeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.GraduationYear
+                ValueFunc = ( source, field, printRequest ) => source.Person?.GraduationYear
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
@@ -1181,7 +1181,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
                 Formatter = PersonAgeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.AgePrecise
+                ValueFunc = ( source, field, printRequest ) => source.Person?.AgePrecise
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasPerson>
@@ -1191,7 +1191,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
                 Formatter = WeekdayDateDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.ThisYearsBirthdate
+                ValueFunc = ( source, field, printRequest ) => source.Person?.ThisYearsBirthdate
             } );
 
             var personDataSources = GetPersonDataSources();

@@ -493,7 +493,7 @@ namespace Rock.Utility
         /// <returns><c>true</c> if the attribute value matches the <paramref name="filterFunc"/> filter.</returns>
         private static bool CompareToInMemoryAttribute( IHasAttributes entity, AttributeCache comparedToAttribute, Func<AttributeValue, bool> filterFunc )
         {
-            var comparedToAttributeValue = entity.GetAttributeValue( comparedToAttribute.Key );
+            var comparedToAttributeValue = entity?.GetAttributeValue( comparedToAttribute.Key );
 
             // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
             if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
