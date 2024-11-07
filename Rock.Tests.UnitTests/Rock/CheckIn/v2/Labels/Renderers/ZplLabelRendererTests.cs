@@ -2706,7 +2706,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
                 RockContext = rockContext.Object
             };
 
@@ -2765,7 +2765,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
                 RockContext = rockContext.Object
             };
 
@@ -2815,7 +2815,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
                 RockContext = rockContext.Object
             };
 

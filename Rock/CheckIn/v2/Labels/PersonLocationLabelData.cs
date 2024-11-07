@@ -54,18 +54,18 @@ namespace Rock.CheckIn.v2.Labels
         /// The attendance records for the <see cref="Person"/> during this
         /// check-in session.
         /// </summary>
-        public List<AttendanceLabel> PersonAttendance { get; }
+        public List<LabelAttendanceDetail> PersonAttendance { get; }
 
         /// <summary>
         /// The attendance records for the <see cref="Person"/> and location
         /// during this check-in session.
         /// </summary>
-        public List<AttendanceLabel> LocationAttendance { get; }
+        public List<LabelAttendanceDetail> LocationAttendance { get; }
 
         /// <summary>
         /// All attendance records for this session.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; }
+        public List<LabelAttendanceDetail> AllAttendance { get; }
 
         /// <summary>
         /// The achievement type names that were completed by any person during
@@ -115,12 +115,12 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The date and time this person was checked in for this label.
         /// </summary>
-        public DateTime CheckInTime { get; }
+        public DateTime CheckInDateTime { get; }
 
         /// <summary>
         /// The current date and time the label is being printed at.
         /// </summary>
-        public DateTime CurrentTime { get; }
+        public DateTime CurrentDateTime { get; }
 
         /// <summary>
         /// The names of the check-in groups that the person was checked into.
@@ -159,7 +159,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <param name="location">The location the person was checked into.</param>
         /// <param name="allAttendance">The list of all attendance labels.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
-        public PersonLocationLabelData( Person person, NamedLocationCache location, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        public PersonLocationLabelData( Person person, NamedLocationCache location, List<LabelAttendanceDetail> allAttendance, RockContext rockContext )
         {
             Person = person;
             Location = location;
@@ -174,10 +174,10 @@ namespace Rock.CheckIn.v2.Labels
                 .ToList();
 
             AreaNames = LocationAttendance.Select( a => a.Area.Name ).ToList();
-            CheckInTime = AllAttendance.Count > 0
+            CheckInDateTime = AllAttendance.Count > 0
                 ? AllAttendance.Min( a => a.StartDateTime )
                 : RockDateTime.Now;
-            CurrentTime = RockDateTime.Now;
+            CurrentDateTime = RockDateTime.Now;
             GroupNames = LocationAttendance.Select( a => a.Group.Name ).ToList();
             GroupRoleNames = PersonAttendance
                 .SelectMany( a => a.GroupMembers )

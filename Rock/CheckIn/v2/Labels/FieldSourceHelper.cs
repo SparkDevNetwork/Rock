@@ -219,21 +219,21 @@ namespace Rock.CheckIn.v2.Labels
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
                 Key = "e654e589-f4f6-4946-b973-49743eb637f4",
-                Name = "Check-in Time",
+                Name = "Check-in Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
+                ValueFunc = ( source, field, printRequest ) => source.CheckInDateTime
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
                 Key = "9d96337a-61b2-48c6-b3df-dec5b4ec8584",
-                Name = "Current Time",
+                Name = "Current Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.CurrentTime
+                ValueFunc = ( source, field, printRequest ) => source.CurrentDateTime
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
@@ -351,11 +351,11 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( PersonLabelData.CheckInTime ),
+                propertyName: nameof( PersonLabelData.CheckInDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( PersonLabelData.CurrentTime ),
+                propertyName: nameof( PersonLabelData.CurrentDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
@@ -463,7 +463,7 @@ namespace Rock.CheckIn.v2.Labels
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
                 Key = "d3f07ec5-4444-4d20-adc3-4f979e8a29cb",
-                Name = "Current Time",
+                Name = "Current Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
@@ -593,11 +593,11 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( AttendanceLabelData.CheckInTime ),
+                propertyName: nameof( AttendanceLabelData.CheckInDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( AttendanceLabelData.CurrentTime ),
+                propertyName: nameof( AttendanceLabelData.CurrentDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
@@ -719,21 +719,21 @@ namespace Rock.CheckIn.v2.Labels
             dataSources.Add( new SingleValueFieldDataSource<FamilyLabelData>
             {
                 Key = "7bae9b91-3653-4796-9698-c01b2d3b5049",
-                Name = "Check-in Time",
+                Name = "Check-in Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
+                ValueFunc = ( source, field, printRequest ) => source.CheckInDateTime
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<FamilyLabelData>
             {
                 Key = "2309804e-e2dc-43b8-b5f4-ce78ced088b3",
-                Name = "Current Time",
+                Name = "Current Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
+                ValueFunc = ( source, field, printRequest ) => source.CurrentDateTime
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
@@ -808,11 +808,11 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( FamilyLabelData.CheckInTime ),
+                propertyName: nameof( FamilyLabelData.CheckInDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( FamilyLabelData.CurrentTime ),
+                propertyName: nameof( FamilyLabelData.CurrentDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
@@ -851,10 +851,21 @@ namespace Rock.CheckIn.v2.Labels
         {
             // Use the same information as attendance label except for achievement
             // information, since we don't have that data now.
-            return GetAttendanceLabelAttendeeInfoDataSources()
+            var dataSources = GetStandardPersonAttendeeInfoDataSources()
                 .Concat( GetAttendanceLabelCheckInInfoDataSources() )
-                .DistinctBy( ds => ds.Key )
                 .ToList();
+
+            dataSources.Add( new SingleValueFieldDataSource<CheckoutLabelData>
+            {
+                Key = "90a60176-b3ea-4dc9-8201-ad599d7a240e",
+                Name = "Checkout Date Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.CheckoutDateTime
+            } );
+
+            return dataSources.DistinctBy( ds => ds.Key ).ToList();
         }
 
         /// <summary>
@@ -879,11 +890,15 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( CheckoutLabelData.CheckInTime ),
+                propertyName: nameof( CheckoutLabelData.CheckInDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( CheckoutLabelData.CurrentTime ),
+                propertyName: nameof( CheckoutLabelData.CheckoutDateTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( CheckoutLabelData.CurrentDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
@@ -951,11 +966,11 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( PersonLocationLabelData.CheckInTime ),
+                propertyName: nameof( PersonLocationLabelData.CheckInDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
-                propertyName: nameof( PersonLocationLabelData.CurrentTime ),
+                propertyName: nameof( PersonLocationLabelData.CurrentDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
@@ -1030,21 +1045,21 @@ namespace Rock.CheckIn.v2.Labels
             dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
             {
                 Key = "b89cce4b-18af-432d-96c0-442e6125cc1f",
-                Name = "Check-in Time",
+                Name = "Check-in Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
+                ValueFunc = ( source, field, printRequest ) => source.CheckInDateTime
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
             {
                 Key = "83a48fc3-69b3-469d-ac94-704d29488a8e",
-                Name = "Current Time",
+                Name = "Current Date Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.CurrentTime
+                ValueFunc = ( source, field, printRequest ) => source.CurrentDateTime
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
