@@ -356,6 +356,37 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
+                // No legacy check-in labels were found, so attempt to print any
+                // next-gen check-in labels. If that still comes back with no
+                // labels then assume there just aren't any for this attendance.
+                var kioskId = new AttendanceService( rockContext ).Queryable()
+                    .Where( a => attendanceIds.Contains( a.Id ) && a.DeviceId.HasValue )
+                    .Select( a => a.DeviceId )
+                    .FirstOrDefault();
+
+                var kiosk = DeviceCache.Get( kioskId ?? 0 );
+
+                if ( kiosk != null && ZebraPrint.TryReprintNextGenLabels( attendanceIds, kiosk, out var messages, out var clientLabels ) )
+                {
+                    if ( clientLabels.Any() )
+                    {
+                        var script = $@"
+if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
+    window.RockCheckinNative.PrintV2Labels(JSON.stringify({clientLabels.ToJson()}));
+}}
+";
+                        ScriptManager.RegisterClientScriptBlock( upnlContent, upnlContent.GetType(), "addV2LabelScript", script, true );
+                    }
+
+                    var printResultMessage = messages.Count == 0
+                        ? "Labels printed."
+                        : messages.JoinStrings( "<br>" );
+
+                    maPrintResult.Show( printResultMessage, ModalAlertType.None );
+
+                    return;
+                }
+
                 maNoLabelsFound.Show( "No labels were found for re-printing.", ModalAlertType.Alert );
                 return;
             }
